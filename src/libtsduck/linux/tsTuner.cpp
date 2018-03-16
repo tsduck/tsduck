@@ -41,6 +41,8 @@ TSDUCK_SOURCE;
 
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
 
+#define FE_ZERO (::fe_status_t(0))
+
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_POLL;
@@ -353,11 +355,11 @@ bool ts::Tuner::close(Report& report)
 
 bool ts::Tuner::getFrontendStatus(::fe_status_t& status, Report& report)
 {
-    status = ::FE_NONE;
+    status = FE_ZERO;
     errno = 0;
     bool ok = ::ioctl(_frontend_fd, FE_READ_STATUS, &status) == 0;
     int err = errno;
-    if (ok || (!ok && err == EBUSY && status != ::FE_NONE)) {
+    if (ok || (!ok && err == EBUSY && status != FE_ZERO)) {
         return true;
     }
     else {
@@ -378,7 +380,7 @@ bool ts::Tuner::signalLocked(Report& report)
         return false;
     }
     else {
-        ::fe_status_t status = ::FE_NONE;
+        ::fe_status_t status = FE_ZERO;
         getFrontendStatus(status, report);
         return (status & ::FE_HAS_LOCK) != 0;
     }
@@ -993,7 +995,7 @@ bool ts::Tuner::start(Report& report)
     for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _signal_poll) {
 
         // Read the frontend status
-        ::fe_status_t status = ::FE_NONE;
+        ::fe_status_t status = FE_ZERO;
         getFrontendStatus(status, report);
 
         // If the input signal is locked, cool...
@@ -1415,7 +1417,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     });
 
     // Read current status, ignore errors.
-    ::fe_status_t status = ::FE_NONE;
+    ::fe_status_t status = FE_ZERO;
     getFrontendStatus(status, report);
 
     // Read current tuning parameters

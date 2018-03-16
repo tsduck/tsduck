@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.9
+Version 3.9-619
 
 - Added plugins mpe and mpeinject to respectively extract and inject MPE
   (Multi-Protocol Encapsulation) datagrams to/from UDP/IP. A complete example
