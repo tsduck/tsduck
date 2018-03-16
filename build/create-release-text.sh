@@ -44,8 +44,10 @@ WIN32=$(getlink '/TSDuck-Win32-.*\.exe$')
 WIN64=$(getlink '/TSDuck-Win64-.*\.exe$')
 FC64=$(getlink '/tsduck-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64=$(getlink '/tsduck_[0-9].*_amd64\.deb$')
+ARM=$(getlink '/tsduck_[0-9].*_armhf\.deb$')
 FC64DEV=$(getlink '/tsduck-devel-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64DEV=$(getlink '/tsduck-dev_[0-9].*_amd64\.deb$')
+ARMDEV=$(getlink '/tsduck-dev_[0-9].*_armhf\.deb$')
 
 # Now create the markdown file.
 MDFILE=$INSTALLDIR/github-release-$TAG.md
@@ -56,12 +58,14 @@ Binaries for command-line tools and plugins:
 * Windows 64 bits: $WIN64
 * Fedora 64 bits: $FC64
 * Ubuntu 64 bits: $UB64
+* Raspbian 32 bits (Raspberry Pi): $ARM
 * macOS: [use Homebrew](https://github.com/tsduck/homebrew-tsduck/blob/master/README.md)
 
 Binaries for development environment:
 * Windows: Included in installer (select option "Development")
 * Fedora 64 bits: $FC64DEV
 * Ubuntu 64 bits: $UB64DEV
+* Raspbian 32 bits (Raspberry Pi): $ARMDEV
 * macOS: Included in Homebrew package
 EOF
 
