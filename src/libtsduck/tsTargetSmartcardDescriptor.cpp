@@ -35,11 +35,14 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_smartcard_descriptor"
 #define MY_DID ts::DID_INT_SMARTCARD
-#define MY_TID ts::TID_INT
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSmartcardDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
+
+TS_ID_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
+TS_ID_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
+
+TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSmartcardDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
+TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSmartcardDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
 
 
 //----------------------------------------------------------------------------

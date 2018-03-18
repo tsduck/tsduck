@@ -273,7 +273,7 @@ Bits = 32
 
 [DescriptorId]
 # Private descriptors: Most significant bytes contain a private data specifier.
-# Table-specific descriptors: MSB contains table if followed by FFFFFFFF.
+# Table-specific descriptors: MSB contains table id followed by FFFFFFFF.
 Bits = 8
 # MPEG-defined:
 0x01 = NPT Reference
@@ -446,6 +446,11 @@ Bits = 8
 0x74FFFFFFFF15 = AIT Simple Application Location
 0x74FFFFFFFF16 = AIT Application Usage
 0x74FFFFFFFF17 = AIT Simple Application Boundary
+# Valid in an SIT (0xFC, Splice Information Table, ANSI / SCTE 35):
+0xFCFFFFFFFF00 = SCTE 35 Avail
+0xFCFFFFFFFF01 = SCTE 35 DTMF
+0xFCFFFFFFFF02 = SCTE 35 Segmentation
+0xFCFFFFFFFF03 = SCTE 35 Time
 # With PDS for Canal+ / NDS France (MediaHighway).
 0x000000C080 = DTG Stream Indicator/PIO Offset Time (MediaHighway)
 0x000000C081 = Logical Channel/AC-3 Audio Stream (MediaHighway)
@@ -1476,6 +1481,7 @@ Bits = 16
 0x910C = AC-4 receiver-mix audio description, mono, for the visually impaired
 0x910D = AC-4 receiver-mix audio description, stereo, for the visually impaired
 0x910E-0x91FF = AC-4
+0xBF03 = HEVC plano-stereoscopic top and bottom (TaB) frame-packing
 
 [DTSSampleRate]
 Bits = 4
