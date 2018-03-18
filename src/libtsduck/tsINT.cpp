@@ -381,7 +381,7 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
         // Fixed part
         const uint8_t action_type = section.tableIdExtension() >> 8;
-        const uint8_t id_hash = section.tableIdExtension() & 0x0F;
+        const uint8_t id_hash = section.tableIdExtension() & 0xFF;
         const uint8_t comp_hash = data[0] ^ data[1] ^ data[2];
         const uint32_t platform_id = GetUInt24(data);
         const uint8_t processing_order = data[3];
@@ -390,7 +390,7 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         strm << margin << "Platform id: " << names::PlatformId(platform_id, names::FIRST) << std::endl
              << margin
              << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)",
-                                {action_type, processing_order, id_hash, 
+                                {action_type, processing_order, id_hash,
                                  id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash})})
              << std::endl
              << margin << "Platform descriptors:" << std::endl;

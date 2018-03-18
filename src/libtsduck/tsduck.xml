@@ -261,6 +261,10 @@
       </additional_info>
     </AC3_descriptor>
 
+    <adaptation_field_data_descriptor adaptation_field_data_identifier="uint8, required"/>
+
+    <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
+
     <application_signalling_descriptor>
       <!-- One per application -->
       <application application_type="uint15, required"
@@ -632,6 +636,16 @@
           MAC_addr_low="MAC address, required"
           MAC_addr_high="MAC address, required"/>
     </target_MAC_address_range_descriptor>
+
+    <target_serial_number_descriptor>
+      <!-- Serial data bytes -->
+      Hexadecimal content
+    </target_serial_number_descriptor>
+
+    <target_smartcard_descriptor super_CA_system_id="uint32, required">
+      <!-- Private data bytes -->
+      Hexadecimal content
+    </target_smartcard_descriptor>
 
     <teletext_descriptor>
       <!-- One per page -->

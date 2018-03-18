@@ -79,6 +79,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
 
     REF_TYPE(AACDescriptor);
     REF_TYPE(AC3Descriptor);
+    REF_TYPE(AdaptationFieldDataDescriptor);
+    REF_TYPE(AncillaryDataDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
     REF_TYPE(AVCVideoDescriptor);
@@ -132,6 +134,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(TargetIPSourceSlashDescriptor);
     REF_TYPE(TargetMACAddressDescriptor);
     REF_TYPE(TargetMACAddressRangeDescriptor);
+    REF_TYPE(TargetSerialNumberDescriptor);
+    REF_TYPE(TargetSmartcardDescriptor);
     REF_TYPE(TeletextDescriptor);
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);
