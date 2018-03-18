@@ -1,0 +1,134 @@
+====================================================
+TSDuck - List of features to be implemented or fixed
+====================================================
+
+* In plugin mpe, add option --replace-ts to extract TS from UDP datagrams
+  and completely replace the original stream. Prerequisites: Collect several
+  real-world MPE streams with encapsulated TS-in-UDP-in-MPE-in-TS to make sure
+  we have a complete understanding of the use case.
+
+* Implement missing PSI/SI tables and descriptors (list below).
+
+  ISO/IEC 13818-1 / H.222 (MPEG system layer)
+  - 2.6.2   video_stream_descriptor
+  - 2.6.4   audio_stream_descriptor
+  - 2.6.6   hierarchy_descriptor
+  - 2.6.10  data_stream_alignment_descriptor
+  - 2.6.12  target_background_grid_descriptor
+  - 2.6.14  video_window_descriptor
+  - 2.6.20  system_clock_descriptor
+  - 2.6.22  multiplex_buffer_utilization_descriptor
+  - 2.6.24  copyright_descriptor
+  - 2.6.26  maximum_bitrate_descriptor
+  - 2.6.30  smoothing_buffer_descriptor
+  - 2.6.34  IBP_descriptor
+  - 2.6.36  MPEG-4_video_descriptor
+  - 2.6.38  MPEG-4_audio_descriptor
+  - 2.6.40  IOD_descriptor
+  - 2.6.42  SL_descriptor
+  - 2.6.44  FMC_descriptor
+  - 2.6.46  external_ES_ID_descriptor
+  - 2.6.48  muxcode_descriptor
+  - 2.6.50  FmxBufferSize_descriptor
+  - 2.6.52  MultiplexBuffer_descriptor
+  - 2.11.3.8 ISO_IEC_14496_section
+
+  ISO/IEC 13818-1 2000, Amendment 1, Transport of Metadata
+  - 2.6.56  content_labelling_descriptor
+  - 2.6.58  metadata_pointer_descriptor
+  - 2.6.60  metadata_descriptor
+  - 2.6.62  metadata_STD_descriptor
+  - 2.12.6  metadata_section
+
+  W5771 Amendment 3, Transport of AVC
+  - 2.6.56  AVC_timing_and_HRD_descriptor
+
+  H.222.0-201401 Amendment 3, Transport of HEVC
+  - 11) 2.6.90  extension_descriptor
+  - 13) 2.6.97  HEVC_timing_and_HRD_descriptor
+
+  ETSI EN 300 468 (DVB SI)
+  - 5.2.8    Stuffing Table (ST)
+  - 6.2.3    announcement_support_descriptor
+  - 6.2.6    cell_frequency_link_descriptor
+  - 6.2.7    cell_list_descriptor
+  - 6.2.14   DSNG_descriptor
+  - 6.2.17   frequency_list_descriptor
+  - 6.2.18   FTA_content_management_descriptor
+  - 6.2.21   mosaic_descriptor
+  - 6.2.22   multilingual_bouquet_name_descriptor
+  - 6.2.23   multilingual_component_descriptor
+  - 6.2.24   multilingual_network_name_descriptor
+  - 6.2.30   PDC_descriptor
+  - 6.2.34   service_availability_descriptor
+  - 6.2.36   service_move_descriptor
+  - 6.2.38   short_smoothing_buffer_descriptor
+  - 6.2.40   stuffing_descriptor
+  - 6.2.42   telephone_descriptor
+  - 6.2.46   transport_stream_descriptor
+  - 6.4.1    CI_ancillary_data_descriptor
+  - 6.4.2    CP_descriptor
+  - 6.4.3    CP_identifier_descriptor
+  - 6.4.4    part 9 of ETSI TS 102 825
+  - 6.4.5.1  C2_delivery_system_descriptor
+  - 6.4.5.2  SH_delivery_system_descriptor
+  - 6.4.5.3  T2_delivery_system_descriptor
+  - 6.4.5.4  C2_bundle_delivery_system_descriptor
+  - 6.4.6    image_icon_descriptor
+  - 6.4.8    network_change_notify_descriptor
+  - 6.4.9    service_relocated_descriptor
+  - 6.4.11   target_region_descriptor
+  - 6.4.12   target_region_name_descriptor
+  - 6.4.14   URI_linkage_descriptor
+  - 6.4.15   video_depth_range_descriptor
+  - 7.1.1    Discontinuity Information Table (DIT)
+  - 7.1.2    Selection Information Table (SIT)
+  - 7.2.1    partial_transport_stream_descriptor
+  - D.7      AC-4_descriptor
+  - G.3.1    DTS-HD_audio_stream_descriptor
+  - L.1      DTS_Neural_descriptor
+
+  ETSI EN 301 192 (DVB Data Broadcasting)
+  - 8.4.5.11  target_IPv6_address_descriptor (also ETSI TS 102 006)
+  - 8.4.5.12  target_IPv6_slash_descriptor
+  - 8.4.5.13  target_IPv6_source_slash_descriptor
+  - 8.4.5.15  IP/MAC_generic_stream_location_descriptor
+  - 8.4.5.16  ISP_access_mode_descriptor
+
+  ETSI TS 102 006 (System Software Update)
+  - 9.5.2.4   target_IPv6_address_descriptor
+  - 9.5.2.6   update_descriptor
+  - 9.5.2.7   SSU_location_descriptor
+  - 9.5.2.8   SSU_subgroup_association_descriptor
+  - 9.5.2.9   scheduling_descriptor
+  - 9.5.2.11  SSU_event_name_descriptor
+  - 9.5.2.12  message_descriptor (not the same as ETSI EN 300 468, name it SSUMessageDescriptor)
+  - 9.5.2.14  enhanced_message_descriptor (name it SSUEnhancedMessageDescriptor for consistency)
+  - 9.5.2.15  ssu_uri_descriptor
+
+  ETSI TS 102 809 (DVB HbbTV)
+  - 5.3.5.3    application_descriptor
+  - 5.3.5.4    application_recording_descriptor
+  - 5.3.5.6.1  application_name_descriptor
+  - 5.3.5.6.2  application_icons_descriptor
+  - 5.3.5.7    external_application_authorisation_descriptor
+  - 5.3.5.8    graphics_constraints_descriptor
+  - 5.3.10.1   application_storage_descriptor
+  - 6.2.1      service_identifier_descriptor
+
+  ETSI TS 101 812 V1.3.2 (DVB-MHP)
+  - 10.8.1    transport_protocol_descriptor
+  - 10.8.2    ip_signalling_descriptor
+  - 10.8.3.2  prefetch_descriptor
+  - 10.8.3.3  DII_location_descriptor
+  - 10.9.1    dvb_j_application_descriptor
+  - 10.9.2    dvb_j_application_location_descriptor
+  - 10.10.1   dvb_html_application_descriptor
+  - 10.10.2   dvb_html_application_location_descriptor
+  - 10.10.3   dvb_html_application_boundary_descriptor
+
+  ANSI/SCTE 35 (Splice Information)
+  - 10.3.1  avail_descriptor
+  - 10.3.2  DTMF_descriptor
+  - 10.3.3  Segmentation_descriptor
+  - 10.3.4  time_descriptor
