@@ -20,10 +20,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Descriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAES.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithm.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithmTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.h" />
@@ -258,6 +260,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsTargetIPSourceSlashDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTargetMACAddressDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTargetMACAddressRangeDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTargetSerialNumberDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTargetSmartcardDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPServer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPSocket.h" />
@@ -365,8 +369,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAIT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
@@ -544,6 +550,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsTargetIPSourceSlashDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetMACAddressDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetMACAddressRangeDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTargetSerialNumberDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTargetSmartcardDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPConnection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPServer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPSocket.cpp" />

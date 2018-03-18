@@ -18,10 +18,12 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
     ../../../src/libtsduck/tsAC3Descriptor.h \
+    ../../../src/libtsduck/tsAdaptationFieldDataDescriptor.h \
     ../../../src/libtsduck/tsAES.h \
     ../../../src/libtsduck/tsAIT.h \
     ../../../src/libtsduck/tsAlgorithm.h \
     ../../../src/libtsduck/tsAlgorithmTemplate.h \
+    ../../../src/libtsduck/tsAncillaryDataDescriptor.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.h \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.h \
@@ -256,6 +258,8 @@ HEADERS += \
     ../../../src/libtsduck/tsTargetIPSourceSlashDescriptor.h \
     ../../../src/libtsduck/tsTargetMACAddressDescriptor.h \
     ../../../src/libtsduck/tsTargetMACAddressRangeDescriptor.h \
+    ../../../src/libtsduck/tsTargetSerialNumberDescriptor.h \
+    ../../../src/libtsduck/tsTargetSmartcardDescriptor.h \
     ../../../src/libtsduck/tsTCPConnection.h \
     ../../../src/libtsduck/tsTCPServer.h \
     ../../../src/libtsduck/tsTCPSocket.h \
@@ -353,8 +357,10 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
+    ../../../src/libtsduck/tsAdaptationFieldDataDescriptor.cpp \
     ../../../src/libtsduck/tsAES.cpp \
     ../../../src/libtsduck/tsAIT.cpp \
+    ../../../src/libtsduck/tsAncillaryDataDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
@@ -532,6 +538,8 @@ SOURCES += \
     ../../../src/libtsduck/tsTargetIPSourceSlashDescriptor.cpp \
     ../../../src/libtsduck/tsTargetMACAddressDescriptor.cpp \
     ../../../src/libtsduck/tsTargetMACAddressRangeDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetSerialNumberDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetSmartcardDescriptor.cpp \
     ../../../src/libtsduck/tsTCPConnection.cpp \
     ../../../src/libtsduck/tsTCPServer.cpp \
     ../../../src/libtsduck/tsTCPSocket.cpp \
