@@ -2,6 +2,11 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.10-623
+
+- Input plugin "file" can now read more than one file. Input files are
+  concatenated as input stream.
+
 Version 3.9-619
 
 - Added plugins mpe and mpeinject to respectively extract and inject MPE

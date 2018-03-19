@@ -55,7 +55,11 @@ namespace ts {
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;
     private:
-        TSFileInput _file;
+        UStringVector _filenames;
+        size_t        _current_file;
+        size_t        _repeat_count;
+        uint64_t      _start_offset;
+        TSFileInput   _file;
 
         // Inaccessible operations
         FileInput() = delete;
@@ -111,23 +115,28 @@ TSPLUGIN_DECLARE_PROCESSOR(file, ts::FileProcessor)
 //----------------------------------------------------------------------------
 
 ts::FileInput::FileInput(TSP* tsp_) :
-    InputPlugin(tsp_, u"Read packets from a file.", u"[options] [file-name]"),
+    InputPlugin(tsp_, u"Read packets from one or more files.", u"[options] [file-name ...]"),
+    _filenames(),
+    _current_file(0),
+    _repeat_count(1),
+    _start_offset(0),
     _file()
 {
-    option(u"",               0,  STRING, 0, 1);
+    option(u"",               0,  STRING, 0, UNLIMITED_COUNT);
     option(u"byte-offset",   'b', UNSIGNED);
     option(u"infinite",      'i');
     option(u"packet-offset", 'p', UNSIGNED);
     option(u"repeat",        'r', POSITIVE);
 
     setHelp(u"File-name:\n"
-            u"  Name of the input file. Use standard input by default.\n"
+            u"  Name of the input files. The files are read in sequence. Use standard\n"
+            u"  input by default.\n"
             u"\n"
             u"Options:\n"
             u"\n"
             u"  -b value\n"
             u"  --byte-offset value\n"
-            u"      Start reading the file at the specified byte offset (default: 0).\n"
+            u"      Start reading each file at the specified byte offset (default: 0).\n"
             u"      This option is allowed only if the input file is a regular file.\n"
             u"\n"
             u"  --help\n"
@@ -145,7 +154,7 @@ ts::FileInput::FileInput(TSP* tsp_) :
             u"\n"
             u"  -r count\n"
             u"  --repeat count\n"
-            u"      Repeat the playout of the file the specified number of times\n"
+            u"      Repeat the playout of each file the specified number of times\n"
             u"      (default: only once). This option is allowed only if the\n"
             u"      input file is a regular file.\n"
             u"\n"
@@ -230,20 +239,56 @@ ts::FileProcessor::FileProcessor(TSP* tsp_) :
 
 bool ts::FileInput::start()
 {
-    return _file.open (value(u""),
-                       present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1),
-                       intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
-                       *tsp);
+    // Get command line options.
+    getValues(_filenames);
+    _current_file = 0;
+    _repeat_count = present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1);
+    _start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
+
+    if (_filenames.size() > 1 && _repeat_count == 0) {
+        tsp->error(u"specifying --infinite is meaningless with more than one file");
+        return false;
+    }
+
+    // Name of first input file (or standard input if there is not input file).
+    const UString first(_filenames.empty() ? UString() : _filenames.front());
+    if (_filenames.size() > 1) {
+        tsp->verbose(u"reading file %s", {first});
+    }
+
+    // Open first input file.
+    return _file.open(first, _repeat_count, _start_offset, *tsp);
 }
 
 bool ts::FileInput::stop()
 {
-    return _file.close (*tsp);
+    return _file.close(*tsp);
 }
 
-size_t ts::FileInput::receive (TSPacket* buffer, size_t max_packets)
+size_t ts::FileInput::receive(TSPacket* buffer, size_t max_packets)
 {
-    return _file.read (buffer, max_packets, *tsp);
+    // Loop on input files.
+    for (;;) {
+
+        // Read some packets from current file.
+        size_t count = _file.read(buffer, max_packets, *tsp);
+        if (count > 0) {
+            // Got packets, return them.
+            return count;
+        }
+
+        // If this is the last file, return the end of input.
+        if (++_current_file >= _filenames.size()) {
+            return 0;
+        }
+
+        // Open the next file.
+        _file.close(*tsp);
+        tsp->verbose(u"reading file %s", {_filenames[_current_file]});
+        if (!_file.open(_filenames[_current_file], _repeat_count, _start_offset, *tsp)) {
+            return 0;
+        }
+    }
 }
 
 
@@ -253,17 +298,17 @@ size_t ts::FileInput::receive (TSPacket* buffer, size_t max_packets)
 
 bool ts::FileOutput::start()
 {
-    return _file.open (value(u""), present(u"append"), present(u"keep"), *tsp);
+    return _file.open(value(u""), present(u"append"), present(u"keep"), *tsp);
 }
 
 bool ts::FileOutput::stop()
 {
-    return _file.close (*tsp);
+    return _file.close(*tsp);
 }
 
 bool ts::FileOutput::send (const TSPacket* buffer, size_t packet_count)
 {
-    return _file.write (buffer, packet_count, *tsp);
+    return _file.write(buffer, packet_count, *tsp);
 }
 
 
@@ -273,15 +318,15 @@ bool ts::FileOutput::send (const TSPacket* buffer, size_t packet_count)
 
 bool ts::FileProcessor::start()
 {
-    return _file.open (value(u""), present(u"append"), present(u"keep"), *tsp);
+    return _file.open(value(u""), present(u"append"), present(u"keep"), *tsp);
 }
 
 bool ts::FileProcessor::stop()
 {
-    return _file.close (*tsp);
+    return _file.close(*tsp);
 }
 
 ts::ProcessorPlugin::Status ts::FileProcessor::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    return _file.write (&pkt, 1, *tsp) ? TSP_OK : TSP_END;
+    return _file.write(&pkt, 1, *tsp) ? TSP_OK : TSP_END;
 }
