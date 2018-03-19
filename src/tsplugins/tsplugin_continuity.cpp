@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  Check continuity counters
+//  Check or fix continuity counters
 //
 //----------------------------------------------------------------------------
 
@@ -51,9 +51,13 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        UString       _tag;            // Message tag
-        PacketCounter _packet_count;   // TS packet count
-        uint8_t       _cc[PID_MAX];    // Continuity counter by PID
+        UString       _tag;             // Message tag
+        bool          _fix;             // Fix incorrect continuity counters
+        int           _log_level;       // Log level for discontinuity messages
+        PacketCounter _packet_count;    // TS packet count
+        PIDSet        _pids;            // PID values to check or fix
+        uint8_t       _oldCC[PID_MAX];  // Continuity counter by PID (input)
+        uint8_t       _newCC[PID_MAX];  // Continuity counter by PID (output)
 
         // Inaccessible operations
         ContinuityPlugin() = delete;
@@ -71,16 +75,32 @@ TSPLUGIN_DECLARE_PROCESSOR(continuity, ts::ContinuityPlugin)
 //----------------------------------------------------------------------------
 
 ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Check continuity counters on TS packets.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Check or fix continuity counters on TS packets.", u"[options]"),
     _tag(),
-    _packet_count(0)
+    _fix(),
+    _log_level(Severity::Info),
+    _packet_count(0),
+    _pids()
 {
+    option(u"fix", 'f');
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     option(u"tag", 't', STRING);
 
     setHelp(u"Options:\n"
             u"\n"
+            u"  -f\n"
+            u"  --fix\n"
+            u"      Fix incorrect continuity counters. By default, only display\n"
+            u"      discontinuities.\n"
+            u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Check or fix continuity counters only in packets with this PID value.\n"
+            u"      Several -p or --pid options may be specified. By default, all PID's\n"
+            u"      are checked or fixed.\n"
             u"\n"
             u"  -t 'string'\n"
             u"  --tag 'string'\n"
@@ -99,13 +119,23 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
 bool ts::ContinuityPlugin::start()
 {
     // Command line arguments
+    getPIDSet(_pids, u"pid", true);
+    _fix = present(u"fix");
     _tag = value(u"tag");
     if (!_tag.empty()) {
         _tag += u": ";
     }
 
+    // Null packets are not subject to continuity counters. Never check the null PID.
+    _pids.reset(PID_NULL);
+
+    // Without --fix, all discontinuities are always reported.
+    // With --fix, this is only a verbose message.
+    _log_level = _fix ? Severity::Verbose : Severity::Info;
+
     // Preset continuity counters to invalid values
-    ::memset(_cc, 0xFF, sizeof(_cc));
+    ::memset(_oldCC, 0xFF, sizeof(_oldCC));
+    ::memset(_newCC, 0xFF, sizeof(_newCC));
 
     return true;
 }
@@ -115,26 +145,31 @@ bool ts::ContinuityPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ContinuityPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::ContinuityPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
-    const uint8_t cc = pkt.getCC();
 
-    // Continuity counters (CC) are located in the TS header. This is a 4-bit
-    // field, incremented at each packet on a PID, wrapping from 15 to 0.
-    // Null packets are not subject to CC. Adjacent identical CC on a PID
-    // are allowed and indicate a duplicated packet.
+    // Check selected PID's only.
+    if (_pids.test(pid)) {
 
-    if (pid != PID_NULL &&              // not a null packet
-        _cc[pid] < 16 &&                // not first packet on PID
-        _cc[pid] != cc &&               // not a duplicated packet
-        ((_cc[pid] + 1) & 0x0F) != cc)  // wrong CC
-    {
-        tsp->info(u"%sTS: %'d, PID: 0x%X, missing: %d", {_tag, _packet_count, pid, (cc < _cc[pid] ? 16 : 0) + cc - _cc[pid] - 1});
+        // Adjacent identical CC on a PID are allowed and indicate a duplicated packet.
+        const uint8_t cc = pkt.getCC();
+        const bool duplicated = _oldCC[pid] == cc;
+
+        // Check if the CC is incorrect.
+        if (_oldCC[pid] < 16 && !duplicated && ((_oldCC[pid] + 1) & 0x0F) != cc) {
+            tsp->log(_log_level, u"%sTS: %'d, PID: 0x%X, missing: %d", {_tag, _packet_count, pid, (cc < _oldCC[pid] ? 16 : 0) + cc - _oldCC[pid] - 1});
+        }
+
+        // Fix CC if requested. Fixes are propagated all along the PID.
+        if (_fix && _newCC[pid] < 16) {
+            pkt.setCC(duplicated ? _newCC[pid] : ((_newCC[pid] + 1) & 0x0F));
+        }
+
+        _oldCC[pid] = cc;
+        _newCC[pid] = pkt.getCC();
     }
 
     _packet_count++;
-    _cc[pid] = cc;
-
     return TSP_OK;
 }

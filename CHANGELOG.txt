@@ -2,7 +2,9 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.10-623
+Version 3.10-624
+
+- Added options --fix and --pid to plugin "continuity".
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
