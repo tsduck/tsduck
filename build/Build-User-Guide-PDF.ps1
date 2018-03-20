@@ -55,10 +55,11 @@ $SrcDir = (Join-Path $RootDir "src")
 $DocIn = (Join-Path $DocDir "tsduck.docx")
 $DocOut = (Join-Path $DocDir "tsduck.pdf")
 
-# Get TSDuck version.
-$Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
-$Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
-$Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
+# Get TSDuck version. Increment commit count since we are going to create a new version.
+$Major = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
+$Minor = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
+$Commit = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
+$Commit = $Commit  + 1
 $Version = "${Major}.${Minor}-${Commit}"
 
 # The following properties are set in the document:
