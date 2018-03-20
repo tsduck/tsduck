@@ -51,20 +51,21 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        int    scrambling_ctrl;  // Scrambling control value (<0: no filter)
-        bool   with_payload;     // Packets with payload
-        bool   with_af;          // Packets with adaptation field
-        bool   with_pes;         // Packets with clear PES headers
-        bool   has_pcr;          // Packets with PCR or OPCR
-        bool   unit_start;       // Packets with payload unit start
-        bool   valid;            // Packets with valid sync byte and error ind
-        bool   negate;           // Negate filter (exclude selected packets)
-        bool   stuffing;         // Replace excluded packet with stuffing
-        int    min_payload;      // Minimum payload size (<0: no filter)
-        int    max_payload;      // Maximum payload size (<0: no filter)
-        int    min_af;           // Minimum adaptation field size (<0: no filter)
-        int    max_af;           // Maximum adaptation field size (<0: no filter)
-        PIDSet pid;              // PID values to filter
+        int           scrambling_ctrl;  // Scrambling control value (<0: no filter)
+        bool          with_payload;     // Packets with payload
+        bool          with_af;          // Packets with adaptation field
+        bool          with_pes;         // Packets with clear PES headers
+        bool          has_pcr;          // Packets with PCR or OPCR
+        bool          unit_start;       // Packets with payload unit start
+        bool          valid;            // Packets with valid sync byte and error ind
+        bool          negate;           // Negate filter (exclude selected packets)
+        bool          stuffing;         // Replace excluded packet with stuffing
+        int           min_payload;      // Minimum payload size (<0: no filter)
+        int           max_payload;      // Maximum payload size (<0: no filter)
+        int           min_af;           // Minimum adaptation field size (<0: no filter)
+        int           max_af;           // Maximum adaptation field size (<0: no filter)
+        PacketCounter after_packets;
+        PIDSet        pid;              // PID values to filter
 
         // Inaccessible operations
         FilterPlugin() = delete;
@@ -96,9 +97,11 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     max_payload(0),
     min_af(0),
     max_af(0),
+    after_packets(0),
     pid()
 {
     option(u"adaptation-field",          0);
+    option(u"after-packets",             0,  UNSIGNED);
     option(u"clear",                    'c');
     option(u"max-adaptation-field-size", 0,  INTEGER, 0, 1, 0, 184);
     option(u"max-payload-size",          0,  INTEGER, 0, 1, 0, 184);
@@ -118,6 +121,10 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
             u"\n"
             u"  --adaptation-field\n"
             u"      Select packets with an adaptation field.\n"
+            u"\n"
+            u"  --after-packets count\n"
+            u"      Let the first 'count' packets pass transparently without filtering. Start\n"
+            u"      to apply the filtering criteria after that number of packets.\n"
             u"\n"
             u"  -c\n"
             u"  --clear\n"
@@ -202,6 +209,8 @@ bool ts::FilterPlugin::start()
     max_payload = intValue<int>(u"max-payload-size", -1);
     min_af = intValue<int>(u"min-adaptation-field-size", -1);
     max_af = intValue<int>(u"max-adaptation-field-size", -1);
+    after_packets = intValue<PacketCounter>(u"after-packets", 0);
+
     getPIDSet(pid, u"pid");
 
     return true;
@@ -212,8 +221,14 @@ bool ts::FilterPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
+    // Pass initial packets without filtering.
+
+    if (after_packets > 0) {
+        after_packets--;
+        return TSP_OK;
+    }
 
     // Check if the packet matches one of the selected criteria.
 
