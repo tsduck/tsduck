@@ -6,7 +6,7 @@ Version 3.10-625
 
 - Added options --fix and --pid to plugin "continuity".
 
-- Added option --after-packets to plugin filter.
+- Added option --after-packets to plugin "filter".
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
