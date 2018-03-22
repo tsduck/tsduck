@@ -8,7 +8,7 @@ Version 3.10-628
 
 - Added option --after-packets to plugin "filter".
 
-- Added option --default-interface to input plugin "ip".
+- Added option --default-interface to input plugin "ip" and plugin "mpeinject".
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
