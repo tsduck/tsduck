@@ -214,37 +214,44 @@ bool ts::UDPSocket::setTTL (int ttl, bool multicast, Report& report)
 
 //----------------------------------------------------------------------------
 // Join one multicast group on one local interface.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, Report& report)
 {
-    if (!local.hasAddress()) {
-        // No local address specified, use all of them
-        return addMembership(multicast, report);
+    if (local.hasAddress()) {
+        report.verbose(u"joining multicast group %s from local address %s", {multicast.toString(), local.toString()});
     }
     else {
-        // Add one membership
-        report.verbose(u"joining multicast group %s from local address %s", {multicast.toString(), local.toString()});
-        MReq req(multicast, local);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
-            report.error(u"error adding multicast membership to %s from local address %s: %s", {multicast.toString(), local.toString(), SocketErrorCodeMessage()});
-            return false;
-        }
-        else {
-            _mcast.insert(req);
-            return true;
-        }
+        report.verbose(u"joining multicast group %s from default interface", {multicast.toString()});
+    }
+
+    MReq req(multicast, local);
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
+        report.error(u"error adding multicast membership to %s from local address %s: %s", {multicast.toString(), local.toString(), SocketErrorCodeMessage()});
+        return false;
+    }
+    else {
+        _mcast.insert(req);
+        return true;
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Join one multicast group on all local interfaces.
-// Return true on success, false on error.
+// Join one multicast group, let the system select the local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership(const IPAddress& multicast, Report& report)
+bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, Report& report)
+{
+    return addMembership(multicast, IPAddress(), report);
+}
+
+
+//----------------------------------------------------------------------------
+// Join one multicast group on all local interfaces.
+//----------------------------------------------------------------------------
+
+bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, Report& report)
 {
     // There is no implicit way to listen on all interfaces.
     // If no local address is specified, we must get the list
@@ -253,7 +260,7 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, Report& report)
 
     // Get all local interfaces.
     IPAddressVector loc_if;
-    if (!GetLocalIPAddresses (loc_if, report)) {
+    if (!GetLocalIPAddresses(loc_if, report)) {
         return false;
     }
 
@@ -261,7 +268,7 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, Report& report)
     bool ok = true;
     for (size_t i = 0; i < loc_if.size(); ++i) {
         if (loc_if[i].hasAddress()) {
-            ok = addMembership (multicast, loc_if[i], report) && ok;
+            ok = addMembership(multicast, loc_if[i], report) && ok;
         }
     }
     return ok;
@@ -273,7 +280,7 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::dropMembership (Report& report)
+bool ts::UDPSocket::dropMembership(Report& report)
 {
     bool ok = true;
     for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
@@ -461,7 +468,6 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
 
     // Browse returned ancillary data.
     for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
-        report.debug(u"UDP recvmsg, ancillary message %d, level %d, %d bytes", {cmsg->cmsg_type, cmsg->cmsg_level, cmsg->cmsg_len});
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
             destination = SocketAddress(info->ipi_addr, _local_address.port());

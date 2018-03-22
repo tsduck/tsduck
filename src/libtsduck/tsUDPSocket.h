@@ -177,8 +177,8 @@ namespace ts {
         //!
         //! @param [in] multicast Multicast IP address to listen to.
         //! @param [in] local IP address of a local interface on which to listen.
-        //! If set to @link IPAddress::AnyAddress @endlink, the applications
-        //! listens on all local interfaces.
+        //! If set to @link IPAddress::AnyAddress @endlink, the application lets
+        //! the system selects the appropriate local interface.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
@@ -190,14 +190,28 @@ namespace ts {
         //! This method indicates that the application wishes to receive multicast
         //! packets which are sent to a specific multicast address.
         //!
-        //! Using this version of addMembership(), the applications listens on all
-        //! local interfaces.
+        //! Using this method, the application listens on all local interfaces.
         //!
         //! @param [in] multicast Multicast IP address to listen to.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembership(const IPAddress& multicast, Report& report = CERR);
+        bool addMembershipAll(const IPAddress& multicast, Report& report = CERR);
+
+        //!
+        //! Join a multicast group.
+        //!
+        //! This method indicates that the application wishes to receive multicast
+        //! packets which are sent to a specific multicast address.
+        //!
+        //! Using this method, the application lets the system selects the appropriate
+        //! local interface.
+        //!
+        //! @param [in] multicast Multicast IP address to listen to.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool addMembershipDefault(const IPAddress& multicast, Report& report = CERR);
 
         //!
         //! Drop all multicast membership requests.
