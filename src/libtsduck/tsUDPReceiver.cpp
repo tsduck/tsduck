@@ -40,6 +40,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report) :
     _dest_addr(),
     _local_address(),
     _reuse_port(false),
+    _default_interface(false),
     _use_first_source(false),
     _recv_bufsize(0),
     _use_source(),
@@ -55,12 +56,13 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report) :
 
 void ts::UDPReceiver::defineOptions(ts::Args& args) const
 {
-    args.option(u"",               0,  Args::STRING, 1, 1);
-    args.option(u"buffer-size",   'b', Args::UNSIGNED);
-    args.option(u"first-source",  'f');
-    args.option(u"local-address", 'l', Args::STRING);
-    args.option(u"reuse-port",    'r');
-    args.option(u"source",        's', Args::STRING);
+    args.option(u"",                  0,  Args::STRING, 1, 1);
+    args.option(u"buffer-size",      'b', Args::UNSIGNED);
+    args.option(u"default-interface", 0);
+    args.option(u"first-source",     'f');
+    args.option(u"local-address",    'l', Args::STRING);
+    args.option(u"reuse-port",       'r');
+    args.option(u"source",           's', Args::STRING);
 }
 
 
@@ -84,6 +86,10 @@ void ts::UDPReceiver::addHelp(ts::Args& args) const
             u"  -b value\n"
             u"  --buffer-size value\n"
             u"      Specify the UDP socket receive buffer size (socket option).\n"
+            u"\n"
+            u"  --default-interface\n"
+            u"      Let the system find the appropriate local interface on which to listen.\n"
+            u"      By default, listen on all local interfaces.\n"
             u"\n"
             u"  -f\n"
             u"  --first-source\n"
@@ -125,6 +131,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
 {
     // General options.
     _reuse_port = args.present(u"reuse-port");
+    _default_interface = args.present(u"default-interface");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
 
@@ -151,6 +158,12 @@ bool ts::UDPReceiver::load(ts::Args& args)
         _local_address.clear();
     }
     else if (!_local_address.resolve(args.value(u"local-address"), args)) {
+        return false;
+    }
+
+    // Either specify a local address or let the system decide, but not both.
+    if (_default_interface && _local_address.hasAddress()) {
+        args.error(u"--default-interface and --local-address are mutually exclusive");
         return false;
     }
 
@@ -191,12 +204,25 @@ bool ts::UDPReceiver::open(ts::Report& report)
 
     // Create UDP socket from the superclass.
     // Note: On Windows, bind must be done *before* joining multicast groups.
-    const bool ok =
+    bool ok =
         UDPSocket::open(report) &&
         reusePort(_reuse_port, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
-        bind(local_addr, report) &&
-        (!_dest_addr.hasAddress() || addMembership(_dest_addr, _local_address, report));
+        bind(local_addr, report);
+
+    // Join multicast group.
+    if (ok && _dest_addr.hasAddress()) {
+        if (_default_interface) {
+            ok = addMembershipDefault(_dest_addr, report);
+        }
+        else if (_local_address.hasAddress()) {
+            ok = addMembership(_dest_addr, _local_address, report);
+        }
+        else {
+            // By default, listen on all interfaces.
+            ok = addMembershipAll(_dest_addr, report);
+        }
+    }
 
     if (!ok) {
         close();
