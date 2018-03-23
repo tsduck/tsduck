@@ -66,6 +66,16 @@ namespace ts {
         PacketCounter _inter_pkt;          // # TS packets between 2 new PID packets
         PacketCounter _pid_next_pkt;       // Next time to insert a packet
         PacketCounter _packet_count;       // TS packet counter
+        uint64_t      _inter_time;              // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
+        uint64_t      _minpts;                  // Start only inserting packages when this PTS has been passed
+        PID           _minptsPID;               // defines the PID of minpts setting
+        uint64_t      _maxpts;                  // After this PTS has been seen, stop inserting
+        bool          _minmaxpts_rangeOK;       // signal indicates if we shall insert 
+        uint64_t      _max_insert_count;        // from userinput, maximum packages to insert
+        uint64_t      _inserted_packet_count;   // counts inserted packets
+        uint64_t      _youngest_pts;            // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
+        uint64_t      _pts_last_inserted;       // stores nearest pts (actually pcr/300) of last packet insertion
+        uint8_t       _last_inserted_cc;        // Continuity counter of last inserted packet
 
         // Inaccessible operations
         MuxPlugin() = delete;
@@ -95,7 +105,12 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _bitrate(0),
     _inter_pkt(0),
     _pid_next_pkt(0),
-    _packet_count(0)
+    _packet_count(0),
+    _inter_time(0),
+    _minpts(0),
+    _minptsPID(0),
+    _maxpts(0),
+    _inserted_packet_count(0)
 {
     option(u"",                       0,  STRING, 1, 1);
     option(u"bitrate",               'b', UINT32);
@@ -108,6 +123,11 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     option(u"pid",                   'p', PIDVAL);
     option(u"repeat",                'r', POSITIVE);
     option(u"terminate",             't');
+    option(u"inter-time",             0, UINT32);
+	option(u"minpts",                 0, UNSIGNED);
+    option(u"maxpts",                 0, UNSIGNED);
+    option(u"minmaxptspid",           0, PIDVAL);
+    option(u"maxinsertcount",         0, UNSIGNED);
 
     setHelp(u"Input file:\n"
             u"\n"
@@ -134,6 +154,13 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
             u"      the number of TS packets in the transport between two new packets.\n"
             u"      Use instead of --bitrate if the global bitrate of the TS cannot be\n"
             u"      determined.\n"
+            u"\n"
+            u"  --inter-time value\n"
+            u"      Specifies the time interval for the inserted packets, that is to say\n"
+            u"      the difference between the nearest PCR clock value at the point of insertion\n"
+            u"      in milliseconds. Example: 1000 will keep roughly 1s space between two inserted packages\n"
+            u"      The value 0 is not allowed, it means inter-time is disabled\n"
+            u"      Use minmaxptspid to specify the pid carrying the PCR clock of interest\n"
             u"\n"
             u"  -j\n"
             u"  --joint-termination\n"
@@ -170,6 +197,23 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
             u"      when packet insertion is complete, the transmission continues and the\n"
             u"      stuffing is no longer modified.\n"
             u"\n"
+            u"  --minpts value\n"
+            u"      Insert Packet only when the last PCR (PCR as PTS value, so divided by 300) \n"
+            u"      within the PID has passed\n"
+            u"      Example: 13245\n"
+            u"\n"
+            u"  --minmaxptspid value\n"
+            u"      Defines the PCR PID\n"
+            u"      Example: 0x123\n"
+            u"\n"
+            u"  --maxpts value\n"
+            u"      Stop inserting package when this PTS within the PID has occured\n"
+            u"      Example: 54321\n"
+            u"\n"
+            u"  --maxinsertcount value\n"
+            u"      Stop inserting packages after this number of packages was inserted\n"
+            u"      Example: 1\n"
+            u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 }
@@ -189,10 +233,21 @@ bool ts::MuxPlugin::start()
     _force_pid_value = intValue<PID>(u"pid");
     _bitrate = intValue<BitRate>(u"bitrate", 0);
     _inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
+    _inter_time = intValue<uint64_t>(u"inter-time", 0);
+    _minpts = intValue<uint64_t>(u"minpts", 0);
+    _maxpts = intValue<uint64_t>(u"maxpts", 0);
+    _minptsPID = intValue<PID>(u"minmaxptspid", 0);
+    _max_insert_count = intValue<uint64_t>(u"maxinsertcount", 0);
     _packet_count = 0;
     _pid_next_pkt = 0;
     _ts_pids.reset();
+    _youngest_pts = 0;
+    _pts_last_inserted = 0;
+    _inserted_packet_count = 0;
+    _minmaxpts_rangeOK = true;                  //by default, enable packet insertion
     TS_ZERO (_cc);
+
+    _inter_time = _inter_time * 90;             //Milliseconds to PTS conversion
 
     if (_bitrate != 0 && _inter_pkt != 0) {
         tsp->error(u"--bitrate and --inter-packet are mutually exclusive");
@@ -202,6 +257,10 @@ bool ts::MuxPlugin::start()
     if (_terminate && tsp->useJointTermination()) {
         tsp->error(u"--terminate and --joint-termination are mutually exclusive");
         return false;
+    }
+
+    if (_minpts > 0 ) {
+        _minmaxpts_rangeOK = false;             //for minmaxpts option, we need to wait until a packet with PTS was reached
     }
 
     return _file.open (value(u""),
@@ -242,6 +301,45 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
     // Count TS
     _packet_count++;
     PID pid = pkt.getPID();
+    uint64_t currentpts = 0;
+
+    if ((pid == _minptsPID || _minptsPID == 0) && pkt.hasAF()) {
+        currentpts = pkt.getPCR() / SYSTEM_CLOCK_SUBFACTOR; //pcr to pts format calculation
+        if (currentpts > 0) {
+            _youngest_pts = currentpts;
+        }
+    }
+
+    //handle min max pts, modify _minmaxpts_rangeOK signal
+    if (currentpts > 0) {
+        //check if minpts is reached
+        if (_minpts != 0) {
+            if (_minptsPID == 0 || pid == _minptsPID) {
+                if (currentpts > _minpts  && (currentpts < _maxpts || _maxpts == 0)) {
+                    tsp->debug(u"Found minmaxpts range OK at PTS: %'d, enabling packet insertion", { currentpts });
+                    _minmaxpts_rangeOK = true;
+                }
+            }
+        }
+
+        //check if inter-time is reached
+        if (_inter_time != 0 && _pts_last_inserted != 0) {
+            uint64_t calculated = _pts_last_inserted + _inter_time;
+            if (_youngest_pts > calculated) {
+                tsp->debug(u"Detected waiting time %d has passed, pts_last_insert: %d, youngest pts: %d, enabling packet insertion", { _inter_time ,_pts_last_inserted, _youngest_pts});
+                _minmaxpts_rangeOK = true;
+            }
+            else {
+                _minmaxpts_rangeOK = false;
+            }
+        }
+
+        //check if maxpts is reached
+        if (_maxpts != 0 && _maxpts < currentpts && (pid == _minptsPID || _minptsPID == 0)) {
+            tsp->debug(u"Maxpts %d reached, disabling packet insertion at PTS: %'d", { _maxpts,currentpts });
+            _minmaxpts_rangeOK = false;
+        }
+    }
 
     // Non-stuffing is transparently passed
     if (pid != PID_NULL) {
@@ -254,19 +352,31 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
         return TSP_OK;
     }
 
-    // Now, it is time to insert a new packet, read it
-    if (_file.read (&pkt, 1, *tsp) == 0) {
-        // File read error, error message already reported
-        // If processing terminated, either exit or transparently pass packets
-        if (tsp->useJointTermination()) {
-            tsp->jointTerminate();
-            return TSP_OK;
+    if (_minmaxpts_rangeOK && (_max_insert_count > _inserted_packet_count || _max_insert_count == 0)) {
+    // Now, it is time to insert a new packet, read it. Directly overwrite the memory area of current stuffing pkt
+        if (_file.read (&pkt, 1, *tsp) == 0) {
+            // File read error, error message already reported
+            // If processing terminated, either exit or transparently pass packets
+            if (tsp->useJointTermination()) {
+                tsp->jointTerminate();
+                return TSP_OK;
+            }
+            else if (_terminate) {
+                return TSP_END;
+            }
+            else {
+                return TSP_OK;
+            }
         }
-        else if (_terminate) {
-            return TSP_END;
-        }
-        else {
-            return TSP_OK;
+
+        _inserted_packet_count++;
+        _pts_last_inserted = _youngest_pts;                                                             //store pts of last insertion
+        pkt.setCC(_last_inserted_cc);
+        _last_inserted_cc++;                                                                            //raise continuity counter
+        tsp->verbose(u"Inserting Packet at PTS: %'d, file: %s", { _pts_last_inserted,_file.getFileName() });
+
+        if (_inter_time != 0) {
+            _minmaxpts_rangeOK = false; //reset rangeOK signal if inter_time is specified
         }
     }
 
