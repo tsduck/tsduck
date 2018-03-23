@@ -412,7 +412,7 @@ bool ts::PMTPlugin::start()
     _pds = intValue<PDS>(u"pds");
     _ac3_atsc2dvb = present(u"ac3-atsc2dvb");
     _eac3_atsc2dvb = present(u"eac3-atsc2dvb");
-    _add_stream_id = present(u"add-stream-identifier");
+    _add_stream_id = present(u"set-stream-identifier");
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     getIntValues(_removed_pid, u"remove-pid");
     getIntValues(_removed_desc, u"remove-descriptor");
