@@ -71,6 +71,10 @@ namespace ts {
         //!   selected port will be accepted only when they arrive through the selected
         //!   interface.
         //!
+        //! Special note for receiving multicast on most Unix systems (at least Linux
+        //! and macOS): The IP address shall be either AnyAddress or the <b>multicast
+        //! group address</b>. Do not specify a local address to receive multicast on Unix.
+        //!
         //! The port number part of the socket address must be one of:
         //! - @link SocketAddress::AnyPort @endlink. The socket is bound to an
         //!   arbitrary unused local UDP port.
