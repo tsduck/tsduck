@@ -199,8 +199,17 @@ bool ts::UDPReceiver::open(ts::Report& report)
     _first_source.clear();
     _sources.clear();
 
-    // The local socket address to bind is the optional local IP address and the destination port
-    SocketAddress local_addr(_local_address, _dest_addr.port());
+    // The local socket address to bind is the optional local IP address and the destination port.
+    // Except on Linux, macOS and probably most Unix, when listening to a multicast group.
+    // In that case, we bind to the multicast group, not the local interface.
+    // Note that if _dest_addr has an address, it is a multicast one (checked in load()).
+    SocketAddress local_addr(
+#if defined(TS_UNIX)
+        _dest_addr.hasAddress() ? _dest_addr.address() : _local_address,
+#else
+        _local_address,
+#endif
+        _dest_addr.port());
 
     // Create UDP socket from the superclass.
     // Note: On Windows, bind must be done *before* joining multicast groups.

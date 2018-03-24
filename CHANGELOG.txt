@@ -16,6 +16,9 @@ Version 3.10-630
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
 
+- Fixed incorrect behaviour on Linux and macOS when receiving multicast with
+  plugin "ip" and "mpeinject" and a --local-interface was specified.
+
 Version 3.9-619
 
 - Added plugins mpe and mpeinject to respectively extract and inject MPE
