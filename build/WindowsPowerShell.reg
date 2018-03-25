@@ -1,0 +1,71 @@
+Windows Registry Editor Version 5.00
+ 
+;-----------------------------------------------------------------------------
+; 
+;  TSDuck - The MPEG Transport Stream Toolkit
+;  Copyright (c) 2005-2018, Thierry Lelegard
+;  All rights reserved.
+;
+;  Redistribution and use in source and binary forms, with or without
+;  modification, are permitted provided that the following conditions are met:
+;
+;  1. Redistributions of source code must retain the above copyright notice,
+;     this list of conditions and the following disclaimer.
+;  2. Redistributions in binary form must reproduce the above copyright
+;     notice, this list of conditions and the following disclaimer in the
+;     documentation and/or other materials provided with the distribution.
+;
+;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+;  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+;  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+;  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+;  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+;  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+;  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+;  THE POSSIBILITY OF SUCH DAMAGE.
+; 
+;-----------------------------------------------------------------------------
+; 
+;  Windows registry entries to facilitate the usage of the Windows PowerShell.
+; 
+;-----------------------------------------------------------------------------
+
+; A Windows PowerShell script file name has a ".ps1" extension.
+; Default action for double-click on a script file in Windows Explorer is to
+; edit the script file using notepad. We change this to execute the script.
+; The output window is visible but is automatically closed after execution of
+; the script. If you want the window to remain visible after execution, add a
+; "pause" at the end of the script.
+
+[HKEY_CLASSES_ROOT\Microsoft.PowerShellScript.1\shell\open\Command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -ExecutionPolicy RemoteSigned -File \"%1\""
+
+; Define how "Open With" should invoke PowerShell on a script.
+; Same as default double-click action on a script but explicitely redefined in
+; case the user specifies "Open With" and powershell.exe on a script file.
+
+[HKEY_CLASSES_ROOT\Applications\powershell.exe\shell\open\command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -ExecutionPolicy RemoteSigned -File \"%1\""
+
+; Add an "Open PowerShell Here" in the context menu of directories.
+
+[HKEY_CLASSES_ROOT\Directory\shell\powershell]
+@="Open PowerShell Here"
+[HKEY_CLASSES_ROOT\Directory\shell\powershell\command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit -ExecutionPolicy RemoteSigned -Command Set-Location -LiteralPath \"%L\""
+
+; Define the PowerShell window properties with similar values as default PowerShell windows.
+
+[HKEY_CURRENT_USER\Console\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe]
+"FaceName"="Lucida Console"
+"QuickEdit"=dword:00000001
+"HistoryBufferSize"=dword:00000064
+"HistoryNoDup"=dword:00000001
+"ScreenBufferSize"=dword:0bb80078
+"WindowSize"=dword:00320078
+"FontSize"=dword:000c0000
+"FontFamily"=dword:00000036
+"FontWeight"=dword:00000190
