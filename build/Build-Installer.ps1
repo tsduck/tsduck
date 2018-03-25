@@ -41,6 +41,10 @@
   executable binary installers, standalone binaries (without admin rights),
   source code and wintools archives.
 
+ .PARAMETER GitPull
+
+  Perform a git pull command before building.
+
  .PARAMETER NoPause
 
   Do not wait for the user to press <enter> at end of execution. By default,
@@ -71,6 +75,7 @@
 #>
 [CmdletBinding()]
 param(
+    [switch]$GitPull = $false,
     [switch]$NoPause = $false,
     [switch]$NoBuild = $false,
     [switch]$NoInstaller = $false,
@@ -119,7 +124,7 @@ if (-not $NoInstaller) {
 # Build the project.
 if (-not $NoBuild) {
     Push-Location
-    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64
+    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
