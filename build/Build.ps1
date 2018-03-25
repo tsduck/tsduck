@@ -32,6 +32,10 @@
 
   Build TSDuck from the command line, an alternative to Visual Studio.
 
+ .PARAMETER GitPull
+
+  Perform a git pull command before building.
+
  .PARAMETER Installer
 
   Generate everything which is needed for installer.
@@ -62,6 +66,7 @@
   when the script was run from Windows Explorer.
 #>
 param(
+    [switch]$GitPull = $false,
     [switch]$Installer = $false,
     [switch]$Debug = $false,
     [switch]$Release = $false,
@@ -86,8 +91,23 @@ if (-not $Win32 -and -not $Win64) {
     $Win64 = $true
 }
 
+# Get the project directories.
+$RootDir = (Split-Path -Parent $PSScriptRoot)
+
 # Make sure that Git hooks are installed.
 & (Join-Path $PSScriptRoot git-hook-update.ps1) -NoPause
+
+# Update git repository if requested.
+if ($GitPull) {
+    # Search git command.
+    $git = (Search-File "git.exe" @($env:Path, 'C:\Program Files\Git\cmd', 'C:\Program Files (x86)\Git\cmd'))
+    if (-not $git) {
+        Exit-Script -NoPause:$NoPause "Git not found"
+    }
+    Push-Location $RootDir
+    & $git pull
+    Pop-Location
+}
 
 # Get location of Visual Studio and project files.
 $VS = Search-VisualStudio
