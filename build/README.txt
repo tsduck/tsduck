@@ -73,6 +73,10 @@ Build scripts on Windows
   development environment. It is referenced by third-party applications using
   the TSDuck library.
 
+- WindowsPowerShell.reg : A registry file which add definitions to run a
+  PowerShell script by double-clicking on it (the default action is to edit
+  script files with notepad).
+
 Project files for Linux and macOS
 ---------------------------------
 - build-project-files.sh : This shell script is the Unix equivalent of
