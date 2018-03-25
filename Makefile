@@ -69,5 +69,5 @@ install install-devel:
 
 # Various build targets are redirected to build subdirectory.
 .PHONY: tarball rpm rpm32 deb
-tarball rpm rpm32 deb:
+tarball rpm rpm32 deb installer:
 	$(MAKE) -C build $@
