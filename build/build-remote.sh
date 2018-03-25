@@ -206,14 +206,36 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 (
     if $WINDOWS; then
         # Build on Windows.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            PowerShell "$REMOTE_DIR\\installers\\Build-Installer.ps1"
+        # Cleanup repository, rebuild from scratch.
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+            ". '$REMOTE_DIR/build/Cleanup.ps1' -NoPause"
 
-        # @@@ TODO: Detect new installers and get them
+        # Create a remote timestamp in installers subdirectory.
+        # Newer files will be the installers we build.
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+            "[void](New-Item -Type File '$REMOTE_DIR/installers/timestamp.tmp' -Force)"
 
+        # Build installers after updating the repository.
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+            ". '$REMOTE_DIR/build/Build-Installer.ps1' -GitPull -NoSource -NoPause"
+
+        # Get all files from installers directory which are newer than the timestamp.
+        files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+            "Get-ChildItem '$REMOTE_DIR/installers' |
+             Where-Object { \$_.LastWriteTime -gt (Get-Item '$REMOTE_DIR/installers/timestamp.tmp').LastWriteTime } |
+             ForEach-Object { \$_.Name }" | tr '\r' ' ')
+
+        # Copy all installers files.
+        for f in $files; do
+            scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
+        done
+
+        # Delete the temporary timestamp.
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+            "[void](Remove-Item -Force '$REMOTE_DIR/installers/timestamp.tmp' -ErrorAction Ignore)"
     else
         # Build on Unix.
-        # Create a remote timestamp. Newer files are the installers we build.
+        # Create a remote timestamp. Newer files will be the installers we build.
         # Build installers from scratch after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             cd "$REMOTE_DIR" '&&' \
@@ -222,9 +244,13 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
             touch "installers/timestamp.tmp" '&&' \
             make installer
 
+        # Get all files from installers directory which are newer than the time stamp.
+        files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+            find "$REMOTE_DIR/installers" -maxdepth 1 -type f -newer "$REMOTE_DIR/installers/timestamp.tmp" -printf '%f ')
+
         # Copy all files from installers directory which are newer than the time stamp.
-        for f in $(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" find "$REMOTE_DIR/installers" -type f -newer "$REMOTE_DIR/installers/timestamp.tmp"); do
-            scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$f" "$ROOTDIR/installers/"
+        for f in $files; do
+            scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
         done
 
         # Delete the temporary timestamp.
