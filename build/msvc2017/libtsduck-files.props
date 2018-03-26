@@ -133,6 +133,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsIPMACPlatformProviderNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPMACStreamLocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPUtils.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsIPv6Address.h" />
     <ClInclude Include="..\..\src\libtsduck\tsISO639LanguageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsjson.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLinkageDescriptor.h" />
@@ -452,6 +453,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsIPMACPlatformProviderNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPMACStreamLocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsIPv6Address.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsISO639LanguageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsjson.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLinkageDescriptor.cpp" />

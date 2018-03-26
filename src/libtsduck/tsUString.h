@@ -1369,6 +1369,25 @@ namespace ts {
                             bool use_upper = true);
 
         //!
+        //! Format a string containing an hexadecimal value.
+        //! This version differ from Hexa() in the interpretation of the @ min_width argument.
+        //! @tparam INT An integer type.
+        //! @param [in] value The integer value to format.
+        //! @param [in] min_width Minimum width of the returned string, including the optional prefix and separator.
+        //! By default, use the "natural" size of @a INT (e.g. 8 for 32-bit integer) plus prefix and separator.
+        //! @param [in] separator Separator string for groups of 4 digits, empty by default.
+        //! @param [in] use_prefix If true, prepend the standard hexa prefix "0x".
+        //! @param [in] use_upper If true, use upper-case hexadecimal digits.
+        //! @return The formatted string.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        static UString HexaMin(INT value,
+                               size_type min_width = 0,
+                               const UString& separator = UString(),
+                               bool use_prefix = true,
+                               bool use_upper = true);
+
+        //!
         //! Format a string using a template and arguments.
         //!
         //! This method is similar in principle to @c printf(). The @a fmt paramter is used as a
@@ -1390,9 +1409,9 @@ namespace ts {
         //! - @c - : Left-justified (right-justified by default).
         //! - @c + : Force a '+' sign with positive decimal integers (@c \%d only).
         //! - @c 0 : Zero padding for integers. This is the default with @c \%x and @c \%X.
-        //! - @e digits : Minimum field width. This is a display width, not a number of characters.
+        //! - @e digits : Minimum field width. This is a display width, not a number of characters for strings.
         //!   With @c \%x or @c \%X, the default width is the "natural" width of the parameter
-        //!   (e.g. 4 digits for a @c uint16_t value).
+        //!   (e.g. 8 digits for a @c uint32_t value without thousands separator).
         //! - @c . @e digits : Starting with a dot. Maximum field width for strings. Ignored for integers.
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
         //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.

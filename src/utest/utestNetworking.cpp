@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPAddress.h"
+#include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 #include "tsSocketAddress.h"
 #include "tsTCPConnection.h"
@@ -59,6 +60,7 @@ public:
 
     void testIPAddressConstructors();
     void testIPAddress();
+    void testIPv6Address();
     void testMACAddress();
     void testGetLocalIPAddresses();
     void testSocketAddressConstructors();
@@ -70,6 +72,7 @@ public:
     CPPUNIT_TEST_SUITE(NetworkingTest);
     CPPUNIT_TEST(testIPAddressConstructors);
     CPPUNIT_TEST(testIPAddress);
+    CPPUNIT_TEST(testIPv6Address);
     CPPUNIT_TEST(testMACAddress);
     CPPUNIT_TEST(testGetLocalIPAddresses);
     CPPUNIT_TEST(testSocketAddressConstructors);
@@ -220,6 +223,53 @@ void NetworkingTest::testIPAddress()
 
     // Note: fail if not connected to a network.
     utest::Out() << "NetworkingTest: www.google.com = " << ts::IPAddress(u"www.google.com") << std::endl;
+}
+
+void NetworkingTest::testIPv6Address()
+{
+    ts::IPv6Address a1;
+    CPPUNIT_ASSERT(!a1.hasAddress());
+    CPPUNIT_ASSERT(!a1.isMulticast());
+
+    CPPUNIT_ASSERT(!ts::IPv6Address::AnyAddress.hasAddress());
+    CPPUNIT_ASSERT(ts::IPv6Address::LocalHost.hasAddress());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0), ts::IPv6Address::LocalHost.networkPrefix());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(1), ts::IPv6Address::LocalHost.interfaceIdentifier());
+
+    CPPUNIT_ASSERT(!a1.resolve(u":", NULLREP));
+    CPPUNIT_ASSERT(!a1.hasAddress());
+
+    CPPUNIT_ASSERT(a1.resolve(u"::"));
+    CPPUNIT_ASSERT(!a1.hasAddress());
+    CPPUNIT_ASSERT(a1 == ts::IPv6Address::AnyAddress);
+
+    CPPUNIT_ASSERT(a1.resolve(u"::1"));
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT(a1 == ts::IPv6Address::LocalHost);
+
+    CPPUNIT_ASSERT(!a1.resolve(u"", NULLREP));
+    CPPUNIT_ASSERT(!a1.hasAddress());
+
+    a1.setAddress(0, 1, 2, 3, 4, 5, 6, 7);
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x0000000100020003), a1.networkPrefix());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x0004000500060007), a1.interfaceIdentifier());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0:1:2:3:4:5:6:7", a1.toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0000:0001:0002:0003:0004:0005:0006:0007", a1.toString(false));
+
+    a1.setAddress(0x12, 0x345, 0x6789, 0xFFFF, 0, 0, 0, 0xBEEF);
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x001203456789FFFF), a1.networkPrefix());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x000000000000BEEF), a1.interfaceIdentifier());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"12:345:6789:ffff::beef", a1.toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0012:0345:6789:ffff:0000:0000:0000:beef", a1.toString(false));
+
+    CPPUNIT_ASSERT(a1.resolve(u"fe80::93a3:dea0:2108:b81e"));
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0xFE80000000000000), a1.networkPrefix());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x93A3DEA02108B81E), a1.interfaceIdentifier());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fe80::93a3:dea0:2108:b81e", a1.toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", a1.toString(false));
 }
 
 void NetworkingTest::testMACAddress()

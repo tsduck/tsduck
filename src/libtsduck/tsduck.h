@@ -146,6 +146,7 @@
 #include "tsIPMACPlatformProviderNameDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"
 #include "tsIPUtils.h"
+#include "tsIPv6Address.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsjson.h"
 #include "tsLinkageDescriptor.h"

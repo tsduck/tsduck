@@ -131,6 +131,7 @@ HEADERS += \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.h \
     ../../../src/libtsduck/tsIPUtils.h \
+    ../../../src/libtsduck/tsIPv6Address.h \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.h \
     ../../../src/libtsduck/tsjson.h \
     ../../../src/libtsduck/tsLinkageDescriptor.h \
@@ -440,6 +441,7 @@ SOURCES += \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
+    ../../../src/libtsduck/tsIPv6Address.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
     ../../../src/libtsduck/tsjson.cpp \
     ../../../src/libtsduck/tsLinkageDescriptor.cpp \
