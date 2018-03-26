@@ -28,47 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a target_MAC_address_descriptor (INT/UNT specific).
+//!  Representation of a target_IPv6_address_descriptor (INT/UNT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsMACAddress.h"
+#include "tsIPv6Address.h"
+#include "tsIPUtils.h"
 
 namespace ts {
     //!
-    //! Representation of a target_MAC_address_descriptor (INT/UNT specific).
+    //! Representation of a target_IPv6_address_descriptor (INT/UNT specific).
     //!
     //! This descriptor cannot be present in other tables than an INT or UNT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 192, 8.4.5.6
-    //! @see ETSI TS 102 006, 6.5.2.2
+    //! @see ETSI EN 301 192, 8.4.5.11
+    //! @see ETSI TS 102 006, 6.5.2.4
     //!
-    class TSDUCKDLL TargetMACAddressDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetIPv6AddressDescriptor : public AbstractDescriptor
     {
     public:
-        // TargetMACAddressDescriptor public members:
-        MACAddress       MAC_addr_mask;  //!< MAC address mask
-        MACAddressVector MAC_addr;       //!< MAC addresses
+        // TargetIPv6AddressDescriptor public members:
+        IPv6Address       IPv6_addr_mask;  //!< IPv6 address mask
+        IPv6AddressVector IPv6_addr;       //!< IPv6 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 41;
+        static const size_t MAX_ENTRIES = 14;
 
         //!
         //! Default constructor.
         //!
-        TargetMACAddressDescriptor();
+        TargetIPv6AddressDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetMACAddressDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        TargetIPv6AddressDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

@@ -473,7 +473,7 @@ bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool
 
 
 //----------------------------------------------------------------------------
-// Get an IPv4 or MAC address attribute of an XML element.
+// Get an IPv4/v6 or MAC address attribute of an XML element.
 //----------------------------------------------------------------------------
 
 bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, bool required, const IPAddress& defValue) const
@@ -489,7 +489,25 @@ bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, boo
 
     const bool ok = value.resolve(str, _report);
     if (!ok) {
-        _report.error(u"'%s' is not a valid IP address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        _report.error(u"'%s' is not a valid IPv4 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+    }
+    return ok;
+}
+
+bool ts::xml::Element::getIPv6Attribute(IPv6Address& value, const UString& name, bool required, const IPv6Address& defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        value = defValue;
+        return true;
+    }
+
+    const bool ok = value.resolve(str, _report);
+    if (!ok) {
+        _report.error(u"'%s' is not a valid IPv6 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
     }
     return ok;
 }

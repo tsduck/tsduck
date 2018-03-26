@@ -222,9 +222,10 @@ namespace ts {
 
         //!
         //! Decode a string in standard IPv6 numerical format.
-        //! If @a name cannot be resolved, the address is set to @link AnyAddress @endlink.
         //! @param [in] name A string containing a string in standard IPv6 numerical format.
         //! @param [in] report Where to report errors.
+        //! @return True if @a name was successfully resolved, false otherwise.
+        //! In the later case, the address is set to @link AnyAddress @endlink.
         //! @see https://en.wikipedia.org/wiki/IPv6_address
         //!
         bool resolve(const UString& name, Report& report = CERR);
@@ -243,6 +244,12 @@ namespace ts {
         //! @return This object, converted as a string.
         //!
         UString toString(bool compact = true) const;
+
+        //!
+        //! Get the IP address as a byte block.
+        //! @return Byte block containing the IPv6 bytes.
+        //!
+        ByteBlock toBytes() const { return ByteBlock(_bytes, sizeof(_bytes)); }
 
         //!
         //! Comparison "less than" operator.

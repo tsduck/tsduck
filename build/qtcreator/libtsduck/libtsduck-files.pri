@@ -127,12 +127,14 @@ HEADERS += \
     ../../../src/libtsduck/tsIntegerUtilsTemplate.h \
     ../../../src/libtsduck/tsInterruptHandler.h \
     ../../../src/libtsduck/tsIPAddress.h \
+    ../../../src/libtsduck/tsIPMACGenericStreamLocationDescriptor.h \
     ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.h \
     ../../../src/libtsduck/tsIPUtils.h \
     ../../../src/libtsduck/tsIPv6Address.h \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.h \
+    ../../../src/libtsduck/tsISPAccessModeDescriptor.h \
     ../../../src/libtsduck/tsjson.h \
     ../../../src/libtsduck/tsLinkageDescriptor.h \
     ../../../src/libtsduck/tsLNB.h \
@@ -257,6 +259,9 @@ HEADERS += \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.h \
     ../../../src/libtsduck/tsTargetIPSlashDescriptor.h \
     ../../../src/libtsduck/tsTargetIPSourceSlashDescriptor.h \
+    ../../../src/libtsduck/tsTargetIPv6AddressDescriptor.h \
+    ../../../src/libtsduck/tsTargetIPv6SlashDescriptor.h \
+    ../../../src/libtsduck/tsTargetIPv6SourceSlashDescriptor.h \
     ../../../src/libtsduck/tsTargetMACAddressDescriptor.h \
     ../../../src/libtsduck/tsTargetMACAddressRangeDescriptor.h \
     ../../../src/libtsduck/tsTargetSerialNumberDescriptor.h \
@@ -437,12 +442,14 @@ SOURCES += \
     ../../../src/libtsduck/tsINT.cpp \
     ../../../src/libtsduck/tsIntegerUtils.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
+    ../../../src/libtsduck/tsIPMACGenericStreamLocationDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsIPv6Address.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
+    ../../../src/libtsduck/tsISPAccessModeDescriptor.cpp \
     ../../../src/libtsduck/tsjson.cpp \
     ../../../src/libtsduck/tsLinkageDescriptor.cpp \
     ../../../src/libtsduck/tsLNB.cpp \
@@ -538,6 +545,9 @@ SOURCES += \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPSlashDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPSourceSlashDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetIPv6AddressDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetIPv6SlashDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetIPv6SourceSlashDescriptor.cpp \
     ../../../src/libtsduck/tsTargetMACAddressDescriptor.cpp \
     ../../../src/libtsduck/tsTargetMACAddressRangeDescriptor.cpp \
     ../../../src/libtsduck/tsTargetSerialNumberDescriptor.cpp \
