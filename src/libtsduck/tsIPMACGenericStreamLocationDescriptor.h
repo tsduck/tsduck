@@ -28,47 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a target_MAC_address_descriptor (INT/UNT specific).
+//!  Representation of an IP/MAC_generic_stream_location_descriptor (INT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsMACAddress.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!
-    //! Representation of a target_MAC_address_descriptor (INT/UNT specific).
+    //! Representation of an IP/MAC_generic_stream_location_descriptor (INT specific).
     //!
-    //! This descriptor cannot be present in other tables than an INT or UNT
+    //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 192, 8.4.5.6
-    //! @see ETSI TS 102 006, 6.5.2.2
+    //! @see ETSI EN 301 192, 8.4.5.15
     //!
-    class TSDUCKDLL TargetMACAddressDescriptor : public AbstractDescriptor
+    class TSDUCKDLL IPMACGenericStreamLocationDescriptor : public AbstractDescriptor
     {
     public:
-        // TargetMACAddressDescriptor public members:
-        MACAddress       MAC_addr_mask;  //!< MAC address mask
-        MACAddressVector MAC_addr;       //!< MAC addresses
-
-        //!
-        //! Maximum number of entries to fit in 255 bytes.
-        //!
-        static const size_t MAX_ENTRIES = 41;
+        // IPMACGenericStreamLocationDescriptor public members:
+        uint16_t  interactive_network_id;  //!< Delivery system id.
+        uint8_t   modulation_system_type;  //!< Type of modulation.
+        uint16_t  modulation_system_id;    //!< System identifier, depending on modulation.
+        uint16_t  PHY_stream_id;           //!< Stream identifier, depending on modulation.
+        ByteBlock selector_bytes;          //!< Selector bytes.
 
         //!
         //! Default constructor.
         //!
-        TargetMACAddressDescriptor();
+        IPMACGenericStreamLocationDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetMACAddressDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        IPMACGenericStreamLocationDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

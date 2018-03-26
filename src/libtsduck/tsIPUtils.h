@@ -88,11 +88,17 @@ namespace ts {
     }
 
     class IPAddress;
+    class IPv6Address;
 
     //!
     //! Vector of IP addresses.
     //!
     typedef std::vector<IPAddress> IPAddressVector;
+
+    //!
+    //! Vector of IPv6 addresses.
+    //!
+    typedef std::vector<IPv6Address> IPv6AddressVector;
 
     //!
     //! Get the list of all local IPv4 addresses in the system.

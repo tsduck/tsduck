@@ -88,15 +88,7 @@ TSDuck - List of features to be implemented or fixed
   - G.3.1    DTS-HD_audio_stream_descriptor
   - L.1      DTS_Neural_descriptor
 
-  ETSI EN 301 192 (DVB Data Broadcasting)
-  - 8.4.5.11  target_IPv6_address_descriptor (also ETSI TS 102 006)
-  - 8.4.5.12  target_IPv6_slash_descriptor
-  - 8.4.5.13  target_IPv6_source_slash_descriptor
-  - 8.4.5.15  IP/MAC_generic_stream_location_descriptor
-  - 8.4.5.16  ISP_access_mode_descriptor
-
   ETSI TS 102 006 (System Software Update)
-  - 9.5.2.4   target_IPv6_address_descriptor
   - 9.5.2.6   update_descriptor
   - 9.5.2.7   SSU_location_descriptor
   - 9.5.2.8   SSU_subgroup_association_descriptor

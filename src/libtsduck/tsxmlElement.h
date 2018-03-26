@@ -38,6 +38,7 @@
 #include "tsByteBlock.h"
 #include "tsVariable.h"
 #include "tsIPAddress.h"
+#include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 
 namespace ts {
@@ -324,6 +325,16 @@ namespace ts {
             }
 
             //!
+            //! Set an IPv6 address attribute of an XML element.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setIPv6Attribute(const UString& name, const IPv6Address& value)
+            {
+                setAttribute(name, value.toString());
+            }
+
+            //!
             //! Set a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
@@ -449,6 +460,16 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& defValue = IPAddress()) const;
+
+            //!
+            //! Get an IPv6 address attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getIPv6Attribute(IPv6Address& value, const UString& name, bool required = false, const IPv6Address& defValue = IPv6Address()) const;
 
             //!
             //! Get a MAC address attribute of an XML element in "x:x:x:x:x:x" format.

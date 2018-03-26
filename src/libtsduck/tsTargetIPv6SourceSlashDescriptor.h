@@ -28,47 +28,67 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a target_MAC_address_descriptor (INT/UNT specific).
+//!  Representation of a target_IPv6_source_slash_descriptor (INT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsMACAddress.h"
+#include "tsIPv6Address.h"
+#include "tsIPUtils.h"
 
 namespace ts {
     //!
-    //! Representation of a target_MAC_address_descriptor (INT/UNT specific).
+    //! Representation of a target_IPv6_source_slash_descriptor (INT specific).
     //!
-    //! This descriptor cannot be present in other tables than an INT or UNT
+    //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 192, 8.4.5.6
-    //! @see ETSI TS 102 006, 6.5.2.2
+    //! @see ETSI EN 301 192, 8.4.5.13
     //!
-    class TSDUCKDLL TargetMACAddressDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetIPv6SourceSlashDescriptor : public AbstractDescriptor
     {
     public:
-        // TargetMACAddressDescriptor public members:
-        MACAddress       MAC_addr_mask;  //!< MAC address mask
-        MACAddressVector MAC_addr;       //!< MAC addresses
+        //!
+        //! Structure of an address entry in the descriptor.
+        //!
+        class Address
+        {
+        public:
+            IPv6Address IPv6_source_addr;         //!< IPv6 source address.
+            uint8_t     IPv6_source_slash_mask;   //!< Number of bits in source network mask.
+            IPv6Address IPv6_dest_addr;           //!< IPv6 destination address.
+            uint8_t     IPv6_dest_slash_mask;     //!< Number of bits in destination network mask.
+
+            //!
+            //! Constructor
+            //! @param [in] addr1 IPv6 source address.
+            //! @param [in] mask1 Number of bits in source network mask.
+            //! @param [in] addr2 IPv6 destination address.
+            //! @param [in] mask2 Number of bits in destination network mask.
+            //!
+            Address(const IPv6Address& addr1 = IPv6Address(), uint8_t mask1 = 0, const IPv6Address& addr2 = IPv6Address(), uint8_t mask2 = 0);
+        };
+        
+        // TargetIPv6SourceSlashDescriptor public members:
+        std::vector<Address> addresses;  //!< IPv6 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 41;
+        static const size_t MAX_ENTRIES = 7;
 
         //!
         //! Default constructor.
         //!
-        TargetMACAddressDescriptor();
+        TargetIPv6SourceSlashDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetMACAddressDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        TargetIPv6SourceSlashDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

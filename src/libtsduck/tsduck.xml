@@ -426,6 +426,15 @@
         temporal_id_min="uint3, optional, specify both min and max or none"
         temporal_id_max="uint3, optional, specify both min and max or none"/>
 
+    <IPMAC_generic_stream_location_descriptor
+        interactive_network_id="uint16, required"
+        modulation_system_type="DVB-S2|DVB-T2|DVB-C2|DVB-NGH|uint8, required"
+        modulation_system_id="uint16, default=0"
+        PHY_stream_id="uint16, default=0">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <selector_bytes>Hexadecimal content</selector_bytes>
+    </IPMAC_generic_stream_location_descriptor>
+
     <IPMAC_platform_name_descriptor
         language_code="char3, required"
         text="string, required">
@@ -452,6 +461,10 @@
       <language code="char3, required"
                 audio_type="uint8, required"/>
     </ISO_639_language_descriptor>
+
+    <ISP_access_mode_descriptor access_mode="unused|dialup|uint8, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </ISP_access_mode_descriptor>
 
     <linkage_descriptor
         transport_stream_id="uint16, required"
@@ -622,6 +635,30 @@
           IPv4_dest_addr="IPv4 address, required"
           IPv4_dest_slash_mask="uint8, required"/>
     </target_IP_source_slash_descriptor>
+
+    <target_IPv6_address_descriptor IPv6_addr_mask="IPv6 address, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv6 address: -->
+      <address IPv6_addr="IPv6 address, required"/>
+    </target_IPv6_address_descriptor>
+
+    <target_IPv6_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv6 address: -->
+      <address
+          IPv6_addr="IPv6 address, required"
+          IPv6_slash_mask="uint8, required"/>
+    </target_IPv6_slash_descriptor>
+
+    <target_IPv6_source_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per pair of IPv6 address: -->
+      <address
+          IPv6_source_addr="IPv6 address, required"
+          IPv6_source_slash_mask="uint8, required"
+          IPv6_dest_addr="IPv6 address, required"
+          IPv6_dest_slash_mask="uint8, required"/>
+    </target_IPv6_source_slash_descriptor>
 
     <target_MAC_address_descriptor MAC_addr_mask="MAC address, required">
       <!-- Must be in an INT (table id 0x4C) -->

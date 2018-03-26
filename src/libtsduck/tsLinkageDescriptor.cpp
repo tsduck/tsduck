@@ -513,7 +513,7 @@ void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& display, const
 
 
 //----------------------------------------------------------------------------
-// Display linkage private data for 
+// Display linkage private data for INT.
 //----------------------------------------------------------------------------
 
 void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
@@ -560,7 +560,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
 
 
 //----------------------------------------------------------------------------
-// Display linkage private data for 
+// Display linkage private data for deferred INT.
 //----------------------------------------------------------------------------
 
 void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
