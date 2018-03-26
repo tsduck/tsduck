@@ -187,7 +187,16 @@ if [[ -n "$VMX_FILE" ]]; then
         fi
 
         # Wait that the machine is accessible using ssh.
-        ssh -o ConnectTimeout=$BOOT_TIMEOUT "$HOST_NAME" cd &>/dev/null || error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
+        # Don't wait once for boot timeout, sometimes it hangs. 
+        maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
+        ok=1
+        while [[ $(date +%s) -lt $maxdate ]]; do
+            ssh -o ConnectTimeout=5 "$HOST_NAME" cd &>/dev/null
+            ok=$?
+            [[ $ok -eq 0 ]] && break
+            sleep 5
+        done
+        [[ $ok -ne 0 ]] && error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
         echo "SSH ok for $HOST_NAME"
 
         # We need to shutdown the VM after building the installers.
@@ -204,7 +213,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
 # Build remote installers.
 (
-    if $WINDOWS; then
+    if $REMOTE_WIN; then
         # Build on Windows.
         # Cleanup repository, rebuild from scratch.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
