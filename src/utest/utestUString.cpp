@@ -1095,6 +1095,18 @@ void UStringTest::testHexa()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x000002", ts::UString::Hexa<uint16_t>(0x02, 6));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0000<>0123", ts::UString::Hexa<uint32_t>(0x123, 0, u"<>"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0000,0123", ts::UString::Hexa<uint32_t>(0x123, 0, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x00", ts::UString::HexaMin<uint8_t>(0, 0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0", ts::UString::HexaMin<uint8_t>(0, 1));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0", ts::UString::HexaMin<uint8_t>(0, 2));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0", ts::UString::HexaMin<uint8_t>(0, 3));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x00", ts::UString::HexaMin<uint8_t>(0, 4));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x000", ts::UString::HexaMin<uint8_t>(0, 5));
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0000,0123", ts::UString::HexaMin<uint32_t>(0x123, 0, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"123", ts::UString::HexaMin<uint32_t>(0x123, 1, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"000,0123", ts::UString::HexaMin<uint32_t>(0x123, 8, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0,0123", ts::UString::HexaMin<uint32_t>(0x123, 8, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
 }
 
 void UStringTest::testHexaDump()
@@ -1556,7 +1568,7 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"00000000000000AB", ts::UString::Format(u"%X", {TS_CONST64(171)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"000000000000000000AB", ts::UString::Format(u"%20X", {TS_CONST64(171)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"00AB", ts::UString::Format(u"%*X", {4, TS_CONST64(171)}));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"B", ts::UString::Format(u"%*X", {1, TS_CONST64(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AB", ts::UString::Format(u"%*X", {1, TS_CONST64(171)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0123,4567", ts::UString::Format(u"%'X", {uint32_t(0x1234567)}));
 
     // Enumerations

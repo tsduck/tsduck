@@ -697,6 +697,62 @@ ts::UString ts::UString::Hexa(INT value,
 
 
 //----------------------------------------------------------------------------
+// Format a string containing an hexadecimal value (variant).
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+ts::UString ts::UString::HexaMin(INT value,
+                                 size_type min_width,
+                                 const UString& separator,
+                                 bool use_prefix,
+                                 bool use_upper)
+{
+    // We build the result string in s IN REVERSE ORDER
+    UString s;
+    s.reserve(32); // avoid reallocating (most of the time)
+
+    // So, we need the separator in reverse order too.
+    UString sep(separator);
+    sep.reverse();
+
+    // Minimum number of hexa digits to format.
+    size_type min_digit = min_width > 0 ? 0 : 2 * sizeof(INT);
+
+    // Remove prefix width from the minimum width.
+    if (use_prefix && min_width >= 2) {
+        min_width -= 2;
+    }
+
+    // Format the value
+    for (size_type digit_count = 0; digit_count == 0 || digit_count < min_digit || s.size() < min_width || value != 0; digit_count++) {
+        const int nibble = int(value & 0xF);
+        value >>= 4;
+        if (digit_count % 4 == 0 && digit_count > 0) {
+            s += sep;
+        }
+        if (nibble < 10) {
+            s.push_back(u'0' + UChar(nibble));
+        }
+        else if (use_upper) {
+            s.push_back(u'A' + UChar(nibble - 10));
+        }
+        else {
+            s.push_back(u'a' + UChar(nibble - 10));
+        }
+    }
+
+    // Add the optional prefix, still in reverse order.
+    if (use_prefix) {
+        s.push_back(u'x');
+        s.push_back(u'0');
+    }
+
+    // Reverse characters in string
+    return s.toReversed();
+}
+
+
+//----------------------------------------------------------------------------
 // Format a percentage string.
 //----------------------------------------------------------------------------
 

@@ -95,9 +95,9 @@ ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
 
 void ts::ByteBlock::copy(const void* data_, size_type size_)
 {
-    resize(size_);
-    if (size_ > 0) {
-        ::memcpy(data(), data_, size_);  // Flawfinder: ignore: memcpy()
+    resize(data_ == 0 ? 0 : size_);
+    if (size() > 0) {
+        ::memcpy(data(), data_, size());  // Flawfinder: ignore: memcpy()
     }
 }
 

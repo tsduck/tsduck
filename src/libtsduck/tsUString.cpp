@@ -1797,15 +1797,21 @@ void ts::UString::ArgMixInContext::processArg()
         if (!_arg->isInteger() && debugActive()) {
             debug(u"type mismatch, not an integer", cmd);
         }
-        // If min width is not specified, use the "natural" width of the argument.
-        if (minWidth == 0) {
-            minWidth = 2 * _arg->size(); // number of hexa digits
-        }
-        if (_arg->size() <= 4) {
-            _result.append(Hexa(_arg->toUInt32(), minWidth, separator, false, cmd == u'X'));
-        }
-        else {
-            _result.append(Hexa(_arg->toUInt64(), minWidth, separator, false, cmd == u'X'));
+        // Format the hexa string.
+        const bool upper = cmd == u'X';
+        switch (_arg->size()) {
+            case 1:
+                _result.append(HexaMin(_arg->toInteger<uint8_t>(), minWidth, separator, false, upper));
+                break;
+            case 2:
+                _result.append(HexaMin(_arg->toInteger<uint16_t>(), minWidth, separator, false, upper));
+                break;
+            case 4:
+                _result.append(HexaMin(_arg->toInteger<uint32_t>(), minWidth, separator, false, upper));
+                break;
+            default:
+                _result.append(HexaMin(_arg->toInteger<uint64_t>(), minWidth, separator, false, upper));
+                break;
         }
     }
     else {
