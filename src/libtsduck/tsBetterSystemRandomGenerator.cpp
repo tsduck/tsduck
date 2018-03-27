@@ -55,6 +55,7 @@ ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
     _ready(true),
     _state_file(UserHomeDirectory() + PathSeparator + u".tsseed"),
     _aes(),
+    _sha(),
     _index(AES::BLOCK_SIZE), // at end of block, will need update
     _state(),
     _pool(AES::BLOCK_SIZE)
