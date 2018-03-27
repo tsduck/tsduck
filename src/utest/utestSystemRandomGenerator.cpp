@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSystemRandomGenerator.h"
+#include "tsBetterSystemRandomGenerator.h"
 #include "tsByteBlock.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -48,13 +49,18 @@ public:
     virtual void tearDown() override;
 
     void testSystemRandomGenerator();
+    void testBetterSystemRandomGenerator();
 
-    CPPUNIT_TEST_SUITE (SystemRandomGeneratorTest);
-    CPPUNIT_TEST (testSystemRandomGenerator);
-    CPPUNIT_TEST_SUITE_END ();
+    CPPUNIT_TEST_SUITE(SystemRandomGeneratorTest);
+    CPPUNIT_TEST(testSystemRandomGenerator);
+    CPPUNIT_TEST(testBetterSystemRandomGenerator);
+    CPPUNIT_TEST_SUITE_END();
+
+private:
+    void testRandom(ts::RandomGenerator& prng);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (SystemRandomGeneratorTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(SystemRandomGeneratorTest);
 
 
 //----------------------------------------------------------------------------
@@ -73,19 +79,17 @@ void SystemRandomGeneratorTest::tearDown()
 
 
 //----------------------------------------------------------------------------
-// Test cases
+// Test a PRNG.
 //----------------------------------------------------------------------------
 
-void SystemRandomGeneratorTest::testSystemRandomGenerator()
+void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
 {
-    ts::SystemRandomGenerator gen;
-
     // System PRNG are supposed to be immediately ready
-    CPPUNIT_ASSERT(gen.ready());
+    CPPUNIT_ASSERT(prng.ready());
 
     // But make sure they accept to be seeded anyway
     ts::ByteBlock seed(256);
-    CPPUNIT_ASSERT(gen.seed(&seed[0], seed.size()));
+    CPPUNIT_ASSERT(prng.seed(&seed[0], seed.size()));
 
     // Now, it is difficult to "test" random generator.
     // We use the following scenario:
@@ -103,16 +107,32 @@ void SystemRandomGeneratorTest::testSystemRandomGenerator()
     CPPUNIT_ASSERT_EQUAL(data1.size(), size_t(std::count(data1.begin(), data1.end(), 0)));
     CPPUNIT_ASSERT_EQUAL(data2.size(), size_t(std::count(data2.begin(), data2.end(), 0)));
 
-    CPPUNIT_ASSERT(gen.read(&data1[0], data1.size()));
-    CPPUNIT_ASSERT(gen.read(&data2[0], data2.size()));
+    CPPUNIT_ASSERT(prng.read(&data1[0], data1.size()));
+    CPPUNIT_ASSERT(prng.read(&data2[0], data2.size()));
 
     const size_t zero1 = std::count(data1.begin(), data1.end(), 0);
     const size_t zero2 = std::count(data2.begin(), data2.end(), 0);
 
-    utest::Out() << "SystemRandomGeneratorTest: zeroes over " << data1.size() << " bytes: "
-                 << zero1 << ", " << zero2 << std::endl;
+    utest::Out() << prng.name() << ": zeroes over " << data1.size() << " bytes: "
+        << zero1 << ", " << zero2 << std::endl;
 
     CPPUNIT_ASSERT(zero1 < data1.size() / 10);
     CPPUNIT_ASSERT(zero2 < data2.size() / 10);
     CPPUNIT_ASSERT(data1 != data2);
+}
+
+
+//----------------------------------------------------------------------------
+// Test cases
+//----------------------------------------------------------------------------
+
+void SystemRandomGeneratorTest::testSystemRandomGenerator()
+{
+    ts::SystemRandomGenerator gen;
+    testRandom(gen);
+}
+
+void SystemRandomGeneratorTest::testBetterSystemRandomGenerator()
+{
+    testRandom(*ts::BetterSystemRandomGenerator::Instance());
 }

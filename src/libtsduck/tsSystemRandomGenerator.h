@@ -45,6 +45,7 @@ namespace ts {
     {
     public:
         // Implementation of RandomGenerator interface:
+        virtual UString name() const override { return u"SystemRandomGenerator"; }
         virtual bool seed(const void*, size_t) override;
         virtual bool ready() const override;
         virtual bool read(void*, size_t) override;
@@ -65,5 +66,9 @@ namespace ts {
 #else
         int _fd;
 #endif
+
+        // Unaccessible operations.
+        SystemRandomGenerator(const SystemRandomGenerator&) = delete;
+        SystemRandomGenerator& operator=(const SystemRandomGenerator&) = delete;
     };
 }

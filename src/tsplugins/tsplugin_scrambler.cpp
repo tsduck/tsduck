@@ -41,7 +41,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsOneShotPacketizer.h"
 #include "tsECMGClient.h"
-#include "tsSystemRandomGenerator.h"
+#include "tsBetterSystemRandomGenerator.h"
 #include "tsCADescriptor.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -202,7 +202,6 @@ namespace ts {
         Scrambling        _current_key;        // Preprocessed current control word
         SectionDemux      _demux;              // Section demux
         CyclingPacketizer _pzer_pmt;           // Packetizer for modified PMT
-        SystemRandomGenerator _cw_gen;         // Control word generator
 
         // Return current/next CryptoPeriod for CW or ECM
         CryptoPeriod& currentCW()  {return _cp[_current_cw];}
@@ -285,8 +284,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _current_ecm(0),
     _current_key(),
     _demux(this),
-    _pzer_pmt(),
-    _cw_gen()
+    _pzer_pmt()
 {
     option(u"",                      0,  STRING, 1, 1);
     option(u"access-criteria",      'a', STRING);
@@ -994,12 +992,12 @@ ts::ScramblerPlugin::CryptoPeriod::CryptoPeriod() :
 // Initialize first crypto period.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::initCycle (ScramblerPlugin* scrambler, uint16_t cp_number)
+void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, uint16_t cp_number)
 {
     _scrambler = scrambler;
     _cp_number = cp_number;
-    _scrambler->_cw_gen.read(_cw_current, sizeof(_cw_current));
-    _scrambler->_cw_gen.read(_cw_next, sizeof(_cw_next));
+    BetterSystemRandomGenerator::Instance()->read(_cw_current, sizeof(_cw_current));
+    BetterSystemRandomGenerator::Instance()->read(_cw_next, sizeof(_cw_next));
     generateECM();
 }
 
@@ -1008,12 +1006,12 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle (ScramblerPlugin* scrambler, u
 // Initialize crypto period following specified one.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::initNext (const CryptoPeriod& previous)
+void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 {
     _scrambler = previous._scrambler;
     _cp_number = previous._cp_number + 1;
-    ::memcpy(_cw_current, previous._cw_next, sizeof(_cw_current));  // Flawfinder: ignore: memcpy()
-    _scrambler->_cw_gen.read(_cw_next, sizeof(_cw_next));
+    ::memcpy(_cw_current, previous._cw_next, sizeof(_cw_current));
+    BetterSystemRandomGenerator::Instance()->read(_cw_next, sizeof(_cw_next));
     generateECM();
 }
 
