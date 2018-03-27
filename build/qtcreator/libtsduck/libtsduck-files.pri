@@ -43,6 +43,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAVCVUIParameters.h \
     ../../../src/libtsduck/tsBAT.h \
     ../../../src/libtsduck/tsBCD.h \
+    ../../../src/libtsduck/tsBetterSystemRandomGenerator.h \
     ../../../src/libtsduck/tsBinaryTable.h \
     ../../../src/libtsduck/tsBitStream.h \
     ../../../src/libtsduck/tsBlockCipher.h \
@@ -383,6 +384,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAVCVUIParameters.cpp \
     ../../../src/libtsduck/tsBAT.cpp \
     ../../../src/libtsduck/tsBCD.cpp \
+    ../../../src/libtsduck/tsBetterSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsBinaryTable.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \

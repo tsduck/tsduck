@@ -67,6 +67,7 @@
 #include "tsAVCVUIParameters.h"
 #include "tsBAT.h"
 #include "tsBCD.h"
+#include "tsBetterSystemRandomGenerator.h"
 #include "tsBinaryTable.h"
 #include "tsBitStream.h"
 #include "tsBlockCipher.h"

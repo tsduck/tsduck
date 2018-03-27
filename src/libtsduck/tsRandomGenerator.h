@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -42,6 +42,12 @@ namespace ts {
     class TSDUCKDLL RandomGenerator
     {
     public:
+        //!
+        //! Algorithm name (informational only).
+        //! @return The algorithm name.
+        //!
+        virtual UString name() const = 0;
+
         //!
         //! Seed (add entropy) to the PRNG.
         //! @param [in] addr Address of entropy data.
