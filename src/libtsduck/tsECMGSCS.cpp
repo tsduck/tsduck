@@ -792,8 +792,8 @@ ts::UString ts::ecmgscs::ECMResponse::dump (size_t indent) const
 {
     return UString::Format(u"%*sECM_response (ECMG<=>SCS)\n", {indent, u"   "}) +
         tlv::Message::dump(indent) +
-        dumpHexa(indent, u"ECM_chann    el_id", channel_id) +
-        dumpHexa(indent, u"ECM_stream_id    ", stream_id) +
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id) +
         dumpDecimal(indent, u"CP_number", CP_number) +
         dumpOptional(indent, u"ECM_datagram", true, ECM_datagram, UString::HEXA);
 }

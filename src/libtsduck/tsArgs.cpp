@@ -123,6 +123,21 @@ ts::Args::IOption::IOption(const UChar* name_,
             max_value = 0x1FFF;
             type = INTEGER;
             break;
+        case INT8:
+            min_value = -128;
+            max_value = 127;
+            type = INTEGER;
+            break;
+        case INT16:
+            min_value = -32768;
+            max_value = 32767;
+            type = INTEGER;
+            break;
+        case INT32:
+            min_value = -TS_CONST64(0x80000000);
+            max_value = 0x7FFFFFFFF;
+            type = INTEGER;
+            break;
         default:
             throw ArgsError(UString::Format(u"invalid option type %d", {type}));
     }

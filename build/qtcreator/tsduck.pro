@@ -100,6 +100,7 @@ SUBDIRS += \
     tsdate \
     tsdektec \
     tsdump \
+    tsecmg \
     tsfixcc \
     tsftrunc \
     tslsdvb \
