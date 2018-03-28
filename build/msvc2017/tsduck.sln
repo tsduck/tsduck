@@ -477,6 +477,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_mpeinject", "tsplu
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsecmg", "tsecmg.vcxproj", "{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1157,6 +1162,14 @@ Global
 		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|Win32.Build.0 = Release|Win32
 		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|x64.ActiveCfg = Release|x64
 		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|x64.Build.0 = Release|x64
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Debug|Win32.Build.0 = Debug|Win32
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Debug|x64.ActiveCfg = Debug|x64
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Debug|x64.Build.0 = Debug|x64
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Release|Win32.ActiveCfg = Release|Win32
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Release|Win32.Build.0 = Release|Win32
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Release|x64.ActiveCfg = Release|x64
+		{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

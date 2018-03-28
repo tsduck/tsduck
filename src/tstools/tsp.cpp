@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     }
 
     // IP initialization required on foolish OS
-    if (!ts::IPInitialize(CERR)) {
+    if (!ts::IPInitialize(opt)) {
         return EXIT_FAILURE;
     }
 

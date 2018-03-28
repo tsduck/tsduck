@@ -90,6 +90,16 @@ namespace ts {
             }
 
             //!
+            //! Force the protocol version number to another value.
+            //! Use with care.
+            //! @param [in] version The protocol version number.
+            //!
+            void forceProtocolVersion(VERSION version)
+            {
+                _version = version;
+            }
+
+            //!
             //! Get the message tag.
             //! @return The message tag.
             //!
