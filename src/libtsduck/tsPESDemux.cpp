@@ -357,19 +357,24 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                 }
                 offset = p1 - pdata + sizeof(StartCodePrefix);
 
-                // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of
+                // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of data.
                 const uint8_t* p2 = reinterpret_cast<const uint8_t*>(
                             LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix)));
                 const uint8_t* p3 = reinterpret_cast<const uint8_t*>(
                             LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3)));
-                size_t nalunit_size;
+                size_t nalunit_size = 0;
                 if (p2 == 0 && p3 == 0) {
+                    // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.
                     nalunit_size = psize - offset;
                 }
-                else if (p2 == 0 || p3 < p2) {
+                else if (p2 == 0 || (p3 != 0 && p3 < p2)) {
+                    // NALunit ends at 00 00 00.
+                    assert(p3 != 0);
                     nalunit_size = p3 - pdata - offset;
                 }
                 else {
+                    // NALunit ends at 00 00 01.
+                    assert(p2 != 0);
                     nalunit_size = p2 - pdata - offset;
                 }
 

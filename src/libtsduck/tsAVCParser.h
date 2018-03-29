@@ -53,14 +53,7 @@ namespace ts {
         //! It must remain valid as long as the AVCParser object is used.
         //! @param [in] size_in_bytes Size in bytes of the memory area to parse.
         //!
-        AVCParser(const void* data, size_t size_in_bytes) :
-            _base(reinterpret_cast<const uint8_t*>(data)),
-            _end(_base + size_in_bytes),
-            _total_size(size_in_bytes),
-            _byte(_base),
-            _bit(0)
-        {
-        }
+        AVCParser(const void* data, size_t size_in_bytes);
 
         //!
         //! Reset with a new memory area.
@@ -68,14 +61,7 @@ namespace ts {
         //! It must remain valid as long as the AVCParser object is used.
         //! @param [in] size_in_bytes Size in bytes of the memory area to parse.
         //!
-        void reset(const void* data, size_t size_in_bytes)
-        {
-            _base = reinterpret_cast<const uint8_t*>(data);
-            _end = _base + size_in_bytes;
-            _total_size = size_in_bytes;
-            _byte = _base;
-            _bit = 0;
-        }
+        void reset(const void* data, size_t size_in_bytes);
 
         //!
         //! Reset parsing at the specified point.
@@ -83,36 +69,19 @@ namespace ts {
         //! @param [in] bit_offset Offset of first bit in first byte.
         //! The bit offset zero is the most significant bit.
         //!
-        void reset(size_t byte_offset = 0, size_t bit_offset = 0)
-        {
-            _byte = _base + std::min(byte_offset + bit_offset / 8, _total_size);
-            _bit = bit_offset % 8;
-        }
+        void reset(size_t byte_offset = 0, size_t bit_offset = 0);
 
         //!
         //! Get number of remaining bytes (rounded down).
         //! @return The number of remaining bytes (rounded down).
         //!
-        size_t remainingBytes() const
-        {
-            assert(_byte >= _base);
-            assert(_byte <= _end);
-            assert(_byte < _end || _bit == 0);
-            return _end - _byte - (_bit != 0);
-        }
+        size_t remainingBytes() const;
 
         //!
         //! Get number of remaining bits.
         //! @return The number of remaining bits.
         //!
-        size_t remainingBits() const
-        {
-            assert(_byte >= _base);
-            assert(_byte <= _end);
-            assert(_byte < _end || _bit == 0);
-            assert(_bit < 8);
-            return 8 * (_end - _byte) - _bit;
-        }
+        size_t remainingBits() const;
 
         //!
         //! Check end of stream.
@@ -165,11 +134,11 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT,
+                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
+                  typename std::enable_if<std::is_unsigned<INT>::value>::type* = nullptr>
         bool u(INT& val, size_t n)
         {
-            assert(std::numeric_limits<INT>::is_integer);
-            assert(!std::numeric_limits<INT>::is_signed);
             return readBits(val, n);
         }
 
@@ -181,11 +150,11 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT,
+                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
+                  typename std::enable_if<std::is_signed<INT>::value>::type* = nullptr>
         bool i(INT& val, size_t n)
         {
-            assert(std::numeric_limits<INT>::is_integer);
-            assert(std::numeric_limits<INT>::is_signed);
             return readBits(val, n);
         }
 
@@ -195,11 +164,11 @@ namespace ts {
         //! @param [out] val Returned integer value.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT,
+                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
+                  typename std::enable_if<std::is_unsigned<INT>::value>::type* = nullptr>
         bool ue(INT& val)
         {
-            assert(std::numeric_limits<INT>::is_integer);
-            assert(!std::numeric_limits<INT>::is_signed);
             return expColomb(val);
         }
 
@@ -209,49 +178,39 @@ namespace ts {
         //! @param [out] val Returned integer value.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT,
+                  typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr,
+                  typename std::enable_if<std::is_signed<INT>::value>::type* = nullptr>
         bool se(INT& val);
 
     private:
+        // Deleted operations.
         AVCParser() = delete;
         AVCParser(const AVCParser&) = delete;
         AVCParser& operator=(const AVCParser&) = delete;
 
         // Private members.
-        const uint8_t* _base;
-        const uint8_t* _end;
-        size_t         _total_size;
-        const uint8_t* _byte;         // Byte pointer
-        size_t         _bit;          // Bit offset into *_byte
+        const uint8_t* _base;         // Base address of the memory area to parse.
+        const uint8_t* _end;          // End address + 1 of the memory area.
+        size_t         _total_size;   // Size in bytes of the memory area.
+        const uint8_t* _byte;         // Current byte pointer inside memory area.
+        size_t         _bit;          // Current bit offset into *_byte
+
+        // A macro asserting the consistent state of this object.
+        // Must be a macro to preserve the use of assert().
+        #define ts_avcparser_assert_consistent() \
+            assert(_base != 0);                  \
+            assert(_end == _base + _total_size); \
+            assert(_byte >= _base);              \
+            assert(_byte <= _end);               \
+            assert(_byte < _end || _bit == 0);   \
+            assert(_bit < 8)
 
         // Advance pointer to next byte boundary.
-        void nextByte()
-        {
-            // Next byte boundary
-            assert(_byte < _end);
-            ++_byte;
-            _bit = 0;
-
-            // Process start code emulation prevention: sequences 00 00 03
-            // are used when 00 00 00 or 00 00 01 would be present. In that
-            // case, the 00 00 is part of the raw byte sequence payload (rbsp)
-            // but the 03 shall be discarded.
-            if (_byte < _end && *_byte == 0x03 && _byte > _base+1 && _byte[-1] == 0x00 && _byte[-2] == 0x00) {
-                // Skip 03 after 00 00
-                ++_byte;
-            }
-        }
+        void nextByte();
 
         // Advance pointer by one bit and return the bit value
-        uint8_t nextBit()
-        {
-            assert(_byte < _end);
-            uint8_t b = (*_byte >> (7 - _bit)) & 0x01;
-            if (++_bit > 7) {
-                nextByte();
-            }
-            return b;
-        }
+        uint8_t nextBit();
 
         // Extract Exp-Golomb-coded value using n bits.
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
@@ -260,3 +219,7 @@ namespace ts {
 }
 
 #include "tsAVCParserTemplate.h"
+
+#if !defined(TS_AVCPARSER_CPP)
+#undef ts_avcparser_assert_consistent
+#endif
