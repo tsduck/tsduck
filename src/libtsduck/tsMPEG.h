@@ -1174,6 +1174,20 @@ namespace ts {
     };
 
     //---------------------------------------------------------------------
+    //! Scrambling mode values (in scrambling_descriptor)
+    //---------------------------------------------------------------------
+
+    enum : uint8_t {
+        SCRAMBLING_DVB_CSA1      = 0x01, //!< DVB-CSA1
+        SCRAMBLING_DVB_CSA2      = 0x02, //!< DVB-CSA2
+        SCRAMBLING_DVB_CSA3_STD  = 0x03, //!< DVB-CSA3, standard mode
+        SCRAMBLING_DVB_CSA3_MIN  = 0x04, //!< DVB-CSA3, minimally enhanced mode
+        SCRAMBLING_DVB_CSA3_FULL = 0x05, //!< DVB-CSA3, fully enhanced mode
+        SCRAMBLING_DVB_CISSA1    = 0x10, //!< DVB-CISSA v1
+        SCRAMBLING_ATIS_IIF_IDSA = 0x70, //!< ATIS IIF IDSA for MPEG-2 TS
+    };
+
+    //---------------------------------------------------------------------
     //! Data broadcast id values (in data_broadcast[_id]_descriptor)
     //---------------------------------------------------------------------
 

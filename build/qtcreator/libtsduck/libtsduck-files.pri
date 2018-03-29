@@ -65,6 +65,8 @@ HEADERS += \
     ../../../src/libtsduck/tsCondition.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
+    ../../../src/libtsduck/tsCPDescriptor.h \
+    ../../../src/libtsduck/tsCPIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCRC32.h \
     ../../../src/libtsduck/tsCTS1.h \
     ../../../src/libtsduck/tsCTS1Template.h \
@@ -209,6 +211,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSafePtrTemplate.h \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsScrambling.h \
+    ../../../src/libtsduck/tsScramblingDescriptor.h \
     ../../../src/libtsduck/tsSDT.h \
     ../../../src/libtsduck/tsSection.h \
     ../../../src/libtsduck/tsSectionDemux.h \
@@ -403,6 +406,8 @@ SOURCES += \
     ../../../src/libtsduck/tsCondition.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
+    ../../../src/libtsduck/tsCPDescriptor.cpp \
+    ../../../src/libtsduck/tsCPIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCRC32.cpp \
     ../../../src/libtsduck/tsCueIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCyclingPacketizer.cpp \
@@ -506,6 +511,7 @@ SOURCES += \
     ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsScrambling.cpp \
+    ../../../src/libtsduck/tsScramblingDescriptor.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSection.cpp \
     ../../../src/libtsduck/tsSectionDemux.cpp \

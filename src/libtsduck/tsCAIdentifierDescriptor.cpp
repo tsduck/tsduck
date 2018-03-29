@@ -142,7 +142,7 @@ void ts::CAIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCh
 void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
-        const std::string margin(indent, ' ');
+    const std::string margin(indent, ' ');
 
     while (size >= 2) {
         uint16_t cas_id = GetUInt16(data);

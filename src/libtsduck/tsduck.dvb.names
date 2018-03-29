@@ -739,6 +739,14 @@ Bits = 16
 0xAA00 = Best CAS
 0xAA01 = BestCAS
 
+[CPSystemId]
+Bits = 16
+0x0000 = DVB CPCM Content Licence
+0x0001 = DVB CPCM Auxiliary Data
+0x0002 = DVB CPCM Revocation List
+0x0100 = DTCP Renewability Messages
+0x0101 = HDCP Renewability Messages
+
 [DataBroadcastId]
 Bits = 16
 0x0001 = Data pipe
@@ -2450,3 +2458,16 @@ Bits = 8
 0x20 = MPEG-4 ancillary data (ETSI TS 101 154)
 0x40 = RDS via UECP (ETSI TS 101 154)
 0x80 = reserved_0 for future use
+
+[ScramblingMode]
+# In scrambling_descriptor.
+Bits = 8
+0x01 = DVB-CSA1
+0x02 = DVB-CSA2
+0x03 = DVB-CSA3, standard mode
+0x04 = DVB-CSA3, minimally enhanced mode
+0x05 = DVB-CSA3, fully enhanced mode
+0x10 = DVB-CISSA v1
+0x11-0x1F = DVB-CISSA future versions
+0x70 = ATIS IIF IDSA for MPEG-2 TS
+0x71-0x7F = ATIS defined
