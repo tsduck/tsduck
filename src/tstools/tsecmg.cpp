@@ -579,6 +579,12 @@ bool ECMGClient::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         return sendErrorResponse(msg, ts::ecmgscs::Errors::not_enough_CW);
     }
     else {
+        // Start to build the response.
+        ts::ecmgscs::ECMResponse resp;
+        resp.channel_id = msg->channel_id;
+        resp.stream_id = msg->stream_id;
+        resp.CP_number = msg->CP_number;
+
         // Build the ECM section payload.
         ts::ByteBlock ecm;
         ecm.appendUInt16(ts::tlv::MSG_ECM);
@@ -605,29 +611,34 @@ bool ECMGClient::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         // Update length in message TLV.
         ts::PutUInt16(ecm.data() + 2, uint16_t(ecm.size() - 4));
 
+        // Compute the table id for the ECM, 0x80 or 0x81. There are two incompatible possibilities.
+        // First method is to copy the parity of the crypto period number. Second method is to
+        // alternate between the two, request after request in the stream. There is no requirement
+        // that the table id has the same parity as the CP. However, it is safe to do it just in
+        // case some CAS relies on it. On the other hand, if the SCS sends non-consecutive CP
+        // numbers, it is possible that two adjacent CP have the same parity. Anyway, since there
+        // is no perfect solution, we use the first one since it is simpler.
+        const ts::TID tid = ts::TID(ts::TID_ECM_80 | (msg->CP_number & 0x01));
+
         // Build the ECM section.
-        ts::SectionPtr ecmSection(new ts::Section(ts::TID_ECM_80, true, ecm.data(), ecm.size()));
+        ts::SectionPtr ecmSection(new ts::Section(tid, true, ecm.data(), ecm.size()));
 
-        // Raw content of ECM to return.
-        const uint8_t* ecmData = ecmSection->content();
-        size_t ecmSize = ecmSection->size();
-
-        // If we need to send TS packets, packetize the section.
-        ts::TSPacketVector ecmPackets;
+        // Format ECM for the response message.
         if (_opt.channelStatus.section_TSpkt_flag) {
+            // Send ECM as TS packets, packetize the section.
+            ts::TSPacketVector ecmPackets;
             ts::OneShotPacketizer zer;
             zer.addSection(ecmSection);
             zer.getPackets(ecmPackets);
-            ecmData = ecmPackets.empty() ? 0 : ecmPackets[0].b;
-            ecmSize = ecmPackets.size() * ts::PKT_SIZE;
+            if (!ecmPackets.empty()) {
+                resp.ECM_datagram.copy(ecmPackets[0].b, ecmPackets.size() * ts::PKT_SIZE);
+            }
+        }
+        else {
+            // Send ECM as a section.
+            resp.ECM_datagram.copy(ecmSection->content(), ecmSection->size());
         }
 
-        // Now build the response.
-        ts::ecmgscs::ECMResponse resp;
-        resp.channel_id = msg->channel_id;
-        resp.stream_id = msg->stream_id;
-        resp.CP_number = msg->CP_number;
-        resp.ECM_datagram.copy(ecmData, ecmSize);
         return send(&resp);
     }
 }
