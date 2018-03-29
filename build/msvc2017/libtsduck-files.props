@@ -67,6 +67,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsCondition.h" />
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCPDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCPIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCRC32.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCTS1.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCTS1Template.h" />
@@ -211,6 +213,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsScrambling.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsScramblingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSDT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionDemux.h" />
@@ -415,6 +418,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsCondition.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCPDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCPIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCRC32.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCueIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCyclingPacketizer.cpp" />
@@ -518,6 +523,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScrambling.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsScramblingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionDemux.cpp" />

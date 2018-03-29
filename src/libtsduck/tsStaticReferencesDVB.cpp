@@ -91,6 +91,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(ContentDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);
+    REF_TYPE(CPDescriptor);
+    REF_TYPE(CPIdentifierDescriptor);
     REF_TYPE(CueIdentifierDescriptor);
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
@@ -119,6 +121,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
     REF_TYPE(SatelliteDeliverySystemDescriptor);
+    REF_TYPE(ScramblingDescriptor);
     REF_TYPE(ServiceDescriptor);
     REF_TYPE(ServiceListDescriptor);
     REF_TYPE(ShortEventDescriptor);
