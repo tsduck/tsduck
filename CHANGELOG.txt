@@ -19,6 +19,9 @@ Version 3.10-630
 - Fixed incorrect behaviour on Linux and macOS when receiving multicast with
   plugin "ip" and "mpeinject" and a --local-interface was specified.
 
+- Bug fix: tsanalyzer and a few plugins could crash when a video PID contained
+  corrupted AVC/H.264 video.
+
 Version 3.9-619
 
 - Added plugins mpe and mpeinject to respectively extract and inject MPE
