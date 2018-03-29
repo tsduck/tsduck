@@ -293,6 +293,10 @@ private:
     {
         return ts::Time::CurrentLocalTime().format(ts::Time::DATE | ts::Time::TIME);
     }
+
+    // Deleted operations.
+    ECMGClient(const ECMGClient&) = delete;
+    ECMGClient& operator=(const ECMGClient&) = delete;
 };
 
 
