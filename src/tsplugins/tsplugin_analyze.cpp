@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsTSAnalyzerReport.h"
+#include "tsTSSpeedMetrics.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -57,18 +58,16 @@ namespace ts {
         UString           _output_name;
         std::ofstream     _output_stream;
         std::ostream*     _output;
-        MilliSecond       _output_interval;
+        NanoSecond        _output_interval;
         bool              _multiple_output;
-        PacketCounter     _current_packet;
-        Time              _next_report_time;
-        PacketCounter     _next_report_packet;
+        TSSpeedMetrics    _metrics;
+        NanoSecond        _next_report;
         TSAnalyzerReport  _analyzer;
         TSAnalyzerOptions _analyzer_options;
 
         bool openOutput();
         void closeOutput();
         bool produceReport();
-        void computeNextReportTime (const Time& current_utc, MilliSecond interval);
 
         // Inaccessible operations
         AnalyzePlugin() = delete;
@@ -92,9 +91,8 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _output(),
     _output_interval(0),
     _multiple_output(false),
-    _current_packet(0),
-    _next_report_time(Time::Epoch),
-    _next_report_packet(0),
+    _metrics(),
+    _next_report(0),
     _analyzer(),
     _analyzer_options()
 {
@@ -141,12 +139,15 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 bool ts::AnalyzePlugin::start()
 {
     _output_name = value(u"output-file");
-    _output_interval = MilliSecPerSec * intValue<MilliSecond>(u"interval", 0);
+    _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
     _analyzer_options.getOptions(*this);
     _analyzer.setAnalysisOptions(_analyzer_options);
-    _current_packet = 0;
+
+    // For production of multiple reports at regular intervals.
+    _metrics.start();
+    _next_report = _output_interval;
 
     // Create the output file. Note that this file is used only in the stop
     // method and could be created there. However, if the file cannot be
@@ -237,61 +238,24 @@ bool ts::AnalyzePlugin::stop()
 
 
 //----------------------------------------------------------------------------
-// Compute next time to produce a report
-//----------------------------------------------------------------------------
-
-void ts::AnalyzePlugin::computeNextReportTime (const Time& current_utc, MilliSecond interval)
-{
-    // Compute next report time
-    _next_report_time = current_utc + interval;
-
-    // To avoid getting system time every packet, try to guess the packet index for next report time
-    const BitRate bitrate = tsp->bitrate();
-    if (bitrate == 0) {
-        // Unknown bitrate, we have to check current time every packet
-        _next_report_packet = 0;
-    }
-    else {
-        _next_report_packet = _current_packet + PacketDistance(bitrate, interval);
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Packet processing method
 //----------------------------------------------------------------------------
 
 ts::ProcessorPlugin::Status ts::AnalyzePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    // Count packets in transport stream
-    _current_packet++;
-
     // Feed the analyzer with one packet
     _analyzer.feedPacket (pkt);
 
     // With --interval, check if it is time to produce a report
-    if (_output_interval > 0) {
-        if (_current_packet == 1) {
-            // Initialize the repetition when the first packet arrives
-            computeNextReportTime(Time::CurrentUTC(), _output_interval);
+    if (_output_interval > 0 && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
+        // Time to produce a report.
+        if (!produceReport()) {
+            return TSP_END;
         }
-        else if (_next_report_packet == 0 || (_next_report_packet > 0 && _current_packet >= _next_report_packet)) {
-            // Check current time to see if this is time to produce a report
-            const Time current_utc(Time::CurrentUTC());
-            if (current_utc < _next_report_time) {
-                // False alarm, we have to wait some more
-                computeNextReportTime(current_utc, _next_report_time - current_utc);
-            }
-            else {
-                // Time to produce a report
-                if (!produceReport()) {
-                    return TSP_END;
-                }
-                // Reset analysis context
-                _analyzer.reset();
-                computeNextReportTime (current_utc, _output_interval);
-            }
-        }
+        // Reset analysis context.
+        _analyzer.reset();
+        // Compute next report time.
+        _next_report += _output_interval;
     }
 
     return TSP_OK;

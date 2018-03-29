@@ -317,6 +317,7 @@
 #include "tsTSFileOutputResync.h"
 #include "tsTSPacket.h"
 #include "tsTSScanner.h"
+#include "tsTSSpeedMetrics.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsTunerParameters.h"
