@@ -164,10 +164,6 @@ namespace ts {
         void getStatus(Status& status) const;
 
     private:
-        // Unreachable constructors and operators.
-        PCRAnalyzer(const PCRAnalyzer&);
-        PCRAnalyzer& operator=(const PCRAnalyzer&);
-
         // Process a discontinuity in the transport stream
         void processDiscountinuity();
 
@@ -198,5 +194,9 @@ namespace ts {
         size_t   _completed_pids;     // Number of PIDs with enough PCRs
         size_t   _pcr_pids;           // Number of PIDs with PCRs
         PIDAnalysis* _pid[PID_MAX];   // Per-PID stats
+
+        // Unreachable constructors and operators.
+        PCRAnalyzer(const PCRAnalyzer&) = delete;
+        PCRAnalyzer& operator=(const PCRAnalyzer&) = delete;
     };
 }

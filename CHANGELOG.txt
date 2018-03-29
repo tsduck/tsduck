@@ -16,11 +16,14 @@ Version 3.10-630
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
 
-- Fixed incorrect behaviour on Linux and macOS when receiving multicast with
+- Bug fix: Incorrect behaviour on Linux and macOS when receiving multicast with
   plugin "ip" and "mpeinject" and a --local-interface was specified.
 
 - Bug fix: tsanalyzer and a few plugins could crash when a video PID contained
   corrupted AVC/H.264 video.
+
+- Bug fix: Plugin "analyze" with option --interval incorrectly used the TS
+  clock to produce the analysis files instead of the wall clock time.
 
 Version 3.9-619
 
