@@ -196,6 +196,7 @@ namespace ts {
         const uint8_t* _byte;         // Current byte pointer inside memory area.
         size_t         _bit;          // Current bit offset into *_byte
 
+        //! @cond nodoxygen
         // A macro asserting the consistent state of this object.
         // Must be a macro to preserve the use of assert().
         #define ts_avcparser_assert_consistent() \
@@ -205,6 +206,7 @@ namespace ts {
             assert(_byte <= _end);               \
             assert(_byte < _end || _bit == 0);   \
             assert(_bit < 8)
+        //! @endcond
 
         // Advance pointer to next byte boundary.
         void nextByte();
