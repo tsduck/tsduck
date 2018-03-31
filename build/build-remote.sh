@@ -34,6 +34,14 @@
 #  Currently supports VMWare only as hypervisor for local VM's.
 #  Remotely built installers are copied into the local installers directory.
 #
+#  Sample user's script to build TSDuck binaries on four platforms, one
+#  physical Raspberry Pi and three VMWare virtual machines:
+#
+#    $HOME/tsduck/build/build-remote.sh --host raspberry
+#    $HOME/tsduck/build/build-remote.sh --host vmwindows --vmware $HOME/VM/Windows.vmwarevm/Windows.vmx --windows
+#    $HOME/tsduck/build/build-remote.sh --host vmfedora  --vmware $HOME/VM/Fedora.vmwarevm/Fedora.vmx
+#    $HOME/tsduck/build/build-remote.sh --host vmubuntu  --vmware $HOME/VM/Ubuntu.vmwarevm/Ubuntu.vmx
+#
 #-----------------------------------------------------------------------------
 
 SCRIPT=$(basename $BASH_SOURCE)
@@ -236,6 +244,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
         # Copy all installers files.
         for f in $files; do
+            echo "Fetching $f"
             scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
         done
 
@@ -255,10 +264,11 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
         # Get all files from installers directory which are newer than the time stamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            find "$REMOTE_DIR/installers" -maxdepth 1 -type f -newer "$REMOTE_DIR/installers/timestamp.tmp" -printf '%f ')
+            find "$REMOTE_DIR/installers" -maxdepth 1 -type f -newer "$REMOTE_DIR/installers/timestamp.tmp" -printf "'%f '")
 
         # Copy all files from installers directory which are newer than the time stamp.
         for f in $files; do
+            echo "Fetching $f"
             scp $SSH_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
         done
 
