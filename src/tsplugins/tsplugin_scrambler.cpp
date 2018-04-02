@@ -34,7 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsScrambling.h"
+#include "tsDVBCSA2.h"
 #include "tsIDSA.h"
 #include "tsByteBlock.h"
 #include "tsService.h"
@@ -180,7 +180,6 @@ namespace ts {
         BitRate           _ecm_bitrate;        // ECM PID's bitrate
         PID               _ecm_pid;            // PID for ECM
         PacketCounter     _partial_scrambling; // Do not scramble all packets if > 1
-        Scrambling::EntropyMode _cw_mode;      // Entropy reduction
         ecmgscs::ChannelStatus  _channel_status; // Initial response to ECMG channel_setup
         ecmgscs::StreamStatus   _stream_status;  // Initial response to ECMG stream_setup
 
@@ -203,7 +202,7 @@ namespace ts {
         CryptoPeriod      _cp[2];              // Previous/current or current/next crypto-periods
         size_t            _current_cw;         // Index to current CW (current crypto period)
         size_t            _current_ecm;        // Index to current ECM (ECM being broadcast)
-        Scrambling        _scrambling_csa2;    // Scrambler with DVB-CSA2.
+        DVBCSA2           _scrambling_csa2;    // Scrambler with DVB-CSA2.
         IDSA              _scrambling_atis;    // Scrambler with ATIS-IDSA.
         SectionDemux      _demux;              // Section demux
         CyclingPacketizer _pzer_pmt;           // Packetizer for modified PMT
@@ -271,7 +270,6 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _ecm_bitrate(0),
     _ecm_pid(PID_NULL),
     _partial_scrambling(0),
-    _cw_mode(Scrambling::REDUCE_ENTROPY),
     _channel_status(),
     _stream_status(),
     _abort(false),
@@ -463,7 +461,7 @@ bool ts::ScramblerPlugin::start()
     _use_fixed_key = present(u"control-word");
     _atis_idsa = present(u"atis-idsa");
     _synchronous_ecmg = present(u"synchronous");
-    _cw_mode = present(u"no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
+    _scrambling_csa2.setEntropyMode(present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
     _component_level = present(u"component-level");
     _scramble_audio = !present(u"no-audio");
     _scramble_video = !present(u"no-video");
@@ -497,7 +495,7 @@ bool ts::ScramblerPlugin::start()
 
         // Use a fixed control word
         ByteBlock cw;
-        const size_t expected = _atis_idsa ? IDSA::KEY_SIZE : CW_BYTES;
+        const size_t expected = _atis_idsa ? IDSA::KEY_SIZE : DVBCSA2::KEY_SIZE;
         if (!value(u"control-word").hexaDecode(cw) || cw.size() != expected) {
             tsp->error(u"invalid control word, specify %d hexa digits", {2 * expected});
             return false;
@@ -897,7 +895,7 @@ bool ts::ScramblerPlugin::initScramblerKey(const ByteBlock& cw)
     tsp->debug(u"using control word: " + UString::Dump(cw, UString::SINGLE_LINE));
 
     if (!_atis_idsa) {
-        _scrambling_csa2.init(cw.data(), _cw_mode);
+        _scrambling_csa2.setKey(cw.data(), cw.size());
     }
     else if (!_scrambling_atis.setKey(cw.data(), cw.size())) {
         tsp->error(u"error setting ATIS-IDSA key");
@@ -1023,7 +1021,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
     uint8_t buffer[PKT_SIZE];
 
     if (!_atis_idsa) {
-        _scrambling_csa2.encrypt(payload, payload_size);
+        _scrambling_csa2.encryptInPlace(payload, payload_size);
     }
     else if (_scrambling_atis.encrypt(payload, payload_size, buffer, sizeof(buffer))) {
         // Need of overwrite packet payload with encrypted content.

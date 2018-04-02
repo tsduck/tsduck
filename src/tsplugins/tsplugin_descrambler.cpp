@@ -34,7 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsScrambling.h"
+#include "tsDVBCSA2.h"
 #include "tsIDSA.h"
 #include "tsByteBlock.h"
 TSDUCK_SOURCE;
@@ -55,10 +55,9 @@ namespace ts {
 
     private:
         bool                           _atis_idsa;       // Use ATIS-IDSA instead of DVB-CSA2.
-        Scrambling::EntropyMode        _cw_mode;         // CW entropy mode
         std::list<ByteBlock>           _cw_list;         // List of control words
         std::list<ByteBlock>::iterator _next_cw;         // Next control word
-        Scrambling                     _scrambling_csa2; // Preprocessed current control word
+        DVBCSA2                        _scrambling_csa2; // Preprocessed current control word
         IDSA                           _scrambling_atis; // Scrambler with ATIS-IDSA.
         uint8_t                        _last_scv;        // Scrambling_control_value in last packet
         PIDSet                         _pids;            // List of PID's to descramble
@@ -81,7 +80,6 @@ TSPLUGIN_DECLARE_PROCESSOR(descrambler, ts::DescramblerPlugin)
 ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"DVB descrambler using static control words.", u"[options]"),
     _atis_idsa(false),
-    _cw_mode(Scrambling::REDUCE_ENTROPY),
     _cw_list(),
     _next_cw(),
     _scrambling_csa2(),
@@ -138,11 +136,11 @@ ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
 bool ts::DescramblerPlugin::start()
 {
     _atis_idsa = present(u"atis-idsa");
-    _cw_mode = present(u"no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
+    _scrambling_csa2.setEntropyMode(present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
     getPIDSet(_pids, u"pid", true);
 
     // Expected control word size.
-    const size_t cw_size = _atis_idsa ? IDSA::KEY_SIZE : CW_BYTES;
+    const size_t cw_size = _atis_idsa ? IDSA::KEY_SIZE : DVBCSA2::KEY_SIZE;
 
     // Get control words as list of strings
     UStringList lines;
@@ -222,7 +220,7 @@ ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket(TSPacket& pkt, 
         // Set descrambling key.
         tsp->verbose(u"using control word: " + UString::Dump(*_next_cw, UString::SINGLE_LINE));
         if (!_atis_idsa) {
-            _scrambling_csa2.init(_next_cw->data(), _cw_mode);
+            _scrambling_csa2.setKey(_next_cw->data(), _next_cw->size());
         }
         else if (!_scrambling_atis.setKey(_next_cw->data(), _next_cw->size())) {
             tsp->error(u"error setting ATIS-IDSA key");
@@ -242,7 +240,7 @@ ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket(TSPacket& pkt, 
     uint8_t buffer[PKT_SIZE];
 
     if (!_atis_idsa) {
-        _scrambling_csa2.decrypt(payload, payload_size);
+        _scrambling_csa2.decryptInPlace(payload, payload_size);
     }
     else if (_scrambling_atis.decrypt(payload, payload_size, buffer, sizeof(buffer))) {
         // Need of overwrite packet payload with decrypted content.

@@ -30,8 +30,13 @@
 #include "tsIDSA.h"
 TSDUCK_SOURCE;
 
+
+//----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
 ts::IDSA::IDSA() :
-    SuperClass()
+    DVS042<AES>()
 {
     // The IV are defined by the standard and not modifiable.
     static const uint8_t iv_zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

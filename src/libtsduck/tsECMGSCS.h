@@ -37,6 +37,7 @@
 #include "tstlvStreamMessage.h"
 #include "tsSingletonManager.h"
 #include "tsMPEG.h"
+#include "tsDVBCSA2.h"
 
 namespace ts {
     //!
@@ -517,7 +518,7 @@ namespace ts {
             //! @param [in] cw_addr Control word address.
             //! @param [in] cw_size Control word size in bytes.
             //!
-            CPCWCombination(uint16_t cpn = 0, const void* cw_addr = 0, size_t cw_size = CW_BYTES) :
+            CPCWCombination(uint16_t cpn = 0, const void* cw_addr = 0, size_t cw_size = DVBCSA2::KEY_SIZE) :
                 CP(cpn),
                 CW(cw_addr, cw_addr != 0 ? cw_size : 0)
             {

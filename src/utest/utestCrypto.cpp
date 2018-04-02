@@ -45,6 +45,7 @@
 #include "tsCTS3.h"
 #include "tsCTS4.h"
 #include "tsSCTE52.h"
+#include "tsDVBCSA2.h"
 #include "tsIDSA.h"
 #include "tsSystemRandomGenerator.h"
 #include "utestCppUnitTest.h"
@@ -56,6 +57,7 @@ TSDUCK_SOURCE;
 #include "crypto/tv_des_chain.h"
 #include "crypto/tv_tdes.h"
 #include "crypto/tv_tdes_cbc.h"
+#include "crypto/tv_dvb_csa2.h"
 #include "crypto/tv_sha1.h"
 #include "crypto/tv_sha256.h"
 #include "crypto/tv_sha512.h"
@@ -83,6 +85,8 @@ public:
     void testDES();
     void testTDES();
     void testTDES_CBC();
+    void testDVBCSA2();
+    void testIDSA();
     void testSCTE52_2003();
     void testSCTE52_2008();
     void testSHA1();
@@ -102,6 +106,8 @@ public:
     CPPUNIT_TEST(testDES);
     CPPUNIT_TEST(testTDES);
     CPPUNIT_TEST(testTDES_CBC);
+    CPPUNIT_TEST(testDVBCSA2);
+    CPPUNIT_TEST(testIDSA);
     CPPUNIT_TEST(testSCTE52_2003);
     CPPUNIT_TEST(testSCTE52_2008);
     CPPUNIT_TEST(testSHA1);
@@ -201,6 +207,32 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
             << "  Expected plain: " << ts::UString::Dump(plain, plain_size, ts::UString::SINGLE_LINE) << std::endl
             << "  Returned plain: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
         CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": decryption failed");
+    }
+
+    ::memcpy(&tmp[0], plain, plain_size);
+    retsize = tmp.size();
+    CPPUNIT_ASSERT(algo.encryptInPlace(&tmp[0], plain_size, &retsize));
+    CPPUNIT_ASSERT_EQUAL(cipher_size, retsize);
+
+    if (::memcmp(cipher, &tmp[0], cipher_size) != 0) {
+        utest::Out()
+            << "CryptoTest: " << name << ": encryptInPlace failed" << std::endl
+            << "  Expected cipher: " << ts::UString::Dump(cipher, cipher_size, ts::UString::SINGLE_LINE) << std::endl
+            << "  Returned cipher: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
+        CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": encryptInPlace failed");
+    }
+
+    ::memcpy(&tmp[0], cipher, cipher_size);
+    retsize = tmp.size();
+    CPPUNIT_ASSERT(algo.decryptInPlace(&tmp[0], cipher_size, &retsize));
+    CPPUNIT_ASSERT_EQUAL(plain_size, retsize);
+
+    if (::memcmp(plain, &tmp[0], plain_size) != 0) {
+        utest::Out()
+            << "CryptoTest: " << name << ": decryptInPlace failed" << std::endl
+            << "  Expected plain: " << ts::UString::Dump(plain, plain_size, ts::UString::SINGLE_LINE) << std::endl
+            << "  Returned plain: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
+        CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": decryptInPlace failed");
     }
 }
 
@@ -428,9 +460,24 @@ void CryptoTest::testTDES_CBC()
     const size_t tv_count = sizeof(tv_tdes_cbc) / sizeof(TV_TDES_CBC);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_TDES_CBC* tv = tv_tdes_cbc + tvi;
-        CPPUNIT_ASSERT(cbc_tdes.setIV(tv->iv, sizeof(tv->iv)));
-        testCipher(cbc_tdes, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
+        testChaining(cbc_tdes, tvi, tv_count, tv->key, sizeof(tv->key), tv->iv, sizeof(tv->iv), tv->plain, tv->size, tv->cipher, tv->size);
     }
+}
+
+void CryptoTest::testDVBCSA2()
+{
+    ts::DVBCSA2 csa;
+    const size_t tv_count = sizeof(tv_dvb_csa2) / sizeof(tv_dvb_csa2[0]);
+    for (size_t tvi = 0; tvi < tv_count; ++tvi) {
+        const TV_DVB_CSA2* tv = tv_dvb_csa2 + tvi;
+        testCipher(csa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
+    }
+}
+
+void CryptoTest::testIDSA()
+{
+    ts::IDSA idsa;
+    // to be supplied...
 }
 
 void CryptoTest::testSCTE52_2003()
@@ -439,8 +486,7 @@ void CryptoTest::testSCTE52_2003()
     const size_t tv_count = sizeof(tv_scte52_2003) / sizeof(tv_scte52_2003[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SCTE52_2003* tv = tv_scte52_2003 + tvi;
-        CPPUNIT_ASSERT(scte.setIV(tv->iv, sizeof(tv->iv)));
-        testCipher(scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testChaining(scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->iv, sizeof(tv->iv), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
 }
 

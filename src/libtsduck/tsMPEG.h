@@ -225,16 +225,6 @@ namespace ts {
     const uint8_t SVERSION_MAX = 1 << SVERSION_BITS;
 
     //!
-    //! Size in bits of a DVB Common Scrambling (DVB-CS) Control Word (CW).
-    //!
-    const size_t CW_BITS = 64;
-
-    //!
-    //! Size in bytes of a DVB Common Scrambling (DVB-CS) Control Word (CW).
-    //!
-    const size_t CW_BYTES = CW_BITS / 8;
-
-    //!
     //! Scrambling_control values (used in TS and PES packets headers)
     //!
     enum : uint8_t {

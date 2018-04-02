@@ -26,39 +26,31 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  ATIS-0800006 AES-based TS packet encryption (ATIS-IDSA).
-//!
+
+#include "tsBlockCipher.h"
+#include "tsByteBlock.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Encrypt one block of data in place.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsDVS042.h"
-#include "tsAES.h"
+bool ts::BlockCipher::encryptInPlace(void* data, size_t data_length, size_t* max_actual_length)
+{
+    const ByteBlock plain(data, data_length);
+    const size_t cipher_max_size = max_actual_length != 0 ? *max_actual_length : data_length;
+    return encrypt(plain.data(), plain.size(), data, cipher_max_size, max_actual_length);
+}    
 
-namespace ts {
-    //!
-    //! ATIS-0800006 AES-based TS packet encryption (ATIS-IDSA).
-    //!
-    class TSDUCKDLL IDSA : public DVS042<AES>
-    {
-    public:
-        //!
-        //! ATIS-IDSA control words size in bytes (AES-128 key size).
-        //!
-        static const size_t KEY_SIZE = 16;
 
-        //!
-        //! Constructor.
-        //!
-        IDSA();
+//----------------------------------------------------------------------------
+// Decrypt one block of data in place.
+//----------------------------------------------------------------------------
 
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override {return u"ATIS-IDSA";}
-
-    private:
-        // The IV are defined by the standard and not modifiable.
-        virtual bool setIV(const void* iv_, size_t iv_length) override { return DVS042<AES>::setIV(iv_, iv_length); }
-        virtual bool setShortIV(const void* iv_, size_t iv_length) override { return DVS042<AES>::setShortIV(iv_, iv_length); }
-    };
+bool ts::BlockCipher::decryptInPlace(void* data, size_t data_length, size_t* max_actual_length)
+{
+    const ByteBlock cipher(data, data_length);
+    const size_t plain_max_size = max_actual_length != 0 ? *max_actual_length : data_length;
+    return decrypt(cipher.data(), cipher.size(), data, plain_max_size, max_actual_length);
 }

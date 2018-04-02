@@ -95,6 +95,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
     ../../../src/libtsduck/tsDVBCharsetUTF16.h \
     ../../../src/libtsduck/tsDVBCharsetUTF8.h \
+    ../../../src/libtsduck/tsDVBCSA2.h \
     ../../../src/libtsduck/tsDVS042.h \
     ../../../src/libtsduck/tsDVS042Template.h \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.h \
@@ -211,7 +212,6 @@ HEADERS += \
     ../../../src/libtsduck/tsSafePtr.h \
     ../../../src/libtsduck/tsSafePtrTemplate.h \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
-    ../../../src/libtsduck/tsScrambling.h \
     ../../../src/libtsduck/tsScramblingDescriptor.h \
     ../../../src/libtsduck/tsSCTE52.h \
     ../../../src/libtsduck/tsSDT.h \
@@ -392,6 +392,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBCD.cpp \
     ../../../src/libtsduck/tsBetterSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsBinaryTable.cpp \
+    ../../../src/libtsduck/tsBlockCipher.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
@@ -427,6 +428,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF16.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF8.cpp \
+    ../../../src/libtsduck/tsDVBCSA2.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.cpp \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \
@@ -513,7 +515,6 @@ SOURCES += \
     ../../../src/libtsduck/tsRST.cpp \
     ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp \
-    ../../../src/libtsduck/tsScrambling.cpp \
     ../../../src/libtsduck/tsScramblingDescriptor.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSection.cpp \

@@ -35,6 +35,12 @@
 #pragma once
 #include "tsMemoryUtils.h"
 
+#if defined(TS_MSC)
+    #pragma warning(push)
+    // warning C4505: 'ts::DVS042<ts::AES>::encrypt': unreferenced local function has been removed
+    #pragma warning(disable:4505)
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -42,7 +48,7 @@
 
 template<class CIPHER>
 ts::DVS042<CIPHER>::DVS042() :
-    SuperClass(1, 1, 1),
+    CipherChainingTemplate<CIPHER>(1, 1, 1),
     shortIV(this->block_size)
 {
 }
@@ -55,7 +61,7 @@ ts::DVS042<CIPHER>::DVS042() :
 template<class CIPHER>
 bool ts::DVS042<CIPHER>::setIV(const void* iv_data, size_t iv_length)
 {
-    const bool ok1 = SuperClass::setIV(iv_data, iv_length);
+    const bool ok1 = CipherChainingTemplate<CIPHER>::setIV(iv_data, iv_length);
     const bool ok2 = setShortIV(iv_data, iv_length);
     return ok1 && ok2;
 }
@@ -200,3 +206,7 @@ bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
     }
     return true;
 }
+
+#if defined(TS_MSC)
+    #pragma warning (pop)
+#endif

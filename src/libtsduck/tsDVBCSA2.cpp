@@ -9,7 +9,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsScrambling.h"
+#include "tsDVBCSA2.h"
 TSDUCK_SOURCE;
 
 // Operations on 64-bit areas.
@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 // Not needed with Scrambling class, preferably use REDUCE_ENTROPY mode.
 //----------------------------------------------------------------------------
 
-void ts::Scrambling::reduceCW(uint8_t *cw)
+void ts::DVBCSA2::ReduceCW(uint8_t *cw)
 {
     cw[3] = ((uint16_t)cw[0] + (uint16_t)cw[1] + (uint16_t)cw[2]) % 256;
     cw[7] = ((uint16_t)cw[4] + (uint16_t)cw[5] + (uint16_t)cw[6]) % 256;
@@ -49,7 +49,7 @@ void ts::Scrambling::reduceCW(uint8_t *cw)
 // Return true if reduced, false if not.
 //----------------------------------------------------------------------------
 
-bool ts::Scrambling::isReducedCW(const uint8_t *cw)
+bool ts::DVBCSA2::IsReducedCW(const uint8_t *cw)
 {
     return cw[3] == ((uint16_t)cw[0] + (uint16_t)cw[1] + (uint16_t)cw[2]) % 256 &&
            cw[7] == ((uint16_t)cw[4] + (uint16_t)cw[5] + (uint16_t)cw[6]) % 256;
@@ -60,8 +60,9 @@ bool ts::Scrambling::isReducedCW(const uint8_t *cw)
 // Default Constructor.
 //----------------------------------------------------------------------------
 
-ts::Scrambling::Scrambling() :
+ts::DVBCSA2::DVBCSA2(EntropyMode mode) :
     _init(false),
+    _mode(mode),
     _block(),
     _stream()
 {
@@ -140,7 +141,7 @@ namespace {
 }
 
 
-void ts::Scrambling::StreamCipher::init (const uint8_t *key)
+void ts::DVBCSA2::StreamCipher::init (const uint8_t *key)
 {
     // load first 32 bits of key into A[1]..A[8]
     // load last  32 bits of key into B[1]..B[8]
@@ -180,7 +181,7 @@ void ts::Scrambling::StreamCipher::init (const uint8_t *key)
 }
 
 
-void ts::Scrambling::StreamCipher::cipher (const uint8_t* sb, uint8_t *cb)
+void ts::DVBCSA2::StreamCipher::cipher (const uint8_t* sb, uint8_t *cb)
 {
     const bool init = sb != 0;
     int i,j;
@@ -432,7 +433,7 @@ namespace {
 }
 
 
-void ts::Scrambling::BlockCipher::init (const uint8_t *key)
+void ts::DVBCSA2::BlockCipher::init(const uint8_t *key)
 {
     int i,j,k;
     int bit[64];
@@ -478,7 +479,7 @@ void ts::Scrambling::BlockCipher::init (const uint8_t *key)
 }
 
 
-void ts::Scrambling::BlockCipher::decipher (const uint8_t *ib, uint8_t *bd)
+void ts::DVBCSA2::BlockCipher::decipher(const uint8_t *ib, uint8_t *bd)
 {
     int i;
     int sbox_in;
@@ -523,7 +524,7 @@ void ts::Scrambling::BlockCipher::decipher (const uint8_t *ib, uint8_t *bd)
 }
 
 
-void ts::Scrambling::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
+void ts::DVBCSA2::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
 {
     int i;
     int sbox_in;
@@ -572,38 +573,28 @@ void ts::Scrambling::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
 // Set the control word for subsequent encrypt/decrypt operations
 //----------------------------------------------------------------------------
 
-void ts::Scrambling::init (const uint8_t *cw, EntropyMode mode)
+bool ts::DVBCSA2::setKey(const void* key, size_t key_length, size_t rounds)
 {
+    // Only one possible key size.
+    if (key == 0 || key_length != KEY_SIZE) {
+        return false;
+    }
+
     // Preprocess control word
-    memcpy_8 (_key, cw);
-    if (mode == REDUCE_ENTROPY) {
-        reduceCW (_key);
+    memcpy_8(_key, key);
+    if (_mode == REDUCE_ENTROPY) {
+        ReduceCW(_key);
     }
 
     // Block cipher key schedule
-    _block.init (_key);
+    _block.init(_key);
 
     // Stream cipher initialization
-    _stream.init (_key);
+    _stream.init(_key);
 
     // Mark as initialized
     _init = true;
-}
-
-
-//----------------------------------------------------------------------------
-// Get current control word value. Return true on success, false on error
-//----------------------------------------------------------------------------
-
-bool ts::Scrambling::getCW (uint8_t* cw, size_t cw_size)
-{
-    if (_init && cw_size == 8) {
-        memcpy_8 (cw, _key);
-        return true;
-    }
-    else {
-        return false;
-    }
+    return true;
 }
 
 
@@ -611,52 +602,63 @@ bool ts::Scrambling::getCW (uint8_t* cw, size_t cw_size)
 // Encrypt a data block (typically the payload of a TS or PES packet).
 //----------------------------------------------------------------------------
 
-void ts::Scrambling::encrypt (uint8_t* data, size_t size)
+bool ts::DVBCSA2::encryptInPlace(void* addr, size_t size, size_t* max_actual_length)
 {
-    StreamCipher stream_ctx;           // stream cipher context
-    uint8_t iblock[8];                   // input of block cipher
-    uint8_t ib[MAX_NBLOCKS+1][8];        // intermediate blocks
-    uint8_t ostream[8];                  // output of stream cipher
+    uint8_t* data = reinterpret_cast<uint8_t*>(addr);
     const size_t nblocks = size / 8;   // number of blocks
     const size_t rsize = size % 8;     // residue size
 
-    assert (_init);
-    assert (nblocks <= MAX_NBLOCKS);
+    // Filter invalid parameters.
+    if (addr == 0 || nblocks > MAX_NBLOCKS || !_init) {
+        return false;
+    }
+
+    // Output size is the same as input size.
+    if (max_actual_length != 0) {
+        *max_actual_length = size;
+    }
 
     // Packets smaller than 8 bytes are left unscrambled
     if (size < 8) {
-        return;
+        return true;
     }
+
+    StreamCipher stream_ctx;       // stream cipher context
+    uint8_t iblock[8];             // input of block cipher
+    uint8_t ib[MAX_NBLOCKS+1][8];  // intermediate blocks
+    uint8_t ostream[8];            // output of stream cipher
 
     // Perform block cipher in reverse CBC mode.
     // After last block is initialization vector (zero in DVB-CSA)
-    clear_8 (ib[nblocks]);
+    clear_8(ib[nblocks]);
     for (int i = int (nblocks) - 1; i >= 0; i--) {
-        xor_8 (iblock, data + 8*i, ib[i+1]);
-        _block.encipher (iblock, ib[i]);
+        xor_8(iblock, data + 8*i, ib[i+1]);
+        _block.encipher(iblock, ib[i]);
     }
 
     // The first block is scrambled using the block cipher only.
-    memcpy_8 (data, ib[0]);
+    memcpy_8(data, ib[0]);
 
     // Its scrambled value is used to initialize the stream cipher.
     stream_ctx = _stream;
-    stream_ctx.cipher (ib[0], ostream);
+    stream_ctx.cipher(ib[0], ostream);
 
     // Now perform stream cipher in the reverse direction.
     // Skip first block, as indicated above.
     for (size_t i = 1; i < nblocks; i++) {
         stream_ctx.cipher (0, ostream);
-        xor_8 (data + 8*i, ib[i], ostream);
+        xor_8(data + 8*i, ib[i], ostream);
     }
 
     // Cipher residue, if any
     if (rsize > 0) {
         stream_ctx.cipher (0, ostream);
         for (size_t i = 0; i < rsize; i++) {
-            data [8*nblocks + i] ^= ostream[i];
+            data[8*nblocks + i] ^= ostream[i];
         }
     }
+
+    return true;
 }
 
 
@@ -664,40 +666,49 @@ void ts::Scrambling::encrypt (uint8_t* data, size_t size)
 // Decrypt a data block (typically the payload of a TS or PES packet).
 //----------------------------------------------------------------------------
 
-void ts::Scrambling::decrypt (uint8_t* data, size_t size)
+bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_length)
 {
-    StreamCipher stream_ctx;          // stream cipher context
-    uint8_t ostream[8];                 // output of stream cipher
-    uint8_t ib[8];                      // intermediate block
-    uint8_t oblock[8];                  // output of block cipher
+    uint8_t* data = reinterpret_cast<uint8_t*>(addr);
     const size_t nblocks = size / 8;  // number of blocks
     const size_t rsize = size % 8;    // residue size
 
-    assert (_init);
-    assert (nblocks <= MAX_NBLOCKS);
+    // Filter invalid parameters.
+    if (addr == 0 || nblocks > MAX_NBLOCKS || !_init) {
+        return false;
+    }
+
+    // Output size is the same as input size.
+    if (max_actual_length != 0) {
+        *max_actual_length = size;
+    }
 
     // Packets smaller than 8 bytes are left unscrambled
     if (size < 8) {
-        return;
+        return true;
     }
+
+    StreamCipher stream_ctx;          // stream cipher context
+    uint8_t ostream[8];               // output of stream cipher
+    uint8_t ib[8];                    // intermediate block
+    uint8_t oblock[8];                // output of block cipher
 
     // Initialize stream cipher with first 8 bytes of scrambled packet.
     // The first block is scrambled using the block cipher only.
     // Its scrambled value is used to initialize the stream cipher.
     stream_ctx = _stream;
-    stream_ctx.cipher (data, ib);
+    stream_ctx.cipher(data, ib);
 
     // Decipher all blocks except last one.
     for (size_t i = 1; i < nblocks; i++) {
         _block.decipher (ib, oblock);
         stream_ctx.cipher (0, ostream);
-        xor_8 (ib, data + 8*i, ostream);
-        xor_8 (data + 8*(i-1), ib, oblock);
+        xor_8(ib, data + 8*i, ostream);
+        xor_8(data + 8*(i-1), ib, oblock);
     }
 
     // Last block - sb[nblocks+1] = IV = 0
     // Xor with zero is a null operation -> decipher directly into plain.
-    _block.decipher (ib, data + 8*(nblocks-1));
+    _block.decipher(ib, data + 8*(nblocks-1));
 
     // Decipher residue, if any
     if (rsize > 0) {
@@ -705,5 +716,34 @@ void ts::Scrambling::decrypt (uint8_t* data, size_t size)
         for (size_t i = 0; i < rsize; i++) {
             data [8*nblocks + i] ^= ostream[i];
         }
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Wrappers for encrypt and decrypt.
+//----------------------------------------------------------------------------
+
+bool ts::DVBCSA2::encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+{
+    if (plain == 0 || cipher == 0 || cipher_maxsize < plain_length) {
+        return false;
+    }
+    else {
+        ::memcpy(cipher, plain, plain_length);
+        return encryptInPlace(cipher, plain_length, cipher_length);
+    }
+}
+
+bool ts::DVBCSA2::decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+{
+    if (cipher == 0 || plain == 0 || plain_maxsize < cipher_length) {
+        return false;
+    }
+    else {
+        ::memcpy(plain, cipher, cipher_length);
+        return decryptInPlace(plain, cipher_length, plain_length);
     }
 }

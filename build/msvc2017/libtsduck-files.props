@@ -97,6 +97,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF16.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF8.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCSA2.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042Template.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.h" />
@@ -213,7 +214,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsScrambling.h" />
     <ClInclude Include="..\..\src\libtsduck\tsScramblingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSCTE52.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSDT.h" />
@@ -404,6 +404,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsBCD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBetterSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBinaryTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsBlockCipher.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBouquetNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsByteBlock.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.cpp" />
@@ -439,6 +440,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF16.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF8.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCSA2.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />
@@ -525,7 +527,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsScrambling.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScramblingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSection.cpp" />

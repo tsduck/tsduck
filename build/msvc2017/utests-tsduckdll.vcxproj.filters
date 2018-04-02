@@ -195,6 +195,9 @@
     <ClInclude Include="..\..\src\utest\utestCppUnitThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\utest\crypto\tv_dvb_csa2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\tsduck.rc">
