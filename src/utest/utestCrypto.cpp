@@ -44,7 +44,8 @@
 #include "tsCTS2.h"
 #include "tsCTS3.h"
 #include "tsCTS4.h"
-#include "tsDVS042.h"
+#include "tsSCTE52.h"
+#include "tsIDSA.h"
 #include "tsSystemRandomGenerator.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -82,7 +83,8 @@ public:
     void testDES();
     void testTDES();
     void testTDES_CBC();
-    void testDES_DVS042();
+    void testSCTE52_2003();
+    void testSCTE52_2008();
     void testSHA1();
     void testSHA256();
     void testSHA512();
@@ -100,7 +102,8 @@ public:
     CPPUNIT_TEST(testDES);
     CPPUNIT_TEST(testTDES);
     CPPUNIT_TEST(testTDES_CBC);
-    CPPUNIT_TEST(testDES_DVS042);
+    CPPUNIT_TEST(testSCTE52_2003);
+    CPPUNIT_TEST(testSCTE52_2008);
     CPPUNIT_TEST(testSHA1);
     CPPUNIT_TEST(testSHA256);
     CPPUNIT_TEST(testSHA512);
@@ -430,14 +433,26 @@ void CryptoTest::testTDES_CBC()
     }
 }
 
-void CryptoTest::testDES_DVS042()
+void CryptoTest::testSCTE52_2003()
 {
-    ts::DVS042<ts::DES> dvs042_des;
-    const size_t tv_count = sizeof(tv_dvs042_des) / sizeof(TV_DES_CHAIN);
+    ts::SCTE52_2003 scte;
+    const size_t tv_count = sizeof(tv_scte52_2003) / sizeof(tv_scte52_2003[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
-        const TV_DES_CHAIN* tv = tv_dvs042_des + tvi;
-        CPPUNIT_ASSERT(dvs042_des.setIV(tv->iv, sizeof(tv->iv)));
-        testCipher(dvs042_des, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        const TV_SCTE52_2003* tv = tv_scte52_2003 + tvi;
+        CPPUNIT_ASSERT(scte.setIV(tv->iv, sizeof(tv->iv)));
+        testCipher(scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+    }
+}
+
+void CryptoTest::testSCTE52_2008()
+{
+    ts::SCTE52_2008 scte;
+    const size_t tv_count = sizeof(tv_scte52_2008) / sizeof(tv_scte52_2008[0]);
+    for (size_t tvi = 0; tvi < tv_count; ++tvi) {
+        const TV_SCTE52_2008* tv = tv_scte52_2008 + tvi;
+        CPPUNIT_ASSERT(scte.setIV(tv->iv, sizeof(tv->iv)));
+        CPPUNIT_ASSERT(scte.setShortIV(tv->short_iv, sizeof(tv->short_iv)));
+        testCipher(scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
 }
 

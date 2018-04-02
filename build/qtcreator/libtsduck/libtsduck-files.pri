@@ -124,6 +124,7 @@ HEADERS += \
     ../../../src/libtsduck/tsHash.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
+    ../../../src/libtsduck/tsIDSA.h \
     ../../../src/libtsduck/tsInputRedirector.h \
     ../../../src/libtsduck/tsINT.h \
     ../../../src/libtsduck/tsIntegerUtils.h \
@@ -212,6 +213,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsScrambling.h \
     ../../../src/libtsduck/tsScramblingDescriptor.h \
+    ../../../src/libtsduck/tsSCTE52.h \
     ../../../src/libtsduck/tsSDT.h \
     ../../../src/libtsduck/tsSection.h \
     ../../../src/libtsduck/tsSectionDemux.h \
@@ -446,6 +448,7 @@ SOURCES += \
     ../../../src/libtsduck/tsGuardCondition.cpp \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
+    ../../../src/libtsduck/tsIDSA.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \
     ../../../src/libtsduck/tsINT.cpp \
     ../../../src/libtsduck/tsIntegerUtils.cpp \

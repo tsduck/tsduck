@@ -126,6 +126,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsHash.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsIDSA.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
     <ClInclude Include="..\..\src\libtsduck\tsINT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtils.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsScrambling.h" />
     <ClInclude Include="..\..\src\libtsduck\tsScramblingDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSCTE52.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSDT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionDemux.h" />
@@ -458,6 +460,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsGuardCondition.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsIDSA.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsINT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIntegerUtils.cpp" />
