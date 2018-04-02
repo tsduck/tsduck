@@ -263,10 +263,9 @@ bool ts::ECMGClient::disconnect()
 //----------------------------------------------------------------------------
 
 bool ts::ECMGClient::generateECM(uint16_t cp_number,
-                                 const void* current_cw,
-                                 const void* next_cw,
-                                 const void* ac,
-                                 size_t ac_size,
+                                 const ByteBlock& current_cw,
+                                 const ByteBlock& next_cw,
+                                 const ByteBlock& ac,
                                  uint16_t cp_duration,
                                  ecmgscs::ECMResponse& ecm_response)
 {
@@ -276,13 +275,17 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     msg.stream_id = _stream_status.stream_id;
     msg.CP_number = cp_number;
     msg.has_CW_encryption = false;
-    msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
-    msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
+    if (!current_cw.empty()) {
+        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
+    }
+    if (!next_cw.empty()) {
+        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
+    }
     msg.has_CP_duration = cp_duration != 0;
     msg.CP_duration = cp_duration;
-    msg.has_access_criteria = ac != 0;
-    if (ac != 0) {
-        msg.access_criteria.copy(ac, ac_size);
+    msg.has_access_criteria = !ac.empty();
+    if (msg.has_access_criteria) {
+        msg.access_criteria = ac;
     }
 
     // Send the CW_provision message
@@ -320,10 +323,9 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
 //----------------------------------------------------------------------------
 
 bool ts::ECMGClient::submitECM(uint16_t cp_number,
-                               const void* current_cw,
-                               const void* next_cw,
-                               const void* ac,
-                               size_t ac_size,
+                               const ByteBlock& current_cw,
+                               const ByteBlock& next_cw,
+                               const ByteBlock& ac,
                                uint16_t cp_duration,
                                ECMGClientHandlerInterface* ecm_handler)
 {
@@ -333,13 +335,17 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
     msg.stream_id = _stream_status.stream_id;
     msg.CP_number = cp_number;
     msg.has_CW_encryption = false;
-    msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
-    msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
+    if (!current_cw.empty()) {
+        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
+    }
+    if (!next_cw.empty()) {
+        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
+    }
     msg.has_CP_duration = cp_duration != 0;
     msg.CP_duration = cp_duration;
-    msg.has_access_criteria = ac != 0;
-    if (ac != 0) {
-        msg.access_criteria.copy(ac, ac_size);
+    msg.has_access_criteria = !ac.empty();
+    if (msg.has_access_criteria) {
+        msg.access_criteria = ac;
     }
 
     // Register an asynchronous request

@@ -71,18 +71,10 @@ namespace ts {
         DVS042();
 
         //!
-        //! Set a new initialization vector.
-        //! This method sets the IV for @e long blocks (longer than the block size)
+        //! Set a new initialization vector for short blocks.
+        //! The method setIV() sets the IV for @e long blocks (longer than the block size)
         //! and @e short blocks (shorter than the block size). The latter can then
         //! be overwritten using setShortIV().
-        //! @param [in] iv Address of IV.
-        //! @param [in] iv_length IV length in bytes.
-        //! @return True on success, false on error.
-        //!
-        virtual bool setIV(const void* iv, size_t iv_length) override;
-
-        //!
-        //! Set a new initialization vector for short blocks.
         //! @param [in] iv Address of IV.
         //! @param [in] iv_length IV length in bytes.
         //! @return True on success, false on error.
@@ -90,8 +82,9 @@ namespace ts {
         virtual bool setShortIV(const void* iv, size_t iv_length);
 
         // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const override {return this->block_size;}
+        virtual size_t minMessageSize() const override {return 0;}
         virtual bool residueAllowed() const override {return true;}
+        virtual bool setIV(const void* iv, size_t iv_length) override;
 
         // Implementation of BlockCipher interface.
         virtual UString name() const override {return this->algo == 0 ? UString() : this->algo->name() + u"-DVS042";}

@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsScrambling.h"
+#include "tsIDSA.h"
 #include "tsByteBlock.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
@@ -43,6 +44,7 @@
 #include "tsECMGClient.h"
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsCADescriptor.h"
+#include "tsScramblingDescriptor.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
@@ -131,7 +133,7 @@ namespace ts {
             void getNextECMPacket(TSPacket&);
 
             // Initialize the scrambler with the current control word.
-            void initScramblerKey() const;
+            bool initScramblerKey() const { return _scrambler->initScramblerKey(_cw_current); }
 
             // Get scrambling control value for scrambled TS packets
             uint8_t getScramblingControlValue() const { return uint8_t((_cp_number & 0x01) ? SC_ODD_KEY : SC_EVEN_KEY); }
@@ -142,8 +144,8 @@ namespace ts {
             volatile bool    _ecm_ok;         // _ecm field is valid
             TSPacketVector   _ecm;            // Packetized ECM
             size_t           _ecm_pkt_index;  // Next ECM packet to insert in TS
-            uint8_t          _cw_current[CW_BYTES];
-            uint8_t          _cw_next[CW_BYTES];
+            ByteBlock        _cw_current;
+            ByteBlock        _cw_next;
 
             // Generate the ECM for a crypto-period.
             // With --synchronous, the ECM is directly generated. Otherwise,
@@ -167,6 +169,8 @@ namespace ts {
         bool              _scramble_subtitles; // Scramble all subtitles components
         bool              _synchronous_ecmg;   // Synchronous ECM generation
         bool              _ignore_scrambled;   // Ignore packets which are already scrambled
+        bool              _atis_idsa;          // Use ATIS-IDSA instead of DVB-CSA2.
+        bool              _update_pmt;         // Update PMT.
         SocketAddress     _ecmg_addr;          // ECMG socket address
         uint32_t          _super_cas_id;       // CA system & subsystem id
         ByteBlock         _access_criteria;    // AC constant value
@@ -199,7 +203,8 @@ namespace ts {
         CryptoPeriod      _cp[2];              // Previous/current or current/next crypto-periods
         size_t            _current_cw;         // Index to current CW (current crypto period)
         size_t            _current_ecm;        // Index to current ECM (ECM being broadcast)
-        Scrambling        _current_key;        // Preprocessed current control word
+        Scrambling        _scrambling_csa2;    // Scrambler with DVB-CSA2.
+        IDSA              _scrambling_atis;    // Scrambler with ATIS-IDSA.
         SectionDemux      _demux;              // Section demux
         CyclingPacketizer _pzer_pmt;           // Packetizer for modified PMT
 
@@ -209,15 +214,18 @@ namespace ts {
         CryptoPeriod& currentECM() {return _cp[_current_ecm];}
         CryptoPeriod& nextECM()    {return _cp[(_current_ecm + 1) & 0x01];}
 
+        // Initialize the scrambler with the current control word.
+        bool initScramblerKey(const ByteBlock& cw);
+
         // Perform CW and ECM transition
-        void changeCW();
+        bool changeCW();
         void changeECM();
 
         // Check if we are in degraded mode or if we enter degraded mode
         bool inDegradedMode();
 
         // Try to exit from degraded mode
-        void tryExitDegradedMode();
+        bool tryExitDegradedMode();
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -252,6 +260,8 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _scramble_subtitles(false),
     _synchronous_ecmg(false),
     _ignore_scrambled(false),
+    _atis_idsa(false),
+    _update_pmt(false),
     _ecmg_addr(),
     _super_cas_id(0),
     _access_criteria(),
@@ -282,12 +292,14 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _cp(),
     _current_cw(0),
     _current_ecm(0),
-    _current_key(),
+    _scrambling_csa2(),
+    _scrambling_atis(),
     _demux(this),
     _pzer_pmt()
 {
     option(u"",                      0,  STRING, 1, 1);
     option(u"access-criteria",      'a', STRING);
+    option(u"atis-idsa",             0);
     option(u"bitrate-ecm",          'b', POSITIVE);
     option(u"channel-id",            0,  UINT16);
     option(u"component-level",       0);
@@ -322,6 +334,11 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
             u"      Specifies the access criteria for the service as sent to the ECMG.\n"
             u"      The value must be a suite of hexadecimal digits.\n"
             u"\n"
+            u"  --atis-idsa\n"
+            u"      Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the default).\n"
+            u"      The control words are 16-byte long instead of 8-byte. A scrambling\n"
+            u"      descriptor is automatically added to the PMT to indicate ATIS-IDSA.\n"
+            u"\n"
             u"  -b value\n"
             u"  --bitrate-ecm value\n"
             u"      Specifies the bitrate for ECM PID's in bits / second. The default is\n"
@@ -340,9 +357,9 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
             u"\n"
             u"  -c value\n"
             u"  --control-word value\n"
-            u"      Specifies a fixed and constant control word for all TS packets.\n"
-            u"      The value must be a string of 16 hexadecimal digits. When using\n"
-            u"      this option, no ECMG is required.\n"
+            u"      Specifies a fixed and constant control word for all TS packets. The value\n"
+            u"      must be a string of 16 hexadecimal digits (32 digits with --atis-idsa).\n"
+            u"      When using this option, no ECMG is required.\n"
             u"\n"
             u"  -i value\n"
             u"  --ecm-id value\n"
@@ -373,6 +390,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
             u"  -n\n"
             u"  --no-entropy-reduction\n"
             u"      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
+            u"      Ignored with --atis-idsa.\n"
             u"\n"
             u"  --no-video\n"
             u"      Do not scramble video components in the selected service. By default,\n"
@@ -438,10 +456,12 @@ bool ts::ScramblerPlugin::start()
     _pkt_change_cw = 0;
     _pkt_change_ecm = 0;
     _partial_clear = 0;
+    _update_pmt = false;
 
     // Parameters
     _service.set (value(u""));
     _use_fixed_key = present(u"control-word");
+    _atis_idsa = present(u"atis-idsa");
     _synchronous_ecmg = present(u"synchronous");
     _cw_mode = present(u"no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
     _component_level = present(u"component-level");
@@ -477,14 +497,16 @@ bool ts::ScramblerPlugin::start()
 
         // Use a fixed control word
         ByteBlock cw;
-        if (!value(u"control-word").hexaDecode(cw) || cw.size() != CW_BYTES) {
-            tsp->error(u"invalid control word, specify 16 hexa digits");
+        const size_t expected = _atis_idsa ? IDSA::KEY_SIZE : CW_BYTES;
+        if (!value(u"control-word").hexaDecode(cw) || cw.size() != expected) {
+            tsp->error(u"invalid control word, specify %d hexa digits", {2 * expected});
             return false;
         }
 
-        // Initialize current scrambling key
-        _current_key.init(cw.data(), _cw_mode);
-        tsp->verbose(u"using fixed control word: " + UString::Dump(cw, UString::SINGLE_LINE));
+        // Initialize current scrambling key.
+        if (!initScramblerKey(cw)) {
+            return false;
+        }
     }
     else if (!present(u"ecmg")) {
         // No --cw, no --ecmg, how do we do?
@@ -620,7 +642,7 @@ void ts::ScramblerPlugin::processSDT(SDT& sdt)
     }
 
     // Remember service id
-    _service.setId (service_id);
+    _service.setId(service_id);
     tsp->verbose(u"service id is 0x%X", {service_id});
 
     // No longer need to filter the SDT
@@ -635,7 +657,7 @@ void ts::ScramblerPlugin::processSDT(SDT& sdt)
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::processPAT (PAT& pat)
+void ts::ScramblerPlugin::processPAT(PAT& pat)
 {
     // Register all PMT PID's as used.
     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -691,7 +713,7 @@ void ts::ScramblerPlugin::processPMT(PMT& pmt)
     // Allocate a PID value for ECM if necessary
     if (!_use_fixed_key && _ecm_pid == PID_NULL) {
         // Start at service PMT PID, then look for an unused one.
-        for (_ecm_pid = _service.getPMTPID() + 1; _ecm_pid < PID_NULL && _input_pids.test (_ecm_pid); _ecm_pid++) {}
+        for (_ecm_pid = _service.getPMTPID() + 1; _ecm_pid < PID_NULL && _input_pids.test(_ecm_pid); _ecm_pid++) {}
         if (_ecm_pid >= PID_NULL) {
             tsp->error(u"cannot find an unused PID for ECM, try --pid-ecm");
             _abort = true;
@@ -701,8 +723,16 @@ void ts::ScramblerPlugin::processPMT(PMT& pmt)
         }
     }
 
+    // With ATIS scrambling, add a scrambling_descriptor in the PMT.
+    if (_atis_idsa) {
+        _update_pmt = true;
+        pmt.descs.add(ScramblingDescriptor(SCRAMBLING_ATIS_IIF_IDSA));
+    }
+
     // With ECM generation, modify the PMT
     if (!_use_fixed_key) {
+
+        _update_pmt = true;
 
         // Create a CA_descriptor
         CADescriptor ca_desc ((_super_cas_id >> 16) & 0xFFFF, _ecm_pid);
@@ -721,8 +751,10 @@ void ts::ScramblerPlugin::processPMT(PMT& pmt)
             // Add one single CA_descriptor at program level
             pmt.descs.add(ca_desc);
         }
+    }
 
-        // Packetize the modified PMT
+    // Packetize the modified PMT
+    if (_update_pmt) {
         _pzer_pmt.removeSections(TID_PMT, pmt.service_id);
         _pzer_pmt.addTable(pmt);
     }
@@ -780,16 +812,16 @@ bool ts::ScramblerPlugin::inDegradedMode()
 // Try to exit from degraded mode
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::tryExitDegradedMode()
+bool ts::ScramblerPlugin::tryExitDegradedMode()
 {
     // If not in degraded mode, nothing to do
     if (!_degraded_mode) {
-        return;
+        return true;
     }
 
     // We are in degraded mode. If next ECM not yet ready, stay degraded
     if (!nextECM().ecmReady()) {
-        return;
+        return true;
     }
 
     // Next ECM is ready, at last. Exit degraded mode.
@@ -805,10 +837,14 @@ void ts::ScramblerPlugin::tryExitDegradedMode()
     }
     else {
         // Change CW now.
-        changeCW();
+        if (!changeCW()) {
+            return false;
+        }
         // Start broadcasting ECM after beginning of crypto-period
         _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _delay_start);
     }
+
+    return true;
 }
 
 
@@ -816,21 +852,24 @@ void ts::ScramblerPlugin::tryExitDegradedMode()
 // Perform crypto-period transition, for CW or ECM
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::changeCW()
+bool ts::ScramblerPlugin::changeCW()
 {
     // Allowed to change CW only if not in degraded mode
     if (!inDegradedMode()) {
         // Point to next crypto-period
         _current_cw = (_current_cw + 1) & 0x01;
         // Use new control word
-        currentCW().initScramblerKey();
+        if (!currentCW().initScramblerKey()) {
+            return false;
+        }
         // Determine new transition point
         _pkt_change_cw = _packet_count + PacketDistance (_ts_bitrate, _cp_duration);
         // Generate (or start generating) next ECM when using ECM(N) in cp(N)
         if (_current_ecm == _current_cw) {
-            nextCW().initNext (currentCW());
+            nextCW().initNext(currentCW());
         }
     }
+    return true;
 }
 
 void ts::ScramblerPlugin::changeECM()
@@ -850,10 +889,30 @@ void ts::ScramblerPlugin::changeECM()
 
 
 //----------------------------------------------------------------------------
+// Initialize the scrambler with a control word.
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::initScramblerKey(const ByteBlock& cw)
+{
+    tsp->debug(u"using control word: " + UString::Dump(cw, UString::SINGLE_LINE));
+
+    if (!_atis_idsa) {
+        _scrambling_csa2.init(cw.data(), _cw_mode);
+    }
+    else if (!_scrambling_atis.setKey(cw.data(), cw.size())) {
+        tsp->error(u"error setting ATIS-IDSA key");
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Count packets
     _packet_count++;
@@ -889,18 +948,18 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
         return TSP_NULL;
     }
 
+    // Packetize modified PMT when needed.
+    if (_update_pmt && pid == _pzer_pmt.getPID()) {
+        _pzer_pmt.getNextPacket(pkt);
+        return TSP_OK;
+    }
+
     // Perform crypto-period management
     if (!_use_fixed_key) {
 
-        // Packetize modified PMT when ECM generation is used
-        if (pid == _pzer_pmt.getPID()) {
-            _pzer_pmt.getNextPacket(pkt);
-            return TSP_OK;
-        }
-
         // Is it time to apply the next control word ?
-        if (_packet_count >= _pkt_change_cw) {
-            changeCW();
+        if (_packet_count >= _pkt_change_cw && !changeCW()) {
+            return TSP_END;
         }
 
         // Is it time to start broadcasting the next ECM ?
@@ -915,8 +974,11 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
             assert(_ecm_bitrate != 0);
             _pkt_insert_ecm += BitRate(_ts_bitrate / _ecm_bitrate);
 
-            // Exit degraded mode ?
-            tryExitDegradedMode();
+            // Try to exit from degraded mode, if we were in.
+            // Not that return false means unrecoverable error here.
+            if (!tryExitDegradedMode()) {
+                return TSP_END;
+            }
 
             // Replace current null packet with an ECM packet
             currentECM().getNextECMPacket (pkt);
@@ -955,8 +1017,22 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
         _partial_clear = _partial_scrambling - 1;
     }
 
-    // Scramble the packet payload.
-    _current_key.encrypt(pkt.getPayload(), pkt.getPayloadSize());
+    // Scramble the packet payload. DVB-CSA scrambles in-place, but not other algorithms.
+    uint8_t* const payload = pkt.getPayload();
+    size_t const payload_size = pkt.getPayloadSize();
+    uint8_t buffer[PKT_SIZE];
+
+    if (!_atis_idsa) {
+        _scrambling_csa2.encrypt(payload, payload_size);
+    }
+    else if (_scrambling_atis.encrypt(payload, payload_size, buffer, sizeof(buffer))) {
+        // Need of overwrite packet payload with encrypted content.
+        ::memcpy(payload, buffer, payload_size);
+    }
+    else {
+        tsp->error(u"error encrypting packet using ATIS-IDSA");
+        return TSP_END;
+    }
     _scrambled_count++;
 
     // Set scrambling_control_value in TS header.
@@ -996,8 +1072,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, ui
 {
     _scrambler = scrambler;
     _cp_number = cp_number;
-    BetterSystemRandomGenerator::Instance()->read(_cw_current, sizeof(_cw_current));
-    BetterSystemRandomGenerator::Instance()->read(_cw_next, sizeof(_cw_next));
+    BetterSystemRandomGenerator::Instance()->read(_cw_current.data(), _cw_current.size());
+    BetterSystemRandomGenerator::Instance()->read(_cw_next.data(), _cw_next.size());
     generateECM();
 }
 
@@ -1010,8 +1086,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 {
     _scrambler = previous._scrambler;
     _cp_number = previous._cp_number + 1;
-    ::memcpy(_cw_current, previous._cw_next, sizeof(_cw_current));
-    BetterSystemRandomGenerator::Instance()->read(_cw_next, sizeof(_cw_next));
+    _cw_current = _cw_next;
+    BetterSystemRandomGenerator::Instance()->read(_cw_next.data(), _cw_next.size());
     generateECM();
 }
 
@@ -1030,8 +1106,7 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
         if (!_scrambler->_ecmg.generateECM(_cp_number,
                                            _cw_current,
                                            _cw_next,
-                                           _scrambler->_access_criteria.data(),
-                                           _scrambler->_access_criteria.size(),
+                                           _scrambler->_access_criteria,
                                            uint16_t(_scrambler->_cp_duration / 100),
                                            response)) {
             // Error, message already reported
@@ -1046,8 +1121,7 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
         if (!_scrambler->_ecmg.submitECM(_cp_number,
                                          _cw_current,
                                          _cw_next,
-                                         _scrambler->_access_criteria.data(),
-                                         _scrambler->_access_criteria.size(),
+                                         _scrambler->_access_criteria,
                                          uint16_t(_scrambler->_cp_duration / 100),
                                          this)) {
             // Error, message already reported
@@ -1121,15 +1195,4 @@ void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket (TSPacket& pkt)
         pkt.setCC(_scrambler->_ecm_cc);
         _scrambler->_ecm_cc = (_scrambler->_ecm_cc + 1) & 0x0F;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Initialize the scrambler with the current control word.
-//----------------------------------------------------------------------------
-
-void ts::ScramblerPlugin::CryptoPeriod::initScramblerKey() const
-{
-    _scrambler->tsp->debug(u"using new control word: " + UString::Dump(_cw_current, sizeof(_cw_current), UString::SINGLE_LINE));
-    _scrambler->_current_key.init(_cw_current, _scrambler->_cw_mode);
 }
