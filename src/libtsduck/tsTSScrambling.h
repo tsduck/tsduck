@@ -129,5 +129,9 @@ namespace ts {
         CWList           _cw_list;  
         CWList::iterator _next_cw;
         int              _encrypt_parity;
+
+        // Inaccessible operations.
+        TSScrambling(const TSScrambling&) = delete;
+        TSScrambling& operator=(const TSScrambling&) = delete;
     };
 }
