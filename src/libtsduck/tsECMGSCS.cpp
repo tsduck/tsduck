@@ -104,7 +104,7 @@ ts::ecmgscs::Protocol::Protocol() :
     add (Tags::CW_provision,   Tags::ECM_stream_id,     2, 2,      1, 1);
     add (Tags::CW_provision,   Tags::CP_number,         2, 2,      1, 1);
     add (Tags::CW_provision,   Tags::CW_encryption,     0, 0xFFFF, 0, 1);
-    add (Tags::CW_provision,   Tags::CP_CW_combination, 2+CW_BYTES, 2+CW_BYTES, 1, 0xFFFF);
+    add (Tags::CW_provision,   Tags::CP_CW_combination, 2 + DVBCSA2::KEY_SIZE, 2 + DVBCSA2::KEY_SIZE, 1, 0xFFFF);
     add (Tags::CW_provision,   Tags::CP_duration,       2, 2,      0, 1);
     add (Tags::CW_provision,   Tags::access_criteria,   0, 0xFFFF, 0, 1);
 

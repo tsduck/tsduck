@@ -36,7 +36,7 @@
 #include "tsPlugin.h"
 #include "tsSafePtr.h"
 #include "tsService.h"
-#include "tsScrambling.h"
+#include "tsDVBCSA2.h"
 #include "tsSectionDemux.h"
 #include "tsCondition.h"
 #include "tsMutex.h"
@@ -148,7 +148,7 @@ namespace ts {
     protected:
         // Implementation of TableHandlerInterface.
         // If overridden by a subclass, superclass must be explicitly invoked.
-        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
     private:
         struct ScrambledStream;
@@ -158,7 +158,7 @@ namespace ts {
         typedef std::map <PID, ECMStreamPtr> ECMStreamMap;
 
         // Abstract descrambler private data
-        Scrambling::EntropyMode _cw_mode;
+        DVBCSA2::EntropyMode _cw_mode;
         PacketCounter      _packet_count;      // Packet counter in TS
         bool               _abort;             // Error, abort asap
         bool               _synchronous;       // Synchronous ECM deciphering
@@ -178,55 +178,55 @@ namespace ts {
         struct ScrambledStream
         {
             std::set<PID> ecm_pids;  // PIDs of ECM streams
-            uint8_t         last_scv;  // Last scrambling control value on this PID
+            uint8_t       last_scv;  // Last scrambling control value on this PID
 
             // Constructor
-            ScrambledStream() : ecm_pids(), last_scv (SC_CLEAR) {}
+            ScrambledStream() : ecm_pids(), last_scv(SC_CLEAR) {}
         };
 
         // Description of an ECM stream
         struct ECMStream
         {
-            TID         last_tid;              // Last table id (0x80 or 0x81)
-            Scrambling  key_even;              // DVB-CSA preprocessed CW (even)
-            Scrambling  key_odd;               // DVB-CSA preprocessed CW (odd)
-            DVS042<AES> dvs042;                // AES cipher in DVS 042 mode (not DVB-CSA)
+            TID         last_tid;                // Last table id (0x80 or 0x81)
+            DVBCSA2     key_even;                // DVB-CSA preprocessed CW (even)
+            DVBCSA2     key_odd;                 // DVB-CSA preprocessed CW (odd)
+            DVS042<AES> dvs042;                  // AES cipher in DVS 042 mode (not DVB-CSA)
             // -- start of write-protected, read-volative area --
-            volatile bool cw_valid;            // CW's are valid
-            volatile bool new_cw_even;         // New CW available (even)
-            volatile bool new_cw_odd;          // New CW available (odd)
+            volatile bool cw_valid;              // CW's are valid
+            volatile bool new_cw_even;           // New CW available (even)
+            volatile bool new_cw_odd;            // New CW available (odd)
             // -- start of protected area --
-            bool    new_ecm;                   // New ECM available
-            size_t  ecm_size;                  // Used size in ECM
-            uint8_t ecm[MAX_PSI_SECTION_SIZE]; // Last received ECM
-            uint8_t cw_even[CW_BYTES];         // Last valid CW (even)
-            uint8_t cw_odd[CW_BYTES];          // Last valid CW (odd)
+            bool    new_ecm;                     // New ECM available
+            size_t  ecm_size;                    // Used size in ECM
+            uint8_t ecm[MAX_PSI_SECTION_SIZE];   // Last received ECM
+            uint8_t cw_even[DVBCSA2::KEY_SIZE];  // Last valid CW (even)
+            uint8_t cw_odd[DVBCSA2::KEY_SIZE];   // Last valid CW (odd)
 
             // Constructor:
             ECMStream() :
-                last_tid (TID_NULL),
-                key_even (),
-                key_odd (),
-                dvs042 (),
-                cw_valid (false),
-                new_cw_even (false),
-                new_cw_odd (false),
-                new_ecm (false),
-                ecm_size (0)
+                last_tid(TID_NULL),
+                key_even(),
+                key_odd(),
+                dvs042(),
+                cw_valid(false),
+                new_cw_even(false),
+                new_cw_odd(false),
+                new_ecm(false),
+                ecm_size(0)
             {
-                TS_ZERO (ecm);
-                TS_ZERO (cw_even);
-                TS_ZERO (cw_odd);
+                TS_ZERO(ecm);
+                TS_ZERO(cw_even);
+                TS_ZERO(cw_odd);
             }
         };
 
         // Get the ECM stream for a PID, create it if non existent
-        ECMStreamPtr getOrCreateECMStream (PID);
+        ECMStreamPtr getOrCreateECMStream(PID);
 
         // Process one ECM (the one in ECMStream::ecm).
         // In asynchronous mode, this method must be invoked with the mutex held. The method
         // releases the mutex while deciphering the ECM and relocks it before exiting.
-        void processECM (ECMStream&);
+        void processECM(ECMStream&);
 
         // Analyze a list of descriptors, looking for ECM PID's
         void analyzeCADescriptors (const DescriptorList& dlist, std::set<PID>& ecm_pids);
@@ -235,9 +235,9 @@ namespace ts {
         virtual void main() override;
 
         // Process specific tables
-        void processPAT (const PAT&);
-        void processPMT (const PMT&);
-        void processSDT (const SDT&);
-        void processCMT (const Section&);
+        void processPAT(const PAT&);
+        void processPMT(const PMT&);
+        void processSDT(const SDT&);
+        void processCMT(const Section&);
     };
 }

@@ -51,11 +51,6 @@ namespace ts {
     {
     public:
         //!
-        //! Explicit reference to the superclass.
-        //!
-        typedef DVS042<DES> SuperClass;
-
-        //!
         //! Constructor.
         //!
         SCTE52_2003() : DVS042<DES>() {}
@@ -65,7 +60,7 @@ namespace ts {
 
     private:
         // The IV are identical, there is no specific IV for short blocks.
-        virtual bool setShortIV(const void* iv, size_t iv_length) override { return SuperClass::setShortIV(iv, iv_length); }
+        virtual bool setShortIV(const void* iv_, size_t iv_length) override { return DVS042<DES>::setShortIV(iv_, iv_length); }
     };
 
     //!
@@ -81,11 +76,6 @@ namespace ts {
     class TSDUCKDLL SCTE52_2008 : public DVS042<DES>
     {
     public:
-        //!
-        //! Explicit reference to the superclass.
-        //!
-        typedef DVS042<DES> SuperClass;
-
         //!
         //! Constructor.
         //!

@@ -137,6 +137,46 @@ namespace ts {
                              size_t* plain_length = 0) = 0;
 
         //!
+        //! Encrypt one block of data in place.
+        //!
+        //! The default implementation is to call encrypt() and copy the data.
+        //! A subclass may provide a more efficient implementation.
+        //!
+        //! For pure block ciphers such as AES or DES, the plain text and cipher text
+        //! must have the block size of the algorithm. For cipher chainings, the
+        //! acceptable message sizes depend on the chaining mode.
+        //!
+        //! @param [in,out] data Address of data buffer to encrypt.
+        //! @param [in] data_length Input plain text length in bytes.
+        //! @param [in,out] max_actual_length Optional, ignored if zero.
+        //! On input, contain the maximum size of the data buffer, which can be larger than @a data_length.
+        //! On output, receive the actual size of the encrypted data. For pure block ciphers, this is the
+        //! same as @a data_length. For cipher chainings with padding, this can be larger.
+        //! @return True on success, false on error.
+        //!
+        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0);
+
+        //!
+        //! Decrypt one block of data in place.
+        //!
+        //! The default implementation is to call decrypt() and copy the data.
+        //! A subclass may provide a more efficient implementation.
+        //!
+        //! For pure block ciphers such as AES or DES, the plain text and cipher text
+        //! must have the block size of the algorithm. For cipher chainings, the
+        //! acceptable message sizes depend on the chaining mode.
+        //!
+        //! @param [in,out] data Address of data buffer to decrypt.
+        //! @param [in] data_length Input cipher text length in bytes.
+        //! @param [in,out] max_actual_length Optional, ignored if zero.
+        //! On input, contain the maximum size of the data buffer, which can be larger than @a data_length.
+        //! On output, receive the actual size of the decrypted data. For pure block ciphers, this is the
+        //! same as @a data_length. For cipher chainings with padding, this can be smaller.
+        //! @return True on success, false on error.
+        //!
+        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0);
+
+        //!
         //! Virtual destructor.
         //!
         virtual ~BlockCipher() {}

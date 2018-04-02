@@ -48,7 +48,7 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_,
                                              const UString& syntax_,
                                              const UString& help_) :
     ProcessorPlugin(tsp_, description_, syntax_, help_),
-    _cw_mode(Scrambling::REDUCE_ENTROPY),
+    _cw_mode(DVBCSA2::REDUCE_ENTROPY),
     _packet_count(0),
     _abort(false),
     _synchronous(false),
@@ -94,7 +94,7 @@ bool ts::AbstractDescrambler::startDescrambler(bool           synchronous,
                                                size_t         stack_usage)
 {
     // Get descrambler parameters
-    _cw_mode = reduce_entropy ? Scrambling::REDUCE_ENTROPY : Scrambling::FULL_CW;
+    _cw_mode = reduce_entropy ? DVBCSA2::REDUCE_ENTROPY : DVBCSA2::FULL_CW;
     _synchronous = synchronous;
     _service = service;
     _stack_usage = stack_usage > 0 ? stack_usage : ECM_THREAD_STACK_USAGE;
@@ -432,8 +432,8 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
 
     // Submit the ECM to the CAS (subclass)
 
-    uint8_t cw_even[CW_BYTES];
-    uint8_t cw_odd[CW_BYTES];
+    uint8_t cw_even[DVBCSA2::KEY_SIZE];
+    uint8_t cw_odd[DVBCSA2::KEY_SIZE];
     bool ok = decipherECM(ecm, ecm_size, cw_even, cw_odd);
 
     if (ok) {
@@ -455,15 +455,15 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
     // CW when it is actually unchanged.
 
     if (ok) {
-        if (!estream.cw_valid || ::memcmp(estream.cw_even, cw_even, CW_BYTES) != 0) {
+        if (!estream.cw_valid || ::memcmp(estream.cw_even, cw_even, DVBCSA2::KEY_SIZE) != 0) {
             // Previous even CW was either invalid or different from new one
             estream.new_cw_even = true;
-            ::memcpy(estream.cw_even, cw_even, CW_BYTES);  // Flawfinder: ignore: memcpy()
+            ::memcpy(estream.cw_even, cw_even, DVBCSA2::KEY_SIZE);
         }
-        if (!estream.cw_valid || ::memcmp(estream.cw_odd, cw_odd, CW_BYTES) != 0) {
+        if (!estream.cw_valid || ::memcmp(estream.cw_odd, cw_odd, DVBCSA2::KEY_SIZE) != 0) {
             // Previous odd CW was either invalid or different from new one
             estream.new_cw_odd = true;
-            ::memcpy(estream.cw_odd, cw_odd, CW_BYTES);  // Flawfinder: ignore: memcpy()
+            ::memcpy(estream.cw_odd, cw_odd, DVBCSA2::KEY_SIZE);
         }
     }
 
@@ -601,10 +601,10 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
                 _abort = true;
                 return TSP_END;
             }
-            uint8_t key[2 * CW_BYTES];
-            ::memcpy(key, pecm->cw_even, CW_BYTES);            // Flawfinder: ignore: memcpy()
-            ::memcpy(key + CW_BYTES, pecm->cw_odd, CW_BYTES);  // Flawfinder: ignore: memcpy()
-            if (!pecm->dvs042.setKey(key, 2 * CW_BYTES)) {
+            uint8_t key[2 * DVBCSA2::KEY_SIZE];
+            ::memcpy(key, pecm->cw_even, DVBCSA2::KEY_SIZE);
+            ::memcpy(key + DVBCSA2::KEY_SIZE, pecm->cw_odd, DVBCSA2::KEY_SIZE);
+            if (!pecm->dvs042.setKey(key, 2 * DVBCSA2::KEY_SIZE)) {
                 tsp->error(u"error setting descrambling key in AES-128/DVS042 engine");
                 _abort = true;
                 return TSP_END;
@@ -613,11 +613,13 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
             pecm->new_cw_odd = false;
         }
         else if (scv == SC_EVEN_KEY) {
-            pecm->key_even.init(pecm->cw_even, _cw_mode);
+            pecm->key_even.setEntropyMode(_cw_mode);
+            pecm->key_even.setKey(pecm->cw_even, sizeof(pecm->cw_even));
             pecm->new_cw_even = false;
         }
         else {
-            pecm->key_odd.init(pecm->cw_odd, _cw_mode);
+            pecm->key_odd.setEntropyMode(_cw_mode);
+            pecm->key_odd.setKey(pecm->cw_odd, sizeof(pecm->cw_odd));
             pecm->new_cw_odd = false;
         }
 
@@ -639,18 +641,19 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
         ::memcpy(pl, tmp, pl_size);  // Flawfinder: ignore: memcpy()
     }
     else {
-        Scrambling& scr(scv == SC_EVEN_KEY ? pecm->key_even : pecm->key_odd);
-        scr.decrypt(pl, pl_size);
+        DVBCSA2& scr(scv == SC_EVEN_KEY ? pecm->key_even : pecm->key_odd);
+        scr.decryptInPlace(pl, pl_size);
 
         // Trace CW change in PIDs
         if (scv != ss.last_scv) {
             ss.last_scv = scv;
-            uint8_t cw[CW_BYTES];
-            const bool get_cw_ok = scr.getCW(cw, sizeof(cw));
-            assert(get_cw_ok);
-            tsp->debug(u"packet %d, PID %d (0x%X), new CW (%s): %X %X %X %X %X %X %X %X",
-                       {_packet_count - 1, pid, pid, scv == SC_EVEN_KEY ? u"even" : u"odd",
-                       cw[0], cw[1], cw[2], cw[3], cw[4], cw[5], cw[6], cw[7]});
+            //@@
+            //@@ uint8_t cw[DVBCSA2::KEY_SIZE];
+            //@@ const bool get_cw_ok = scr.getCW(cw, sizeof(cw));
+            //@@ assert(get_cw_ok);
+            //@@ tsp->debug(u"packet %d, PID %d (0x%X), new CW (%s): %X %X %X %X %X %X %X %X",
+            //@@            {_packet_count - 1, pid, pid, scv == SC_EVEN_KEY ? u"even" : u"odd",
+            //@@            cw[0], cw[1], cw[2], cw[3], cw[4], cw[5], cw[6], cw[7]});
         }
     }
 

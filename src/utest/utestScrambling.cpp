@@ -27,11 +27,11 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Scrambling
+//  CppUnit test suite for class ts::DVBCSA2
 //
 //----------------------------------------------------------------------------
 
-#include "tsScrambling.h"
+#include "tsDVBCSA2.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
 #include "utestCppUnitTest.h"
@@ -88,8 +88,8 @@ void ScramblingTest::tearDown()
 namespace {
     struct ScramblingTestVector
     {
-        uint8_t        cw_even[ts::CW_BYTES];
-        uint8_t        cw_odd[ts::CW_BYTES];
+        uint8_t      cw_even[ts::DVBCSA2::KEY_SIZE];
+        uint8_t      cw_odd[ts::DVBCSA2::KEY_SIZE];
         ts::TSPacket plain;
         ts::TSPacket cipher;
     };
@@ -176,7 +176,7 @@ void ScramblingTest::testScrambling()
 {
     const ScramblingTestVector* vec = scrambling_test_vectors;
     size_t count = sizeof(scrambling_test_vectors) / sizeof(ScramblingTestVector);
-    ts::Scrambling scrambler;
+    ts::DVBCSA2 scrambler;
     ts::TSPacket pkt;
 
     utest::Out() << "ScramblingTest: " << count << " test vectors" << std::endl;
@@ -190,7 +190,7 @@ void ScramblingTest::testScrambling()
         utest::Out() << "ScramblingTest: " << ti << ", header: " << header_size <<
               " byte, payload: " << payload_size <<
               " bytes, PID: " << vec->plain.getPID() <<
-              ", scrambling: " << ts::names::ScramblingControl (scv) << std::endl;
+              ", scrambling: " << ts::names::ScramblingControl(scv) << std::endl;
 
         CPPUNIT_ASSERT(header_size == vec->cipher.getHeaderSize());
         CPPUNIT_ASSERT(payload_size == vec->cipher.getPayloadSize());
@@ -198,16 +198,16 @@ void ScramblingTest::testScrambling()
         CPPUNIT_ASSERT(scv == ts::SC_EVEN_KEY || scv == ts::SC_ODD_KEY);
         CPPUNIT_ASSERT(vec->plain.getScrambling() == ts::SC_CLEAR);
 
-        scrambler.init (scv == ts::SC_EVEN_KEY ? vec->cw_even : vec->cw_odd, ts::Scrambling::REDUCE_ENTROPY);
+        CPPUNIT_ASSERT(scrambler.setKey(scv == ts::SC_EVEN_KEY ? vec->cw_even : vec->cw_odd, sizeof(vec->cw_even)));
 
         // Descrambling test
         pkt = vec->cipher;
-        scrambler.decrypt(pkt.b + header_size, payload_size);
+        CPPUNIT_ASSERT(scrambler.decryptInPlace(pkt.b + header_size, payload_size));
         CPPUNIT_ASSERT(::memcmp (pkt.b + header_size, vec->plain.b + header_size, payload_size) == 0);
 
         // Scrambling test
         pkt = vec->plain;
-        scrambler.encrypt(pkt.b + header_size, payload_size);
+        CPPUNIT_ASSERT(scrambler.encryptInPlace(pkt.b + header_size, payload_size));
         CPPUNIT_ASSERT(::memcmp(pkt.b + header_size, vec->cipher.b + header_size, payload_size) == 0);
     }
 }

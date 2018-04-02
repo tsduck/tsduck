@@ -61,11 +61,6 @@ namespace ts {
     {
     public:
         //!
-        //! Explicit reference to the superclass.
-        //!
-        typedef CipherChainingTemplate<CIPHER> SuperClass;
-
-        //!
         //! Constructor.
         //!
         DVS042();
@@ -81,16 +76,29 @@ namespace ts {
         //!
         virtual bool setShortIV(const void* iv, size_t iv_length);
 
-        // Implementation of CipherChaining interface.
+        // Implementation of BlockCipher and CipherChaining interfaces.
+        // For some reason, doxygen is unable to automatically inherit the
+        // documentation of *some* methods when a non-template class derives
+        // from our template class. We need explicit copydoc directives.
+
+        //! @copydoc ts::CipherChaining::minMessageSize()
         virtual size_t minMessageSize() const override {return 0;}
+
+        //! @copydoc ts::CipherChaining::residueAllowed()
         virtual bool residueAllowed() const override {return true;}
+
+        //! @copydoc ts::CipherChaining::setIV()
         virtual bool setIV(const void* iv, size_t iv_length) override;
 
-        // Implementation of BlockCipher interface.
+        //! @copydoc ts::BlockCipher::name()
         virtual UString name() const override {return this->algo == 0 ? UString() : this->algo->name() + u"-DVS042";}
+
+        //! @copydoc ts::BlockCipher::encrypt()
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
                              size_t* cipher_length = 0) override;
+
+        //! @copydoc ts::BlockCipher::decrypt()
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
                              size_t* plain_length = 0) override;

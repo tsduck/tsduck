@@ -28,22 +28,22 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  DVB-CSA (Digital Video Broadcasting Common Scrambling Algorithm)
+//!  DVB CSA-2 (Digital Video Broadcasting Common Scrambling Algorithm)
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsCipherChaining.h"
 
 namespace ts {
     //!
-    //! DVB-CSA (Digital Video Broadcasting Common Scrambling Algorithm).
+    //! DVB CSA-2 (Digital Video Broadcasting Common Scrambling Algorithm).
     //!
-    class TSDUCKDLL Scrambling
+    class TSDUCKDLL DVBCSA2 : public CipherChaining
     {
     public:
-        static const size_t KEY_BITS = 64;             //!< DVB-CSA control words size in bits.
-        static const size_t KEY_SIZE = KEY_BITS / 8;   //!< DVB-CSA control words size in bytes.
+        static const size_t KEY_BITS = 64;             //!< DVB CSA-2 control words size in bits.
+        static const size_t KEY_SIZE = KEY_BITS / 8;   //!< DVB CSA-2 control words size in bytes.
 
         //!
         //! Control word entropy reduction.
@@ -56,57 +56,57 @@ namespace ts {
 
         //!
         //! Default Constructor.
-        //!
-        Scrambling();
-
-        //!
-        //! Set the control word for subsequent encrypt/decrypt operations.
-        //! @param [in] cw Address of control word. Its size must be ts::Scrambling::KEY_SIZE.
         //! @param [in] mode Entropy reduction mode.
         //!
-        void init(const uint8_t *cw, EntropyMode mode);
+        DVBCSA2(EntropyMode mode = REDUCE_ENTROPY);
 
         //!
-        //! Check if a valid control word is set.
-        //! @return True if a valid control word is set.
+        //! Set the entropy mode, used in setKey().
+        //! @param [in] mode Entropy reduction mode.
         //!
-        bool initialiazed() const {return _init;}
+        void setEntropyMode(EntropyMode mode) { _mode = mode; }
 
         //!
-        //! Get the current control word value.
-        //! @param [out] cw Address of returned control word buffer.
-        //! @param [in] size Buffer size, must be ts::Scrambling::KEY_SIZE.
-        //! @return True on success, false on error.
+        //! Get the entropy mode, used in setKey().
+        //! @return The entropy reduction mode.
         //!
-        bool getCW(uint8_t* cw, size_t size);
-
-        //!
-        //! Encrypt a data block (typically the payload of a TS or PES packet).
-        //! @param [in,out] data Address of the buffer to encrypt.
-        //! @param [in] size Buffer size.
-        //!
-        void encrypt(uint8_t* data, size_t size);
-
-        //!
-        //! Decrypt a data block (typically the payload of a TS or PES packet).
-        //! @param [in,out] data Address of the buffer to decrypt.
-        //! @param [in] size Buffer size.
-        //!
-        void decrypt(uint8_t* data, size_t size);
+        EntropyMode entropyMode() const { return _mode; }
 
         //!
         //! Manually perform the entropy reduction on a control word.
-        //! Not needed with ts::Scrambling class, preferably use @link REDUCE_ENTROPY @endlink mode.
-        //! @param [in,out] cw Address of a control word to reduce. Its size must be ts::Scrambling::KEY_SIZE.
+        //! Not needed with ts::DVBCSA2 class, preferably use @link REDUCE_ENTROPY @endlink mode.
+        //! @param [in,out] cw Address of a control word to reduce. Its size must be ts::DVBCSA2::KEY_SIZE.
         //!
-        static void reduceCW(uint8_t *cw);
+        static void ReduceCW(uint8_t *cw);
 
         //!
         //! Check if a control word is entropy-reduced.
-        //! @param [in] cw Address of a control word. Its size must be ts::Scrambling::KEY_SIZE.
+        //! @param [in] cw Address of a control word. Its size must be ts::DVBCSA2::KEY_SIZE.
         //! @return True if reduced, false if not.
         //!
-        static bool isReducedCW(const uint8_t *cw);
+        static bool IsReducedCW(const uint8_t *cw);
+
+        // Implementation of CipherChaining interface. Cannot set IV with DVB CSA.
+        virtual bool setIV(const void*, size_t) override { return false; }
+        virtual size_t minIVSize() const override { return 0; }
+        virtual size_t maxIVSize() const override { return 0; }
+        virtual size_t minMessageSize() const override { return 0; }
+        virtual bool residueAllowed() const override { return true; }
+
+        // Implementation of BlockCipher interface.
+        virtual UString name() const override { return u"DVB-CSA2"; }
+        virtual size_t blockSize() const override { return 8; }
+        virtual size_t minKeySize() const override { return KEY_SIZE; }
+        virtual size_t maxKeySize() const override { return KEY_SIZE; }
+        virtual bool isValidKeySize(size_t size) const override { return size == KEY_SIZE; }
+        virtual size_t minRounds() const override { return 8; }
+        virtual size_t maxRounds() const override { return 8; }
+        virtual size_t defaultRounds() const override { return 8; }
+        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
+        virtual bool encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length = 0) override;
+        virtual bool decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length = 0) override;
+        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0) override;
+        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0) override;
 
     private:
         // Block cipher data
@@ -142,6 +142,7 @@ namespace ts {
 
         // DVB-CSA scrambling data
         bool         _init;
+        EntropyMode  _mode;
         uint8_t      _key[KEY_SIZE];
         BlockCipher  _block;
         StreamCipher _stream;
