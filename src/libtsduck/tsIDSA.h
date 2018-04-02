@@ -28,20 +28,37 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  ATIS-0800006 AES-based TS packet encryption (ATIS-IDSA).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 10
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 654
+#include "tsDVS042.h"
+#include "tsAES.h"
+
+namespace ts {
+    //!
+    //! ATIS-0800006 AES-based TS packet encryption (ATIS-IDSA).
+    //!
+    class TSDUCKDLL IDSA : public DVS042<AES>
+    {
+    public:
+        //!
+        //! Explicit reference to the superclass.
+        //!
+        typedef DVS042<AES> SuperClass;
+
+        //!
+        //! Constructor.
+        //!
+        IDSA();
+
+        // Implementation of BlockCipher interface.
+        virtual UString name() const override {return u"ATIS-IDSA";}
+
+    private:
+        // The IV are defined by the standard and not modifiable.
+        virtual bool setIV(const void* iv, size_t iv_length) override { return SuperClass::setIV(iv, iv_length); }
+        virtual bool setShortIV(const void* iv, size_t iv_length) override { return SuperClass::setShortIV(iv, iv_length); }
+    };
+}

@@ -69,13 +69,13 @@ namespace ts {
         //! Get the minimum IV sizes in bytes.
         //! @return The minimum IV sizes in bytes.
         //!
-        virtual size_t minIVSize() const {return _iv_min_size;}
+        virtual size_t minIVSize() const {return iv_min_size;}
 
         //!
         //! Get the maximum IV sizes in bytes.
         //! @return The maximum IV sizes in bytes.
         //!
-        virtual size_t maxIVSize() const {return _iv_max_size;}
+        virtual size_t maxIVSize() const {return iv_max_size;}
 
         //!
         //! Get the minimum message size.
@@ -93,7 +93,9 @@ namespace ts {
     protected:
         // Protected fields, for chaining mode subclass implementation.
         BlockCipher* algo;        //!< An instance of the block cipher.
-        size_t       block_size;  //!< Shortcut for algo->blockSize().
+        const size_t block_size;  //!< Shortcut for algo->blockSize().
+        const size_t iv_min_size; //!< IV min size in bytes.
+        const size_t iv_max_size; //!< IV max size in bytes.
         ByteBlock    iv;          //!< Current initialization vector.
         ByteBlock    work;        //!< Temporary working buffer.
 
@@ -110,10 +112,6 @@ namespace ts {
                        size_t work_blocks = 1);
 
     private:
-        // Private fields
-        size_t _iv_min_size;  // IV min size in bytes
-        size_t _iv_max_size;  // IV max size in bytes
-
         // Inaccesible operations
         CipherChaining(const CipherChaining&) = delete;
         CipherChaining& operator=(const CipherChaining&) = delete;

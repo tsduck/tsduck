@@ -26,22 +26,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 10
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 654
+#include "tsIDSA.h"
+TSDUCK_SOURCE;
+
+ts::IDSA::IDSA() :
+    SuperClass()
+{
+    // The IV are defined by the standard and not modifiable.
+    static const uint8_t iv_zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    setIV(iv_zero, sizeof(iv_zero));
+}

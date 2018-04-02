@@ -38,10 +38,10 @@ TSDUCK_SOURCE;
 ts::CipherChaining::CipherChaining (BlockCipher* cipher, size_t iv_min_blocks, size_t iv_max_blocks, size_t work_blocks) :
     algo(cipher),
     block_size(algo == 0 ? 0 : algo->blockSize()),
+    iv_min_size(iv_min_blocks * block_size),
+    iv_max_size(iv_max_blocks * block_size),
     iv(iv_max_blocks * block_size),
-    work(work_blocks * block_size),
-    _iv_min_size(iv_min_blocks * block_size),
-    _iv_max_size(iv_max_blocks * block_size)
+    work(work_blocks * block_size)
 {
 }
 
@@ -97,11 +97,11 @@ bool ts::CipherChaining::setKey (const void* key, size_t key_length, size_t roun
 
 bool ts::CipherChaining::setIV(const void* iv_data, size_t iv_length)
 {
-    if (_iv_min_size == 0 && iv_length == 0) {
+    if (iv_min_size == 0 && iv_length == 0) {
         iv.clear();
         return true;
     }
-    else if (iv_data == 0 || iv_length < _iv_min_size || iv_length > _iv_max_size) {
+    else if (iv_data == 0 || iv_length < iv_min_size || iv_length > iv_max_size) {
         iv.clear();
         return false;
     }

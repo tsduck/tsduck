@@ -37,28 +37,74 @@
 
 
 //----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+ts::DVS042<CIPHER>::DVS042() :
+    SuperClass(1, 1, 1),
+    shortIV(this->block_size)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Set initialization vectors.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+bool ts::DVS042<CIPHER>::setIV(const void* iv_data, size_t iv_length)
+{
+    const bool ok1 = SuperClass::setIV(iv_data, iv_length);
+    const bool ok2 = setShortIV(iv_data, iv_length);
+    return ok1 && ok2;
+}
+
+template<class CIPHER>
+bool ts::DVS042<CIPHER>::setShortIV(const void* iv_data, size_t iv_length)
+{
+    if (this->iv_min_size == 0 && iv_length == 0) {
+        shortIV.clear();
+        return true;
+    }
+    else if (iv_data == 0 || iv_length < this->iv_min_size || iv_length > this->iv_max_size) {
+        shortIV.clear();
+        return false;
+    }
+    else {
+        shortIV.copy(iv_data, iv_length);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Encryption in DVS 042 mode.
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
 bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
-                                   void* cipher, size_t cipher_maxsize,
-                                   size_t* cipher_length)
+                                 void* cipher, size_t cipher_maxsize,
+                                 size_t* cipher_length)
 {
     if (this->algo == 0 ||
         this->iv.size() != this->block_size ||
+        this->shortIV.size() != this->block_size ||
         this->work.size() < this->block_size ||
-        plain_length < this->block_size ||
-        cipher_maxsize < plain_length) {
+        cipher_maxsize < plain_length)
+    {
         return false;
     }
+
+    // Cipher length is always the same as plain length.
     if (cipher_length != 0) {
         *cipher_length = plain_length;
     }
 
-    // Encrypt all blocks in CBC mode, except the last one if partial
+    // Select IV depending on block size.
+    const uint8_t* previous = plain_length < this->block_size ? this->shortIV.data() : this->iv.data();
 
-    uint8_t* previous = this->iv.data();
+    // Encrypt all blocks in CBC mode, except the last one if partial.
     const uint8_t* pt = reinterpret_cast<const uint8_t*>(plain);
     uint8_t* ct = reinterpret_cast<uint8_t*>(cipher);
 
@@ -80,9 +126,8 @@ bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
     }
 
     // Process final block if incomplete
-
     if (plain_length > 0) {
-        // work = encrypt (Cn-1)
+        // work = encrypt (Cn-1), which is encrypt (shortIV) for short packets
         if (!this->algo->encrypt(previous, this->block_size, this->work.data(), this->block_size)) {
             return false;
         }
@@ -101,23 +146,27 @@ bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
 
 template<class CIPHER>
 bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
-                                   void* plain, size_t plain_maxsize,
-                                   size_t* plain_length)
+                                 void* plain, size_t plain_maxsize,
+                                 size_t* plain_length)
 {
     if (this->algo == 0 ||
         this->iv.size() != this->block_size ||
+        this->shortIV.size() != this->block_size ||
         this->work.size() < this->block_size ||
-        cipher_length < this->block_size ||
-        plain_maxsize < cipher_length) {
+        plain_maxsize < cipher_length)
+    {
         return false;
     }
+
+    // Deciphered length is always the same as cipher length.
     if (plain_length != 0) {
         *plain_length = cipher_length;
     }
 
-    // Decrypt all blocks in CBC mode, except the last one if partial
+    // Select IV depending on block size.
+    const uint8_t* previous = cipher_length < this->block_size ? this->shortIV.data() : this->iv.data();
 
-    const uint8_t* previous = this->iv.data();
+    // Decrypt all blocks in CBC mode, except the last one if partial
     const uint8_t* ct = reinterpret_cast<const uint8_t*>(cipher);
     uint8_t* pt = reinterpret_cast<uint8_t*>(plain);
 
@@ -139,9 +188,8 @@ bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
     }
 
     // Process final block if incomplete
-
     if (cipher_length > 0) {
-        // work = encrypt (Cn-1)
+        // work = encrypt (Cn-1), which is encrypt (shortIV) for short packets
         if (!this->algo->encrypt(previous, this->block_size, this->work.data(), this->block_size)) {
             return false;
         }

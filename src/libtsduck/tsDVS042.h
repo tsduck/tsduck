@@ -49,12 +49,10 @@ namespace ts {
     //! of messages shorter than the block size. In the 2003 (DVS 042) version,
     //! the same IV (called "whitener" in the standard) is used for long and
     //! short messages. In the 2008 version, a different "whitener2" must be
-    //! used for messages shorter than the block size. To avoid confusion, this
-    //! implementation does no allow the handling of messages shorter than the
-    //! block size.
+    //! used for messages shorter than the block size.
     //!
-    //! DVS042 can process a residue. The plain text and cipher text sizes must be
-    //! equal to or greater than the block size of the underlying block cipher.
+    //! The ATIS-0800006 standard (IDSA) uses the same chaining mode and residue
+    //! processing as DVS-042 but is based on AES instead of DES.
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
@@ -63,9 +61,33 @@ namespace ts {
     {
     public:
         //!
+        //! Explicit reference to the superclass.
+        //!
+        typedef CipherChainingTemplate<CIPHER> SuperClass;
+
+        //!
         //! Constructor.
         //!
-        DVS042() : CipherChainingTemplate<CIPHER>(1, 1, 1) {}
+        DVS042();
+
+        //!
+        //! Set a new initialization vector.
+        //! This method sets the IV for @e long blocks (longer than the block size)
+        //! and @e short blocks (shorter than the block size). The latter can then
+        //! be overwritten using setShortIV().
+        //! @param [in] iv Address of IV.
+        //! @param [in] iv_length IV length in bytes.
+        //! @return True on success, false on error.
+        //!
+        virtual bool setIV(const void* iv, size_t iv_length) override;
+
+        //!
+        //! Set a new initialization vector for short blocks.
+        //! @param [in] iv Address of IV.
+        //! @param [in] iv_length IV length in bytes.
+        //! @return True on success, false on error.
+        //!
+        virtual bool setShortIV(const void* iv, size_t iv_length);
 
         // Implementation of CipherChaining interface.
         virtual size_t minMessageSize() const override {return this->block_size;}
@@ -79,6 +101,9 @@ namespace ts {
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
                              size_t* plain_length = 0) override;
+
+    protected:
+        ByteBlock shortIV;  //!< Current initialization vector for short blocks.
     };
 }
 
