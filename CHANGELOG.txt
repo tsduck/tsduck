@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.10-630
+Version 3.10-652
 
 - Added options --fix and --pid to plugin "continuity".
 
@@ -15,6 +15,9 @@ Version 3.10-630
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
+
+- Added utility "tsecmg", a DVB SimulCrypt-compliant ECMG stub to test system
+  integration.
 
 - Bug fix: Incorrect behaviour on Linux and macOS when receiving multicast with
   plugin "ip" and "mpeinject" and a --local-interface was specified.
