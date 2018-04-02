@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.10-652
+Version 3.10-655
 
 - Added options --fix and --pid to plugin "continuity".
 
@@ -15,6 +15,9 @@ Version 3.10-652
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
+
+- Added option --atis-idsa to plugins "scrambler" and "descrambler" (perform
+  ATIS-IDSA scrambling instead of DVB-CSA2).
 
 - Added utility "tsecmg", a DVB SimulCrypt-compliant ECMG stub to test system
   integration.

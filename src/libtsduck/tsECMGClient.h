@@ -47,8 +47,9 @@ namespace ts {
     //!
     //! A DVB-ECMG client which acts as a DVB-SCS.
     //!
-    //! Restriction: The target ECMG shall support only current/next control words in ECM,
-    //! meaning CW_per_msg = 2 and lead_CW = 1.
+    //! Restriction: The target ECMG shall support only current or current/next control
+    //! words in ECM, meaning CW_per_msg = 1 or 2 and lead_CW = 0 or 1.
+    //!
     //! @see DVB standard ETSI TS 103.197 V1.4.1 for ECMG <=> SCS protocol.
     //!
     class TSDUCKDLL ECMGClient: private Thread
@@ -98,19 +99,18 @@ namespace ts {
         //! Synchronously generate an ECM.
         //!
         //! @param [in] cp_number Current crypto-period number.
-        //! @param [in] current_cw 8-byte control word for current crypto-period.
-        //! @param [in] next_cw 8-byte control word for next crypto-period.
-        //! @param [in] ac Access criteria, unspecified if zero.
-        //! @param [in] ac_size Access criteria size in bytes.
+        //! @param [in] current_cw Control word for current crypto-period.
+        //! @param [in] next_cw Control word for next crypto-period.
+        //! If empty, the ECMG must work with CW_per_msg = 1.
+        //! @param [in] ac Access criteria, can be empty.
         //! @param [in] cp_duration Crypto-period in 100 ms units, unspecified if zero.
         //! @param [out] response Returned ECM.
         //! @return True on success, false on error.
         //!
         bool generateECM(uint16_t cp_number,
-                         const void* current_cw,
-                         const void* next_cw,
-                         const void* ac,
-                         size_t ac_size,
+                         const ByteBlock& current_cw,
+                         const ByteBlock& next_cw,
+                         const ByteBlock& ac,
                          uint16_t cp_duration,
                          ecmgscs::ECMResponse& response);
 
@@ -120,19 +120,18 @@ namespace ts {
         //! The notification of the ECM generation or error is performed through the specified handler.
         //!
         //! @param [in] cp_number Current crypto-period number.
-        //! @param [in] current_cw 8-byte control word for current crypto-period.
-        //! @param [in] next_cw 8-byte control word for next crypto-period.
-        //! @param [in] ac Access criteria, unspecified if zero.
-        //! @param [in] ac_size Access criteria size in bytes.
+        //! @param [in] current_cw Control word for current crypto-period.
+        //! @param [in] next_cw Control word for next crypto-period.
+        //! If empty, the ECMG must work with CW_per_msg = 1.
+        //! @param [in] ac Access criteria, can be empty.
         //! @param [in] cp_duration Crypto-period in 100 ms units, unspecified if zero.
         //! @param [in] handler Object which will be notified of the returned ECM.
         //! @return True on success, false on error.
         //!
         bool submitECM(uint16_t cp_number,
-                       const void* current_cw,
-                       const void* next_cw,
-                       const void* ac,
-                       size_t ac_size,
+                       const ByteBlock& current_cw,
+                       const ByteBlock& next_cw,
+                       const ByteBlock& ac,
                        uint16_t cp_duration,
                        ECMGClientHandlerInterface* handler);
 
@@ -175,7 +174,7 @@ namespace ts {
         // Private members
         State                   _state;
         const AbortInterface*   _abort;
-        Report*        _report;
+        Report*                 _report;
         tlv::Connection <Mutex> _connection;     // connection with ECMG server
         ecmgscs::ChannelStatus  _channel_status; // initial response to channel_setup
         ecmgscs::StreamStatus   _stream_status;  // initial response to stream_setup
