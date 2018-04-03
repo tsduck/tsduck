@@ -35,15 +35,51 @@ TSDUCK_SOURCE;
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::TSScrambling::TSScrambling(Report& report) :
+ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
-    _dvbcsa(),
-    _idsa(),
-    _scrambler(&_dvbcsa),
+    _scrambling_type(scrambling),
     _cw_list(),
     _next_cw(_cw_list.end()),
-    _encrypt_parity(0)
+    _encrypt_scv(SC_CLEAR),
+    _decrypt_scv(SC_CLEAR),
+    _dvbcsa(),
+    _idsa(),
+    _scrambler()
 {
+    if (!setScramblingType(scrambling)) {
+        // Fallback to DVB-CSA2 by default.
+        setScramblingType(SCRAMBLING_DVB_CSA2);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Force the usage of a specific algorithm.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::setScramblingType(uint8_t scrambling)
+{
+    switch (scrambling) {
+        case SCRAMBLING_DVB_CSA2:
+            _scrambler[0] = &_dvbcsa[0];
+            _scrambler[1] = &_dvbcsa[1];
+            break;
+        case SCRAMBLING_ATIS_IIF_IDSA:
+            _scrambler[0] = &_idsa[0];
+            _scrambler[1] = &_idsa[1];
+            break;
+        default:
+            return false;
+    }
+
+    _scrambling_type = scrambling;
+    return true;
+}
+
+void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
+{
+    _dvbcsa[0].setEntropyMode(mode);
+    _dvbcsa[1].setEntropyMode(mode);
 }
 
 
@@ -102,21 +138,23 @@ void ts::TSScrambling::defineOptions(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::TSScrambling::loadArgs(Args& args)
+bool ts::TSScrambling::loadArgs(Args& args)
 {
     // Set the scrambler to use.
     if (args.present(u"atis-idsa") + args.present(u"dvb-csa2") > 1) {
         args.error(u"--atis-idsa and --dvb-csa2 are mutally exclusive");
     }
     else if (args.present(u"atis-idsa")) {
-        _scrambler = &_idsa;
+        setScramblingType(SCRAMBLING_ATIS_IIF_IDSA);
     }
     else {
-        _scrambler = &_dvbcsa;
-        _dvbcsa.setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
+        setScramblingType(SCRAMBLING_DVB_CSA2);
     }
 
-    // Get control words as list of strings
+    // Set DVB-CSA2 entropy mode regardless of --atis-idsa in case we switch later to DVB-CSA2.
+    setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
+
+    // Get control words as list of strings.
     UStringList lines;
     if (args.present(u"cw") + args.present(u"cw-file") > 1) {
         args.error(u"--cw and --cw-file are mutally exclusive");
@@ -151,6 +189,44 @@ void ts::TSScrambling::loadArgs(Args& args)
 
     // Point next CW to end of list.
     _next_cw = _cw_list.end();
+    return args.valid();
+}
+
+
+//----------------------------------------------------------------------------
+// Rewind the list of fixed control words. Will use first CW.
+//----------------------------------------------------------------------------
+
+void ts::TSScrambling::rewindFixedCW()
+{
+    _next_cw = _cw_list.end();
+    _encrypt_scv = SC_CLEAR;
+    _decrypt_scv = SC_CLEAR;
+}
+
+
+//----------------------------------------------------------------------------
+// Set the next fixed control word as scrambling key.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::setNextFixedCW(int parity)
+{
+    // Error if no fixed control word were provided on the command line.
+    if (_cw_list.empty()) {
+        return false;
+    }
+
+    // Point to next CW.
+    if (_next_cw != _cw_list.end()) {
+        ++_next_cw;
+    }
+    if (_next_cw == _cw_list.end()) {
+        _next_cw = _cw_list.begin();
+    }
+    assert(_next_cw != _cw_list.end());
+
+    // Set the key in the descrambler.
+    return setCW(*_next_cw, parity);
 }
 
 
@@ -160,7 +236,17 @@ void ts::TSScrambling::loadArgs(Args& args)
 
 bool ts::TSScrambling::setCW(const ByteBlock& cw, int parity)
 {
-    return false; //@@@@
+    CipherChaining* algo = _scrambler[parity & 1];
+    assert(algo != 0);
+
+    if (algo->setKey(cw.data(), cw.size())) {
+        _report.debug(u"using scrambling key: " + UString::Dump(cw, UString::SINGLE_LINE));
+        return true;
+    }
+    else {
+        _report.error(u"error setting %d-byte key to %s", {cw.size(), algo->name()});
+        return false;
+    }
 }
 
 
@@ -168,9 +254,14 @@ bool ts::TSScrambling::setCW(const ByteBlock& cw, int parity)
 // Set the parity of all subsequent encryptions.
 //----------------------------------------------------------------------------
 
-void ts::TSScrambling::setEncryptParity(int parity)
+bool ts::TSScrambling::setEncryptParity(int parity)
 {
-    //@@@@
+    // Remember parity.
+    const uint8_t previous_scv = _encrypt_scv;
+    _encrypt_scv = SC_EVEN_KEY | (parity & 1);
+
+    // In case of fixed control words, use next key when the parity changes.
+    return !hasFixedCW() || _encrypt_scv == previous_scv || setNextFixedCW(_encrypt_scv);
 }
 
 
@@ -180,7 +271,33 @@ void ts::TSScrambling::setEncryptParity(int parity)
 
 bool ts::TSScrambling::encrypt(TSPacket& pkt)
 {
-    return false; //@@@@
+    // Filter out encrypted packets.
+    if (pkt.isScrambled()) {
+        _report.error(u"try to scramble an already scrambled packet");
+        return false;
+    }
+
+    // Silently pass packets without payload.
+    if (!pkt.hasPayload()) {
+        return true;
+    }
+
+    // If no current parity is set, start with even by default.
+    if (_encrypt_scv == SC_CLEAR && !setEncryptParity(SC_EVEN_KEY)) {
+        return false;
+    }
+
+    // Encrypt the packet.
+    CipherChaining* algo = _scrambler[_encrypt_scv & 1];
+
+    assert(algo != 0);
+    assert(_encrypt_scv == SC_EVEN_KEY || _encrypt_scv == SC_ODD_KEY);
+
+    const bool ok = algo->encryptInPlace(pkt.getPayload(), pkt.getPayloadSize());
+    if (ok) {
+        pkt.setScrambling(_encrypt_scv);
+    }
+    return ok;
 }
 
 
@@ -190,5 +307,28 @@ bool ts::TSScrambling::encrypt(TSPacket& pkt)
 
 bool ts::TSScrambling::decrypt(TSPacket& pkt)
 {
-    return false; //@@@@
+    // Clear or invalid packets are silently accepted.
+    const uint8_t scv = pkt.getScrambling();
+    if (scv != SC_EVEN_KEY && scv != SC_ODD_KEY) {
+        return true;
+    }
+
+    // Update current parity.
+    const uint8_t previous_scv = _decrypt_scv;
+    _decrypt_scv = scv;
+
+    // In case of fixed control word, use next key when the scrambling control changes.
+    if (hasFixedCW() && previous_scv != _decrypt_scv && !setNextFixedCW(_decrypt_scv)) {
+        return false;
+    }
+
+    // Decrypt the packet.
+    CipherChaining* algo = _scrambler[_decrypt_scv & 1];
+    assert(algo != 0);
+
+    const bool ok = algo->decryptInPlace(pkt.getPayload(), pkt.getPayloadSize());
+    if (ok) {
+        pkt.setScrambling(SC_CLEAR);
+    }
+    return ok;
 }

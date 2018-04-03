@@ -1,4 +1,4 @@
-// AES with chaining modes test vectors
+// DVB-CSA2 test vectors
 
 struct TV_DVB_CSA2 {
     uint8_t key[8];

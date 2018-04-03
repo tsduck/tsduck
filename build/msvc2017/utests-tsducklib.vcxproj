@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -58,6 +58,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\crypto\tv_aes.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_aes_chain.h" />
+    <ClInclude Include="..\..\src\utest\crypto\tv_atis_idsa.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_des.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_des_chain.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_dvb_csa2.h" />

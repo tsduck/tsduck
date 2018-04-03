@@ -38,11 +38,22 @@
 #include "tsTSPacket.h"
 #include "tsDVBCSA2.h"
 #include "tsIDSA.h"
+#include "tsMPEG.h"
 
 namespace ts {
     //!
     //! Transport stream scrambling using multiple algorithms.
+    //!
     //! Include command line arguments processing.
+    //!
+    //! The scrambling type is indicated by a constant as present in a scrambling_descriptor.
+    //! Currently, only SCRAMBLING_DVB_CSA2 and SCRAMBLING_ATIS_IIF_IDSA are supported.
+    //!
+    //! With fixed control words from the command line:
+    //! - For encryption, the next key is used each time setEncryptParity() is called
+    //!   with a new parity.
+    //! - For decryption, the next key is used each time a new scrambling_control
+    //!   value is found in a TS header.
     //!
     class TSDUCKDLL TSScrambling
     {
@@ -50,8 +61,9 @@ namespace ts {
         //!
         //! Default constructor.
         //! @param [in,out] report Where to report error and information.
+        //! @param [in] scrambling Scrambling type.
         //!
-        TSScrambling(Report& report = CERR);
+        TSScrambling(Report& report = CERR, uint8_t scrambling = SCRAMBLING_DVB_CSA2);
 
         //!
         //! Define command line options in an Args.
@@ -67,28 +79,61 @@ namespace ts {
 
         //!
         //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error.
+        //! Args error indicator is also set in case of incorrect arguments.
         //!
-        void loadArgs(Args& args);
+        bool loadArgs(Args& args);
 
         //!
-        //! Check of fixed control words were loaded from the command line.
+        //! Check if fixed control words were loaded from the command line.
         //! @return True if this object uses fixed control words.
         //!
         bool hasFixedCW() const { return !_cw_list.empty(); }
 
         //!
+        //! Get the number of fixed control words from the command line.
+        //! @return Number of fixed control words from the command line.
+        //!
+        size_t fixedCWCount() const { return _cw_list.size(); }
+
+        //!
+        //! Restart the list of fixed control words from the beginning.
+        //! Ignored if no control words were loaded from the command line.
+        //!
+        void rewindFixedCW();
+
+        //!
         //! Get the scrambling algorithm name.
         //! @return The scrambling algorithm name.
         //!
-        UString algoName() const { return _scrambler->name(); }
+        UString algoName() const { return _scrambler[0]->name(); }
 
         //!
         //! Get the required control word size in bytes.
         //! @return The required control word size in bytes.
         //!
-        size_t cwSize() const { return _scrambler->minKeySize(); }
+        size_t cwSize() const { return _scrambler[0]->minKeySize(); }
+
+        //!
+        //! Force the usage of a given algorithm.
+        //! @param [in] scrambling Scrambling type.
+        //! @return True on success, false on unsupported type.
+        //!
+        bool setScramblingType(uint8_t scrambling);
+
+        //!
+        //! Get the current scrambling algorithm.
+        //! @return The scrambling type.
+        //!
+        uint8_t scramblingType() { return _scrambling_type; }
+
+        //!
+        //! Force the entropy mode of DVB-CSA2.
+        //! By default, use settings from the command line.
+        //! @param [in] mode DVB-CSA2 entropy mode.
+        //!
+        void setEntropyMode(DVBCSA2::EntropyMode mode);
 
         //!
         //! Set the control word for encrypt and decrypt.
@@ -101,8 +146,9 @@ namespace ts {
         //!
         //! Set the parity of all subsequent encryptions.
         //! @param [in] parity Use the parity of this integer value (odd or even).
+        //! @return True on success, false on error (error setting next fixed CW, if any).
         //!
-        void setEncryptParity(int parity);
+        bool setEncryptParity(int parity);
 
         //!
         //! Encrypt a TS packet with the current parity and corresponding CW.
@@ -123,12 +169,17 @@ namespace ts {
         typedef std::list<ByteBlock> CWList;
 
         Report&          _report;
-        DVBCSA2          _dvbcsa;
-        IDSA             _idsa;
-        CipherChaining*  _scrambler;
-        CWList           _cw_list;  
+        uint8_t          _scrambling_type;
+        CWList           _cw_list;
         CWList::iterator _next_cw;
-        int              _encrypt_parity;
+        uint8_t          _encrypt_scv;  // Encryption: key to use (SC_EVEN_KEY or SC_ODD_KEY).
+        uint8_t          _decrypt_scv;  // Decryption: previous scrambling_control value.
+        DVBCSA2          _dvbcsa[2];    // Index 0 = even key, 1 = odd key. 
+        IDSA             _idsa[2];
+        CipherChaining*  _scrambler[2];
+
+        // Set the next fixed control word as scrambling key.
+        bool setNextFixedCW(int parity);
 
         // Inaccessible operations.
         TSScrambling(const TSScrambling&) = delete;

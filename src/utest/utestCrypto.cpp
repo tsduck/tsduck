@@ -58,6 +58,7 @@ TSDUCK_SOURCE;
 #include "crypto/tv_tdes.h"
 #include "crypto/tv_tdes_cbc.h"
 #include "crypto/tv_dvb_csa2.h"
+#include "crypto/tv_atis_idsa.h"
 #include "crypto/tv_sha1.h"
 #include "crypto/tv_sha256.h"
 #include "crypto/tv_sha512.h"
@@ -477,7 +478,11 @@ void CryptoTest::testDVBCSA2()
 void CryptoTest::testIDSA()
 {
     ts::IDSA idsa;
-    // to be supplied...
+    const size_t tv_count = sizeof(tv_atis_idsa) / sizeof(tv_atis_idsa[0]);
+    for (size_t tvi = 0; tvi < tv_count; ++tvi) {
+        const TV_ATIS_IDSA* tv = tv_atis_idsa + tvi;
+        testCipher(idsa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
+    }
 }
 
 void CryptoTest::testSCTE52_2003()
