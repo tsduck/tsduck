@@ -38,6 +38,7 @@
 #include "tsTablesPtr.h"
 #include "tsVariable.h"
 #include "tsSimulCryptDate.h"
+#include "tsMPEG.h"
 
 namespace ts {
     //!
