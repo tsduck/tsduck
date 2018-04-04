@@ -158,7 +158,7 @@ namespace ts {
         //! @param [in,out] demux The demux which sends the section.
         //! @param [in] section The new section from the demux.
         //!
-        virtual void handleSection(SectionDemux& demux, const Section& section);
+        virtual void handleSection(SectionDemux& demux, const Section& section) override;
 
     private:
         // Description of a scrambled stream with its possible ECM PID's.
@@ -171,8 +171,12 @@ namespace ts {
         // We filter ECM's on all these PID's and we hope that the subclass will indicate which
         // ECM's are the right ones in checkECM(). At worst, we try to decipher all ECM's from
         // all ECM streams and decipherECM() will fail with ECM's we cannot handle.
-        struct ScrambledStream
+        class ScrambledStream
         {
+        public:
+            // Constructor
+            ScrambledStream() : ecm_pids() {}
+
             std::set<PID> ecm_pids;  // PIDs of ECM streams
         };
 
