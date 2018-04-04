@@ -39,6 +39,7 @@
 #include "tsECMGSCS.h"
 #include "tsTCPServer.h"
 #include "tstlvConnection.h"
+#include "tsDuckProtocol.h"
 #include "tsVariable.h"
 #include "tsOneShotPacketizer.h"
 #include "tsVersionInfo.h"
@@ -589,31 +590,30 @@ bool ECMGClient::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         resp.stream_id = msg->stream_id;
         resp.CP_number = msg->CP_number;
 
-        // Build the ECM section payload.
-        ts::ByteBlock ecm;
-        ecm.appendUInt16(ts::tlv::MSG_ECM);
-        ecm.appendUInt16(0); // placeholder for size
-
         // Add all CW's in the ECM (in the clear, yeah, but that's a fake/test ECMG).
+        ts::duck::ClearECM ecm;
         for (auto it = msg->CP_CW_combination.begin(); it != msg->CP_CW_combination.end(); ++it) {
             if (it->CP < msg->CP_number || it->CP > msg->CP_number + _opt.channelStatus.lead_CW) {
                 // Incorrect CP/CW combination.
                 return sendErrorResponse(msg, ts::ecmgscs::Errors::not_enough_CW);
             }
-            ecm.appendUInt16((it->CP & 0x01) == 0 ? ts::tlv::PRM_CW_EVEN : ts::tlv::PRM_CW_ODD);
-            ecm.appendUInt16(uint16_t(it->CW.size()));
-            ecm.append(it->CW);
+            if ((it->CP & 0x01) == 0) {
+                ecm.cw_even = it->CW;
+            }
+            else {
+                ecm.cw_odd = it->CW;
+            }
         }
 
         // Add optional access criteria in ECM.
         if (msg->has_access_criteria) {
-            ecm.appendUInt16(ts::tlv::PRM_ACCESS_CRITERIA);
-            ecm.appendUInt16(uint16_t(msg->access_criteria.size()));
-            ecm.append(msg->access_criteria);
+            ecm.access_criteria = msg->access_criteria;
         }
 
-        // Update length in message TLV.
-        ts::PutUInt16(ecm.data() + 2, uint16_t(ecm.size() - 4));
+        // Serialize the ECM section payload.
+        ts::ByteBlockPtr ecmBin(new ts::ByteBlock);
+        ts::tlv::Serializer serial(ecmBin);
+        ecm.serialize(serial);
 
         // Compute the table id for the ECM, 0x80 or 0x81. There are two incompatible possibilities.
         // First method is to copy the parity of the crypto period number. Second method is to
@@ -625,7 +625,7 @@ bool ECMGClient::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         const ts::TID tid = ts::TID(ts::TID_ECM_80 | (msg->CP_number & 0x01));
 
         // Build the ECM section.
-        ts::SectionPtr ecmSection(new ts::Section(tid, true, ecm.data(), ecm.size()));
+        ts::SectionPtr ecmSection(new ts::Section(tid, true, ecmBin->data(), ecmBin->size()));
 
         // Format ECM for the response message.
         if (_opt.channelStatus.section_TSpkt_flag) {

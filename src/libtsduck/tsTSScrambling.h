@@ -66,6 +66,13 @@ namespace ts {
         TSScrambling(Report& report = CERR, uint8_t scrambling = SCRAMBLING_DVB_CSA2);
 
         //!
+        //! Copy constructor.
+        //! @param [in] Other instance to copy. Only the configuration parameters, typically
+        //! from the command line, are copied. The state of @a other is not copied.
+        //!
+        TSScrambling(const TSScrambling& other);
+
+        //!
         //! Define command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
         //!
@@ -182,7 +189,6 @@ namespace ts {
         bool setNextFixedCW(int parity);
 
         // Inaccessible operations.
-        TSScrambling(const TSScrambling&) = delete;
         TSScrambling& operator=(const TSScrambling&) = delete;
     };
 }

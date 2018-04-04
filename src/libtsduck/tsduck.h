@@ -109,6 +109,7 @@
 #include "tsDoubleCheckLock.h"
 #include "tsDTSDescriptor.h"
 #include "tsduck.h"
+#include "tsDuckProtocol.h"
 #include "tsDVBCharset.h"
 #include "tsDVBCharsetSingleByte.h"
 #include "tsDVBCharsetUTF16.h"

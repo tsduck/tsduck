@@ -26,42 +26,94 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for DVB descrambler plugins.
-//
-//----------------------------------------------------------------------------
 
 #include "tsAbstractDescrambler.h"
 #include "tsGuardCondition.h"
 TSDUCK_SOURCE;
 
-#define ECM_THREAD_STACK_OVERHEAD (16  * 1024)  // Stack usage in this module
-#define ECM_THREAD_STACK_USAGE    (128 * 1024)  // Default stack usage for CAS
+// Stack usage required by this module in the ECM deciphering thread.
+#define ECM_THREAD_STACK_OVERHEAD (16  * 1024)
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_,
-                                             const UString& description_,
-                                             const UString& syntax_,
-                                             const UString& help_) :
-    ProcessorPlugin(tsp_, description_, syntax_, help_),
-    _cw_mode(DVBCSA2::REDUCE_ENTROPY),
-    _packet_count(0),
+ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
+                                             const UString& description,
+                                             const UString& syntax,
+                                             size_t         stack_usage) :
+    ProcessorPlugin(tsp_, description, syntax),
+    _use_service(false),
     _abort(false),
     _synchronous(false),
-    _aes128_dvs042(false),
-    _iv(),
+    _scrambling(*tsp),
+    _pids(),
+    _packet_count(0),
     _service(),
-    _stack_usage(ECM_THREAD_STACK_USAGE),
-    _demux(this),
+    _stack_usage(stack_usage),
+    _demux(0, this),
     _ecm_streams(),
     _scrambled_streams(),
     _mutex(),
     _ecm_to_do(),
+    _ecm_thread(this),
     _stop_thread(false)
+{
+    option(u"",             0,  STRING, 0, 1);
+    option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"synchronous",  0);
+
+    setHelp(u"Service:\n"
+            u"  Specifies the optional service to descramble. If no fixed control word is\n"
+            u"  specified, ECM's from the service are used to extract control words.\n"
+            u"\n"
+            u"  If the argument is an integer value (either decimal or hexadecimal), it is\n"
+            u"  interpreted as a service id. Otherwise, it is interpreted as a service name,\n"
+            u"  as specified in the SDT. The name is not case sensitive and blanks are\n"
+            u"  ignored. If the input TS does not contain an SDT, use service ids only.\n"
+            u"\n"
+            u"  If the argument is omitted, --pid options shall be specified to list explicit\n"
+            u"  PID's to descramble and fixed control words shall be specified as well.\n"
+            u"\n"
+            u"General options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Descramble packets with this PID value. Several -p or --pid options may be\n"
+            u"      specified. By default, descramble the specified service.\n"
+            u"\n"
+            u"  --synchronous\n"
+            u"      Specify to synchronously decipher the ECM's. By default, continue\n"
+            u"      processing packets while processing ECM's. Use this option with\n"
+            u"      offline packet processing. Use the default (asynchronous) with live\n"
+            u"      packet processing.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
+
+    _scrambling.defineOptions(*this);
+    _scrambling.addHelp(*this);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor of ECMStream inner class.
+//----------------------------------------------------------------------------
+
+ts::AbstractDescrambler::ECMStream::ECMStream(AbstractDescrambler* parent) :
+    last_tid(TID_NULL),
+    scrambling(parent->_scrambling),
+    cw_valid(false),
+    new_cw_even(false),
+    new_cw_odd(false),
+    new_ecm(false),
+    ecm(),
+    cw_even(),
+    cw_odd()
 {
 }
 
@@ -77,7 +129,7 @@ ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStr
         return ecm_it->second;
     }
     else {
-        ECMStreamPtr p (new ECMStream());
+        ECMStreamPtr p(new ECMStream(this));
         _ecm_streams.insert(std::make_pair(ecm_pid, p));
         return p;
     }
@@ -85,38 +137,46 @@ ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStr
 
 
 //----------------------------------------------------------------------------
-// Start abstract descrambler.
+// Start method
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDescrambler::startDescrambler(bool           synchronous,
-                                               bool           reduce_entropy,
-                                               const Service& service,
-                                               size_t         stack_usage)
+bool ts::AbstractDescrambler::start()
 {
-    // Get descrambler parameters
-    _cw_mode = reduce_entropy ? DVBCSA2::REDUCE_ENTROPY : DVBCSA2::FULL_CW;
-    _synchronous = synchronous;
-    _service = service;
-    _stack_usage = stack_usage > 0 ? stack_usage : ECM_THREAD_STACK_USAGE;
+    // Load command line arguments.
+    _use_service = present(u"");
+    _service.set(value(u""));
+    _synchronous = present(u"synchronous");
+    getPIDSet(_pids, u"pid", true);
+    if (!_scrambling.loadArgs(*this)) {
+        return false;
+    }
+
+    // Descramble either a service or a list of PID's, not a mixture of them.
+    if (_use_service && _pids.any()) {
+        tsp->error(u"specify either a service or a list of PID's but not both");
+        return false;
+    }
+
+    // To descramble a fixed list of PID's, we need fixed control words.
+    if (_pids.any() && !_scrambling.hasFixedCW()) {
+        tsp->error(u"specify control words to descramble an explicit list of PID's");
+        return false;
+    }
 
     // Reset descrambler state
     _abort = false;
     _ecm_streams.clear();
     _scrambled_streams.clear();
-
-    // Initialize the section demux.
-    // If the service is known by name, filter the SDT, otherwise filter the PAT.
     _demux.reset();
-    _demux.addPID(PID(_service.hasName() ? PID_SDT : PID_PAT));
 
     // In asynchronous mode, create a thread for ECM processing
     if (!_synchronous) {
         _stop_thread = false;
         ThreadAttributes attr;
-        Thread::getAttributes(attr);
+        _ecm_thread.getAttributes(attr);
         attr.setStackSize(ECM_THREAD_STACK_OVERHEAD + _stack_usage);
-        Thread::setAttributes(attr);
-        Thread::start();
+        _ecm_thread.setAttributes(attr);
+        _ecm_thread.start();
     }
 
     return true;
@@ -137,7 +197,7 @@ bool ts::AbstractDescrambler::stop()
             _stop_thread = true;
             lock.signal();
         }
-        Thread::waitForTermination();
+        _ecm_thread.waitForTermination();
     }
 
     return true;
@@ -145,127 +205,10 @@ bool ts::AbstractDescrambler::stop()
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+//  This method is invoked when a PMT is available for the service.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::handleTable(SectionDemux& demux, const BinaryTable& table)
-{
-    switch (table.tableId()) {
-
-        case TID_PAT: {
-            PAT pat(table);
-            if (pat.isValid()) {
-                processPAT(pat);
-            }
-            break;
-        }
-
-        case TID_SDT_ACT: {
-            SDT sdt(table);
-            if (sdt.isValid()) {
-                processSDT(sdt);
-            }
-            break;
-        }
-
-        case TID_PMT: {
-            PMT pmt(table);
-            if (pmt.isValid() && _service.hasId(pmt.service_id)) {
-                processPMT(pmt);
-            }
-            break;
-        }
-
-        case TID_ECM_80:
-        case TID_ECM_81: {
-            if (table.sectionCount() == 1) {
-                processCMT(*table.sectionAt(0));
-            }
-            break;
-        }
-
-        default: {
-            // Not interested in other tables.
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  This method processes a Service Description Table (SDT).
-//  We search the service in the SDT. Once we get the service, we rebuild a
-//  new SDT containing only one section and only one service (a copy of
-//  all descriptors for the service).
-//----------------------------------------------------------------------------
-
-void ts::AbstractDescrambler::processSDT(const SDT& sdt)
-{
-    // Look for the service by name
-    uint16_t service_id;
-    assert(_service.hasName());
-    if (!sdt.findService(_service.getName(), service_id)) {
-        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
-        _abort = true;
-        return;
-    }
-
-    // Remember service id
-    _service.setId(service_id);
-    tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
-
-    // No longer need to filter the SDT
-    _demux.removePID(PID_SDT);
-
-    // Now filter the PAT to get the PMT PID
-    _demux.addPID(PID_PAT);
-    _service.clearPMTPID();
-}
-
-
-//----------------------------------------------------------------------------
-//  This method processes a Program Association Table (PAT).
-//----------------------------------------------------------------------------
-
-void ts::AbstractDescrambler::processPAT(const PAT& pat)
-{
-    if (_service.hasId()) {
-        // The service id is known, search it in the PAT
-        PAT::ServiceMap::const_iterator it = pat.pmts.find (_service.getId());
-        if (it == pat.pmts.end()) {
-            // Service not found, error
-            tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
-            _abort = true;
-            return;
-        }
-        // If a previous PMT PID was known, no long filter it
-        if (_service.hasPMTPID()) {
-            _demux.removePID(_service.getPMTPID());
-        }
-        // Found PMT PID
-        _service.setPMTPID(it->second);
-        _demux.addPID(it->second);
-    }
-    else if (!pat.pmts.empty()) {
-        // No service specified, use first one in PAT
-        PAT::ServiceMap::const_iterator it = pat.pmts.begin();
-        _service.setId(it->first);
-        _service.setPMTPID(it->second);
-        _demux.addPID (it->second);
-        tsp->verbose(u"using service %d (0x%X)", {_service.getId(), _service.getId()});
-    }
-    else {
-        // No service specified, no service in PAT, error
-        tsp->error(u"no service in PAT");
-        _abort = true;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  This method processes a Program Map Table (PMT).
-//----------------------------------------------------------------------------
-
-void ts::AbstractDescrambler::processPMT(const PMT& pmt)
+void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
 {
     tsp->debug(u"PMT: service 0x%X, %d elementary streams", {pmt.service_id, pmt.streams.size()});
 
@@ -273,7 +216,8 @@ void ts::AbstractDescrambler::processPMT(const PMT& pmt)
     std::set<PID> service_ecm_pids;
     analyzeCADescriptors(pmt.descs, service_ecm_pids);
 
-    // Loop on all elementary streams in this service
+    // Loop on all elementary streams in this service.
+    // Create an entry in _scrambled_streams for each of them.
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
         const PMT::Stream& stream(it->second);
@@ -307,34 +251,18 @@ void ts::AbstractDescrambler::analyzeCADescriptors(const DescriptorList& dlist, 
         size_t size = dlist[index]->payloadSize();
 
         // The fixed part of a CA descriptor is 4 bytes long.
-        if (size < 4) {
-            continue;
-        }
-        uint16_t sysid = GetUInt16 (desc);
-        uint16_t pid = GetUInt16 (desc + 2) & 0x1FFF;
-        desc += 4; size -= 4;
+        if (size >= 4) {
+            const uint16_t sysid = GetUInt16(desc);
+            const uint16_t pid = GetUInt16(desc + 2) & 0x1FFF;
 
-        // Ask subclass if this PID is OK
-        if (checkCADescriptor(sysid, desc, size)) {
-            ecm_pids.insert (pid);
-            getOrCreateECMStream(pid);
-            _demux.addPID(pid);
-            tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
-        }
-
-        // Normally, no PID should be referenced in the private part of a CA
-        // descriptor. However, this rule is not followed by MediaGuard.
-        if (CASFamilyOf(sysid) == CAS_MEDIAGUARD && size >= 13) {
-            desc += 13; size -= 13;
-            while (size >= 15) {
-                pid = GetUInt16(desc) & 0x1FFF;
-                if (checkCADescriptor(sysid, desc + 2, 13)) {
-                    ecm_pids.insert(pid);
-                    getOrCreateECMStream(pid);
-                    _demux.addPID(pid);
-                    tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
-                }
-                desc += 15; size -= 15;
+            // Ask subclass if this PID is OK
+            if (checkCADescriptor(sysid, ByteBlock(desc + 4, size - 4))) {
+                tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
+                // Create context for this ECM stream.
+                ecm_pids.insert(pid);
+                getOrCreateECMStream(pid);
+                // Ask the demux to notify us of ECM's in this PID.
+                _demux.addPID(pid);
             }
         }
     }
@@ -342,10 +270,10 @@ void ts::AbstractDescrambler::analyzeCADescriptors(const DescriptorList& dlist, 
 
 
 //----------------------------------------------------------------------------
-// Process one CMT (CA Message Table) section containing an ECM
+// Invoked by the demux when a section is available in an ECM PID.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::processCMT(const Section& sect)
+void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& sect)
 {
     const PID ecm_pid = sect.sourcePID();
     tsp->log(2, u"got ECM (TID 0x%X) on PID %d (0x%X)", {sect.tableId(), ecm_pid, ecm_pid});
@@ -367,16 +295,10 @@ void ts::AbstractDescrambler::processCMT(const Section& sect)
     estream->last_tid = sect.tableId();
 
     // Check if the ECM can be deciphered (ask subclass)
-    if (!checkECM(sect.payload(), sect.payloadSize())) {
+    if (!checkECM(sect)) {
         tsp->log(2, u"ECM not handled by subclass");
         return;
     }
-
-    if (sect.payloadSize() > sizeof(estream->ecm)) {
-        tsp->error(u"ECM too long (%d bytes) on PID %d (0x%X)", {sect.payloadSize(), ecm_pid, ecm_pid});
-        return;
-    }
-
     tsp->debug(u"new ECM (TID 0x%X) on PID %d (0x%X)", {sect.tableId(), ecm_pid, ecm_pid});
 
     // In asynchronous mode, the CW are accessed under mutex protection.
@@ -385,9 +307,7 @@ void ts::AbstractDescrambler::processCMT(const Section& sect)
     }
 
     // Copy the ECM into the PID context.
-    // Flawfinder: ignore: memcpy()
-    ::memcpy(estream->ecm, sect.payload(), sect.payloadSize());
-    estream->ecm_size = sect.payloadSize();
+    estream->ecm.copy(sect);
     estream->new_ecm = true;
 
     // Decipher the ECM.
@@ -412,39 +332,33 @@ void ts::AbstractDescrambler::processCMT(const Section& sect)
 void ts::AbstractDescrambler::processECM(ECMStream& estream)
 {
     // Copy the ECM out of the protected area into local data
-
-    uint8_t ecm[MAX_PSI_SECTION_SIZE];
-    size_t ecm_size = estream.ecm_size;
-    assert(estream.ecm_size <= sizeof(ecm));
-    ::memcpy(ecm, estream.ecm, estream.ecm_size);  // Flawfinder: ignore: memcpy()
+    Section ecm(estream.ecm, COPY);
     estream.new_ecm = false;
 
     // In asynchronous mode, release the mutex.
-
     if (!_synchronous) {
         _mutex.release();
     }
 
     // Here, we have an ECM to decipher.
-
-    tsp->debug(u"packet %d, decipher ECM, %d bytes: %X %X %X %X %X %X %X %X ...",
-               {_packet_count - 1, ecm_size, ecm[0], ecm[1], ecm[2], ecm[3], ecm[4], ecm[5], ecm[6], ecm[7]});
+    const size_t dumpSize = std::min<size_t>(8, ecm.payloadSize());
+    tsp->debug(u"packet %d, decipher ECM, %d bytes: %s%s", {
+               _packet_count - 1,
+               ecm.payloadSize(),
+               UString::Dump(ecm.payload(), dumpSize, UString::SINGLE_LINE),
+               dumpSize < ecm.payloadSize() ? u" ..." : u""});
 
     // Submit the ECM to the CAS (subclass)
-
-    uint8_t cw_even[DVBCSA2::KEY_SIZE];
-    uint8_t cw_odd[DVBCSA2::KEY_SIZE];
-    bool ok = decipherECM(ecm, ecm_size, cw_even, cw_odd);
+    ByteBlock cw_even;
+    ByteBlock cw_odd;
+    bool ok = decipherECM(ecm, cw_even, cw_odd);
 
     if (ok) {
-        tsp->debug(u"even CW: %X %X %X %X %X %X %X %X",
-                   {cw_even[0], cw_even[1], cw_even[2], cw_even[3], cw_even[4], cw_even[5], cw_even[6], cw_even[7]});
-        tsp->debug(u"odd CW:  %X %X %X %X %X %X %X %X",
-                   {cw_odd[0], cw_odd[1], cw_odd[2], cw_odd[3], cw_odd[4], cw_odd[5], cw_odd[6], cw_odd[7]});
+        tsp->debug(u"even CW: %s", {UString::Dump(cw_even, UString::SINGLE_LINE)});
+        tsp->debug(u"odd CW:  %s", {UString::Dump(cw_odd, UString::SINGLE_LINE)});
     }
 
     // In asynchronous mode, relock the mutex.
-
     if (!_synchronous) {
         _mutex.acquire();
     }
@@ -453,21 +367,19 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
     // Normally, only one CW is modified for each new ECM.
     // Compare extracted CW with previous ones to avoid signaling a new
     // CW when it is actually unchanged.
-
     if (ok) {
-        if (!estream.cw_valid || ::memcmp(estream.cw_even, cw_even, DVBCSA2::KEY_SIZE) != 0) {
+        if (!estream.cw_valid || estream.cw_even != cw_even) {
             // Previous even CW was either invalid or different from new one
             estream.new_cw_even = true;
-            ::memcpy(estream.cw_even, cw_even, DVBCSA2::KEY_SIZE);
+            estream.cw_even = cw_even;
         }
-        if (!estream.cw_valid || ::memcmp(estream.cw_odd, cw_odd, DVBCSA2::KEY_SIZE) != 0) {
+        if (!estream.cw_valid || estream.cw_odd != cw_odd) {
             // Previous odd CW was either invalid or different from new one
             estream.new_cw_odd = true;
-            ::memcpy(estream.cw_odd, cw_odd, DVBCSA2::KEY_SIZE);
+            estream.cw_odd = cw_odd;
         }
+        estream.cw_valid = ok;
     }
-
-    estream.cw_valid = ok;
 }
 
 
@@ -475,16 +387,15 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
 // ECM deciphering thread
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::main()
+void ts::AbstractDescrambler::ECMThread::main()
 {
-    tsp->debug(u"ECM processing thread started");
+    _parent->tsp->debug(u"ECM processing thread started");
 
     // ECM processing loop.
     // The loop executes with the mutex held. The mutex is released
     // while deciphering an ECM and while waiting for the condition
     // variable 'ecm_to_do'.
-
-    GuardCondition lock(_mutex, _ecm_to_do);
+    GuardCondition lock(_parent->_mutex, _parent->_ecm_to_do);
 
     for (;;) {
 
@@ -494,24 +405,24 @@ void ts::AbstractDescrambler::main()
         // released during the ECM processing and a new ECM may
         // have been added at the beginning of the list.
 
-        bool got_ecm, terminate;
+        bool got_ecm = false;
+        bool terminate = false;
 
         do {
             got_ecm = false;
-            terminate = _stop_thread;
+            terminate = _parent->_stop_thread;
 
             // Decipher ECM's on all ECM PID's.
-            for (ECMStreamMap::iterator it = _ecm_streams.begin(); !terminate && it != _ecm_streams.end(); ++it) {
+            for (ECMStreamMap::iterator it = _parent->_ecm_streams.begin(); !terminate && it != _parent->_ecm_streams.end(); ++it) {
                 ECMStreamPtr& estream(it->second);
                 if (estream->new_ecm) {
-
                     // Found an ECM, decipher it. Note that the mutex is
                     // released while deciphering the ECM.
                     got_ecm = true;
-                    processECM(*estream);
+                    _parent->processECM(*estream);
 
                     // Look for termination request while deciphering
-                    terminate = _stop_thread;
+                    terminate = _parent->_stop_thread;
                 }
             }
         } while (!terminate && got_ecm);
@@ -529,7 +440,7 @@ void ts::AbstractDescrambler::main()
         lock.waitCondition();
     }
 
-    tsp->debug(u"ECM processing thread terminated");
+    _parent->tsp->debug(u"ECM processing thread terminated");
 }
 
 
@@ -539,43 +450,48 @@ void ts::AbstractDescrambler::main()
 
 ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
+    const PID pid = pkt.getPID();
+
     // Count packets
     _packet_count++;
 
-    // Filter interesting sections
-    _demux.feedPacket(pkt);
-
-    // If a fatal error occured during section analysis, give up.
-    if (_abort) {
-        return TSP_END;
+    // Descramble packets from fixed PID's using fixed control words.
+    // If there is a user-specified list of PID's, we don't manage a service
+    // and there is nothing else to do.
+    if (_pids.any()) {
+        return !_pids.test(pid) || _scrambling.decrypt(pkt) ? TSP_OK : TSP_END;
     }
 
-    // If the packet has no payload, there is nothing to descramble
-    if (!pkt.hasPayload()) {
-        return TSP_OK;
+    // Filter sections to locate the service and grab ECM's.
+    _service.feedPacket(pkt);
+    _demux.feedPacket(pkt);
+
+    // If the service is definitely unknown or a fatal error occured during table analysis, give up.
+    if (_abort || _service.nonExistentService()) {
+        return TSP_END;
     }
 
     // Get scrambling_control_value in packet.
     uint8_t scv = pkt.getScrambling();
 
-    // Do not modify packet if not scrambled
-    if (scv != SC_EVEN_KEY && scv != SC_ODD_KEY) {
+    // If the packet has no payload or is clear, there is nothing to descramble.
+    if (!pkt.hasPayload() || (scv != SC_EVEN_KEY && scv != SC_ODD_KEY)) {
         return TSP_OK;
     }
 
     // Get PID context. If the PID is not known as a scrambled PID,
     // with a corresponding ECM stream, we cannot descramble it.
-    const PID pid = pkt.getPID();
     ScrambledStreamMap::iterator ssit = _scrambled_streams.find(pid);
     if (ssit == _scrambled_streams.end()) {
         return TSP_OK;
     }
     ScrambledStream& ss(ssit->second);
 
-    // Locate an ECM stream with a currently valid pair of CW
+    // Locate an ECM stream with a currently valid pair of CW.
     ECMStreamPtr pecm;
     for (std::set<PID>::const_iterator it = ss.ecm_pids.begin(); pecm.isNull() && it != ss.ecm_pids.end(); ++it) {
         pecm = getOrCreateECMStream(*it);
+        // Flag cw_valid is "write-protected, read-volatile", no mutex needed.
         if (!pecm->cw_valid) {
             pecm.clear();
         }
@@ -585,41 +501,23 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
         return TSP_OK;
     }
 
-    // We found a valid CW, check if new CW were deciphered
+    // We found a valid CW, check if new CW were deciphered and store them in the descrambler.
+    // Flags new_cw_even/odd are "write-protected, read-volatile", no mutex needed.
     if ((scv == SC_EVEN_KEY && pecm->new_cw_even) || (scv == SC_ODD_KEY && pecm->new_cw_odd)) {
 
-        // A new CW was deciphered. Convert it into a DVB-CSA key context.
+        // A new CW was deciphered. 
         // In asynchronous mode, the CW are accessed under mutex protection.
-
         if (!_synchronous) {
             _mutex.acquire();
         }
 
-        if (_aes128_dvs042) {
-            if (!pecm->dvs042.setIV(_iv.data(), _iv.size())) {
-                tsp->error(u"error setting initialization vector in AES-128/DVS042 engine");
-                _abort = true;
-                return TSP_END;
-            }
-            uint8_t key[2 * DVBCSA2::KEY_SIZE];
-            ::memcpy(key, pecm->cw_even, DVBCSA2::KEY_SIZE);
-            ::memcpy(key + DVBCSA2::KEY_SIZE, pecm->cw_odd, DVBCSA2::KEY_SIZE);
-            if (!pecm->dvs042.setKey(key, 2 * DVBCSA2::KEY_SIZE)) {
-                tsp->error(u"error setting descrambling key in AES-128/DVS042 engine");
-                _abort = true;
-                return TSP_END;
-            }
-            pecm->new_cw_even = false;
-            pecm->new_cw_odd = false;
-        }
-        else if (scv == SC_EVEN_KEY) {
-            pecm->key_even.setEntropyMode(_cw_mode);
-            pecm->key_even.setKey(pecm->cw_even, sizeof(pecm->cw_even));
+        // Store the new CW in the descrambler.
+        if (scv == SC_EVEN_KEY) {
+            pecm->scrambling.setCW(pecm->cw_even, SC_EVEN_KEY);
             pecm->new_cw_even = false;
         }
         else {
-            pecm->key_odd.setEntropyMode(_cw_mode);
-            pecm->key_odd.setKey(pecm->cw_odd, sizeof(pecm->cw_odd));
+            pecm->scrambling.setCW(pecm->cw_odd, SC_ODD_KEY);
             pecm->new_cw_odd = false;
         }
 
@@ -628,37 +526,6 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
         }
     }
 
-    // Descramble the packet payload
-    uint8_t* const pl = pkt.getPayload();
-    size_t const pl_size = pkt.getPayloadSize();
-    if (_aes128_dvs042) {
-        uint8_t tmp[PKT_SIZE];
-        assert(pl_size < sizeof(tmp));
-        if (!pecm->dvs042.decrypt(pl, pl_size, tmp, pl_size)) {
-            tsp->error(u"AES decrypt error");
-            return TSP_END;
-        }
-        ::memcpy(pl, tmp, pl_size);  // Flawfinder: ignore: memcpy()
-    }
-    else {
-        DVBCSA2& scr(scv == SC_EVEN_KEY ? pecm->key_even : pecm->key_odd);
-        scr.decryptInPlace(pl, pl_size);
-
-        // Trace CW change in PIDs
-        if (scv != ss.last_scv) {
-            ss.last_scv = scv;
-            //@@
-            //@@ uint8_t cw[DVBCSA2::KEY_SIZE];
-            //@@ const bool get_cw_ok = scr.getCW(cw, sizeof(cw));
-            //@@ assert(get_cw_ok);
-            //@@ tsp->debug(u"packet %d, PID %d (0x%X), new CW (%s): %X %X %X %X %X %X %X %X",
-            //@@            {_packet_count - 1, pid, pid, scv == SC_EVEN_KEY ? u"even" : u"odd",
-            //@@            cw[0], cw[1], cw[2], cw[3], cw[4], cw[5], cw[6], cw[7]});
-        }
-    }
-
-    // Reset scrambling_control_value to zero in TS header
-    pkt.setScrambling(SC_CLEAR);
-
-    return TSP_OK;
+    // Descramble the packet payload.
+    return pecm->scrambling.decrypt(pkt) ? TSP_OK : TSP_END;
 }

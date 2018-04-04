@@ -772,8 +772,8 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
     // Filter interesting sections to discover the service.
     _service.feedPacket(pkt);
 
-    // If a fatal error occured during PMT analysis, give up.
-    if (_abort) {
+    // If the service is definitely unknown or a fatal error occured during PMT analysis, give up.
+    if (_abort || _service.nonExistentService()) {
         return TSP_END;
     }
 

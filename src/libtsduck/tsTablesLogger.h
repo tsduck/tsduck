@@ -146,12 +146,6 @@ namespace ts {
         void preDisplay(PacketCounter first, PacketCounter last);
         void postDisplay();
 
-        // Build header of a TLV message
-        void startMessage(ByteBlock&, uint16_t message_type, PID pid);
-
-        // Add a section into a TLV message
-        void addSection(ByteBlock&, const Section&);
-
     private:
         // Inaccessible operations.
         TablesLogger() = delete;
