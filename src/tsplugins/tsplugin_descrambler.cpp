@@ -28,14 +28,14 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  DVB-CSA (Common Scrambling Algorithm) Descrambler
+//  Generic / sample / reference descrambler.
+//  Can be used as a template for real conditional access systems.
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsAbstractDescrambler.h"
 #include "tsPluginRepository.h"
-#include "tsTSScrambling.h"
-#include "tsByteBlock.h"
+#include "tsDuckProtocol.h"
 TSDUCK_SOURCE;
 
 
@@ -44,18 +44,18 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class DescramblerPlugin: public ProcessorPlugin
+    class DescramblerPlugin: public AbstractDescrambler
     {
     public:
-        // Implementation of plugin API
-        DescramblerPlugin (TSP*);
-        virtual bool start() override;
-        virtual Status processPacket (TSPacket&, bool&, bool&) override;
+        DescramblerPlugin(TSP*);
+
+    protected:
+        // Implementation of AbstractDescrambler.
+        virtual bool checkCADescriptor(uint16_t cas_id, const ByteBlock& priv) override;
+        virtual bool checkECM(const Section& ecm) override;
+        virtual bool decipherECM(const Section& ecm, ByteBlock& cw_even, ByteBlock& cw_odd) override;
 
     private:
-        TSScrambling _scrambling;
-        PIDSet       _pids;
-
         // Inaccessible operations
         DescramblerPlugin() = delete;
         DescramblerPlugin(const DescramblerPlugin&) = delete;
@@ -72,63 +72,71 @@ TSPLUGIN_DECLARE_PROCESSOR(descrambler, ts::DescramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Generic DVB descrambler.", u"[options]"),
-    _scrambling(*tsp),
-    _pids()
+    AbstractDescrambler(tsp_, u"Generic DVB descrambler.")
 {
-    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-
-    setHelp(u"General options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Descramble packets with this PID value. Several -p or --pid options may be\n"
-            u"      specified. By default, all PID's with scrambled packets are descrambled.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
-
-    _scrambling.defineOptions(*this);
-    _scrambling.addHelp(*this);
+    setHelp(u"This plugin descrambles fixed PID's with fixed control words. As a demo, it can\n"
+            u"also descramble services for which clear ECM's were generated using the utility\n"
+            u"named tsecmg, a DVB SimulCrypt-compliant ECMG for test and demo.\n"
+            u"\n" +
+            getHelp());
 }
 
 
+
 //----------------------------------------------------------------------------
-// Start method
+// Check a CA_descriptor from a PMT.
 //----------------------------------------------------------------------------
 
-bool ts::DescramblerPlugin::start()
+bool ts::DescramblerPlugin::checkCADescriptor(uint16_t cas_id, const ByteBlock& priv)
 {
-    // Load command line arguments.
-    getPIDSet(_pids, u"pid", true);
-    if (!_scrambling.loadArgs(*this)) {
-        return false;
-    }
-
-    // Currently, we need fixed control words.
-    if (!_scrambling.hasFixedCW()) {
-        tsp->error(u"no control word specified");
-        return false;
-    }
-
+    // In this demo descrambler, we accept all CAS id.
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Packet processing method
+// Check if the descrambler may decipher an ECM.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+bool ts::DescramblerPlugin::checkECM(const Section& ecm)
 {
-    // Filter out PID's which are not descrambled.
-    if (!_pids.test(pkt.getPID()) || _scrambling.decrypt(pkt)) {
-        return TSP_OK;
+    // In this demo descrambler, we do not add any further check.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Decipher an ECM.
+//----------------------------------------------------------------------------
+
+bool ts::DescramblerPlugin::decipherECM(const Section& ecm, ByteBlock& cw_even, ByteBlock& cw_odd)
+{
+    // Clear returned ECM's.
+    cw_even.clear();
+    cw_odd.clear();
+
+    // The ECM content is the section payload.
+    const uint8_t* const ecmData = ecm.payload();
+    const size_t ecmSize = ecm.payloadSize();
+
+    // Analyze ECM as a TLV message.
+    tlv::MessageFactory mf(ecmData, ecmSize, duck::Protocol::Instance());
+    tlv::MessagePtr msg;
+    if (mf.errorStatus() == tlv::OK) {
+        mf.factory(msg);
+    }
+
+    // If this a valid ECM?
+    SafePtr<duck::ClearECM> clearECM(msg.downcast<duck::ClearECM>());
+    if (clearECM.isNull()) {
+        // Not a valid ECM as generated by tsecmg.
+        const size_t dumpSize = std::min<size_t>(ecmSize, 16);
+        tsp->error(u"received invalid ECM (%d bytes): %s%s", {ecmSize, UString::Dump(ecmData, dumpSize, UString::SINGLE_LINE), dumpSize < ecmSize ? u" ..." : u""});
+        return false;
     }
     else {
-        return TSP_END;
+        cw_even = clearECM->cw_even;
+        cw_odd = clearECM->cw_odd;
+        return true;
     }
 }

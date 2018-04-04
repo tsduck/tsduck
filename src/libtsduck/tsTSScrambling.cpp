@@ -44,12 +44,23 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _decrypt_scv(SC_CLEAR),
     _dvbcsa(),
     _idsa(),
-    _scrambler()
+    _scrambler{0, 0}
 {
-    if (!setScramblingType(scrambling)) {
-        // Fallback to DVB-CSA2 by default.
-        setScramblingType(SCRAMBLING_DVB_CSA2);
-    }
+    setScramblingType(scrambling);
+}
+
+ts::TSScrambling::TSScrambling(const TSScrambling& other) :
+    _report(other._report),
+    _scrambling_type(other._scrambling_type),
+    _cw_list(other._cw_list),
+    _next_cw(_cw_list.end()),
+    _encrypt_scv(SC_CLEAR),
+    _decrypt_scv(SC_CLEAR),
+    _dvbcsa(),
+    _idsa(),
+    _scrambler{0, 0}
+{
+    setScramblingType(_scrambling_type);
 }
 
 
@@ -69,6 +80,12 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling)
             _scrambler[1] = &_idsa[1];
             break;
         default:
+            // Fallback to DVB-CSA2 if no scrambler was previously defined.
+            if (_scrambler[0] == 0 || _scrambler[1] == 0) {
+                _scrambling_type = SCRAMBLING_DVB_CSA2;
+                _scrambler[0] = &_dvbcsa[0];
+                _scrambler[1] = &_dvbcsa[1];
+            }
             return false;
     }
 

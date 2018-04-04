@@ -93,6 +93,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF16.h" />
@@ -437,6 +438,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF16.cpp" />

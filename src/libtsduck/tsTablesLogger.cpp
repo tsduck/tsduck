@@ -36,6 +36,7 @@
 #include "tstlv.h"
 #include "tsTime.h"
 #include "tsSimulCryptDate.h"
+#include "tsDuckProtocol.h"
 #include "tsxmlComment.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
@@ -275,25 +276,29 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     }
 
     if (_opt.use_udp) {
-        ByteBlock bb;
+        ByteBlockPtr bin(new ByteBlock);
         // Minimize allocation by reserving over size
-        bb.reserve(table.totalSize() + 32 + 4 * table.sectionCount());
+        bin->reserve(table.totalSize() + 32 + 4 * table.sectionCount());
         if (_opt.udp_raw) {
             // Add raw content of each section the message
             for (size_t i = 0; i < table.sectionCount(); ++i) {
                 const Section& sect(*table.sectionAt(i));
-                bb.append(sect.content(), sect.size());
+                bin->append(sect.content(), sect.size());
             }
         }
         else {
-            // Build a TLV message. Each section is a separate PRM_SECTION parameter.
-            startMessage(bb, tlv::MSG_LOG_TABLE, pid);
+            // Build a TLV message.
+            duck::LogTable msg;
+            msg.pid = pid;
+            msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
             for (size_t i = 0; i < table.sectionCount(); ++i) {
-                addSection(bb, *table.sectionAt(i));
+                msg.sections.push_back(table.sectionAt(i));
             }
+            tlv::Serializer serial(bin);
+            msg.serialize(serial);
         }
         // Send TLV message over UDP
-        _sock.send(bb.data(), bb.size(), _report);
+        _sock.send(bin->data(), bin->size(), _report);
     }
 
     // Check max table count
@@ -378,14 +383,17 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
             _sock.send(sect.content(), sect.size(), _report);
         }
         else {
-            ByteBlock bb;
-            // Minimize allocation by reserving over size
-            bb.reserve(sect.size() + 32);
-            // Build a TLV message with one PRM_SECTION parameter.
-            startMessage(bb, tlv::MSG_LOG_SECTION, sect.sourcePID());
-            addSection(bb, sect);
+            // Build a TLV message.
+            duck::LogSection msg;
+            msg.pid = sect.sourcePID();
+            msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
+            msg.section = new Section(sect, SHARE);
+            // Serialize the message.
+            ByteBlockPtr bin(new ByteBlock);
+            tlv::Serializer serial(bin);
+            msg.serialize(serial);
             // Send TLV message over UDP
-            _sock.send(bb.data(), bb.size(), _report);
+            _sock.send(bin->data(), bin->size(), _report);
         }
     }
 
@@ -524,47 +532,6 @@ void ts::TablesLogger::postDisplay()
     if (_opt.flush) {
         _display.flush();
     }
-}
-
-
-//----------------------------------------------------------------------------
-//  Build header of a TLV message
-//----------------------------------------------------------------------------
-
-void ts::TablesLogger::startMessage(ByteBlock& bb, uint16_t message_type, PID pid)
-{
-    bb.clear();
-    // Protocol version
-    bb.appendUInt8(tlv::TS_PROTOCOL_VERSION);
-    // Message type and length
-    bb.appendUInt16(message_type);
-    bb.appendUInt16(0); // message length placeholder
-    // PID parameter
-    bb.appendUInt16(tlv::PRM_PID);
-    bb.appendUInt16(2);
-    bb.appendUInt16(pid);
-    // Timestamp parameter
-    SimulCryptDate now(Time::CurrentLocalTime());
-    bb.appendUInt16(tlv::PRM_TIMESTAMP);
-    bb.appendUInt16(SimulCryptDate::SIZE);
-    now.putBinary(bb.enlarge(SimulCryptDate::SIZE));
-    // Update message length
-    PutUInt16(&bb[3], uint16_t(bb.size() - 5));
-}
-
-
-//----------------------------------------------------------------------------
-//  Add a section into a TLV message
-//----------------------------------------------------------------------------
-
-void ts::TablesLogger::addSection(ByteBlock& bb, const Section& sect)
-{
-    // Section parameter
-    bb.appendUInt16(tlv::PRM_SECTION);
-    bb.appendUInt16(uint16_t(sect.size()));
-    bb.append(sect.content(), sect.size());
-    // Update message length
-    PutUInt16(&bb[3], uint16_t(bb.size() - 5));
 }
 
 

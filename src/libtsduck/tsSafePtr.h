@@ -351,7 +351,7 @@ namespace ts {
         //! same object, interpreted as @a ST. Otherwise, return the null pointer. The
         //! @a MUTEX type of the returned safe pointer is the same as used in this object.
         //!
-        template <typename ST>
+        template <typename ST, typename std::enable_if<std::is_base_of<ST, T>::value>::type* = nullptr>
         SafePtr<ST,MUTEX> upcast()
         {
             return _shared->template upcast<ST>();
@@ -380,7 +380,7 @@ namespace ts {
         //! the null pointer. The @a MUTEX type of the returned safe pointer is the same as
         //! used in this object.
         //!
-        template <typename ST>
+        template <typename ST, typename std::enable_if<std::is_base_of<T, ST>::value>::type* = nullptr>
         SafePtr<ST,MUTEX> downcast()
         {
             return _shared->template downcast<ST>();

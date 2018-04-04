@@ -91,6 +91,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
+    ../../../src/libtsduck/tsDuckProtocol.h \
     ../../../src/libtsduck/tsDVBCharset.h \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
     ../../../src/libtsduck/tsDVBCharsetUTF16.h \
@@ -425,6 +426,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDescriptor.cpp \
     ../../../src/libtsduck/tsDescriptorList.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
+    ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF16.cpp \

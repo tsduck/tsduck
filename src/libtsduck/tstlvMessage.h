@@ -36,6 +36,7 @@
 #include "tstlvSerializer.h"
 #include "tsUString.h"
 #include "tsSafePtr.h"
+#include "tsVariable.h"
 
 namespace ts {
     namespace tlv {
@@ -244,6 +245,20 @@ namespace ts {
             }
 
             //!
+            //! Dump an optional integer value in decimal (helper routine for subclasses).
+            //! @tparam INT An integer type.
+            //! @param [in] indent Left indentation size.
+            //! @param [in] name Parameter name.
+            //! @param [in] value Integer value.
+            //! @return The formatted string with embedded new-lines.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            static UString dumpOptionalDecimal(size_t indent, const UString& name, const Variable<INT>& value)
+            {
+                return value.set() ? dumpDecimal(indent, name, value.value()) : u"";
+            }
+
+            //!
             //! Dump an optional integer value in hexadecimal (helper routine for subclasses).
             //! @tparam INT An integer type.
             //! @param [in] indent Left indentation size.
@@ -256,6 +271,20 @@ namespace ts {
             static UString dumpOptionalHexa(size_t indent, const UString& name, bool has_value, const INT& value)
             {
                 return has_value ? dumpHexa(indent, name, value) : u"";
+            }
+
+            //!
+            //! Dump an optional integer value in hexadecimal (helper routine for subclasses).
+            //! @tparam INT An integer type.
+            //! @param [in] indent Left indentation size.
+            //! @param [in] name Parameter name.
+            //! @param [in] value Integer value.
+            //! @return The formatted string with embedded new-lines.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            static UString dumpOptionalHexa(size_t indent, const UString& name, const Variable<INT>& value)
+            {
+                return value.set() ? dumpHexa(indent, name, value.value()) : u"";
             }
 
             //!
@@ -272,6 +301,21 @@ namespace ts {
             static UString dumpOptionalInteger(size_t indent, const UString& name, bool has_value, const INT& value)
             {
                 return has_value ? dumpInteger(indent, name, value) : u"";
+            }
+
+            //!
+            //! Dump an optional integer value (helper routine for subclasses).
+            //! Signed integer types are dumped in decimal, unsigned types in hexadecimal.
+            //! @tparam INT An integer type.
+            //! @param [in] indent Left indentation size.
+            //! @param [in] name Parameter name.
+            //! @param [in] value Integer value.
+            //! @return The formatted string with embedded new-lines.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            static UString dumpOptionalInteger(size_t indent, const UString& name, const Variable<INT>& value)
+            {
+                return value.set() ? dumpInteger(indent, name, value.value()) : u"";
             }
 
             //!
