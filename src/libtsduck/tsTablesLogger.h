@@ -101,6 +101,19 @@ namespace ts {
         //!
         void reportDemuxErrors(std::ostream& strm);
 
+        //!
+        //! Static routine to analyze UDP messages as sent by the table logger (option --ip-udp).
+        //! @param [in] data Address of UDP message.
+        //! @param [in] size Size in bytes of UDP message.
+        //! @param [in] no_encapsulation When true, the UDP message contains raw sections.
+        //! When false, the UDP message contains a TLV structure.
+        //! @param [out] sections List of sections in the message.
+        //! @param [out] timestamp Time of the collection of the table. Available only in TLV message.
+        //! Contains Time::Epoch if not available.
+        //! @return True on success, false on invalid message.         
+        //!
+        static bool AnalyzeUDPMessage(const uint8_t* data, size_t size, bool no_encapsulation, SectionPtrVector& sections, Time& timestamp);
+
     protected:
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

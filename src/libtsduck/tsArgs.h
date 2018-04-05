@@ -432,6 +432,19 @@ namespace ts {
         virtual void setHelp(const UString& help) {_help = help;}
 
         //!
+        //! Format help lines from a long text.
+        //! @param [in] level Indentation level:
+        //! - 0 : Titles, typically no indentation.
+        //! - 1 : Description of parameters, option names.
+        //! - 2 : Description of options.
+        //! @param [in] text A long text to format.
+        //! @param [in] line_width Target line width.
+        //! @return A string with embedded margins and new-lines.
+        //! Always terminated with a new line.
+        //!
+        UString helpLines(int level, const UString& text, size_t line_width = 79);
+
+        //!
         //! Set the option flags of the command.
         //!
         //! @param [in] flags Define various options, a combination of or'ed values from @link Flags @endlink.

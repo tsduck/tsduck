@@ -243,6 +243,23 @@ void ts::Section::initialize(PID pid)
 
 
 //----------------------------------------------------------------------------
+// Static method to compute a section size. Return zero on error.
+//----------------------------------------------------------------------------
+
+size_t ts::Section::SectionSize(const void* content, size_t content_size)
+{
+    if (content == 0 || content_size < MIN_SHORT_SECTION_SIZE || content_size > MAX_PRIVATE_SECTION_SIZE) {
+        return 0;
+    }
+    else {
+        const uint8_t* data = reinterpret_cast<const uint8_t*>(content);
+        size_t length = 3 + (GetUInt16(data + 1) & 0x0FFF);
+        return length < content_size ? 0 : length;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Private method: Helper for constructors.
 //----------------------------------------------------------------------------
 
@@ -251,33 +268,25 @@ void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation
     initialize (pid);
     _data = bbp;
 
-    // Basic check, for min and max section size
-
-    _is_valid = _data->size() >= MIN_SHORT_SECTION_SIZE && _data->size() <= MAX_PRIVATE_SECTION_SIZE;
-
-    // Extract short section header info
-
-    if (_is_valid) {
-        uint16_t length = GetUInt16 (&(*_data)[1]) & 0x0FFF;
-        _is_valid = length == _data->size() - 3;
-    }
+    // Basic validity check using section size
+    const size_t total_size = SectionSize(*bbp);
+    _is_valid = total_size > 0 && total_size == _data->size();
 
     // Extract long section header info
-
     if (isLongSection()) {
         _is_valid = _data->size() >= MIN_LONG_SECTION_SIZE && sectionNumber() <= lastSectionNumber();
     }
 
     // Check CRC32 if required
-
     if (isLongSection()) {
+        // Section size, without CRC32:
         const size_t size = _data->size() - 4;
         switch (crc_op) {
             case CRC32::CHECK:
-                _is_valid = CRC32 (_data->data(), size) == GetUInt32 (&(*_data)[size]);
+                _is_valid = CRC32(_data->data(), size) == GetUInt32(&(*_data)[size]);
                 break;
             case CRC32::COMPUTE:
-                PutUInt32 (_data->data() + size, CRC32 (_data->data(), size).value());
+                PutUInt32(_data->data() + size, CRC32(_data->data(), size).value());
                 break;
             case CRC32::IGNORE:
                 break;

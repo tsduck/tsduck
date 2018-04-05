@@ -226,6 +226,27 @@ ts::Args::Args(const UString& description, const UString& syntax, const UString&
 
 
 //----------------------------------------------------------------------------
+// Format help lines from a long text.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::helpLines(int level, const UString& text, size_t line_width)
+{
+    // Actual indentation width.
+    size_t indent = 0;
+    if (level == 1) {
+        indent = 2;
+    }
+    else if (level >= 2) {
+        indent = 6;
+    }
+
+    // Format the line.
+    const UString margin(indent, SPACE);
+    return (margin + text.toTrimmed()).toSplitLines(line_width, u".,;:", margin) + u"\n";
+}
+
+
+//----------------------------------------------------------------------------
 // Add a new option.
 //----------------------------------------------------------------------------
 

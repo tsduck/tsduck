@@ -70,6 +70,45 @@ ts::tlv::MessageFactory::MessageFactory(const ByteBlock &bb, const Protocol* pro
 
 
 //----------------------------------------------------------------------------
+// Message factory
+//----------------------------------------------------------------------------
+
+void ts::tlv::MessageFactory::factory(MessagePtr& msg) const
+{
+    if (_error_status == OK) {
+        _protocol->factory(*this, msg);
+    }
+    else {
+        msg.clear();
+    }
+}
+
+ts::tlv::MessagePtr ts::tlv::MessageFactory::factory() const
+{
+    MessagePtr msg;
+    factory(msg);
+    return msg;
+}
+
+void ts::tlv::MessageFactory::buildErrorResponse(MessagePtr& msg) const
+{
+    if (_error_status == OK) {
+        msg.clear(); // no error
+    }
+    else {
+        _protocol->buildErrorResponse(*this, msg);
+    }
+}
+
+ts::tlv::MessagePtr ts::tlv::MessageFactory::errorResponse() const
+{
+    MessagePtr msg;
+    buildErrorResponse(msg);
+    return msg;
+}
+
+
+//----------------------------------------------------------------------------
 // Analyze the TLV message in memory.
 //----------------------------------------------------------------------------
 

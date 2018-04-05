@@ -121,10 +121,7 @@ bool ts::DescramblerPlugin::decipherECM(const Section& ecm, ByteBlock& cw_even, 
 
     // Analyze ECM as a TLV message.
     tlv::MessageFactory mf(ecmData, ecmSize, duck::Protocol::Instance());
-    tlv::MessagePtr msg;
-    if (mf.errorStatus() == tlv::OK) {
-        mf.factory(msg);
-    }
+    tlv::MessagePtr msg(mf.factory());
 
     // If this a valid ECM?
     SafePtr<duck::ClearECM> clearECM(msg.downcast<duck::ClearECM>());
