@@ -129,8 +129,8 @@ void ts::TSScrambling::addHelp(Args& args) const
         u"\n"
         u"  -n\n"
         u"  --no-entropy-reduction\n"
-        u"      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
-        u"      Ignored with --atis-idsa.\n";
+        u"      With DVB-CSA2, do not perform control word entropy reduction to 48 bits.\n"
+        u"      Keep full 64-bit control words. Ignored with --atis-idsa.\n";
 
     args.setHelp(args.getHelp() + help);
 }
