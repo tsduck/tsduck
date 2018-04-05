@@ -122,13 +122,14 @@ namespace ts {
     // Internals of the IPv4 protocol.
     //------------------------------------------------------------------------
 
-    const uint8_t IPv4_VERSION          =  4;   //!< Protocol version of IPv4 is ... 4 !
-    const size_t  IPv4_PROTOCOL_OFFSET  =  9;   //!< Offset of the protocol identifier in an IPv4 header.
-    const size_t  IPv4_CHECKSUM_OFFSET  = 10;   //!< Offset of the checksum in an IPv4 header.
-    const size_t  IPv4_SRC_ADDR_OFFSET  = 12;   //!< Offset of source IP address in an IPv4 header.
-    const size_t  IPv4_DEST_ADDR_OFFSET = 16;   //!< Offset of destination IP address in an IPv4 header.
-    const size_t  IPv4_MIN_HEADER_SIZE  = 20;   //!< Minimum size of an IPv4 header.
-    const size_t  UDP_HEADER_SIZE       =  8;   //!< Size of a UDP header.
+    const uint8_t IPv4_VERSION          =     4;   //!< Protocol version of IPv4 is ... 4 !
+    const size_t  IPv4_PROTOCOL_OFFSET  =     9;   //!< Offset of the protocol identifier in an IPv4 header.
+    const size_t  IPv4_CHECKSUM_OFFSET  =    10;   //!< Offset of the checksum in an IPv4 header.
+    const size_t  IPv4_SRC_ADDR_OFFSET  =    12;   //!< Offset of source IP address in an IPv4 header.
+    const size_t  IPv4_DEST_ADDR_OFFSET =    16;   //!< Offset of destination IP address in an IPv4 header.
+    const size_t  IPv4_MIN_HEADER_SIZE  =    20;   //!< Minimum size of an IPv4 header.
+    const size_t  UDP_HEADER_SIZE       =     8;   //!< Size of a UDP header.
+    const size_t  IP_MAX_PACKET_SIZE    = 65536;   //!< Maximum size of an IP packet.
 
     //!
     //! Selected IP protocol identifiers.

@@ -137,23 +137,31 @@ namespace ts {
             //! Return the fully rebuilt message.
             //! Valid only when errorStatus() == OK.
             //! @param [out] msg Safe pointer to the rebuilt message.
+            //! Set a null pointer on error.
             //!
-            void factory(MessagePtr& msg) const
-            {
-                assert(_error_status == OK);
-                _protocol->factory(*this, msg);
-            }
+            void factory(MessagePtr& msg) const;
+
+            //!
+            //! Return the fully rebuilt message.
+            //! Valid only when errorStatus() == OK.
+            //! @return Safe pointer to the rebuilt message or null pointer on error.
+            //!
+            MessagePtr factory() const;
 
             //!
             //! Return the error response for the peer.
             //! Valid only when errorStatus() != OK.
             //! @param [out] msg Safe pointer to the error response message.
+            //! Set a null pointer without error.
             //!
-            void buildErrorResponse(MessagePtr& msg) const
-            {
-                assert(_error_status != OK);
-                _protocol->buildErrorResponse(*this, msg);
-            }
+            void buildErrorResponse(MessagePtr& msg) const;
+
+            //!
+            //! Return the error response for the peer.
+            //! Valid only when errorStatus() != OK.
+            //! @return Safe pointer to the error response message or null pointer without error.
+            //!
+            MessagePtr errorResponse() const;
 
             //!
             //! Location of one parameter value inside the message block.
@@ -319,11 +327,11 @@ namespace ts {
                 MessageFactoryPtr compound; // for compound TLV parameter
 
                 // Constructor:
-                ExtParameter(const void*     tlv_addr_     = 0,
-                              size_t          tlv_size_     = 0,
-                              const void*     addr_         = 0,
-                              LENGTH          length_       = 0,
-                              MessageFactory* compound_     = 0) :
+                ExtParameter(const void*     tlv_addr_ = 0,
+                             size_t          tlv_size_ = 0,
+                             const void*     addr_ = 0,
+                             LENGTH          length_ = 0,
+                             MessageFactory* compound_ = 0) :
                     Parameter(tlv_addr_, tlv_size_, addr_, length_),
                     compound(compound_)
                 {

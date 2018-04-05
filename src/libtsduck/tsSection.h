@@ -586,6 +586,21 @@ namespace ts {
         //!
         std::ostream& dump(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false) const;
 
+        //!
+        //! Static method to compute a section size.
+        //! @param [in] content Address of the binary section data.
+        //! @param [in] content_size Size in bytes of the buffer containing the section and possibly trailing additional data.
+        //! @return The total size in bytes of the section starting at @a content or zero on error.
+        //!
+        static size_t SectionSize(const void* content, size_t content_size);
+
+        //!
+        //! Static method to compute a section size.
+        //! @param [in] content Buffer containing the section and possibly trailing additional data.
+        //! @return The total size in bytes of the section starting in @a content or zero on error.
+        //!
+        static size_t SectionSize(const ByteBlock& content) { return SectionSize(content.data(), content.size()); }
+
     private:
         // Private fields
         bool          _is_valid;    // Content of *_data is a valid section

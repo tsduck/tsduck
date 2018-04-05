@@ -46,8 +46,11 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in,out] report Where to report error.
+        //! @param [in] with_short_options When true, define one-letter short options.
+        //! @param [in] dest_as_param When true, the destination [address:]port is defined
+        //! as a parameter. When false, it is defined as option --ip--udp.
         //!
-        explicit UDPReceiver(Report& report = CERR);
+        explicit UDPReceiver(Report& report = CERR, bool with_short_options = true, bool dest_as_param = true);
 
         //!
         //! Define command line options in an Args.
@@ -69,6 +72,14 @@ namespace ts {
         //!
         virtual bool load(Args& args);
 
+        //!
+        //! Check if a UDP receiver is specified.
+        //! When @a dest_as_param is false in the constructor, the UDP parameters
+        //! are optional and it is legitimate to not use UDP.
+        //! @return True if UDP parameters are present.
+        //!
+        bool receiverSpecified() const { return _receiver_specified; }
+
         // Override UDPSocket methods
         virtual bool open(Report& report = CERR) override;
         virtual bool receive(void* data,
@@ -80,15 +91,18 @@ namespace ts {
                              Report& report = CERR) override;
 
     private:
-        SocketAddress           _dest_addr;         // Expected destination of packets.
-        IPAddress               _local_address;     // Local address on which to listen.
-        bool                    _reuse_port;        // Reuse port socket option.
-        bool                    _default_interface; // Use default local interface.
-        bool                    _use_first_source;  // Use socket address of first received packet to filter subsequent packets.
-        size_t                  _recv_bufsize;      // Socket receive buffer size.
-        SocketAddress           _use_source;        // Filter on this socket address of sender.
-        SocketAddress           _first_source;      // Socket address of first received packet.
-        std::set<SocketAddress> _sources;           // Set of all detected packet sources.
+        bool                    _with_short_options;
+        bool                    _dest_as_param;
+        bool                    _receiver_specified; // An address is specified.
+        SocketAddress           _dest_addr;          // Expected destination of packets.
+        IPAddress               _local_address;      // Local address on which to listen.
+        bool                    _reuse_port;         // Reuse port socket option.
+        bool                    _default_interface;  // Use default local interface.
+        bool                    _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
+        size_t                  _recv_bufsize;       // Socket receive buffer size.
+        SocketAddress           _use_source;         // Filter on this socket address of sender.
+        SocketAddress           _first_source;       // Socket address of first received packet.
+        std::set<SocketAddress> _sources;            // Set of all detected packet sources.
 
         // Unreachable operations
         UDPReceiver(const UDPReceiver&) = delete;

@@ -35,8 +35,11 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::UDPReceiver::UDPReceiver(ts::Report& report) :
+ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool dest_as_param) :
     UDPSocket(false, report),
+    _with_short_options(with_short_options),
+    _dest_as_param(dest_as_param),
+    _receiver_specified(false),
     _dest_addr(),
     _local_address(),
     _reuse_port(false),
@@ -56,13 +59,13 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report) :
 
 void ts::UDPReceiver::defineOptions(ts::Args& args) const
 {
-    args.option(u"",                  0,  Args::STRING, 1, 1);
-    args.option(u"buffer-size",      'b', Args::UNSIGNED);
+    args.option(_dest_as_param ? u"" : u"ip-udp", (!_dest_as_param && _with_short_options) ? 'i' : 0,  Args::STRING, 1, 1);
+    args.option(u"buffer-size", _with_short_options ? 'b' : 0, Args::UNSIGNED);
     args.option(u"default-interface", 0);
-    args.option(u"first-source",     'f');
-    args.option(u"local-address",    'l', Args::STRING);
-    args.option(u"reuse-port",       'r');
-    args.option(u"source",           's', Args::STRING);
+    args.option(u"first-source", _with_short_options ? 'f' : 0);
+    args.option(u"local-address", _with_short_options ? 'l' : 0, Args::STRING);
+    args.option(u"reuse-port", _with_short_options ? 'r' : 0);
+    args.option(u"source", _with_short_options ? 's' : 0, Args::STRING);
 }
 
 
@@ -72,54 +75,70 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
 
 void ts::UDPReceiver::addHelp(ts::Args& args) const
 {
-    UString help =
-            u"Parameter:\n"
-            u"\n"
-            u"  The parameter [address:]port describes the destination of UDP packets.\n"
-            u"  The 'port' part is mandatory and specifies the UDP port to listen on.\n"
-            u"  The 'address' part is optional. It specifies an IP multicast address\n"
-            u"  to listen on. It can be also a host name that translates to a multicast\n"
-            u"  address.\n"
-            u"\n"
-            u"UDP reception options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --buffer-size value\n"
-            u"      Specify the UDP socket receive buffer size (socket option).\n"
-            u"\n"
-            u"  --default-interface\n"
-            u"      Let the system find the appropriate local interface on which to listen.\n"
-            u"      By default, listen on all local interfaces.\n"
-            u"\n"
-            u"  -f\n"
-            u"  --first-source\n"
-            u"      Filter UDP packets based on the source address. Use the sender address of\n"
-            u"      the first received packet as only allowed source. This option is useful\n"
-            u"      when several sources send packets to the same destination address and port.\n"
-            u"      Accepting all packets could result in a corrupted stream and only one\n"
-            u"      sender shall be accepted. To allow a more precise selection of the sender,\n"
-            u"      use option --source. Options --first-source and --source are mutually\n"
-            u"      exclusive.\n"
-            u"\n"
-            u"  -l address\n"
-            u"  --local-address address\n"
-            u"      Specify the IP address of the local interface on which to listen.\n"
-            u"      It can be also a host name that translates to a local address.\n"
-            u"      By default, listen on all local interfaces.\n"
-            u"\n"
-            u"  -r\n"
-            u"  --reuse-port\n"
-            u"      Set the reuse port socket option.\n"
-            u"\n"
-            u"  -s address[:port]\n"
-            u"  --source address[:port]\n"
-            u"      Filter UDP packets based on the specified source address. This option is\n"
-            u"      useful when several sources send packets to the same destination address\n"
-            u"      and port. Accepting all packets could result in a corrupted stream and\n"
-            u"      only one sender shall be accepted. Options --first-source and --source\n"
-            u"      are mutually exclusive.\n";
+    // Format the help text for the [address:]port parameter / option.
+    const UString destText(args.helpLines(_dest_as_param ? 1 : 2,
+        u"The parameter [address:]port describes the destination of UDP packets to receive. "
+        u"The 'port' part is mandatory and specifies the UDP port to listen on. "
+        u"The 'address' part is optional. It specifies an IP multicast address to listen on. "
+        u"It can be also a host name that translates to a multicast address."));
+    UString destParameter;
+    UString destOption;
 
-    args.setHelp(help + args.getHelp());
+    if (_dest_as_param) {
+        destParameter = u"Parameter:\n\n" + destText + u"\n";
+    }
+    else {
+        destOption = UString(_with_short_options ? u"  --i [address:]port\n" : u"") +
+            u"  --ip-udp [address:]port\n" + destText + u"\n";
+    }
+
+    UString help =
+        destParameter +
+        u"UDP reception options:\n"
+        u"\n" +
+        UString(_with_short_options ? u"  -b value\n" : u"") +
+        u"  --buffer-size value\n"
+        u"      Specify the UDP socket receive buffer size (socket option).\n"
+        u"\n"
+        u"  --default-interface\n"
+        u"      Let the system find the appropriate local interface on which to listen.\n"
+        u"      By default, listen on all local interfaces.\n"
+        u"\n" +
+        UString(_with_short_options ? u"  -f\n" : u"") +
+        u"  --first-source\n"
+        u"      Filter UDP packets based on the source address. Use the sender address of\n"
+        u"      the first received packet as only allowed source. This option is useful\n"
+        u"      when several sources send packets to the same destination address and port.\n"
+        u"      Accepting all packets could result in a corrupted stream and only one\n"
+        u"      sender shall be accepted. To allow a more precise selection of the sender,\n"
+        u"      use option --source. Options --first-source and --source are mutually\n"
+        u"      exclusive.\n"
+        u"\n" +
+        destOption +
+        UString(_with_short_options ? u"  -l address\n" : u"") +
+        u"  --local-address address\n"
+        u"      Specify the IP address of the local interface on which to listen.\n"
+        u"      It can be also a host name that translates to a local address.\n"
+        u"      By default, listen on all local interfaces.\n"
+        u"\n" +
+        UString(_with_short_options ? u"  -r\n" : u"") +
+        u"  --reuse-port\n"
+        u"      Set the reuse port socket option.\n"
+        u"\n" +
+        UString(_with_short_options ? u"  -s address[:port]\n" : u"") +
+        u"  --source address[:port]\n"
+        u"      Filter UDP packets based on the specified source address. This option is\n"
+        u"      useful when several sources send packets to the same destination address\n"
+        u"      and port. Accepting all packets could result in a corrupted stream and\n"
+        u"      only one sender shall be accepted. Options --first-source and --source\n"
+        u"      are mutually exclusive.\n";
+
+    if (_dest_as_param) {
+        args.setHelp(help + args.getHelp());
+    }
+    else {
+        args.setHelp(args.getHelp() + u"\n" + help);
+    }
 }
 
 
@@ -129,14 +148,23 @@ void ts::UDPReceiver::addHelp(ts::Args& args) const
 
 bool ts::UDPReceiver::load(ts::Args& args)
 {
-    // General options.
+    // Get destination address.
+    const UString destination(args.value(_dest_as_param ? u"" : u"ip-udp"));
+    _receiver_specified = !destination.empty();
+
+    // When --ip-udp is specified as an option, the presence of a UDP received is optional.
+    // Option UDP-related parameters are ignored when not specified.
+    if (!_dest_as_param && !_receiver_specified) {
+        return true;
+    }
+
+    // General UDP options.
     _reuse_port = args.present(u"reuse-port");
     _default_interface = args.present(u"default-interface");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
 
-    // Get and resolve destination address.
-    const UString destination(args.value(u""));
+    // Resolve destination address.
     if (!_dest_addr.resolve(destination, args)) {
         return false;
     }
@@ -195,6 +223,12 @@ bool ts::UDPReceiver::load(ts::Args& args)
 
 bool ts::UDPReceiver::open(ts::Report& report)
 {
+    // Check if UDP parameters were specified.
+    if (!_receiver_specified) {
+        report.error(u"no UDP receiver address specified");
+        return false;
+    }
+
     // Clear collection of source address information.
     _first_source.clear();
     _sources.clear();
