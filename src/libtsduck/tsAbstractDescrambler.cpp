@@ -146,14 +146,14 @@ bool ts::AbstractDescrambler::start()
     _use_service = present(u"");
     _service.set(value(u""));
     _synchronous = present(u"synchronous");
-    getPIDSet(_pids, u"pid", true);
+    getPIDSet(_pids, u"pid");
     if (!_scrambling.loadArgs(*this)) {
         return false;
     }
 
     // Descramble either a service or a list of PID's, not a mixture of them.
-    if (_use_service && _pids.any()) {
-        tsp->error(u"specify either a service or a list of PID's but not both");
+    if ((_use_service + _pids.any()) != 1) {
+        tsp->error(u"specify either a service or a list of PID's");
         return false;
     }
 
