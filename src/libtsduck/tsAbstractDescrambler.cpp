@@ -45,12 +45,13 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
                                              size_t         stack_usage) :
     ProcessorPlugin(tsp_, description, syntax),
     _use_service(false),
+    _need_ecm(false),
     _abort(false),
     _synchronous(false),
     _scrambling(*tsp),
     _pids(),
     _packet_count(0),
-    _service(),
+    _service(this, *tsp),
     _stack_usage(stack_usage),
     _demux(0, this),
     _ecm_streams(),
@@ -157,6 +158,9 @@ bool ts::AbstractDescrambler::start()
         return false;
     }
 
+    // We need to decipher ECM's if we descramble a service without fixed control words.
+    _need_ecm = _use_service && !_scrambling.hasFixedCW();
+
     // To descramble a fixed list of PID's, we need fixed control words.
     if (_pids.any() && !_scrambling.hasFixedCW()) {
         tsp->error(u"specify control words to descramble an explicit list of PID's");
@@ -170,7 +174,7 @@ bool ts::AbstractDescrambler::start()
     _demux.reset();
 
     // In asynchronous mode, create a thread for ECM processing
-    if (!_synchronous) {
+    if (_need_ecm && !_synchronous) {
         _stop_thread = false;
         ThreadAttributes attr;
         _ecm_thread.getAttributes(attr);
@@ -191,7 +195,7 @@ bool ts::AbstractDescrambler::stop()
 {
     // In asynchronous mode, notify the ECM processing thread to terminate
     // and wait for its actual termination.
-    if (!_synchronous) {
+    if (_need_ecm && !_synchronous) {
         {
             GuardCondition lock(_mutex, _ecm_to_do);
             _stop_thread = true;
@@ -214,24 +218,34 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
 
     // Search ECM PID's at service level
     std::set<PID> service_ecm_pids;
-    analyzeCADescriptors(pmt.descs, service_ecm_pids);
+    if (_need_ecm) {
+        analyzeCADescriptors(pmt.descs, service_ecm_pids);
+    }
 
     // Loop on all elementary streams in this service.
     // Create an entry in _scrambled_streams for each of them.
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
-        const PMT::Stream& stream(it->second);
+        const PMT::Stream& pmt_stream(it->second);
+
+        // Enforce an entry for this PID in _scrambled_streams, even no valid ECM PID is found
+        // (maybe we don't need ECM at all). But the PID must be marked as potentially scrambled.
+        ScrambledStream& scr_stream(_scrambled_streams[pid]);
 
         // Search ECM PIDs at elementary stream level.
         std::set<PID> component_ecm_pids;
-        analyzeCADescriptors(stream.descs, component_ecm_pids);
+        if (_need_ecm) {
+            analyzeCADescriptors(pmt_stream.descs, component_ecm_pids);
+        }
 
         // If none found as stream level, use the ones from service level.
         if (!component_ecm_pids.empty()) {
-            _scrambled_streams[pid].ecm_pids = component_ecm_pids;
+            // Valid ECM PID's found at component level, use them.
+            scr_stream.ecm_pids = component_ecm_pids;
         }
         else if (!service_ecm_pids.empty()) {
-            _scrambled_streams[pid].ecm_pids = service_ecm_pids;
+            // Valid ECM PID's found at service level, use them.
+            scr_stream.ecm_pids = service_ecm_pids;
         }
     }
 }
@@ -477,6 +491,11 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
     // If the packet has no payload or is clear, there is nothing to descramble.
     if (!pkt.hasPayload() || (scv != SC_EVEN_KEY && scv != SC_ODD_KEY)) {
         return TSP_OK;
+    }
+
+    // Without ECM's, we descramble using fixed control words.
+    if (!_need_ecm) {
+        return _scrambling.decrypt(pkt) ? TSP_OK : TSP_END;
     }
 
     // Get PID context. If the PID is not known as a scrambled PID,

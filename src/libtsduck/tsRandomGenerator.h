@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!
@@ -73,8 +74,17 @@ namespace ts {
         virtual bool read(void* addr, size_t size) = 0;
 
         //!
+        //! Get random data in a byte block.
+        //! The default implementation uses read().
+        //! @param [out] data Returned random data.
+        //! @param [in] size Requested size in bytes of random data.
+        //! @return True on success, false on error.
+        //!
+        virtual bool readByteBlock(ByteBlock& data, size_t size);
+
+        //!
         //! Virtual destructor
         //!
-        virtual ~RandomGenerator() {}
+        virtual ~RandomGenerator();
     };
 }

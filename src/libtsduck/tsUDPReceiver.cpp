@@ -59,13 +59,21 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
 
 void ts::UDPReceiver::defineOptions(ts::Args& args) const
 {
-    args.option(_dest_as_param ? u"" : u"ip-udp", (!_dest_as_param && _with_short_options) ? 'i' : 0,  Args::STRING, 1, 1);
-    args.option(u"buffer-size", _with_short_options ? 'b' : 0, Args::UNSIGNED);
+    if (_dest_as_param) {
+        // [address:]port is a mandatory parameter.
+        args.option(u"", 0, Args::STRING, 1, 1);
+    }
+    else {
+        // [address:]port is an option.
+        args.option(u"ip-udp", _with_short_options ? 'i' : 0, Args::STRING);
+    }
+
+    args.option(u"buffer-size",       _with_short_options ? 'b' : 0, Args::UNSIGNED);
     args.option(u"default-interface", 0);
-    args.option(u"first-source", _with_short_options ? 'f' : 0);
-    args.option(u"local-address", _with_short_options ? 'l' : 0, Args::STRING);
-    args.option(u"reuse-port", _with_short_options ? 'r' : 0);
-    args.option(u"source", _with_short_options ? 's' : 0, Args::STRING);
+    args.option(u"first-source",      _with_short_options ? 'f' : 0);
+    args.option(u"local-address",     _with_short_options ? 'l' : 0, Args::STRING);
+    args.option(u"reuse-port",        _with_short_options ? 'r' : 0);
+    args.option(u"source",            _with_short_options ? 's' : 0, Args::STRING);
 }
 
 

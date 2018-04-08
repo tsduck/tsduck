@@ -26,22 +26,25 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsRandomGenerator.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 10
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 664
+ts::RandomGenerator::~RandomGenerator()
+{
+}
+
+//----------------------------------------------------------------------------
+// Get random data in a byte block.
+//----------------------------------------------------------------------------
+
+bool ts::RandomGenerator::readByteBlock(ByteBlock& data, size_t size)
+{
+    data.resize(size);
+    return read(data.data(), size);
+}
