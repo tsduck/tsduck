@@ -259,6 +259,36 @@ bool ts::ECMGClient::disconnect()
 
 
 //----------------------------------------------------------------------------
+// Build a CW_provision message.
+//----------------------------------------------------------------------------
+
+void ts::ECMGClient::buildCWProvision(ecmgscs::CWProvision& msg,
+                                      uint16_t cp_number,
+                                      const ByteBlock& current_cw,
+                                      const ByteBlock& next_cw,
+                                      const ByteBlock& ac,
+                                      uint16_t cp_duration)
+{
+    msg.channel_id = _stream_status.channel_id;
+    msg.stream_id = _stream_status.stream_id;
+    msg.CP_number = cp_number;
+    msg.has_CW_encryption = false;
+    msg.has_CP_duration = cp_duration != 0;
+    msg.CP_duration = cp_duration;
+    msg.has_access_criteria = !ac.empty();
+    msg.access_criteria = ac;
+
+    msg.CP_CW_combination.clear();
+    if (!current_cw.empty()) {
+        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
+    }
+    if (!next_cw.empty()) {
+        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Synchronously generate an ECM.
 //----------------------------------------------------------------------------
 
@@ -271,22 +301,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
 {
     // Build a CW_provision message
     ecmgscs::CWProvision msg;
-    msg.channel_id = _stream_status.channel_id;
-    msg.stream_id = _stream_status.stream_id;
-    msg.CP_number = cp_number;
-    msg.has_CW_encryption = false;
-    if (!current_cw.empty()) {
-        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
-    }
-    if (!next_cw.empty()) {
-        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
-    }
-    msg.has_CP_duration = cp_duration != 0;
-    msg.CP_duration = cp_duration;
-    msg.has_access_criteria = !ac.empty();
-    if (msg.has_access_criteria) {
-        msg.access_criteria = ac;
-    }
+    buildCWProvision(msg, cp_number, current_cw, next_cw, ac, cp_duration);
 
     // Send the CW_provision message
     if (!_connection.send(msg, *_report)) {
@@ -295,26 +310,29 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
 
     // Compute ECM generation timeout (very conservative)
     const MilliSecond timeout = std::max(RESPONSE_TIMEOUT, 2 * MilliSecond(_channel_status.max_comp_time));
-    const Time deadline = Time::CurrentLocalTime() + timeout;
 
     // Wait for an ECM response from the ECMG
-    for (;;) {
-        Time now = Time::CurrentLocalTime();
-        tlv::MessagePtr resp;
-        if (now >= deadline || !_response_queue.dequeue(resp, deadline - now)) {
-            _report->error(u"ECM generation timeout");
-            return false;
-        }
-        if (resp->tag() == ecmgscs::Tags::ECM_response) {
-            ecmgscs::ECMResponse* const ep = dynamic_cast <ecmgscs::ECMResponse*>(resp.pointer());
-            assert(ep != 0);
-            if (ep->CP_number == cp_number) {
-                // This is our ECM
-                ecm_response = *ep;
-                return true;
-            }
+    tlv::MessagePtr resp;
+    if (!_response_queue.dequeue(resp, timeout)) {
+        _report->error(u"ECM generation timeout");
+        return false;
+    }
+    if (resp->tag() == ecmgscs::Tags::ECM_response) {
+        ecmgscs::ECMResponse* const ep = dynamic_cast <ecmgscs::ECMResponse*>(resp.pointer());
+        assert(ep != 0);
+        if (ep->CP_number == cp_number) {
+            // This is our ECM
+            ecm_response = *ep;
+            return true;
         }
     }
+
+    // Unexpected response. Messages other than our ECM_response are channel_test
+    // and status_test. They are automatically handled in the reception thread.
+    // At this point, if we receive a message, this is an error or an truely
+    // unexpected message.
+    _report->error(u"unexpected response to ECM request:\n%s", {resp->dump(4)});
+    return false;
 }
 
 
@@ -331,22 +349,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
 {
     // Build a CW_provision message
     ecmgscs::CWProvision msg;
-    msg.channel_id = _stream_status.channel_id;
-    msg.stream_id = _stream_status.stream_id;
-    msg.CP_number = cp_number;
-    msg.has_CW_encryption = false;
-    if (!current_cw.empty()) {
-        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number, current_cw));
-    }
-    if (!next_cw.empty()) {
-        msg.CP_CW_combination.push_back(ecmgscs::CPCWCombination(cp_number + 1, next_cw));
-    }
-    msg.has_CP_duration = cp_duration != 0;
-    msg.CP_duration = cp_duration;
-    msg.has_access_criteria = !ac.empty();
-    if (msg.has_access_criteria) {
-        msg.access_criteria = ac;
-    }
+    buildCWProvision(msg, cp_number, current_cw, next_cw, ac, cp_duration);
 
     // Register an asynchronous request
     {

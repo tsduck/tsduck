@@ -134,6 +134,7 @@ bool ts::DescramblerPlugin::decipherECM(const Section& ecm, ByteBlock& cw_even, 
     else {
         cw_even = clearECM->cw_even;
         cw_odd = clearECM->cw_odd;
+        tsp->verbose(u"ECM found, even CW: %s, odd CW: %s", {UString::Dump(cw_even, UString::COMPACT), UString::Dump(cw_odd, UString::COMPACT)});
         return true;
     }
 }

@@ -183,6 +183,14 @@ namespace ts {
         AsyncRequests           _async_requests;
         MessageQueue <tlv::Message, NullMutex> _response_queue;
 
+        // Build a CW_provision message.
+        void buildCWProvision(ecmgscs::CWProvision& msg,
+                              uint16_t cp_number,
+                              const ByteBlock& current_cw,
+                              const ByteBlock& next_cw,
+                              const ByteBlock& ac,
+                              uint16_t cp_duration);
+
         // Receiver thread main code
         virtual void main() override;
 

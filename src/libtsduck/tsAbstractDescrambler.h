@@ -246,6 +246,7 @@ namespace ts {
 
         // Abstract descrambler private data.
         bool               _use_service;       // Descramble a service (ie. not a specific list of PID's).
+        bool               _need_ecm;          // We need to get control words from ECM's.
         bool               _abort;             // Error, abort asap.
         bool               _synchronous;       // Synchronous ECM deciphering.
         TSScrambling       _scrambling;        // Default descrambling (used with fixed control words).

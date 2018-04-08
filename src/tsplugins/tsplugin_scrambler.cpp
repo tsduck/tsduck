@@ -156,6 +156,7 @@ namespace ts {
 
         // ScramblerPlugin parameters, remain constant after start()
         ServiceDiscovery  _service;             // Service description
+        bool              _use_service;         // Scramble a service (ie. not a specific list of PID's).
         bool              _component_level;     // Insert CA_descriptors at component level
         bool              _scramble_audio;      // Scramble all audio components
         bool              _scramble_video;      // Scramble all video components
@@ -179,7 +180,6 @@ namespace ts {
 
         // ScramblerPlugin state
         volatile bool     _abort;               // Error (service not found, etc)
-        bool              _ready;               // Ready to transmit packets
         bool              _degraded_mode;       // In degraded mode (see comments above)
         PacketCounter     _packet_count;        // Complete TS packet counter
         PacketCounter     _scrambled_count;     // Summary of scrambled packets
@@ -234,8 +234,9 @@ TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"DVB scrambler.", u"[options] service"),
+    ProcessorPlugin(tsp_, u"DVB scrambler.", u"[options] [service]"),
     _service(this, *tsp),
+    _use_service(false),
     _component_level(false),
     _scramble_audio(false),
     _scramble_video(false),
@@ -257,7 +258,6 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _channel_status(),
     _stream_status(),
     _abort(false),
-    _ready(false),
     _degraded_mode(false),
     _packet_count(0),
     _scrambled_count(0),
@@ -277,7 +277,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _scrambling(*tsp),
     _pzer_pmt()
 {
-    option(u"",                      0,  STRING, 1, 1);
+    option(u"",                      0,  STRING, 0, 1);
     option(u"access-criteria",      'a', STRING);
     option(u"bitrate-ecm",          'b', POSITIVE);
     option(u"channel-id",            0,  UINT16);
@@ -290,15 +290,24 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     option(u"no-audio",              0);
     option(u"no-video",              0);
     option(u"partial-scrambling",    0,  POSITIVE);
+    option(u"pid",                  'p', PIDVAL, 0, UNLIMITED_COUNT);
     option(u"pid-ecm",               0,  PIDVAL);
-    option(u"private-data",         'p', STRING);
+    option(u"private-data",          0,  STRING);
     option(u"stream-id",             0,  UINT16);
     option(u"subtitles",             0);
     option(u"super-cas-id",         's', UINT32);
     option(u"synchronous",           0);
 
-    setHelp(u"Service:\n"
-            u"  Specifies the service to scramble.\n"
+    setHelp(u"Service parameter:\n"
+            u"\n"
+            u"  Specifies the optional service to scramble. If no service is specified, a\n"
+            u"  list of PID's to scramble must be provided using --pid options. When PID's\n"
+            u"  are provided, fixed control words must be specified as well.\n"
+            u"\n"
+            u"  If no fixed CW is specified, a random CW is generated for each crypto-period\n"
+            u"  and ECM's containing the current and next CW's are created and inserted in\n"
+            u"  the stream. ECM's can be created only when a service is specified.\n"
+            u"\n"
             u"  If the argument is an integer value (either decimal or hexadecimal), it is\n"
             u"  interpreted as a service id. Otherwise, it is interpreted as a service name,\n"
             u"  as specified in the SDT. The name is not case sensitive and blanks are\n"
@@ -363,13 +372,17 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
             u"      Specifying higher values is a way to reduce the scrambling CPU load\n"
             u"      while keeping the service mostly scrambled.\n"
             u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Scramble packets with this PID value. Several -p or --pid options may be\n"
+            u"      specified. By default, scramble the specified service.\n"
+            u"\n"
             u"  --pid-ecm value\n"
             u"      Specifies the new ECM PID for the service. By defaut, use the first\n"
             u"      unused PID immediately following the PMT PID. Using the default, there\n"
             u"      is a risk to later discover that this PID is already used. In that case,\n"
             u"      specify --pid-ecm with a notoriously unused PID value.\n"
             u"\n"
-            u"  -p value\n"
             u"  --private-data value\n"
             u"      Specifies the private data to insert in the CA_descriptor in the PMT.\n"
             u"      The value must be a suite of hexadecimal digits.\n"
@@ -407,13 +420,11 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 bool ts::ScramblerPlugin::start()
 {
     // Reset states
-    _scrambled_pids.reset();
     _conflict_pids.reset();
     _packet_count = 0;
     _scrambled_count = 0;
     _ecm_cc = 0;
     _abort = false;
-    _ready = false;
     _degraded_mode = false;
     _ts_bitrate = 0;
     _pkt_insert_ecm = 0;
@@ -423,7 +434,9 @@ bool ts::ScramblerPlugin::start()
     _update_pmt = false;
 
     // Parameters
+    _use_service = present(u"");
     _service.set(value(u""));
+    getPIDSet(_scrambled_pids, u"pid");
     _synchronous_ecmg = present(u"synchronous");
     _component_level = present(u"component-level");
     _scramble_audio = !present(u"no-audio");
@@ -455,9 +468,21 @@ bool ts::ScramblerPlugin::start()
         return false;
     }
 
+    // Scramble either a service or a list of PID's, not a mixture of them.
+    if ((_use_service + _scrambled_pids.any()) != 1) {
+        tsp->error(u"specify either a service or a list of PID's");
+        return false;
+    }
+
+    // To scramble a fixed list of PID's, we need fixed control words, otherwise the random CW's are lost.
+    if (_scrambled_pids.any() && !_scrambling.hasFixedCW()) {
+        tsp->error(u"specify control words to scramble an explicit list of PID's");
+        return false;
+    }
+
     // Do we need to manage crypto-periods and ECM insertion?
     _need_cp = _scrambling.fixedCWCount() != 1;
-    _need_ecm = !_scrambling.hasFixedCW();
+    _need_ecm = _use_service && !_scrambling.hasFixedCW();
 
     // Specify which ECMG <=> SCS version to use.
     ecmgscs::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"ecmg-scs-version", 2));
@@ -542,6 +567,8 @@ bool ts::ScramblerPlugin::stop()
 
 void ts::ScramblerPlugin::handlePMT(const PMT& table)
 {
+    assert(_use_service);
+
     // We need to know the bitrate in order to schedule crypto-periods or ECM insertion.
     if (_ts_bitrate == 0 && (_need_cp || _need_ecm)) {
         tsp->error(u"unknown bitrate, cannot schedule crypto-periods");
@@ -552,7 +579,8 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
     // Need a modifiable version of the PMT.
     PMT pmt(table);
 
-    // Collect all PIDS to scramble
+    // Collect all PIDS to scramble.
+    _scrambled_pids.reset();
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
         const PMT::Stream& stream(it->second);
@@ -561,6 +589,13 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
             _scrambled_pids.set(pid);
             tsp->verbose(u"starting scrambling PID 0x%X", {pid});
         }
+    }
+
+    // Check that we have somethng to scramble.
+    if (_scrambled_pids.none()) {
+        tsp->error(u"no PID to scramble in service");
+        _abort = true;
+        return;
     }
 
     // Allocate a PID value for ECM if necessary
@@ -611,9 +646,6 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
         _pzer_pmt.setPID(_service.getPMTPID());
         _pzer_pmt.addTable(pmt);
     }
-
-    // We are now ready to scramble packets
-    _ready = true;
 
     // Next crypto-period.
     if (_need_cp) {
@@ -770,7 +802,9 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
     }
 
     // Filter interesting sections to discover the service.
-    _service.feedPacket(pkt);
+    if (_use_service) {
+        _service.feedPacket(pkt);
+    }
 
     // If the service is definitely unknown or a fatal error occured during PMT analysis, give up.
     if (_abort || _service.nonExistentService()) {
@@ -783,8 +817,8 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
         return TSP_END;
     }
 
-    // While not ready to transmit, nullify all packets
-    if (!_ready) {
+    // As long as we do not know which PID's to scramble, nullify all packets
+    if (_scrambled_pids.none()) {
         return TSP_NULL;
     }
 
@@ -853,7 +887,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
         _partial_clear = _partial_scrambling - 1;
     }
 
-    // Scramble the packet payload. DVB-CSA scrambles in-place, but not other algorithms.
+    // Scramble the packet payload.
     if (!_scrambling.encrypt(pkt)) {
         return TSP_END;
     }
@@ -889,8 +923,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, ui
     _cp_number = cp_number;
 
     if (_scrambler->_need_ecm) {
-        BetterSystemRandomGenerator::Instance()->read(_cw_current.data(), _cw_current.size());
-        BetterSystemRandomGenerator::Instance()->read(_cw_next.data(), _cw_next.size());
+        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_current, _scrambler->_scrambling.cwSize());
+        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next,_scrambler->_scrambling.cwSize());
         generateECM();
     }
 }
@@ -906,8 +940,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
     _cp_number = previous._cp_number + 1;
 
     if (_scrambler->_need_ecm) {
-        _cw_current = _cw_next;
-        BetterSystemRandomGenerator::Instance()->read(_cw_next.data(), _cw_next.size());
+        _cw_current = previous._cw_next;
+        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next, _scrambler->_scrambling.cwSize());
         generateECM();
     }
 }
