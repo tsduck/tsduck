@@ -67,7 +67,7 @@ namespace ts {
 
         //!
         //! Copy constructor.
-        //! @param [in] Other instance to copy. Only the configuration parameters, typically
+        //! @param [in] other Other instance to copy. Only the configuration parameters, typically
         //! from the command line, are copied. The state of @a other is not copied.
         //!
         TSScrambling(const TSScrambling& other);
@@ -167,14 +167,14 @@ namespace ts {
 
         //!
         //! Encrypt a TS packet with the current parity and corresponding CW.
-        //! @param [in,out] the packet to encrypt.
+        //! @param [in,out] pkt The packet to encrypt.
         //! @return True on success, false on error. An already encrypted packet is an error.
         //!
         bool encrypt(TSPacket& pkt);
 
         //!
         //! Decrypt a TS packet with the CW corresponding to the parity in the packet.
-        //! @param [in,out] the packet to decrypt.
+        //! @param [in,out] pkt The packet to decrypt.
         //! @return True on success, false on error. A clear packet is not an error.
         //!
         bool decrypt(TSPacket& pkt);
