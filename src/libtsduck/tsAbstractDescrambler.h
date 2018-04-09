@@ -149,7 +149,7 @@ namespace ts {
         //! If overridden by a concrete descrambler, the superclass must be explicitly invoked.
         //! @param [in] table A reference to the new PMT.
         //!
-        virtual void handlePMT(const PMT&) override;
+        virtual void handlePMT(const PMT& table) override;
 
         //!
         //! This hook is invoked when a complete section is available.
