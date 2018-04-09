@@ -50,8 +50,8 @@ namespace {
     // Command line default arguments.
     static const uint16_t DEFAULT_SERVER_PORT       = 2222;
     static const uint16_t DEFAULT_REPETITION        = 100;
-    static const int16_t  DEFAULT_DELAY_START       = -200;
-    static const int16_t  DEFAULT_DELAY_STOP        = -200;
+    static const int16_t  DEFAULT_DELAY_START       = 200;
+    static const int16_t  DEFAULT_DELAY_STOP        = 200;
     static const int16_t  DEFAULT_TRANS_DELAY_START = -500;
     static const int16_t  DEFAULT_TRANS_DELAY_STOP  = 0;
 
@@ -207,7 +207,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
     // Other hard-coded ECMG parameters.
     channelStatus.max_streams = 0;       // No specified max number of streams per channel.
-    channelStatus.max_comp_time = ecmCompTime + 100;
+    channelStatus.max_comp_time = uint16_t(ecmCompTime + 100);
     channelStatus.min_CP_duration = 10;  // Minimum crypto period in 100 x ms, 1 second here.
     streamStatus.access_criteria_transfer_mode = false;  // We don't really need access criteria.
 

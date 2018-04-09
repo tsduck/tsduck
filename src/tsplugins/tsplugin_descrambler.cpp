@@ -47,15 +47,22 @@ namespace ts {
     class DescramblerPlugin: public AbstractDescrambler
     {
     public:
+        // Constructor.
         DescramblerPlugin(TSP*);
+        
+        // Implementation of ProcessorPlugin interface.
+        virtual bool start() override;
 
     protected:
         // Implementation of AbstractDescrambler.
-        virtual bool checkCADescriptor(uint16_t cas_id, const ByteBlock& priv) override;
+        virtual bool checkCADescriptor(uint16_t pmt_cas_id, const ByteBlock& priv) override;
         virtual bool checkECM(const Section& ecm) override;
         virtual bool decipherECM(const Section& ecm, ByteBlock& cw_even, ByteBlock& cw_odd) override;
 
     private:
+        // Private fields.
+        uint16_t _cas_id;
+
         // Inaccessible operations
         DescramblerPlugin() = delete;
         DescramblerPlugin(const DescramblerPlugin&) = delete;
@@ -72,25 +79,55 @@ TSPLUGIN_DECLARE_PROCESSOR(descrambler, ts::DescramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
-    AbstractDescrambler(tsp_, u"Generic DVB descrambler.")
+    AbstractDescrambler(tsp_, u"Generic DVB descrambler."),
+    _cas_id(0)
 {
+    option(u"cas-id", 0, UINT16);
+
     setHelp(u"This plugin descrambles fixed PID's with fixed control words. As a demo, it can\n"
             u"also descramble services for which clear ECM's were generated using the utility\n"
             u"named tsecmg, a DVB SimulCrypt-compliant ECMG for test and demo.\n"
             u"\n" +
-            getHelp());
+            getHelp() +
+            u"\n"
+            u"General options:\n"
+            u"\n"
+            u"  --cas-id value\n"
+            u"      Specify the CA_system_id to filter when searching for ECM streams. Since\n"
+            u"      this descrambler is a demo tool using clear ECM's, it is unlikely that\n"
+            u"      other real ECM streams exist. So, by default, any ECM stream is used to\n"
+            u"      get the clear ECM's.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
+
+//----------------------------------------------------------------------------
+// Plugin start method.
+//----------------------------------------------------------------------------
+
+bool ts::DescramblerPlugin::start()
+{
+    // Load plugin-specific command line arguments.
+    _cas_id = intValue<uint16_t>(u"cas-id", 0);
+
+    // The invoke superclass to actually start the descrambler.
+    return AbstractDescrambler::start();
+}
 
 
 //----------------------------------------------------------------------------
 // Check a CA_descriptor from a PMT.
 //----------------------------------------------------------------------------
 
-bool ts::DescramblerPlugin::checkCADescriptor(uint16_t cas_id, const ByteBlock& priv)
+bool ts::DescramblerPlugin::checkCADescriptor(uint16_t pmt_cas_id, const ByteBlock& priv)
 {
-    // In this demo descrambler, we accept all CAS id.
-    return true;
+    // In this demo descrambler, we accept all CAS id, unless one is specified.
+    return _cas_id == 0 || pmt_cas_id == _cas_id;
 }
 
 

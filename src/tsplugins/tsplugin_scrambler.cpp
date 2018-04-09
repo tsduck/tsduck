@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  DVB-CSA (Common Scrambling Algorithm) Scrambler
+//  DVB-CSA or ATIS-IDSA Scrambler
 //
 //----------------------------------------------------------------------------
 

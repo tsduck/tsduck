@@ -29,6 +29,7 @@
 
 #include "tsAbstractDescrambler.h"
 #include "tsGuardCondition.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 // Stack usage required by this module in the ECM deciphering thread.
@@ -65,7 +66,8 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
     option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
     option(u"synchronous",  0);
 
-    setHelp(u"Service:\n"
+    setHelp(u"Service parameter:\n"
+            u"\n"
             u"  Specifies the optional service to descramble. If no fixed control word is\n"
             u"  specified, ECM's from the service are used to extract control words.\n"
             u"\n"
@@ -77,10 +79,7 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
             u"  If the argument is omitted, --pid options shall be specified to list explicit\n"
             u"  PID's to descramble and fixed control words shall be specified as well.\n"
             u"\n"
-            u"General options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
+            u"Generic descrambler options:\n"
             u"\n"
             u"  -p value\n"
             u"  --pid value\n"
@@ -91,10 +90,7 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
             u"      Specify to synchronously decipher the ECM's. By default, continue\n"
             u"      processing packets while processing ECM's. Use this option with\n"
             u"      offline packet processing. Use the default (asynchronous) with live\n"
-            u"      packet processing.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      packet processing.\n");
 
     _scrambling.defineOptions(*this);
     _scrambling.addHelp(*this);
@@ -216,11 +212,12 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
 {
     tsp->debug(u"PMT: service 0x%X, %d elementary streams", {pmt.service_id, pmt.streams.size()});
 
+    // Default scrambling is DVB-CSA2.
+    uint8_t scrambling_type = SCRAMBLING_DVB_CSA2;
+
     // Search ECM PID's at service level
     std::set<PID> service_ecm_pids;
-    if (_need_ecm) {
-        analyzeCADescriptors(pmt.descs, service_ecm_pids);
-    }
+    analyzeDescriptors(pmt.descs, service_ecm_pids, scrambling_type);
 
     // Loop on all elementary streams in this service.
     // Create an entry in _scrambled_streams for each of them.
@@ -234,9 +231,7 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
 
         // Search ECM PIDs at elementary stream level.
         std::set<PID> component_ecm_pids;
-        if (_need_ecm) {
-            analyzeCADescriptors(pmt_stream.descs, component_ecm_pids);
-        }
+        analyzeDescriptors(pmt_stream.descs, component_ecm_pids, scrambling_type);
 
         // If none found as stream level, use the ones from service level.
         if (!component_ecm_pids.empty()) {
@@ -248,6 +243,13 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
             scr_stream.ecm_pids = service_ecm_pids;
         }
     }
+
+    // Set global scrambling type from scrambling descriptor, if not specified on the command line.
+    tsp->verbose(u"using scrambling mode: %s", {DVBNameFromSection(u"ScramblingMode", scrambling_type)});
+    _scrambling.setScramblingType(scrambling_type, false);
+    for (ECMStreamMap::iterator it = _ecm_streams.begin(); it != _ecm_streams.end(); ++it) {
+        it->second->scrambling.setScramblingType(scrambling_type, false);
+    }
 }
 
 
@@ -255,28 +257,46 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
 // Analyze a list of descriptors, looking for ECM PID's
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::analyzeCADescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids)
+void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids, uint8_t& scrambling)
 {
-    // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    // Loop on all descriptors
+    for (size_t index = 0; index < dlist.count(); ++index) {
+        if (!dlist[index].isNull()) {
 
-        // Descriptor payload
-        const uint8_t* desc = dlist[index]->payload();
-        size_t size = dlist[index]->payloadSize();
+            // Descriptor payload
+            const uint8_t* desc = dlist[index]->payload();
+            size_t size = dlist[index]->payloadSize();
 
-        // The fixed part of a CA descriptor is 4 bytes long.
-        if (size >= 4) {
-            const uint16_t sysid = GetUInt16(desc);
-            const uint16_t pid = GetUInt16(desc + 2) & 0x1FFF;
+            switch (dlist[index]->tag()) {
+                case DID_CA: {
+                    // The fixed part of a CA descriptor is 4 bytes long.
+                    // Ignore CA descriptors if we do not need ECM's.
+                    if (_need_ecm && size >= 4) {
+                        const uint16_t sysid = GetUInt16(desc);
+                        const uint16_t pid = GetUInt16(desc + 2) & 0x1FFF;
 
-            // Ask subclass if this PID is OK
-            if (checkCADescriptor(sysid, ByteBlock(desc + 4, size - 4))) {
-                tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
-                // Create context for this ECM stream.
-                ecm_pids.insert(pid);
-                getOrCreateECMStream(pid);
-                // Ask the demux to notify us of ECM's in this PID.
-                _demux.addPID(pid);
+                        // Ask subclass if this PID is OK
+                        if (checkCADescriptor(sysid, ByteBlock(desc + 4, size - 4))) {
+                            tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
+                            // Create context for this ECM stream.
+                            ecm_pids.insert(pid);
+                            getOrCreateECMStream(pid);
+                            // Ask the demux to notify us of ECM's in this PID.
+                            _demux.addPID(pid);
+                        }
+                    }
+                    break;
+                }
+                case DID_SCRAMBLING: {
+                    // A scrambling descriptor contains one byte.
+                    if (size >= 1) {
+                        scrambling = desc[0];
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
         }
     }
