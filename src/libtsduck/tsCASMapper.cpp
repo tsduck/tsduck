@@ -89,7 +89,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
             const PMT pmt(table);
             if (pmt.isValid()) {
                 // Identify all ECM PID's at program level.
-                analyzeCADescriptors(pmt.descs, false);
+                analyzeCADescriptors(pmt.descs, true);
                 // Identify all ECM PID's at stream level.
                 for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                     analyzeCADescriptors(it->second.descs, true);

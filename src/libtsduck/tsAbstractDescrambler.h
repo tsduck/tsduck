@@ -241,8 +241,8 @@ namespace ts {
         // releases the mutex while deciphering the ECM and relocks it before exiting.
         void processECM(ECMStream&);
 
-        // Analyze a list of descriptors, looking for ECM PID's
-        void analyzeCADescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids);
+        // Analyze a list of descriptors from the PMT, looking for ECM PID's
+        void analyzeDescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids, uint8_t& scrambling);
 
         // Abstract descrambler private data.
         bool               _use_service;       // Descramble a service (ie. not a specific list of PID's).

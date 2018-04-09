@@ -125,15 +125,23 @@ namespace ts {
         //!
         //! Force the usage of a given algorithm.
         //! @param [in] scrambling Scrambling type.
+        //! @param [in] overrideExplicit If true, always set the scrambling type.
+        //! If false, ignore it if an explicit type was set on the command line.
         //! @return True on success, false on unsupported type.
         //!
-        bool setScramblingType(uint8_t scrambling);
+        bool setScramblingType(uint8_t scrambling, bool overrideExplicit = true);
 
         //!
         //! Get the current scrambling algorithm.
         //! @return The scrambling type.
         //!
         uint8_t scramblingType() { return _scrambling_type; }
+
+        //!
+        //! Check if a scrambling algorithm was specified on the command line.
+        //! @return Tue if a scrambling algorithm was specified on the command line.
+        //!
+        bool explicitScramblingType() const { return _explicit_type; }
 
         //!
         //! Force the entropy mode of DVB-CSA2.
@@ -177,6 +185,7 @@ namespace ts {
 
         Report&          _report;
         uint8_t          _scrambling_type;
+        bool             _explicit_type;
         CWList           _cw_list;
         CWList::iterator _next_cw;
         uint8_t          _encrypt_scv;  // Encryption: key to use (SC_EVEN_KEY or SC_ODD_KEY).

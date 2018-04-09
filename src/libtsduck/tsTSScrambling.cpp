@@ -38,6 +38,7 @@ TSDUCK_SOURCE;
 ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
+    _explicit_type(false),
     _cw_list(),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -52,6 +53,7 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
 ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
+    _explicit_type(other._explicit_type),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -68,28 +70,31 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
 // Force the usage of a specific algorithm.
 //----------------------------------------------------------------------------
 
-bool ts::TSScrambling::setScramblingType(uint8_t scrambling)
+bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplicit)
 {
-    switch (scrambling) {
-        case SCRAMBLING_DVB_CSA2:
-            _scrambler[0] = &_dvbcsa[0];
-            _scrambler[1] = &_dvbcsa[1];
-            break;
-        case SCRAMBLING_ATIS_IIF_IDSA:
-            _scrambler[0] = &_idsa[0];
-            _scrambler[1] = &_idsa[1];
-            break;
-        default:
-            // Fallback to DVB-CSA2 if no scrambler was previously defined.
-            if (_scrambler[0] == 0 || _scrambler[1] == 0) {
-                _scrambling_type = SCRAMBLING_DVB_CSA2;
+    if (overrideExplicit || !_explicit_type) {
+        switch (scrambling) {
+            case SCRAMBLING_DVB_CSA1:
+            case SCRAMBLING_DVB_CSA2:
                 _scrambler[0] = &_dvbcsa[0];
                 _scrambler[1] = &_dvbcsa[1];
-            }
-            return false;
-    }
+                break;
+            case SCRAMBLING_ATIS_IIF_IDSA:
+                _scrambler[0] = &_idsa[0];
+                _scrambler[1] = &_idsa[1];
+                break;
+            default:
+                // Fallback to DVB-CSA2 if no scrambler was previously defined.
+                if (_scrambler[0] == 0 || _scrambler[1] == 0) {
+                    _scrambling_type = SCRAMBLING_DVB_CSA2;
+                    _scrambler[0] = &_dvbcsa[0];
+                    _scrambler[1] = &_dvbcsa[1];
+                }
+                return false;
+        }
 
-    _scrambling_type = scrambling;
+        _scrambling_type = scrambling;
+    }
     return true;
 }
 
@@ -111,13 +116,16 @@ void ts::TSScrambling::addHelp(Args& args) const
         u"Transport stream scrambling options:\n"
         u"\n"
         u"  --atis-idsa\n"
-        u"      Use ATIS-IDSA descrambling (ATIS-0800006) instead of DVB-CSA2 (the\n"
+        u"      Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the\n"
         u"      default). The control words are 16-byte long instead of 8-byte.\n"
         u"\n"
         u"  -c value\n"
         u"  --cw value\n"
         u"      Specifies a fixed and constant control word for all TS packets. The value\n"
         u"      must be a string of 16 hexadecimal digits (32 digits with --atis-idsa).\n"
+        u"\n"
+        u"  --dvb-csa2\n"
+        u"      Use DVB-CSA2 scrambling. This is the default.\n"
         u"\n"
         u"  -f name\n"
         u"  --cw-file name\n"
@@ -167,6 +175,10 @@ bool ts::TSScrambling::loadArgs(Args& args)
     else {
         setScramblingType(SCRAMBLING_DVB_CSA2);
     }
+
+    // If an explicit scrambling type is given, the application should probably
+    // ignore scrambling descriptors when descrambling.
+    _explicit_type = args.present(u"atis-idsa") || args.present(u"dvb-csa2");
 
     // Set DVB-CSA2 entropy mode regardless of --atis-idsa in case we switch later to DVB-CSA2.
     setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
