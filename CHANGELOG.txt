@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.10-661
+Version 3.10-668
 
 - The utility "tstabdump" can now dump sections and files which are sent over
   UDP/IP by "tstables" or the plugin "tables". Command line options were added
@@ -16,6 +16,8 @@ Version 3.10-661
 
 - Added options --inter-time, --max-insert-count, --min-pts, --max-pts and
   --pts-pid to plugin "mux".
+
+- Added option --milli-seconds to plugin "history".
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
@@ -35,6 +37,12 @@ Version 3.10-661
 
 - Bug fix: Plugin "analyze" with option --interval incorrectly used the TS
   clock to produce the analysis files instead of the wall clock time.
+
+- Bug fix: Plugin "history": Detection of scrambling transitions: Now ignore
+  packets without payload or with short payloads (less than 8 bytes). These
+  packets are normally left clear in a scrambled PID. Considering them as clear
+  packets used to report spurious scrambled-to-clear transitions, immediately
+  followed by clear-to-scrambled transistions.
 
 Version 3.9-619
 

@@ -77,6 +77,7 @@ namespace ts {
         bool          _report_cas;        // Report CAS events
         bool          _time_all;          // Report all TDT/TOT
         bool          _ignore_stream_id;  // Ignore stream_id modifications
+        bool          _use_milliseconds;  // Report playback time instead of packet number.
         PacketCounter _suspend_after;     // Number of missing packets after which a PID is considered as suspended
         TDT           _last_tdt;          // Last received TDT
         PacketCounter _last_tdt_pkt;      // Packet# of last TDT
@@ -117,6 +118,7 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
     _report_cas(false),
     _time_all(false),
     _ignore_stream_id(false),
+    _use_milliseconds(false),
     _suspend_after(0),
     _last_tdt(Time::Epoch),
     _last_tdt_pkt(0),
@@ -127,6 +129,7 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
     option(u"cas",                      'c');
     option(u"eit",                      'e');
     option(u"ignore-stream-id-change",  'i');
+    option(u"milli-seconds",            'm');
     option(u"output-file",              'o', STRING);
     option(u"suspend-packet-threshold", 's', POSITIVE);
     option(u"time-all",                 't');
@@ -149,6 +152,13 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
             u"      Do not report stream_id modifications in a stream. Some subtitle streams\n"
             u"      may constantly swap between \"private stream\" and \"padding stream\". This\n"
             u"      option suppresses these annoying messages.\n"
+            u"\n"
+            u"  -m\n"
+            u"  --milli-seconds\n"
+            u"      For each message, report time in milli-seconds from the beginning of the\n"
+            u"      stream instead of the TS packet number. This time is a playback time based\n"
+            u"      on the current TS bitrate (use plugin pcrbitrate when necessary).\n"
+            u"\n"
             u"\n"
             u"  -o filename\n"
             u"  --output-file filename\n"
@@ -208,6 +218,7 @@ bool ts::HistoryPlugin::start()
     _report_eit = present(u"eit");
     _time_all = present(u"time-all");
     _ignore_stream_id = present(u"ignore-stream-id-change");
+    _use_milliseconds = present(u"milli-seconds");
     _suspend_after = intValue<PacketCounter>(u"suspend-packet-threshold");
 
     // Create output file
@@ -470,11 +481,17 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
     }
 
     // Record information about current PID
-    PID pid = pkt.getPID();
-    PIDContext* cpid = _cpids + pid;
-    uint8_t scrambling = pkt.getScrambling();
-    bool has_pes_start = pkt.getPUSI() && pkt.getPayloadSize() >= 4 && (GetUInt32(pkt.getPayload()) >> 8) == PES_START;
-    uint8_t pes_stream_id = has_pes_start ? pkt.b[pkt.getHeaderSize() + 3] : 0;
+    const PID pid = pkt.getPID();
+    PIDContext* const cpid = _cpids + pid;
+    const uint8_t scrambling = pkt.getScrambling();
+    const bool has_pes_start = pkt.getPUSI() && pkt.getPayloadSize() >= 4 && (GetUInt32(pkt.getPayload()) >> 8) == PES_START;
+    const uint8_t pes_stream_id = has_pes_start ? pkt.b[pkt.getHeaderSize() + 3] : 0;
+
+    // Detection of scrambling transition: Ignore packets without payload or with short
+    // payloads (less than 8 bytes). These packets are normally left clear in a scrambled PID.
+    // Considering them as clear packets reports spurious scrambled-to-clear transitions,
+    // immediately followed by clear-to-scrambled transistions.
+    const bool ignore_scrambling = !pkt.hasPayload() || pkt.getPayloadSize() < 8;
 
     if (cpid->pkt_count == 0) {
         // First packet in a PID
@@ -486,18 +503,19 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
         report(cpid->last_pkt, u"PID %d (0x%X) suspended, %s, service 0x%X", {pid, pid, cpid->scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
         report(u"PID %d (0x%X) restarted, %s, service 0x%04X", {pid, pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
     }
-    else if (cpid->scrambling == 0 && scrambling != 0) {
+    else if (!ignore_scrambling && cpid->scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
         report(u"PID %d (0x%X), clear to scrambled transition, %s key, service 0x%X", {pid, pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
     }
-    else if (cpid->scrambling != 0 && scrambling == 0) {
+    else if (!ignore_scrambling && cpid->scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
         report(u"PID %d (0x%X), scrambled to clear transition, service 0x%X", {pid, pid, _cpids[pid].service_id});
     }
-    else if (_report_cas && cpid->scrambling != scrambling) {
+    else if (!ignore_scrambling && _report_cas && cpid->scrambling != scrambling) {
         // New crypto-period
         report(u"PID %d (0x%X), new crypto-period, %s key, service 0x%X", {pid, pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
     }
+
     if (has_pes_start) {
         if (!cpid->pes_strid.set()) {
             // Found first PES stream id in the PID.
@@ -509,7 +527,11 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
         }
         cpid->pes_strid = pes_stream_id;
     }
-    cpid->scrambling = scrambling;
+
+    if (!ignore_scrambling) {
+        cpid->scrambling = scrambling;
+    }
+
     cpid->last_pkt = _current_pkt;
     cpid->pkt_count++;
 
@@ -537,6 +559,11 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::i
     if (!_time_all && _last_tdt.isValid() && !_last_tdt_reported) {
         _last_tdt_reported = true;
         report(_last_tdt_pkt, u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATE | Time::TIME)});
+    }
+
+    // Convert pkt number in playback time when necessary.
+    if (_use_milliseconds) {
+        pkt = PacketInterval(tsp->bitrate(), pkt);
     }
 
     // Then report the message.
