@@ -1,47 +1,45 @@
 # Text files to always convert to native line endings on checkout.
 .gitignore text
 .gitattributes text
-Makefile* text
-*.mk text
 *.txt text
-*.dox text
-*.md text
-*.h text
-*.c text
-*.cpp text
-*.asm text
-*.xml text
-*.pro text
-*.pri text
-*.control text
-*.names text
+*.dox text linguist-language=Doxygen
+*.md text linguist-language=MarkDown
+*.h text linguist-language=C++
+*.cpp text linguist-language=C++
+*.c text linguist-language=C
+*.xml text linguist-language=XML
+*.pro text linguist-language=QMake
+*.pri text linguist-language=QMake
+*.names text linguist-language=Names
 
 # Text files that will always have CRLF line endings on checkout.
-*.ps1 text eol=crlf
-*.psm1 text eol=crlf
-*.nsi text eol=crlf
-*.sln text eol=crlf
-*.props text eol=crlf
-*.vcxproj text eol=crlf
-*.vcxproj.filters text eol=crlf
+*.ps1 text eol=crlf linguist-language=PowerShell
+*.psm1 text eol=crlf linguist-language=PowerShell
+*.nsi text eol=crlf linguist-language=NSIS
+*.sln text eol=crlf linguist-language=VisualStudio
+*.props text eol=crlf linguist-language=VisualStudio
+*.vcxproj text eol=crlf linguist-language=VisualStudio
+*.vcxproj.filters text eol=crlf linguist-language=VisualStudio
 
 # Text files that will always have LF line endings on checkout.
-*.html text eol=lf
-*.sh text eol=lf
-*.postinst text eol=lf
-*.spec text eol=lf
-*.perms text eol=lf
-*.rules text eol=lf
-Makefile* text eol=lf
+*.html text eol=lf linguist-language=HTML
+*.sh text eol=lf linguist-language=Bash
+*.control text eol=lf linguist-language=InstallScripts
+*.postinst text eol=lf linguist-language=InstallScripts
+*.spec text eol=lf linguist-language=InstallScripts
+*.perms text eol=lf linguist-language=InstallScripts
+*.rules text eol=lf linguist-language=InstallScripts
+Doxyfile* text eol=lf linguist-language=Doxygen
+Makefile* text eol=lf linguist-language=Makefile
+*.mk text eol=lf linguist-language=Makefile
 
 # Binary file, do not modify on convert, whatever your git settings are.
 *.exe binary
-*.pdf binary
 *.bin binary
 *.png binary
 *.jpg binary
 *.ico binary
-*.xcf binary
-*.docx binary
-*.pptx binary
-*.bin binary
+*.xcf binary linguist-language=GIMP
+*.pdf binary linguist-language=PDF
+*.docx binary linguist-language=Word
+*.pptx binary linguist-language=PowerPoint
