@@ -2844,6 +2844,11 @@ namespace ts {
 //!
 #define TS_VERSION_USTRING TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT)
 
+//!
+//! Define the TSDuck version as an integer, suitable for comparisons.
+//!
+#define TS_VERSION_INTEGER ((TS_VERSION_MAJOR * 10000000) + (TS_VERSION_MINOR * 100000) + TS_COMMIT)
+
 
 //----------------------------------------------------------------------------
 // Define a mechanism to identify source code and compilation time in the
