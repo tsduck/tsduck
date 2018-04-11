@@ -54,6 +54,7 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
 
     bool        current;   // Display current version of TSDuck, this executable.
+    bool        integer;   // Display current version of TSDuck as integer value.
     bool        latest;    // Display the latest version of TSDuck.
     bool        check;     // Check if a new version of TSDuck is available.
     bool        all;       // List all available versions of TSDuck.
@@ -74,6 +75,7 @@ private:
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Check version, download and upgrade TSDuck.", u"[options]"),
     current(false),
+    integer(false),
     latest(false),
     check(false),
     all(false),
@@ -90,6 +92,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"check",            'c');
     option(u"download",         'd');
     option(u"force",            'f');
+    option(u"integer",          'i');
     option(u"latest",           'l');
     option(u"name",             'n', Args::STRING);
     option(u"output-directory", 'o', Args::STRING);
@@ -130,6 +133,11 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --integer\n"
+            u"      Display the current version of TSDuck in integer format, suitable for\n"
+            u"      comparison in a script. Example: " + ts::GetVersion(ts::VERSION_INTEGER) + u" for " + ts::GetVersion(ts::VERSION_SHORT) + u".\n"
             u"\n"
             u"  -l\n"
             u"  --latest\n"
@@ -180,6 +188,7 @@ Options::Options(int argc, char *argv[]) :
 
     all = present(u"all");
     current = present(u"this");
+    integer = present(u"integer");
     latest = present(u"latest");
     check = present(u"check");
     binary = present(u"binary");
@@ -200,12 +209,12 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // Filter invalid combinations of options.
-    if (all + current + latest + check + !name.empty() > 1) {
-        error(u"specify only one of --this --latest --name --check --all");
+    if (all + current + integer + latest + check + !name.empty() > 1) {
+        error(u"specify only one of --this --integer --latest --name --check --all");
     }
 
     // If nothing is specified, default to --this
-    if (!all && !latest && !check && !download && !upgrade && name.empty()) {
+    if (!all && !integer && !latest && !check && !download && !upgrade && name.empty()) {
         current = true;
     }
 
@@ -594,6 +603,10 @@ int main(int argc, char *argv[])
     if (opt.current) {
         // Display current version.
         std::cout << ts::GetVersion(opt.verbose() ? ts::VERSION_LONG : ts::VERSION_SHORT) << std::endl;
+    }
+    else if (opt.integer) {
+        // Display current version in integer format.
+        std::cout << ts::GetVersion(ts::VERSION_INTEGER) << std::endl;
     }
     else if (opt.all) {
         success = ListAllVersions(opt);

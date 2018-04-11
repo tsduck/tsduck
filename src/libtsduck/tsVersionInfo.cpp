@@ -45,6 +45,7 @@ const int tsduckLibraryVersionCommit = TS_COMMIT;
 const ts::Enumeration ts::VersionFormatEnum({
     {u"short",   ts::VERSION_SHORT},
     {u"long",    ts::VERSION_LONG},
+    {u"integer", ts::VERSION_INTEGER},
     {u"date",    ts::VERSION_DATE},
     {u"nsis",    ts::VERSION_NSIS},
     {u"dektec",  ts::VERSION_DEKTEC},
@@ -70,6 +71,10 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
             return (applicationName.empty() ? UString() : applicationName + u": ") +
                 u"TSDuck - The MPEG Transport Stream Toolkit - version " +
                 GetVersion(VERSION_SHORT);
+        }
+        case VERSION_INTEGER: {
+            // An integer value, suitable for comparison.
+            return UString::Decimal(TS_VERSION_INTEGER, 0, true, u"");
         }
         case VERSION_DATE: {
             // The build date.

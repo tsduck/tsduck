@@ -46,6 +46,7 @@ namespace ts {
     enum VersionFormat {
         VERSION_SHORT,   //!< Short format X.Y-R.
         VERSION_LONG,    //!< Full explanatory format.
+        VERSION_INTEGER, //!< Integer format XXYYRRRRR.
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output NSIS @c !define directives.
         VERSION_DEKTEC,  //!< Version of embedded Dektec DTAPI and detected Dektec drivers.

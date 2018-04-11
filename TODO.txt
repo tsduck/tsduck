@@ -19,7 +19,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.20  system_clock_descriptor
   - 2.6.22  multiplex_buffer_utilization_descriptor
   - 2.6.24  copyright_descriptor
-  - 2.6.26  maximum_bitrate_descriptor
   - 2.6.30  smoothing_buffer_descriptor
   - 2.6.34  IBP_descriptor
   - 2.6.36  MPEG-4_video_descriptor
