@@ -88,33 +88,39 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
 class ts::DektecOutputPlugin::Guts
 {
 public:
-    bool                 starting;     // Starting phase (loading FIFO, no transmit)
-    bool                 is_started;   // Device started
-    bool                 mute_on_stop; // Device supports output muting
-    int                  dev_index;    // Dektec device index
-    int                  chan_index;   // Device output channel index
-    DektecDevice         device;       // Device characteristics
-    Dtapi::DtDevice      dtdev;        // Device descriptor
-    Dtapi::DtOutpChannel chan;         // Output channel
-    int                  detach_mode;  // Detach mode
-    BitRate              opt_bitrate;  // Bitrate option (0 means unspecified)
-    BitRate              cur_bitrate;  // Current output bitrate
-
-    Guts() :                           // Constructor.
-        starting(false),
-        is_started(false),
-        mute_on_stop(false),
-        dev_index(-1),
-        chan_index(-1),
-        device(),
-        dtdev(),
-        chan(),
-        detach_mode(DTAPI_WAIT_UNTIL_SENT),
-        opt_bitrate(0),
-        cur_bitrate(0)
-    {
-    }
+    Guts();                             // Constructor
+    bool                 starting;      // Starting phase (loading FIFO, no transmit)
+    bool                 is_started;    // Device started
+    bool                 mute_on_stop;  // Device supports output muting
+    int                  dev_index;     // Dektec device index
+    int                  chan_index;    // Device output channel index
+    DektecDevice         device;        // Device characteristics
+    Dtapi::DtDevice      dtdev;         // Device descriptor
+    Dtapi::DtOutpChannel chan;          // Output channel
+    int                  detach_mode;   // Detach mode
+    BitRate              opt_bitrate;   // Bitrate option (0 means unspecified)
+    BitRate              cur_bitrate;   // Current output bitrate
+    int                  max_fifo_size; // Maximum FIFO size
+    int                  fifo_size;     // Actual FIFO size
 };
+
+
+ts::DektecOutputPlugin::Guts::Guts() :
+    starting(false),
+    is_started(false),
+    mute_on_stop(false),
+    dev_index(-1),
+    chan_index(-1),
+    device(),
+    dtdev(),
+    chan(),
+    detach_mode(DTAPI_WAIT_UNTIL_SENT),
+    opt_bitrate(0),
+    cur_bitrate(0),
+    max_fifo_size(0),
+    fifo_size(0)
+{
+}
 
 
 //----------------------------------------------------------------------------
@@ -222,6 +228,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"16K", DTAPI_DVBT2_FFT_16K},
         {u"32K", DTAPI_DVBT2_FFT_32K},
     }));
+    option(u"fifo-size", 0, INTEGER, 0, 1, 1024, UNLIMITED_VALUE);
     option(u"frequency", 'f', POSITIVE);
     option(u"guard-interval", 'g', Enumeration({
         {u"1/32", DTAPI_MOD_DVBT_G_1_32},
@@ -505,6 +512,10 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
             u"  --fft-mode value\n"
             u"      DVB-T2 modulators: indicate the FFT mode. Must be one of 1K, 2K, 4K, 8K,\n"
             u"      16K or 32K. The default is 32K.\n"
+            u"\n"
+            u"  --fifo-size value\n"
+            u"      Set the FIFO size in bytes of the output channel in the Dektec device. The\n"
+            u"      default value depends on the device type.\n"
             u"\n"
             u"  -f value\n"
             u"  --frequency value\n"
@@ -872,17 +883,6 @@ bool ts::DektecOutputPlugin::start()
         return startError(u"output device reset error", status);
     }
 
-    // Get current FIFO size, for information only, ignore errors
-    int fifo_size = 0;
-    int max_fifo_size = 0;
-    status = _guts->chan.GetFifoSize(fifo_size);
-    if (status == DTAPI_OK) {
-        status = _guts->chan.GetMaxFifoSize(max_fifo_size);
-    }
-    if (status == DTAPI_OK) {
-        tsp->verbose(u"output fifo size: %'d bytes, max: %'d bytes", {fifo_size, max_fifo_size});
-    }
-
     // Set 188/204-byte output packet format and stuffing
     status = _guts->chan.SetTxMode(present(u"204") ? DTAPI_TXMODE_ADD16 : DTAPI_TXMODE_188, present(u"stuffing") ? 1 : 0);
     if (status != DTAPI_OK) {
@@ -904,6 +904,41 @@ bool ts::DektecOutputPlugin::start()
             tsp->error(u"set modulator output level: " + DektecStrError(status));
         }
     }
+
+    // Get max FIFO size.
+    _guts->max_fifo_size = 0;
+    status = _guts->chan.GetFifoSizeMax(_guts->max_fifo_size);
+    if (status != DTAPI_OK || _guts->max_fifo_size == 0) {
+        // Not supported on this device, use hard-coded value.
+        _guts->max_fifo_size = int(DTA_FIFO_SIZE);
+        tsp->verbose(u"max fifo size not supported, using %'d bytes", {_guts->max_fifo_size});
+    }
+
+    // Get typical FIFO size, for information only, ignore errors
+    int typ_fifo_size = 0;
+    _guts->chan.GetFifoSizeTyp(typ_fifo_size);
+
+    // Set channel FIFO size.
+    if (present(u"fifo-size")) {
+        // Get the requested FIFO size value. Round it downward to a multiple of 16.
+        // Limit the value to the maximum FIFO size of the device.
+        const int size = std::min(intValue<int>(u"fifo-size"), _guts->max_fifo_size) & ~0x0F;
+        if (size > 0) {
+            tsp->verbose(u"setting output fifo size to %'d bytes", {size});
+            status = _guts->chan.SetFifoSize(size);
+            if (status != DTAPI_OK) {
+                return startError(u"error setting FIFO size", status);
+            }
+        }
+    }
+
+    // Get current FIFO size.
+    _guts->fifo_size = 0;
+    status = _guts->chan.GetFifoSize(_guts->fifo_size);
+    if (status != DTAPI_OK) {
+        return startError(u"error getting FIFO size", status);
+    }
+    tsp->verbose(u"output fifo size: %'d bytes, max: %'d bytes, typical: %'d bytes", {_guts->fifo_size, _guts->max_fifo_size, typ_fifo_size});
 
     // Set output bitrate
     status = _guts->chan.SetTsRateBps(int(_guts->cur_bitrate));
@@ -1530,7 +1565,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
             }
 
             // We consider the FIFO is loaded when 80% full.
-            const int max_size = (8 * DTA_FIFO_SIZE) / 10;
+            const int max_size = (8 * _guts->fifo_size) / 10;
             if (fifo_load < max_size - int(PKT_SIZE)) {
                 // Remain in starting phase, limit next I/O size
                 max_io_size = max_size - fifo_load;

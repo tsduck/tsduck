@@ -40,6 +40,7 @@ namespace ts {
 
     //!
     //! Safe size in bytes of the FIFO of DTA devices.
+    //! This is a legacy value, recent devices can report dynamically.
     //!
     const size_t DTA_FIFO_SIZE = 8 * 1024 * 1024;
 

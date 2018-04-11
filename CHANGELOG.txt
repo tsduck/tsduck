@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.10-668
+Version 3.10-672
 
 - The utility "tstabdump" can now dump sections and files which are sent over
   UDP/IP by "tstables" or the plugin "tables". Command line options were added
@@ -21,6 +21,8 @@ Version 3.10-668
 
 - Input plugin "file" can now read more than one file. Input files are
   concatenated as input stream.
+
+- Added option --fifo-size to output plugin "dektec".
 
 - Added option --atis-idsa to plugins "scrambler" and "descrambler" (perform
   ATIS-IDSA scrambling instead of DVB-CSA2).
