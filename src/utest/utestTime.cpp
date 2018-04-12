@@ -55,6 +55,8 @@ public:
     void testFieldsValid();
     void testDecode();
     void testEpoch();
+    void testUnixTime();
+    void testDaylightSavingTime();
 
     CPPUNIT_TEST_SUITE(TimeTest);
     CPPUNIT_TEST(testTime);
@@ -66,6 +68,8 @@ public:
     CPPUNIT_TEST(testFieldsValid);
     CPPUNIT_TEST(testDecode);
     CPPUNIT_TEST(testEpoch);
+    CPPUNIT_TEST(testUnixTime);
+    CPPUNIT_TEST(testDaylightSavingTime);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -256,4 +260,42 @@ void TimeTest::testDecode()
 void TimeTest::testEpoch()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
+}
+
+void TimeTest::testUnixTime()
+{
+    CPPUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074));
+}
+
+void TimeTest::testDaylightSavingTime()
+{
+    // Daylight saving time boundaries:
+    // Non-existent range (UTC) : 2018-03-25 01:00:00 -> 01:59:59
+    // Duplicated range (UTC)   : 2017-10-29 00:00:00 -> 00:59:59, then 01:00:00 -> 01:59:59
+    //
+    // On a system @UTC+1 (+2 in summer):
+    //
+    // Non-existent range:
+    //    $ date --date="2018-03-25 01:59:59"
+    //    Sun Mar 25 01:59:59 CET 2018
+    //    $ date --date="2018-03-25 02:00:00"
+    //    date: invalid date ‘2018-03-25 02:00:00’
+    //    $ date --date="2018-03-25 02:59:59"
+    //    date: invalid date ‘2018-03-25 02:59:59’
+    //    $ date --date="2018-03-25 03:00:00"
+    //    Sun Mar 25 03:00:00 CEST 2018
+    //
+    // Duplicated range:
+    //    $ date --date="2017-10-29 00:30:00 UTC"
+    //    Sun Oct 29 02:30:00 CEST 2017
+    //    $ date --date="2017-10-29 01:30:00 UTC"
+    //    Sun Oct 29 02:30:00 CET 2017   <-- same local time
+    //
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 01:00:00.000", ts::Time(2018, 3, 25, 1,  0,  0).format());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 01:59:59.000", ts::Time(2018, 3, 25, 1, 59, 59).format());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 04:00:00.000", ts::Time(2018, 3, 25, 4,  0,  0).format());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 03:00:00.000", ts::Time(2018, 3, 25, 3,  0,  0).format());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 02:00:00.000", ts::Time(2018, 3, 25, 2,  0,  0).format());
 }

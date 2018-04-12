@@ -109,15 +109,15 @@ ts::Time::Fields::Fields (int year_, int month_, int day_, int hour_, int minute
 bool ts::Time::Fields::operator== (const Fields& f) const
 {
     return year == f.year && month == f.month && day == f.day &&
-        hour == f.hour && minute == f.minute && second == f.second &&
-        millisecond == f.millisecond;
+           hour == f.hour && minute == f.minute && second == f.second &&
+           millisecond == f.millisecond;
 }
 
 bool ts::Time::Fields::operator!= (const Fields& f) const
 {
     return year != f.year || month != f.month || day != f.day ||
-        hour != f.hour || minute != f.minute || second != f.second ||
-            millisecond != f.millisecond;
+           hour != f.hour || minute != f.minute || second != f.second ||
+           millisecond != f.millisecond;
 }
 
 
@@ -144,7 +144,7 @@ bool ts::Time::IsLeapYear(int year)
 bool ts::Time::Fields::isValid() const
 {
     // Number of days per month.
-    static const int dpm[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 31, 31};
+    static const int dpm[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
     // We don't accept pre-UNIX years to make sure it works everywhere.
     return year >= 1970 &&
@@ -314,7 +314,7 @@ ts::Time ts::Time::localToUTC() const
     ::tm stime;
     TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == 0) {
-        throw TimeError(u"gmtime_r error");
+        throw TimeError(u"localtime_r error");
     }
 
 #if defined(__sun)
@@ -432,7 +432,7 @@ ts::Time ts::Time::UnixTimeToUTC(const uint32_t t)
 #else
     // On non-UNIX systems, use manual calculation.
     // The value t is a number of seconds since Jan 1st 1970.
-    return Time(1970, 1, 1, 0, 0, 0) + (1000 * MilliSecond(t));
+    return UnixEpoch + Second(t) * 1000 * TICKS_PER_MS;
 #endif
 }
 
@@ -509,7 +509,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     stime.tm_hour = hour;
     stime.tm_min = minute;
     stime.tm_sec = second;
-    stime.tm_isdst = -1; // undefined
+    stime.tm_isdst = -1;
 
     time_t seconds = ::mktime(&stime);
 
@@ -527,6 +527,15 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     int gmt_offset = stime.tm_gmtoff;
 #endif
     seconds += gmt_offset;
+
+    // stime is modified on output with actual time.
+    // Again, the problem is that mktime() works with local time.
+    // In rare cases, at the point of daylight saving time switch (twice a year),
+    // the hour is modified because the corresponding local time does not exist
+    // (especially in spring where one hour "disappears"). Here, we just want
+    // to convert time, regardless of local time considerations. So, we
+    // compensate here.
+    seconds += (hour - stime.tm_hour) * 3600;
 
     // Convert to 64-bit time value
     return (int64_t(seconds) * 1000 + int64_t(millisecond)) * TICKS_PER_MS;
