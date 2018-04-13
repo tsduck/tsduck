@@ -426,14 +426,8 @@ ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 
 ts::Time ts::Time::UnixTimeToUTC(const uint32_t t)
 {
-#if defined(TS_UNIX)
-    // On UNIX, use native features
-    return Time(int64_t(t) * 1000 * TICKS_PER_MS);
-#else
-    // On non-UNIX systems, use manual calculation.
     // The value t is a number of seconds since Jan 1st 1970.
-    return UnixEpoch + Second(t) * 1000 * TICKS_PER_MS;
-#endif
+    return Time(UnixEpoch._value + (Second(t) * 1000 * TICKS_PER_MS));
 }
 
 
