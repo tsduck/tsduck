@@ -2,6 +2,14 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.11-676
+
+- Bug fix: In rare cases, time conversions could produce incorrect results when
+  the time value was in the middle of the "non-existing hour", during the
+  spring switch of daylight saving time. In practice, the problem occured on
+  Linux when handling the "next change time" of a TOT and the system local
+  time was UTC.
+
 Version 3.10-672
 
 - The utility "tstabdump" can now dump sections and files which are sent over
