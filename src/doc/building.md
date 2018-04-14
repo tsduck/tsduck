@@ -167,3 +167,20 @@ the TSDuck library.
 On Windows systems, there is only one binary installer which contains the tools,
 plugins, documentation and development environment. The user can select which
 components shall be installed. The development environment is unselected by default.
+
+# Installing in non-standard locations {#nonstdinst}
+
+On systems where you have no administration privilege and consequently no right
+to use the standard installers, you may want to manually install TSDuck is some
+arbitrary directory.
+
+On UNIX systems (which include Linux and macOS), you have to rebuild TSDuck from
+the source repository and install it using a command like this one:
+
+~~~~
+make install SYSPREFIX=$HOME/usr/local
+~~~~
+
+On Windows systems, a so-called _portable_ or _standalone_ package will be
+provided in a future version.
+
