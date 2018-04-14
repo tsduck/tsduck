@@ -985,6 +985,13 @@ namespace ts {
         DID_UNT_ENHANCED_MSG    = 0x0C, //!< DID for UNT enhanced_message_descriptor
         DID_UNT_SSU_URI         = 0x0D, //!< DID for UNT ssu_uri_descriptor
 
+        // Valid in a SIT (Splice Information Table, SCTE 35).
+
+        DID_SPLICE_AVAIL        = 0x00, //!< DID for SCTE 35 SIT avail_descriptor
+        DID_SPLICE_DTMF         = 0x01, //!< DID for SCTE 35 SIT DTMF_descriptor
+        DID_SPLICE_SEGMENT      = 0x02, //!< DID for SCTE 35 SIT segmentation_descriptor
+        DID_SPLICE_TIME         = 0x03, //!< DID for SCTE 35 SIT time_descriptor
+
         // Valid in ATSC / SCTE context:
 
         DID_ATSC_STUFFING       = 0X80, //!< DID for ATSC stuffing_descriptor
@@ -1373,15 +1380,5 @@ namespace ts {
         SPLICE_TIME_SIGNAL           = 0x06, //!< TimeSignal
         SPLICE_BANDWIDTH_RESERVATION = 0x07, //!< BandwidthReservation
         SPLICE_PRIVATE_COMMAND       = 0xFF, //!< PrivateCommand
-    };
-
-    //!
-    //! Splice descriptor tags in Splice Information Table.
-    //!
-    enum : uint8_t {
-        SPLICE_DESC_AVAIL   = 0x00, //!< avail_descriptor
-        SPLICE_DESC_DTMF    = 0x01, //!< DTMF_descriptor
-        SPLICE_DESC_SEGMENT = 0x02, //!< segmentation_descriptor
-        SPLICE_DESC_TIME    = 0x03, //!< time_descriptor
     };
 }

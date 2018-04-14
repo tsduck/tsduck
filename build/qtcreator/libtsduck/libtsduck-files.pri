@@ -235,8 +235,10 @@ HEADERS += \
     ../../../src/libtsduck/tsSingletonManager.h \
     ../../../src/libtsduck/tsSocket.h \
     ../../../src/libtsduck/tsSocketAddress.h \
+    ../../../src/libtsduck/tsSpliceAvailDescriptor.h \
     ../../../src/libtsduck/tsSpliceInfoTable.h \
     ../../../src/libtsduck/tsSpliceInsert.h \
+    ../../../src/libtsduck/tsSpliceTimeDescriptor.h \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.h \
     ../../../src/libtsduck/tsSSULinkageDescriptor.h \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
@@ -537,8 +539,10 @@ SOURCES += \
     ../../../src/libtsduck/tsSingletonManager.cpp \
     ../../../src/libtsduck/tsSocket.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
+    ../../../src/libtsduck/tsSpliceAvailDescriptor.cpp \
     ../../../src/libtsduck/tsSpliceInfoTable.cpp \
     ../../../src/libtsduck/tsSpliceInsert.cpp \
+    ../../../src/libtsduck/tsSpliceTimeDescriptor.cpp \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsSSULinkageDescriptor.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \

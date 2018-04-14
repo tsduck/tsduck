@@ -117,7 +117,5 @@ TSDuck - List of features to be implemented or fixed
   - 10.10.3   dvb_html_application_boundary_descriptor
 
   ANSI/SCTE 35 (Splice Information)
-  - 10.3.1  avail_descriptor
   - 10.3.2  DTMF_descriptor
   - 10.3.3  Segmentation_descriptor
-  - 10.3.4  time_descriptor

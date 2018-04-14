@@ -104,6 +104,8 @@
 #include "tsServiceDescriptor.h"
 #include "tsServiceListDescriptor.h"
 #include "tsShortEventDescriptor.h"
+#include "tsSpliceAvailDescriptor.h"
+#include "tsSpliceTimeDescriptor.h"
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
 #include "tsSupplementaryAudioDescriptor.h"
