@@ -2,7 +2,9 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.11-676
+Version 3.11-681
+
+- Added option --sync-layout to plugin "mpe".
 
 - Bug fix: In rare cases, time conversions could produce incorrect results when
   the time value was in the middle of the "non-existing hour", during the
