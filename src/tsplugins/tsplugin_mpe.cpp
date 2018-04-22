@@ -165,7 +165,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
             u"      With --log, dump the UDP payload of each network datagram.\n"
             u"\n"
             u"  --dump-max value\n"
-            u"      With --dump-datagram or --dump-udp, specify the maxumum number of bytes\n"
+            u"      With --dump-datagram or --dump-udp, specify the maximum number of bytes\n"
             u"      to dump. By default, dump everything.\n"
             u"\n"
             u"  --help\n"
