@@ -58,6 +58,7 @@ namespace ts {
         // Plugin private fields.
         bool          _abort;           // Error, abort asap.
         bool          _log;             // Log MPE datagrams.
+        bool          _sync_layout;     // Display a layout of 0x47 sync bytes.
         bool          _send_udp;        // Send all datagrams through UDP.
         UDPSocket     _sock;            // Outgoing UDP socket (forwarded datagrams).
         int           _ttl;             // Time to live option.
@@ -99,6 +100,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     MPEHandlerInterface(),
     _abort(false),
     _log(false),
+    _sync_layout(false),
     _send_udp(false),
     _sock(false, *tsp_),
     _ttl(0),
@@ -126,6 +128,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     option(u"redirect",     'r', STRING);
     option(u"source",       's', STRING);
     option(u"ttl",           0,  INTEGER, 0, 1, 1, 255);
+    option(u"sync-layout",   0);
     option(u"udp-forward",  'u');
 
     setHelp(u"Options:\n"
@@ -179,6 +182,9 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
             u"  --source address[:port]\n"
             u"      Filter MPE UDP datagrams based on the specified source IP address.\n"
             u"\n"
+            u"  --sync-layout\n"
+            u"      With --log, display the layout of 0x47 sync bytes in the UDP payload.\n"
+            u"\n"
             u"  --ttl value\n"
             u"      With --udp-forward, specify the TTL (Time-To-Live) socket option.\n"
             u"      The actual option is either \"Unicast TTL\" or \"Multicast TTL\",\n"
@@ -204,7 +210,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
 bool ts::MPEPlugin::start()
 {
     // Get command line arguments
-    _log = present(u"log");
+    _sync_layout = present(u"sync-layout");
+    _log = _sync_layout || present(u"log");
     _send_udp = present(u"udp-forward");
     _outfile_append = present(u"append");
     getValue(_outfile_name, u"output-file");
@@ -346,12 +353,38 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
             macComment = u", should be " + mcMAC.toString();
         }
 
-        tsp->info(u"PID 0x%X (%d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X",
+        // Add a layout of 0x47 sync bytes.
+        UString syncBytes;
+        const uint8_t* const udp = mpe.udpMessage();
+        const size_t udpSize = mpe.udpMessageSize();
+        if (_sync_layout) {
+            size_t start = 0;
+            for (size_t i = 0; i < udpSize; ++i) {
+                if (udp[i] == SYNC_BYTE) {
+                    if (syncBytes.empty()) {
+                        syncBytes = u"\n ";
+                    }
+                    if (start != i) {
+                        syncBytes.append(UString::Format(u" %d", {i - start}));
+                    }
+                    syncBytes.append(UString::Format(u" [%X]", {SYNC_BYTE}));
+                    start = i + 1;
+                }
+            }
+            if (syncBytes.empty()) {
+                syncBytes = u" no sync byte";
+            }
+            else if (start < udpSize) {
+                syncBytes.append(UString::Format(u" %d", {udpSize - start}));
+            }
+        }
+
+        tsp->info(u"PID 0x%X (%d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s",
                   {mpe.sourcePID(), mpe.sourcePID(),
                    mpe.sourceIPAddress().toString(), mpe.sourceUDPPort(),
                    destIP.toString(), mpe.destinationUDPPort(),
-                   destMAC.toString(), macComment, mpe.udpMessageSize(),
-                   GetUInt16(mpe.datagram() + 6)});
+                   destMAC.toString(), macComment, udpSize,
+                   GetUInt16(mpe.datagram() + 6), syncBytes});
     }
 
     // Save UDP messages in binary file.

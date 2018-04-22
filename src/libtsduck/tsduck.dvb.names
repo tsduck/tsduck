@@ -62,6 +62,16 @@ Bits = 8
 0x80 = ECM (even)
 0x81 = ECM (odd)
 0x82-0x8F = EMM
+0xA0 = SCT (Superframe Composition Table, ETSI EN 301 790)
+0xA1 = FCT (Frame Composition Table, ETSI EN 301 790)
+0xA2 = TCT (Time-Slot Composition Table, ETSI EN 301 790)
+0xA3 = SPT (Satellite Position Table, ETSI EN 301 790)
+0xA4 = CMT (Correction Message Table, ETSI EN 301 790)
+0xA5 = TBTP (Terminal Burst Time Plan, ETSI EN 301 790)
+0xA6 = PCR packet payload (ETSI EN 301 790)
+0xAA = Transmission Mode Support Table (ETSI EN 301 790)
+0xB0 = TIM (Terminal Information Message, ETSI EN 301 790)
+0xB1 = LL_FEC_parity_data_table (ETSI EN 301 790)
 0xFC = SCTE 35 Splice Information
 0xFF = Forbidden TID 0xFF
 # CAS-specific values, most significant byte is a CAS family.
@@ -395,6 +405,29 @@ Bits = 8
 0x7F = Extension Descriptor
 # ANSI / SCTE defined. Incompatible with DVB (no PDS present).
 0x8A = Cue Identifier (SCTE 35)
+# Defined by ETSI EN 301 790 (return channel) without private data specifier.
+0xA0 = Network layer info (ETSI EN 301 790)
+0xA1 = Correction message (ETSI EN 301 790)
+0xA2 = Logon initialize (ETSI EN 301 790)
+0xA3 = ACQ assign (ETSI EN 301 790)
+0xA4 = SYNC assign (ETSI EN 301 790)
+0xA5 = Encrypted Logon ID (ETSI EN 301 790)
+0xA6 = Echo value (ETSI EN 301 790)
+0xA7 = RCS content (ETSI EN 301 790)
+0xA8 = Satellite forward link (ETSI EN 301 790)
+0xA9 = Satellite return link (ETSI EN 301 790)
+0xAA = table update (ETSI EN 301 790)
+0xAB = Contention control (ETSI EN 301 790)
+0xAC = Correction control (ETSI EN 301 790)
+0xAD = Forward interaction path (ETSI EN 301 790)
+0xAE = Return interaction path (ETSI EN 301 790)
+0xAF = Connection control (ETSI EN 301 790)
+0xB0 = Mobility control descriptor (ETSI EN 301 790)
+0xB1 = Correction message extension (ETSI EN 301 790)
+0xB2 = Return Transmission Modes (ETSI EN 301 790)
+0xB3 = Mesh Logon initialize (ETSI EN 301 790)
+0xB5 = Implementation type (ETSI EN 301 790)
+0xB6 = LL FEC identifier (ETSI EN 301 790)
 0xFF = Forbidden Descriptor Id 0xFF
 # Valid in a UNT (0x4B, Update Notification Table, ETSI TS 102 006):
 0x4BFFFFFFFF01 = UNT Scheduling
