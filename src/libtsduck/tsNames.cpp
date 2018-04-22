@@ -56,14 +56,19 @@ bool ts::names::HasTableSpecificName(uint8_t did, uint8_t tid)
 
 ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
 {
-    // Use version with PDS or table first, then without it.
-    const Names::Value fullValue = (did >= 0x80 && pds != 0 && pds != PDS_NULL) || tid == 0xFF ?
-        // Could be a private descriptor.
-        ((Names::Value(pds) << 8) | Names::Value(did)) :
+    if (did >= 0x80 && pds != 0 && pds != PDS_NULL) {
+        // If this is a private descriptor, only consider the private value.
+        // Do not fallback because the same value with PDS == 0 can be different.
+        return NamesDVB::Instance().nameFromSection(u"DescriptorId", (Names::Value(pds) << 8) | Names::Value(did), flags, 8);
+    }
+    else if (tid != 0xFF) {
         // Could be a table-specific descriptor.
-        ((Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did));
-
-    return NamesDVB::Instance().nameFromSectionWithFallback(u"DescriptorId", fullValue, Names::Value(did), flags, 8);
+        const Names::Value fullValue = (Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did);
+        return NamesDVB::Instance().nameFromSectionWithFallback(u"DescriptorId", fullValue, Names::Value(did), flags, 8);
+    }
+    else {
+        return NamesDVB::Instance().nameFromSection(u"DescriptorId", Names::Value(did), flags, 8);
+    }
 }
 
 //----------------------------------------------------------------------------
