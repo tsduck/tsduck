@@ -215,7 +215,7 @@ void WebRequestTest::testGitHub()
 void WebRequestTest::testGoogle()
 {
     testURL(u"http://www.google.com/",
-            true,     // expectRedirection
+            false,    // expectRedirection
             false,    // expectSSL
             true,     // expectTextContent
             false);   // expectInvariant
