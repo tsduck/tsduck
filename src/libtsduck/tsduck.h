@@ -125,6 +125,7 @@
 #include "tsECMGSCS.h"
 #include "tsEDID.h"
 #include "tsEIT.h"
+#include "tsEMMGClient.h"
 #include "tsEMMGMUX.h"
 #include "tsEnhancedAC3Descriptor.h"
 #include "tsEnumeration.h"

@@ -109,6 +109,7 @@ HEADERS += \
     ../../../src/libtsduck/tsECMGSCS.h \
     ../../../src/libtsduck/tsEDID.h \
     ../../../src/libtsduck/tsEIT.h \
+    ../../../src/libtsduck/tsEMMGClient.h \
     ../../../src/libtsduck/tsEMMGMUX.h \
     ../../../src/libtsduck/tsEnhancedAC3Descriptor.h \
     ../../../src/libtsduck/tsEnumeration.h \
@@ -440,6 +441,7 @@ SOURCES += \
     ../../../src/libtsduck/tsECMGClient.cpp \
     ../../../src/libtsduck/tsECMGSCS.cpp \
     ../../../src/libtsduck/tsEIT.cpp \
+    ../../../src/libtsduck/tsEMMGClient.cpp \
     ../../../src/libtsduck/tsEMMGMUX.cpp \
     ../../../src/libtsduck/tsEnhancedAC3Descriptor.cpp \
     ../../../src/libtsduck/tsEnumeration.cpp \
