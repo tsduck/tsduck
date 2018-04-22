@@ -26,22 +26,62 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+//
+//  Minimal generic DVB SimulCrypt compliant EMMG for CAS head-end integration.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 686
+#include "tsArgs.h"
+#include "tsIPUtils.h"
+#include "tsVersionInfo.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+//  Command line options
+//----------------------------------------------------------------------------
+
+struct EMMGOptions: public ts::Args
+{
+    EMMGOptions(int argc, char *argv[]);
+
+};
+
+EMMGOptions::EMMGOptions(int argc, char *argv[]) :
+    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG.", u"[options]")
+{
+
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
+
+    analyze(argc, argv);
+
+    exitOnError();
+}
+
+
+//----------------------------------------------------------------------------
+//  Program entry point
+//----------------------------------------------------------------------------
+
+int main (int argc, char *argv[])
+{
+    TSDuckLibCheckVersion();
+    EMMGOptions opt(argc, argv);
+
+    // IP initialization.
+    if (!ts::IPInitialize(opt)) {
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}

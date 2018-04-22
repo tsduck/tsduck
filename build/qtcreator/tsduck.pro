@@ -101,6 +101,7 @@ SUBDIRS += \
     tsdektec \
     tsdump \
     tsecmg \
+    tsemmg \
     tsfixcc \
     tsftrunc \
     tslsdvb \

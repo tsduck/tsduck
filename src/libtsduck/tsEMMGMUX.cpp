@@ -770,12 +770,14 @@ ts::emmgmux::DataProvision::DataProvision (const tlv::MessageFactory& fact) :
 
 void ts::emmgmux::DataProvision::serializeParameters (tlv::Serializer& fact) const
 {
-    fact.put (Tags::data_channel_id, channel_id);
-    fact.put (Tags::data_stream_id,  stream_id);
-    fact.put (Tags::client_id,       client_id);
-    fact.put (Tags::data_id,         data_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::data_stream_id,  stream_id);
+    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::data_id,         data_id);
     for (size_t i = 0; i < datagram.size(); ++i) {
-        fact.put (Tags::datagram, *(datagram[i]));
+        if (!datagram[i].isNull()) {
+            fact.put(Tags::datagram, *(datagram[i]));
+        }
     }
 }
 

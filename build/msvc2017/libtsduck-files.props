@@ -111,6 +111,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsECMGSCS.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEDID.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEIT.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEMMGClient.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEMMGMUX.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnumeration.h" />
@@ -452,6 +453,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGSCS.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEIT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsEMMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGMUX.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEnumeration.cpp" />
