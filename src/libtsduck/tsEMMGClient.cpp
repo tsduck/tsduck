@@ -46,6 +46,7 @@ const ts::MilliSecond ts::EMMGClient::RESPONSE_TIMEOUT;
 ts::EMMGClient::EMMGClient() :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE)),
     _state(INITIAL),
+    _total_bytes(0),
     _abort(0),
     _report(0),
     _connection(emmgmux::Protocol::Instance(), true, 3),
@@ -246,6 +247,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     }
 
     // Data stream now established
+    _total_bytes = 0;
     {
         Guard lock(_mutex);
         _state = CONNECTED;
@@ -326,8 +328,8 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
         return false;
     }
 
-    // In assynchronous mode, we are done.
-    if (synchronous) {
+    // In asynchronous mode, we are done.
+    if (!synchronous) {
         return true;
     }
 
@@ -379,12 +381,24 @@ bool ts::EMMGClient::dataProvision(const void* data, size_t size)
 
 bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
 {
+    // Build a data provision message.
     emmgmux::DataProvision request;
     request.channel_id = _stream_status.channel_id;
     request.stream_id = _stream_status.stream_id;
     request.client_id = _stream_status.client_id;
     request.data_id = _stream_status.data_id;
     request.datagram = data;
+
+    // Eliminate null pointers, count total data bytes.
+    for (auto it = request.datagram.begin(); it != request.datagram.end(); ) {
+        if (it->isNull()) {
+            it = request.datagram.erase(it);
+        }
+        else {
+            _total_bytes += (*it)->size();
+            ++it;
+        }
+    }
 
     return _connection.send(request, *_report);
 }

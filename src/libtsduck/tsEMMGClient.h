@@ -164,6 +164,17 @@ namespace ts {
         //!
         bool isConnected() const {return _state == CONNECTED;}
 
+        //!
+        //! Get the total number of data bytes which were sent so far.
+        //! @return The total number of data bytes which were sent so far.
+        //!
+        uint64_t totalBytes() const { return _total_bytes; }
+
+        //!
+        //! Reset the total number of data bytes which were sent so far.
+        //!
+        void resetTotalBytes() { _total_bytes = 0; }
+
     private:
         // State of the client connection
         enum State {
@@ -183,6 +194,7 @@ namespace ts {
 
         // Private members
         State                  _state;
+        uint64_t               _total_bytes;
         const AbortInterface*  _abort;
         Report*                _report;
         tlv::Connection<Mutex> _connection;     // connection with MUX server
