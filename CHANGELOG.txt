@@ -7,6 +7,8 @@ Version 3.11-682
 - Added options --sync-layout, --dump-datagram, --dump-udp, --dump-max and
   --skip to plugin "mpe".
 
+- Added utility "tsemmg", an EMMG simulator for MUX integration testing.
+
 - Bug fix: In rare cases, time conversions could produce incorrect results when
   the time value was in the middle of the "non-existing hour", during the
   spring switch of daylight saving time. In practice, the problem occured on

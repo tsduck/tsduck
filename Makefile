@@ -49,11 +49,23 @@ CLOC_FLAGS        += --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.pptx,.docx
 default:
 	+@$(RECURSE)
 
+# Build and run all tests.
+.PHONY: test-all
+test-all: test test-suite
+
 # Build and run unitary tests.
 .PHONY: test
-test:
-	@$(MAKE)
+test: default
 	@$(MAKE) -C src/utest test
+
+# Execute the TSDuck test suite from a sibling directory, if present.
+.PHONY: test-suite
+test-suite: default
+	@if [[ -d ../tsduck-test/.git ]]; then \
+	   cd ../tsduck-test; git pull; ./run-all-tests.sh --dev; \
+	 else \
+	   echo >&2 "No git repository in ../tsduck-test"; \
+	 fi
 
 # Download the Dektec DTAPI. Automatically done during a global "make" since
 # we recurse in "dektec" before "src".
