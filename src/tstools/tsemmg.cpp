@@ -194,7 +194,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
             u"      'stream_BW_request' message. The value is in kilobits per second. The\n"
             u"      default is the value of the --bandwidth option. Specifying distinct values\n"
             u"      for --bandwidth and --requested-bandwidth can be used for testing the\n"
-            u"      behavior of a MUX."
+            u"      behavior of a MUX.\n"
             u"\n"
             u"  -s\n"
             u"  --section-mode\n"
