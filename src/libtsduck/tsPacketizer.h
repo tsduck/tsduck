@@ -130,8 +130,9 @@ namespace ts {
         //! Build the next MPEG packet for the list of sections.
         //! If there is no section to packetize, generate a null packet on PID_NULL.
         //! @param [out] packet The next TS packet.
+        //! @return True if a real packet is returned, false if a null packet was returned.
         //!
-        void getNextPacket(TSPacket& packet);
+        bool getNextPacket(TSPacket& packet);
 
         //!
         //! Get the number of generated packets so far.

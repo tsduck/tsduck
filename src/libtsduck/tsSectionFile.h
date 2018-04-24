@@ -37,6 +37,7 @@
 #include "tsxmlElement.h"
 #include "tsMPEG.h"
 #include "tsSection.h"
+#include "tsBinaryTable.h"
 #include "tsUString.h"
 #include "tsDVBCharset.h"
 #include "tsTablesPtr.h"
