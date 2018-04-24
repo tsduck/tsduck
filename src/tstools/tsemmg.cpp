@@ -37,6 +37,7 @@
 #include "tsEMMGClient.h"
 #include "tsPacketizer.h"
 #include "tsMonotonic.h"
+#include "tsSectionFile.h"
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
@@ -46,7 +47,7 @@ namespace {
     static const size_t   DEFAULT_EMM_SIZE       = 100;
     static const ts::TID  DEFAULT_EMM_MIN_TID    = ts::TID_EMM_FIRST;
     static const ts::TID  DEFAULT_EMM_MAX_TID    = ts::TID_EMM_LAST;
-    static const size_t   DEFAULT_BYTES_PER_SEND = 2000;
+    static const size_t   DEFAULT_BYTES_PER_SEND = 500;
 
     // Minimum interval between two send operations.
     static const ts::NanoSecond MIN_SEND_INTERVAL = 4 * ts::NanoSecPerMilliSec; // 4 ms
@@ -69,23 +70,26 @@ class EMMGOptions: public ts::Args
 public:
     EMMGOptions(int argc, char *argv[]);
 
-    ts::SocketAddress muxAddress;          // TCP server address for MUX.
-    uint32_t          clientId;            // Client id, see EMMG/PDG <=> MUX protocol.
-    uint16_t          channelId;           // Data_channel_id, see EMMG/PDG <=> MUX protocol.
-    uint16_t          streamId;            // Data_stream_id, see EMMG/PDG <=> MUX protocol.
-    uint16_t          dataId;              // Data_id, see EMMG/PDG <=> MUX protocol.
-    uint8_t           dataType;            // Data_type, see EMMG/PDG <=> MUX protocol.
-    bool              sectionMode;         // If true, send data in section format.
-    uint16_t          sendBandwidth;       // Bandwidth of sent data in kb/s.
-    uint16_t          requestedBandwidth;  // Requested bandwidth in kb/s.
-    bool              ignoreAllocatedBW;   // Ignore the returned allocated bandwidth.
-    size_t            emmSize;             // Size in bytes of generated EMM's.
-    ts::TID           emmMinTableId;       // Minimum table id of generated EMM's.
-    ts::TID           emmMaxTableId;       // Maximum table id of generated EMM's.
-    uint64_t          maxBytes;            // Stop after injecting that number of bytes.
-    ts::BitRate       dataBitrate;         // Actual data bitrate.
-    size_t            bytesPerSend;        // Approximate size of each send.
-    ts::NanoSecond    sendInterval;        // Interval between two send operations.
+    ts::UStringVector    inputFiles;          // Input file names.
+    ts::SectionPtrVector sections;            // Loaded sections from input files.
+    size_t               maxCycles;           // Maximum number of cycles of section files.
+    ts::SocketAddress    muxAddress;          // TCP server address for MUX.
+    uint32_t             clientId;            // Client id, see EMMG/PDG <=> MUX protocol.
+    uint16_t             channelId;           // Data_channel_id, see EMMG/PDG <=> MUX protocol.
+    uint16_t             streamId;            // Data_stream_id, see EMMG/PDG <=> MUX protocol.
+    uint16_t             dataId;              // Data_id, see EMMG/PDG <=> MUX protocol.
+    uint8_t              dataType;            // Data_type, see EMMG/PDG <=> MUX protocol.
+    bool                 sectionMode;         // If true, send data in section format.
+    uint16_t             sendBandwidth;       // Bandwidth of sent data in kb/s.
+    uint16_t             requestedBandwidth;  // Requested bandwidth in kb/s.
+    bool                 ignoreAllocatedBW;   // Ignore the returned allocated bandwidth.
+    size_t               emmSize;             // Size in bytes of generated EMM's.
+    ts::TID              emmMinTableId;       // Minimum table id of generated EMM's.
+    ts::TID              emmMaxTableId;       // Maximum table id of generated EMM's.
+    uint64_t             maxBytes;            // Stop after injecting that number of bytes.
+    ts::BitRate          dataBitrate;         // Actual data bitrate.
+    size_t               bytesPerSend;        // Approximate size of each send.
+    ts::NanoSecond       sendInterval;        // Interval between two send operations.
 
     // Adjust the various rates and delays according to the allocated bandwidth.
     bool adjustBandwidth(uint16_t allocated);
@@ -93,7 +97,10 @@ public:
 
 // Constructor.
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
-    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG.", u"[options]"),
+    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG.", u"[options] [section-file ...]"),
+    inputFiles(),
+    sections(),
+    maxCycles(0),
     muxAddress(),
     clientId(0),
     channelId(0),
@@ -112,10 +119,12 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     bytesPerSend(0),
     sendInterval(0)
 {
+    option(u"",                    0,  STRING, 0, UNLIMITED_COUNT);
     option(u"bandwidth",          'b', INTEGER, 0, 1, 1, 0xFFFF);
     option(u"bytes-per-send",      0,  INTEGER, 0, 1, 0x20, 0xEFFF);
     option(u"channel-id",          0,  INT16);
     option(u"client-id",          'c', INT32);
+    option(u"cycles",              0,  UNSIGNED);
     option(u"data-id",            'd', INT16);
     option(u"emm-size",            0,  INTEGER, 0, 1, ts::MIN_SHORT_SECTION_SIZE, ts::MAX_PRIVATE_SECTION_SIZE);
     option(u"emm-min-table-id",    0,  UINT8);
@@ -129,7 +138,18 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     option(u"stream-id",           0,  INT16);
     option(u"type",               't', DataTypeEnum);
 
-    setHelp(u"Options:\n"
+    setHelp(u"Parameters:\n"
+            u"\n"
+            u"  The parameters are files containing sections in binary or XML format. Several\n"
+            u"  files can be specified. All sections are loaded and injected in the MUX using\n"
+            u"  the EMMG/PDG <=> MUX protocol. The list of all sections from all files is\n"
+            u"  cycled as long as tsemmg is running. The sections can be of any type, not\n"
+            u"  only EMM's.\n"
+            u"\n"
+            u"  If no input file is specified, tsemmg generates fixed-size fake EMM's. See\n"
+            u"  options --emm-size, --emm-min-table-id and --emm-max-table-id.\n"
+            u"\n"
+            u"Options:\n"
             u"\n"
             u"  -b value\n"
             u"  --bandwidth value\n"
@@ -149,6 +169,10 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
             u"      This option sets the DVB SimulCrypt parameter 'client_id'. Default: 0.\n"
             u"      For EMM injection, the most signification 16 bits shall be the\n"
             u"      'CA_system_id' of the corresponding CAS.\n"
+            u"\n"
+            u"  --cycles value\n"
+            u"      Inject the sections from the input files the specified number of times.\n"
+            u"      By default, inject sections indefinitely.\n"
             u"\n"
             u"  -d value\n"
             u"  --data-id value\n"
@@ -221,6 +245,8 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    getValues(inputFiles);
+    maxCycles = intValue<size_t>(u"cycles");
     const ts::UString mux(value(u"mux"));
     clientId = intValue<uint32_t>(u"client-id", 0);
     dataId = intValue<uint16_t>(u"data-id", 0);
@@ -254,6 +280,14 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     // Specify which EMMG/PDG <=> MUX version to use.
     ts::emmgmux::Protocol::Instance()->setVersion(protocolVersion);
+
+    // Load sections from input files.
+    for (auto it = inputFiles.begin(); it != inputFiles.end(); ++it) {
+        ts::SectionFile file;
+        if (file.load(*it, *this, ts::SectionFile::UNSPECIFIED, ts::CRC32::CHECK)) {
+            sections.insert(sections.end(), file.sections().begin(), file.sections().end());
+        }
+    }
 
     exitOnError();
 }
@@ -338,6 +372,8 @@ private:
     const EMMGOptions& _opt;
     ts::TID _emmTableId;
     uint8_t _payloadData;
+    size_t  _nextSection;
+    size_t  _cycleCount;
 
     // Inaccessible operations.
     EMMGSectionProvider() = delete;
@@ -349,7 +385,9 @@ private:
 EMMGSectionProvider::EMMGSectionProvider(const EMMGOptions& opt) :
     _opt(opt),
     _emmTableId(opt.emmMinTableId),
-    _payloadData(0)
+    _payloadData(0),
+    _nextSection(0),
+    _cycleCount(0)
 {
 }
 
@@ -360,16 +398,31 @@ EMMGSectionProvider::EMMGSectionProvider(const EMMGOptions& opt) :
 
 void EMMGSectionProvider::provideSection(ts::SectionCounter counter, ts::SectionPtr& section)
 {
-    // Create a fake EMM payload with all bytes containing the same value.
-    // This value is incremented in each new fake EMM.
-    assert(_opt.emmSize >= ts::MIN_SHORT_SECTION_SIZE);
-    ts::ByteBlock payload(_opt.emmSize - ts::MIN_SHORT_SECTION_SIZE, _payloadData++);
+    if (_opt.inputFiles.empty()) {
+        // There is no input file.
+        // Create a fake EMM payload with all bytes containing the same value.
+        // This value is incremented in each new fake EMM.
+        assert(_opt.emmSize >= ts::MIN_SHORT_SECTION_SIZE);
+        ts::ByteBlock payload(_opt.emmSize - ts::MIN_SHORT_SECTION_SIZE, _payloadData++);
 
-    // Create a fake EMM section.
-    section = new ts::Section(_emmTableId, true, payload.data(), payload.size());
+        // Create a fake EMM section.
+        section = new ts::Section(_emmTableId, true, payload.data(), payload.size());
 
-    // Compute the next EMM table id.
-    _emmTableId = _emmTableId >= _opt.emmMaxTableId ? _opt.emmMinTableId : _emmTableId + 1;
+        // Compute the next EMM table id.
+        _emmTableId = _emmTableId >= _opt.emmMaxTableId ? _opt.emmMinTableId : _emmTableId + 1;
+    }
+    else if (_opt.maxCycles > 0 && _cycleCount >= _opt.maxCycles) {
+        // The total number of cycles has been exhausted.
+        section.clear();
+    }
+    else {
+        // Get the next loaded section.
+        section = _opt.sections[_nextSection];
+        if (++_nextSection >= _opt.sections.size()) {
+            _nextSection = 0;
+            _cycleCount++;
+        }
+    }
 }
 
 
@@ -451,7 +504,6 @@ int main (int argc, char *argv[])
                 targetBytes = allBytes - client.totalBytes();
             }
         }
-        opt.debug(u"after %'d ms, sending at least %'d bytes for current interval", {duration / ts::NanoSecPerMilliSec, targetBytes});
 
         // Send the data we need to send now. Split in several send operations if needed.
         while (ok && targetBytes > 0 && client.totalBytes() < opt.maxBytes) {
@@ -459,35 +511,41 @@ int main (int argc, char *argv[])
             // Size of this send operation.
             const uint64_t targetSendSize = std::min(opt.bytesPerSend, targetBytes);
             uint64_t sendSize = 0;
-            opt.debug(u"targetBytes = %'d bytes, targetSendSize = %'d", {targetBytes, targetSendSize});
 
             // Build a set of data to send.
             if (opt.sectionMode) {
                 // Get complete sections from the section provider.
                 ts::SectionPtrVector sections;
-                while (sendSize < targetSendSize) {
+                while (ok && sendSize < targetSendSize) {
+                    // Get one section.
                     ts::SectionPtr sec;
                     sectionProvider.provideSection(0, sec);
-                    assert(!sec.isNull());
-                    sections.push_back(sec);
-                    sendSize += sec->size();
+                    // Getting a null pointer means end of input.
+                    ok = !sec.isNull();
+                    if (ok) {
+                        sections.push_back(sec);
+                        sendSize += sec->size();
+                    }
                 }
 
                 // Send the sections.
-                ok = client.dataProvision(sections);
+                ok = client.dataProvision(sections) && ok;
             }
             else {
                 // Get TS packets from the packetizer.
                 sendSize = ts::RoundUp(targetSendSize, ts::PKT_SIZE);
                 ts::TSPacketVector packets(sendSize / ts::PKT_SIZE);
-                for (size_t i = 0; i < packets.size(); ++i) {
-                    packetizer.getNextPacket(packets[i]);
+                for (size_t i = 0; ok && i < packets.size(); ++i) {
+                    ok = packetizer.getNextPacket(packets[i]);
+                    if (!ok) {
+                        // No more packet, shrink the packet buffer.
+                        packets.resize(i);
+                    }
                 }
 
                 // Send the packets.
-                ok = client.dataProvision(packets.data(), packets.size() * ts::PKT_SIZE);
+                ok = client.dataProvision(packets.data(), packets.size() * ts::PKT_SIZE) && ok;
             }
-            opt.debug(u"sent %'d bytes in one operation", {sendSize});
 
             // Any data left for another send operation?
             targetBytes = sendSize > targetBytes ? 0 : targetBytes - sendSize;

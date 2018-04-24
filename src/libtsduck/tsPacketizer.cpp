@@ -70,7 +70,7 @@ void ts::Packetizer::reset()
 // Build the next MPEG packet for the list of sections.
 //----------------------------------------------------------------------------
 
-void ts::Packetizer::getNextPacket (TSPacket& pkt)
+bool ts::Packetizer::getNextPacket (TSPacket& pkt)
 {
     // Count generated packets
     _packet_count++;
@@ -84,7 +84,7 @@ void ts::Packetizer::getNextPacket (TSPacket& pkt)
     // If there is still no current section, return a null packet
     if (_section.isNull()) {
         pkt = NullPacket;
-        return;
+        return false;
     }
 
     // Various values to build the MPEG header.
@@ -202,6 +202,7 @@ void ts::Packetizer::getNextPacket (TSPacket& pkt)
 
     // Do packet stuffing if necessary.
     ::memset (data, 0xFF, remain_in_packet);
+    return true;
 }
 
 

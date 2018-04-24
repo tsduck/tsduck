@@ -72,6 +72,6 @@ namespace ts {
     private:
         // Hide these methods
         void setStuffingPolicy(StuffingPolicy) = delete;
-        void getNextPacket(TSPacket&) = delete;
+        bool getNextPacket(TSPacket&) = delete;
     };
 }
