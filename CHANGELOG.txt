@@ -9,6 +9,9 @@ Version 3.11-682
 
 - Added utility "tsemmg", an EMMG simulator for MUX integration testing.
 
+- Added option --buffer-size in plugin "datainject". The plugin is now able to
+  receive data using UDP, as defined in the DVB SimulCrypt protocol.
+
 - Bug fix: In rare cases, time conversions could produce incorrect results when
   the time value was in the middle of the "non-existing hour", during the
   spring switch of daylight saving time. In practice, the problem occured on

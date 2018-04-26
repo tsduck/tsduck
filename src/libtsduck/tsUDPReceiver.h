@@ -80,6 +80,15 @@ namespace ts {
         //!
         bool receiverSpecified() const { return _receiver_specified; }
 
+        //!
+        //! Set application-specified parameters to receive unicast traffic.
+        //! This method is used when command line parameters are not used.
+        //! @param [in] localAddress Optional local address and required UDP port.
+        //! @param [in] reusePort Reuse-port option.
+        //! @param [in] bufferSize Optional socket receive buffer size.
+        //!
+        void setParameters(const SocketAddress& localAddress, bool reusePort, size_t bufferSize = 0);
+
         // Override UDPSocket methods
         virtual bool open(Report& report = CERR) override;
         virtual bool receive(void* data,

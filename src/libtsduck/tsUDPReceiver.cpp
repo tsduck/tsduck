@@ -226,6 +226,21 @@ bool ts::UDPReceiver::load(ts::Args& args)
 
 
 //----------------------------------------------------------------------------
+// Set application-specified parameters to receive unicast traffic.
+//----------------------------------------------------------------------------
+
+void ts::UDPReceiver::setParameters(const SocketAddress& localAddress, bool reusePort, size_t bufferSize)
+{
+    _receiver_specified = true;
+    _dest_addr.clear();
+    _dest_addr.setPort(localAddress.port());
+    _local_address = localAddress;
+    _reuse_port = reusePort;
+    _recv_bufsize = bufferSize;
+}
+
+
+//----------------------------------------------------------------------------
 // Open the socket. Override UDPSocket::open().
 //----------------------------------------------------------------------------
 

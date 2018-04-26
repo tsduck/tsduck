@@ -31,6 +31,7 @@
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 #include "tsOneShotPacketizer.h"
+#include "tstlvSerializer.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -46,10 +47,12 @@ const ts::MilliSecond ts::EMMGClient::RESPONSE_TIMEOUT;
 ts::EMMGClient::EMMGClient() :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE)),
     _state(INITIAL),
+    _udp_address(),
     _total_bytes(0),
     _abort(0),
     _report(0),
     _connection(emmgmux::Protocol::Instance(), true, 3),
+    _udp_socket(),
     _channel_status(),
     _stream_status(),
     _mutex(),
@@ -77,6 +80,7 @@ ts::EMMGClient::~EMMGClient()
         _report = NullReport::Instance();
         _connection.disconnect(NULLREP);
         _connection.close(NULLREP);
+        _udp_socket.close(NULLREP);
 
         // Notify receiver thread to terminate
         _state = DESTRUCTING;
@@ -94,6 +98,10 @@ bool ts::EMMGClient::abortConnection(const UString& message)
 {
     if (!message.empty()) {
         _report->error(message);
+    }
+
+    if (_udp_address.hasPort()) {
+        _udp_socket.close(*_report);
     }
 
     GuardCondition lock(_mutex, _work_to_do);
@@ -145,6 +153,7 @@ ts::tlv::TAG ts::EMMGClient::waitResponse()
 //----------------------------------------------------------------------------
 
 bool ts::EMMGClient::connect(const SocketAddress& mux,
+                             const SocketAddress& udp,
                              uint32_t client_id,
                              uint16_t data_channel_id,
                              uint16_t data_stream_id,
@@ -181,6 +190,17 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     if (!_connection.connect(mux, *_report)) {
         _connection.close(*_report);
         return false;
+    }
+
+    // Build full UDP address if required.
+    _udp_address = udp;
+    if (_udp_address.hasPort() && !_udp_address.hasAddress()) {
+        _udp_address.setAddress(mux.address());
+    }
+
+    // Create UDP socket if we need UDP.
+    if (_udp_address.hasPort() && !_udp_socket.open(*report)) {
+        return abortConnection();
     }
 
     // Automatic response to channel_test.
@@ -304,6 +324,11 @@ bool ts::EMMGClient::disconnect()
         lock.signal();
     }
 
+    // Cleanup UDP socket.
+    if (_udp_address.hasPort()) {
+        ok = _udp_socket.close() && ok;
+    }
+
     return ok;
 }
 
@@ -400,7 +425,18 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
         }
     }
 
-    return _connection.send(request, *_report);
+    // Send the message.
+    if (_udp_address.hasPort()) {
+        // Send data_provision messages using UDP.
+        ByteBlockPtr bbp(new ByteBlock);
+        tlv::Serializer serial(bbp);
+        request.serialize(serial);
+        return _udp_socket.send(bbp->data(), bbp->size(), _udp_address, *_report);
+    }
+    else {
+        // Send data_provision messages using UDP.
+        return _connection.send(request, *_report);
+    }
 }
 
 
