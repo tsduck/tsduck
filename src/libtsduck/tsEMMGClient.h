@@ -38,6 +38,7 @@
 #pragma once
 #include "tsEMMGMUX.h"
 #include "tstlvConnection.h"
+#include "tsUDPSocket.h"
 #include "tsTablesPtr.h"
 #include "tsCondition.h"
 #include "tsMutex.h"
@@ -71,6 +72,8 @@ namespace ts {
         //! Perform all initial channel and stream negotiation.
         //!
         //! @param [in] mux IP address and TCP port of the MUX.
+        //! @param [in] udp If port is specified, then send data_rovision messages using UDP
+        //! instead of TCP. If the IP address is not specified, use the same one as @a mux.
         //! @param [in] client_id Client id, see EMMG/PDG <=> MUX protocol.
         //! @param [in] data_channel_id Data_channel_id, see EMMG/PDG <=> MUX protocol.
         //! @param [in] data_stream_id Data_stream_id, see EMMG/PDG <=> MUX protocol.
@@ -85,6 +88,7 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool connect(const SocketAddress& mux,
+                     const SocketAddress& udp,
                      uint32_t client_id,
                      uint16_t data_channel_id,
                      uint16_t data_stream_id,
@@ -194,10 +198,12 @@ namespace ts {
 
         // Private members
         State                  _state;
+        SocketAddress          _udp_address;
         uint64_t               _total_bytes;
         const AbortInterface*  _abort;
         Report*                _report;
         tlv::Connection<Mutex> _connection;     // connection with MUX server
+        UDPSocket              _udp_socket;     // where to send data_provision if UDP is used
         emmgmux::ChannelStatus _channel_status; // automatic response to channel_test
         emmgmux::StreamStatus  _stream_status;  // automatic response to stream_test
         Mutex                  _mutex;          // exclusive access to protected fields

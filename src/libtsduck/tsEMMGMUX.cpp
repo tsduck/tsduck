@@ -743,37 +743,37 @@ ts::UString ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
 // data_provision
 //----------------------------------------------------------------------------
 
-ts::emmgmux::DataProvision::DataProvision () :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::data_provision),
-    client_id     (0),
-    data_id       (0),
-    datagram      ()
+ts::emmgmux::DataProvision::DataProvision() :
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::data_provision),
+    client_id(0),
+    data_id(0),
+    datagram()
 {
 }
 
-ts::emmgmux::DataProvision::DataProvision (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id)),
-    data_id       (fact.get<uint16_t> (Tags::data_id)),
-    datagram      ()
+ts::emmgmux::DataProvision::DataProvision(const tlv::MessageFactory& fact) :
+    StreamMessage(fact.protocolVersion(),
+                  fact.commandTag(),
+                  fact.count(Tags::data_channel_id) == 0 ? 0xFFFF : fact.get<uint16_t>(Tags::data_channel_id),
+                  fact.count(Tags::data_stream_id) == 0 ? 0xFFFF : fact.get<uint16_t>(Tags::data_stream_id)),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    data_id(fact.get<uint16_t>(Tags::data_id)),
+    datagram()
 {
     std::vector <tlv::MessageFactory::Parameter> params;
-    fact.get (Tags::datagram, params);
-    datagram.resize (params.size());
+    fact.get(Tags::datagram, params);
+    datagram.resize(params.size());
     for (size_t i = 0; i < params.size(); ++i) {
         datagram[i] = new ByteBlock (params[i].addr, params[i].length);
     }
 }
 
-void ts::emmgmux::DataProvision::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::DataProvision::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::data_stream_id,  stream_id);
-    fact.put(Tags::client_id,       client_id);
-    fact.put(Tags::data_id,         data_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
+    fact.put(Tags::data_id, data_id);
     for (size_t i = 0; i < datagram.size(); ++i) {
         if (!datagram[i].isNull()) {
             fact.put(Tags::datagram, *(datagram[i]));

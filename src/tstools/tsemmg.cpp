@@ -35,6 +35,7 @@
 #include "tsIntegerUtils.h"
 #include "tsIPUtils.h"
 #include "tsEMMGClient.h"
+#include "tsUDPSocket.h"
 #include "tsPacketizer.h"
 #include "tsMonotonic.h"
 #include "tsSectionFile.h"
@@ -73,7 +74,9 @@ public:
     ts::UStringVector    inputFiles;          // Input file names.
     ts::SectionPtrVector sections;            // Loaded sections from input files.
     size_t               maxCycles;           // Maximum number of cycles of section files.
-    ts::SocketAddress    muxAddress;          // TCP server address for MUX.
+    ts::SocketAddress    tcpMuxAddress;       // TCP server address for MUX.
+    ts::SocketAddress    udpMuxAddress;       // UDP server address for MUX.
+    bool                 useUDP;              // Use UDP to send data provisions.
     uint32_t             clientId;            // Client id, see EMMG/PDG <=> MUX protocol.
     uint16_t             channelId;           // Data_channel_id, see EMMG/PDG <=> MUX protocol.
     uint16_t             streamId;            // Data_stream_id, see EMMG/PDG <=> MUX protocol.
@@ -101,7 +104,9 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     inputFiles(),
     sections(),
     maxCycles(0),
-    muxAddress(),
+    tcpMuxAddress(),
+    udpMuxAddress(),
+    useUDP(false),
     clientId(0),
     channelId(0),
     streamId(0),
@@ -137,6 +142,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     option(u"section-mode",       's');
     option(u"stream-id",           0,  INT16);
     option(u"type",               't', DataTypeEnum);
+    option(u"udp",                'u', STRING);
 
     setHelp(u"Parameters:\n"
             u"\n"
@@ -236,6 +242,14 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
             u"      (EMM). In addition to integer values, the following names can be used:\n"
             u"      'emm' (0), 'private-data' (1), 'ecm' (2).\n"
             u"\n"
+            u"  -u [address:]port\n"
+            u"  --udp [address:]port\n"
+            u"      Specify that the 'data_provision' messages shall be sent using UDP. By\n"
+            u"      default, the 'data_provision' messages are sent over TCP using the same\n"
+            u"      TCP connection as the management commands. If the IP address (or host\n"
+            u"      name) is not specified, use the same IP address as the --mux option. The\n"
+            u"      port number is required, even if it is the same as the TCP port.\n"
+            u"\n"
             u"  -v\n"
             u"  --verbose\n"
             u"      Produce verbose output.\n"
@@ -247,7 +261,8 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     getValues(inputFiles);
     maxCycles = intValue<size_t>(u"cycles");
-    const ts::UString mux(value(u"mux"));
+    const ts::UString tcpMux(value(u"mux"));
+    const ts::UString udpMux(value(u"udp"));
     clientId = intValue<uint32_t>(u"client-id", 0);
     dataId = intValue<uint16_t>(u"data-id", 0);
     channelId = intValue<uint16_t>(u"channel-id", 1);
@@ -271,11 +286,24 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     }
 
     // Resolve MUX address.
-    if (mux.empty()) {
+    if (tcpMux.empty()) {
         error(u"missing MUX server, use --mux address:port");
     }
-    else if (muxAddress.resolve(mux, *this) && (!muxAddress.hasAddress() || !muxAddress.hasPort())) {
+    else if (tcpMuxAddress.resolve(tcpMux, *this) && (!tcpMuxAddress.hasAddress() || !tcpMuxAddress.hasPort())) {
         error(u"missing MUX server address or port, use --mux address:port");
+    }
+
+    // Check if UDP is used for data provision.
+    useUDP = !udpMux.empty();
+    if (useUDP && udpMuxAddress.resolve(udpMux, *this)) {
+        // Use same address as TCP by default.
+        if (!udpMuxAddress.hasAddress()) {
+            udpMuxAddress.setAddress(tcpMuxAddress.address());
+        }
+        // UDP port is mandatory.
+        if (!udpMuxAddress.hasPort()) {
+            error(u"missing port in --udp [address:]port");
+        }
     }
 
     // Specify which EMMG/PDG <=> MUX version to use.
@@ -442,14 +470,21 @@ int main (int argc, char *argv[])
     // Command line options.
     EMMGOptions opt(argc, argv);
 
-    // An object to manage the connection with the MUX.
+    // An object to manage the TCP connection with the MUX.
     ts::EMMGClient client;
     ts::emmgmux::ChannelStatus channelStatus;
     ts::emmgmux::StreamStatus streamStatus;
 
+    // UDP socket for the data_provision messages.
+    ts::UDPSocket udpSocket;
+    if (opt.useUDP && !udpSocket.open(opt)) {
+        return EXIT_FAILURE;
+    }
+
     // Connect to the MUX.
-    opt.verbose(u"Connecting to MUX at %s", {opt.muxAddress.toString()});
-    if (!client.connect(opt.muxAddress,
+    opt.verbose(u"Connecting to MUX at %s", {opt.tcpMuxAddress.toString()});
+    if (!client.connect(opt.tcpMuxAddress,
+                        opt.udpMuxAddress,
                         opt.clientId,
                         opt.channelId,
                         opt.streamId,
