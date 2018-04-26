@@ -34,18 +34,59 @@
 
 #pragma once
 #include "tsAbstractTable.h"
+#include "tsSCTE35.h"
 #include "tsSpliceInsert.h"
+#include "tsSpliceSchedule.h"
 
 namespace ts {
     //!
     //! Representation of an SCTE 35 Splice Information Table.
+    //! Encryption is not supported, encrypted sections are rejected.
     //! @see ANSI/SCTE 35, 9.2.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL SpliceInfoTable
+    class TSDUCKDLL SpliceInfoTable : public AbstractTable
     {
     public:
+        // Public members:
+        uint8_t        protocol_version;      //!< SCTE 35 protocol version, should be zero.
+        uint64_t       pts_adjustment;        //!< 33 bits, zero when creating a table.
+        uint16_t       tier;                  //!< 12 bits, authorization tier.
+        uint8_t        splice_command_type;   //!< Embedded splice command.
+        SpliceSchedule splice_schedule;       //!< SpliceSchedule command, valid when splice_command_type == SPLICE_SCHEDULE.
+        SpliceInsert   splice_insert;         //!< SpliceInsert command, valid when splice_command_type == SPLICE_INSERT.
+        SpliceTime     time_signal;           //!< TimeSignal command, valid when splice_command_type == SPLICE_TIME_SIGNAL.
+        SplicePrivateCommand private_command; //!< Private command, valid when splice_command_type == SPLICE_PRIVATE_COMMAND.
+        DescriptorList descs;                 //!< Descriptor list.
+
+        //!
+        //! Default constructor.
+        //!
+        SpliceInfoTable();
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        SpliceInfoTable(const SpliceInfoTable& other);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        SpliceInfoTable(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        //!
+        //! Clear all fields.
+        //!
+        void clear();
+
+        // Inherited methods
+        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+
         //!
         //! A static method to display a section.
         //! @param [in,out] display Display engine.

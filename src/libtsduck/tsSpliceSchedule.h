@@ -28,60 +28,66 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an SCTE 35 SpliceInsert command.
+//!  Representation of an SCTE 35 SpliceSchedule command.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractSignalization.h"
-#include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 
 namespace ts {
     //!
-    //! Representation of an SCTE 35 SpliceInsert command.
+    //! Representation of an SCTE 35 SpliceSchedule command.
     //!
-    //! @see ANSI/SCTE 35, 9.3.3.
+    //! @see ANSI/SCTE 35, 9.3.2.
     //!
-    class TSDUCKDLL SpliceInsert : public AbstractSignalization
+    class TSDUCKDLL SpliceSchedule : public AbstractSignalization
     {
     public:
         //!
-        //! A map of 64-bit PTS time values, indexed by 8-bit component tags.
+        //! A map of 32-bit UTC time values, indexed by 8-bit component tags.
         //! Used when the program is splice component by component, not as a whole.
         //!
-        typedef std::map<uint8_t, SpliceTime> SpliceByComponent;
+        typedef std::map<uint8_t, uint32_t> UTCByComponent;
+
+        //!
+        //! A SpliceSchedule command is made of a list of events.
+        //!
+        class Event
+        {
+        public:
+            uint32_t       event_id;        //!< Splice event id.
+            bool           canceled;        //!< When true, event is canceled, other fields are ignored.
+            bool           splice_out;      //!< When true, this is a "splice out" event, "splice in" otherwise.
+            bool           program_splice;  //!< When true, all components are spliced.
+            bool           use_duration;    //!< When true, the duration of the splice out / splice in sequence is given.
+            uint32_t       program_utc;     //!< UTC time value of the event (valid if !canceled && program_splice && !immediate).
+            UTCByComponent components_utc;  //!< UTC time value of the event by component (valid if !canceled && !program_splice && !immediate).
+            uint64_t       duration_pts;    //!< Duration of the splice out / splice in sequence (valid if !canceled && use_duration).
+            bool           auto_return;     //!< When true, there won't be an explicit "splice in" event, use duration_pts (valid if !canceled && use_duration).
+            uint16_t       program_id;      //!< Unique program id.
+            uint8_t        avail_num;       //!< Identification for a specific avail within one program_id.
+            uint8_t        avails_expected; //!< Expected number of individual avails within the current viewing event.
+        };
+
+        //!
+        //! A list of splice Event structures.
+        //!
+        typedef std::list<Event> EventList;
 
         // Public members, derived from SCTE 35 standard.
-        uint32_t          event_id;        //!< Splice event id.
-        bool              canceled;        //!< When true, event is canceled, other fields are ignored.
-        bool              splice_out;      //!< When true, this is a "splice out" event, "splice in" otherwise.
-        bool              immediate;       //!< When true, should splice asap, time fields are ignored.
-        bool              program_splice;  //!< When true, all components are spliced.
-        bool              use_duration;    //!< When true, the duration of the splice out / splice in sequence is given.
-        SpliceTime        program_pts;     //!< PTS time value of the event (valid if !canceled && program_splice && !immediate).
-        SpliceByComponent components_pts;  //!< PTS time value of the event by component (valid if !canceled && !program_splice && !immediate).
-        uint64_t          duration_pts;    //!< Duration of the splice out / splice in sequence (valid if !canceled && use_duration).
-        bool              auto_return;     //!< When true, there won't be an explicit "splice in" event, use duration_pts (valid if !canceled && use_duration).
-        uint16_t          program_id;      //!< Unique program id.
-        uint8_t           avail_num;       //!< Identification for a specific avail within one program_id.
-        uint8_t           avails_expected; //!< Expected number of individual avails within the current viewing event.
+        EventList events;  //!< The events in the SpliceSchedule command.
 
         //!
         //! Default constructor.
         //!
-        SpliceInsert();
+        SpliceSchedule();
 
         //!
         //! Reset all fields to default initial values.
         //!
         void clear();
-
-        //!
-        //! Adjust PTS time values using the "PTS adjustment" field from a splice information section.
-        //! @param adjustment PTS adjustment value.
-        //!
-        void adjustPTS(uint64_t adjustment);
 
         //!
         //! Display the splice insert command.
@@ -91,16 +97,16 @@ namespace ts {
         void display(TablesDisplay& display, int indent) const;
 
         //!
-        //! Deserialize a SpliceInsert command from binary data.
+        //! Deserialize a SpliceSchedule command from binary data.
         //! @param [in] data Address of data to deserialize.
-        //! @param [in] size Size of data buffer, possibly larger than the SpliceInsert command.
+        //! @param [in] size Size of data buffer, possibly larger than the SpliceSchedule command.
         //! @return Deserialized size, -1 on incorrect data.
         //!
         int deserialize(const uint8_t* data, size_t size);
 
         //!
-        //! Serialize the SpliceInsert command.
-        //! @param [in,out] data The SpliceInsert command is serialized at the end of this byte block.
+        //! Serialize the SpliceSchedule command.
+        //! @param [in,out] data The SpliceSchedule command is serialized at the end of this byte block.
         //!
         void serialize(ByteBlock& data) const;
 

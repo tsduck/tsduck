@@ -308,6 +308,14 @@ namespace ts {
         size_t serialize(uint8_t*& addr, size_t& size, size_t start = 0) const;
 
         //!
+        //! Serialize the content of the descriptor list in a byte block.
+        //! @param [in,out] bb A byte block into which the descriptor list is appended.
+        //! @param [in] start Start searializing at this index.
+        //! @return The size in bytes of the serialized data.
+        //!
+        size_t serialize(ByteBlock& bb, size_t start = 0) const;
+
+        //!
         //! Same as serialize(), but prepend a 2-byte length field before the descriptor list.
         //! The 2-byte length field has 4 reserved bits (all '1') and 12 bits for the length
         //! of the descriptor list.

@@ -217,6 +217,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsScramblingDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSCTE35.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSCTE52.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSDT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSection.h" />
@@ -241,6 +242,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInfoTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInsert.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceSchedule.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceTimeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSSULinkageDescriptor.h" />
@@ -536,6 +538,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScramblingDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSCTE35.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionDemux.cpp" />
@@ -556,6 +559,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInfoTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInsert.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceSchedule.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceTimeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSSULinkageDescriptor.cpp" />
