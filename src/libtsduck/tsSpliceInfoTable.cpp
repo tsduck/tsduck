@@ -146,10 +146,15 @@ void ts::SpliceInfoTable::deserialize(const BinaryTable& table, const DVBCharset
     bool encrypted = (data[1] & 0x80) != 0;
     pts_adjustment = (uint64_t(data[1] & 0x01) << 32) | uint64_t(GetUInt32(data + 2));
     tier = (GetUInt16(data + 7) >> 4) & 0x0FFF;
-    const uint16_t command_length = GetUInt16(data + 8) & 0x0FFF;
+    const size_t command_length = GetUInt16(data + 8) & 0x0FFF;
     splice_command_type = data[10];
     data += 11; remain -= 11;
 
+    // Encrypted sections cannot be deserialized.
+    if (encrypted) {
+        return;
+    }
+    
     // Decode splice command (and then 2 bytes for descriptor loop size).
     if (command_length + 2 > remain) {
         return;
