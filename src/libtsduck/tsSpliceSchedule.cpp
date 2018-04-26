@@ -37,12 +37,28 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::SpliceSchedule::SpliceSchedule() :
     AbstractSignalization(MY_XML_NAME),
     events()
+{
+}
+
+ts::SpliceSchedule::Event::Event() :
+    event_id(0),
+    canceled(false),
+    splice_out(false),
+    program_splice(false),
+    use_duration(false),
+    program_utc(0),
+    components_utc(),
+    duration_pts(0),
+    auto_return(false),
+    program_id(0),
+    avail_num(0),
+    avails_expected(0)
 {
 }
 

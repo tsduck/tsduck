@@ -98,8 +98,10 @@ namespace ts {
         UString toString() const;
 
         // Inherited methods.
+        //! @cond doxygen
         SpliceTime& operator=(const SpliceTime& other) { SuperClass::operator=(other); return *this; }
         SpliceTime& operator=(const uint64_t& other) { SuperClass::operator=(other); return *this; }
+        //! @endcond
     };
 
     //!

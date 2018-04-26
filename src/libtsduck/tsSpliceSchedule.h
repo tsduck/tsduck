@@ -69,6 +69,9 @@ namespace ts {
             uint16_t       program_id;      //!< Unique program id.
             uint8_t        avail_num;       //!< Identification for a specific avail within one program_id.
             uint8_t        avails_expected; //!< Expected number of individual avails within the current viewing event.
+
+            //! Constructor.
+            Event();
         };
 
         //!
