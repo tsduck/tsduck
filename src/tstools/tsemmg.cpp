@@ -509,7 +509,7 @@ int main (int argc, char *argv[])
         while (ok && targetBytes > 0 && client.totalBytes() < opt.maxBytes) {
 
             // Size of this send operation.
-            const uint64_t targetSendSize = std::min(opt.bytesPerSend, targetBytes);
+            const uint64_t targetSendSize = std::min<uint64_t>(opt.bytesPerSend, targetBytes);
             uint64_t sendSize = 0;
 
             // Build a set of data to send.
@@ -533,7 +533,7 @@ int main (int argc, char *argv[])
             }
             else {
                 // Get TS packets from the packetizer.
-                sendSize = ts::RoundUp(targetSendSize, ts::PKT_SIZE);
+                sendSize = ts::RoundUp<uint64_t>(targetSendSize, ts::PKT_SIZE);
                 ts::TSPacketVector packets(sendSize / ts::PKT_SIZE);
                 for (size_t i = 0; ok && i < packets.size(); ++i) {
                     ok = packetizer.getNextPacket(packets[i]);
