@@ -37,7 +37,267 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_info_table"
 #define MY_TID ts::TID_SCTE35_SIT
 
+TS_XML_TABLE_FACTORY(ts::SpliceInfoTable, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::SpliceInfoTable, MY_TID);
 TS_ID_SECTION_DISPLAY(ts::SpliceInfoTable::DisplaySection, MY_TID);
+
+
+//----------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------
+
+ts::SpliceInfoTable::SpliceInfoTable() :
+    AbstractTable(MY_TID, MY_XML_NAME),
+    protocol_version(0),
+    pts_adjustment(0),
+    tier(0x0FFF),
+    splice_command_type(SPLICE_NULL),
+    splice_schedule(),
+    splice_insert(),
+    time_signal(),
+    private_command(),
+    descs(this)
+{
+    _is_valid = true;
+}
+
+ts::SpliceInfoTable::SpliceInfoTable(const SpliceInfoTable& other) :
+    AbstractTable(other),
+    protocol_version(other.protocol_version),
+    pts_adjustment(other.pts_adjustment),
+    tier(other.tier),
+    splice_command_type(other.splice_command_type),
+    splice_schedule(other.splice_schedule),
+    splice_insert(other.splice_insert),
+    time_signal(other.time_signal),
+    private_command(other.private_command),
+    descs(this, other.descs)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Clear all fields.
+//----------------------------------------------------------------------------
+
+void ts::SpliceInfoTable::clear()
+{
+    _is_valid = false;
+    protocol_version = 0;
+    pts_adjustment = 0;
+    tier = 0x0FFF;
+    splice_command_type = SPLICE_NULL;
+    splice_schedule.clear();
+    splice_insert.clear();
+    time_signal.reset();
+    private_command.identifier = 0;
+    private_command.private_bytes.clear();
+    descs.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary table
+//----------------------------------------------------------------------------
+
+ts::SpliceInfoTable::SpliceInfoTable(const BinaryTable& table, const DVBCharset* charset) :
+    SpliceInfoTable()
+{
+    deserialize(table, charset);
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::SpliceInfoTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+{
+    // Clear table content
+    clear();
+
+    // This is a short table, must have only one section
+    if (!table.isValid() || table.tableId() != _table_id || table.sectionCount() != 1) {
+        return;
+    }
+
+    // Reference to single section
+    const Section& sect(*table.sectionAt(0));
+    const uint8_t* data = sect.payload();
+    size_t remain = sect.payloadSize();
+
+    // Payload layout: fixed part (11 bytes), variable part, CRC2 (4 bytes).
+    // There is a CRC32 at the end of a SpliceInfoTable, even though we are in a short section.
+    if (remain < 15) {
+        return;
+    }
+
+    // Check CRC32 now
+    const CRC32 comp_crc32(sect.content(), sect.size() - 4);
+    const uint32_t sect_crc32 = GetUInt32(data + remain - 4);
+    remain -= 4;
+
+    if (sect_crc32 != comp_crc32) {
+        return;
+    }
+
+    // Fixed part.
+    protocol_version = data[0];
+    bool encrypted = (data[1] & 0x80) != 0;
+    pts_adjustment = (uint64_t(data[1] & 0x01) << 32) | uint64_t(GetUInt32(data + 2));
+    tier = (GetUInt16(data + 7) >> 4) & 0x0FFF;
+    const uint16_t command_length = GetUInt16(data + 8) & 0x0FFF;
+    splice_command_type = data[10];
+    data += 11; remain -= 11;
+
+    // Decode splice command (and then 2 bytes for descriptor loop size).
+    if (command_length + 2 > remain) {
+        return;
+    }
+    switch (splice_command_type) {
+        case SPLICE_NULL:
+        case SPLICE_BANDWIDTH_RESERVATION:
+            // These commands are empty.
+            break;
+        case SPLICE_SCHEDULE:
+            if (splice_schedule.deserialize(data, command_length) < 0) {
+                return;
+            }
+            break;
+        case SPLICE_INSERT:
+            if (splice_insert.deserialize(data, command_length) < 0) {
+                return;
+            }
+            break;
+        case SPLICE_TIME_SIGNAL:
+            if (time_signal.deserialize(data, command_length) < 0) {
+                return;
+            }
+            break;
+        case SPLICE_PRIVATE_COMMAND:
+            if (command_length < 4) {
+                return;
+            }
+            private_command.identifier = GetUInt32(data);
+            private_command.private_bytes.copy(data + 4, command_length - 4);
+            break;
+        default:
+            // Invalid command.
+            break;
+    }
+    data += command_length; remain -= command_length;
+
+    // Process descriptor list.
+    const uint16_t dlength = GetUInt16(data);
+    data += 2; remain -= 2;
+    if (dlength > remain) {
+        return;
+    }
+    descs.add(data, dlength);
+
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::SpliceInfoTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+{
+    // Reinitialize table object
+    table.clear();
+
+    // Return an empty table if not valid
+    if (!_is_valid) {
+        return;
+    }
+
+    // Build the section header.
+    ByteBlockPtr bb(new ByteBlock);
+    bb->appendUInt8(MY_TID);
+    bb->appendUInt16(0); // placeholder for section length
+
+    // Splice info section fixed part.
+    bb->appendUInt8(protocol_version);
+    bb->appendUInt8(uint8_t(pts_adjustment >> 32) & 0x01);
+    bb->appendUInt32(uint32_t(pts_adjustment));
+    bb->appendUInt8(0); // cw_index
+    bb->appendUInt16(tier << 4);
+    bb->appendUInt8(0); // placeholder for command length
+    bb->appendUInt8(splice_command_type);
+
+    // Serialize the splice command.
+    size_t start = bb->size();
+    switch (splice_command_type) {
+        case SPLICE_NULL:
+        case SPLICE_BANDWIDTH_RESERVATION:
+            // These commands are empty.
+            break;
+        case SPLICE_SCHEDULE:
+            splice_schedule.serialize(*bb);
+            break;
+        case SPLICE_INSERT:
+            splice_insert.serialize(*bb);
+            break;
+        case SPLICE_TIME_SIGNAL:
+            time_signal.serialize(*bb);
+            break;
+        case SPLICE_PRIVATE_COMMAND:
+            bb->appendUInt32(private_command.identifier);
+            bb->append(private_command.private_bytes);
+            break;
+        default:
+            // Invalid command.
+            break;
+    }
+
+    // Adjust the command length.
+    PutUInt16(bb->data() + 11, (uint16_t((*bb)[11]) << 8) | (uint16_t(bb->size() - start) & 0x0FFF));
+
+    // Descriptor loop.
+    start = bb->size();
+    bb->appendUInt16(0); // placeholder for descriptors length.
+    size_t dlength = descs.serialize(*bb);
+    PutUInt16(bb->data() + start, uint16_t(dlength));
+
+    // Placeholder for CRC32.
+    bb->appendUInt32(0);
+
+    // Update section length.
+    // section_syntax = 0, private_indicator = 0
+    PutUInt16(bb->data() + 1, 0x3000 | ((bb->size() - 3) & 0x0FFF));
+
+    // Compute and update CRC32.
+    // This will not be done by the Section class since this is a short section.
+    PutUInt32(bb->data() + bb->size() - 4, CRC32(bb->data(), bb->size() - 4).value());
+
+    // Build the section.
+    SectionPtr section(new Section(bb));
+    table.addSection(section);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+void ts::SpliceInfoTable::buildXML(xml::Element* root) const
+{
+    //@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SpliceInfoTable::fromXML(const xml::Element* element)
+{
+    _is_valid =
+        checkXMLName(element);
+    //@@@@@@@@
+}
 
 
 //----------------------------------------------------------------------------
@@ -106,15 +366,37 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
         if (cmd_length > size) {
             cmd_length = size;
         }
-        if (cmd_type == SPLICE_INSERT) {
-            SpliceInsert cmd;
-            const int done = cmd.deserialize(data, cmd_length);
-            if (done >= 0) {
-                cmd.display(display, indent);
-                data += done;
-                cmd_length -= done;
-                size -= done;
+        switch (cmd_type) {
+            case SPLICE_SCHEDULE: {
+                SpliceSchedule cmd;
+                const int done = cmd.deserialize(data, cmd_length);
+                if (done >= 0) {
+                    cmd.display(display, indent);
+                    data += done; size -= done; cmd_length -= done;
+                }
+                break;
             }
+            case SPLICE_INSERT: {
+                SpliceInsert cmd;
+                const int done = cmd.deserialize(data, cmd_length);
+                if (done >= 0) {
+                    cmd.display(display, indent);
+                    data += done; size -= done; cmd_length -= done;
+                }
+                break;
+            }
+            case SPLICE_TIME_SIGNAL: {
+                SpliceTime cmd;
+                const int done = cmd.deserialize(data, cmd_length);
+                if (done >= 0) {
+                    strm << margin << "Time: " << cmd.toString() << std::endl;
+                    data += done; size -= done; cmd_length -= done;
+                }
+                break;
+            }
+            default:
+                // Invalid command.
+                break;
         }
         if (cmd_length > 0) {
             // Unexpected command or unexpected command size.
@@ -130,18 +412,8 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
             if (dl_length > size) {
                 dl_length = size;
             }
-            while (dl_length >= 6) {
-                const uint8_t tag = data[0];
-                const size_t len = std::max<size_t>(4, std::min<size_t>(dl_length - 2, data[1]));
-                const uint32_t id = GetUInt32(data + 2);
-                strm << margin
-                     << UString::Format(u"Splice descriptor tag: %s, size: %d bytes, id: 0x%X, content: %s",
-                                        {DVBNameFromSection(u"SpliceDescriptorTag", tag, names::HEXA_FIRST), len, id, UString::Dump(data + 6, len - 4, UString::SINGLE_LINE)})
-                     << std::endl;
-                data += 2 + len;
-                size -= 2 + len;
-                dl_length -= 2 + len;
-            }
+            display.displayDescriptorList(data, dl_length, indent, section.tableId());
+            data += dl_length; size -= dl_length;
         }
     }
 

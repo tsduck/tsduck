@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSpliceAvailDescriptor.h"
+#include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"

@@ -125,6 +125,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(ServiceDescriptor);
     REF_TYPE(ServiceListDescriptor);
     REF_TYPE(ShortEventDescriptor);
+    REF_TYPE(SpliceAvailDescriptor);
+    REF_TYPE(SpliceTimeDescriptor);
     REF_TYPE(SSUDataBroadcastIdDescriptor);
     REF_TYPE(SSULinkageDescriptor);
     REF_TYPE(STDDescriptor);

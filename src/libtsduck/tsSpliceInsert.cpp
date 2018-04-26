@@ -30,7 +30,10 @@
 #include "tsSpliceInsert.h"
 #include "tsTablesDisplay.h"
 #include "tsNames.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
+
+#define MY_XML_NAME u"splice_insert"
 
 
 //----------------------------------------------------------------------------
@@ -38,13 +41,14 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SpliceInsert::SpliceInsert() :
+    AbstractSignalization(MY_XML_NAME),
     event_id(0),
     canceled(true),
     splice_out(false),
     immediate(false),
     program_splice(false),
     use_duration(false),
-    program_pts(INVALID_PTS),
+    program_pts(),
     components_pts(),
     duration_pts(INVALID_PTS),
     auto_return(false),
@@ -90,15 +94,15 @@ void ts::SpliceInsert::adjustPTS(uint64_t adjustment)
     }
 
     // Adjust program splice time.
-    if (program_splice && program_pts <= PTS_DTS_MASK) {
-        program_pts = (program_pts + adjustment) & PTS_DTS_MASK;
+    if (program_splice && program_pts.set() && program_pts.value() <= PTS_DTS_MASK) {
+        program_pts = (program_pts.value() + adjustment) & PTS_DTS_MASK;
     }
 
     // Adjust components splice times.
     if (!program_splice) {
-        for (PTSByComponent::iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
-            if (it->second <= PTS_DTS_MASK) {
-                it->second = (it->second + adjustment) & PTS_DTS_MASK;
+        for (SpliceByComponent::iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
+            if (it->second.set() && it->second.value() <= PTS_DTS_MASK) {
+                it->second = (it->second.value() + adjustment) & PTS_DTS_MASK;
             }
         }
     }
@@ -126,15 +130,15 @@ void ts::SpliceInsert::display(TablesDisplay& display, int indent) const
 
         if (program_splice && !immediate) {
             // The complete program switches at a given time.
-            strm << margin << UString::Format(u"Time PTS: 0x%09X (%d)", {program_pts, program_pts}) << std::endl;
+            strm << margin << "Time PTS: " << program_pts.toString() << std::endl;
         }
         if (!program_splice) {
             // Program components switch individually.
             strm << margin << "Number of components: " << components_pts.size() << std::endl;
-            for (PTSByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
+            for (SpliceByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
                 strm << margin << UString::Format(u"  Component tag: 0x%X (%d)", {it->first, it->first});
                 if (!immediate) {
-                    strm << UString::Format(u", time PTS: 0x%09X (%d)", {it->second, it->second});
+                    strm << ", time PTS: " << it->second.toString();
                 }
                 strm << std::endl;
             }
@@ -142,7 +146,7 @@ void ts::SpliceInsert::display(TablesDisplay& display, int indent) const
         if (use_duration) {
             strm << margin << UString::Format(u"Duration PTS: 0x%09X (%d), auto return: %s", {duration_pts, duration_pts, UString::YesNo(auto_return)}) << std::endl;
         }
-        strm << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {program_id, program_id, avail_num, avails_expected, avails_expected}) << std::endl;
+        strm << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {program_id, program_id, avail_num, avail_num, avails_expected}) << std::endl;
     }
 }
 
@@ -178,9 +182,11 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
 
     if (program_splice && !immediate) {
         // The complete program switches at a given time.
-        if (!GetSpliceTime(program_pts, data, size)) {
+        const int s = program_pts.deserialize(data, size);
+        if (s < 0) {
             return -1; // invalid
         }
+        data += s; size -= s;
     }
     if (!program_splice) {
         // Program components switch individually.
@@ -194,10 +200,14 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
                 return -1; // too short
             }
             const uint8_t ctag = data[0];
-            uint64_t pts = INVALID_PTS;
             data++; size--;
-            if (!immediate && !GetSpliceTime(pts, data, size)) {
-                return -1; // invalid
+            SpliceTime pts;
+            if (!immediate) {
+                const int s = pts.deserialize(data, size);
+                if (s < 0) {
+                    return -1; // invalid
+                }
+                data += s; size -= s;
             }
             components_pts.insert(std::make_pair(ctag, pts));
         }
@@ -222,28 +232,6 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
 
 
 //----------------------------------------------------------------------------
-// Get a splice_time structure, skip the data area.
-//----------------------------------------------------------------------------
-
-bool ts::SpliceInsert::GetSpliceTime(uint64_t& pts, const uint8_t*& data, size_t& size)
-{
-    if (size >= 1 && (data[0] & 0x80) == 0) {
-        pts = INVALID_PTS;
-        data++; size--;
-        return true;
-    }
-    else if (size >= 5 && (data[0] & 0x80) != 0) {
-        pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
-        data += 5; size -= 5;
-        return true;
-    }
-    else {
-        return false; // invalid
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Serialize the SpliceInsert command.
 //----------------------------------------------------------------------------
 
@@ -259,16 +247,14 @@ void ts::SpliceInsert::serialize(ByteBlock& data) const
                          (immediate ? 0x10 : 0x00) |
                          0x0F);
         if (program_splice && !immediate) {
-            data.appendUInt8(0xFE | uint8_t(program_pts >> 32));
-            data.appendUInt32(uint32_t(program_pts));
+            program_pts.serialize(data);
         }
         if (!program_splice) {
             data.appendUInt8(uint8_t(components_pts.size()));
-            for (PTSByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
+            for (SpliceByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
                 data.appendUInt8(it->first);
                 if (!immediate) {
-                    data.appendUInt8(0xFE | uint8_t(it->second >> 32));
-                    data.appendUInt32(uint32_t(it->second));
+                    it->second.serialize(data);
                 }
             }
         }
@@ -279,5 +265,89 @@ void ts::SpliceInsert::serialize(ByteBlock& data) const
         data.appendUInt16(program_id);
         data.appendUInt8(avail_num);
         data.appendUInt8(avails_expected);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+void ts::SpliceInsert::buildXML(xml::Element* root) const
+{
+    root->setIntAttribute(u"splice_event_id", event_id, true);
+    root->setBoolAttribute(u"splice_event_cancel", canceled);
+    if (!canceled) {
+        root->setBoolAttribute(u"out_of_network", splice_out);
+        root->setBoolAttribute(u"splice_immediate", immediate);
+        root->setIntAttribute(u"unique_program_id", program_id);
+        root->setIntAttribute(u"avail_num", avail_num);
+        root->setIntAttribute(u"avails_expected", avails_expected);
+        if (program_splice && !immediate && program_pts.set()) {
+            root->setIntAttribute(u"pts_time", program_pts.value());
+        }
+        if (use_duration) {
+            xml::Element* e = root->addElement(u"break_duration");
+            e->setBoolAttribute(u"auto_return", auto_return);
+            e->setIntAttribute(u"duration", duration_pts);
+        }
+        if (!program_splice) {
+            for (auto it = components_pts.begin(); it != components_pts.end(); ++it) {
+                xml::Element* e = root->addElement(u"component");
+                e->setIntAttribute(u"component_tag", it->first);
+                if (!immediate && it->second.set()) {
+                    e->setIntAttribute(u"pts_time", it->second.value());
+                }
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SpliceInsert::fromXML(const xml::Element* element)
+{
+    clear();
+
+    _is_valid =
+        checkXMLName(element) &&
+        element->getIntAttribute<uint32_t>(event_id, u"splice_event_id", true) &&
+        element->getBoolAttribute(canceled, u"splice_event_cancel", false, false);
+
+    if (_is_valid && !canceled) {
+        xml::ElementVector children;
+        _is_valid =
+            element->getBoolAttribute(splice_out, u"out_of_network", true) &&
+            element->getBoolAttribute(immediate, u"splice_immediate", false, false) &&
+            element->getIntAttribute<uint16_t>(program_id, u"unique_program_id", true) &&
+            element->getIntAttribute<uint8_t>(avail_num, u"avail_num", false, 0) &&
+            element->getIntAttribute<uint8_t>(avails_expected, u"avails_expected", false, 0) &&
+            element->getChildren(children, u"break_duration", 0, immediate ? 0 : 1);
+        use_duration = !children.empty();
+        if (_is_valid && use_duration) {
+            _is_valid =
+                element->getBoolAttribute(auto_return, u"auto_return", true) &&
+                element->getIntAttribute<uint64_t>(duration_pts, u"duration", true);
+        }
+        program_splice = element->hasAttribute(u"pts_time");
+        if (_is_valid && program_splice) {
+            _is_valid = element->getOptionalIntAttribute<uint64_t>(program_pts, u"pts_time", 0, PTS_DTS_MASK);
+        }
+        if (_is_valid && !program_splice) {
+            _is_valid = element->getChildren(children, u"component", 0, 255);
+            for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+                uint8_t tag = 0;
+                SpliceTime pts;
+                _is_valid =
+                    children[i]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
+                    children[i]->getOptionalIntAttribute<uint64_t>(pts, u"pts_time", 0, PTS_DTS_MASK);
+                if (_is_valid) {
+                    components_pts[tag] = pts;
+                }
+            }
+        }
     }
 }

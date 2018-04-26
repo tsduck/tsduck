@@ -307,6 +307,35 @@ size_t ts::DescriptorList::serialize(uint8_t*& addr, size_t& size, size_t start)
 
 
 //----------------------------------------------------------------------------
+// Serialize the content of the descriptor list in a byte block.
+//----------------------------------------------------------------------------
+
+size_t ts::DescriptorList::serialize(ByteBlock& bb, size_t start) const
+{
+    // Keep track of byte block size before serializing the descriptor list.
+    const size_t previous_size = bb.size();
+
+    // Increase the byte block size by the max size of a descriptor list.
+    size_t added_size = 0xFFFF;
+    bb.resize(previous_size + added_size);
+
+    // Serialize the descriptor list into the extended area.
+    uint8_t* data = bb.data() + previous_size;
+    size_t size = added_size;
+    serialize(data, size, start);
+
+    // 'size' contains the remaining size, from 'added_size'.
+    // Update 'added_size' to contain the size of the serialized descriptor list.
+    assert(size <= added_size);
+    added_size -= size;
+
+    // Shrink the byte block to the end of descriptor list.
+    bb.resize(previous_size + added_size);
+    return added_size;
+}
+
+
+//----------------------------------------------------------------------------
 // Same as Serialize, but prepend a 2-byte length field
 // before the descriptor list. The 2-byte length field
 // has 4 reserved bits (all '1') and 12 bits for the length

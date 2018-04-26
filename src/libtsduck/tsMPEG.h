@@ -1351,34 +1351,4 @@ namespace ts {
         TELETEXT_DATA_UNIT_ID_CLOSED_CAPTIONS = 0xC5,  //!< Data_unit_id for Closed Caption (extension ?).
         TELETEXT_DATA_UNIT_ID_STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
     };
-
-    //---------------------------------------------------------------------
-    // ANSI / SCTE 35 (splice information for ads insertion)
-    //---------------------------------------------------------------------
-
-    //! Registered splice identifier for SCTE 35
-    const uint32_t SPLICE_ID_CUEI = 0x43554549;   // ASCII “CUEI”
-
-    //!
-    //! Cue stream type values in cue_identifier_descriptor.
-    //!
-    enum : uint8_t {
-        CUE_INSERT_NULL_SCHEDULE = 0x00, //!< Only splice_insert, splice_null, splice_schedule are allowed in this PID.
-        CUE_ALL_COMMANDS         = 0x01, //!< All messages can be used in this PID.
-        CUE_SEGMENTATION         = 0x02, //!< This PID carries the time_signal command and the segmentation descriptor.
-        CUE_TIERED_SPLICING      = 0x03, //!< Tiered Splicing .
-        CUE_TIERED_SEGMENTATION  = 0x04, //!< Tiered Segmentation.
-    };
-
-    //!
-    //! Splice commands in Splice Information Table.
-    //!
-    enum : uint8_t {
-        SPLICE_NULL                  = 0x00, //!< SpliceNull
-        SPLICE_SCHEDULE              = 0x04, //!< SpliceSchedule
-        SPLICE_INSERT                = 0x05, //!< SpliceInsert
-        SPLICE_TIME_SIGNAL           = 0x06, //!< TimeSignal
-        SPLICE_BANDWIDTH_RESERVATION = 0x07, //!< BandwidthReservation
-        SPLICE_PRIVATE_COMMAND       = 0xFF, //!< PrivateCommand
-    };
 }

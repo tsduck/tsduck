@@ -215,6 +215,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSafePtrTemplate.h \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsScramblingDescriptor.h \
+    ../../../src/libtsduck/tsSCTE35.h \
     ../../../src/libtsduck/tsSCTE52.h \
     ../../../src/libtsduck/tsSDT.h \
     ../../../src/libtsduck/tsSection.h \
@@ -239,6 +240,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSpliceAvailDescriptor.h \
     ../../../src/libtsduck/tsSpliceInfoTable.h \
     ../../../src/libtsduck/tsSpliceInsert.h \
+    ../../../src/libtsduck/tsSpliceSchedule.h \
     ../../../src/libtsduck/tsSpliceTimeDescriptor.h \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.h \
     ../../../src/libtsduck/tsSSULinkageDescriptor.h \
@@ -524,6 +526,7 @@ SOURCES += \
     ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsScramblingDescriptor.cpp \
+    ../../../src/libtsduck/tsSCTE35.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSection.cpp \
     ../../../src/libtsduck/tsSectionDemux.cpp \
@@ -544,6 +547,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSpliceAvailDescriptor.cpp \
     ../../../src/libtsduck/tsSpliceInfoTable.cpp \
     ../../../src/libtsduck/tsSpliceInsert.cpp \
+    ../../../src/libtsduck/tsSpliceSchedule.cpp \
     ../../../src/libtsduck/tsSpliceTimeDescriptor.cpp \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsSSULinkageDescriptor.cpp \

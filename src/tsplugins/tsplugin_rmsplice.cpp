@@ -295,7 +295,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
-        tsp->verbose(u"adding splice %s at PTS 0x%09X", {cmd.splice_out ? u"out" : u"in", cmd.program_pts});
+        tsp->verbose(u"adding splice %s at PTS 0x%09X", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString()});
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.addEvent(cmd, _tagsByPID);
         }
@@ -325,23 +325,23 @@ void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool spliceOut, uint32
 void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagByPID& tags)
 {
     uint64_t pts = 0;
-    if (cmd.program_splice) {
+    if (cmd.program_splice && cmd.program_pts.set()) {
         // Same PTS value for all components in the service.
-        pts = cmd.program_pts;
+        pts = cmd.program_pts.value();
     }
     else {
         // There is one PTS value per service component in the command, search our PTS value.
         const TagByPID::const_iterator it1 = tags.find(pid);
-        const SpliceInsert::PTSByComponent::const_iterator it2 =
+        const SpliceInsert::SpliceByComponent::const_iterator it2 =
             it1 == tags.end() ?                     // no component tag found for our PID
             cmd.components_pts.end() :              // so there won't be any PTS
             cmd.components_pts.find(it1->second);   // search PTS value for the component type
-        if (it2 == cmd.components_pts.end()) {
+        if (it2 == cmd.components_pts.end() || !it2->second.set()) {
             // The SpliceInsert does not specify any PTS for our PID, nothing to do.
             return;
         }
         else {
-            pts = it2->second;
+            pts = it2->second.value();
         }
     }
 

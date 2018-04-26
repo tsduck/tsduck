@@ -2434,14 +2434,6 @@ Bits = 8
 0x07 = BandwidthReservation
 0xFF = PrivateCommand
 
-[SpliceDescriptorTag]
-# In SCTE 35 splice_information_table
-Bits = 8
-0x00 = avail_descriptor
-0x01 = DTMF_descriptor
-0x02 = segmentation_descriptor
-0x03 = time_descriptor
-
 [PlatformId]
 # Allocated by DVB
 Bits = 24

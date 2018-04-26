@@ -26,22 +26,59 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsSCTE35.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// SpliceTime methods
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 693
+// Convert the SpliceTime structure to string.
+ts::UString ts::SpliceTime::toString() const
+{
+    return set() ? UString::Decimal(value()) : u"unset";
+}
+
+// Deserialize a SpliceTime structure from binary data.
+int ts::SpliceTime::deserialize(const uint8_t* data, size_t size)
+{
+    if (size < 1) {
+        return -1; // too short.
+    }
+    else if ((data[0] & 0x80) == 0) {
+        reset();
+        return 1;
+    }
+    else if (size < 5) {
+        return -1; // too short.
+    }
+    else {
+        *this = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
+        return 5;
+    }
+}
+
+// Serialize the SpliceTime structure.
+void ts::SpliceTime::serialize(ByteBlock& data) const
+{
+    if (set()) {
+        data.appendUInt8(0xFE | uint8_t(value() >> 32));
+        data.appendUInt32(uint32_t(value()));
+    }
+    else {
+        data.appendUInt8(0x7F);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// SplicePrivateCommand methods
+//----------------------------------------------------------------------------
+
+ts::SplicePrivateCommand::SplicePrivateCommand(uint32_t id) :
+    identifier(id),
+    private_bytes()
+{
+}
