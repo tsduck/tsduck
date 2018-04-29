@@ -44,7 +44,7 @@ namespace ts {
     //! Encryption is not supported, encrypted sections are rejected.
     //! @see ANSI/SCTE 35, 9.2.
     //!
-    class TSDUCKDLL SpliceInfoTable : public AbstractTable
+    class TSDUCKDLL SpliceInformationTable : public AbstractTable
     {
     public:
         // Public members:
@@ -61,20 +61,20 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        SpliceInfoTable();
+        SpliceInformationTable();
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        SpliceInfoTable(const SpliceInfoTable& other);
+        SpliceInformationTable(const SpliceInformationTable& other);
 
         //!
         //! Constructor from a binary table.
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SpliceInfoTable(const BinaryTable& table, const DVBCharset* charset = 0);
+        SpliceInformationTable(const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
         //! Clear all fields.

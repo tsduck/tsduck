@@ -238,7 +238,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSocket.h \
     ../../../src/libtsduck/tsSocketAddress.h \
     ../../../src/libtsduck/tsSpliceAvailDescriptor.h \
-    ../../../src/libtsduck/tsSpliceInfoTable.h \
+    ../../../src/libtsduck/tsSpliceInformationTable.h \
     ../../../src/libtsduck/tsSpliceInsert.h \
     ../../../src/libtsduck/tsSpliceSchedule.h \
     ../../../src/libtsduck/tsSpliceTimeDescriptor.h \
@@ -545,7 +545,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSocket.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
     ../../../src/libtsduck/tsSpliceAvailDescriptor.cpp \
-    ../../../src/libtsduck/tsSpliceInfoTable.cpp \
+    ../../../src/libtsduck/tsSpliceInformationTable.cpp \
     ../../../src/libtsduck/tsSpliceInsert.cpp \
     ../../../src/libtsduck/tsSpliceSchedule.cpp \
     ../../../src/libtsduck/tsSpliceTimeDescriptor.cpp \

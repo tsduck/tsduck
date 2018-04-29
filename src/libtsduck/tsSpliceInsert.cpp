@@ -168,6 +168,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     data += 5; size -= 5;
 
     if (canceled) {
+        _is_valid = true;
         return int(data - start);  // end of command
     }
     if (size < 1) {
@@ -227,6 +228,8 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     avail_num = data[2];
     avails_expected = data[3];
     data += 4; size -= 4;
+
+    _is_valid = true;
     return int(data - start);
 }
 
@@ -280,7 +283,7 @@ void ts::SpliceInsert::buildXML(xml::Element* root) const
     if (!canceled) {
         root->setBoolAttribute(u"out_of_network", splice_out);
         root->setBoolAttribute(u"splice_immediate", immediate);
-        root->setIntAttribute(u"unique_program_id", program_id);
+        root->setIntAttribute(u"unique_program_id", program_id, true);
         root->setIntAttribute(u"avail_num", avail_num);
         root->setIntAttribute(u"avails_expected", avails_expected);
         if (program_splice && !immediate && program_pts.set()) {
@@ -318,33 +321,34 @@ void ts::SpliceInsert::fromXML(const xml::Element* element)
         element->getBoolAttribute(canceled, u"splice_event_cancel", false, false);
 
     if (_is_valid && !canceled) {
-        xml::ElementVector children;
+        xml::ElementVector breakDuration;
+        xml::ElementVector components;
         _is_valid =
             element->getBoolAttribute(splice_out, u"out_of_network", true) &&
             element->getBoolAttribute(immediate, u"splice_immediate", false, false) &&
             element->getIntAttribute<uint16_t>(program_id, u"unique_program_id", true) &&
             element->getIntAttribute<uint8_t>(avail_num, u"avail_num", false, 0) &&
             element->getIntAttribute<uint8_t>(avails_expected, u"avails_expected", false, 0) &&
-            element->getChildren(children, u"break_duration", 0, immediate ? 0 : 1);
-        use_duration = !children.empty();
+            element->getChildren(breakDuration, u"break_duration", 0, immediate ? 0 : 1) &&
+            element->getChildren(components, u"component", 0, 255);
+        use_duration = !breakDuration.empty();
+        program_splice = element->hasAttribute(u"pts_time") || (immediate && components.empty());
         if (_is_valid && use_duration) {
-            assert(children.size() == 1);
+            assert(breakDuration.size() == 1);
             _is_valid =
-                children[0]->getBoolAttribute(auto_return, u"auto_return", true) &&
-                children[0]->getIntAttribute<uint64_t>(duration_pts, u"duration", true);
+                breakDuration[0]->getBoolAttribute(auto_return, u"auto_return", true) &&
+                breakDuration[0]->getIntAttribute<uint64_t>(duration_pts, u"duration", true);
         }
-        program_splice = element->hasAttribute(u"pts_time");
-        if (_is_valid && program_splice) {
+        if (_is_valid && program_splice && !immediate) {
             _is_valid = element->getOptionalIntAttribute<uint64_t>(program_pts, u"pts_time", 0, PTS_DTS_MASK);
         }
         if (_is_valid && !program_splice) {
-            _is_valid = element->getChildren(children, u"component", 0, 255);
-            for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+            for (size_t i = 0; _is_valid && i < components.size(); ++i) {
                 uint8_t tag = 0;
                 SpliceTime pts;
                 _is_valid =
-                    children[i]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
-                    children[i]->getOptionalIntAttribute<uint64_t>(pts, u"pts_time", 0, PTS_DTS_MASK);
+                    components[i]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
+                    components[i]->getOptionalIntAttribute<uint64_t>(pts, u"pts_time", 0, PTS_DTS_MASK);
                 if (_is_valid) {
                     components_pts[tag] = pts;
                 }
