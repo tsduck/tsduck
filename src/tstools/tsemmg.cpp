@@ -569,7 +569,7 @@ int main (int argc, char *argv[])
             else {
                 // Get TS packets from the packetizer.
                 sendSize = ts::RoundUp<uint64_t>(targetSendSize, ts::PKT_SIZE);
-                ts::TSPacketVector packets(sendSize / ts::PKT_SIZE);
+                ts::TSPacketVector packets(size_t(sendSize / ts::PKT_SIZE));
                 for (size_t i = 0; ok && i < packets.size(); ++i) {
                     ok = packetizer.getNextPacket(packets[i]);
                     if (!ok) {

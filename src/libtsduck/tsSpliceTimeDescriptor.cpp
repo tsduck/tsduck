@@ -114,7 +114,8 @@ void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
         display.displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
-             << margin << UString::Format(u"TAI: %'d seconds (%s) + %'d ns, UTC offset: %'d", {tai, Time::UnixTimeToUTC(tai).format(Time::DATE | Time::TIME), ns, off})
+             << margin
+             << UString::Format(u"TAI: %'d seconds (%s) + %'d ns, UTC offset: %'d", {tai, Time::UnixTimeToUTC(uint32_t(tai)).format(Time::DATE | Time::TIME), ns, off})
              << std::endl;
         data += 16; size -= 16;
     }

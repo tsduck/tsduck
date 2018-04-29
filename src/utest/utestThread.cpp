@@ -331,6 +331,9 @@ void ThreadTest::testMutexTimeout()
 
     CPPUNIT_ASSERT(!mutex.acquire(50));
     CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
+    // The next assert may fail on a very busy system (when you compile while running
+    // your tests for instance). The test process may be suspended longer than expected
+    // and the final dueTime2 may have already passed.
     CPPUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
     CPPUNIT_ASSERT(mutex.acquire(1000));
     CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
