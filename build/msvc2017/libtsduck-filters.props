@@ -718,7 +718,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsSpliceInfoTable.h">
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceInformationTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInsert.h">
@@ -1665,7 +1665,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsSpliceInfoTable.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceInformationTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInsert.cpp">

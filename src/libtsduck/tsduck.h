@@ -247,7 +247,7 @@
 #include "tsSocket.h"
 #include "tsSocketAddress.h"
 #include "tsSpliceAvailDescriptor.h"
-#include "tsSpliceInfoTable.h"
+#include "tsSpliceInformationTable.h"
 #include "tsSpliceInsert.h"
 #include "tsSpliceSchedule.h"
 #include "tsSpliceTimeDescriptor.h"

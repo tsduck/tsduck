@@ -70,7 +70,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(PMT);
     REF_TYPE(RST);
     REF_TYPE(SDT);
-    REF_TYPE(SpliceInfoTable);
+    REF_TYPE(SpliceInformationTable);
     REF_TYPE(TDT);
     REF_TYPE(TOT);
     REF_TYPE(TSDT);

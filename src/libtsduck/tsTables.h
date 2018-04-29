@@ -46,7 +46,7 @@
 #include "tsPMT.h"
 #include "tsRST.h"
 #include "tsSDT.h"
-#include "tsSpliceInfoTable.h"
+#include "tsSpliceInformationTable.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsTSDT.h"

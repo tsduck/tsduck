@@ -36,7 +36,7 @@
 #include "tsPluginRepository.h"
 #include "tsServiceDiscovery.h"
 #include "tsSectionDemux.h"
-#include "tsSpliceInfoTable.h"
+#include "tsSpliceInformationTable.h"
 TSDUCK_SOURCE;
 
 
@@ -276,7 +276,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
 {
     // Try to extract a SpliceInsert command from the section.
     SpliceInsert cmd;
-    if (!SpliceInfoTable::ExtractSpliceInsert(cmd, section)) {
+    if (!SpliceInformationTable::ExtractSpliceInsert(cmd, section)) {
         // Not the right table or command, just ignore it.
         return;
     }

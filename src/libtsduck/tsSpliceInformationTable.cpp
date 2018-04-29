@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSpliceInfoTable.h"
+#include "tsSpliceInformationTable.h"
 #include "tsBinaryTable.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
@@ -38,16 +38,16 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_information_table"
 #define MY_TID ts::TID_SCTE35_SIT
 
-TS_XML_TABLE_FACTORY(ts::SpliceInfoTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SpliceInfoTable, MY_TID);
-TS_ID_SECTION_DISPLAY(ts::SpliceInfoTable::DisplaySection, MY_TID);
+TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::SpliceInfoTable::SpliceInfoTable() :
+ts::SpliceInformationTable::SpliceInformationTable() :
     AbstractTable(MY_TID, MY_XML_NAME),
     protocol_version(0),
     pts_adjustment(0),
@@ -62,7 +62,7 @@ ts::SpliceInfoTable::SpliceInfoTable() :
     _is_valid = true;
 }
 
-ts::SpliceInfoTable::SpliceInfoTable(const SpliceInfoTable& other) :
+ts::SpliceInformationTable::SpliceInformationTable(const SpliceInformationTable& other) :
     AbstractTable(other),
     protocol_version(other.protocol_version),
     pts_adjustment(other.pts_adjustment),
@@ -81,7 +81,7 @@ ts::SpliceInfoTable::SpliceInfoTable(const SpliceInfoTable& other) :
 // Clear all fields.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInfoTable::clear()
+void ts::SpliceInformationTable::clear()
 {
     _is_valid = false;
     protocol_version = 0;
@@ -101,8 +101,8 @@ void ts::SpliceInfoTable::clear()
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::SpliceInfoTable::SpliceInfoTable(const BinaryTable& table, const DVBCharset* charset) :
-    SpliceInfoTable()
+ts::SpliceInformationTable::SpliceInformationTable(const BinaryTable& table, const DVBCharset* charset) :
+    SpliceInformationTable()
 {
     deserialize(table, charset);
 }
@@ -112,7 +112,7 @@ ts::SpliceInfoTable::SpliceInfoTable(const BinaryTable& table, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInfoTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     clear();
@@ -128,7 +128,7 @@ void ts::SpliceInfoTable::deserialize(const BinaryTable& table, const DVBCharset
     size_t remain = sect.payloadSize();
 
     // Payload layout: fixed part (11 bytes), variable part, CRC2 (4 bytes).
-    // There is a CRC32 at the end of a SpliceInfoTable, even though we are in a short section.
+    // There is a CRC32 at the end of a SpliceInformationTable, even though we are in a short section.
     if (remain < 15) {
         return;
     }
@@ -209,7 +209,7 @@ void ts::SpliceInfoTable::deserialize(const BinaryTable& table, const DVBCharset
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInfoTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SpliceInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();
@@ -288,7 +288,7 @@ void ts::SpliceInfoTable::serialize(BinaryTable& table, const DVBCharset* charse
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInfoTable::buildXML(xml::Element* root) const
+void ts::SpliceInformationTable::buildXML(xml::Element* root) const
 {
     root->setIntAttribute(u"protocol_version", protocol_version, false);
     root->setIntAttribute(u"pts_adjustment", pts_adjustment, false);
@@ -340,7 +340,7 @@ void ts::SpliceInfoTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInfoTable::fromXML(const xml::Element* element)
+void ts::SpliceInformationTable::fromXML(const xml::Element* element)
 {
     clear();
     xml::ElementVector command;
@@ -396,10 +396,10 @@ void ts::SpliceInfoTable::fromXML(const xml::Element* element)
 
 
 //----------------------------------------------------------------------------
-// A static method to display a SpliceInfoTable section.
+// A static method to display a SpliceInformationTable section.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
@@ -407,7 +407,7 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
     size_t size = section.payloadSize();
 
     // Payload layout: fixed part (11 bytes), variable part, CRC2 (4 bytes).
-    // There is a CRC32 at the end of a SpliceInfoTable, even though we are in a short section.
+    // There is a CRC32 at the end of a SpliceInformationTable, even though we are in a short section.
 
     if (size < 15) {
         display.displayExtraData(data, size, indent);
@@ -538,7 +538,7 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
 // A static method to extract a SpliceInsert command from a section.
 //----------------------------------------------------------------------------
 
-bool ts::SpliceInfoTable::ExtractSpliceInsert(SpliceInsert& command, const Section& section)
+bool ts::SpliceInformationTable::ExtractSpliceInsert(SpliceInsert& command, const Section& section)
 {
     // Payload layout: fixed part (11 bytes), variable part, CRC2 (4 bytes).
     const uint8_t* data = section.payload();
