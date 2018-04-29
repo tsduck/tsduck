@@ -307,9 +307,10 @@ void ts::SpliceSchedule::fromXML(const xml::Element* element)
                 xmlEvents[i]->getChildren(children, u"break_duration", 0, 1);
             ev.use_duration = !children.empty();
             if (_is_valid && ev.use_duration) {
+                assert(children.size() == 1);
                 _is_valid =
-                    xmlEvents[i]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
-                    xmlEvents[i]->getIntAttribute<uint64_t>(ev.duration_pts, u"duration", true);
+                    children[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
+                    children[0]->getIntAttribute<uint64_t>(ev.duration_pts, u"duration", true);
             }
             ev.program_splice = xmlEvents[i]->hasAttribute(u"utc_splice_time");
             if (_is_valid && ev.program_splice) {
@@ -322,7 +323,7 @@ void ts::SpliceSchedule::fromXML(const xml::Element* element)
                     uint32_t utc = 0;
                     _is_valid =
                         children[i1]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
-                        children[i1]->getIntAttribute<uint32_t>(utc, u"utc_splice__time", true);
+                        children[i1]->getIntAttribute<uint32_t>(utc, u"utc_splice_time", true);
                     if (_is_valid) {
                         ev.components_utc[tag] = utc;
                     }

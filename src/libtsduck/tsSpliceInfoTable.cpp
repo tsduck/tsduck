@@ -30,11 +30,12 @@
 #include "tsSpliceInfoTable.h"
 #include "tsBinaryTable.h"
 #include "tsNames.h"
+#include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"splice_info_table"
+#define MY_XML_NAME u"splice_information_table"
 #define MY_TID ts::TID_SCTE35_SIT
 
 TS_XML_TABLE_FACTORY(ts::SpliceInfoTable, MY_XML_NAME);
@@ -154,7 +155,7 @@ void ts::SpliceInfoTable::deserialize(const BinaryTable& table, const DVBCharset
     if (encrypted) {
         return;
     }
-    
+
     // Decode splice command (and then 2 bytes for descriptor loop size).
     if (command_length + 2 > remain) {
         return;
@@ -289,7 +290,49 @@ void ts::SpliceInfoTable::serialize(BinaryTable& table, const DVBCharset* charse
 
 void ts::SpliceInfoTable::buildXML(xml::Element* root) const
 {
-    //@@@@@
+    root->setIntAttribute(u"protocol_version", protocol_version, false);
+    root->setIntAttribute(u"pts_adjustment", pts_adjustment, false);
+    root->setIntAttribute(u"tier", tier, true);
+
+    switch (splice_command_type) {
+        case SPLICE_NULL: {
+            root->addElement(u"splice_null");
+            break;
+        }
+        case SPLICE_BANDWIDTH_RESERVATION:  {
+            root->addElement(u"bandwidth_reservation");
+            break;
+        }
+        case SPLICE_SCHEDULE: {
+            splice_schedule.toXML(root);
+            break;
+        }
+        case SPLICE_INSERT: {
+            splice_insert.toXML(root);
+            break;
+        }
+        case SPLICE_TIME_SIGNAL: {
+            xml::Element* cmd = root->addElement(u"time_signal");
+            if (time_signal.set()) {
+                cmd->setIntAttribute(u"pts_time", time_signal.value(), false);
+            }
+            break;
+        }
+        case SPLICE_PRIVATE_COMMAND: {
+            xml::Element* cmd = root->addElement(u"private_command");
+            cmd->setIntAttribute(u"identifier", private_command.identifier, true);
+            if (!private_command.private_bytes.empty()) {
+                cmd->addHexaText(private_command.private_bytes);
+            }
+            break;
+        }
+        default: {
+            // Invalid command.
+            break;
+        }
+    }
+
+    descs.toXML(root);
 }
 
 
@@ -299,9 +342,56 @@ void ts::SpliceInfoTable::buildXML(xml::Element* root) const
 
 void ts::SpliceInfoTable::fromXML(const xml::Element* element)
 {
+    clear();
+    xml::ElementVector command;
+
     _is_valid =
-        checkXMLName(element);
-    //@@@@@@@@
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
+        element->getIntAttribute<uint64_t>(pts_adjustment, u"pts_adjustment", false, 0) &&
+        element->getIntAttribute<uint16_t>(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
+        descs.fromXML(command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
+
+    if (!_is_valid && command.size() != 1) {
+        _is_valid = false;
+        element->report().error(u"Specify exactly one splice command in <%s>, line %d", {element->name(), element->lineNumber()});
+    }
+
+    if (_is_valid) {
+        assert(command.size() == 1);
+        const xml::Element* const cmd = command[0];
+        if (cmd->name() == u"splice_null") {
+            splice_command_type = SPLICE_NULL;
+        }
+        else if (cmd->name() == u"splice_schedule") {
+            splice_command_type = SPLICE_SCHEDULE;
+            splice_schedule.fromXML(cmd);
+            _is_valid = splice_schedule.isValid();
+        }
+        else if (cmd->name() == u"splice_insert") {
+            splice_command_type = SPLICE_INSERT;
+            splice_insert.fromXML(cmd);
+            _is_valid = splice_insert.isValid();
+        }
+        else if (cmd->name() == u"time_signal") {
+            splice_command_type = SPLICE_TIME_SIGNAL;
+            _is_valid = cmd->getOptionalIntAttribute<uint64_t>(time_signal, u"pts_time", 0, PTS_DTS_MASK);
+        }
+        else if (cmd->name() == u"bandwidth_reservation") {
+            splice_command_type = SPLICE_BANDWIDTH_RESERVATION;
+        }
+        else if (cmd->name() == u"private_command") {
+            splice_command_type = SPLICE_PRIVATE_COMMAND;
+            _is_valid =
+                cmd->getIntAttribute<uint32_t>(private_command.identifier, u"identifier", true) &&
+                cmd->getHexaText(private_command.private_bytes);
+        }
+        else {
+            // should not get there.
+            _is_valid = false;
+            assert(false);
+        }
+    }
 }
 
 
@@ -376,6 +466,7 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
                 SpliceSchedule cmd;
                 const int done = cmd.deserialize(data, cmd_length);
                 if (done >= 0) {
+                    assert(size_t(done) <= cmd_length);
                     cmd.display(display, indent);
                     data += done; size -= done; cmd_length -= done;
                 }
@@ -385,6 +476,7 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
                 SpliceInsert cmd;
                 const int done = cmd.deserialize(data, cmd_length);
                 if (done >= 0) {
+                    assert(size_t(done) <= cmd_length);
                     cmd.display(display, indent);
                     data += done; size -= done; cmd_length -= done;
                 }
@@ -396,6 +488,14 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
                 if (done >= 0) {
                     strm << margin << "Time: " << cmd.toString() << std::endl;
                     data += done; size -= done; cmd_length -= done;
+                }
+                break;
+            }
+            case SPLICE_PRIVATE_COMMAND: {
+                if (cmd_length >= 4) {
+                    const uint32_t cmd = GetUInt32(data);
+                    strm << margin << UString::Format(u"Command identifier: 0x%0X (%'d)", {cmd, cmd}) << std::endl;
+                    data += 4; size -= 4; cmd_length -= 4;
                 }
                 break;
             }

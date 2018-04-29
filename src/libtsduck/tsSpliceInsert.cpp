@@ -328,9 +328,10 @@ void ts::SpliceInsert::fromXML(const xml::Element* element)
             element->getChildren(children, u"break_duration", 0, immediate ? 0 : 1);
         use_duration = !children.empty();
         if (_is_valid && use_duration) {
+            assert(children.size() == 1);
             _is_valid =
-                element->getBoolAttribute(auto_return, u"auto_return", true) &&
-                element->getIntAttribute<uint64_t>(duration_pts, u"duration", true);
+                children[0]->getBoolAttribute(auto_return, u"auto_return", true) &&
+                children[0]->getIntAttribute<uint64_t>(duration_pts, u"duration", true);
         }
         program_splice = element->hasAttribute(u"pts_time");
         if (_is_valid && program_splice) {
