@@ -238,9 +238,11 @@ HEADERS += \
     ../../../src/libtsduck/tsSocket.h \
     ../../../src/libtsduck/tsSocketAddress.h \
     ../../../src/libtsduck/tsSpliceAvailDescriptor.h \
+    ../../../src/libtsduck/tsSpliceDTMFDescriptor.h \
     ../../../src/libtsduck/tsSpliceInformationTable.h \
     ../../../src/libtsduck/tsSpliceInsert.h \
     ../../../src/libtsduck/tsSpliceSchedule.h \
+    ../../../src/libtsduck/tsSpliceSegmentationDescriptor.h \
     ../../../src/libtsduck/tsSpliceTimeDescriptor.h \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.h \
     ../../../src/libtsduck/tsSSULinkageDescriptor.h \
@@ -545,9 +547,11 @@ SOURCES += \
     ../../../src/libtsduck/tsSocket.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
     ../../../src/libtsduck/tsSpliceAvailDescriptor.cpp \
+    ../../../src/libtsduck/tsSpliceDTMFDescriptor.cpp \
     ../../../src/libtsduck/tsSpliceInformationTable.cpp \
     ../../../src/libtsduck/tsSpliceInsert.cpp \
     ../../../src/libtsduck/tsSpliceSchedule.cpp \
+    ../../../src/libtsduck/tsSpliceSegmentationDescriptor.cpp \
     ../../../src/libtsduck/tsSpliceTimeDescriptor.cpp \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsSSULinkageDescriptor.cpp \

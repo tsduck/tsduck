@@ -27,37 +27,37 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSpliceTimeDescriptor.h"
+#include "tsSpliceDTMFDescriptor.h"
+#include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"splice_time_descriptor"
-#define MY_DID ts::DID_SPLICE_TIME
+#define MY_XML_NAME u"splice_DTMF_descriptor"
+#define MY_DID ts::DID_SPLICE_DTMF
 #define MY_TID ts::TID_SCTE35_SIT
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceTimeDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::SpliceTimeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceTimeDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceDTMFDescriptor, MY_XML_NAME, MY_TID);
+TS_ID_DESCRIPTOR_FACTORY(ts::SpliceDTMFDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceDTMFDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::SpliceTimeDescriptor::SpliceTimeDescriptor() :
+ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
     identifier(SPLICE_ID_CUEI),
-    TAI_seconds(0),
-    TAI_ns(0),
-    UTC_offset(0)
+    preroll(0),
+    DTMF()
 {
     _is_valid = true;
 }
 
-ts::SpliceTimeDescriptor::SpliceTimeDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    SpliceTimeDescriptor()
+ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    SpliceDTMFDescriptor()
 {
     deserialize(desc, charset);
 }
@@ -67,14 +67,20 @@ ts::SpliceTimeDescriptor::SpliceTimeDescriptor(const Descriptor& desc, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SpliceDTMFDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(identifier);
-    bbp->appendUInt48(TAI_seconds);
-    bbp->appendUInt32(TAI_ns);
-    bbp->appendUInt16(UTC_offset);
-    serializeEnd(desc, bbp);
+    const ByteBlock binDTMF(DTMF.toDVB(0, UString::NPOS, charset));
+    if (_is_valid && binDTMF.size() <= DTMF_MAX_SIZE) {
+        ByteBlockPtr bbp(serializeStart());
+        bbp->appendUInt32(identifier);
+        bbp->appendUInt8(preroll);
+        bbp->append(uint8_t((DTMF.size() << 5) | 0x1F));
+        bbp->append(binDTMF);
+        serializeEnd(desc, bbp);
+    }
+    else {
+        desc.invalidate();
+    }
 }
 
 
@@ -82,18 +88,21 @@ void ts::SpliceTimeDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SpliceDTMFDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    _is_valid = desc.isValid() && desc.tag() == _tag && size == 16;
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 6;
 
     if (_is_valid) {
         identifier = GetUInt32(data);
-        TAI_seconds = GetUInt48(data + 4);
-        TAI_ns = GetUInt32(data + 10);
-        UTC_offset = GetUInt16(data + 14);
+        preroll = GetUInt8(data + 4);
+        const size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
+        _is_valid = len + 6 == size;
+        if (_is_valid) {
+            DTMF = UString::FromDVB(data + 6, len, charset);
+        }
     }
 }
 
@@ -102,21 +111,25 @@ void ts::SpliceTimeDescriptor::deserialize(const Descriptor& desc, const DVBChar
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
-    if (size >= 16) {
-        const uint64_t tai = GetUInt48(data + 4);
-        const uint32_t ns = GetUInt32(data + 10);
-        const uint16_t off = GetUInt16(data + 14);
+    if (size >= 6) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
         display.displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
-             << margin << UString::Format(u"TAI: %'d seconds (%s) + %'d ns, UTC offset: %'d", {tai, Time::UnixTimeToUTC(tai).format(Time::DATE | Time::TIME), ns, off})
+             << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {GetUInt8(data + 4)})
              << std::endl;
-        data += 16; size -= 16;
+        size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
+        data += 6; size -= 6;
+
+        if (len > size) {
+            len = size;
+        }
+        strm << margin << "DTMF: \"" << UString::FromDVB(data, len, display.dvbCharset()) << "\"" << std::endl;
+        data += len; size -= len;
     }
 
     display.displayExtraData(data, size, indent);
@@ -127,12 +140,11 @@ void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::buildXML(xml::Element* root) const
+void ts::SpliceDTMFDescriptor::buildXML(xml::Element* root) const
 {
     root->setIntAttribute(u"identifier", identifier, true);
-    root->setIntAttribute(u"TAI_seconds", TAI_seconds, false);
-    root->setIntAttribute(u"TAI_ns", TAI_ns, false);
-    root->setIntAttribute(u"UTC_offset", UTC_offset, false);
+    root->setIntAttribute(u"preroll", preroll);
+    root->setAttribute(u"DTMF", DTMF);
 }
 
 
@@ -140,12 +152,11 @@ void ts::SpliceTimeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceDTMFDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
         element->getIntAttribute<uint32_t>(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-        element->getIntAttribute<uint64_t>(TAI_seconds, u"TAI_seconds", true, 0, 0, TS_UCONST64(0x0000FFFFFFFFFFFF)) &&
-        element->getIntAttribute<uint32_t>(TAI_ns, u"TAI_ns", true) &&
-        element->getIntAttribute<uint16_t>(UTC_offset, u"UTC_offset", true);
+        element->getIntAttribute<uint8_t>(preroll, u"preroll", true) &&
+        element->getAttribute(DTMF, u"DTMF", true, u"", 0, DTMF_MAX_SIZE);
 }
