@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.11-682
+Version 3.11-697
 
 - Added options --sync-layout, --dump-datagram, --dump-udp, --dump-max and
   --skip to plugin "mpe".
@@ -11,6 +11,8 @@ Version 3.11-682
 
 - Added option --buffer-size in plugin "datainject". The plugin is now able to
   receive data using UDP, as defined in the DVB SimulCrypt protocol.
+
+- SCTE 35 splice information tables can now be created from XML format.
 
 - Bug fix: In rare cases, time conversions could produce incorrect results when
   the time value was in the middle of the "non-existing hour", during the

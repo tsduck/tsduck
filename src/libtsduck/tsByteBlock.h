@@ -204,6 +204,15 @@ namespace ts {
         //! Append an integer in big endian representation at the end.
         //! @param [in] i Integer value to serialize at the end of the block.
         //!
+        void appendUInt40(uint64_t i)
+        {
+            appendUInt40BE(i);
+        }
+
+        //!
+        //! Append an integer in big endian representation at the end.
+        //! @param [in] i Integer value to serialize at the end of the block.
+        //!
         void appendUInt48(uint64_t i)
         {
             appendUInt48BE(i);
@@ -294,6 +303,15 @@ namespace ts {
         //! Append an integer in big endian representation at the end.
         //! @param [in] i Integer value to serialize at the end of the block.
         //!
+        void appendUInt40BE(uint64_t i)
+        {
+            PutUInt40BE(enlarge(5), i);
+        }
+
+        //!
+        //! Append an integer in big endian representation at the end.
+        //! @param [in] i Integer value to serialize at the end of the block.
+        //!
         void appendUInt48BE(uint64_t i)
         {
             PutUInt48BE(enlarge(6), i);
@@ -369,6 +387,15 @@ namespace ts {
         void appendUInt32LE(uint32_t i)
         {
             PutUInt32LE(enlarge(4), i);
+        }
+
+        //!
+        //! Append an integer in little endian representation at the end.
+        //! @param [in] i Integer value to serialize at the end of the block.
+        //!
+        void appendUInt40LE(uint64_t i)
+        {
+            PutUInt40LE(enlarge(5), i);
         }
 
         //!

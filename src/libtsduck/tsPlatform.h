@@ -1911,6 +1911,41 @@ namespace ts {
     }
 
     //!
+    //! Inlined function serializing a 40-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
+    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt40BE(void* p, uint64_t i)
+    {
+        *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 32);
+        *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+    }
+
+    //!
+    //! Inlined function serializing a 40-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
+    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt40(void* p, uint64_t i)
+    {
+        PutUInt40BE(p, i);
+    }
+
+    //!
+    //! Inlined function serializing a 40-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
+    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt40LE(void* p, uint64_t i)
+    {
+        *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+        *(static_cast<uint8_t*>(p) + 4) = static_cast<uint8_t>(i >> 32);
+    }
+
+    //!
     //! Inlined function serializing a 48-bit unsigned integer data in big endian representation.
     //!
     //! @param [out] p An address where to serialize the 48-bit unsigned integer.

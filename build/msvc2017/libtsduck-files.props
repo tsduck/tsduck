@@ -240,9 +240,11 @@
     <ClInclude Include="..\..\src\libtsduck\tsSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSocketAddress.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceDTMFDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInformationTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInsert.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceSchedule.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceSegmentationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceTimeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSSULinkageDescriptor.h" />
@@ -557,9 +559,11 @@
     <ClCompile Include="..\..\src\libtsduck\tsSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSocketAddress.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceDTMFDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInformationTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInsert.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceSchedule.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceSegmentationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceTimeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSSULinkageDescriptor.cpp" />

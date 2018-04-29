@@ -718,6 +718,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceDTMFDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInformationTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -725,6 +728,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSpliceSchedule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceSegmentationDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSpliceTimeDescriptor.h">
@@ -1665,6 +1671,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsSpliceAvailDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceDTMFDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInformationTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1672,6 +1681,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSpliceSchedule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceSegmentationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSpliceTimeDescriptor.cpp">
