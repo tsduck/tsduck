@@ -190,7 +190,9 @@ HEADERS += \
     ../../../src/libtsduck/tsPluginSharedLibrary.h \
     ../../../src/libtsduck/tsPMT.h \
     ../../../src/libtsduck/tsPMTHandlerInterface.h \
+    ../../../src/libtsduck/tsPolledFile.h \
     ../../../src/libtsduck/tsPollFiles.h \
+    ../../../src/libtsduck/tsPollFilesListener.h \
     ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
@@ -513,6 +515,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPluginRepository.cpp \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPMT.cpp \
+    ../../../src/libtsduck/tsPolledFile.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \

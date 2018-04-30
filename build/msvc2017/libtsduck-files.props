@@ -192,7 +192,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsPluginSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMTHandlerInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPolledFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPollFilesListener.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
@@ -525,6 +527,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPluginRepository.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPMT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPolledFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPollFiles.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />

@@ -34,155 +34,97 @@
 
 #pragma once
 #include "tsCerrReport.h"
-#include "tsEnumeration.h"
-#include "tsSafePtr.h"
-#include "tsTime.h"
+#include "tsPollFilesListener.h"
 
 namespace ts {
     //!
-    //! Description of a polled file.
-    //!
-    class TSDUCKDLL PolledFile
-    {
-    public:
-        //!
-        //! Status of a polled file.
-        //!
-        enum Status {
-            MODIFIED,  //!< The file was modified since last time.
-            ADDED,     //!< The file was added since last time.
-            DELETED    //!< The file was deleted since last time.
-        };
-
-        //!
-        //! Enumeration names for Status.
-        //!
-        static const ts::Enumeration StatusEnumeration;
-
-        //!
-        //! Get the file name.
-        //! @return The file name.
-        //!
-        const UString& getFileName() const
-        {
-            return _name;
-        }
-
-        //!
-        //! Get file status since last notification.
-        //! @return The file status since last notification.
-        //!
-        Status getStatus() const
-        {
-            return _status;
-        }
-
-    private:
-        friend class PollFiles;
-
-        const UString _name;           // File name
-        Status        _status;         // Status since last report
-        int64_t       _file_size;      // File size in bytes
-        Time          _file_date;      // Last file modification date (UTC)
-        bool          _pending;        // Not yet notified, waiting for stable state
-        Time          _found_date;     // First time (UTC) this size/date state was reported
-
-        // Constructor
-        PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now);
-
-        // Check if file has changed size or date. If yes, return to pending state.
-        void trackChange(const int64_t& size, const Time& date, const Time& now);
-    };
-
-    //!
-    //! Safe pointer to a PolledFile (not thread-safe).
-    //!
-    typedef SafePtr<PolledFile, NullMutex> PolledFilePtr;
-
-    //!
-    //! List of safe pointers to PolledFile (not thread-safe).
-    //!
-    typedef std::list<PolledFilePtr> PolledFileList;
-
-    //!
-    //! Interface for classes listening for file modification.
-    //!
-    class TSDUCKDLL PollFilesListener
-    {
-    public:
-        //!
-        //! Invoked when files have changed.
-        //! @param [in] files List of changed files since last time.
-        //! The entries in the list are sorted by file names.
-        //! @return True to continue polling, false to exit PollFiles().
-        //!
-        virtual bool handlePolledFiles(const PolledFileList& files) = 0;
-
-        //!
-        //! Invoked before each poll to give the opportunity to change where and how the files are polled.
-        //! This is an optional feature, the default implementation does not change anything.
-        //! @param [in,out] wildcard Wildcard specification of files to poll (eg "/path/to/*.dat").
-        //! @param [in,out] poll_interval Interval in milliseconds between two poll operations.
-        //! @param [in,out] min_stable_delay A file size needs to be stable during that duration
-        //! for the file to be reported as added or modified. This prevent too frequent
-        //! poll notifications when a file is being written and his size modified at each poll.
-        //! @return True to continue polling, false to exit PollFiles().
-        //!
-        virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay)
-        {
-            return true;
-        }
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~PollFilesListener() {}
-    };
-
-    //!
     //! A class to poll files for modifications.
-    //!
-    //! To poll files for modification, we need a method like PollFiles(...).
-    //! For technical reasons, we need a class. The method PollFiles() is
-    //! actually a constructor, but we do not need to know...
     //!
     class TSDUCKDLL PollFiles
     {
     public:
         //!
-        //! Constructor, acting as pseudo-method PollFiles(...).
-        //! Invoke the listener each time something has changed.
-        //! The first time, all files are reported as "added".
+        //! Default interval in milliseconds between two poll operations.
         //!
+        static const MilliSecond DEFAULT_POLL_INTERVAL = 1000;
+
+        //!
+        //! Default minimum file stability delay.
+        //! A file size needs to be stable during that duration for the file to be reported as
+        //! added or modified. This prevent too frequent poll notifications when a file is
+        //! being written and his size modified at each poll.
+        //!
+        static const MilliSecond DEFAULT_MIN_STABLE_DELAY = 500;
+
+        //!
+        //! Constructor.
         //! @param [in] wildcard Wildcard specification of files to poll (eg "/path/to/*.dat").
+        //! @param [in] listener Invoked on file modification. Can be null.
         //! @param [in] poll_interval Interval in milliseconds between two poll operations.
         //! @param [in] min_stable_delay A file size needs to be stable during that duration
         //! for the file to be reported as added or modified. This prevent too frequent
         //! poll notifications when a file is being written and his size modified at each poll.
-        //! @param [in,out] listener Invoked on file modification.
         //! @param [in,out] report For debug messages only.
         //!
-        PollFiles(const UString& wildcard,
-                  MilliSecond poll_interval,
-                  MilliSecond min_stable_delay,
-                  PollFilesListener& listener,
+        PollFiles(const UString& wildcard = UString(),
+                  PollFilesListener* listener = 0,
+                  MilliSecond poll_interval = DEFAULT_POLL_INTERVAL,
+                  MilliSecond min_stable_delay = DEFAULT_MIN_STABLE_DELAY,
                   Report& report = CERR);
+
+        //!
+        //! Set a new file wildcard specification to poll.
+        //! @param [in] wildcard Wildcard specification of files to poll (eg "/path/to/*.dat").
+        //!
+        void setFileWildcard(const UString& wildcard) { _files_wildcard = wildcard; }
+
+        //!
+        //! Set a new file listener.
+        //! @param [in] listener Invoked on file modification. Can be null.
+        //!
+        void setListener(PollFilesListener* listener) { _listener = listener; }
+
+        //!
+        //! Set a new polling interval.
+        //! @param [in] poll_interval Interval in milliseconds between two poll operations.
+        //!
+        void setPollInterval(MilliSecond poll_interval) { _poll_interval = poll_interval; }
+
+        //!
+        //! Set a new minimum file stability delay.
+        //! @param [in] min_stable_delay A file size needs to be stable during that duration
+        //! for the file to be reported as added or modified. This prevent too frequent
+        //! poll notifications when a file is being written and his size modified at each poll.
+        //!
+        void setMinStableDelay(MilliSecond min_stable_delay) { _min_stable_delay = min_stable_delay; }
+
+        //!
+        //! Poll files continuously until the listener asks to terminate.
+        //! Invoke the listener each time something has changed.
+        //! The first time, all files are reported as "added".
+        //!
+        void pollRepeatedly();
+
+        //!
+        //! Perform one poll operation, notify listener if necessary, and return immediately.
+        //! @return True to continue polling, false to exit polling.
+        //!
+        bool pollOnce();
 
     private:
         UString            _files_wildcard;
         Report&            _report;
-        PollFilesListener& _listener;
+        MilliSecond        _poll_interval;
+        MilliSecond        _min_stable_delay;
+        PollFilesListener* _listener;
         PolledFileList     _polled_files;   // Updated at each poll, sorted by file name
         PolledFileList     _notified_files; // Modifications to notify
 
         // Mark a file as deleted, move from polled to notified files.
         void deleteFile(PolledFileList::iterator&);
 
-        // Notify listener. Return true to continue polling, false to exit PollFiles().
-        bool notifyListener();
-
-        // Unaccessible operations
-        PollFiles() = delete;
+        // Inaccessible operations
         PollFiles(const PollFiles&) = delete;
+        PollFiles& operator=(const PollFiles&) = delete;
     };
 }

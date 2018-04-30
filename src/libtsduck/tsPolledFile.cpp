@@ -26,22 +26,53 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+//
+//  Poll for files
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 701
+#include "tsPolledFile.h"
+#include "tsSysUtils.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Enumerations, names for values
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::PolledFile::StatusEnumeration({
+    {u"modified", ts::PolledFile::MODIFIED},
+    {u"added",    ts::PolledFile::ADDED},
+    {u"deleted",  ts::PolledFile::DELETED},
+});
+
+
+//----------------------------------------------------------------------------
+// Description of a polled file - Constructor
+//----------------------------------------------------------------------------
+
+ts::PolledFile::PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now) :
+    _name(name),
+    _status(ADDED),
+    _file_size(size),
+    _file_date(date),
+    _pending(true),
+    _found_date(now)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Check if file has changed size or date.
+//----------------------------------------------------------------------------
+
+void ts::PolledFile::trackChange(const int64_t& size, const Time& date, const Time& now)
+{
+    if (_file_size != size || _file_date != date) {
+        _status = MODIFIED;
+        _file_size = size;
+        _file_date = date;
+        _pending = true;
+        _found_date = now;
+    }
+}
