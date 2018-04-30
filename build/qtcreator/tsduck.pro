@@ -82,6 +82,7 @@ SUBDIRS += \
     tsplugin_sifilter \
     tsplugin_skip \
     tsplugin_slice \
+    tsplugin_spliceinject \
     tsplugin_stuffanalyze \
     tsplugin_svremove \
     tsplugin_svrename \
