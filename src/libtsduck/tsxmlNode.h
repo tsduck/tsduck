@@ -317,7 +317,7 @@ namespace ts {
             Node*   _firstChild;    //!< First child, can be null, other children are linked through the RingNode.
             size_t  _inputLineNum;  //!< Line number in input document, zero if build programmatically.
 
-            // Unaccessible operations.
+            // Inaccessible operations.
             Node(const Node&) = delete;
             Node& operator=(const Node&) = delete;
         };

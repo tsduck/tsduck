@@ -77,7 +77,7 @@ namespace ts {
         private:
             bool _isCData;
 
-            // Unaccessible operations.
+            // Inaccessible operations.
             Text(const Text&) = delete;
             Text& operator=(const Text&) = delete;
         };

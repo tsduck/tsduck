@@ -67,7 +67,7 @@ namespace ts {
         int _fd;
 #endif
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         SystemRandomGenerator(const SystemRandomGenerator&) = delete;
         SystemRandomGenerator& operator=(const SystemRandomGenerator&) = delete;
     };

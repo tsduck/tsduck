@@ -192,7 +192,7 @@ namespace ts {
         UString  _name;  //!< Character set name.
         uint32_t _code;  //!< Table code.
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         DVBCharset() = delete;
         DVBCharset(const DVBCharset&) = delete;
         DVBCharset& operator=(const DVBCharset&) = delete;

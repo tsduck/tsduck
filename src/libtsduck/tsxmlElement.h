@@ -517,7 +517,7 @@ namespace ts {
             // Get a modifiable reference to an attribute, create if does not exist.
             Attribute& refAttribute(const UString& attributeName);
 
-            // Unaccessible operations.
+            // Inaccessible operations.
             Element(const Element&) = delete;
             Element& operator=(const Element&) = delete;
         };

@@ -71,7 +71,7 @@ namespace ts {
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
         private:
-            // Unaccessible operations.
+            // Inaccessible operations.
             Declaration(const Declaration&) = delete;
             Declaration& operator=(const Declaration&) = delete;
         };
