@@ -87,7 +87,7 @@ namespace ts {
         //! Reverse mapping for complete character set (key = code point, value = byte rep).
         std::map<UChar, uint8_t> _bytesMap;
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         DVBCharsetSingleByte() = delete;
         DVBCharsetSingleByte(const DVBCharsetSingleByte&) = delete;
         DVBCharsetSingleByte& operator=(const DVBCharsetSingleByte&) = delete;

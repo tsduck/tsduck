@@ -114,7 +114,7 @@
         };                                                                   \
         /* Only one instance of the controller. */                           \
         static Controller _controller;                                       \
-        /* Unaccessible operations. */                                       \
+        /* Inaccessible operations. */                                       \
         StaticInstanceClass(const StaticInstanceClass&) = delete;            \
         StaticInstanceClass& operator=(const StaticInstanceClass&) = delete; \
     }

@@ -61,7 +61,7 @@ namespace ts {
         DVBCharsetUTF16() : DVBCharset(u"UNICODE", 0x000011) {}
 
     private:
-        // Unaccessible operations.
+        // Inaccessible operations.
         DVBCharsetUTF16(const DVBCharsetUTF16&) = delete;
         DVBCharsetUTF16& operator=(const DVBCharsetUTF16&) = delete;
     };

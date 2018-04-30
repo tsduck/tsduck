@@ -242,7 +242,7 @@ namespace ts {
         PIDContextMap             _pids;          //!< Map of PID analysis contexts.
         bool                      _addColors;     //!< Add font color tags.
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         TeletextDemux(const TeletextDemux&) = delete;
         TeletextDemux& operator=(const TeletextDemux&) = delete;
     };

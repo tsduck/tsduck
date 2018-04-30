@@ -122,7 +122,7 @@ namespace ts {
         void processPMT(const PMT&);
         void processSDT(const SDT&);
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         ServiceDiscovery(const ServiceDiscovery&) = delete;
         ServiceDiscovery& operator=(const ServiceDiscovery&) = delete;
     };

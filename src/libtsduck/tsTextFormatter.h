@@ -240,7 +240,7 @@ namespace ts {
             setp(&_buffer[0], &_buffer[0] + _buffer.size());
         }
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         TextFormatter(const TextFormatter&) = delete;
         TextFormatter& operator=(const TextFormatter&) = delete;
     };

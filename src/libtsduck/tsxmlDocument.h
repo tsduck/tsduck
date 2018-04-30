@@ -162,7 +162,7 @@ namespace ts {
             //!
             const Element* findModelElement(const Element* elem, const UString& name) const;
 
-            // Unaccessible operations.
+            // Inaccessible operations.
             Document(const Document&) = delete;
             Document& operator=(const Document&) = delete;
         };

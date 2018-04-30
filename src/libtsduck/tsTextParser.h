@@ -273,7 +273,7 @@ namespace ts {
         UStringList _lines;
         Position    _pos;
 
-        // Unaccessible operations.
+        // Inaccessible operations.
         TextParser() = delete;
         TextParser(const TextParser&) = delete;
         TextParser& operator=(const TextParser&) = delete;

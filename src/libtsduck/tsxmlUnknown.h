@@ -66,7 +66,7 @@ namespace ts {
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
         private:
-            // Unaccessible operations.
+            // Inaccessible operations.
             Unknown(const Unknown&) = delete;
             Unknown& operator=(const Unknown&) = delete;
         };
