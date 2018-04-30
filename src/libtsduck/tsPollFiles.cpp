@@ -37,129 +37,127 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Enumerations, names for values
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::PolledFile::StatusEnumeration({
-    {u"modified", ts::PolledFile::MODIFIED},
-    {u"added",    ts::PolledFile::ADDED},
-    {u"deleted",  ts::PolledFile::DELETED},
-});
-
-
-//----------------------------------------------------------------------------
-// Description of a polled file - Constructor
-//----------------------------------------------------------------------------
-
-ts::PolledFile::PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now) :
-    _name(name),
-    _status(ADDED),
-    _file_size(size),
-    _file_date(date),
-    _pending(true),
-    _found_date(now)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Check if file has changed size or date.
-//----------------------------------------------------------------------------
-
-void ts::PolledFile::trackChange(const int64_t& size, const Time& date, const Time& now)
-{
-    if (_file_size != size || _file_date != date) {
-        _status = MODIFIED;
-        _file_size = size;
-        _file_date = date;
-        _pending = true;
-        _found_date = now;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// This method polls files for modification.
+// Constructor.
 //----------------------------------------------------------------------------
 
 ts::PollFiles::PollFiles(const UString& wildcard,
+                         PollFilesListener* listener,
                          MilliSecond poll_interval,
                          MilliSecond min_stable_delay,
-                         PollFilesListener& listener,
                          Report& report) :
     _files_wildcard(wildcard),
     _report(report),
+    _poll_interval(poll_interval),
+    _min_stable_delay(min_stable_delay),
     _listener(listener),
     _polled_files(),
     _notified_files()
-
 {
-    _report.debug(u"Starting PollFiles on %s, poll interval = %d ms, min stable delay = %d ms", {_files_wildcard, poll_interval, min_stable_delay});
+}
 
-    UStringVector found_files;  // Files that are found at each poll
 
-    // Loop on poll
-    while (listener.updatePollFiles(_files_wildcard, poll_interval, min_stable_delay)) {
+//----------------------------------------------------------------------------
+// Poll files continuously until the listener asks to terminate.
+//----------------------------------------------------------------------------
 
-        // List files, sort according to name
-        const Time now(Time::CurrentUTC());
-        ExpandWildcard(found_files, _files_wildcard);
-        std::sort(found_files.begin(), found_files.end());
+void ts::PollFiles::pollRepeatedly()
+{
+    _report.debug(u"Starting PollFiles on %s, poll interval = %d ms, min stable delay = %d ms", {_files_wildcard, _poll_interval, _min_stable_delay});
 
-        // Compare currently found files with last polled state.
-        PolledFileList::iterator polled = _polled_files.begin();
-        for (UStringVector::const_iterator found = found_files.begin(); found != found_files.end(); ++found) {
+    // Loop on poll for files.
+    while (pollOnce()) {
+        // Wait until next poll
+        SleepThread(_poll_interval);
+    }
+}
 
-            // Get characteristics of next found file
-            const UString& name(*found);
-            const int64_t size(GetFileSize(name));
-            const Time date(GetFileModificationTimeUTC(name));
 
-            // Remove polled files before the found file
-            while (polled != _polled_files.end() && name > (*polled)->_name) {
-                deleteFile(polled);
+//----------------------------------------------------------------------------
+// Perform one poll operation, notify listener if necessary, and return immediately.
+//----------------------------------------------------------------------------
+
+bool ts::PollFiles::pollOnce()
+{
+    // Initially update the search criteria from the listener (it there is one).
+    if (_listener != 0) {
+        try {
+            if (!_listener->updatePollFiles(_files_wildcard, _poll_interval, _min_stable_delay)) {
+                // The listener asks to stop.
+                return false;
             }
-
-            // Track change in current found file
-            if (polled == _polled_files.end() || name < (*polled)->_name) {
-                // The found file is new, must be added in polled list.
-                polled = _polled_files.insert(polled, PolledFilePtr(new PolledFile(name, size, date, now)));
-            }
-            else {
-                // The file was already there last time, track changes
-                assert(polled != _polled_files.end());
-                assert(name == (*polled)->_name);
-                (*polled)->trackChange(size, date, now);
-            }
-
-            // Check if the file need to be notified
-            PolledFilePtr& pf(*polled);
-            if (pf->_pending && now >= pf->_found_date + min_stable_delay) {
-                pf->_pending = false;
-                _notified_files.push_back(pf);
-                _report.debug(u"PolledFiles: %s %s", {PolledFile::StatusEnumeration.name(pf->_status), name});
-            }
-
-            // Next polled file
-            ++polled;
         }
+        catch (const std::exception& e) {
+            const char* msg = e.what();
+            _report.error(u"Exception in PollFiles listener: %s", {msg == 0 ? "unknown" : msg});
+        }
+    }
 
-        // Remove all remaining polled files
-        while (polled != _polled_files.end()) {
+    // List files, sort according to name
+    const Time now(Time::CurrentUTC());
+    UStringVector found_files;
+    ExpandWildcard(found_files, _files_wildcard);
+    std::sort(found_files.begin(), found_files.end());
+
+    // Compare currently found files with last polled state.
+    PolledFileList::iterator polled = _polled_files.begin();
+    for (UStringVector::const_iterator found = found_files.begin(); found != found_files.end(); ++found) {
+
+        // Get characteristics of next found file
+        const UString& name(*found);
+        const int64_t size(GetFileSize(name));
+        const Time date(GetFileModificationTimeUTC(name));
+
+        // Remove polled files before the found file
+        while (polled != _polled_files.end() && name > (*polled)->_name) {
             deleteFile(polled);
         }
 
-        // Notify the listener
-        if (!_notified_files.empty() && !notifyListener()) {
-            return;
+        // Track change in current found file
+        if (polled == _polled_files.end() || name < (*polled)->_name) {
+            // The found file is new, must be added in polled list.
+            polled = _polled_files.insert(polled, PolledFilePtr(new PolledFile(name, size, date, now)));
+        }
+        else {
+            // The file was already there last time, track changes
+            assert(polled != _polled_files.end());
+            assert(name == (*polled)->_name);
+            (*polled)->trackChange(size, date, now);
         }
 
-        // Clear notification list, will be a new one at next poll
-        _notified_files.clear();
+        // Check if the file need to be notified
+        PolledFilePtr& pf(*polled);
+        if (pf->_pending && now >= pf->_found_date + _min_stable_delay) {
+            pf->_pending = false;
+            _notified_files.push_back(pf);
+            _report.debug(u"PolledFiles: %s %s", {PolledFile::StatusEnumeration.name(pf->_status), name});
+        }
 
-        // Wait until next poll
-        SleepThread(poll_interval);
+        // Next polled file
+        ++polled;
     }
+
+    // Remove all remaining polled files
+    while (polled != _polled_files.end()) {
+        deleteFile(polled);
+    }
+
+    // Notify the listener
+    if (!_notified_files.empty() && _listener != 0) {
+        try {
+            if (!_listener->handlePolledFiles(_notified_files)) {
+                // The listener asks to stop.
+                return false;
+            }
+        }
+        catch (const std::exception& e) {
+            const char* msg = e.what();
+            _report.error(u"Exception in PollFiles listener: %s", {msg == 0 ? "unknown" : msg});
+        }
+    }
+
+    // Clear notification list, will be a new one at next poll
+    _notified_files.clear();
+    return true;
 }
 
 
@@ -173,21 +171,4 @@ void ts::PollFiles::deleteFile(PolledFileList::iterator& polled)
     (*polled)->_status = PolledFile::DELETED;
     _notified_files.push_back(*polled);
     polled = _polled_files.erase(polled);
-}
-
-
-//----------------------------------------------------------------------------
-// Notify listener
-//----------------------------------------------------------------------------
-
-bool ts::PollFiles::notifyListener()
-{
-    try {
-        return _listener.handlePolledFiles(_notified_files);
-    }
-    catch (const std::exception& e) {
-        const char* msg = e.what();
-        _report.error(u"Exception in PollFiles listener: %s", {msg == 0 ? "unknown" : msg});
-        return true;
-    }
 }
