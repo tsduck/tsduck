@@ -155,6 +155,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueue.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueueTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueueTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMJD.h" />

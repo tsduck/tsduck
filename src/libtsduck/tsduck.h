@@ -168,6 +168,7 @@
 #include "tsMediaGuardDate.h"
 #include "tsMemoryUtils.h"
 #include "tsMessageDescriptor.h"
+#include "tsMessagePriorityQueue.h"
 #include "tsMessageQueue.h"
 #include "tsMJD.h"
 #include "tsModulation.h"

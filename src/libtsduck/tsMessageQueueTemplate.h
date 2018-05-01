@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Template message queue for inter-thread communication
-//
-//----------------------------------------------------------------------------
 
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
@@ -37,8 +33,7 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
-// If max_messages is 0, the queue is unlimited.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
@@ -50,11 +45,6 @@ ts::MessageQueue<MSG, MUTEX>::MessageQueue(size_t maxMessages) :
     _queue()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
 ts::MessageQueue<MSG, MUTEX>::~MessageQueue()
@@ -82,6 +72,26 @@ void ts::MessageQueue<MSG, MUTEX>::setMaxMessages(size_t max)
 
 
 //----------------------------------------------------------------------------
+// Placement in the message queue (virtual protected methods).
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX>
+typename ts::MessageQueue<MSG, MUTEX>::MessageLocator ts::MessageQueue<MSG, MUTEX>::enqueuePlacement(const MessagePtr& msg, const MessageList& list) const
+{
+    // The default placement is pushing at the back of the queue.
+    return list.end();
+}
+
+template <typename MSG, class MUTEX>
+typename ts::MessageQueue<MSG, MUTEX>::MessageLocator ts::MessageQueue<MSG, MUTEX>::dequeuePlacement(const MessageList& list) const
+{
+    // The default placement is fetching from the head of the queue.
+    return list.begin();
+}
+
+
+
+//----------------------------------------------------------------------------
 // Insert a message in the queue, even if the queue is full.
 //----------------------------------------------------------------------------
 
@@ -91,7 +101,7 @@ void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(const MessagePtr& msg)
     Guard lock(_mutex);
 
     // Enqueue the message
-    _queue.push_back(msg);
+    _queue.insert(enqueuePlacement(msg, _queue), msg);
 
     // Signal that a message has been enqueued
     _enqueued.signal();
@@ -141,7 +151,7 @@ bool ts::MessageQueue<MSG, MUTEX>::enqueue(const MessagePtr& msg, MilliSecond ti
     }
 
     // Enqueue the message
-    _queue.push_back(msg);
+    _queue.insert(enqueuePlacement(msg, _queue), msg);
 
     // Signal that a message has been enqueued
     _enqueued.signal();
@@ -185,20 +195,34 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
         }
     }
 
-    // Now, attempt to dequeue a message
-    if (_queue.empty()) {
-        // Queue empty, no message
+    // Now, attempt to dequeue a message.
+    const MessageLocator it(dequeuePlacement(_queue));
+    if (it == _queue.end()) {
+        // Queue empty or nothing to queue, no message
         return false;
     }
     else {
         // Queue not empty, remove a message
-        msg = _queue.front();
-        _queue.pop_front();
+        msg = *it;
+        _queue.erase(it);
 
         // Signal that a message has been dequeued
         _dequeued.signal();
         return true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Peek the next message from the queue, without dequeueing it.
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX>
+typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::peek() const
+{
+    Guard lock(_mutex);
+    const MessageLocator it(dequeuePlacement(_queue));
+    return it == _queue.end() ? MessagePtr() : *it;
 }
 
 
