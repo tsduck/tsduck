@@ -105,6 +105,9 @@ namespace ts {
             }
         };
 
+        // Report a value in log format.
+        void logValue(const UString& type, PID pid, uint64_t value, uint64_t since_start, uint64_t frequency);
+
         // Inaccessible operations
         PCRExtractPlugin() = delete;
         PCRExtractPlugin(const PCRExtractPlugin&) = delete;
@@ -314,9 +317,7 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, b
                              << (pcr - pc.first_pcr) << _separator
                              << std::endl;
                 }
-                if (_log_format) {
-                    tsp->info(u"PID: 0x%X (%d), PCR: 0x%011X, (0x%011X from start of PID)", {pid, pid, pcr, pcr - pc.first_pcr});
-                }
+                logValue(u"PCR", pid, pcr, pcr - pc.first_pcr, SYSTEM_CLOCK_FREQ);
             }
         }
 
@@ -339,9 +340,7 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, b
                     }
                     *_output << std::endl;
                 }
-                if (_log_format) {
-                    tsp->info(u"PID: 0x%X (%d), OPCR: 0x%011X, (0x%011X from start of PID)", {pid, pid, opcr, opcr - pc.first_opcr});
-                }
+                logValue(u"OPCR", pid, opcr, opcr - pc.first_opcr, SYSTEM_CLOCK_FREQ);
             }
         }
 
@@ -370,9 +369,7 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, b
                     }
                     *_output << std::endl;
                 }
-                if (_log_format) {
-                    tsp->info(u"PID: 0x%X (%d), PTS: 0x%09X, (0x%09X from start of PID)", {pid, pid, pts, pts - pc.first_pts});
-                }
+                logValue(u"PTS", pid, pts, pts - pc.first_pts, SYSTEM_CLOCK_SUBFREQ);
             }
         }
 
@@ -395,9 +392,7 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, b
                     }
                     *_output << std::endl;
                 }
-                if (_log_format) {
-                    tsp->info(u"PID: 0x%X (%d), DTS: 0x%09X, (0x%09X from start of PID)", {pid, pid, dts, dts - pc.first_dts});
-                }
+                logValue(u"DTS", pid, dts, dts - pc.first_dts, SYSTEM_CLOCK_SUBFREQ);
             }
         }
 
@@ -406,4 +401,22 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, b
 
     _packet_count++;
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Report a value in log format.
+//----------------------------------------------------------------------------
+
+void ts::PCRExtractPlugin::logValue(const UString& type, PID pid, uint64_t value, uint64_t since_start, uint64_t frequency)
+{
+    if (_log_format) {
+        // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
+        const size_t width = frequency == SYSTEM_CLOCK_FREQ ? 11 : 9;
+        tsp->info(u"PID: 0x%X (%d), %s: 0x%0*X, (0x%0*X, %'d ms from start of PID)",
+                  {pid, pid,
+                   type, width, value,
+                   width, since_start,
+                   (since_start * MilliSecPerSec) / frequency});
+    }
 }
