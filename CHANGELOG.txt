@@ -14,6 +14,9 @@ Version 3.11-697
 
 - SCTE 35 splice information tables can now be created from XML format.
 
+- Bug fix: In "tstables" and plugin "tables", with options --xml and
+  --max-tables, the XML structure was not properly closed.
+
 - Bug fix: In rare cases, time conversions could produce incorrect results when
   the time value was in the middle of the "non-existing hour", during the
   spring switch of daylight saving time. In practice, the problem occured on
