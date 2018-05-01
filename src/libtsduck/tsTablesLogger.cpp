@@ -139,7 +139,7 @@ ts::TablesLogger::~TablesLogger()
 
 void ts::TablesLogger::close()
 {
-    if (!completed()) {
+    if (!_exit) {
 
         // Pack sections in incomplete tables if required.
         if (_opt.pack_and_flush) {
@@ -304,7 +304,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     // Check max table count
     _table_count++;
     if (_opt.max_tables > 0 && _table_count >= _opt.max_tables) {
-        _exit = true;
+        _abort = true;
     }
 }
 
@@ -319,7 +319,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // With option --all-once, track duplicate PID/TID/TDIext/secnum/version.
     if (_opt.all_once) {
         // Pack PID/TID/TDIext/secnum/version into one single 64-bit integer.
-        const uint64_t id = 
+        const uint64_t id =
             (uint64_t(sect.sourcePID()) << 40) |
             (uint64_t(sect.tableId()) << 32) |
             (uint64_t(sect.tableIdExtension()) << 16) |
@@ -400,7 +400,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // Check max table count (actually count sections with --all-sections)
     _table_count++;
     if (_opt.max_tables > 0 && _table_count >= _opt.max_tables) {
-        _exit = true;
+        _abort = true;
     }
 }
 
