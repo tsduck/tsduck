@@ -76,6 +76,15 @@ namespace ts {
             return _status;
         }
 
+        //!
+        //! Get file size in bytes.
+        //! @return The file size in bytes.
+        //!
+        int64_t getSize() const
+        {
+            return _file_size;
+        }
+
     private:
         friend class PollFiles;
 
