@@ -44,9 +44,11 @@ ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessagePriorityQueue(size_t maxMe
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX, class COMPARE>
-typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessageLocator ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::enqueuePlacement(const MessagePtr& msg, const MessageList& list) const
+typename ts::MessageQueue<MSG, MUTEX>::MessageLocator
+ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::enqueuePlacement(const typename MessageQueue<MSG, MUTEX>::MessagePtr& msg,
+                                                                const typename MessageQueue<MSG, MUTEX>::MessageList& list) const
 {
-    typename MessageLocator loc(list.end());
+    typename MessageQueue<MSG, MUTEX>::MessageLocator loc(list.end());
 
     // Null pointers are stored at end (anywhere else would be probably fine).
     if (msg.isNull()) {
@@ -55,7 +57,7 @@ typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessageLocator ts::Messa
 
     // Loop until the previous element is lower that msg.
     while (loc != list.begin()) {
-        const typename MessageLocator cur(loc);
+        const typename MessageQueue<MSG, MUTEX>::MessageLocator cur(loc);
         --loc;
         if (!loc->isNull() && !COMPARE()(*msg, **loc)) {
             return cur;

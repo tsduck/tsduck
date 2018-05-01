@@ -68,7 +68,9 @@ namespace ts {
 
     protected:
         // Inherited methods.
-        virtual MessageLocator enqueuePlacement(const MessagePtr& msg, const MessageList& list) const override;
+        virtual typename MessageQueue<MSG, MUTEX>::MessageLocator
+        enqueuePlacement(const typename MessageQueue<MSG, MUTEX>::MessagePtr& msg,
+                         const typename MessageQueue<MSG, MUTEX>::MessageList& list) const override;
     };
 }
 
