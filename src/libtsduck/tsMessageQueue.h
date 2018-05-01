@@ -39,7 +39,6 @@
 #include "tsCondition.h"
 
 namespace ts {
-
     //!
     //! Template message queue for inter-thread communication.
     //!
@@ -78,7 +77,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        ~MessageQueue();
+        virtual ~MessageQueue();
 
         //!
         //! Get the maximum allowed messages in the queue.
@@ -136,20 +135,57 @@ namespace ts {
         bool dequeue(MessagePtr& msg, MilliSecond timeout = Infinite);
 
         //!
+        //! Peek the next message from the queue, without dequeueing it.
+        //!
+        //! If several threads simultaneously read from the queue, the returned
+        //! message may be deqeued in the meantime by another thread.
+        //!
+        //! @return A safe pointer to the first message in the queue or a null pointer
+        //! if the queue is empty.
+        //!
+        MessagePtr peek() const;
+
+        //!
         //! Clear the content of the queue.
         //!
         void clear();
+
+    protected:
+        //!
+        //! Queues are implemented as list of smart pointers to messages.
+        //!
+        typedef std::list<MessagePtr> MessageList;
+
+        //!
+        //! An iterator used by subclasses to locate placements in the list of messages.
+        //!
+        typedef typename MessageList::const_iterator MessageLocator;
+
+        //!
+        //! This virtual protected method performs placement in the message queue.
+        //! @param [in] msg The message to enqueue.
+        //! @param [in] list The content of the queue.
+        //! @return An iterator to the place where @a msg shall be placed.
+        //!
+        virtual MessageLocator enqueuePlacement(const MessagePtr& msg, const MessageList& list) const;
+
+        //!
+        //! This virtual protected method performs dequeue location in the message queue.
+        //! @param [in] list The content of the queue.
+        //! @return An iterator to the place from where the next message shall be removed.
+        //!
+        virtual MessageLocator dequeuePlacement(const MessageList& list) const;
 
     private:
         MessageQueue(const MessageQueue&) = delete;
         MessageQueue& operator=(const MessageQueue&) = delete;
 
         // Private members.
-        mutable Mutex         _mutex;        //!< Protect access to all private members
-        mutable Condition     _enqueued;     //!< Signaled when some message is inserted
-        mutable Condition     _dequeued;     //!< Signaled when some message is removed
-        size_t                _maxMessages;  //!< Max number of messages in the queue
-        std::list<MessagePtr> _queue;        //!< Actual message queue.
+        mutable Mutex     _mutex;        //!< Protect access to all private members
+        mutable Condition _enqueued;     //!< Signaled when some message is inserted
+        mutable Condition _dequeued;     //!< Signaled when some message is removed
+        size_t            _maxMessages;  //!< Max number of messages in the queue
+        MessageList       _queue;        //!< Actual message queue.
     };
 }
 

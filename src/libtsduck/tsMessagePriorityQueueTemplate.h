@@ -26,22 +26,42 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 706
+template <typename MSG, class MUTEX, class COMPARE>
+ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessagePriorityQueue(size_t maxMessages) :
+    MessageQueue<MSG, MUTEX>::MessageQueue(maxMessages)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Placement in the message queue (virtual protected methods).
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX, class COMPARE>
+typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessageLocator ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::enqueuePlacement(const MessagePtr& msg, const MessageList& list) const
+{
+    typename MessageLocator loc(list.end());
+
+    // Null pointers are stored at end (anywhere else would be probably fine).
+    if (msg.isNull()) {
+        return loc;
+    }
+
+    // Loop until the previous element is lower that msg.
+    while (loc != list.begin()) {
+        const typename MessageLocator cur(loc);
+        --loc;
+        if (!loc->isNull() && !COMPARE()(*msg, **loc)) {
+            return cur;
+        }
+    }
+
+    // Reached begin of list, all elements are greater than msg.
+    return loc;
+}

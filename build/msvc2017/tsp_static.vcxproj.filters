@@ -190,6 +190,15 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_zap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_mpe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_mpeinject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_spliceinject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\tstools\tspProcessorExecutor.h">

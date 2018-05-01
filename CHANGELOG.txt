@@ -2,7 +2,9 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.11-697
+Version 3.11-705
+
+- Added plugin "spliceinject" to inject SCTE 35 splice information in real time.
 
 - Added options --sync-layout, --dump-datagram, --dump-udp, --dump-max and
   --skip to plugin "mpe".

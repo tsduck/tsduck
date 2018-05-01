@@ -153,6 +153,8 @@ HEADERS += \
     ../../../src/libtsduck/tsMediaGuardDate.h \
     ../../../src/libtsduck/tsMemoryUtils.h \
     ../../../src/libtsduck/tsMessageDescriptor.h \
+    ../../../src/libtsduck/tsMessagePriorityQueue.h \
+    ../../../src/libtsduck/tsMessagePriorityQueueTemplate.h \
     ../../../src/libtsduck/tsMessageQueue.h \
     ../../../src/libtsduck/tsMessageQueueTemplate.h \
     ../../../src/libtsduck/tsMJD.h \

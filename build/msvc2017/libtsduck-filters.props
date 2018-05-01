@@ -463,6 +463,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueueTemplate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMessageQueue.h"
+#include "tsMessagePriorityQueue.h"
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
@@ -53,10 +54,12 @@ public:
 
     void testConstructor();
     void testQueue();
+    void testPriorityQueue();
 
     CPPUNIT_TEST_SUITE(MessageQueueTest);
     CPPUNIT_TEST(testConstructor);
     CPPUNIT_TEST(testQueue);
+    CPPUNIT_TEST(testPriorityQueue);
     CPPUNIT_TEST_SUITE_END();
 private:
     ts::NanoSecond  _nsPrecision;
@@ -193,4 +196,74 @@ void MessageQueueTest::testQueue()
     queue.forceEnqueue(new int(-1));
 
     utest::Out() << "MessageQueueTest: main thread: end of test" << std::endl;
+}
+
+void MessageQueueTest::testPriorityQueue()
+{
+    struct Message
+    {
+        int a;
+        int b;
+        Message(int a1 = 0, int b1 = 0) : a(a1), b(b1) {}
+        bool operator<(const Message& other) const { return a < other.a; }
+    };
+
+    ts::MessagePriorityQueue<Message> queue;
+    ts::MessagePriorityQueue<Message>::MessagePtr msg;
+
+    CPPUNIT_ASSERT(queue.enqueue(new Message(1, 1), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(5, 2), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(2, 3), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(6, 4), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(3, 5), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(2, 6), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(0, 7), 0));
+    CPPUNIT_ASSERT(queue.enqueue(new Message(0, 8), 0));
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(0, msg->a);
+    CPPUNIT_ASSERT_EQUAL(7, msg->b);
+
+    msg = queue.peek();
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(0, msg->a);
+    CPPUNIT_ASSERT_EQUAL(8, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(0, msg->a);
+    CPPUNIT_ASSERT_EQUAL(8, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(1, msg->a);
+    CPPUNIT_ASSERT_EQUAL(1, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(2, msg->a);
+    CPPUNIT_ASSERT_EQUAL(3, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(2, msg->a);
+    CPPUNIT_ASSERT_EQUAL(6, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(3, msg->a);
+    CPPUNIT_ASSERT_EQUAL(5, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(5, msg->a);
+    CPPUNIT_ASSERT_EQUAL(2, msg->b);
+
+    CPPUNIT_ASSERT(queue.dequeue(msg, 0));
+    CPPUNIT_ASSERT(!msg.isNull());
+    CPPUNIT_ASSERT_EQUAL(6, msg->a);
+    CPPUNIT_ASSERT_EQUAL(4, msg->b);
+
+    CPPUNIT_ASSERT(!queue.dequeue(msg, 0));
 }

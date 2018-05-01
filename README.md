@@ -8,7 +8,7 @@ TSDuck is used in digital television systems for test, monitoring, integration, 
 
 In practice, TSDuck is used for:
 
-- Transport stream acquisition or transmodulation.
+- Transport stream acquisition or transmodulation, including DVB, ASI and IP multicast.
 - Analyze transport streams, PSI/SI signalization, bitrates, timestamps.
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - On-the-fly transformation or injection of content and signalization.
@@ -16,8 +16,10 @@ In practice, TSDuck is used for:
 - Work on live transport streams, DVB-S/C/T, ASI, IP-TV or offline transport stream files.
 - Use specialized hardware such as cheap DVB tuners (USB, PCI) or professional Dektec devices.
 - Re-route transport streams to other applications.
-- Emulate a CAS head-end using DVB SimulCrypt interfaces to ECMG or EMMG.
-- Extract specific encapsulated data (Teletext, MPE, T2-MI, SCTE 35 cues).
+- Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
+- Analyze and inject SCTE 35 splice information.
+- Extract specific encapsulated data (Teletext, T2-MI).
+- Emulate a CAS head-end using DVB SimulCrypt interfaces to and from ECMG or EMMG.
 - And more...
 
 TSDuck is developed in C++ in a modular architecture. It is easy to extend
