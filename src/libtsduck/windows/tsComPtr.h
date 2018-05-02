@@ -60,6 +60,8 @@ namespace ts {
     //! - refcount : Current reference count on the COM object after the operation.
     //! - ptraddr  : Address of the ComPtr object.
     //!
+    //! @ingroup system
+    //!
     template <class COMCLASS>
     class ComPtr
     {

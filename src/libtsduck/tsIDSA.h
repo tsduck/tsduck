@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! ATIS-0800006 AES-based TS packet encryption (ATIS-IDSA).
+    //! @ingroup crypto
     //!
     class TSDUCKDLL IDSA : public DVS042<AES>
     {

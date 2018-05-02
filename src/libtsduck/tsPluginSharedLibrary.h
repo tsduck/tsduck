@@ -42,6 +42,7 @@
 namespace ts {
     //!
     //! Representation of a TSP plugin shared library.
+    //! @ingroup plugin
     //!
     class TSDUCKDLL PluginSharedLibrary: public ApplicationSharedLibrary
     {

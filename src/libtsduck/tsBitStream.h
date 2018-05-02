@@ -39,6 +39,7 @@ namespace ts {
 
     //!
     //! Class to analyze a bit-stream in memory.
+    //! @ingroup core
     //!
     //! An instance of this class is used to analyze a continuous
     //! bit stream in memory, ignoring byte boundaries.

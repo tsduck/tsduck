@@ -1,0 +1,36 @@
+/**
+
+@defgroup core Core classes
+C++ language core features and design patterns.
+
+@defgroup system Operating system
+Portable operating system layer 
+
+@defgroup net Networking
+Networking features.
+
+@defgroup plugin TSDuck plugins
+TSDuck plugin development.
+
+@defgroup crypto Cryptography
+Cryptographic algorithms.
+
+@defgroup tlv TLV
+Representation of Tag/Length/Value messages.
+
+@defgroup xml XML
+Representation of XML documents.
+
+@defgroup json JSON
+Representation of JSON documents.
+
+@defgroup mpeg MPEG-DVB core
+MPEG-DVB core features.
+
+@defgroup psi Signalization
+Most common tables and descriptors used in MPEG-DVB systems.
+
+@defgroup hardware Hardware support
+Specific hardware support (Dektec, tuners, smartcards)
+
+*/

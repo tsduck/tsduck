@@ -44,6 +44,8 @@ namespace ts {
     //! TSP callback for plugins.
     //-------------------------------------------------------------------------
     //!
+    //! @ingroup plugin
+    //!
     //! Each plugin has an associated TSP object to communicate with the
     //! Transport Stream Processor main executable.
     //!
@@ -154,6 +156,8 @@ namespace ts {
     //! Base class of all @c tsp plugins.
     //-------------------------------------------------------------------------
     //!
+    //! @ingroup plugin
+    //!
     //! Plugin is a subclass of Args; each constructor is expected to define
     //! the syntax, help and option definitions for the command line.
     //!
@@ -247,6 +251,8 @@ namespace ts {
     //! Input @c tsp plugin interface.
     //-------------------------------------------------------------------------
     //!
+    //! @ingroup plugin
+    //!
     //! All shared libraries providing input capability shall return
     //! an object implementing this abstract interface.
     //!
@@ -308,6 +314,8 @@ namespace ts {
     //! Output @c tsp plugin interface.
     //-------------------------------------------------------------------------
     //!
+    //! @ingroup plugin
+    //!
     //! All shared libraries providing output capability shall return
     //! an object implementing this abstract interface.
     //!
@@ -366,6 +374,8 @@ namespace ts {
     //-------------------------------------------------------------------------
     //! Packet processing @c tsp plugin interface.
     //-------------------------------------------------------------------------
+    //!
+    //! @ingroup plugin
     //!
     //! All shared libraries providing packet processing capability shall return
     //! an object implementing this abstract interface.

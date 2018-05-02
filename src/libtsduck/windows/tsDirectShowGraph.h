@@ -38,7 +38,8 @@
 
 namespace ts {
     //!
-    //! An encapsulation of a DirectShow graph.
+    //! An encapsulation of a DirectShow graph (Windows-specific).
+    //! @ingroup system
     //!
     class TSDUCKDLL DirectShowGraph
     {

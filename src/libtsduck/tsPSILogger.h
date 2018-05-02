@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! This class logs sections and tables.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL PSILogger :
         private TableHandlerInterface,

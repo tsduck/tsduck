@@ -40,6 +40,7 @@ namespace ts {
     //!
     //! System-provided PRNG (pseudo-random numbers generator).
     //! Usually not the best PRNG on earth, but fine for most usages.
+    //! @ingroup crypto
     //!
     class TSDUCKDLL SystemRandomGenerator: public RandomGenerator
     {

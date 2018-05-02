@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! Video attributes for Advanced Video Coding.
+    //! @ingroup mpeg
     //!
     //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
     //!

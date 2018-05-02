@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of an application shared library.
+    //! @ingroup plugin
     //!
     class TSDUCKDLL ApplicationSharedLibrary: public SharedLibrary
     {

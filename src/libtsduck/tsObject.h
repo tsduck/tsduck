@@ -46,6 +46,7 @@ namespace ts {
 
     //!
     //! Abstract base class for objects which can be stored in a repository.
+    //! @ingroup core
     //!
     //! This type of object is typically used to communicate between independent
     //! modules or plugins.

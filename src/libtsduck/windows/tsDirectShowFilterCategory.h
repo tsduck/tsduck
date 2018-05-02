@@ -38,7 +38,8 @@
 
 namespace ts {
     //!
-    //! A class which instanciates all DirectShow devices in a given category.
+    //! A class which instanciates all DirectShow devices in a given category (Windows-specific).
+    //! @ingroup system
     //!
     class TSDUCKDLL DirectShowFilterCategory
     {

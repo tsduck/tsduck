@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Dektec input plugin for @c tsp.
+    //! @ingroup plugin
     //!
     class TSDUCKDLL DektecInputPlugin: public InputPlugin
     {

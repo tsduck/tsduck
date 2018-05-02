@@ -43,7 +43,8 @@ namespace ts {
     //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 192, 8.4.5.16
+    //! @see ETSI EN 301 192, 8.4.5.16.
+    //! @ingroup psi
     //!
     class TSDUCKDLL ISPAccessModeDescriptor : public AbstractDescriptor
     {

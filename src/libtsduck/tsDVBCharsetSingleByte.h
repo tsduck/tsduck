@@ -45,7 +45,8 @@ namespace ts {
     //! - Only codes 0xA0-0xFF are specific, some of them being unused depending on the character set.
     //! - The code 0x8A is interpreted as a new line.
     //!
-    //! @see ETSI EN 300 468, Annex A
+    //! @see ETSI EN 300 468, Annex A.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL DVBCharsetSingleByte: public DVBCharset
     {

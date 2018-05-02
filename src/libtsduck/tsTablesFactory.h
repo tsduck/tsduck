@@ -48,6 +48,7 @@ namespace ts {
     //! A factory class which creates tables and descriptors based on id or name.
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TablesFactory
     {

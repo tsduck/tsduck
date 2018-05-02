@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Base class of all cipher chaining modes.
+    //! @ingroup crypto
     //!
     //! Each instance uses a specific block cipher.
     //! The combination of a block cipher and a chaining mode also implements
@@ -119,6 +120,7 @@ namespace ts {
 
     //!
     //! Base class of all cipher chaining modes, template version.
+    //! @ingroup crypto
     //!
     //! Each instance uses a specific block cipher.
     //! The combination of a block cipher and a chaining mode also implements

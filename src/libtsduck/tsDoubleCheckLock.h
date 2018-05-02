@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! The class DoubleCheckLock implements the <i>double check locking</i> design pattern.
+    //! @ingroup core
     //!
     //! The <i>double check locking</i> design pattern is used to protect shared data with
     //! the following characteristics:

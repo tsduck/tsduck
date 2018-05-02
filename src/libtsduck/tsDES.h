@@ -37,7 +37,8 @@
 
 namespace ts {
     //!
-    //! DES block cipher
+    //! DES block cipher.
+    //! @ingroup crypto
     //!
     class TSDUCKDLL DES: public BlockCipher
     {

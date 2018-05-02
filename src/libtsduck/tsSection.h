@@ -45,6 +45,7 @@
 namespace ts {
     //!
     //! Representation of MPEG PSI/SI sections.
+    //! @ingroup mpeg
     //!
     //! What to do with the CRC32 when building a section depends on the
     //! parameter named @a crc_op:

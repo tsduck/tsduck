@@ -39,9 +39,10 @@
 
 namespace ts {
     //!
-    //!  AVC VUI (Video Usability Information) parameters.
+    //! AVC VUI (Video Usability Information) parameters.
+    //! @ingroup mpeg
     //!
-    //!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
     //!
     class TSDUCKDLL AVCVUIParameters: public AbstractAVCStructure
     {

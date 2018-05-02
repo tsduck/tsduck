@@ -39,7 +39,8 @@
 
 namespace ts {
     //!
-    //! Representation of an Event Information Table (EIT)
+    //! Representation of an Event Information Table (EIT).
+    //! @ingroup psi
     //!
     class TSDUCKDLL EIT : public AbstractLongTable
     {

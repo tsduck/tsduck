@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! SHA-1 hash.
+    //! @ingroup crypto
     //!
     class TSDUCKDLL SHA1: public Hash
     {

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! DVS 042 cipher block chaining mode.
+    //! @ingroup crypto
     //!
     //! DVS 042 has been renamed as "ANSI/SCTE 52 2003". It used to be available
     //! at http://www.scte.org/documents/pdf/ANSISCTE522003DVS042.pdf

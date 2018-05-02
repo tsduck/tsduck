@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! Cyclic packetization of MPEG sections into Transport Stream packets.
+    //! @ingroup mpeg
     //!
     //! A CyclingPacketizer contains various sections to be packetized on one PID.
     //!

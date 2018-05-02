@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A basic representation of a MAC address.
+    //! @ingroup net
     //!
     class TSDUCKDLL MACAddress
     {

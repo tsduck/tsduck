@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! DVB CSA-2 (Digital Video Broadcasting Common Scrambling Algorithm).
+    //! @ingroup crypto
     //!
     class TSDUCKDLL DVBCSA2 : public CipherChaining
     {

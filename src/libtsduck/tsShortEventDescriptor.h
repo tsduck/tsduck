@@ -40,6 +40,7 @@ namespace ts {
     //!
     //! Representation of an short_event_descriptor.
     //! @see ETSI 300 468, 6.2.37.
+    //! @ingroup psi
     //!
     class TSDUCKDLL ShortEventDescriptor : public AbstractDescriptor
     {

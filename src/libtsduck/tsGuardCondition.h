@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! Automatic guard class for synchronization condition (ts::Condition).
+    //! @ingroup core
     //!
     //! This class implements the @e guard design pattern for conditions.
     //! See ts::Guard for other usages of the guard design pattern.

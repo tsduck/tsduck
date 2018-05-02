@@ -45,6 +45,7 @@ namespace ts {
     //! Definition of a generic block of bytes.
     //!
     //! This is a subclass of @c std::vector on @c uint8_t.
+    //! @ingroup core
     //!
     class TSDUCKDLL ByteBlock : public std::vector<uint8_t>
     {

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! An encapsulation of Report with a message prefix.
+    //! @ingroup core
     //!
     //! This class encapsulates another instance of Report and
     //! prepend all messages with a prefix.

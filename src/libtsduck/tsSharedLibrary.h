@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Shared library handling (.so on UNIX, DLL on Windows).
+    //! @ingroup system
     //!
     class TSDUCKDLL SharedLibrary
     {

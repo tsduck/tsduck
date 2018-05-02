@@ -43,6 +43,7 @@ namespace ts {
         //! Implementation of "Joint Termination" in the Transport stream processor.
         //!
         //! This is a subclass of ts::TSP and a superclass of all plugin executors.
+        //! @ingroup plugin
         //!
         class JointTermination: public TSP
         {

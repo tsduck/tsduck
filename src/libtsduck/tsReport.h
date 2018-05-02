@@ -64,6 +64,7 @@ namespace ts {
 
     //!
     //! Abstract interface for event reporting and monitoring.
+    //! @ingroup core
     //!
     class TSDUCKDLL Report
     {

@@ -47,6 +47,8 @@ namespace ts {
     //! This base class declares a common interface to parse, display and validate the
     //! data.
     //!
+    //! @ingroup mpeg
+    //!
     class TSDUCKDLL AbstractAVCData
     {
     public:

@@ -46,6 +46,7 @@
 namespace ts {
     //!
     //! Improved system-provided PRNG (pseudo-random numbers generator).
+    //! @ingroup crypto
     //!
     //! Use SystemRandomGenerator as base and add AES-based post-processing.
     //! Implemented as a thread-safe singleton.

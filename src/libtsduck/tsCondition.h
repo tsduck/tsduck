@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! Implementation of the @e synchronization @e condition design pattern.
+    //! @ingroup core
     //!
     //! A @e condition is a general synchronization mechanism which
     //! is associated with a @e mutex.

@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A singleton implementing Report on std::cerr without synchronization.
+    //! @ingroup core
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!

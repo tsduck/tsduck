@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Electronic Code Book (ECB) mode.
+    //! @ingroup crypto
     //!
     //! No padding is performed. The plain text and cipher text sizes must be
     //! multiples of the block size of the underlying block cipher.

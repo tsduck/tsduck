@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Basic monotonic clock & timer.
+    //! @ingroup system
     //!
     class TSDUCKDLL Monotonic
     {

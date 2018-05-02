@@ -43,6 +43,7 @@ namespace ts {
 
     //!
     //! MPE (Multi-Protocol Encapsulation) demux handler interface.
+    //! @ingroup mpeg
     //!
     //! This abstract interface must be implemented by classes which need to be
     //! notified of PID's and packets using a MPEDemux.

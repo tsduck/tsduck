@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Abstract interface for handling report messages.
+    //! @ingroup core
     //!
     class TSDUCKDLL ReportHandler
     {

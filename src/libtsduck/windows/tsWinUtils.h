@@ -28,8 +28,8 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Utilities for Windows and Common Object Model (COM).
-//!  Windows-specific module.
+//!  @ingroup system
+//!  Utilities for Windows and Common Object Model (COM, Windows-specific).
 //!
 //-----------------------------------------------------------------------------
 

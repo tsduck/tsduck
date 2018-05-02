@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! This class maps PID's with CA system ids.
+    //! @ingroup mpeg
     //!
     //! All packets are passed through this object. It tracks the location of all
     //! EMM and ECM PID's and records the corresponding CAS attributes.

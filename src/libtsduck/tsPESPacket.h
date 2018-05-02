@@ -52,6 +52,7 @@ namespace ts {
 
     //!
     //! Representation of MPEG PES packets.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL PESPacket
     {

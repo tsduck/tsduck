@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! This class rebuilds MPEG tables and sections from TS packets.
+    //! @ingroup mpeg
     //!
     //! Long sections are validated with CRC. Corrupted sections are not reported.
     //!

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! AES block cipher
+    //! @ingroup crypto
     //!
     class TSDUCKDLL AES: public BlockCipher
     {

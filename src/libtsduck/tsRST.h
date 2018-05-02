@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Running Status Table (RST).
+    //! @ingroup psi
     //!
     class TSDUCKDLL RST : public AbstractTable
     {

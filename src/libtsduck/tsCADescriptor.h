@@ -47,6 +47,7 @@ namespace ts {
     //! Representation of a generic CA_descriptor.
     //! Specialized classes may exist, depending on the CA_system_id.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.16.
+    //! @ingroup psi
     //!
     class TSDUCKDLL CADescriptor : public AbstractDescriptor
     {

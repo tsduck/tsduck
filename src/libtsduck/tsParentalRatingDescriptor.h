@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of an parental_rating_descriptor
     //! @see ETSI 300 468, 6.2.28.
+    //! @ingroup psi
     //!
     class TSDUCKDLL ParentalRatingDescriptor : public AbstractDescriptor
     {

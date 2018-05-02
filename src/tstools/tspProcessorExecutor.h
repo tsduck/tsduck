@@ -39,6 +39,7 @@ namespace ts {
     namespace tsp {
         //!
         //! Execution context of a tsp packet processor plugin.
+        //! @ingroup plugin
         //!
         class ProcessorExecutor: public PluginExecutor
         {

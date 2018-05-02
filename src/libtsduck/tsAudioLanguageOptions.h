@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Options to update the language of an audio stream in a PMT.
+    //! @ingroup mpeg
     //!
     //! This class is a helper for commands and tools which manipulate
     //! languages in a PMT.

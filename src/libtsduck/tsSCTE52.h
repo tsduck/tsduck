@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! ANSI/SCTE 52 2003 DES-based TS packet encryption.
+    //! @ingroup crypto
     //!
     //! DVS 042 has been renamed as "ANSI/SCTE 52 2003". The next iteration of
     //! this standard is "ANSI/SCTE 52 2008". The only difference between the
@@ -65,6 +66,7 @@ namespace ts {
 
     //!
     //! ANSI/SCTE 52 2008 DES-based TS packet encryption.
+    //! @ingroup crypto
     //!
     //! DVS 042 has been renamed as "ANSI/SCTE 52 2003". The next iteration of
     //! this standard is "ANSI/SCTE 52 2008". The only difference between the

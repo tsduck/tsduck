@@ -40,6 +40,7 @@ namespace ts {
 
     //!
     //! Abstract base class for MPEG audio and video attributes
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL AbstractAudioVideoAttributes
     {

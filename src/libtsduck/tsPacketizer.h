@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Packetization of MPEG sections into Transport Stream packets.
+    //! @ingroup mpeg
     //!
     //! Sections are provided by an object implementing SectionProviderInterface.
     //!

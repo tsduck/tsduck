@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a adaptation_field_data_descriptor.
     //! @see ETSI 300 468, 6.2.1.
+    //! @ingroup psi
     //!
     class TSDUCKDLL AdaptationFieldDataDescriptor : public AbstractDescriptor
     {

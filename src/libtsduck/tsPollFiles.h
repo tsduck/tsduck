@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A class to poll files for modifications.
+    //! @ingroup system
     //!
     class TSDUCKDLL PollFiles
     {

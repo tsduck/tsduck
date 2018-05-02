@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Interface for classes listening for file modification.
+    //! @ingroup system
     //!
     class TSDUCKDLL PollFilesListener
     {

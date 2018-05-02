@@ -43,6 +43,7 @@
 namespace ts {
     //!
     //! Discover and describe a DVB service.
+    //! @ingroup mpeg
     //!
     //! This subclass of Service automatically detects the properties of the
     //! service based on TS packets from the transport stream.

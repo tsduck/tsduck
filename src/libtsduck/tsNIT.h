@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Representation of a Network Information Table (NIT)
+    //! @ingroup psi
     //!
     class TSDUCKDLL NIT : public AbstractTransportListTable
     {

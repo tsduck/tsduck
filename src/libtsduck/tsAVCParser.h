@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Parser for Advanced Video Coding data.
+    //! @ingroup mpeg
     //!
     //! Advanced Video Coding is AVC, ISO/IEC 14496-10, ITU H.264.
     //!
