@@ -118,7 +118,6 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            TS_UNUSED TSP* const      _tsp;
 
             // Inaccessible operations.
             SpliceCommand() = delete;
@@ -218,6 +217,12 @@ namespace ts {
         Packetizer       _packetizer;       // Packetizer for Splice Information sections.
         uint64_t         _last_pts;         // Last PTS value from a clock reference.
 
+        // Specific support for deterministic start (non-regression testing).
+        bool          _wait_first_batch;    // Option --wait-first-batch (wfb).
+        volatile bool _wfb_received;        // First batch was received.
+        Mutex         _wfb_mutex;           // Mutex waiting for _wfb_received.
+        Condition     _wfb_condition;       // Condition waiting for _wfb_received.
+
         // Implementation of PMTHandlerInterface.
         virtual void handlePMT(const PMT&) override;
 
@@ -268,7 +273,11 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     _udp_listener(this),
     _queue(),
     _packetizer(PID_NULL, this),
-    _last_pts(INVALID_PTS)
+    _last_pts(INVALID_PTS),
+    _wait_first_batch(false),
+    _wfb_received(false),
+    _wfb_mutex(),
+    _wfb_condition()
 {
     option(u"buffer-size",      0,  UNSIGNED);
     option(u"delete-files",    'd');
@@ -286,6 +295,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     option(u"service",         's', STRING);
     option(u"start-delay",      0,  UNSIGNED);
     option(u"udp",             'u', STRING);
+    option(u"wait-first-batch", 0);
 
     setHelp(u"The splice commands are injected as splice information sections, as defined by\n"
             u"the SCTE 35 standard. All forms of splice information sections can be injected.\n"
@@ -398,6 +408,13 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
             u"      binary or XML splice information tables. When present, the optional\n"
             u"      address shall specify a local IP address or host name (by default, the\n"
             u"      plugin accepts connections on any local IP interface).\n");
+
+    // The undocumented option --wait-first-batch is typically designed to support
+    // automated non-regression testing. When specified, the start of the plugin
+    // is suspended until the first batch of splice commands is loaded and queued.
+    // This is the guarantee for a deterministic behaviour and determinism is
+    // required for automated non-regression testing. Without this option, the
+    // input files or messages are loaded and queued asynchronously.
 }
 
 
@@ -424,6 +441,7 @@ bool ts::SpliceInjectPlugin::start()
     _poll_interval = intValue<MilliSecond>(u"poll-interval", DEFAULT_POLL_INTERVAL);
     _min_stable_delay = intValue<MilliSecond>(u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
     _queue_size = intValue<size_t>(u"queue-size", DEFAULT_SECTION_QUEUE_SIZE);
+    _wait_first_batch = present(u"wait-first-batch");
 
     // We need either a service or specified PID's.
     if (!_service.hasName() && !_service.hasId() && (_inject_pid == PID_NULL || _pts_pid == PID_NULL)) {
@@ -444,6 +462,9 @@ bool ts::SpliceInjectPlugin::start()
 
     // Tune the section queue.
     _queue.setMaxMessages(_queue_size);
+
+    // Clear the "first message received" flag.
+    _wfb_received = false;
 
     // Initialize the UDP receiver.
     if (_use_udp) {
@@ -467,6 +488,17 @@ bool ts::SpliceInjectPlugin::start()
 
     _last_pts = INVALID_PTS;
     _abort = false;
+
+    // If --wait-first-batch was specified, suspend until a first batch of commands is queued.
+    if (_wait_first_batch) {
+        tsp->verbose(u"waiting for first batch of commands");
+        GuardCondition lock(_wfb_mutex, _wfb_condition);
+        while (!_wfb_received) {
+            lock.waitCondition();
+        }
+        tsp->verbose(u"received first batch of commands");
+    }
+
     return true;
 }
 
@@ -686,7 +718,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                 size--;
             }
             // Does this look like XML now ?
-            if (addr[0] == '<') {
+            if (size > 0 && addr[0] == '<') {
                 type = SectionFile::XML;
             }
         }
@@ -731,6 +763,13 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
             }
         }
     }
+
+    // If --wait-first-batch was specified, signal when the first batch of commands is queued.
+    if (_wait_first_batch && !_wfb_received) {
+        GuardCondition lock(_wfb_mutex, _wfb_condition);
+        _wfb_received = true;
+        lock.signal();
+    }
 }
 
 
@@ -745,8 +784,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
     last_pts(INVALID_PTS),   // no injection time limit
     interval((plugin->_inject_interval * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec), // in PTS units
     count(1),
-    _plugin(plugin),
-    _tsp(plugin->tsp)
+    _plugin(plugin)
 {
     // Analyze the section.
     if (section.isNull() || !section->isValid()) {
