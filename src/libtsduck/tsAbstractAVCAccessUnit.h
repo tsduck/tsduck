@@ -43,6 +43,7 @@ namespace ts {
     //! Base class for AVC access units, aka NALunits.
     //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
     //! @see ISO/IEC 14496-10 section 7.3.1
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL AbstractAVCAccessUnit: public AbstractAVCData
     {

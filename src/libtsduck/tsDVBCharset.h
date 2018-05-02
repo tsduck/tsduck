@@ -39,7 +39,8 @@
 namespace ts {
     //!
     //! Definition of a character set for DVB encoding.
-    //! @see ETSI EN 300 468, Annex A
+    //! @see ETSI EN 300 468, Annex A.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL DVBCharset
     {

@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! Representation of a file name and an associated repetition rate.
+    //! @ingroup mpeg
     //!
     struct TSDUCKDLL FileNameRate
     {

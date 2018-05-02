@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a ancillary_data_descriptor.
     //! @see ETSI 300 468, 6.2.2.
+    //! @ingroup psi
     //!
     class TSDUCKDLL AncillaryDataDescriptor : public AbstractDescriptor
     {

@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! A repository of TSP plugins, either statically or dynamically linked.
+    //! @ingroup plugin
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!

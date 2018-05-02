@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Implementation of memory buffer locked in physical memory.
     //! @tparam T Type of the buffer element.
+    //! @ingroup system
     //!
     template <typename T = uint8_t>
     class ResidentBuffer

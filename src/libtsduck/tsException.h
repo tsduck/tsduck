@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Base class for all exceptions in TSDuck.
+    //! @ingroup core
     //!
     class TSDUCKDLL Exception : public std::exception
     {
@@ -112,18 +113,22 @@ namespace ts {
 namespace ts {
     //!
     //! Exception for generic invalid value error.
+    //! @ingroup core
     //!
     TS_DECLARE_EXCEPTION(InvalidValue);
     //!
     //! Uninitialized variable error.
+    //! @ingroup core
     //!
     TS_DECLARE_EXCEPTION(UninitializedVariable);
     //!
     //! Unimplemented method error.
+    //! @ingroup core
     //!
     TS_DECLARE_EXCEPTION(UnimplementedMethod);
     //!
     //! Implementation error.
+    //! @ingroup core
     //!
     TS_DECLARE_EXCEPTION(ImplementationError);
 }

@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Abstract base class for PRNG's (pseudo-random numbers generators).
+    //! @ingroup crypto
     //!
     class TSDUCKDLL RandomGenerator
     {

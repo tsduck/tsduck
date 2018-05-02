@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Base class for representation of a CAS date.
     //! This general format is used by several CAS vendors.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL AbstractCASDate
     {

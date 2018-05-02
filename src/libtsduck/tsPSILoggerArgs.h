@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Command line arguments for the class PSILogger.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL PSILoggerArgs
     {

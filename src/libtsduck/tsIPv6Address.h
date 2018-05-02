@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! A basic representation of an IPv6 address.
+    //! @ingroup net
     //!
     //! An IPv6 address is made of 128 bits (16 bytes). It can be manipulated as
     //! - 16 bytes

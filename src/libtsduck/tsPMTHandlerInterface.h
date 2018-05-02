@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! General-purpose PMT handler interface.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL PMTHandlerInterface
     {

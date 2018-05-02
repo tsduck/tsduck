@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Abstract interface of block ciphers.
+    //! @ingroup crypto
     //!
     class TSDUCKDLL BlockCipher
     {

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Abstract interface of hash functions.
+    //! @ingroup crypto
     //!
     class TSDUCKDLL Hash
     {

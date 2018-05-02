@@ -47,7 +47,8 @@ namespace ts {
     //! - The datagran and address scrambling is not supported.
     //! - Each datagram shall fit into one section.
     //!
-    //! @see ETSI EN 301 192, section 7.1
+    //! @see ETSI EN 301 192, section 7.1.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL MPEPacket
     {

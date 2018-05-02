@@ -51,6 +51,7 @@ namespace ts {
     //! words in ECM, meaning CW_per_msg = 1 or 2 and lead_CW = 0 or 1.
     //!
     //! @see DVB standard ETSI TS 103.197 V1.4.1 for ECMG <=> SCS protocol.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL ECMGClient: private Thread
     {

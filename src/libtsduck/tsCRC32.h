@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Cyclic Redundancy Check as used in MPEG sections.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL CRC32
     {

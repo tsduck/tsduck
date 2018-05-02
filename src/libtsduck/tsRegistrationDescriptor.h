@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a registration_descriptor
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.8.
+    //! @ingroup psi
     //!
     class TSDUCKDLL RegistrationDescriptor : public AbstractDescriptor
     {

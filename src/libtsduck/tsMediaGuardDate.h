@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Representation of a MediaGuard date.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL MediaGuardDate: public AbstractCASDate
     {

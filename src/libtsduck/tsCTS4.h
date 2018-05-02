@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //!  Cipher text Stealing (CTS) mode, alternative 4.
+    //!  @ingroup crypto
     //!
     //!  Several incompatible designs of CTS exist. This one implements the
     //!  weird STMicroelectronics STi71xx ECB-CTS implementation.

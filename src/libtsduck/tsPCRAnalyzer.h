@@ -38,7 +38,8 @@
 
 namespace ts {
     //!
-    //! PCR statistics analysis
+    //! PCR statistics analysis.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL PCRAnalyzer
     {

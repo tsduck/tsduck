@@ -114,6 +114,7 @@ namespace ts {
         //!
         //! @see http://json.org/
         //! @see https://tools.ietf.org/html/rfc8259
+        //! @ingroup json
         //!
         class TSDUCKDLL Value
         {
@@ -266,6 +267,7 @@ namespace ts {
 
         //!
         //! Implementation of a JSON null literal.
+        //! @ingroup json
         //!
         class TSDUCKDLL Null : public Value
         {
@@ -278,6 +280,7 @@ namespace ts {
 
         //!
         //! Implementation of a JSON true literal.
+        //! @ingroup json
         //!
         class TSDUCKDLL True : public Value
         {
@@ -293,6 +296,7 @@ namespace ts {
 
         //!
         //! Implementation of a JSON false literal.
+        //! @ingroup json
         //!
         class TSDUCKDLL False : public Value
         {
@@ -310,6 +314,7 @@ namespace ts {
         //! Implementation of a JSON number.
         //! Currently, floating-point numbers are not implemented.
         //! All JSON numbers are integers or null.
+        //! @ingroup json
         //!
         class TSDUCKDLL Number : public Value
         {
@@ -335,6 +340,7 @@ namespace ts {
 
         //!
         //! Implementation of a JSON string.
+        //! @ingroup json
         //!
         class TSDUCKDLL String : public Value
         {
@@ -361,6 +367,7 @@ namespace ts {
 
         //!
         //! Implementation of a JSON object.
+        //! @ingroup json
         //!
         class TSDUCKDLL Object: public Value
         {
@@ -388,6 +395,7 @@ namespace ts {
 
         //!
         //! Implementation of a JSON array.
+        //! @ingroup json
         //!
         class TSDUCKDLL Array: public Value
         {

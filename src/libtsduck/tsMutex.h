@@ -40,6 +40,7 @@ namespace ts {
 
     //!
     //! A mutex implementation which is compatible with the ts::Thread class.
+    //! @ingroup system
     //!
     //! The concrete class ts::Mutex is a mutex implementation which
     //! is compatible with the ts::Thread class. This means that concurrent

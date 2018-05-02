@@ -39,6 +39,7 @@ namespace ts {
     namespace tsp {
         //!
         //! Execution context of a tsp output plugin.
+        //! @ingroup plugin
         //!
         class OutputExecutor: public PluginExecutor
         {

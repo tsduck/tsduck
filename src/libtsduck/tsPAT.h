@@ -38,7 +38,8 @@
 
 namespace ts {
     //!
-    //! Representation of a Program Association Table (PAT)
+    //! Representation of a Program Association Table (PAT).
+    //! @ingroup psi
     //!
     class TSDUCKDLL PAT : public AbstractLongTable
     {

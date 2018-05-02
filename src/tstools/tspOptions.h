@@ -42,6 +42,7 @@ namespace ts {
     namespace tsp {
         //!
         //! Transport stream processor command-line options
+        //! @ingroup plugin
         //!
         class Options: public Args
         {

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Representation of a SafeAccess date.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL SafeAccessDate: public AbstractCASDate
     {

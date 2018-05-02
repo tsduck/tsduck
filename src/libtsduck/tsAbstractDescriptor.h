@@ -46,6 +46,7 @@ namespace ts {
 
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
+    //! @ingroup psi
     //!
     class TSDUCKDLL AbstractDescriptor: public AbstractSignalization
     {

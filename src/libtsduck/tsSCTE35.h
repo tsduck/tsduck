@@ -71,6 +71,7 @@ namespace ts {
     //!
     //! Representation of an SCTE 35 splice_time() structure.
     //! This is a 33-bit PTS value which can be set or unset.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL SpliceTime : public Variable<uint64_t>
     {
@@ -106,6 +107,7 @@ namespace ts {
 
     //!
     //! Representation of an SCTE 35 private_command() structure.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL SplicePrivateCommand
     {

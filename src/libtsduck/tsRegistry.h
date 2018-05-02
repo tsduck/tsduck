@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A class to encapsulate the access to the Windows registry.
+    //! @ingroup system
     //!
     //! Vocabulary :
     //!  - Key        : Node of the registry (kind of "directory").

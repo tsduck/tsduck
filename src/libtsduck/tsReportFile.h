@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! A subclass of ts::Report which outputs messages in a text file.
+    //! @ingroup core
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!

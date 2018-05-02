@@ -36,9 +36,9 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
     //!
     //! An interface to be implemented by a class to handle user Ctrl-C interrupt.
+    //! @ingroup core
     //!
     class TSDUCKDLL InterruptHandler
     {

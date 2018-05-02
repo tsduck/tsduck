@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! MD-5 hash.
+    //! @ingroup crypto
     //!
     class TSDUCKDLL MD5: public Hash
     {

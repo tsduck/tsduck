@@ -44,6 +44,7 @@
 namespace ts {
     //!
     //! Command line arguments for the class PSILogger.
+    //! @ingroup plugin
     //!
     class TSDUCKDLL CASSelectionArgs
     {

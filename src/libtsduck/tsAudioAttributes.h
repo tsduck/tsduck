@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Audio attributes for MPEG-1 / MPEG-2 audio.
+    //! @ingroup mpeg
     //!
     //! An AudioAttributes object is built by transmitting audio frames from
     //! PES payloads. Initially, an AudioAttributes object is invalid.

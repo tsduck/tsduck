@@ -43,6 +43,7 @@ namespace ts {
     //! multiples of the block size of the underlying block cipher.
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
+    //! @ingroup crypto
     //!
     template <class CIPHER>
     class CBC: public CipherChainingTemplate<CIPHER>

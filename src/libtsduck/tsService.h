@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Describe a DVB service.
+    //! @ingroup mpeg
     //!
     //! An instance of this class contains all possible properties of a
     //! DVB service. But all properties are optional. They may be set and

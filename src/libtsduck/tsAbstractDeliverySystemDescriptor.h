@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! Abstract base class for DVB delivery system descriptors.
+    //! @ingroup psi
     //!
     class TSDUCKDLL AbstractDeliverySystemDescriptor : public AbstractDescriptor
     {

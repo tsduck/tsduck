@@ -42,6 +42,7 @@ namespace ts {
     //! Representation of a generic linkage_descriptor.
     //! Specialized classes exist, depending on the linkage type.
     //! @see ETSI 300 468, 6.2.19.
+    //! @ingroup psi
     //!
     class TSDUCKDLL LinkageDescriptor : public AbstractDescriptor
     {

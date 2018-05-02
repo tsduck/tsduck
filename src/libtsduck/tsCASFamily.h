@@ -37,7 +37,8 @@
 
 namespace ts {
     //!
-    //! Known Conditional Access Systems families
+    //! Known Conditional Access Systems families.
+    //! @ingroup mpeg
     //!
     enum CASFamily {
         CAS_OTHER       = 0,  //!< Unknown CAS.

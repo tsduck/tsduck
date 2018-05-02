@@ -40,6 +40,7 @@ namespace ts {
     //!
     //! Representation of an enhanced_AC-3_descriptor.
     //! @see ETSI 300 468, D.5.
+    //! @ingroup psi
     //!
     class TSDUCKDLL EnhancedAC3Descriptor : public AbstractDescriptor
     {

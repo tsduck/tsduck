@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Send application output to a "pager" application such as "more" or "less".
+    //! @ingroup system
     //!
     class TSDUCKDLL OutputPager : public ForkPipe
     {

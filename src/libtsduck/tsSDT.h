@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! Representation of a Service Description Table (SDT).
+    //! @ingroup psi
     //!
     class TSDUCKDLL SDT : public AbstractLongTable
     {

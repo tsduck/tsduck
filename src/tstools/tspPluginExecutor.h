@@ -117,6 +117,8 @@ namespace ts {
         //!  condition. In case of error, all processors should also declare an
         //!  "_input_end" to their successor.
         //!
+        //! @ingroup plugin
+        //!
         class PluginExecutor:
             public RingNode,
             public JointTermination,

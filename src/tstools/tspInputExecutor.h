@@ -39,6 +39,7 @@ namespace ts {
     namespace tsp {
         //!
         //! Execution context of a tsp input plugin.
+        //! @ingroup plugin
         //!
         class InputExecutor: public PluginExecutor
         {

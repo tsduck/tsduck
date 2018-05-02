@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! A class to perform various tests on DirectShow and BDA (Windows-specific).
+    //! @ingroup system
     //!
     class TSDUCKDLL DirectShowTest
     {

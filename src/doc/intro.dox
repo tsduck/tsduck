@@ -21,7 +21,8 @@ used either by TSDuck maintainers and developers of third-party applications.
 For developers of third-party applications:
 - @ref usinglibrary "Referencing the TSDuck library from your application"
 - @ref libtutorial "A tutorial on the TSDuck C++ classes"
-- <a href="classes.html">C++ classes</a>
+- <a href="classes.html">C++ classes in alphabetical order</a>
+- <a href="modules.html">C++ classes by category</a>
 - <a href="files.html">Header files</a>
 
 For TSDuck maintainers:

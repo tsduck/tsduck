@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A basic representation of an IP v4 address.
+    //! @ingroup net
     //!
     //! IP v4 addresses are sometimes manipulated as 32-bit integer values.
     //! There is always some ambiguity in the operating system interface about the

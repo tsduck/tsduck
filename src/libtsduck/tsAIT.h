@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of an Application Information Table (AIT)
+    //! @ingroup psi
     //!
     class TSDUCKDLL AIT : public AbstractLongTable
     {

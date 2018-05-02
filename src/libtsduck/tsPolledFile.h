@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Description of a polled file.
+    //! @ingroup system
     //!
     class TSDUCKDLL PolledFile
     {

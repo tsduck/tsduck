@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Dektec output plugin for @c tsp.
+    //! @ingroup plugin
     //!
     class TSDUCKDLL DektecOutputPlugin: public OutputPlugin
     {

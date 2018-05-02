@@ -43,6 +43,7 @@ namespace ts {
     //! ITU-T Rec. H.222.0. See its "Amendment 3: Transport of AVC video
     //! over ITU-T Rec. H.222.0 | ISO/IEC 13818-1 streams" (document W5771),
     //! section 2.6.54.
+    //! @ingroup psi
     //!
     class TSDUCKDLL AVCVideoDescriptor : public AbstractDescriptor
     {

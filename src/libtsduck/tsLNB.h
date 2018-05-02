@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Description of a Low-Noise Block (LNB) converter in a satellite dish.
+    //! @ingroup hardware
     //!
     //! Note: all frequencies are in Hz in parameters.
     //!

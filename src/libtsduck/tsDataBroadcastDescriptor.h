@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a data_broadcast_descriptor.
     //! @see ETSI 300 468, 6.2.11.
+    //! @ingroup psi
     //!
     class TSDUCKDLL DataBroadcastDescriptor : public AbstractDescriptor
     {

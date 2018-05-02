@@ -138,6 +138,8 @@ namespace ts {
     //! the UString class, make sure to avoid any issue with the absence of virtual destructor
     //! in the parent class.
     //!
+    //! @ingroup core
+    //!
     class TSDUCKDLL UString: public std::u16string
     {
     public:
