@@ -67,7 +67,12 @@ namespace ts {
         MessagePriorityQueue(size_t maxMessages = 0);
 
     protected:
-        // Inherited methods.
+        //!
+        //! This virtual protected method performs placement in the message queue.
+        //! @param [in] msg The message to enqueue.
+        //! @param [in] list The content of the queue.
+        //! @return An iterator to the place where @a msg shall be placed.
+        //!
         virtual typename MessageQueue<MSG, MUTEX>::MessageLocator
         enqueuePlacement(const typename MessageQueue<MSG, MUTEX>::MessagePtr& msg,
                          const typename MessageQueue<MSG, MUTEX>::MessageList& list) const override;
