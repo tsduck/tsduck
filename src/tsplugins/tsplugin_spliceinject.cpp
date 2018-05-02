@@ -118,7 +118,7 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            TSP* const                _tsp;
+            TS_UNUSED TSP* const      _tsp;
 
             // Inaccessible operations.
             SpliceCommand() = delete;
