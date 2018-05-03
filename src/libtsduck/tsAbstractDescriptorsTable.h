@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Base class for MPEG tables containing only a list of descriptors (eg. CAT, TSDT).
-    //! @ingroup psi
+    //! @ingroup table
     //!
     class TSDUCKDLL AbstractDescriptorsTable : public AbstractLongTable
     {

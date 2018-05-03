@@ -1,36 +1,86 @@
 /**
 
 @defgroup core Core classes
-C++ language core features and design patterns.
+Generic core classes.
 
-@defgroup system Operating system
-Portable operating system layer 
+  @defgroup cpp C++ language
+  @ingroup core
+  C++ language features and design patterns.
 
-@defgroup net Networking
-Networking features.
+  @defgroup system Operating system
+  @ingroup core
+  Portable operating system layer.
 
-@defgroup plugin TSDuck plugins
-TSDuck plugin development.
+  @defgroup thread Multi-threading
+  @ingroup core
+  Multi-threading and synchronization features.
+
+  @defgroup net Networking
+  @ingroup core
+  Networking features.
+
+  @defgroup log Message logging
+  @ingroup core
+  Unified message logging.
+
+  @defgroup unix Unix
+  @ingroup core
+  Unix specific features.
+
+  @defgroup windows Windows
+  @ingroup core
+  Windows specific features.
+
+@defgroup data Data formats
+Handling various data formats.
+
+  @defgroup tlv TLV
+  @ingroup data
+  Representation of Tag / Length / Value messages.
+
+  @defgroup xml XML
+  @ingroup data
+  Representation of XML documents.
+
+  @defgroup json JSON
+  @ingroup data
+  Representation of JSON documents.
 
 @defgroup crypto Cryptography
 Cryptographic algorithms.
 
-@defgroup tlv TLV
-Representation of Tag/Length/Value messages.
+@defgroup dtv Digital TV
+Digital television features.
 
-@defgroup xml XML
-Representation of XML documents.
+  @defgroup mpeg MPEG-DVB core
+  @ingroup dtv
+  MPEG-DVB core features.
 
-@defgroup json JSON
-Representation of JSON documents.
+  @defgroup table MPEG-DVB tables
+  @ingroup dtv
+  Tables used in MPEG-DVB systems.
 
-@defgroup mpeg MPEG-DVB core
-MPEG-DVB core features.
+  @defgroup descriptor MPEG-DVB descriptors
+  @ingroup dtv
+  Most common descriptors used in MPEG-DVB systems.
 
-@defgroup psi Signalization
-Most common tables and descriptors used in MPEG-DVB systems.
+  @defgroup hardware Hardware support
+  @ingroup dtv
+  Specific hardware support (Dektec, tuners)
 
-@defgroup hardware Hardware support
-Specific hardware support (Dektec, tuners, smartcards)
+@defgroup appdev Application
+Application development.
+
+  @defgroup app Applications
+  @ingroup appdev
+  Application management tools.
+
+  @defgroup cmd Command line
+  @ingroup appdev
+  Command line applications.
+
+  @defgroup plugin Plugins
+  @ingroup appdev
+  TSDuck plugin development.
 
 */

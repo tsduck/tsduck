@@ -63,6 +63,7 @@ namespace ts {
 
     //!
     //! An implementation of UTF-16 strings.
+    //! @ingroup cpp
     //!
     //! This class is an extension of @c std::u16string with additional services.
     //!
@@ -137,8 +138,6 @@ namespace ts {
     //! field to destroy, which is the case for the current implementation. When modifying
     //! the UString class, make sure to avoid any issue with the absence of virtual destructor
     //! in the parent class.
-    //!
-    //! @ingroup core
     //!
     class TSDUCKDLL UString: public std::u16string
     {

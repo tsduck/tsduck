@@ -42,6 +42,7 @@
 namespace ts {
     //!
     //! UDP Socket.
+    //! @ingroup net
     //!
     class TSDUCKDLL UDPSocket: public Socket
     {

@@ -42,7 +42,7 @@
 namespace ts {
     //!
     //! Representation of MPEG PSI/SI tables in binary form (ie. list of sections).
-    //! @ingroup psi
+    //! @ingroup mpeg
     //!
     //! A table is built by adding sections using addSection().
     //! When all sections are present, the table becomes valid.

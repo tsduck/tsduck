@@ -39,6 +39,7 @@ namespace ts {
     namespace tlv {
         //!
         //! Analysis (deserialization) of TLV messages.
+        //! @ingroup tlv
         //!
         class TSDUCKDLL Analyzer
         {

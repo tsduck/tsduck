@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Program Map Table (PMT).
-    //! @ingroup psi
+    //! @ingroup table
     //!
     class TSDUCKDLL PMT : public AbstractLongTable
     {

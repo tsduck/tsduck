@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! A SectionDemux which extracts MPEG tables without external handler.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL StandaloneTableDemux: public SectionDemux, private TableHandlerInterface
     {

@@ -44,6 +44,7 @@ namespace ts {
     namespace xml {
         //!
         //! Base class for all XML objects in a document.
+        //! @ingroup node
         //!
         //! Implementation note on inheritance: Node is a subclass of RingNode. The "ring" is
         //! used to link all siblings. This inheritance should be private since it is an

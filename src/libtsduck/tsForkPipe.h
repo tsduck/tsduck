@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Fork a process and create an optional pipe to its standard input.
-    //! @ingroup core
+    //! @ingroup system
     //!
     class TSDUCKDLL ForkPipe
     {

@@ -36,9 +36,9 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
     //!
     //! Set of attributes for a thread object (ts::Thread).
+    //! @ingroup thread
     //!
     class TSDUCKDLL ThreadAttributes
     {

@@ -29,7 +29,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup core
+//!  @ingroup cpp
 //!  Miscellaneous C++ algorithms supplementing the standard \<algorithm\>.
 //!
 //!  This file declares several template functions implementing general-purpose

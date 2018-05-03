@@ -69,6 +69,7 @@ namespace ts {
 
     //!
     //! Implementation of a DVB tuner.
+    //! @ingroup hardware
     //!
     //! The syntax of a DVB tuner "device name" depends on the operating system.
     //!

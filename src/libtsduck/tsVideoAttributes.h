@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Video attributes for MPEG-1 and MPEG-2.
+    //! @ingroup mpeg
     //!
     //! A VideoAttributes object is built by transmitting video units (starting
     //! with a 00 00 01 xx start code). The state of the object may change

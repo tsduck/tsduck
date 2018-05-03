@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Representation of a Viaccess date.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL ViaccessDate: public AbstractCASDate
     {

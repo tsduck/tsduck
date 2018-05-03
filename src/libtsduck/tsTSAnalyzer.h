@@ -51,6 +51,7 @@
 namespace ts {
     //!
     //! A class which analyzes a complete transport stream.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TSAnalyzer:
         private TableHandlerInterface,

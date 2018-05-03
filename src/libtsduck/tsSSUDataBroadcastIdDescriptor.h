@@ -41,6 +41,7 @@ namespace ts {
     //!
     //! Representation of a data_broadcast_id_descriptor for system software update.
     //! The data_broadcast_id is 0x000A.
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL SSUDataBroadcastIdDescriptor : public AbstractDescriptor
     {

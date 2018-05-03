@@ -28,7 +28,7 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup system
+//!  @ingroup windows
 //!  Declare identifiers for Windows Common Object Model (COM).
 //!
 //!  In short, declaration and definitions of GUID's is a mess !

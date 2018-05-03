@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! A class to encapsulate the initialization of Windows COM.
-    //! @ingroup system
+    //! @ingroup windows
     //!
     //! On Windows, the applications which use the Common Object Model (COM) need
     //! to initialize the COM framework before using COM objects and correctly

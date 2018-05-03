@@ -43,7 +43,7 @@
 namespace ts {
     //!
     //! Representation of a MPEG PSI/SI descriptors in binary format.
-    //! @ingroup psi
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL Descriptor
     {

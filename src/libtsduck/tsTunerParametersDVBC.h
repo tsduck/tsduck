@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! DVB-C (cable, QAM) tuners parameters.
+    //! @ingroup hardware
     //!
     class TSDUCKDLL TunerParametersDVBC: public TunerParameters
     {

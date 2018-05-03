@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Representation of a service_descriptor.
     //! @see ETSI 300 468, 6.2.33.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL ServiceDescriptor : public AbstractDescriptor
     {

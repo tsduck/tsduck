@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! A support class for applications which parse various text formats.
+    //! @ingroup cpp
     //!
     class TextParser
     {

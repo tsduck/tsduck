@@ -43,6 +43,7 @@ namespace ts {
         //!
         //! The class ts::tlv::Protocol defines the syntax of a TLV protocol.
         //! Used by ts::tlv::MessageFactory to validate a message.
+        //! @ingroup tlv
         //!
         class TSDUCKDLL Protocol
         {

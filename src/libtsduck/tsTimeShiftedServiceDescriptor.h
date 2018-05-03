@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a time_shifted_service_descriptor.
     //! @see ETSI 300 468, 6.2.45.
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL TimeShiftedServiceDescriptor : public AbstractDescriptor
     {

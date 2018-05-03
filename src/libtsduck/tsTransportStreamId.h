@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Identification of a transport stream.
+    //! @ingroup mpeg
     //!
     struct TSDUCKDLL TransportStreamId
     {

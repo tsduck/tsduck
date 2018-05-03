@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Transport Stream file output.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TSFileOutput
     {

@@ -46,7 +46,7 @@ namespace ts {
 
     //!
     //! Abstract base class for MPEG PSI/SI tables.
-    //! @ingroup psi
+    //! @ingroup table
     //!
     class TSDUCKDLL AbstractTable: public AbstractSignalization
     {

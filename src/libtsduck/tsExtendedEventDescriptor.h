@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Representation of a extended_event_descriptor.
     //! @see ETSI 300 468, 6.2.15.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL ExtendedEventDescriptor : public AbstractDescriptor
     {

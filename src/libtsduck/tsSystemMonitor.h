@@ -42,6 +42,7 @@
 namespace ts {
     //!
     //! Monitoring thread for system resources used by the application.
+    //! @ingroup system
     //!
     //! This class starts an internal thread which periodically wakes up
     //! and reports the usage of system resources by the current process

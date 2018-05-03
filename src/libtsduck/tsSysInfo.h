@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A singleton holding information on the current operating system.
+    //! @ingroup system
     //!
     class TSDUCKDLL SysInfo
     {

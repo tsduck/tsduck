@@ -36,9 +36,10 @@
 #include "tsUString.h"
 
 namespace ts {
-
     //!
     //! Message severity.
+    //! @ingroup log
+    //!
     //! Positive values are debug levels. The typical default reporting level is @c Info.
     //! All messages with a higher level (@c Verbose and all debug levels) are not reported by default.
     //! The @c struct is here just to add a naming level
@@ -64,7 +65,7 @@ namespace ts {
 
     //!
     //! Abstract interface for event reporting and monitoring.
-    //! @ingroup core
+    //! @ingroup log
     //!
     class TSDUCKDLL Report
     {

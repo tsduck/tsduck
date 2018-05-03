@@ -45,6 +45,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see ETSI EN 301 192, 8.4.5.12
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL TargetIPv6SlashDescriptor : public AbstractDescriptor
     {

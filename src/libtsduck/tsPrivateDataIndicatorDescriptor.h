@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a private_data_indicator_descriptor.
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.28.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL PrivateDataIndicatorDescriptor : public AbstractDescriptor
     {

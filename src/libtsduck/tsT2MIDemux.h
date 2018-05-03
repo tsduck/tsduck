@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! This class analyzes T2-MI (DVB-T2 Modulator Interface) from TS packets.
+    //! @ingroup mpeg
     //!
     //! TS packets from the outer transport stream are passed one by one to the demux.
     //! The signalization is analyzed. Services with at least one T2-MI component are

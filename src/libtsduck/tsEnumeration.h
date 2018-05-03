@@ -39,7 +39,7 @@ namespace ts {
 
     //!
     //! Enumeration of int/string pairs.
-    //! @ingroup core
+    //! @ingroup cpp
     //!
     //! This class is used to manage enumeration values. Here, by enumeration,
     //! we mean an association between strings and integers. The strings are

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! ATSC (terrestrial, cable) tuners parameters
+    //! @ingroup hardware
     //!
     class TSDUCKDLL TunerParametersATSC: public TunerParameters
     {

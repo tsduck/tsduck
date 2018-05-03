@@ -45,6 +45,7 @@ namespace ts {
 
     //!
     //! T2-MI demux handler interface.
+    //! @ingroup mpeg
     //!
     //! This abstract interface must be implemented by classes which need to be
     //! notified of PID's and packets using a T2MIDemux.

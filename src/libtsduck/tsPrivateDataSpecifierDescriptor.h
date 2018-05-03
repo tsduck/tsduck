@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a private_data_specifier_descriptor
     //! @see ETSI 300 468, 6.2.31.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL PrivateDataSpecifierDescriptor : public AbstractDescriptor
     {

@@ -36,10 +36,9 @@
 #include "tsArgs.h"
 
 namespace ts {
-
     //!
     //! A class to redirect an input stream.
-    //! @ingroup core
+    //! @ingroup system
     //!
     //! The constructor redirects a specific input stream (@c std::cin by default) from
     //! a given file. The destructor automatically restores the previous input stream.

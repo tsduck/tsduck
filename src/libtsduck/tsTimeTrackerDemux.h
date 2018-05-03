@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! A demux which tracks time stamps per PID.
+    //! @ingroup mpeg
     //!
     //! Typically used as a superclass by other demux which need time tracking
     //! in addition to other demux activities.

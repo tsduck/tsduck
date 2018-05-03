@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! This class implements a macOS XML PList file.
-    //! @ingroup system
+    //! @ingroup unix
     //!
     class TSDUCKDLL MacPList: public std::map<UString, UString>
     {

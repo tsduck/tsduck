@@ -36,14 +36,12 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
     //!
     //! An interface to check for abort.
+    //! @ingroup system
     //!
     //! This interface is implemented by classes which support interrupt and abort,
     //! for instance a Ctrl-C user interrupt.
-    //!
-    //! @ingroup core
     //!
     class TSDUCKDLL AbortInterface
     {

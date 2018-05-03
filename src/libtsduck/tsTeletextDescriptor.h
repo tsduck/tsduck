@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a teletext_descriptor.
     //! @see ETSI 300 468, 6.2.43.
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL TeletextDescriptor : public AbstractDescriptor
     {

@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Base class for TCP and UDP sockets.
+    //! @ingroup net
     //!
     class TSDUCKDLL Socket
     {

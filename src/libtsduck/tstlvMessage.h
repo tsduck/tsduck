@@ -42,6 +42,7 @@ namespace ts {
     namespace tlv {
         //!
         //! Abstract base class for TLV messages
+        //! @ingroup tlv
         //!
         //! All messages use the same structure as the DVB interfaces defined in the
         //! "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.

@@ -51,6 +51,7 @@ namespace ts {
 
     //!
     //! Abstract base class for DVB tuners parameters.
+    //! @ingroup hardware
     //!
     class TSDUCKDLL TunerParameters: public Object
     {

@@ -45,6 +45,7 @@
 namespace ts {
     //!
     //! Base class for TCP/IP sockets.
+    //! @ingroup net
     //!
     //! This base class is not supposed to be directly instantiated.
     //! The two concrete subclasses of TCPSocket are:

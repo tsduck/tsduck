@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! This class extracts Teletext subtitles from TS packets.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TeletextDemux : public PESDemux
     {

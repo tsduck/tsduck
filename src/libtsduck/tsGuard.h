@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Automatic guard class for mutex (ts::MutexInterface).
-    //! @ingroup core
+    //! @ingroup thread
     //!
     //! This class implements the @e guard design pattern for mutex,
     //! as defined by ts::MutexInterface.

@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! DVB-S / DVB-S2 (satellite) tuners parameters.
+    //! @ingroup hardware
     //!
     class TSDUCKDLL TunerParametersDVBS: public TunerParameters
     {

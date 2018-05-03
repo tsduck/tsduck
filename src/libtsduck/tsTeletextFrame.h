@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Description of one Teletext frame.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TeletextFrame
     {

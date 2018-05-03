@@ -40,6 +40,7 @@ namespace ts {
     //!
     //! Representation of a linkage_descriptor for system software update.
     //! SSU uses linkage type 0x09.
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
     {

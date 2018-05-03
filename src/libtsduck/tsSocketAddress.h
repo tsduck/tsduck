@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Socket address class (IP v4 address & port).
+    //! @ingroup net
     //!
     //! Note: all address and port are used in host byte order.
     //!

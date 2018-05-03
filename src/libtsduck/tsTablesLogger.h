@@ -46,6 +46,7 @@
 namespace ts {
     //!
     //! This class logs sections and tables.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TablesLogger :
         protected TableHandlerInterface,

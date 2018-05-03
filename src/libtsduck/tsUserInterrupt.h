@@ -40,6 +40,8 @@ namespace ts {
 
     //!
     //! An instance of this class handles the Ctrl+C user interrupt.
+    //! @ingroup system
+    //!
     //! There must be at most one active instance at a time.
     //!
     //! Can be used in two ways:

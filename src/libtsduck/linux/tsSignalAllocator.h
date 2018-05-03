@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Allocate POSIX real-time signal numbers (Linux-specific).
-    //! @ingroup system
+    //! @ingroup unix
     //!
     class TSDUCKDLL SignalAllocator
     {

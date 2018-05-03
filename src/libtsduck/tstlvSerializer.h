@@ -40,6 +40,7 @@ namespace ts {
     namespace tlv {
         //!
         //! Serialization of TLV messages.
+        //! @ingroup tlv
         //!
         //! A DVB message is serialized in TLV into a ByteBlock.
         //! A Serializer is always associated to a ByteBlock.

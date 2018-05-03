@@ -42,6 +42,7 @@ namespace ts {
     namespace tlv {
         //!
         //! TCP connection using TLV messages.
+        //! @ingroup net
         //!
         //! @tparam MUTEX Mutex type for synchronization.
         //! Serialization & deserialization need synchronized access.

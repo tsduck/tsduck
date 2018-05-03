@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of an ISO_639_language_descriptor
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.18.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL ISO639LanguageDescriptor : public AbstractDescriptor
     {

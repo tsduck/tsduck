@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Command line arguments for the class TablesLogger.
+    //! @ingroup cmd
     //!
     class TSDUCKDLL TablesLoggerArgs
     {

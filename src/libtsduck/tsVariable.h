@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A template class which defines a @e variable which can be either initialized or uninitialized.
+    //! @ingroup cpp
     //!
     //! @tparam T A type or class which describes the content of the variable.
     //! The basic requirement on @a T is the availability of a copy constructor and

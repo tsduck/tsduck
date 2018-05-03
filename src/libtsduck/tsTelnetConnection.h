@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Implementation of a half-duplex line oriented telnet connection.
+    //! @ingroup net
     //!
     //! This class supports the communication with a half-duplex line oriented telnet server:
     //! - The server sends a prompt.

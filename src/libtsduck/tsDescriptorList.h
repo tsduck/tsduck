@@ -41,7 +41,7 @@ namespace ts {
 
     //!
     //! List of MPEG PSI/SI descriptors.
-    //! @ingroup psi
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL DescriptorList
     {

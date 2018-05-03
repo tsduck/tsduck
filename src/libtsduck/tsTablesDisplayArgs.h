@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! Command line arguments to display PSI/SI tables.
+    //! @ingroup cmd
     //!
     class TSDUCKDLL TablesDisplayArgs
     {
