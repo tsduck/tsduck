@@ -311,6 +311,12 @@
 
     <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
 
+    <application_name_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per language -->
+      <language code="char3, required" application_name="string, required"/>
+    </application_name_descriptor>
+
     <application_signalling_descriptor>
       <!-- One per application -->
       <application application_type="uint15, required"
@@ -584,6 +590,28 @@
       <text>String</text>
     </message_descriptor>
 
+    <multilingual_bouquet_name_descriptor>
+      <!-- One per language -->
+      <language code="char3, required" bouquet_name="string, required"/>
+    </multilingual_bouquet_name_descriptor>
+
+    <multilingual_component_descriptor component_tag="uint8, required">
+      <!-- One per language -->
+      <language code="char3, required" description="string, required"/>
+    </multilingual_component_descriptor>
+
+    <multilingual_network_name_descriptor>
+      <!-- One per language -->
+      <language code="char3, required" network_name="string, required"/>
+    </multilingual_network_name_descriptor>
+
+    <multilingual_service_name_descriptor>
+      <!-- One per language -->
+      <language code="char3, required"
+                service_provider_name="string, required"
+                service_name="string, required"/>
+    </multilingual_service_name_descriptor>
+
     <network_name_descriptor network_name="string, required"/>
 
     <NVOD_reference_descriptor>
@@ -631,6 +659,8 @@
         service_type="uint8, required"
         service_provider_name="string, required"
         service_name="string, required"/>
+
+    <service_identifier_descriptor service_identifier="string, required"/>
 
     <service_list_descriptor>
       <!-- One per service -->

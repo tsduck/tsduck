@@ -26,22 +26,38 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsApplicationNameDescriptor.h"
+#include "tsTablesFactory.h"
+TSDUCK_SOURCE;
+
+#define MY_XML_NAME u"application_name_descriptor"
+#define MY_XML_ATTR u"application_name"
+#define MY_DID ts::DID_AIT_APP_NAME
+#define MY_TID ts::TID_AIT
+
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationNameDescriptor, MY_XML_NAME, MY_TID);
+TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationNameDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationNameDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+
+
+//----------------------------------------------------------------------------
+// Default constructor:
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 715
+ts::ApplicationNameDescriptor::ApplicationNameDescriptor() :
+    AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
+{
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::ApplicationNameDescriptor::ApplicationNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    ApplicationNameDescriptor()
+{
+    deserialize(desc, charset);
+}

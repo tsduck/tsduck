@@ -26,22 +26,37 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsMultilingualBouquetNameDescriptor.h"
+#include "tsTablesFactory.h"
+TSDUCK_SOURCE;
+
+#define MY_XML_NAME u"multilingual_bouquet_name_descriptor"
+#define MY_XML_ATTR u"bouquet_name"
+#define MY_DID ts::DID_MLINGUAL_BOUQUET
+
+TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualBouquetNameDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualBouquetNameDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualBouquetNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+
+
+//----------------------------------------------------------------------------
+// Default constructor:
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 715
+ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor() :
+    AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
+{
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    MultilingualBouquetNameDescriptor()
+{
+    deserialize(desc, charset);
+}

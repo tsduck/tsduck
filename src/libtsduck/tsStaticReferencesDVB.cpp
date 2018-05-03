@@ -81,6 +81,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(AC3Descriptor);
     REF_TYPE(AdaptationFieldDataDescriptor);
     REF_TYPE(AncillaryDataDescriptor);
+    REF_TYPE(ApplicationNameDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
     REF_TYPE(AVCVideoDescriptor);
@@ -113,6 +114,10 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(LocalTimeOffsetDescriptor);
     REF_TYPE(LogicalChannelNumberDescriptor);
     REF_TYPE(MessageDescriptor);
+    REF_TYPE(MultilingualBouquetNameDescriptor);
+    REF_TYPE(MultilingualComponentDescriptor);
+    REF_TYPE(MultilingualNetworkNameDescriptor);
+    REF_TYPE(MultilingualServiceNameDescriptor);
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
@@ -123,6 +128,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(SatelliteDeliverySystemDescriptor);
     REF_TYPE(ScramblingDescriptor);
     REF_TYPE(ServiceDescriptor);
+    REF_TYPE(ServiceIdentifierDescriptor);
     REF_TYPE(ServiceListDescriptor);
     REF_TYPE(ShortEventDescriptor);
     REF_TYPE(SpliceAvailDescriptor);
