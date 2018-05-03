@@ -198,7 +198,7 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
     }
 
     // Now update the 16-bit application loop length.
-    PutUInt16(app_length, 0xF000 | (data - app_length - 2));
+    PutUInt16(app_length, uint16_t(0xF000 | (data - app_length - 2)));
 
     // Compute synthetic tid extension.
     uint16_t tid_ext = (test_application_flag ? 0x8000 : 0x0000) | (application_type & 0x7FFF);
