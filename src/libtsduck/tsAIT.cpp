@@ -96,7 +96,7 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         return;
     }
 
-    // Assume the AIT is composed of a single section
+    // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
 
         // Reference to current section
@@ -106,7 +106,7 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         version = sect.version();
         is_current = sect.isCurrent();
         uint16_t tid_ext(sect.tableIdExtension());
-        test_application_flag = (tid_ext & 0x8000) > 0;
+        test_application_flag = (tid_ext & 0x8000) != 0;
         application_type = tid_ext & 0x7fff;
 
         // Analyze the section payload:
@@ -138,8 +138,8 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         while (remain >= 9) {
             ApplicationIdentifier app_id(GetUInt32(data), GetUInt16(data + 4));
             Application& app(applications[app_id]);
-            app.control_code = data[5];
-            descriptors_length = GetUInt16(data + 6) & 0x0FFF;
+            app.control_code = data[6];
+            descriptors_length = GetUInt16(data + 7) & 0x0FFF;
             data += 9;
             remain -= 9;
             descriptors_length = std::min(descriptors_length, remain);
@@ -166,12 +166,22 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
         return;
     }
 
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    // Current limitation: only one section is serialized.
+    // Extraneous descriptors are dropped.
+
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data(payload);
     size_t remain(sizeof(payload));
 
-    // Insert common descriptors list (with leading length field)
+    // Insert common descriptors list (with leading length field).
+    // Provision space for 16-bit application loop length.
+    remain -= 2;
     descs.lengthSerialize(data, remain);
+
+    // Reserve placeholder for 16-bit application loop length.
+    // Remain is unmodified here, already reserved before serializing the descriptors.
+    uint8_t* const app_length = data;
+    data += 2;
 
     // Add description of all applications
     for (ApplicationMap::const_iterator it = applications.begin(); it != applications.end() && remain >= 9; ++it) {
@@ -184,19 +194,18 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
         remain -= 7;
 
         // Insert application descriptors list (with leading length field)
-        size_t next_index = it->second.descs.lengthSerialize(data, remain);
-        if (next_index != it->second.descs.count()) {
-            // Not enough space to serialize all descriptors in the section.
-            // Return with table left in invalid state.
-            return;
-        }
+        it->second.descs.lengthSerialize(data, remain);
     }
 
-    uint16_t tid_ext = test_application_flag << 15 | application_type;
+    // Now update the 16-bit application loop length.
+    PutUInt16(app_length, 0xF000 | (data - app_length - 2));
+
+    // Compute synthetic tid extension.
+    uint16_t tid_ext = (test_application_flag ? 0x8000 : 0x0000) | (application_type & 0x7FFF);
 
     // Add one single section in the table
     table.addSection(new Section(MY_TID, // tid
-        false,                           // is_private_section
+        true,                            // is_private_section
         tid_ext,                         // tid_ext
         version,
         is_current,
@@ -217,15 +226,16 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    if (size >= 4) {
-        uint16_t application_type = section.tableIdExtension() & 0x7FFF;
-        bool test_application_flag = (section.tableIdExtension() & 0x8000) > 0;
-        strm << margin << UString::Format(u"Application type: %d (0x%X)", { application_type, application_type });
-        strm << u", Test application: " << test_application_flag << std::endl;
+    uint16_t application_type = section.tableIdExtension() & 0x7FFF;
+    bool test_application_flag = (section.tableIdExtension() & 0x8000) != 0;
+    strm << margin << UString::Format(u"Application type: %d (0x%X)", { application_type, application_type });
+    strm << u", Test application: " << test_application_flag << std::endl;
 
+    if (size >= 4) {
         size_t length_field = GetUInt16(data) & 0x0FFF; // common_descriptors_length
         data += 2;
         size -= 2;
+        length_field = std::min(size, length_field);
 
         // Process and display "common descriptors loop"
         if (length_field > 0) {
@@ -235,12 +245,11 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         data += length_field;
         size -= length_field;
 
-        if (size > 2) {
+        if (size >= 2) {
             length_field = GetUInt16(data) & 0x0FFF; // application_loop_length
-
             data += 2;
             size -= 2;
-            size = std::min(size, length_field);
+            length_field = std::min(size, length_field);
 
             // Process and display "application loop"
             while (size >= 9) {
@@ -250,10 +259,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                 length_field = GetUInt16(data + 7) & 0xFFF; // application_descriptors_loop_length
                 data += 9;
                 size -= 9;
-
-                if (length_field > size) {
-                    length_field = size;
-                }
+                length_field = std::min(size, length_field);
 
                 strm << margin << "Application: Identifier: (Organization id: " << UString::Format(u"%d (0x%X)", { org_id, org_id })
                      << ", Application id: " << UString::Format(u"%d (0x%X)", { app_id, app_id })

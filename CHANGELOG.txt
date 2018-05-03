@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.11-705
+Version 3.11-713
 
 - Added plugin "spliceinject" to inject SCTE 35 splice information in real time.
 
@@ -18,6 +18,8 @@ Version 3.11-705
 
 - Bug fix: In "tstables" and plugin "tables", with options --xml and
   --max-tables, the XML structure was not properly closed.
+
+- Bug fix: Application Information Tables (AIT) were not correctly serialized.
 
 - Bug fix: In rare cases, time conversions could produce incorrect results when
   the time value was in the middle of the "non-existing hour", during the

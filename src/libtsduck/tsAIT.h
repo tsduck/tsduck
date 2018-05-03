@@ -80,7 +80,7 @@ namespace ts {
             //!
             bool operator!=(const ApplicationIdentifier& that) const
             {
-                return organisation_id != that.organisation_id && application_id != that.application_id;
+                return organisation_id != that.organisation_id || application_id != that.application_id;
             }
 
             //!
@@ -102,8 +102,7 @@ namespace ts {
         //!
         struct TSDUCKDLL Application : public EntryWithDescriptors
         {
-            ApplicationIdentifier application_id; //!< Application Identifier
-            uint8_t control_code;                 //!< Control code of the application
+            uint8_t control_code;  //!< Control code of the application
 
             //!
             //! Constructor.
@@ -112,7 +111,6 @@ namespace ts {
             //!
             explicit Application(const AbstractTable* table)
                 : EntryWithDescriptors(table)
-                , application_id(0, 0)
                 , control_code(0)
             {
             }
