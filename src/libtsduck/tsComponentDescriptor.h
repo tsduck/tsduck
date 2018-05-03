@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Representation of a component_descriptor.
     //! @see ETSI 300 468, 6.2.8.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL ComponentDescriptor : public AbstractDescriptor
     {

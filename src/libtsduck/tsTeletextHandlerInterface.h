@@ -42,6 +42,7 @@ namespace ts {
 
     //!
     //! Interface to be implemented by classes which need to be notified of Teletext messages using a Teletext demux.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TeletextHandlerInterface
     {

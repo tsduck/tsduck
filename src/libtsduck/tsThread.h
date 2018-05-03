@@ -38,9 +38,9 @@
 #include "tsMutex.h"
 
 namespace ts {
-
     //!
     //! Base class for threads.
+    //! @ingroup thread
     //!
     //! This is a base class for threads.
     //! A thread object is typically implemented as a subclass of ts::Thread.

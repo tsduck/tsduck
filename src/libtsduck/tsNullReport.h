@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! A singleton implementing Report which drops all messages.
-    //! @ingroup core
+    //! @ingroup log
     //!
     class TSDUCKDLL NullReport : public Report
     {

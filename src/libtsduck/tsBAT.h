@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of a Bouquet Association Table (BAT).
-    //! @ingroup psi
+    //! @ingroup table
     //!
     class TSDUCKDLL BAT : public AbstractTransportListTable
     {

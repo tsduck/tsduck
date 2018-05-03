@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Basic definition of an MPEG-2 transport packet.
+    //! @ingroup mpeg
     //!
     //! Physically, an object of this class is exactly implemented as a 188-byte TS packets.
     //! It is safe to consider that arrays or vectors of this class have the physical layout

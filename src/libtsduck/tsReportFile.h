@@ -38,10 +38,9 @@
 #include <fstream>
 
 namespace ts {
-
     //!
     //! A subclass of ts::Report which outputs messages in a text file.
-    //! @ingroup core
+    //! @ingroup log
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!

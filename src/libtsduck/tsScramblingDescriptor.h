@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a scrambling_descriptor.
     //! @see ETSI 300 468, 6.2.32.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL ScramblingDescriptor : public AbstractDescriptor
     {

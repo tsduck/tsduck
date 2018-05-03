@@ -38,7 +38,8 @@
 
 namespace ts {
     //!
-    //! A singleton which generates 64-bit UID, unique integer
+    //! A singleton which generates 64-bit UID, unique integer.
+    //! @ingroup cpp
     //!
     class TSDUCKDLL UID
     {

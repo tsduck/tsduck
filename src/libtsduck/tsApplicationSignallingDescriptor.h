@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Representation of an application_signalling_descriptor.
     //! @see ETSI TS 102 809, 5.3.5.1.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL ApplicationSignallingDescriptor : public AbstractDescriptor
     {

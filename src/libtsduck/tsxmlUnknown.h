@@ -39,6 +39,7 @@ namespace ts {
     namespace xml {
         //!
         //! Unknown element in an XML document.
+        //! @ingroup xml
         //!
         class TSDUCKDLL Unknown: public Node
         {

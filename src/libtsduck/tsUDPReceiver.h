@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! UDP datagram receiver with common command line options.
+    //! @ingroup net
     //!
     class TSDUCKDLL UDPReceiver: public UDPSocket
     {

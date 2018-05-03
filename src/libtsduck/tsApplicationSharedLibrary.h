@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of an application shared library.
-    //! @ingroup plugin
+    //! @ingroup system
     //!
     class TSDUCKDLL ApplicationSharedLibrary: public SharedLibrary
     {
@@ -55,7 +55,8 @@ namespace ts {
         //! Finally, when everything failed, @a filename is searched with the default
         //! system lookup mechanism.
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
-        //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBARY_PATH.
+        //! @param [in] library_path Name of an environment variable, an optional list of directories to search,
+        //! similar to @c LD_LIBARY_PATH.
         //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
         //! when this object is destroyed. If true, the shared library remains active.
         //! @param [in,out] report Where to report errors.

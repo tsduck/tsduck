@@ -36,10 +36,9 @@
 #include "tsMutexInterface.h"
 
 namespace ts {
-
     //!
     //! Empty mutex implementation.
-    //! @ingroup system
+    //! @ingroup thread
     //!
     //! The concrete class ts::NullMutex is an empty mutex implementation
     //! which does nothing and can be used wherever a ts::MutexInterface is

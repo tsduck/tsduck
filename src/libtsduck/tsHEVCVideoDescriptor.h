@@ -43,7 +43,7 @@ namespace ts {
     //! This MPG-defined descriptor is not defined in ISO/IEC 13818-1,
     //! ITU-T Rec. H.222.0. See its "Amendment 3: Transport of HEVC video
     //! over ITU-T Rec. H.222.0 | ISO/IEC 13818-1 streams", section 2.6.95.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL HEVCVideoDescriptor : public AbstractDescriptor
     {

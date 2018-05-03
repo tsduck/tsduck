@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a NVOD_reference_descriptor.
     //! @see ETSI 300 468, 6.2.26.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL NVODReferenceDescriptor : public AbstractDescriptor
     {

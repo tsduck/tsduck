@@ -42,7 +42,7 @@
 namespace ts {
     //!
     //!  Template safe pointer (reference-counted, auto-delete, thread-safe).
-    //!  @ingroup core
+    //!  @ingroup cpp
     //!
     //!  The ts::SafePtr template class is an implementation of the
     //!  @e safe @e pointer design pattern. A safe pointer implements the

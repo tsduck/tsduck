@@ -42,7 +42,7 @@
 namespace ts {
     //!
     //! Asynchronous message report.
-    //! @ingroup core
+    //! @ingroup log
     //!
     //! This class logs messages asynchronously. Each time a message is logged,
     //! the message is queued into an internal buffer and control returns immediately

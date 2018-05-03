@@ -45,6 +45,7 @@ namespace ts {
 
     //!
     //! Command line arguments for DVB tuners.
+    //! @ingroup cmd
     //!
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.

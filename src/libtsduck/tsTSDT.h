@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Representation of a Transport Stream Description Table (TSDT)
+    //! @ingroup table
     //!
     class TSDUCKDLL TSDT : public AbstractDescriptorsTable
     {

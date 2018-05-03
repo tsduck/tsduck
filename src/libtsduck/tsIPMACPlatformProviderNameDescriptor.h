@@ -43,7 +43,7 @@ namespace ts {
     //! because its tag reuses an MPEG-defined one.
     //!
     //! @see ETSI EN 301 192, 8.4.5.3.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL IPMACPlatformProviderNameDescriptor : public AbstractDescriptor
     {

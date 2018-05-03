@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup core
+//!  @ingroup cpp
 //!  Cross-platforms portable base definitions for the TSDuck project.
 //!
 //!  This header file shall be included by all C++ compilation units

@@ -28,8 +28,8 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup system
-//!  DirectShow & BDA utilities, Windows-specific.
+//!  @ingroup windows
+//!  DirectShow & BDA utilities (Windows-specific).
 //!
 //-----------------------------------------------------------------------------
 

@@ -36,10 +36,9 @@
 #include "tsReport.h"
 
 namespace ts {
-
     //!
     //! Encapsulation of Linux DVB property lists.
-    //! @ingroup system
+    //! @ingroup unix
     //!
     class TSDUCKDLL DTVProperties
     {

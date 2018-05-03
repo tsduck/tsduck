@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Format and print a text document using various output types and indentation.
+    //! @ingroup cpp
     //!
     //! This class is used to format XML documents or other types of structured text output.
     //! If is a subclass of <code>std::ostream</code> and can be used as any output stream.

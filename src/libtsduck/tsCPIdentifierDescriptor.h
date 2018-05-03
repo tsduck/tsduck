@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a CP_identifier_descriptor.
     //! @see ETSI 300 468, 6.4.3.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL CPIdentifierDescriptor : public AbstractDescriptor
     {

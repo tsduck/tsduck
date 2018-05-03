@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a CA_identifier_descriptor.
     //! @see ETSI 300 468, 6.2.5.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL CAIdentifierDescriptor : public AbstractDescriptor
     {

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Artificial references to all DVB items.
+    //! @ingroup app
     //!
     //! This class is useful only when using the TSDuck static library.
     //! It is useless, although harmless, when using the TSDuck DLL or shared library.

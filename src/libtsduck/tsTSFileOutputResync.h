@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! A specialized form of transport stream output file with resynchronized PID and continuity counters.
+    //! @ingroup mpeg
     //!
     //! On each PID, the continuity counters are automatically updated and synchronized.
     //! It is also possible to force the PID of packets.

@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a country_availability_descriptor.
     //! @see ETSI 300 468, 6.2.10.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL CountryAvailabilityDescriptor : public AbstractDescriptor
     {

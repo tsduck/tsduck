@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a terrestrial_delivery_system_descriptor.
     //! @see ETSI 300 468, 6.2.13.4.
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL TerrestrialDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {

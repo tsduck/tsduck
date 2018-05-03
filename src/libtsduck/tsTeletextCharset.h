@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Implementation of a Teletext character set.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TeletextCharset
     {

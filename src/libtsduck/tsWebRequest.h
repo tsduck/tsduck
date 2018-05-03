@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Perform a simple Web request (HTTP, HTTPS, FTP).
+    //! @ingroup net
     //!
     //! On UNIX systems, the implementation uses libcurl.
     //! On Windows systems, the implementation uses Microsoft Wininet.

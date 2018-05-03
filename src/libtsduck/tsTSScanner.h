@@ -46,6 +46,7 @@
 namespace ts {
     //!
     //! A class which scans the services of a transport stream.
+    //! @ingroup mpeg
     //!
     class TSDUCKDLL TSScanner: private TableHandlerInterface
     {

@@ -56,7 +56,7 @@ namespace ts {
 
     //!
     //! This class holds information from GitHub about a release of a project.
-    //! @ingroup core
+    //! @ingroup app
     //!
     class TSDUCKDLL GitHubRelease
     {

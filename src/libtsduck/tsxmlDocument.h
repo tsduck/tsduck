@@ -40,6 +40,7 @@ namespace ts {
     namespace xml {
         //!
         //! Representation of an XML document.
+        //! @ingroup xml
         //!
         class TSDUCKDLL Document: public Node
         {

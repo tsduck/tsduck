@@ -39,6 +39,7 @@ namespace ts {
     namespace xml {
         //!
         //! Comment in an XML document.
+        //! @ingroup xml
         //!
         class TSDUCKDLL Comment: public Node
         {

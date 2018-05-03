@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Representation of an Eutelsat_channel_number_descriptor.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     //! This is a private descriptor, must be preceeded by the Eutelsat PDS.
     //! See document "Via Eutelsat Fransat set-top-box specification",

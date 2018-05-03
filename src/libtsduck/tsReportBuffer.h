@@ -37,10 +37,9 @@
 #include "tsNullMutex.h"
 
 namespace ts {
-
     //!
     //! A subclass of ts::Report which logs all messages in an internal buffer.
-    //! @ingroup core
+    //! @ingroup log
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!

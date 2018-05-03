@@ -49,7 +49,7 @@ namespace ts {
 
     //!
     //! The DirectShow sink filter (Windows-specific).
-    //! @ingroup system
+    //! @ingroup windows
     //!
     //! This class implements a DirectShow filter.
     //!
@@ -182,6 +182,7 @@ namespace ts {
 
     //!
     //! SinkPin, input pin for SinkFilter (Windows-specific).
+    //! @ingroup windows
     //!
     class SinkPin: public ::IPin, public ::IMemInputPin
     {
@@ -249,7 +250,7 @@ namespace ts {
 
     //!
     //! SinkEnumMediaTypes, enumerator returned by \::IPin\::EnumMediaTypes (Windows-specific).
-    //! @ingroup system
+    //! @ingroup windows
     //!
     class SinkEnumMediaTypes : public ::IEnumMediaTypes
     {
@@ -290,7 +291,7 @@ namespace ts {
 
     //!
     //! SinkEnumPins, enumerator returned by \::IBaseFilter\::EnumPins (Windows-specific).
-    //! @ingroup system
+    //! @ingroup windows
     //!
     class SinkEnumPins : public ::IEnumPins
     {

@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! DVB-T / DVB-T2 (terrestrial, OFDM) tuners parameters
+    //! @ingroup hardware
     //!
     class TSDUCKDLL TunerParametersDVBT: public TunerParameters
     {

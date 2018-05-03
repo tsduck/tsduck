@@ -43,6 +43,7 @@ namespace ts {
     //! Representation of an SCTE 35 Splice Information Table.
     //! Encryption is not supported, encrypted sections are rejected.
     //! @see ANSI/SCTE 35, 9.2.
+    //! @ingroup table
     //!
     class TSDUCKDLL SpliceInformationTable : public AbstractTable
     {

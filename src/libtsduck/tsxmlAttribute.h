@@ -41,6 +41,7 @@ namespace ts {
     namespace xml {
         //!
         //! Attribute of an XML element.
+        //! @ingroup xml
         //!
         class TSDUCKDLL Attribute
         {

@@ -37,10 +37,9 @@
 #include "tsException.h"
 
 namespace ts {
-
     //!
     //! A mutex implementation which is compatible with the ts::Thread class.
-    //! @ingroup system
+    //! @ingroup thread
     //!
     //! The concrete class ts::Mutex is a mutex implementation which
     //! is compatible with the ts::Thread class. This means that concurrent

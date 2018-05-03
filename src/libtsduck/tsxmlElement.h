@@ -48,6 +48,7 @@ namespace ts {
 
         //!
         //! Structured element in an XML document.
+        //! @ingroup xml
         //!
         class TSDUCKDLL Element: public Node
         {

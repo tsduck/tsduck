@@ -43,6 +43,7 @@
 namespace ts {
     //!
     //! Transport stream scrambling using multiple algorithms.
+    //! @ingroup mpeg
     //!
     //! Include command line arguments processing.
     //!

@@ -41,6 +41,7 @@ namespace ts {
 
     //!
     //! Table handler interface.
+    //! @ingroup mpeg
     //!
     //! This abstract interface must be implemented by classes which need to be
     //! notified of tables using a SectionDemux.

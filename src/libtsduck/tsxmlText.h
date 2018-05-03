@@ -39,6 +39,7 @@ namespace ts {
     namespace xml {
         //!
         //! Text element in an XML document.
+        //! @ingroup xml
         //!
         class TSDUCKDLL Text: public Node
         {

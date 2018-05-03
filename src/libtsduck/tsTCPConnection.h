@@ -40,6 +40,7 @@
 namespace ts {
     //!
     //! Base class for a TCP/IP session.
+    //! @ingroup net
     //!
     //! This class can be used directly by applications or can be derived to create specific
     //! sub-classes which handle application protocols.

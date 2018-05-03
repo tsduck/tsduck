@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! This class produces a report in a grid format with tables and sections.
-    //! @ingroup core
+    //! @ingroup cpp
     //!
     class TSDUCKDLL Grid
     {

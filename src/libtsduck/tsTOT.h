@@ -41,6 +41,7 @@
 namespace ts {
     //!
     //! Representation of a Time Offset Table (TOT)
+    //! @ingroup table
     //!
     class TSDUCKDLL TOT : public AbstractTable
     {

@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a message_descriptor.
     //! @see ETSI 300 468, 6.4.7.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL MessageDescriptor : public AbstractDescriptor
     {

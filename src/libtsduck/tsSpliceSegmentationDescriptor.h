@@ -44,6 +44,7 @@ namespace ts {
     //! Information Table (SIT) because its tag reuses an MPEG-defined one.
     //!
     //! @see SCTE 35, 10.3.3
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL SpliceSegmentationDescriptor : public AbstractDescriptor
     {

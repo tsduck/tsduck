@@ -46,7 +46,7 @@ namespace ts {
     //! This class is typically used as element in an std::initializer_list.
     //! It is used only through the two derived classes ArgMixIn and ArgMixOut.
     //!
-    //! @ingroup core
+    //! @ingroup cpp
     //!
     class TSDUCKDLL ArgMix
     {
@@ -358,7 +358,7 @@ namespace ts {
     //! for a std::initializer_list<ArgMixIn> which is used as parameter to Format().
     //! But this is not guaranteed in other usages.
     //!
-    //! @ingroup core
+    //! @ingroup cpp
     //!
     class TSDUCKDLL ArgMixIn: public ArgMix
     {
@@ -406,7 +406,7 @@ namespace ts {
     //! for a std::initializer_list<ArgMixOut> which is used as parameter to Scan().
     //! But this is not guaranteed in other usages.
     //!
-    //! @ingroup core
+    //! @ingroup cpp
     //!
     class TSDUCKDLL ArgMixOut: public ArgMix
     {

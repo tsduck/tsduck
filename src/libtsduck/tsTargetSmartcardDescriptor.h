@@ -46,6 +46,7 @@ namespace ts {
     //!
     //! @see ETSI EN 301 192, 8.4.5.5
     //! @see ETSI TS 102 006, 6.5.2.1
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL TargetSmartcardDescriptor : public AbstractDescriptor
     {

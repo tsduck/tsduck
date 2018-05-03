@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Representation of a cable_delivery_system_descriptor.
     //! @see ETSI 300 468, 6.2.13.1.
-    //! @ingroup psi
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL CableDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {

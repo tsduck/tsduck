@@ -44,6 +44,7 @@
 namespace ts {
     //!
     //! Managed pointers for COM objects, auto-released (Windows-specific).
+    //! @ingroup windows
     //! @tparam COMCLASS A COM interface or object class.
     //!
     //! If @c TS_COMPTR_INSTRUMENTATION is defined and the application is
@@ -59,8 +60,6 @@ namespace ts {
     //! - comaddr  : Address of the COM object.
     //! - refcount : Current reference count on the COM object after the operation.
     //! - ptraddr  : Address of the ComPtr object.
-    //!
-    //! @ingroup system
     //!
     template <class COMCLASS>
     class ComPtr

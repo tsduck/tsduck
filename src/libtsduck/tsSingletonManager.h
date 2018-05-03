@@ -39,7 +39,8 @@
 
 namespace ts {
     //!
-    //! Helper for singleton definition
+    //! Helper for singleton definition.
+    //! @ingroup cpp
     //!
     //! The class SingletonManager is a singleton itself.
     //! It helps the creation of all other singletons.

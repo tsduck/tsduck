@@ -41,7 +41,7 @@
 namespace ts {
     //!
     //! Template message queue for inter-thread communication.
-    //! @ingroup core
+    //! @ingroup thread
     //!
     //! The ts::MessageQueue template class implements a synchronized
     //! access to a shared queue of generic messages.

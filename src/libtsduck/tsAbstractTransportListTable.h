@@ -42,7 +42,7 @@ namespace ts {
     //!
     //! Abstract base class for tables containing a list of transport stream descriptions.
     //! Common code for BAT and NIT.
-    //! @ingroup psi
+    //! @ingroup table
     //!
     class TSDUCKDLL AbstractTransportListTable : public AbstractLongTable
     {

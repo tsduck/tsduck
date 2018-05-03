@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Representation of a Time & Date Table (TDT)
+    //! @ingroup table
     //!
     class TSDUCKDLL TDT : public AbstractTable
     {

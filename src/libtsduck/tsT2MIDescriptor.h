@@ -39,6 +39,7 @@ namespace ts {
     //!
     //! Representation of a message_descriptor.
     //! @see ETSI 300 468, 6.4.13.
+    //! @ingroup descriptor
     //!
     class TSDUCKDLL T2MIDescriptor : public AbstractDescriptor
     {
