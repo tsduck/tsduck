@@ -14,6 +14,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractLongTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractSignalization.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTableTemplate.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithm.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithmTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsApplicationNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.h" />
@@ -166,6 +168,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsMPEG.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEPacket.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMultilingualBouquetNameDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMultilingualComponentDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMultilingualNetworkNameDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutexInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNames.h" />
@@ -232,6 +238,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsService.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceDiscovery.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsServiceIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceListDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSHA1.h" />
@@ -390,6 +397,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractSignalization.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
@@ -399,6 +407,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsApplicationNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
@@ -506,6 +515,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsMPEDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEG.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEPacket.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMultilingualBouquetNameDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMultilingualComponentDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMultilingualNetworkNameDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
@@ -553,6 +566,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDiscovery.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsServiceIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA1.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA256.cpp" />

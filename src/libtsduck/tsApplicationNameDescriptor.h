@@ -28,20 +28,36 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an application_name_descriptor (AIT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 715
+#include "tsAbstractMultilingualDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an application_name_descriptor (AIT specific).
+    //!
+    //! This descriptor cannot be present in other tables than an AIT
+    //! because its tag reuses an MPEG-defined one.
+    //!
+    //! @see ETSI TS 102 809, 5.3.5.6.1.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ApplicationNameDescriptor : public AbstractMultilingualDescriptor
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        ApplicationNameDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ApplicationNameDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+    };
+}

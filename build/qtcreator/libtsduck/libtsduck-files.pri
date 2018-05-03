@@ -12,6 +12,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractDescriptor.h \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.h \
     ../../../src/libtsduck/tsAbstractLongTable.h \
+    ../../../src/libtsduck/tsAbstractMultilingualDescriptor.h \
     ../../../src/libtsduck/tsAbstractSignalization.h \
     ../../../src/libtsduck/tsAbstractTable.h \
     ../../../src/libtsduck/tsAbstractTableTemplate.h \
@@ -24,6 +25,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAlgorithm.h \
     ../../../src/libtsduck/tsAlgorithmTemplate.h \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.h \
+    ../../../src/libtsduck/tsApplicationNameDescriptor.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.h \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.h \
@@ -164,6 +166,10 @@ HEADERS += \
     ../../../src/libtsduck/tsMPEG.h \
     ../../../src/libtsduck/tsMPEHandlerInterface.h \
     ../../../src/libtsduck/tsMPEPacket.h \
+    ../../../src/libtsduck/tsMultilingualBouquetNameDescriptor.h \
+    ../../../src/libtsduck/tsMultilingualComponentDescriptor.h \
+    ../../../src/libtsduck/tsMultilingualNetworkNameDescriptor.h \
+    ../../../src/libtsduck/tsMultilingualServiceNameDescriptor.h \
     ../../../src/libtsduck/tsMutex.h \
     ../../../src/libtsduck/tsMutexInterface.h \
     ../../../src/libtsduck/tsNames.h \
@@ -230,6 +236,7 @@ HEADERS += \
     ../../../src/libtsduck/tsService.h \
     ../../../src/libtsduck/tsServiceDescriptor.h \
     ../../../src/libtsduck/tsServiceDiscovery.h \
+    ../../../src/libtsduck/tsServiceIdentifierDescriptor.h \
     ../../../src/libtsduck/tsServiceListDescriptor.h \
     ../../../src/libtsduck/tsServiceTemplate.h \
     ../../../src/libtsduck/tsSHA1.h \
@@ -378,6 +385,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
+    ../../../src/libtsduck/tsAbstractMultilingualDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractSignalization.cpp \
     ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
@@ -387,6 +395,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAES.cpp \
     ../../../src/libtsduck/tsAIT.cpp \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.cpp \
+    ../../../src/libtsduck/tsApplicationNameDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
@@ -494,6 +503,10 @@ SOURCES += \
     ../../../src/libtsduck/tsMPEDemux.cpp \
     ../../../src/libtsduck/tsMPEG.cpp \
     ../../../src/libtsduck/tsMPEPacket.cpp \
+    ../../../src/libtsduck/tsMultilingualBouquetNameDescriptor.cpp \
+    ../../../src/libtsduck/tsMultilingualComponentDescriptor.cpp \
+    ../../../src/libtsduck/tsMultilingualNetworkNameDescriptor.cpp \
+    ../../../src/libtsduck/tsMultilingualServiceNameDescriptor.cpp \
     ../../../src/libtsduck/tsMutex.cpp \
     ../../../src/libtsduck/tsNames.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
@@ -541,6 +554,7 @@ SOURCES += \
     ../../../src/libtsduck/tsService.cpp \
     ../../../src/libtsduck/tsServiceDescriptor.cpp \
     ../../../src/libtsduck/tsServiceDiscovery.cpp \
+    ../../../src/libtsduck/tsServiceIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsServiceListDescriptor.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \

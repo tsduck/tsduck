@@ -26,22 +26,37 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsMultilingualNetworkNameDescriptor.h"
+#include "tsTablesFactory.h"
+TSDUCK_SOURCE;
+
+#define MY_XML_NAME u"multilingual_network_name_descriptor"
+#define MY_XML_ATTR u"network_name"
+#define MY_DID ts::DID_MLINGUAL_NETWORK
+
+TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualNetworkNameDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualNetworkNameDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualNetworkNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+
+
+//----------------------------------------------------------------------------
+// Default constructor:
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 715
+ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
+    AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
+{
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    MultilingualNetworkNameDescriptor()
+{
+    deserialize(desc, charset);
+}

@@ -28,20 +28,32 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a multilingual_network_name_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 11
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 715
+#include "tsAbstractMultilingualDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a multilingual_network_name_descriptor.
+    //! @see ETSI 300 468, 6.2.24.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL MultilingualNetworkNameDescriptor : public AbstractMultilingualDescriptor
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        MultilingualNetworkNameDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        MultilingualNetworkNameDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+    };
+}

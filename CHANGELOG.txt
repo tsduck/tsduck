@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.11-713
+Version 3.11-715
 
 - Added plugin "spliceinject" to inject SCTE 35 splice information in real time.
 
