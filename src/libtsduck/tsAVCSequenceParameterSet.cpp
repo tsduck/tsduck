@@ -91,7 +91,7 @@ ts::AVCSequenceParameterSet::AVCSequenceParameterSet(const void* data, size_t si
 // SubWidthC and SubHeightC variables (see H.264 6.2)
 //----------------------------------------------------------------------------
 
-size_t ts::AVCSequenceParameterSet::subWidthC() const
+uint32_t ts::AVCSequenceParameterSet::subWidthC() const
 {
     switch (chroma()) {
         case 1:  return 2;
@@ -101,7 +101,7 @@ size_t ts::AVCSequenceParameterSet::subWidthC() const
     }
 }
 
-size_t ts::AVCSequenceParameterSet::subHeightC() const
+uint32_t ts::AVCSequenceParameterSet::subHeightC() const
 {
     switch (chroma()) {
         case 1:  return 2;
@@ -116,14 +116,15 @@ size_t ts::AVCSequenceParameterSet::subHeightC() const
 // CropUnitX and CropUnitY variables (see H.264 7.4.2.1.1)
 //----------------------------------------------------------------------------
 
-size_t ts::AVCSequenceParameterSet::cropUnitX() const
+uint32_t ts::AVCSequenceParameterSet::cropUnitX() const
 {
     return chromaArrayType() == 0 ? 1 : subWidthC();
 }
 
-size_t ts::AVCSequenceParameterSet::cropUnitY() const
+uint32_t ts::AVCSequenceParameterSet::cropUnitY() const
 {
-    return (chromaArrayType() == 0 ? 1 : subHeightC()) * (2 - frame_mbs_only_flag);
+    assert(frame_mbs_only_flag < 2);
+    return (chromaArrayType() == 0 ? uint32_t(1) : subHeightC()) * (2 - frame_mbs_only_flag);
 }
 
 
@@ -131,24 +132,25 @@ size_t ts::AVCSequenceParameterSet::cropUnitY() const
 // Frame size in pixels
 //----------------------------------------------------------------------------
 
-size_t ts::AVCSequenceParameterSet::frameWidth() const
+uint32_t ts::AVCSequenceParameterSet::frameWidth() const
 {
     if (!valid) {
         return 0;
     }
-    size_t width = MACROBLOCK_WIDTH * (pic_width_in_mbs_minus1 + 1);
+    uint32_t width = uint32_t(MACROBLOCK_WIDTH * (pic_width_in_mbs_minus1 + 1));
     if (frame_cropping_flag) {
         width -= cropUnitX() * (frame_crop_left_offset + frame_crop_right_offset);
     }
     return width;
 }
 
-size_t ts::AVCSequenceParameterSet::frameHeight() const
+uint32_t ts::AVCSequenceParameterSet::frameHeight() const
 {
     if (!valid) {
         return 0;
     }
-    size_t height = MACROBLOCK_HEIGHT * (2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1);
+    assert(frame_mbs_only_flag < 2);
+    uint32_t height = uint32_t(MACROBLOCK_HEIGHT * (2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1));
     if (frame_cropping_flag) {
         height -= cropUnitY() * (frame_crop_top_offset + frame_crop_bottom_offset);
     }

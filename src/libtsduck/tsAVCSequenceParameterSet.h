@@ -86,37 +86,37 @@ namespace ts {
         //! The SubWidthC variable (see H.264 6.2).
         //! @return The SubWidthC variable (see H.264 6.2).
         //!
-        size_t subWidthC() const;
+        uint32_t subWidthC() const;
 
         //!
         //! The SubHeightC variable (see H.264 6.2).
         //! @return The SubHeightC variable (see H.264 6.2).
         //!
-        size_t subHeightC() const;
+        uint32_t subHeightC() const;
 
         //!
         //! The CropUnitX variable (see H.264 7.4.2.1.1).
         //! @return The CropUnitX variable.
         //!
-        size_t cropUnitX() const;
+        uint32_t cropUnitX() const;
 
         //!
         //! The CropUnitY variable (see H.264 7.4.2.1.1).
         //! @return The CropUnitY variable.
         //!
-        size_t cropUnitY() const;
+        uint32_t cropUnitY() const;
 
         //!
         //! Frame width in pixels.
         //! @return The frame width in pixels.
         //!
-        size_t frameWidth() const;
+        uint32_t frameWidth() const;
 
         //!
         //! Frame height in pixels.
         //! @return The frame height in pixels.
         //!
-        size_t frameHeight() const;
+        uint32_t frameHeight() const;
 
         //!
         //! Check validity of extension fields 1.
