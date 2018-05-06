@@ -65,6 +65,11 @@ yum install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-d
 apt-get install g++ doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcppunit-dev libcurl3 libcurl3-dev
 ~~~~
 
+- Starting with Ubuntu 18.04, `libcurl3` has been replaced by `libcurl4` and the installation commmand becomes:
+~~~~
+apt-get install g++ doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcppunit-dev libcurl4 libcurl4-openssl-dev
+~~~~
+
 - It is not possible to build 32-bit TSDuck on 64-bit Ubuntu system (command `make m32`) because
   there is no 32-bit cross-compiled package for pcsc and cppunit on Ubuntu 64-bit.
 
