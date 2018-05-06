@@ -144,7 +144,7 @@ namespace ts {
         //! @return A safe pointer to the first message in the queue or a null pointer
         //! if the queue is empty.
         //!
-        MessagePtr peek() const;
+        MessagePtr peek();
 
         //!
         //! Clear the content of the queue.
@@ -158,24 +158,19 @@ namespace ts {
         typedef std::list<MessagePtr> MessageList;
 
         //!
-        //! An iterator used by subclasses to locate placements in the list of messages.
-        //!
-        typedef typename MessageList::const_iterator MessageLocator;
-
-        //!
         //! This virtual protected method performs placement in the message queue.
         //! @param [in] msg The message to enqueue.
         //! @param [in] list The content of the queue.
         //! @return An iterator to the place where @a msg shall be placed.
         //!
-        virtual MessageLocator enqueuePlacement(const MessagePtr& msg, const MessageList& list) const;
+        virtual typename MessageList::iterator enqueuePlacement(const MessagePtr& msg, MessageList& list);
 
         //!
         //! This virtual protected method performs dequeue location in the message queue.
         //! @param [in] list The content of the queue.
         //! @return An iterator to the place from where the next message shall be removed.
         //!
-        virtual MessageLocator dequeuePlacement(const MessageList& list) const;
+        virtual typename MessageList::iterator dequeuePlacement(MessageList& list);
 
     private:
         MessageQueue(const MessageQueue&) = delete;
