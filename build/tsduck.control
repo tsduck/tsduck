@@ -5,7 +5,11 @@ Maintainer: Thierry Lelegard <thierry@lelegard.fr>
 Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
-Depends: libc6, libstdc++6, libgcc1, libpcsclite1, libcurl3
+Depends: libc6,
+ libstdc++6,
+ libgcc1,
+ libpcsclite1,
+ libcurl3 | libcurl4
 Description: MPEG Transport Stream Toolkit
  The MPEG Transport Stream Toolkit provides some simple utilities to process
  MPEG Transport Streams (TS), either as recorded files or live streams. The
