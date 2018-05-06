@@ -76,14 +76,17 @@ void ts::MessageQueue<MSG, MUTEX>::setMaxMessages(size_t max)
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-typename ts::MessageQueue<MSG, MUTEX>::MessageLocator ts::MessageQueue<MSG, MUTEX>::enqueuePlacement(const MessagePtr& msg, const MessageList& list) const
+typename ts::MessageQueue<MSG, MUTEX>::MessageList::iterator
+    ts::MessageQueue<MSG, MUTEX>::enqueuePlacement(const MessagePtr& msg, MessageList& list)
 {
     // The default placement is pushing at the back of the queue.
     return list.end();
+
 }
 
 template <typename MSG, class MUTEX>
-typename ts::MessageQueue<MSG, MUTEX>::MessageLocator ts::MessageQueue<MSG, MUTEX>::dequeuePlacement(const MessageList& list) const
+typename ts::MessageQueue<MSG, MUTEX>::MessageList::iterator
+    ts::MessageQueue<MSG, MUTEX>::dequeuePlacement(MessageList& list)
 {
     // The default placement is fetching from the head of the queue.
     return list.begin();
@@ -196,7 +199,7 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
     }
 
     // Now, attempt to dequeue a message.
-    const MessageLocator it(dequeuePlacement(_queue));
+    const typename MessageList::iterator it(dequeuePlacement(_queue));
     if (it == _queue.end()) {
         // Queue empty or nothing to queue, no message
         return false;
@@ -218,10 +221,10 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::peek() const
+typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::peek()
 {
     Guard lock(_mutex);
-    const MessageLocator it(dequeuePlacement(_queue));
+    const typename MessageList::iterator it(dequeuePlacement(_queue));
     return it == _queue.end() ? MessagePtr() : *it;
 }
 
