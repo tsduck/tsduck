@@ -50,7 +50,7 @@ ts::EMMGClient::EMMGClient() :
     _udp_address(),
     _total_bytes(0),
     _abort(0),
-    _report(0),
+    _report(NullReport::Instance()),
     _connection(emmgmux::Protocol::Instance(), true, 3),
     _udp_socket(),
     _channel_status(),
@@ -110,6 +110,7 @@ bool ts::EMMGClient::abortConnection(const UString& message)
     _connection.close(*_report);
     lock.signal();
 
+    _report = NullReport::Instance();
     return false;
 }
 
@@ -329,6 +330,7 @@ bool ts::EMMGClient::disconnect()
         ok = _udp_socket.close() && ok;
     }
 
+    _report = NullReport::Instance();
     return ok;
 }
 
@@ -428,6 +430,12 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
     // Send the message.
     if (_udp_address.hasPort()) {
         // Send data_provision messages using UDP.
+        // We need to separately check if the TCP connection is still active.
+        if (!isConnected()) {
+            _report->error(u"MUX is disconnected");
+            return false;
+        }
+        // Manually serialize the data_provision message.
         ByteBlockPtr bbp(new ByteBlock);
         tlv::Serializer serial(bbp);
         request.serialize(serial);
@@ -435,6 +443,7 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
     }
     else {
         // Send data_provision messages using UDP.
+        // The data_provision message is automatically serialized by the tlv::Connection object.
         return _connection.send(request, *_report);
     }
 }
@@ -507,7 +516,7 @@ void ts::EMMGClient::main()
             }
             // Get abort and report handler
             abort = _abort;
-            report = _report;
+            report = _report == 0 ? &NULLREP : _report;
             // Automatically release mutex
         }
 

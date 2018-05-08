@@ -167,7 +167,7 @@ namespace ts {
         //! Check if the EMMG is connected.
         //! @return True if the EMMG is connected.
         //!
-        bool isConnected() const {return _state == CONNECTED;}
+        bool isConnected() const { return _state == CONNECTED; }
 
         //!
         //! Get the total number of data bytes which were sent so far.
@@ -198,7 +198,7 @@ namespace ts {
         static const MilliSecond RESPONSE_TIMEOUT = 5000;
 
         // Private members
-        State                  _state;
+        volatile State         _state;
         SocketAddress          _udp_address;
         uint64_t               _total_bytes;
         const AbortInterface*  _abort;
