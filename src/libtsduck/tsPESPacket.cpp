@@ -43,6 +43,7 @@ ts::PESPacket::PESPacket() :
     _is_valid(false),
     _header_size(0),
     _source_pid(PID_NULL),
+    _stream_type(ST_NULL),
     _first_pkt(0),
     _last_pkt(0),
     _data()
@@ -118,7 +119,7 @@ ts::PESPacket::PESPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
 // Initialize from a binary content.
 //----------------------------------------------------------------------------
 
-void ts::PESPacket::initialize (const ByteBlockPtr& bbp)
+void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
 {
     _is_valid = false;
     _header_size = 0;
@@ -173,6 +174,7 @@ void ts::PESPacket::clear()
     _is_valid = false;
     _header_size = 0;
     _source_pid = PID_NULL;
+    _stream_type = ST_NULL;
     _data.clear();
 }
 
@@ -182,11 +184,12 @@ void ts::PESPacket::clear()
 // between the two packet objects.
 //----------------------------------------------------------------------------
 
-ts::PESPacket& ts::PESPacket::operator= (const PESPacket& pp)
+ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
 {
     _is_valid = pp._is_valid;
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
+    _stream_type = pp._stream_type;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
     _data = pp._data;
@@ -199,11 +202,12 @@ ts::PESPacket& ts::PESPacket::operator= (const PESPacket& pp)
 // is duplicated.
 //----------------------------------------------------------------------------
 
-ts::PESPacket& ts::PESPacket::copy (const PESPacket& pp)
+ts::PESPacket& ts::PESPacket::copy(const PESPacket& pp)
 {
     _is_valid = pp._is_valid;
     _header_size = pp._header_size;
     _source_pid = pp._source_pid;
+    _stream_type = pp._stream_type;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
     _data = pp._is_valid ? new ByteBlock (*pp._data) : 0;
@@ -217,7 +221,7 @@ ts::PESPacket& ts::PESPacket::copy (const PESPacket& pp)
 // Note: Invalid packets are never identical
 //----------------------------------------------------------------------------
 
-bool ts::PESPacket::operator== (const PESPacket& pp) const
+bool ts::PESPacket::operator==(const PESPacket& pp) const
 {
     return _is_valid && pp._is_valid && (_data == pp._data || *_data == *pp._data);
 }
@@ -229,8 +233,11 @@ bool ts::PESPacket::operator== (const PESPacket& pp) const
 
 bool ts::PESPacket::isMPEG2Video() const
 {
-    // Must have a video stream_id and payload must start with 00 00 01
-    if (!IsVideoSID (getStreamId())) {
+    // Must have a video stream_id and payload must start with 00 00 01.
+    if (_stream_type == ST_MPEG1_VIDEO || _stream_type == ST_MPEG2_VIDEO) {
+        return true;
+    }
+    else if (_stream_type != ST_NULL || !IsVideoSID(getStreamId())) {
         return false;
     }
     else {
@@ -248,7 +255,10 @@ bool ts::PESPacket::isMPEG2Video() const
 bool ts::PESPacket::isAVC() const
 {
     // Must have a video stream_id and payload must start with 00 00 00 [00...] 01
-    if (!IsVideoSID (getStreamId())) {
+    if (_stream_type == ST_AVC_VIDEO) {
+        return true;
+    }
+    else if (_stream_type != ST_NULL || !IsVideoSID(getStreamId())) {
         return false;
     }
     else {
@@ -270,7 +280,15 @@ bool ts::PESPacket::isAVC() const
 bool ts::PESPacket::isAC3() const
 {
     // Payload must start with 0B 77
-    const uint8_t* pl = payload();
-    size_t pl_size = payloadSize();
-    return pl_size > 2 && pl[0] == 0x0B && pl[1] == 0x77;
+    if (_stream_type == ST_AC3_AUDIO) {
+        return true;
+    }
+    else if (_stream_type != ST_NULL) {
+        return false;
+    }
+    else {
+        const uint8_t* pl = payload();
+        size_t pl_size = payloadSize();
+        return pl_size > 2 && pl[0] == 0x0B && pl[1] == 0x77;
+    }
 }

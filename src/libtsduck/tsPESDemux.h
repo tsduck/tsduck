@@ -40,13 +40,14 @@
 #include "tsVideoAttributes.h"
 #include "tsAVCAttributes.h"
 #include "tsAC3Attributes.h"
+#include "tsSectionDemux.h"
 
 namespace ts {
     //!
     //! This class extracts PES packets from TS packets.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL PESDemux: public TimeTrackerDemux
+    class TSDUCKDLL PESDemux: public TimeTrackerDemux, private TableHandlerInterface
     {
     public:
         //!
@@ -156,7 +157,13 @@ namespace ts {
             void syncLost() {sync = false; ts->clear();}
         };
 
-        typedef std::map <PID, PIDContext> PIDContextMap;
+        // Map of PID contexts, indexed by PID.
+        // One context is created per demuxed PES PID.
+        typedef std::map<PID,PIDContext> PIDContextMap;
+
+        // Map of stream types (from PMT), indexed by PID.
+        // All known PID's are referenced here, not only demuxed PES PID's.
+        typedef std::map<PID,uint8_t> StreamTypeMap;
 
         // Feed the demux with a TS packet (PID already filtered).
         void processPacket(const TSPacket&);
@@ -164,11 +171,16 @@ namespace ts {
         // Process a complete PES packet
         void processPESPacket(PID, PIDContext&);
 
+        // Implementation of TableHandlerInterface.
+        virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
+
         // Private members:
         PESHandlerInterface* _pes_handler;
         PIDContextMap        _pids;
+        StreamTypeMap        _stream_types;
+        SectionDemux         _section_demux;
 
-        // Inacessible operations
+        // Inaccessible operations
         PESDemux(const PESDemux&) = delete;
         PESDemux& operator=(const PESDemux&) = delete;
     };

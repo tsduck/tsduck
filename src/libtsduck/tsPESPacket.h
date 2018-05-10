@@ -206,6 +206,24 @@ namespace ts {
         }
 
         //!
+        //! Get the stream type, as specified in the PMT (optional).
+        //! @return The stream type.
+        //!
+        uint8_t getStreamType() const
+        {
+            return _stream_type;
+        }
+
+        //!
+        //! Set the stream type, as specified in the PMT.
+        //! @param [in] type The stream type.
+        //!
+        void setStreamType(uint8_t type)
+        {
+            _stream_type = type;
+        }
+
+        //!
         //! Index of first TS packet of the PES packet in the demultiplexed stream.
         //! Usually valid only if the PES packet was extracted by a PES demux.
         //! @return The first TS packet of the PES packet in the demultiplexed stream.
@@ -361,6 +379,7 @@ namespace ts {
         bool          _is_valid;     // Content of *_data is a valid packet
         size_t        _header_size;  // PES header size in bytes
         PID           _source_pid;   // Source PID (informational)
+        uint8_t       _stream_type;  // Stream type from PMT (informational)
         PacketCounter _first_pkt;    // Index of first packet in stream
         PacketCounter _last_pkt;     // Index of last packet in stream
         ByteBlockPtr  _data;         // Full binary content of the packet
