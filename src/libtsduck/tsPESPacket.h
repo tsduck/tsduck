@@ -60,8 +60,9 @@ namespace ts {
         //!
         //! Default constructor.
         //! The PESPacket is initially marked invalid.
+        //! @param [in] source_pid PID from which the packet was read.
         //!
-        PESPacket();
+        PESPacket(PID source_pid = PID_NULL);
 
         //!
         //! Copy constructor.
