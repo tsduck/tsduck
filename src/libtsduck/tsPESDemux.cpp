@@ -33,6 +33,8 @@
 
 #include "tsPESDemux.h"
 #include "tsMemoryUtils.h"
+#include "tsPAT.h"
+#include "tsPMT.h"
 TSDUCK_SOURCE;
 
 
@@ -57,8 +59,12 @@ namespace {
 ts::PESDemux::PESDemux(PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
     SuperClass(pid_filter),
     _pes_handler(pes_handler),
-    _pids()
+    _pids(),
+    _stream_types(),
+    _section_demux(this)
 {
+    // Analyze the PAT, to get the PMT's, to get the stream types.
+    _section_demux.addPID(PID_PAT);
 }
 
 
@@ -99,12 +105,18 @@ void ts::PESDemux::immediateReset()
 {
     SuperClass::immediateReset();
     _pids.clear();
+    _stream_types.clear();
+
+    // Reset the section demux back to initial state (intercepting the PAT).
+    _section_demux.reset();
+    _section_demux.addPID(PID_PAT);
 }
 
 void ts::PESDemux::immediateResetPID(PID pid)
 {
     SuperClass::immediateResetPID(pid);
     _pids.erase(pid);
+    _stream_types.erase(pid);
 }
 
 
@@ -113,9 +125,9 @@ void ts::PESDemux::immediateResetPID(PID pid)
 // Check isValid() on returned object.
 //----------------------------------------------------------------------------
 
-void ts::PESDemux::getAudioAttributes (PID pid, AudioAttributes& va) const
+void ts::PESDemux::getAudioAttributes(PID pid, AudioAttributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find (pid);
+    PIDContextMap::const_iterator pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.audio.isValid()) {
         va.invalidate();
     }
@@ -124,9 +136,9 @@ void ts::PESDemux::getAudioAttributes (PID pid, AudioAttributes& va) const
     }
 }
 
-void ts::PESDemux::getVideoAttributes (PID pid, VideoAttributes& va) const
+void ts::PESDemux::getVideoAttributes(PID pid, VideoAttributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find (pid);
+    PIDContextMap::const_iterator pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.video.isValid()) {
         va.invalidate();
     }
@@ -135,9 +147,9 @@ void ts::PESDemux::getVideoAttributes (PID pid, VideoAttributes& va) const
     }
 }
 
-void ts::PESDemux::getAVCAttributes (PID pid, AVCAttributes& va) const
+void ts::PESDemux::getAVCAttributes(PID pid, AVCAttributes& va) const
 {
-    PIDContextMap::const_iterator pci = _pids.find (pid);
+    PIDContextMap::const_iterator pci = _pids.find(pid);
     if (pci == _pids.end() || !pci->second.avc.isValid()) {
         va.invalidate();
     }
@@ -146,7 +158,7 @@ void ts::PESDemux::getAVCAttributes (PID pid, AVCAttributes& va) const
     }
 }
 
-void ts::PESDemux::getAC3Attributes (PID pid, AC3Attributes& va) const
+void ts::PESDemux::getAC3Attributes(PID pid, AC3Attributes& va) const
 {
     PIDContextMap::const_iterator pci = _pids.find (pid);
     if (pci == _pids.end() || !pci->second.ac3.isValid()) {
@@ -157,9 +169,9 @@ void ts::PESDemux::getAC3Attributes (PID pid, AC3Attributes& va) const
     }
 }
 
-bool ts::PESDemux::allAC3 (PID pid) const
+bool ts::PESDemux::allAC3(PID pid) const
 {
-    PIDContextMap::const_iterator pci = _pids.find (pid);
+    PIDContextMap::const_iterator pci = _pids.find(pid);
     return pci != _pids.end() && pci->second.pes_count > 0 && pci->second.ac3_count == pci->second.pes_count;
 }
 
@@ -170,9 +182,15 @@ bool ts::PESDemux::allAC3 (PID pid) const
 
 void ts::PESDemux::feedPacket(const TSPacket& pkt)
 {
+    // Feed the section demux to get the PAT and PMT's.
+    _section_demux.feedPacket(pkt);
+
+    // Process PES data on filtered PID's.
     if (_pid_filter[pkt.getPID()]) {
         processPacket(pkt);
     }
+
+    // Invoke super class for its own processing.
     SuperClass::feedPacket(pkt);
 }
 
@@ -195,10 +213,10 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // If at a unit start and the context exists, process previous PES packet in context
     if (pc_exists && pkt.getPUSI() && pci->second.sync) {
-        // Process packet, invoke all handlers
-        processPESPacket (pid, pci->second);
+        // Process packet, invoke all handlers  
+        processPESPacket(pid, pci->second);
         // Recheck PID context in case it was reset by a handler
-        pci = _pids.find (pid);
+        pci = _pids.find(pid);
         pc_exists = pci != _pids.end();
     }
 
@@ -207,7 +225,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     // for a while => release context.
     if (pkt.getScrambling() != SC_CLEAR) {
         if (pc_exists) {
-            _pids.erase (pid);
+            _pids.erase(pid);
         }
         return;
     }
@@ -282,6 +300,42 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
 
 //-----------------------------------------------------------------------------
+// This hook is invoked when a complete table is available.
+// Implementation of TableHandlerInterface.
+//-----------------------------------------------------------------------------
+
+void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
+{
+    switch (table.tableId()) {
+        case TID_PAT: {
+            // Got a PAT, add all PMT PID's to section demux.
+            const PAT pat(table);
+            if (pat.isValid()) {
+                for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
+                    _section_demux.addPID(it->second);
+                }
+            }
+            break;
+        }
+        case TID_PMT: {
+            // Got a PMT, collect all stream types.
+            const PMT pmt(table);
+            if (pmt.isValid()) {
+                for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+                    _stream_types[it->first] = it->second.stream_type;
+                }
+            }
+            break;
+        }
+        default: {
+            // Nothing to do.
+            break;
+        }
+    }
+}
+
+
+//-----------------------------------------------------------------------------
 // This hook is invoked when a complete PES packet is available.
 //-----------------------------------------------------------------------------
 
@@ -312,6 +366,12 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     pp.setFirstTSPacketIndex(pc.first_pkt);
     pp.setLastTSPacketIndex(pc.last_pkt);
 
+    // Set stream type if known.
+    const StreamTypeMap::const_iterator it = _stream_types.find(pid);
+    if (it != _stream_types.end()) {
+        pp.setStreamType(it->second);
+    }
+
     // Mark that we are in the context of handlers.
     // This is used to prevent the destruction of PID contexts during
     // the execution of a handler.
@@ -330,16 +390,16 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
             // The beginning of the payload is already a start code prefix.
             for (size_t offset = 0; offset < psize; ) {
                 // Look for next start code
-                const void* pnext = LocatePattern (pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
+                const void* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
                 size_t next = pnext == 0 ? psize : reinterpret_cast <const uint8_t*> (pnext) - pdata;
                 // Invoke handler
                 if (_pes_handler != 0) {
-                    _pes_handler->handleVideoStartCode (*this, pp, pdata[offset+3], offset, next - offset);
+                    _pes_handler->handleVideoStartCode(*this, pp, pdata[offset + 3], offset, next - offset);
                 }
                 // Accumulate info from video units to extract video attributes.
                 // If new attributes were found, invoke handler.
-                if (pc.video.moreBinaryData (pdata + offset, next - offset) && _pes_handler != 0) {
-                    _pes_handler->handleNewVideoAttributes (*this, pp, pc.video);
+                if (pc.video.moreBinaryData(pdata + offset, next - offset) && _pes_handler != 0) {
+                    _pes_handler->handleNewVideoAttributes(*this, pp, pc.video);
                 }
                 // Move to next start code
                 offset = next;
@@ -432,17 +492,17 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
             pc.ac3_count++;
             // Accumulate info from audio frames to extract audio attributes.
             // If new attributes were found, invoke handler.
-            if (pc.ac3.moreBinaryData (pdata, psize) && _pes_handler != 0) {
-                _pes_handler->handleNewAC3Attributes (*this, pp, pc.ac3);
+            if (pc.ac3.moreBinaryData(pdata, psize) && _pes_handler != 0) {
+                _pes_handler->handleNewAC3Attributes(*this, pp, pc.ac3);
             }
         }
 
         // Process other audio frames
-        else if (IsAudioSID (pp.getStreamId())) {
+        else if (IsAudioSID(pp.getStreamId())) {
             // Accumulate info from audio frames to extract audio attributes.
             // If new attributes were found, invoke handler.
-            if (pc.audio.moreBinaryData (pdata, psize) && _pes_handler != 0) {
-                _pes_handler->handleNewAudioAttributes (*this, pp, pc.audio);
+            if (pc.audio.moreBinaryData(pdata, psize) && _pes_handler != 0) {
+                _pes_handler->handleNewAudioAttributes(*this, pp, pc.audio);
             }
         }
     }

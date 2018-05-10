@@ -568,6 +568,7 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum : uint8_t {
+        ST_NULL          = 0x00, //!< Invalid stream type value, used to indicate an absence of value
         ST_MPEG1_VIDEO   = 0x01, //!< MPEG-1 Video
         ST_MPEG2_VIDEO   = 0x02, //!< MPEG-2 Video
         ST_MPEG1_AUDIO   = 0x03, //!< MPEG-1 Audio
