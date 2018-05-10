@@ -2,7 +2,7 @@
 
 ### Abstract
 
-[TSDuck](https://tsduck.github.io/) is an extensible toolkit for MPEG/DVB transport streams.
+[TSDuck](https://tsduck.io/) is an extensible toolkit for MPEG/DVB transport streams.
 
 TSDuck is used in digital television systems for test, monitoring, integration, debug, lab or demo.
 
@@ -44,13 +44,13 @@ Using `--help`, each utility displays its syntax and exits.
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB
 signalization and many other features. See the
-[programming guide](https://tsduck.github.io/doxy/html/)
-and its [tutorial](https://tsduck.github.io/doxy/html/libtutorial.html).
+[programming guide](https://tsduck.io/doxy/)
+and its [tutorial](https://tsduck.io/doxy/libtutorial.html).
 
 ### Building
 
 TSDuck can be built on Windows, Linux and macOS systems. See the
-[building guide](https://tsduck.github.io/doxy/html/building.html) for details.
+[building guide](https://tsduck.io/doxy/building.html) for details.
 
 ### Download
 

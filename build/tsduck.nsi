@@ -274,7 +274,7 @@ Section "-Common" SectionCommon
     ; Declare uninstaller in "Add/Remove Software" control panel
     WriteRegStr HKLM "${UninstallKey}" "DisplayName" "TSDuck"
     WriteRegStr HKLM "${UninstallKey}" "Publisher" "Thierry Lelegard"
-    WriteRegStr HKLM "${UninstallKey}" "URLInfoAbout" "https://tsduck.github.io/"
+    WriteRegStr HKLM "${UninstallKey}" "URLInfoAbout" "https://tsduck.io/"
     WriteRegStr HKLM "${UninstallKey}" "DisplayVersion" "${tsduckVersion}"
     WriteRegStr HKLM "${UninstallKey}" "DisplayIcon" "$INSTDIR\TSDuckUninstall.exe"
     WriteRegStr HKLM "${UninstallKey}" "UninstallString" "$INSTDIR\TSDuckUninstall.exe"
