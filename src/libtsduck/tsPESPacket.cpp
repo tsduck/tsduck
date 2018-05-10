@@ -39,10 +39,10 @@ TSDUCK_SOURCE;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::PESPacket::PESPacket() :
+ts::PESPacket::PESPacket(PID source_pid) :
     _is_valid(false),
     _header_size(0),
-    _source_pid(PID_NULL),
+    _source_pid(source_pid),
     _stream_type(ST_NULL),
     _first_pkt(0),
     _last_pkt(0),
@@ -59,6 +59,7 @@ ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
     _is_valid(pp._is_valid),
     _header_size(pp._header_size),
     _source_pid(pp._source_pid),
+    _stream_type(pp._stream_type),
     _first_pkt(pp._first_pkt),
     _last_pkt(pp._last_pkt),
     _data()
@@ -82,34 +83,19 @@ ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
 //----------------------------------------------------------------------------
 
 ts::PESPacket::PESPacket(const void* content, size_t content_size, PID source_pid) :
-    _is_valid(false),
-    _header_size(0),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    PESPacket(source_pid)
 {
     initialize(new ByteBlock(content, content_size));
 }
 
 ts::PESPacket::PESPacket(const ByteBlock& content, PID source_pid) :
-    _is_valid(false),
-    _header_size(0),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    PESPacket(source_pid)
 {
     initialize(new ByteBlock(content));
 }
 
 ts::PESPacket::PESPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
-    _is_valid(false),
-    _header_size(0),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    PESPacket(source_pid)
 {
     initialize(content_ptr);
 }
@@ -280,10 +266,13 @@ bool ts::PESPacket::isAVC() const
 bool ts::PESPacket::isAC3() const
 {
     // Payload must start with 0B 77
-    if (_stream_type == ST_AC3_AUDIO) {
+    if (_stream_type == ST_AC3_AUDIO || _stream_type == ST_EAC3_AUDIO) {
+        // ATSC defined stream type.
         return true;
     }
-    else if (_stream_type != ST_NULL) {
+    else if (_stream_type != ST_NULL && _stream_type != ST_PES_PRIV) {
+        // In DVB systems, there is no stream type for AC-3. AC-3 streams are
+        // defined by "PES private data" and an AC-3 descriptor.
         return false;
     }
     else {
