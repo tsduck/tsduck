@@ -555,6 +555,9 @@ void ts::DataInjectPlugin::TCPListener::main()
         _plugin->_channel_established = false;
         _plugin->_stream_established = false;
 
+        // Clear pending messages from previous session.
+        _plugin->_queue.clear();
+
         // Loop on message reception from the client
         while (ok && _client.receive(msg, _tsp, *_tsp)) {
 
@@ -575,9 +578,10 @@ void ts::DataInjectPlugin::TCPListener::main()
                         channel_status.channel_id = m->channel_id;
                         channel_status.client_id = m->client_id;
                         channel_status.section_TSpkt_flag = m->section_TSpkt_flag;
-                        ok = _client.send (channel_status, *_tsp);
+                        ok = _client.send(channel_status, *_tsp);
                         Guard lock(_plugin->_mutex);
                         _plugin->_client_id = m->client_id;
+                        _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
                         _plugin->_channel_established = true;
                     }
                     break;
