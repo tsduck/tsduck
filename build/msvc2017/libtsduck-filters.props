@@ -61,6 +61,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsAC3Descriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsAC4Descriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1201,6 +1204,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsAC4Descriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.cpp">

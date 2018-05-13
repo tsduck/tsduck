@@ -105,13 +105,15 @@ const ts::TSPacket ts::EmptyPacket = {{
 // Can be used once at startup time in paranoid applications.
 //----------------------------------------------------------------------------
 
-void ts::TSPacket::SanityCheck ()
+void ts::TSPacket::SanityCheck()
 {
-    assert (sizeof(TSPacket) == PKT_SIZE);
+    assert(sizeof(TSPacket) == PKT_SIZE);
     TSPacket p;
-    assert (reinterpret_cast<uint8_t*> (&p) == p.b);
+    assert(reinterpret_cast<uint8_t*>(&p) == p.b);
     TSPacket pa[2];
-    assert (reinterpret_cast<char*> (&(pa[1])) == reinterpret_cast<char*> (&(pa[0])) + PKT_SIZE);
+    assert(reinterpret_cast<char*>(&(pa[1])) == reinterpret_cast<char*>(&(pa[0])) + PKT_SIZE);
+    TSPacketVector pv(2);
+    assert(reinterpret_cast<char*>(&(pv[1])) == reinterpret_cast<char*>(&(pv[0])) + PKT_SIZE);
 }
 
 //----------------------------------------------------------------------------

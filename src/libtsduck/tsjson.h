@@ -120,6 +120,10 @@ namespace ts {
         {
         public:
             //!
+            //! Default constructor.
+            //!
+            Value() = default;
+            //!
             //! Virtual destructor.
             //!
             virtual ~Value() {}
@@ -272,6 +276,11 @@ namespace ts {
         class TSDUCKDLL Null : public Value
         {
         public:
+            //!
+            //! Default constructor.
+            //!
+            Null() = default;
+
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeNull; }
             virtual bool isNull() const override { return true; }
@@ -285,6 +294,11 @@ namespace ts {
         class TSDUCKDLL True : public Value
         {
         public:
+            //!
+            //! Default constructor.
+            //!
+            True() = default;
+
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeTrue; }
             virtual bool isTrue() const override { return true; }
@@ -301,6 +315,11 @@ namespace ts {
         class TSDUCKDLL False : public Value
         {
         public:
+            //!
+            //! Default constructor.
+            //!
+            False() = default;
+
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeFalse; }
             virtual bool isFalse() const override { return true; }

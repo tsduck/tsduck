@@ -286,7 +286,7 @@ bool ts::Time::decode(const ts::UString& str, int fields)
     try {
         *this = Time(t);
     }
-    catch (TimeError) {
+    catch (TimeError&) {
         return false;
     }
     return true;

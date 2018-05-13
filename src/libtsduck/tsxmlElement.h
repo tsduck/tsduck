@@ -244,6 +244,18 @@ namespace ts {
             }
 
             //!
+            //! Set an optional bool attribute to a node.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setOptionalBoolAttribute(const UString& name, const Variable<bool>& value)
+            {
+                if (value.set()) {
+                    refAttribute(name).setBool(value.value());
+                }
+            }
+
+            //!
             //! Set an attribute with an integer value to a node.
             //! @tparam INT An integer type.
             //! @param [in] name Attribute name.
@@ -371,6 +383,14 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool defValue = false) const;
+
+            //!
+            //! Get an optional boolean attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @return True on success, false on error.
+            //!
+            bool getOptionalBoolAttribute(Variable<bool>& value, const UString& name) const;
 
             //!
             //! Get an integer attribute of an XML element.

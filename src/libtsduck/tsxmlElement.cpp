@@ -411,6 +411,29 @@ bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool r
 
 
 //----------------------------------------------------------------------------
+// Get an optional boolean attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getOptionalBoolAttribute(Variable<bool>& value, const UString& name) const
+{
+    // Default: erase value.
+    value.reset();
+    bool ok = true;
+
+    if (hasAttribute(name)) {
+        // Attribute present, value must be correct.
+        bool val = false;
+        ok = getBoolAttribute(val, name, true);
+        if (ok) {
+            value = val;
+        }
+    }
+
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
 // Get an enumeration attribute of an XML element.
 //----------------------------------------------------------------------------
 
