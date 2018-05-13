@@ -19,6 +19,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
     ../../../src/libtsduck/tsAC3Descriptor.h \
+    ../../../src/libtsduck/tsAC4Descriptor.h \
     ../../../src/libtsduck/tsAdaptationFieldDataDescriptor.h \
     ../../../src/libtsduck/tsAES.h \
     ../../../src/libtsduck/tsAIT.h \
@@ -391,6 +392,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
+    ../../../src/libtsduck/tsAC4Descriptor.cpp \
     ../../../src/libtsduck/tsAdaptationFieldDataDescriptor.cpp \
     ../../../src/libtsduck/tsAES.cpp \
     ../../../src/libtsduck/tsAIT.cpp \

@@ -47,6 +47,7 @@
 #include "tsAbstractTransportListTable.h"
 #include "tsAC3Attributes.h"
 #include "tsAC3Descriptor.h"
+#include "tsAC4Descriptor.h"
 #include "tsAdaptationFieldDataDescriptor.h"
 #include "tsAES.h"
 #include "tsAIT.h"

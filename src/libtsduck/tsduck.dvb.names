@@ -1593,6 +1593,13 @@ Bits = 8
 2 = discrete
 3 = undefined
 
+[AC4ChannelMode]
+Bits = 8
+0 = Mono
+1 = Stereo
+2 = Multi-channel
+3 = Reserved
+
 [ScramblingControl]
 # In TS header
 Bits = 2

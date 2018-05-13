@@ -400,7 +400,7 @@ size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
 
     // Return packets from the input buffer
     size_t pkt_cnt = std::min(_inbuf_count, max_packets);
-    ::memcpy(buffer, _inbuf + _inbuf_next, pkt_cnt * PKT_SIZE);
+    TSPacket::Copy(buffer, _inbuf + _inbuf_next, pkt_cnt);
     _inbuf_count -= pkt_cnt;
     _inbuf_next += pkt_cnt * PKT_SIZE;
 

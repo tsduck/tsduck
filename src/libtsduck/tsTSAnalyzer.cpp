@@ -793,8 +793,8 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
 {
     for (size_t di = 0; di < descs.count(); ++di) {
 
-        const uint8_t* data(descs[di]->payload());
-        size_t size(descs[di]->payloadSize());
+        const uint8_t* data = descs[di]->payload();
+        size_t size = descs[di]->payloadSize();
 
         switch (descs[di]->tag()) {
             case DID_CA: {
@@ -876,6 +876,35 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 if (ps != 0) {
                     // The presence of this descriptor indicates a PID carrying an AIT.
                     ps->comment = u"AIT";
+                }
+                break;
+            }
+            case DID_EXTENSION: {
+                // Extension descriptor: need to look at the descriptor_tag_extension.
+                if (size >= 1) {
+                    switch (data[0]) {
+                        case EDID_AC4: {
+                            // The presence of this descriptor indicates an AC-4 audio track.
+                            ps->description = u"AC-4 Audio";
+                            ps->carry_audio = true;
+                            break;
+                        }
+                        case EDID_DTS_HD_AUDIO: {
+                            // The presence of this descriptor indicates an DTS-HD audio track.
+                            ps->description = u"DTS-HD Audio";
+                            ps->carry_audio = true;
+                            break;
+                        }
+                        case EDID_DTS_NEURAL: {
+                            // The presence of this descriptor indicates an DTS-Neural audio track.
+                            ps->description = u"DTS Neural Surround Audio";
+                            ps->carry_audio = true;
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
                 }
                 break;
             }

@@ -21,6 +21,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Descriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAC4Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAES.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAIT.h" />
@@ -403,6 +404,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAC4Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAIT.cpp" />
