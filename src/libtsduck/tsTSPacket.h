@@ -489,39 +489,62 @@ namespace ts {
         std::ostream& display(std::ostream& strm, uint32_t flags = 0, int indent = 0) const;
 
         //!
+        //! Init packet from a memory area.
+        //! @param [in] source Address of the memory area to read. Must contain at least PKT_SIZE bytes.
+        //!
+        void copyFrom(const void* source)
+        {
+            assert(source != 0);
+            ::memcpy(b, source, PKT_SIZE);
+        }
+
+        //!
+        //! Copy packet content to a memory area.
+        //! @param [out] dest Address of the memory area to write. Must contain at least PKT_SIZE bytes.
+        //!
+        void copyTo(void* dest) const
+        {
+            assert(dest != 0);
+            ::memcpy(dest, b, PKT_SIZE);
+        }
+
+        //!
         //! Copy contiguous TS packets.
         //! @param [out] dest Address of the first contiguous TS packet to write.
-        //! @param source Address of the first contiguous TS packet to read.
-        //! @param count Number of TS packets to copy.
+        //! @param [in] source Address of the first contiguous TS packet to read.
+        //! @param [in] count Number of TS packets to copy.
         //!
         static inline void Copy(TSPacket* dest, const TSPacket* source, size_t count = 1)
         {
-            // The casts are here to avoid warnings with GCC 8.x.x.
-            ::memcpy(reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(source), count * PKT_SIZE);
+            assert(dest != 0);
+            assert(source != 0);
+            ::memcpy(dest->b, source->b, count * PKT_SIZE);
         }
 
         //!
         //! Copy contiguous TS packets from raw memory.
         //! @param [out] dest Address of the first contiguous TS packet to write.
-        //! @param source Address of the memory area to read.
-        //! @param count Number of TS packets to copy.
+        //! @param [in] source Address of the memory area to read.
+        //! @param [in] count Number of TS packets to copy.
         //!
         static inline void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1)
         {
-            // The cast is here to avoid warnings with GCC 8.x.x.
-            ::memcpy(reinterpret_cast<void*>(dest), source, count * PKT_SIZE);
+            assert(dest != 0);
+            assert(source != 0);
+            ::memcpy(dest->b, source, count * PKT_SIZE);
         }
 
         //!
         //! Copy contiguous TS packets into raw memory.
         //! @param [out] dest Address of the memory area to write.
-        //! @param source Address of the first contiguous TS packet to read.
-        //! @param count Number of TS packets to copy.
+        //! @param [in] source Address of the first contiguous TS packet to read.
+        //! @param [in] count Number of TS packets to copy.
         //!
         static inline void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1)
         {
-            // The cast is here to avoid warnings with GCC 8.x.x.
-            ::memcpy(dest, reinterpret_cast<const void*>(source), count * PKT_SIZE);
+            assert(dest != 0);
+            assert(source != 0);
+            ::memcpy(dest, source->b, count * PKT_SIZE);
         }
 
         //!
