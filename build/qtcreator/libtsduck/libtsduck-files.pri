@@ -100,6 +100,11 @@ HEADERS += \
     ../../../src/libtsduck/tsDVBCharsetUTF16.h \
     ../../../src/libtsduck/tsDVBCharsetUTF8.h \
     ../../../src/libtsduck/tsDVBCSA2.h \
+    ../../../src/libtsduck/tsDVBHTMLApplicationBoundaryDescriptor.h \
+    ../../../src/libtsduck/tsDVBHTMLApplicationDescriptor.h \
+    ../../../src/libtsduck/tsDVBHTMLApplicationLocationDescriptor.h \
+    ../../../src/libtsduck/tsDVBJApplicationDescriptor.h \
+    ../../../src/libtsduck/tsDVBJApplicationLocationDescriptor.h \
     ../../../src/libtsduck/tsDVS042.h \
     ../../../src/libtsduck/tsDVS042Template.h \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.h \
@@ -454,6 +459,11 @@ SOURCES += \
     ../../../src/libtsduck/tsDVBCharsetUTF16.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF8.cpp \
     ../../../src/libtsduck/tsDVBCSA2.cpp \
+    ../../../src/libtsduck/tsDVBHTMLApplicationBoundaryDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBHTMLApplicationDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBHTMLApplicationLocationDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBJApplicationDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBJApplicationLocationDescriptor.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.cpp \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \

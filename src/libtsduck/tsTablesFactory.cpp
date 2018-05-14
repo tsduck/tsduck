@@ -128,7 +128,7 @@ ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(con
     return it != _descriptorNames.end() ? it->second : 0;
 }
 
-ts::TablesFactory::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id) const
+ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id) const
 {
     std::map<TID,DisplaySectionFunction>::const_iterator it = _sectionDisplays.find(id);
     return it != _sectionDisplays.end() ? it->second : 0;
@@ -210,7 +210,7 @@ ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(con
     return getDescriptorFunction(edid, tid, _descriptorIds);
 }
 
-ts::TablesFactory::DisplayDescriptorFunction ts::TablesFactory::getDescriptorDisplay(const EDID& edid, TID tid) const
+ts::DisplayDescriptorFunction ts::TablesFactory::getDescriptorDisplay(const EDID& edid, TID tid) const
 {
     return getDescriptorFunction(edid, tid, _descriptorDisplays);
 }

@@ -229,3 +229,13 @@ void ts::SSULinkageDescriptor::fromXML(const xml::Element* element)
     element->report().error(u"Internal error, there is no XML representation for SSULinkageDescriptor");
     _is_valid = false;
 }
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+{
+    LinkageDescriptor::DisplayDescriptor(display, did, payload, size, indent, tid, pds);
+}

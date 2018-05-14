@@ -153,14 +153,7 @@ namespace ts {
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
         virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
-
-        //!
-        //! A static method to display a section.
-        //! @param [in,out] display Display engine.
-        //! @param [in] section The section to display.
-        //! @param [in] indent Indentation width.
-        //!
-        static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
+        DeclareDisplaySection();
 
     private:
         // Add a new section to a table being serialized

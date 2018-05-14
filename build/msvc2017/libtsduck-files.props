@@ -102,6 +102,11 @@
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF16.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF8.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCSA2.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationBoundaryDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationLocationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBJApplicationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBJApplicationLocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042Template.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.h" />
@@ -466,6 +471,11 @@
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF16.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF8.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCSA2.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationBoundaryDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationLocationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBJApplicationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBJApplicationLocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />

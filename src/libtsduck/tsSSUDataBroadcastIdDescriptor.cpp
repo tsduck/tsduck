@@ -212,3 +212,13 @@ void ts::SSUDataBroadcastIdDescriptor::fromXML(const xml::Element* element)
     element->report().error(u"Internal error, there is no XML representation for SSUDataBroadcastIdDescriptor");
     _is_valid = false;
 }
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+{
+    DataBroadcastIdDescriptor::DisplayDescriptor(display, did, payload, size, indent, tid, pds);
+}

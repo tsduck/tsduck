@@ -42,6 +42,7 @@ namespace ts {
     //! This descriptor cannot be present in other tables than an AIT
     //! because its tag reuses an MPEG-defined one.
     //!
+    //! @see ETSI TS 101 812, 10.7.4.1.
     //! @see ETSI TS 102 809, 5.3.5.6.1.
     //! @ingroup descriptor
     //!
