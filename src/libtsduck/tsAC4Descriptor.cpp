@@ -127,10 +127,14 @@ void ts::AC4Descriptor::deserialize(const Descriptor& desc, const DVBCharset* ch
     }
 
     if (_is_valid && (flags & 0x40) != 0) {
-        _is_valid = size >= 1 && size >= size_t(1 + data[0]);
+        _is_valid = size >= 1;
         if (_is_valid) {
-            ac4_dsi_toc.copy(data + 1, data[0]);
-            data += 1 + data[0]; size -= 1 + data[0];
+            const size_t toc_size = data[0];
+            _is_valid = size >= 1 + toc_size;
+            if (_is_valid) {
+                ac4_dsi_toc.copy(data + 1, data[0]);
+                data += 1 + toc_size; size -= 1 + toc_size;
+            }
         }
     }
 
