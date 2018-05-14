@@ -91,6 +91,16 @@ namespace ts {
     {
     public:
         //!
+        //! Generic definition of the pointed type for this safe pointer.
+        //!
+        typedef T DataType;
+
+        //!
+        //! Generic definition of the mutex for this safe pointer.
+        //!
+        typedef MUTEX MutexType;
+
+        //!
         //! Default constructor using an optional unmanaged object.
         //!
         //! The optional argument @a p can be either @c 0 (null pointer)

@@ -34,7 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsOneShotPacketizer.h"
+#include "tsPacketizer.h"
 #include "tsEMMGMUX.h"
 #include "tstlvConnection.h"
 #include "tsTCPServer.h"
@@ -44,8 +44,9 @@
 #include "tsThread.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_PACKET_QUEUE_SIZE 100  // Maximum number of TS packets in queue
-#define SERVER_BACKLOG            1    // One connection at a time
+#define DEFAULT_PROTOCOL_VERSION  2     // Default protocol version for EMMG/PDG <=> MUX.
+#define DEFAULT_QUEUE_SIZE        1000  // Maximum number of TS packets in queue
+#define SERVER_BACKLOG            1     // One connection at a time
 #define SERVER_THREAD_STACK_SIZE  (128 * 1024)
 
 
@@ -54,7 +55,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class DataInjectPlugin: public ProcessorPlugin
+    class DataInjectPlugin: public ProcessorPlugin, private SectionProviderInterface
     {
     public:
         // Implementation of plugin API
@@ -64,11 +65,13 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        // TS packets are passed from the server thread to the plugin thread using a message queue.
+        // TS packets or sections are passed from the server thread to the plugin thread using a message queue.
         typedef MessageQueue<TSPacket, Mutex> TSPacketQueue;
+        typedef MessageQueue<Section, Mutex> SectionQueue;
 
-        // Message queues enqueue smart pointers to the message type.
-        typedef TSPacketQueue::MessagePtr TSPacketPtr;
+        // Message queues enqueue smart pointers to the message type (MT = Multi-Thread).
+        typedef TSPacketQueue::MessagePtr TSPacketPtrMT;
+        typedef SectionQueue::MessagePtr SectionPtrMT;
 
         // TCP listener thread.
         class TCPListener : public Thread
@@ -133,7 +136,8 @@ namespace ts {
         TCPServer       _server;               // EMMG/PDG <=> MUX TCP server
         TCPListener     _tcp_listener;         // TCP listener thread.
         UDPListener     _udp_listener;         // UDP listener thread.
-        TSPacketQueue   _queue;                // Queue of incoming TS packets
+        TSPacketQueue   _packet_queue;         // Queue of incoming TS packets.
+        SectionQueue    _section_queue;        // Queue of incoming sections.
         volatile bool   _channel_established;  // Data channel open.
         volatile bool   _stream_established;   // Data stream open.
         volatile bool   _req_bitrate_changed;  // Requested bitrate has changed.
@@ -142,8 +146,12 @@ namespace ts {
         uint32_t        _client_id;            // DVB SimilCrypt client id.
         uint16_t        _data_id;              // DVB SimilCrypt data id.
         bool            _section_mode;         // Datagrams are sections.
+        Packetizer      _packetizer;           // Generate packets in the case of incoming sections.
         BitRate         _req_bitrate;          // Requested bitrate
         size_t          _lost_packets;         // Lost packets (queue full)
+
+        // Reset all client session context information.
+        void clearSession();
 
         // Process bandwidth request. Invoked in the server thread.
         bool processBandwidthRequest(const tlv::MessagePtr&, emmgmux::StreamBWAllocation&);
@@ -151,8 +159,12 @@ namespace ts {
         // Process data provision. Invoked in the server thread.
         bool processDataProvision(const tlv::MessagePtr&);
 
-        // Enqueue a TS packet. Invoked in the server thread.
-        bool enqueuePacket(const TSPacketPtr&);
+        // Report packet/session loss. Invoked with _mutex held.
+        void processPacketLoss(const UChar* type, bool enqueueSuccess);
+
+        // Implementation of SectionProviderInterface.
+        virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
+        virtual bool doStuffing() override { return false; }
 
         // Inaccessible operations
         DataInjectPlugin() = delete;
@@ -182,7 +194,8 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _server(),
     _tcp_listener(this),
     _udp_listener(this),
-    _queue(),
+    _packet_queue(),
+    _section_queue(),
     _channel_established(false),
     _stream_established(false),
     _req_bitrate_changed(false),
@@ -190,12 +203,13 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _client_id(0),
     _data_id(0),
     _section_mode(false),
+    _packetizer(PID_NULL, this),
     _req_bitrate(0),
     _lost_packets(0)
 {
     option(u"bitrate-max",      'b', POSITIVE);
     option(u"buffer-size",       0,  UNSIGNED);
-    option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 2, 3);
+    option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 1, 5);
     option(u"pid",              'p', PIDVAL, 1, 1);
     option(u"queue-size",       'q', UINT32);
     option(u"reuse-port",       'r');
@@ -215,7 +229,7 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"  -v value\n"
             u"  --emmg-mux-version value\n"
             u"      Specifies the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol.\n"
-            u"      Valid values are 2 and 3. The default is 2.\n"
+            u"      Valid values are 1 to 5. The default is " TS_USTRINGIFY(DEFAULT_PROTOCOL_VERSION) u".\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
@@ -226,9 +240,9 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"\n"
             u"  -q value\n"
             u"  --queue-size value\n"
-            u"      Specifies the maximum number of data TS packets in the internal queue,\n"
-            u"      ie. packets which are received from the EMMG/PDG client but not yet\n"
-            u"      inserted into the TS. The default is " TS_USTRINGIFY(DEFAULT_PACKET_QUEUE_SIZE) u".\n"
+            u"      Specifies the maximum number of sections or TS packets in the internal\n"
+            u"      queue, ie. sections or packets which are received from the EMMG/PDG\n"
+            u"      client but not yet inserted into the TS. The default is " TS_USTRINGIFY(DEFAULT_QUEUE_SIZE) u".\n"
             u"\n"
             u"  -r\n"
             u"  --reuse-port\n"
@@ -257,12 +271,16 @@ bool ts::DataInjectPlugin::start()
     // Command line options
     _max_bitrate = intValue<BitRate>(u"bitrate-max", 0);
     _data_pid = intValue<PID>(u"pid");
-    _queue.setMaxMessages(intValue<size_t>(u"queue-size", DEFAULT_PACKET_QUEUE_SIZE));
+    const size_t queue_size = intValue<size_t>(u"queue-size", DEFAULT_QUEUE_SIZE);
     _reuse_port = present(u"reuse-port");
     _sock_buf_size = intValue<size_t>(u"buffer-size");
 
+    // Limit internal queues sizes.
+    _packet_queue.setMaxMessages(queue_size);
+    _section_queue.setMaxMessages(queue_size);
+
     // Specify which EMMG/PDG <=> MUX version to use.
-    emmgmux::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"emmg-mux-version", 2));
+    emmgmux::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"emmg-mux-version", DEFAULT_PROTOCOL_VERSION));
 
     // Initialize the TCP server.
     if (!_server_address.resolve(value(u"server"), *tsp)) {
@@ -282,24 +300,45 @@ bool ts::DataInjectPlugin::start()
         return false;
     }
 
-    // Initial bandwidth allocation (zero means unlimited)
-    _req_bitrate = _max_bitrate;
-    _req_bitrate_changed = false;
+    // Clear client session.
+    clearSession();
     tsp->verbose(u"initial bandwidth allocation is %s", {_req_bitrate == 0 ? u"unlimited" : UString::Decimal(_req_bitrate) + u" b/s"});
 
     // TS processing state
     _data_cc = 0;
-    _lost_packets = 0;
     _pkt_current = 0;
     _pkt_next_data = 0;
 
     // Start the internal threads.
-    _channel_established = false;
-    _stream_established = false;
     _tcp_listener.start();
     _udp_listener.start();
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Reset all client session context information.
+//----------------------------------------------------------------------------
+
+void ts::DataInjectPlugin::clearSession()
+{
+    // Work on some protected data
+    Guard lock(_mutex);
+
+    // No client session is established.
+    _channel_established = false;
+    _stream_established = false;
+
+    // Reset queues.
+    _packet_queue.clear();
+    _section_queue.clear();
+    _packetizer.reset();
+    _lost_packets = 0;
+
+    // Initial bandwidth allocation (zero means unlimited)
+    _req_bitrate = _max_bitrate;
+    _req_bitrate_changed = false;
 }
 
 
@@ -333,39 +372,72 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, b
     }
 
     // Data injection may occur only be replacing null packets
-    if (pid != PID_NULL) {
-        return TSP_OK;
-    }
+    if (pid == PID_NULL) {
 
-    // Update data PID bitrate
-    if (_req_bitrate_changed) {
-        // Reinitialize insertion point when bitrate changes
-        _pkt_next_data = _pkt_current;
-        _req_bitrate_changed = false;
-    }
+        // Update data PID bitrate
+        if (_req_bitrate_changed) {
+            // Reinitialize insertion point when bitrate changes
+            _pkt_next_data = _pkt_current;
+            _req_bitrate_changed = false;
+        }
 
-    // Try to insert data
-    if (_pkt_next_data <= _pkt_current) {
-        // Time to insert data packet, if any is available immediately.
-        TSPacketPtr pp;
-        if (_queue.dequeue(pp, 0)) {
-            // Update data packet
-            pkt = *pp;
-            // Update PID and continuity counter.
-            pkt.setPID(_data_pid);
-            pkt.setCC(_data_cc);
-            _data_cc = (_data_cc + 1) & CC_MASK;
-            // Compute next insertion point if the data PID bitrate is specified.
-            // Otherwise, try to update any null packet (unbounded bitrate).
+        // Try to insert data
+        if (_pkt_next_data <= _pkt_current) {
+            // Time to insert data packet, if any is available immediately.
             Guard lock(_mutex);
-            if (_req_bitrate != 0) {
-                // TODO: refine this, works only for low injection bitrates.
-                _pkt_next_data += tsp->bitrate() / _req_bitrate;
+
+            // Get next packet to insert.
+            bool got_packet = false;
+            if (_section_mode) {
+                // Section mode: Get a packet from the packetizer.
+                got_packet = _packetizer.getNextPacket(pkt);
+            }
+            else {
+                // Packet mode: Dequeue a packet immediately.
+                TSPacketPtrMT pp;
+                got_packet = _packet_queue.dequeue(pp, 0);
+                if (got_packet) {
+                    pkt = *pp;
+                }
+            }
+
+            // Update new inserted packet.
+            if (got_packet) {
+                // Update PID and continuity counter.
+                pkt.setPID(_data_pid);
+                pkt.setCC(_data_cc);
+                _data_cc = (_data_cc + 1) & CC_MASK;
+                // Compute next insertion point if the data PID bitrate is specified.
+                // Otherwise, try to update any null packet (unbounded bitrate).
+                if (_req_bitrate != 0) {
+                    // TODO: refine this, works only for low injection bitrates.
+                    _pkt_next_data += tsp->bitrate() / _req_bitrate;
+                }
             }
         }
     }
 
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of SectionProviderInterface.
+// Provide next section to packetize in section mode.
+//----------------------------------------------------------------------------
+
+void ts::DataInjectPlugin::provideSection(SectionCounter counter, SectionPtr& section)
+{
+    // Try to dequeue a section immediately.
+    SectionPtrMT mt_section;
+    if (_section_queue.dequeue(mt_section, 0)) {
+        // A section was dequeue. Change the mutex of the safe pointer.
+        section = mt_section.changeMutex<SectionPtr::MutexType>();
+    }
+    else {
+        // No section available.
+        section.clear();
+    }
 }
 
 
@@ -442,22 +514,15 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
     // Check that the stream is established.
     bool ok = true;
     if (_section_mode) {
-        // Feed a packetizer with all sections (one section per datagram parameter)
-        OneShotPacketizer pzer;
+        // Section mode, one section per datagram parameter, enqueue them.
         for (size_t i = 0; i < m->datagram.size(); ++i) {
-            SectionPtr sp(new Section(m->datagram[i]));
+            SectionPtrMT sp(new Section(m->datagram[i]));
             if (sp->isValid()) {
-                pzer.addSection(sp);
+                processPacketLoss(u"sections", _section_queue.enqueue(sp, 0));
             }
             else {
                 tsp->error(u"received an invalid section (%d bytes)", {m->datagram[i]->size()});
             }
-        }
-        // Extract all packets and enqueue them
-        TSPacketVector pv;
-        pzer.getPackets(pv);
-        for (size_t i = 0; i < pv.size(); ++i) {
-            ok = enqueuePacket(new TSPacket(pv[i])) && ok;
         }
     }
     else {
@@ -470,9 +535,9 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                     tsp->error(u"invalid TS packet");
                 }
                 else {
-                    TSPacketPtr p(new TSPacket());
-                    ::memcpy(p->b, data, PKT_SIZE);
-                    ok = enqueuePacket(p) && ok;
+                    TSPacketPtrMT p(new TSPacket());
+                    p->copyFrom(data);
+                    processPacketLoss(u"packets", _packet_queue.enqueue(p, 0));
                     data += PKT_SIZE;
                     size -= PKT_SIZE;
                 }
@@ -488,26 +553,18 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 
 
 //----------------------------------------------------------------------------
-// Enqueue a TS packet. Invoked in the server thread.
-// Return true on success, false on error.
+// Report packet/session loss. Invoked with _mutex held.
 //----------------------------------------------------------------------------
 
-bool ts::DataInjectPlugin::enqueuePacket(const TSPacketPtr& pkt)
+void ts::DataInjectPlugin::processPacketLoss(const UChar* type, bool enqueueSuccess)
 {
-    // Enqueue packet immediately or fail.
-    const bool ok = _queue.enqueue(pkt, 0);
-
-    Guard lock(_mutex);
-
-    if (!ok && _lost_packets++ == 0) {
-        tsp->warning(u"internal queue overflow, losing packets, consider using --queue-size");
+    if (!enqueueSuccess && _lost_packets++ == 0) {
+        tsp->warning(u"internal queue overflow, losing %s, consider using --queue-size", {type});
     }
-    else if (ok && _lost_packets != 0) {
-        tsp->info(u"retransmitting after %'d lost packets", {_lost_packets});
+    else if (enqueueSuccess && _lost_packets != 0) {
+        tsp->info(u"retransmitting after %'d lost %s", {_lost_packets, type});
         _lost_packets = 0;
     }
-
-    return ok;
 }
 
 
@@ -548,15 +605,12 @@ void ts::DataInjectPlugin::TCPListener::main()
 
         _tsp->verbose(u"incoming connection from %s", {client_address.toString()});
 
+        // Start from a fresh client session context.
+        _plugin->clearSession();
+
         // Connection state
         bool ok = true;
         tlv::MessagePtr msg;
-
-        _plugin->_channel_established = false;
-        _plugin->_stream_established = false;
-
-        // Clear pending messages from previous session.
-        _plugin->_queue.clear();
 
         // Loop on message reception from the client
         while (ok && _client.receive(msg, _tsp, *_tsp)) {
@@ -738,7 +792,7 @@ void ts::DataInjectPlugin::UDPListener::main()
         else {
             // Log the message
             if (_tsp->debug()) {
-                _tsp->debug(u"received message from %s\n%s", {sender.toString(), msg->dump(4)});
+                _tsp->debug(u"received UDP message from %s\n%s", {sender.toString(), msg->dump(4)});
             }
             // The only accepted message is data_provision.
             _plugin->processDataProvision(msg);
