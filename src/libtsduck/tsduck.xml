@@ -433,6 +433,37 @@
       </additional_info>
     </DTS_descriptor>
 
+    <dvb_html_application_boundary_descriptor
+        label="string, required"
+        regular_expression="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_html_application_boundary_descriptor>
+
+    <dvb_html_application_descriptor parameter="string, optional">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per application id: -->
+      <application id="uint16, required"/>
+    </dvb_html_application_descriptor>
+
+    <dvb_html_application_location_descriptor
+        physical_root="string, required"
+        initial_path="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_html_application_location_descriptor>
+
+    <dvb_j_application_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per parameter: -->
+      <parameter value="string, required"/>
+    </dvb_j_application_descriptor>
+
+    <dvb_j_application_location_descriptor
+        base_directory="string, required"
+        classpath_extension="string, required"
+        initial_class="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_j_application_location_descriptor>
+
     <eacem_preferred_name_identifier_descriptor name_id="uint8, required"/>
 
     <eacem_preferred_name_list_descriptor>

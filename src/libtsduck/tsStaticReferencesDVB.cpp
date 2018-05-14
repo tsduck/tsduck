@@ -98,6 +98,11 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
     REF_TYPE(DTSDescriptor);
+    REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);
+    REF_TYPE(DVBHTMLApplicationDescriptor);
+    REF_TYPE(DVBHTMLApplicationLocationDescriptor);
+    REF_TYPE(DVBJApplicationDescriptor);
+    REF_TYPE(DVBJApplicationLocationDescriptor);
     REF_TYPE(EacemPreferredNameIdentifierDescriptor);
     REF_TYPE(EacemPreferredNameListDescriptor);
     REF_TYPE(EacemStreamIdentifierDescriptor);

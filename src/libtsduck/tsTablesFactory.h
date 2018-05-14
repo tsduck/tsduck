@@ -68,40 +68,6 @@ namespace ts {
         typedef AbstractDescriptorPtr (*DescriptorFactory)();
 
         //!
-        //! Profile of a function to display a section.
-        //! Each subclass should provide a static function named @e DisplaySection
-        //! which displays a section of its table-id.
-        //!
-        //! @param [in,out] display Display engine.
-        //! @param [in] section The section to display.
-        //! @param [in] indent Indentation width.
-        //!
-        typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, int indent);
-
-        //!
-        //! Profile of a function to display a descriptor.
-        //! Each subclass should provide a static function named @e DisplayDescriptor
-        //! which displays a descriptor of its type.
-        //!
-        //! @param [in,out] display Display engine.
-        //! @param [in] did Descriptor id.
-        //! @param [in] payload Address of the descriptor payload.
-        //! @param [in] size Size in bytes of the descriptor payload.
-        //! @param [in] indent Indentation width.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //!
-        typedef void (*DisplayDescriptorFunction)(TablesDisplay& display,
-                                                  DID did,
-                                                  const uint8_t* payload,
-                                                  size_t size,
-                                                  int indent,
-                                                  TID tid,
-                                                  PDS pds);
-
-        //!
         //! Get the table factory for a given table id.
         //! @param [in] id Table id.
         //! @return Corresponding factory or zero if there is none.

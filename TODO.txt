@@ -99,8 +99,3 @@ TSDuck - List of features to be implemented or fixed
   - 10.8.2    ip_signalling_descriptor
   - 10.8.3.2  prefetch_descriptor
   - 10.8.3.3  DII_location_descriptor
-  - 10.9.1    dvb_j_application_descriptor
-  - 10.9.2    dvb_j_application_location_descriptor
-  - 10.10.1   dvb_html_application_descriptor
-  - 10.10.2   dvb_html_application_location_descriptor
-  - 10.10.3   dvb_html_application_boundary_descriptor
