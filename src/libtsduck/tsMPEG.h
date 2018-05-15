@@ -1293,6 +1293,16 @@ namespace ts {
     };
 
     //---------------------------------------------------------------------
+    //! DVB-MHP transport protocol ids.
+    //---------------------------------------------------------------------
+
+    enum : uint16_t {
+        MHP_PROTO_CAROUSEL = 0x0001,  //!< MHP Object Carousel
+        MHP_PROTO_MPE      = 0x0002,  //!< IP via DVB-MPE
+        MHP_PROTO_HTTP     = 0x0003,  //!< HTTP over interaction channel
+    };
+
+    //---------------------------------------------------------------------
     // T2-MI (DVB-T2 Modulator Interface)
     //---------------------------------------------------------------------
 

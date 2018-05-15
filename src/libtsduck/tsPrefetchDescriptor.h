@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a dvb_j_application_descriptor (AIT specific).
+//!  Representation of a prefetch_descriptor (AIT specific).
 //!
 //----------------------------------------------------------------------------
 
@@ -37,31 +37,58 @@
 
 namespace ts {
     //!
-    //! Representation of a dvb_j_application_descriptor (AIT specific).
+    //! Representation of a prefetch_descriptor (AIT specific).
     //!
     //! This descriptor cannot be present in other tables than an AIT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI TS 101 812, 10.9.1.
+    //! @see ETSI TS 101 812, 10.8.3.2.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DVBJApplicationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL PrefetchDescriptor : public AbstractDescriptor
     {
     public:
-        // DVBJApplicationDescriptor public members:
-        UStringList parameters; //!< Application parameters.
+        //!
+        //! Module entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            UString label;               //!< Label string.
+            uint8_t prefetch_priority;   //!< Prefetch priority, 1 to 100.
+
+            //!
+            //! Default constructor.
+            //! @param [in] str Label.
+            //! @param [in] pri Prefetch priority, 1 to 100.
+            //!
+            Entry(const UString& str = UString(), uint8_t pri = 1) :
+                label(str),
+                prefetch_priority(pri)
+            {
+            }
+        };
+
+        //!
+        //! List of service entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        // PrefetchDescriptor public members:
+        uint8_t   transport_protocol_label;  //!< Transport protocol label.
+        EntryList entries;                   //!< The list of module entries.
 
         //!
         //! Default constructor.
         //!
-        DVBJApplicationDescriptor();
+        PrefetchDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        DVBJApplicationDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        PrefetchDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

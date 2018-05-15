@@ -179,7 +179,7 @@ On systems where you have no administration privilege and consequently no right
 to use the standard installers, you may want to manually install TSDuck is some
 arbitrary directory.
 
-On UNIX systems (which include Linux and macOS), you have to rebuild TSDuck from
+On Unix systems (which include Linux and macOS), you have to rebuild TSDuck from
 the source repository and install it using a command like this one:
 
 ~~~~
@@ -189,3 +189,77 @@ make install SYSPREFIX=$HOME/usr/local
 On Windows systems, a so-called _portable_ or _standalone_ package will be
 provided in a future version.
 
+# Running from the build location {#runbuild}
+
+It is sometimes useful to run a TSDuck binary, `tsp` or any other, directly
+from the build directory, right after compilation. This can be required for
+testing or debugging.
+
+## Windows {#runwindows}
+
+On Windows, the binaries and all plugins are built in a subdirectory named
+`build\msvc2017\<target>-<platform>`. The commands can be run using their
+complete path.
+
+For instance, to run the released 64-bit version of `tsp`, use:
+~~~~
+D:\tsduck> build\msvc2017\Release-x64\tsp.exe --version
+tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.12-730
+~~~~
+
+For other combinations (release vs. debug and 32 vs. 64 bits), the paths
+from the repository root are:
+~~~~
+build\msvc2017\Release-x64\tsp.exe
+build\msvc2017\Debug-x64\tsp.exe
+build\msvc2017\Release-Win32\tsp.exe
+build\msvc2017\Debug-Win32\tsp.exe
+~~~~
+
+## Linux and macOS {#rununix}
+
+On all Unix systems, the binaries, plugins and tests are built in
+subdirectories of their respective source directories. Specifically,
+the tools and plugins are not in the same directory.
+
+To run a tool from its build directory, a few environment variables
+shall be defined (including `$PATH`). A shell-script named `setenv.sh`
+is automatically created in each build directory. This script defines
+the appropriate environment for running binaries which are in this
+build directory.
+
+Depending on your target (release vs. debug, 32 bits vs. 64 bits, Intel vs. ARM),
+execute one of:
+~~~~
+source src/tstools/release-x86_64/setenv.sh
+source src/tstools/debug-x86_64/setenv.sh
+source src/tstools/release-i386/setenv.sh
+source src/tstools/debug-i386/setenv.sh
+source src/tstools/release-arm/setenv.sh
+source src/tstools/debug-arm/setenv.sh
+~~~~
+
+Note the usage of the `source` command to make sure that the environment
+variables are defined in the current shell.
+
+Example:
+~~~~
+$ source src/tstools/release-x86_64/setenv.sh 
+$ which tsp
+~/tsduck/src/tstools/release-x86_64/tsp
+$ tsp --version
+tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.12-730
+~~~~
+
+# Cleaning up {#buildcleanup}
+
+On Windows, to cleanup a repository tree and return to a pristine source state,
+execute the following PowerShell script:
+~~~~
+build\Cleanup.ps1
+~~~~
+
+On Linux and macOS, the same cleanup task is achieved using the following command:
+~~~~
+make distclean
+~~~~

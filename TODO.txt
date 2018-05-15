@@ -93,9 +93,3 @@ TSDuck - List of features to be implemented or fixed
   - 5.3.5.7    external_application_authorization_descriptor
   - 5.3.5.8    graphics_constraints_descriptor
   - 5.3.10.1   application_storage_descriptor
-
-  ETSI TS 101 812 V1.3.2 (DVB-MHP)
-  - 10.8.1    transport_protocol_descriptor
-  - 10.8.2    ip_signalling_descriptor
-  - 10.8.3.2  prefetch_descriptor
-  - 10.8.3.3  DII_location_descriptor

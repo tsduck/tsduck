@@ -2555,3 +2555,10 @@ Bits = 8
 0x11-0x1F = DVB-CISSA future versions
 0x70 = ATIS IIF IDSA for MPEG-2 TS
 0x71-0x7F = ATIS defined
+
+[MHPTransportProtocolId]
+# In transport_protocol_descriptor (ETSI TS 102 812)
+Bits = 16
+0x0001 = MHP Object Carousel
+0x0002 = IP via DVB-MPE
+0x0003 = HTTP over interaction channel

@@ -27,29 +27,30 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBHTMLApplicationDescriptor.h"
+#include "tsPrefetchDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsNames.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"dvb_html_application_descriptor"
-#define MY_DID ts::DID_AIT_HTML_APP
+#define MY_XML_NAME u"prefetch_descriptor"
+#define MY_DID ts::DID_AIT_PREFETCH
 #define MY_TID ts::TID_AIT
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::DVBHTMLApplicationDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::PrefetchDescriptor, MY_XML_NAME, MY_TID);
+TS_ID_DESCRIPTOR_FACTORY(ts::PrefetchDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::PrefetchDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor() :
+ts::PrefetchDescriptor::PrefetchDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
-    application_ids(),
-    parameter()
+    transport_protocol_label(0),
+    entries()
 {
     _is_valid = true;
 }
@@ -59,8 +60,8 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    DVBHTMLApplicationDescriptor()
+ts::PrefetchDescriptor::PrefetchDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    PrefetchDescriptor()
 {
     deserialize(desc, charset);
 }
@@ -70,14 +71,14 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::PrefetchDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(uint8_t(application_ids.size() * sizeof(uint16_t)));
-    for (size_t i = 0; i < application_ids.size(); ++i) {
-        bbp->appendUInt16(application_ids[i]);
+    bbp->appendUInt8(transport_protocol_label);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        bbp->append(it->label.toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->appendUInt8(it->prefetch_priority);
     }
-    bbp->append(parameter.toDVB(0, UString::NPOS, charset));
     serializeEnd(desc, bbp);
 }
 
@@ -86,10 +87,9 @@ void ts::DVBHTMLApplicationDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::PrefetchDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
-    application_ids.clear();
-    parameter.clear();
+    entries.clear();
 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -97,17 +97,20 @@ void ts::DVBHTMLApplicationDescriptor::deserialize(const Descriptor& desc, const
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
 
     if (_is_valid) {
-        size_t len = data[0];
+        transport_protocol_label = data[0];
         data++; size--;
-        _is_valid = len % 2 == 0 && len <= size;
-        if (_is_valid) {
-            while (len >= 2) {
-                application_ids.push_back(GetUInt16(data));
-                data += 2; size -= 2; len -= 2;
+        while (_is_valid && size >= 1) {
+            const size_t len = data[0];
+            data++; size--;
+            _is_valid = len + 1 <= size;
+            if (_is_valid) {
+                entries.push_back(Entry(UString::FromDVB(data, len, charset), data[len]));
+                data += len + 1; size -= len + 1;
             }
-            parameter = UString::FromDVB(data, size, charset);
         }
     }
+
+    _is_valid = _is_valid && size == 0;
 }
 
 
@@ -115,22 +118,23 @@ void ts::DVBHTMLApplicationDescriptor::deserialize(const Descriptor& desc, const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
-        size_t len = data[0];
-        if (len % 2 == 0 && len + 1 <= size) {
-            data++; size--;
-            while (len >= 2) {
-                const uint16_t id = GetUInt16(data);
-                data += 2; size -= 2; len -= 2;
-                strm << margin << UString::Format(u"Application id: 0x%X (%d)", {id, id}) << std::endl;
+        strm << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[0], data[0]}) << std::endl;
+        data++; size--;
+        while (size >= 1) {
+            const size_t len = data[0];
+            if (len + 2 > size) {
+                break;
             }
-            strm << margin << "Parameter: \"" << UString::FromDVB(data, size, display.dvbCharset()) << "\"" << std::endl;
-            size = 0;
+            strm << margin
+                 << UString::Format(u"Label: \"%s\", prefetch priority: %d", {UString::FromDVB(data + 1, len, display.dvbCharset()), data[len + 1]})
+                 << std::endl;
+            data += len + 2; size -= len + 2;
         }
     }
 
@@ -142,11 +146,13 @@ void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::buildXML(xml::Element* root) const
+void ts::PrefetchDescriptor::buildXML(xml::Element* root) const
 {
-    root->setAttribute(u"parameter", parameter);
-    for (auto it = application_ids.begin(); it != application_ids.end(); ++it) {
-        root->addElement(u"application")->setIntAttribute(u"id", *it, true);
+    root->setIntAttribute(u"transport_protocol_label", transport_protocol_label, true);
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        xml::Element* e = root->addElement(u"module");
+        e->setAttribute(u"label", it->label);
+        e->setIntAttribute(u"prefetch_priority", it->prefetch_priority, false);
     }
 }
 
@@ -155,22 +161,23 @@ void ts::DVBHTMLApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::fromXML(const xml::Element* element)
+void ts::PrefetchDescriptor::fromXML(const xml::Element* element)
 {
-    application_ids.clear();
-    parameter.clear();
+    entries.clear();
 
     xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
-        element->getAttribute(parameter, u"parameter", false) &&
-        element->getChildren(children, u"application");
+        element->getIntAttribute<uint8_t>(transport_protocol_label, u"transport_protocol_label", true) &&
+        element->getChildren(children, u"module");
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
-        uint16_t id;
-        _is_valid = children[i]->getIntAttribute<uint16_t>(id, u"id", true);
+        Entry entry;
+        _is_valid =
+            children[i]->getAttribute(entry.label, u"label", true) &&
+            children[i]->getIntAttribute<uint8_t>(entry.prefetch_priority, u"prefetch_priority", true, 1, 1, 100);
         if (_is_valid) {
-            application_ids.push_back(id);
+            entries.push_back(entry);
         }
     }
 }

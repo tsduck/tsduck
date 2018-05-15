@@ -91,6 +91,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDescriptor.h \
     ../../../src/libtsduck/tsDescriptorList.h \
     ../../../src/libtsduck/tsDescriptorListTemplate.h \
+    ../../../src/libtsduck/tsDIILocationDescriptor.h \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
@@ -146,6 +147,7 @@ HEADERS += \
     ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.h \
+    ../../../src/libtsduck/tsIPSignallingDescriptor.h \
     ../../../src/libtsduck/tsIPUtils.h \
     ../../../src/libtsduck/tsIPv6Address.h \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.h \
@@ -207,6 +209,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPolledFile.h \
     ../../../src/libtsduck/tsPollFiles.h \
     ../../../src/libtsduck/tsPollFilesListener.h \
+    ../../../src/libtsduck/tsPrefetchDescriptor.h \
     ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
@@ -330,6 +333,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvStreamMessage.h \
     ../../../src/libtsduck/tsTLVSyntax.h \
     ../../../src/libtsduck/tsTOT.h \
+    ../../../src/libtsduck/tsTransportProtocolDescriptor.h \
     ../../../src/libtsduck/tsTransportStreamId.h \
     ../../../src/libtsduck/tsTSAnalyzer.h \
     ../../../src/libtsduck/tsTSAnalyzerOptions.h \
@@ -452,6 +456,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDES.cpp \
     ../../../src/libtsduck/tsDescriptor.cpp \
     ../../../src/libtsduck/tsDescriptorList.cpp \
+    ../../../src/libtsduck/tsDIILocationDescriptor.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
@@ -495,6 +500,7 @@ SOURCES += \
     ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.cpp \
+    ../../../src/libtsduck/tsIPSignallingDescriptor.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsIPv6Address.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
@@ -544,6 +550,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPMT.cpp \
     ../../../src/libtsduck/tsPolledFile.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
+    ../../../src/libtsduck/tsPrefetchDescriptor.cpp \
     ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
@@ -639,6 +646,7 @@ SOURCES += \
     ../../../src/libtsduck/tstlvSerializer.cpp \
     ../../../src/libtsduck/tsTLVSyntax.cpp \
     ../../../src/libtsduck/tsTOT.cpp \
+    ../../../src/libtsduck/tsTransportProtocolDescriptor.cpp \
     ../../../src/libtsduck/tsTSAnalyzer.cpp \
     ../../../src/libtsduck/tsTSAnalyzerOptions.cpp \
     ../../../src/libtsduck/tsTSAnalyzerReport.cpp \

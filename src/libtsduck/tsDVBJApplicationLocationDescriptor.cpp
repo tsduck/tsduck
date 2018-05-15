@@ -47,7 +47,10 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBJApplicationLocationDescriptor::DisplayDescripto
 //----------------------------------------------------------------------------
 
 ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME)
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    base_directory(),
+    classpath_extension(),
+    initial_class()
 {
     _is_valid = true;
 }
@@ -71,7 +74,9 @@ ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor(const D
 void ts::DVBJApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    //@@@
+    bbp->append(base_directory.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(classpath_extension.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(initial_class.toDVB(0, UString::NPOS, charset));
     serializeEnd(desc, bbp);
 }
 
@@ -82,10 +87,29 @@ void ts::DVBJApplicationLocationDescriptor::serialize(Descriptor& desc, const DV
 
 void ts::DVBJApplicationLocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1; //@@@
+    base_directory.clear();
+    classpath_extension.clear();
+    initial_class.clear();
+
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
 
     if (_is_valid) {
-        //@@@
+        const size_t len1 = data[0];
+        data += 1; size -= 1;
+        _is_valid = len1 + 1 <= size;
+        if (_is_valid) {
+            base_directory = UString::FromDVB(data, len1, charset);
+            const size_t len2 = data[len1];
+            data += len1 + 1; size -= len1 + 1;
+            _is_valid = len2 <= size;
+            if (_is_valid) {
+                classpath_extension = UString::FromDVB(data, len2, charset);
+                initial_class = UString::FromDVB(data + len2, size - len2, charset);
+            }
+        }
     }
 }
 
@@ -96,7 +120,20 @@ void ts::DVBJApplicationLocationDescriptor::deserialize(const Descriptor& desc, 
 
 void ts::DVBJApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    //@@@
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 1) {
+        size_t len = std::min<size_t>(data[0], size - 1);
+        strm << margin << "Base directory: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+        data += 1 + len; size -= 1 + len;
+        if (size >= 1) {
+            len = std::min<size_t>(data[0], size - 1);
+            strm << margin << "Classpath ext: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl
+                 << margin << "Initial class: \"" << UString::FromDVB(data + 1 + len, size - len - 1, display.dvbCharset()) << "\"" << std::endl;
+            size = 0;
+        }
+    }
 
     display.displayExtraData(data, size, indent);
 }
@@ -108,7 +145,9 @@ void ts::DVBJApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& dis
 
 void ts::DVBJApplicationLocationDescriptor::buildXML(xml::Element* root) const
 {
-    //@@@
+    root->setAttribute(u"base_directory", base_directory);
+    root->setAttribute(u"classpath_extension", classpath_extension);
+    root->setAttribute(u"initial_class", initial_class);
 }
 
 
@@ -119,5 +158,8 @@ void ts::DVBJApplicationLocationDescriptor::buildXML(xml::Element* root) const
 void ts::DVBJApplicationLocationDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element); //@@@
+        checkXMLName(element) &&
+        element->getAttribute(base_directory, u"base_directory", true) &&
+        element->getAttribute(classpath_extension, u"classpath_extension", true) &&
+        element->getAttribute(initial_class, u"initial_class", true);
 }
