@@ -47,7 +47,9 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBHTMLApplicationLocationDescriptor::DisplayDescri
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME)
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    physical_root(),
+    initial_path()
 {
     _is_valid = true;
 }
@@ -71,7 +73,8 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(c
 void ts::DVBHTMLApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    //@@@
+    bbp->append(physical_root.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(initial_path.toDVB(0, UString::NPOS, charset));
     serializeEnd(desc, bbp);
 }
 
@@ -82,10 +85,21 @@ void ts::DVBHTMLApplicationLocationDescriptor::serialize(Descriptor& desc, const
 
 void ts::DVBHTMLApplicationLocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1; //@@@
+    physical_root.clear();
+    initial_path.clear();
+
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1;
 
     if (_is_valid) {
-        //@@@
+        const size_t len = data[0];
+        _is_valid = len + 1 <= size;
+        if (_is_valid) {
+            physical_root = UString::FromDVB(data + 1, len, charset);
+            initial_path = UString::FromDVB(data + 1 + len, size - len - 1, charset);
+        }
     }
 }
 
@@ -96,7 +110,15 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserialize(const Descriptor& des
 
 void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    //@@@
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 1) {
+        size_t len = std::min<size_t>(data[0], size - 1);
+        strm << margin << "Physical root: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl
+             << margin << "Initial path: \"" << UString::FromDVB(data + 1 + len, size - len - 1, display.dvbCharset()) << "\"" << std::endl;
+        size = 0;
+    }
 
     display.displayExtraData(data, size, indent);
 }
@@ -108,7 +130,8 @@ void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& 
 
 void ts::DVBHTMLApplicationLocationDescriptor::buildXML(xml::Element* root) const
 {
-    //@@@
+    root->setAttribute(u"physical_root", physical_root);
+    root->setAttribute(u"initial_path", initial_path);
 }
 
 
@@ -119,5 +142,7 @@ void ts::DVBHTMLApplicationLocationDescriptor::buildXML(xml::Element* root) cons
 void ts::DVBHTMLApplicationLocationDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element); //@@@
+        checkXMLName(element) &&
+        element->getAttribute(physical_root, u"physical_root", true) &&
+        element->getAttribute(initial_path, u"initial_path", true);
 }

@@ -420,6 +420,12 @@
       <selector_bytes>Hexadecimal content</selector_bytes>
     </data_broadcast_id_descriptor>
 
+    <DII_location_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per module -->
+      <module DII_identification="uint15, required" association_tag="uint16, required"/>
+    </DII_location_descriptor>
+
     <DTS_descriptor
         sample_rate_code="uint4, required"
         bit_rate_code="uint6, required"
@@ -563,6 +569,10 @@
       <!-- Must be in an INT (table id 0x4C) -->
     </IPMAC_stream_location_descriptor>
 
+    <ip_signalling_descriptor platform_id="uint24, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </ip_signalling_descriptor>
+
     <ISO_639_language_descriptor>
       <!-- One per language -->
       <language code="char3, required"
@@ -668,6 +678,12 @@
       <country country_code="char3, required"
                rating="uint8, required"/>
     </parental_rating_descriptor>
+
+    <prefetch_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per module -->
+      <module label="string, required" prefetch_priority="int, 1 to 100, required"/>
+    </prefetch_descriptor>
 
     <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
 
@@ -879,6 +895,38 @@
         reference_event_id="uint16, required"/>
 
     <time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+    <transport_protocol_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- Only one of the following shall be present -->
+      <!-- For protocol id 1: -->
+      <object_carousel
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          component_tag="uint8, required"/>
+      <!-- For protocol id 2: -->
+      <ip_mpe
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          alignment_indicator="bool, required">
+        <!-- One per URL -->
+        <url value="string, required"/>
+      </ip_mpe>
+      <!-- For protocol id 3: -->
+      <http>
+        <!-- One per URL -->
+        <url base="string, required">
+          <!-- One per URL extension -->
+          <extension value="string, required"/>
+        </url>
+      </http>
+      <!-- For other (unknown) protocol ids: -->
+      <protocol id="uint16, required">
+        Hexadecimal content.
+      </protocol>
+    </transport_protocol_descriptor>
 
     <VBI_data_descriptor>
       <!-- One per VBI data service -->

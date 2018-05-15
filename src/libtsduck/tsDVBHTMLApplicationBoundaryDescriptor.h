@@ -49,6 +49,8 @@ namespace ts {
     {
     public:
         // DVBHTMLApplicationBoundaryDescriptor public members:
+        UString label;                //!< Data label.
+        UString regular_expression;   //!< Regular expression to generate all URL's.
 
         //!
         //! Default constructor.

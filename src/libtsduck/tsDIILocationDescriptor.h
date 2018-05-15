@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a dvb_j_application_descriptor (AIT specific).
+//!  Representation of a DII_location_descriptor (AIT specific).
 //!
 //----------------------------------------------------------------------------
 
@@ -37,31 +37,63 @@
 
 namespace ts {
     //!
-    //! Representation of a dvb_j_application_descriptor (AIT specific).
+    //! Representation of a DII_location_descriptor (AIT specific).
     //!
     //! This descriptor cannot be present in other tables than an AIT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI TS 101 812, 10.9.1.
+    //! @see ETSI TS 101 812, 10.8.3.3.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DVBJApplicationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DIILocationDescriptor : public AbstractDescriptor
     {
     public:
-        // DVBJApplicationDescriptor public members:
-        UStringList parameters; //!< Application parameters.
+        //!
+        //! Module entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            uint16_t DII_identification;  //!< Identifier, 15 bits.
+            uint16_t association_tag;     //!< Tag.
+
+            //!
+            //! Default constructor.
+            //! @param [in] id DII id.
+            //! @param [in] tag Association tag.
+            //!
+            Entry(uint16_t id = 0, uint16_t tag = 0) :
+                DII_identification(id),
+                association_tag(tag)
+            {
+            }
+        };
+
+        //!
+        //! List of service entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 63;
+
+        // DIILocationDescriptor public members:
+        uint8_t   transport_protocol_label;  //!< Transport protocol label.
+        EntryList entries;                   //!< The list of module entries.
 
         //!
         //! Default constructor.
         //!
-        DVBJApplicationDescriptor();
+        DIILocationDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        DVBJApplicationDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        DIILocationDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

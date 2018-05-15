@@ -49,6 +49,8 @@ namespace ts {
     {
     public:
         // DVBHTMLApplicationLocationDescriptor public members:
+        UString physical_root;  //!< Physical root.
+        UString initial_path;   //!< Initial path.
 
         //!
         //! Default constructor.

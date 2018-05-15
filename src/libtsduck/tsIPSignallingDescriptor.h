@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a dvb_j_application_descriptor (AIT specific).
+//!  Representation of an ip_signalling_descriptor (AIT specific).
 //!
 //----------------------------------------------------------------------------
 
@@ -37,31 +37,32 @@
 
 namespace ts {
     //!
-    //! Representation of a dvb_j_application_descriptor (AIT specific).
+    //! Representation of an ip_signalling_descriptor (AIT specific).
     //!
     //! This descriptor cannot be present in other tables than an AIT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI TS 101 812, 10.9.1.
+    //! @see ETSI TS 101 812, 10.8.2.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DVBJApplicationDescriptor : public AbstractDescriptor
+    class TSDUCKDLL IPSignallingDescriptor : public AbstractDescriptor
     {
     public:
-        // DVBJApplicationDescriptor public members:
-        UStringList parameters; //!< Application parameters.
+        // IPSignallingDescriptor public members:
+        uint32_t platform_id;  //!< 24 bits, platform id.
 
         //!
         //! Default constructor.
+        //! @param [in] id Platform id.
         //!
-        DVBJApplicationDescriptor();
+        IPSignallingDescriptor(uint32_t id = 0);
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        DVBJApplicationDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        IPSignallingDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

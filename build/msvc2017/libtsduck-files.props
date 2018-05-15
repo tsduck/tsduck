@@ -93,6 +93,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorList.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorListTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDIILocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsIPMACPlatformNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPMACPlatformProviderNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPMACStreamLocationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsIPSignallingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPv6Address.h" />
     <ClInclude Include="..\..\src\libtsduck\tsISO639LanguageDescriptor.h" />
@@ -209,6 +211,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPolledFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPollFilesListener.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPrefetchDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
@@ -332,6 +335,7 @@
     <ClInclude Include="..\..\src\libtsduck\tstlvStreamMessage.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTLVSyntax.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTOT.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTransportProtocolDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTransportStreamId.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzerOptions.h" />
@@ -464,6 +468,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDIILocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
@@ -507,6 +512,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsIPMACPlatformNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPMACPlatformProviderNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPMACStreamLocationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsIPSignallingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPv6Address.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsISO639LanguageDescriptor.cpp" />
@@ -556,6 +562,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPMT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPolledFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPollFiles.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPrefetchDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
@@ -651,6 +658,7 @@
     <ClCompile Include="..\..\src\libtsduck\tstlvSerializer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTLVSyntax.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTOT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTransportProtocolDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerReport.cpp" />

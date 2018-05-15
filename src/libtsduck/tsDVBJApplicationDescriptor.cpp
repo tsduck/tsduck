@@ -47,7 +47,8 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBJApplicationDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME)
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    parameters()
 {
     _is_valid = true;
 }
@@ -71,7 +72,9 @@ ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor(const Descriptor& desc,
 void ts::DVBJApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    //@@@
+    for (auto it = parameters.begin(); it != parameters.end(); ++it) {
+        bbp->append(it->toDVBWithByteLength(0, UString::NPOS, charset));
+    }
     serializeEnd(desc, bbp);
 }
 
@@ -82,11 +85,23 @@ void ts::DVBJApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset
 
 void ts::DVBJApplicationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1; //@@@
+    parameters.clear();
+    _is_valid = desc.isValid() && desc.tag() == _tag;
 
-    if (_is_valid) {
-        //@@@
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    while (_is_valid && size >= 1) {
+        const size_t len = data[0];
+        data += 1; size -= 1;
+        _is_valid = len <= size;
+        if (_is_valid) {
+            parameters.push_back(UString::FromDVB(data, len, charset));
+            data += len; size -= len;
+        }
     }
+
+    _is_valid = _is_valid && size == 0;
 }
 
 
@@ -96,7 +111,14 @@ void ts::DVBJApplicationDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    //@@@
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    while (size >= 1) {
+        const size_t len = std::min<size_t>(data[0], size - 1);
+        strm << margin << "Parameter: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+        data += 1 + len; size -= 1 + len;
+    }
 
     display.displayExtraData(data, size, indent);
 }
@@ -108,7 +130,9 @@ void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
 void ts::DVBJApplicationDescriptor::buildXML(xml::Element* root) const
 {
-    //@@@
+    for (auto it = parameters.begin(); it != parameters.end(); ++it) {
+        root->addElement(u"parameter")->setAttribute(u"value", *it);
+    }
 }
 
 
@@ -118,6 +142,18 @@ void ts::DVBJApplicationDescriptor::buildXML(xml::Element* root) const
 
 void ts::DVBJApplicationDescriptor::fromXML(const xml::Element* element)
 {
+    parameters.clear();
+
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(element); //@@@
+        checkXMLName(element) &&
+        element->getChildren(children, u"parameter");
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        UString param;
+        _is_valid = children[i]->getAttribute(param, u"value", true);
+        if (_is_valid) {
+            parameters.push_back(param);
+        }
+    }
 }

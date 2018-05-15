@@ -97,6 +97,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(CueIdentifierDescriptor);
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
+    REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
     REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);
     REF_TYPE(DVBHTMLApplicationDescriptor);
@@ -114,6 +115,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(IPMACPlatformNameDescriptor);
     REF_TYPE(IPMACPlatformProviderNameDescriptor);
     REF_TYPE(IPMACStreamLocationDescriptor);
+    REF_TYPE(IPSignallingDescriptor);
     REF_TYPE(ISO639LanguageDescriptor);
     REF_TYPE(LinkageDescriptor);
     REF_TYPE(LocalTimeOffsetDescriptor);
@@ -126,6 +128,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
+    REF_TYPE(PrefetchDescriptor);
     REF_TYPE(PrivateDataIndicatorDescriptor);
     REF_TYPE(PrivateDataSpecifierDescriptor);
     REF_TYPE(RegistrationDescriptor);
@@ -158,6 +161,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);
     REF_TYPE(TimeShiftedServiceDescriptor);
+    REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
 }
