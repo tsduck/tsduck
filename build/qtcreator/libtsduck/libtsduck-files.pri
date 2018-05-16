@@ -26,6 +26,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAlgorithm.h \
     ../../../src/libtsduck/tsAlgorithmTemplate.h \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.h \
+    ../../../src/libtsduck/tsApplicationDescriptor.h \
     ../../../src/libtsduck/tsApplicationNameDescriptor.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.h \
@@ -406,6 +407,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAES.cpp \
     ../../../src/libtsduck/tsAIT.cpp \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.cpp \
+    ../../../src/libtsduck/tsApplicationDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationNameDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \

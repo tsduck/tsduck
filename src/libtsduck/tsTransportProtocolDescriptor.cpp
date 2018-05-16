@@ -184,29 +184,102 @@ void ts::TransportProtocolDescriptor::serialize(Descriptor& desc, const DVBChars
 // into the appropriate structure. Return false on invalid selector bytes.
 //----------------------------------------------------------------------------
 
-bool ts::TransportProtocolDescriptor::transferSelectorBytes()
+bool ts::TransportProtocolDescriptor::transferSelectorBytes(const DVBCharset* charset)
 {
+    // Clear other protocols.
+    carousel.clear();
+    mpe.clear();
+    http.clear();
+
+    // Build one selected protocol by analyzing the selector bytes.
+    const uint8_t* data = selector.data();
+    size_t size = selector.size();
+
     switch (protocol_id) {
         case MHP_PROTO_CAROUSEL: {
-            //@@@@@
-            selector.clear();
-            return true;
+            if (size == 0) {
+                return false;
+            }
+            const bool remote = (data[0] & 0x80) != 0;
+            if ((remote && size != 8) || (!remote && size != 2)) {
+                return false;
+            }
+            if (remote) {
+                carousel.original_network_id = GetUInt16(data + 1);
+                carousel.transport_stream_id = GetUInt16(data + 3);
+                carousel.service_id = GetUInt16(data + 5);
+                carousel.component_tag = data[7];
+            }
+            else {
+                carousel.component_tag = data[1];
+            }
+            break;
         }
         case MHP_PROTO_MPE: {
-            //@@@@@
-            selector.clear();
-            return true;
+            if (size == 0) {
+                return false;
+            }
+            const bool remote = (data[0] & 0x80) != 0;
+            if ((remote && size < 8) || (!remote && size < 2)) {
+                return false;
+            }
+            data++; size--;
+            if (remote) {
+                mpe.original_network_id = GetUInt16(data);
+                mpe.transport_stream_id = GetUInt16(data + 2);
+                mpe.service_id = GetUInt16(data + 4);
+                data += 6; size -= 6;
+            }
+            mpe.alignment_indicator = (data[0] & 0x80) != 0;
+            data++; size--;
+            while (size > 0) {
+                const size_t len = data[0];
+                if (size < 1 + len) {
+                    return false;
+                }
+                mpe.urls.push_back(UString::FromDVB(data + 1, len, charset));
+                data += 1 + len; size -= 1 + len;
+            }
+            break;
         }
         case MHP_PROTO_HTTP: {
-            //@@@@@
-            selector.clear();
-            return true;
+            while (size > 0) {
+                // Deserialize one URL entry.
+                HTTPEntry e;
+                // Get URL base.
+                const size_t len = data[0];
+                if (size < 2 + len) {
+                    return false;
+                }
+                e.URL_base = UString::FromDVB(data + 1, len, charset);
+                size_t count = data[1 + len];
+                data += 2 + len; size -= 2 + len;
+                // Loop on all URL extensions.
+                while (count-- > 0) {
+                    if (size == 0) {
+                        return false;
+                    }
+                    const size_t extlen = data[0];
+                    if (size < 1 + extlen) {
+                        return false;
+                    }
+                    e.URL_extensions.push_back(UString::FromDVB(data + 1, extlen, charset));
+                    data += 1 + extlen; size -= 1 + extlen;
+                }
+                // URL entry completed.
+                http.push_back(e);
+            }
+            break;
         }
         default: {
-            // Other protocols, do not interpret.
+            // Other protocols, do not interpret, keep selector byte array.
             return true;
         }
     }
+
+    // When a protocol was built, clear the selector byte array.
+    selector.clear();
+    return true;
 }
 
 
@@ -227,7 +300,7 @@ void ts::TransportProtocolDescriptor::deserialize(const Descriptor& desc, const 
         protocol_id = GetUInt16(data);
         transport_protocol_label = data[2];
         selector.copy(data + 3, size - 3);
-        _is_valid = transferSelectorBytes();
+        _is_valid = transferSelectorBytes(charset);
     }
 }
 
@@ -242,11 +315,93 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
     const std::string margin(indent, ' ');
 
     if (size >= 3) {
-        strm << margin << "Protocol id: " << DVBNameFromSection(u"MHPTransportProtocolId", GetUInt16(data), names::BOTH_FIRST) << std::endl
+        const uint16_t proto = GetUInt16(data);
+        strm << margin << "Protocol id: " << DVBNameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl
              << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[2], data[2]}) << std::endl;
         data += 3; size -= 3;
 
-        //@@@@
+        switch (proto) {
+            case MHP_PROTO_CAROUSEL: {
+                if (size > 0) {
+                    const bool remote = (data[0] & 0x80) != 0;
+                    if (remote && size >= 8) {
+                        const uint16_t net = GetUInt16(data + 1);
+                        const uint16_t ts  = GetUInt16(data + 3);
+                        const uint16_t srv = GetUInt16(data + 5);
+                        strm << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
+                             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
+                             << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
+                             << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[7], data[7]}) << std::endl;
+                        data += 8; size -= 8;
+                    }
+                    else if (!remote && size >= 2) {
+                        strm << margin << UString::Format(u"Component tag: 0x%X (%d)", {data[1], data[1]}) << std::endl;
+                        data += 2; size -= 2;
+                    }
+                }
+                break;
+            }
+            case MHP_PROTO_MPE: {
+                if (size > 0) {
+                    const bool remote = (data[0] & 0x80) != 0;
+                    bool ok = true;
+                    if (remote && size >= 8) {
+                        const uint16_t net = GetUInt16(data + 1);
+                        const uint16_t ts  = GetUInt16(data + 3);
+                        const uint16_t srv = GetUInt16(data + 5);
+                        strm << margin << UString::Format(u"Original network id: 0x%X (%d)", {net, net}) << std::endl
+                             << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
+                             << margin << UString::Format(u"Service id: 0x%X (%d)", {srv, srv}) << std::endl
+                             << margin << UString::Format(u"Alignment indicator: %d", {(data[7] >> 7) & 0x01}) << std::endl;
+                        data += 8; size -= 8;
+                    }
+                    else if (!remote && size >= 2) {
+                        strm << margin << UString::Format(u"Alignment indicator: %d", {(data[1] >> 7) & 0x01}) << std::endl;
+                        data += 2; size -= 2;
+                    }
+                    else {
+                        ok = false;
+                    }
+                    while (ok && size > 0) {
+                        const size_t len = data[0];
+                        ok = size >= 1 + len;
+                        if (ok) {
+                            strm << margin << "URL: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+                            data += 1 + len; size -= 1 + len;
+                        }
+                    }
+                }
+                break;
+            }
+            case MHP_PROTO_HTTP: {
+                bool ok = true;
+                while (ok && size > 0) {
+                    const size_t len = data[0];
+                    ok = size >= 2 + len;
+                    if (ok) {
+                        strm << margin << "URL base: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+                        size_t count = data[1 + len];
+                        data += 2 + len; size -= 2 + len;
+                        while (count-- > 0) {
+                            const size_t extlen = data[0];
+                            ok = size >= 1 + extlen;
+                            if (ok) {
+                                strm << margin << "  Extension: \"" << UString::FromDVB(data + 1, extlen, display.dvbCharset()) << "\"" << std::endl;
+                                data += 1 + extlen; size -= 1 + extlen;
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+            default: {
+                strm << margin << UString::Format(u"Selector: %d bytes", {size}) << std::endl;
+                if (size > 0) {
+                    strm << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+                    data += size; size = 0;
+                }
+            }
+        }
     }
 
     display.displayExtraData(data, size, indent);
@@ -283,7 +438,7 @@ void ts::TransportProtocolDescriptor::buildXML(xml::Element* root) const
         case MHP_PROTO_HTTP: {
             xml::Element* proto = root->addElement(u"http");
             for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
-                xml::Element* url = root->addElement(u"url");
+                xml::Element* url = proto->addElement(u"url");
                 url->setAttribute(u"base", it1->URL_base);
                 for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
                     url->addElement(u"extension")->setAttribute(u"value", *it2);
@@ -315,6 +470,7 @@ void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element)
     xml::ElementVector ip;
     xml::ElementVector htt;
     xml::ElementVector proto;
+    xml::ElementVector urls;
 
     _is_valid =
         checkXMLName(element) &&
@@ -330,20 +486,53 @@ void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element)
     }
     else if (_is_valid && !objcar.empty()) {
         protocol_id = MHP_PROTO_CAROUSEL;
-        //@@@@
+        _is_valid =
+            objcar[0]->getOptionalIntAttribute(carousel.original_network_id, u"original_network_id") &&
+            objcar[0]->getOptionalIntAttribute(carousel.transport_stream_id, u"transport_stream_id") &&
+            objcar[0]->getOptionalIntAttribute(carousel.service_id, u"service_id") &&
+            objcar[0]->getIntAttribute<uint8_t>(carousel.component_tag, u"component_tag", true);
     }
     else if (_is_valid && !ip.empty()) {
         protocol_id = MHP_PROTO_MPE;
-        //@@@@
+        _is_valid =
+            ip[0]->getOptionalIntAttribute(mpe.original_network_id, u"original_network_id") &&
+            ip[0]->getOptionalIntAttribute(mpe.transport_stream_id, u"transport_stream_id") &&
+            ip[0]->getOptionalIntAttribute(mpe.service_id, u"service_id") &&
+            ip[0]->getBoolAttribute(mpe.alignment_indicator, u"alignment_indicator", true) &&
+            ip[0]->getChildren(urls, u"url");
+        for (size_t i = 0; _is_valid && i < urls.size(); ++i) {
+            UString u;
+            _is_valid = urls[i]->getAttribute(u, u"value");
+            if (_is_valid) {
+                mpe.urls.push_back(u);
+            }
+        }
     }
     else if (_is_valid && !htt.empty()) {
         protocol_id = MHP_PROTO_HTTP;
-        //@@@@
+        _is_valid = htt[0]->getChildren(urls, u"url");
+        for (size_t i = 0; _is_valid && i < urls.size(); ++i) {
+            HTTPEntry e;
+            xml::ElementVector exts;
+            _is_valid =
+                urls[i]->getAttribute(e.URL_base, u"base") &&
+                urls[i]->getChildren(exts, u"extension");
+            for (size_t ie = 0; _is_valid && ie < exts.size(); ++ie) {
+                UString u;
+                _is_valid = exts[ie]->getAttribute(u, u"value");
+                if (_is_valid) {
+                    e.URL_extensions.push_back(u);
+                }
+            }
+            if (_is_valid) {
+                http.push_back(e);
+            }
+        }
     }
     else if (_is_valid && !proto.empty()) {
         _is_valid =
             proto[0]->getIntAttribute<uint16_t>(protocol_id, u"id", true) &&
             proto[0]->getHexaText(selector) &&
-            transferSelectorBytes();
+            transferSelectorBytes(0);
     }
 }
