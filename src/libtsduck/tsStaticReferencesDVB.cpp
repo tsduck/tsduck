@@ -81,6 +81,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(AC3Descriptor);
     REF_TYPE(AdaptationFieldDataDescriptor);
     REF_TYPE(AncillaryDataDescriptor);
+    REF_TYPE(ApplicationDescriptor);
     REF_TYPE(ApplicationNameDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);

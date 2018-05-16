@@ -58,6 +58,7 @@
 #include "tsAVCVideoDescriptor.h"
 #include "tsAdaptationFieldDataDescriptor.h"
 #include "tsAncillaryDataDescriptor.h"
+#include "tsApplicationDescriptor.h"
 #include "tsApplicationNameDescriptor.h"
 #include "tsApplicationSignallingDescriptor.h"
 #include "tsApplicationUsageDescriptor.h"

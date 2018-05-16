@@ -53,6 +53,7 @@
 #include "tsAIT.h"
 #include "tsAlgorithm.h"
 #include "tsAncillaryDataDescriptor.h"
+#include "tsApplicationDescriptor.h"
 #include "tsApplicationNameDescriptor.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsApplicationSignallingDescriptor.h"

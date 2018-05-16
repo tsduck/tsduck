@@ -322,6 +322,19 @@
 
     <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
 
+    <application_descriptor
+        service_bound="bool, required"
+        visibility="uint2, required"
+        application_priority="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per profile -->
+      <profile
+          application_profile="uint16, required"
+          version="string 'major.minor.micro', required"/>
+      <!-- One per transport_protocol_label -->
+      <transport_protocol label="uint8, required"/>
+    </application_descriptor>
+
     <application_name_descriptor>
       <!-- Must be in an AIT (table id 0x74) -->
       <!-- One per language -->

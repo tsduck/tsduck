@@ -82,6 +82,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsApplicationDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsApplicationNameDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1246,6 +1249,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsApplicationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsApplicationNameDescriptor.cpp">

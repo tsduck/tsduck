@@ -126,6 +126,6 @@ namespace ts {
     private:
         // When the protocol id is a known one, try to transfer the selector bytes
         // into the appropriate structure. Return false on invalid selector bytes.
-        bool transferSelectorBytes();
+        bool transferSelectorBytes(const DVBCharset* charset);
     };
 }
