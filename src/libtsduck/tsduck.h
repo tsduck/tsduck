@@ -332,6 +332,7 @@
 #include "tstlvAnalyzer.h"
 #include "tstlvChannelMessage.h"
 #include "tstlvConnection.h"
+#include "tstlvLogger.h"
 #include "tstlvMessage.h"
 #include "tstlvMessageFactory.h"
 #include "tstlvProtocol.h"

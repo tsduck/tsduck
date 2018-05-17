@@ -26,22 +26,53 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tstlvLogger.h"
+
+
+//----------------------------------------------------------------------------
+// Constructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 734
+ts::tlv::Logger::Logger(int default_level, Report* default_report) :
+    _report(default_report != 0 ? default_report : NullReport::Instance()),
+    _default_level(default_level),
+    _levels()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Severity levels.
+//----------------------------------------------------------------------------
+
+int ts::tlv::Logger::severity(TAG tag) const
+{
+    auto it = _levels.find(tag);
+    return it == _levels.end() ? _default_level : it->second;
+}
+
+void ts::tlv::Logger::resetSeverities(int default_level)
+{
+    _default_level = default_level;
+    _levels.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Report a TLV message.
+//----------------------------------------------------------------------------
+
+void ts::tlv::Logger::log(const Message& msg, const UString& comment, Report* report)
+{
+    const int level = severity(msg.tag());
+    if (_report->maxSeverity() >= level) {
+        const UString dump(msg.dump(4));
+        if (comment.empty()) {
+            _report->log(level, dump);
+        }
+        else {
+            _report->log(level, u"%s\n%s", {comment, dump});
+        }
+    }
+}

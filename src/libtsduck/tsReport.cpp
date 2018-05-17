@@ -76,6 +76,21 @@ void ts::Report::raiseMaxSeverity(int level)
 
 
 //----------------------------------------------------------------------------
+// Enumeration to use severity values on the command line for instance.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::Severity::Enums({
+    {u"fatal",   ts::Severity::Fatal},
+    {u"severe",  ts::Severity::Severe},
+    {u"error",   ts::Severity::Error},
+    {u"warning", ts::Severity::Warning},
+    {u"info",    ts::Severity::Info},
+    {u"verbose", ts::Severity::Verbose},
+    {u"debug",   ts::Severity::Debug},
+});
+
+
+//----------------------------------------------------------------------------
 // Formatted line prefix header for a severity
 //----------------------------------------------------------------------------
 

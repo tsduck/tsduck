@@ -37,6 +37,7 @@
 #include "tstlvProtocol.h"
 #include "tsMutex.h"
 #include "tstlvMessage.h"
+#include "tstlvLogger.h"
 
 namespace ts {
     namespace tlv {
@@ -80,6 +81,14 @@ namespace ts {
             bool send(const Message& msg, Report& report);
 
             //!
+            //! Serialize and send a TLV message.
+            //! @param [in] msg The message to send.
+            //! @param [in,out] logger Where to report errors and messages.
+            //! @return True on success, false on error.
+            //!
+            bool send(const Message& msg, Logger& logger);
+
+            //!
             //! Receive a TLV message.
             //! Wait for the message, deserialize it and validate it.
             //! Process invalid messages and loop until a valid message is received.
@@ -90,6 +99,18 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool receive(MessagePtr& msg, const AbortInterface* abort, Report& report);
+
+            //!
+            //! Receive a TLV message.
+            //! Wait for the message, deserialize it and validate it.
+            //! Process invalid messages and loop until a valid message is received.
+            //! @param [out] msg A safe pointer to the received message.
+            //! @param [in] abort If non-zero, invoked when I/O is interrupted
+            //! (in case of user-interrupt, return, otherwise retry).
+            //! @param [in,out] logger Where to report errors and messages.
+            //! @return True on success, false on error.
+            //!
+            bool receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger);
 
             //!
             //! Get invalid incoming messages processing.

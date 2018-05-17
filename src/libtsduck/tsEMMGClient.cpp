@@ -50,7 +50,7 @@ ts::EMMGClient::EMMGClient() :
     _udp_address(),
     _total_bytes(0),
     _abort(0),
-    _report(NullReport::Instance()),
+    _logger(),
     _connection(emmgmux::Protocol::Instance(), true, 3),
     _udp_socket(),
     _channel_status(),
@@ -77,7 +77,7 @@ ts::EMMGClient::~EMMGClient()
 
         // Break connection, if not already done
         _abort = 0;
-        _report = NullReport::Instance();
+        _logger.setReport(NullReport::Instance());
         _connection.disconnect(NULLREP);
         _connection.close(NULLREP);
         _udp_socket.close(NULLREP);
@@ -97,20 +97,20 @@ ts::EMMGClient::~EMMGClient()
 bool ts::EMMGClient::abortConnection(const UString& message)
 {
     if (!message.empty()) {
-        _report->error(message);
+        _logger.report().error(message);
     }
 
     if (_udp_address.hasPort()) {
-        _udp_socket.close(*_report);
+        _udp_socket.close(_logger.report());
     }
 
     GuardCondition lock(_mutex, _work_to_do);
     _state = DISCONNECTED;
-    _connection.disconnect(*_report);
-    _connection.close(*_report);
+    _connection.disconnect(_logger.report());
+    _connection.close(_logger.report());
     lock.signal();
 
-    _report = NullReport::Instance();
+    _logger.setReport(NullReport::Instance());
     return false;
 }
 
@@ -164,7 +164,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
                              emmgmux::ChannelStatus& channel_status,
                              emmgmux::StreamStatus& stream_status,
                              const AbortInterface* abort,
-                             Report* report)
+                             const tlv::Logger& logger)
 {
     // Initial state check
     {
@@ -175,21 +175,20 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
             Thread::start();
         }
         if (_state != DISCONNECTED) {
-            if (report != 0) {
-                report->error(u"EMMG client already connected");
-            }
+            tlv::Logger log(logger);
+            log.report().error(u"EMMG client already connected");
             return false;
         }
         _abort = abort;
-        _report = report != 0 ? report : NullReport::Instance();
+        _logger = logger;
     }
 
     // Perform TCP connection to EMMG server
-    if (!_connection.open(*_report)) {
+    if (!_connection.open(_logger.report())) {
         return false;
     }
-    if (!_connection.connect(mux, *_report)) {
-        _connection.close(*_report);
+    if (!_connection.connect(mux, _logger.report())) {
+        _connection.close(_logger.report());
         return false;
     }
 
@@ -200,7 +199,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     }
 
     // Create UDP socket if we need UDP.
-    if (_udp_address.hasPort() && !_udp_socket.open(*report)) {
+    if (_udp_address.hasPort() && !_udp_socket.open(_logger.report())) {
         return abortConnection();
     }
 
@@ -224,7 +223,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     channel_setup.channel_id = data_channel_id;
     channel_setup.client_id = client_id;
     channel_setup.section_TSpkt_flag = !section_format;
-    if (!_connection.send(channel_setup, *_report)) {
+    if (!_connection.send(channel_setup, _logger)) {
         return abortConnection();
     }
 
@@ -254,7 +253,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     stream_setup.client_id = client_id;
     stream_setup.data_id = data_id;
     stream_setup.data_type = data_type;
-    if (!_connection.send(stream_setup, *_report)) {
+    if (!_connection.send(stream_setup, _logger)) {
         return abortConnection();
     }
 
@@ -305,14 +304,14 @@ bool ts::EMMGClient::disconnect()
         req.channel_id = _stream_status.channel_id;
         req.stream_id = _stream_status.stream_id;
         req.client_id = _stream_status.client_id;
-        ok = _connection.send(req, *_report) && waitResponse() == emmgmux::Tags::stream_close_response;
+        ok = _connection.send(req, _logger) && waitResponse() == emmgmux::Tags::stream_close_response;
         
         // If we get a polite reply, send a channel_close
         if (ok) {
             emmgmux::ChannelClose cc;
             cc.channel_id = _channel_status.channel_id;
             cc.client_id = _channel_status.client_id;
-            ok = _connection.send(cc, *_report);
+            ok = _connection.send(cc, _logger);
         }
     }
 
@@ -320,8 +319,8 @@ bool ts::EMMGClient::disconnect()
     GuardCondition lock(_mutex, _work_to_do);
     if (previous_state == CONNECTING || previous_state == CONNECTED) {
         _state = DISCONNECTED;
-        ok = _connection.disconnect(*_report) && ok;
-        ok = _connection.close(*_report) && ok;
+        ok = _connection.disconnect(_logger.report()) && ok;
+        ok = _connection.close(_logger.report()) && ok;
         lock.signal();
     }
 
@@ -330,7 +329,7 @@ bool ts::EMMGClient::disconnect()
         ok = _udp_socket.close() && ok;
     }
 
-    _report = NullReport::Instance();
+    _logger.setReport(NullReport::Instance());
     return ok;
 }
 
@@ -351,7 +350,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
     request.client_id = _stream_status.client_id;
     request.has_bandwidth = true;
     request.bandwidth = bandwidth;
-    if (!_connection.send(request, *_report)) {
+    if (!_connection.send(request, _logger)) {
         return false;
     }
 
@@ -364,7 +363,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
     tlv::TAG response = waitResponse();
     switch (response) {
         case 0:
-            _report->error(u"MUX stream_BW_request response timeout");
+            _logger.report().error(u"MUX stream_BW_request response timeout");
             return false;
         case emmgmux::Tags::channel_error:
         case emmgmux::Tags::stream_error:
@@ -374,7 +373,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
             // Valid response.
             return true;
         default:
-            _report->error(u"unexpected response 0x%X from MUX (expected stream_status)", {response});
+            _logger.report().error(u"unexpected response 0x%X from MUX (expected stream_status)", {response});
             return false;
     }
 }
@@ -432,19 +431,20 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
         // Send data_provision messages using UDP.
         // We need to separately check if the TCP connection is still active.
         if (!isConnected()) {
-            _report->error(u"MUX is disconnected");
+            _logger.report().error(u"MUX is disconnected");
             return false;
         }
         // Manually serialize the data_provision message.
         ByteBlockPtr bbp(new ByteBlock);
         tlv::Serializer serial(bbp);
         request.serialize(serial);
-        return _udp_socket.send(bbp->data(), bbp->size(), _udp_address, *_report);
+        _logger.log(request, u"sending UDP message to " + _udp_address.toString());
+        return _udp_socket.send(bbp->data(), bbp->size(), _udp_address, _logger.report());
     }
     else {
         // Send data_provision messages using UDP.
         // The data_provision message is automatically serialized by the tlv::Connection object.
-        return _connection.send(request, *_report);
+        return _connection.send(request, _logger);
     }
 }
 
@@ -499,7 +499,6 @@ void ts::EMMGClient::main()
     for (;;) {
 
         TS_UNUSED const AbortInterface* abort = 0;
-        Report* report = 0;
 
         // Wait for a connection to be managed
         {
@@ -514,16 +513,15 @@ void ts::EMMGClient::main()
             if (_state == DESTRUCTING) {
                 return;
             }
-            // Get abort and report handler
+            // Get abort handler
             abort = _abort;
-            report = _report == 0 ? &NULLREP : _report;
             // Automatically release mutex
         }
 
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receive(msg, _abort, *report)) {
+        while (ok && _connection.receive(msg, _abort, _logger)) {
             // Is this kind of response worth reporting to the application?
             bool reportResponse = true;
 
@@ -531,13 +529,13 @@ void ts::EMMGClient::main()
                 case emmgmux::Tags::channel_test: {
                     // Automatic reply to channel_test
                     reportResponse = false;
-                    ok = _connection.send(_channel_status, *report);
+                    ok = _connection.send(_channel_status, _logger);
                     break;
                 }
                 case emmgmux::Tags::stream_test: {
                     // Automatic reply to stream_test
                     reportResponse = false;
-                    ok = _connection.send(_stream_status, *report);
+                    ok = _connection.send(_stream_status, _logger);
                     break;
                 }
                 case emmgmux::Tags::stream_BW_allocation: {

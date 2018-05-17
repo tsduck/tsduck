@@ -175,6 +175,7 @@ namespace ts {
         BitRate           _ecm_bitrate;         // ECM PID's bitrate
         PID               _ecm_pid;             // PID for ECM
         PacketCounter     _partial_scrambling;  // Do not scramble all packets if > 1
+        tlv::Logger       _logger;              // Message logger for ECMG <=> SCS protocol
         ecmgscs::ChannelStatus _channel_status; // Initial response to ECMG channel_setup
         ecmgscs::StreamStatus  _stream_status;  // Initial response to ECMG stream_setup
 
@@ -255,6 +256,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _ecm_bitrate(0),
     _ecm_pid(PID_NULL),
     _partial_scrambling(0),
+    _logger(ts::Severity::Debug, tsp_),
     _channel_status(),
     _stream_status(),
     _abort(false),
@@ -287,6 +289,8 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     option(u"ecmg",                 'e', STRING);
     option(u"ecmg-scs-version",     'v', INTEGER, 0, 1, 2, 3);
     option(u"ignore-scrambled",      0);
+    option(u"log-data",              0,  ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol",          0,  ts::Severity::Enums, 0, 1, true);
     option(u"no-audio",              0);
     option(u"no-video",              0);
     option(u"partial-scrambling",    0,  POSITIVE);
@@ -357,6 +361,18 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
             u"      Ignore packets which are already scrambled. Since these packets\n"
             u"      are likely scrambled with a different control word, descrambling\n"
             u"      will not be possible the usual way.\n"
+            u"\n"
+            u"  --log-data[=level]\n"
+            u"      Same as --log-protocol but applies to CW_provision and ECM_response\n"
+            u"      messages only. To debug the session management without being flooded by\n"
+            u"      data messages, use --log-protocol=info --log-data=debug.\n"
+            u"\n"
+            u"  --log-protocol[=level]\n"
+            u"      Log all ECMG <=> SCS protocol messages using the specified level. If the\n"
+            u"      option is not present, the messages are logged at debug level only. If the\n"
+            u"      option is present without value, the messages are logged at info level.\n"
+            u"      A level can be a numerical debug level or any of the following:\n"
+            u"      " + ts::Severity::Enums.nameList() + u".\n"
             u"\n"
             u"  --no-audio\n"
             u"      Do not scramble audio components in the selected service. By default,\n"
@@ -453,6 +469,13 @@ bool ts::ScramblerPlugin::start()
     const uint16_t ecm_stream_id = intValue<uint16_t>(u"stream-id", 1);
     const uint16_t ecm_id = intValue<uint16_t>(u"ecm-id", 1);
 
+    // Set logging levels.
+    const int log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
+    const int log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
+    _logger.setDefaultSeverity(log_protocol);
+    _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, log_data);
+    _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, log_data);
+
     // Scrambling-specific parameters.
     if (!_scrambling.loadArgs(*this)) {
         return false;
@@ -503,7 +526,7 @@ bool ts::ScramblerPlugin::start()
             return false;
         }
         else if (!_ecmg.connect(_ecmg_addr, _super_cas_id, ecm_channel_id, ecm_stream_id, ecm_id,
-                                uint16_t(_cp_duration / 100), _channel_status, _stream_status, tsp, tsp))
+                                uint16_t(_cp_duration / 100), _channel_status, _stream_status, tsp, _logger))
         {
             // Error connecting to ECMG, error message already reported
             return false;

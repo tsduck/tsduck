@@ -71,6 +71,7 @@ class EMMGOptions: public ts::Args
 public:
     EMMGOptions(int argc, char *argv[]);
 
+    ts::tlv::Logger      logger;              // Message logger.
     ts::UStringVector    inputFiles;          // Input file names.
     ts::SectionPtrVector sections;            // Loaded sections from input files.
     size_t               maxCycles;           // Maximum number of cycles of section files.
@@ -101,6 +102,7 @@ public:
 // Constructor.
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG.", u"[options] [section-file ...]"),
+    logger(ts::Severity::Debug, this),
     inputFiles(),
     sections(),
     maxCycles(0),
@@ -136,6 +138,8 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     option(u"emm-max-table-id",    0,  UINT8);
     option(u"emmg-mux-version",    0,  INTEGER, 0, 1, 1, 5);
     option(u"ignore-allocated",   'i');
+    option(u"log-data",            0,  ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol",        0,  ts::Severity::Enums, 0, 1, true);
     option(u"max-bytes",           0,  UNSIGNED);
     option(u"mux",                'm', STRING);
     option(u"requested-bandwidth", 0,  INT16);
@@ -210,6 +214,18 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
             u"      data at the planned bandwidth, even if it is higher than the allocated\n"
             u"      bandwidth.\n"
             u"\n"
+            u"  --log-data[=level]\n"
+            u"      Same as --log-protocol but applies to data_provision messages only. To\n"
+            u"      debug the session management without being flooded by data messages, use\n"
+            u"      --log-protocol=info --log-data=debug.\n"
+            u"\n"
+            u"  --log-protocol[=level]\n"
+            u"      Log all EMMG/PDG <=> MUX protocol messages using the specified level. If\n"
+            u"      the option is not present, the messages are logged at debug level only.\n"
+            u"      If the option is present without value, the messages are logged at info\n"
+            u"      level. A level can be a numerical debug level or any of the following:\n"
+            u"      " + ts::Severity::Enums.nameList() + u".\n"
+            u"\n"
             u"  --max-bytes value\n"
             u"      Stop after sending the specified number of bytes. By default, send data\n"
             u"      indefinitely.\n"
@@ -279,6 +295,12 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     maxBytes = intValue<uint64_t>(u"max-bytes", std::numeric_limits<uint64_t>::max());
     bytesPerSend = intValue<size_t>(u"bytes-per-send", DEFAULT_BYTES_PER_SEND);
     const ts::tlv::VERSION protocolVersion = intValue<ts::tlv::VERSION>(u"emmg-mux-version", 2);
+
+    // Set logging levels.
+    const int log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
+    const int log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
+    logger.setDefaultSeverity(log_protocol);
+    logger.setSeverity(ts::emmgmux::Tags::data_provision, log_data);
 
     // Check validity of some parameters.
     if (emmMaxTableId < emmMinTableId) {
@@ -494,7 +516,7 @@ int main (int argc, char *argv[])
                         channelStatus,
                         streamStatus,
                         0,
-                        &opt))
+                        opt.logger))
     {
         return EXIT_FAILURE;
     }

@@ -79,18 +79,23 @@ void ts::tlv::Connection<MUTEX>::handleConnected(Report& report)
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::send (const Message& msg, Report& report)
+bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Report& report)
 {
-    if (report.debug()) {
-        report.debug(u"sending message to %s\n%s", {peerName(), msg.dump(4)});
-    }
+    tlv::Logger logger(Severity::Debug, &report);
+    return send(msg, logger);
+}
 
-    ByteBlockPtr bbp (new ByteBlock);
-    Serializer serial (bbp);
-    msg.serialize (serial);
+template <class MUTEX>
+bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Logger& logger)
+{
+    logger.log(msg, u"sending message to " + peerName());
 
-    Guard lock (_send_mutex);
-    return SuperClass::send (bbp->data(), bbp->size(), report);
+    ByteBlockPtr bbp(new ByteBlock);
+    Serializer serial(bbp);
+    msg.serialize(serial);
+
+    Guard lock(_send_mutex);
+    return SuperClass::send(bbp->data(), bbp->size(), logger.report());
 }
 
 
@@ -99,40 +104,47 @@ bool ts::tlv::Connection<MUTEX>::send (const Message& msg, Report& report)
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface* abort, Report& report)
+bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Report& report)
 {
-    const bool has_version (_protocol->hasVersion());
-    const size_t header_size (has_version ? 5 : 4);
-    const size_t length_offset (has_version ? 3 : 2);
+    tlv::Logger logger(Severity::Debug, &report);
+    return receive(msg, abort, logger);
+}
+
+template <class MUTEX>
+bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
+{
+    const bool has_version(_protocol->hasVersion());
+    const size_t header_size(has_version ? 5 : 4);
+    const size_t length_offset(has_version ? 3 : 2);
 
     // Loop until a valid message is received
     for (;;) {
-        ByteBlock bb (header_size);
+        ByteBlock bb(header_size);
 
         // Receive complete message
         {
-            Guard lock (_receive_mutex);
+            Guard lock(_receive_mutex);
 
             // Read message header
-            if (!SuperClass::receive (bb.data(), header_size, abort, report)) {
+            if (!SuperClass::receive(bb.data(), header_size, abort, logger.report())) {
                 return false;
             }
 
             // Get message length and read message payload
-            const size_t length (GetUInt16 (bb.data() + length_offset));
-            bb.resize (header_size + length);
-            if (!SuperClass::receive (bb.data() + header_size, length, abort, report)) {
+            const size_t length = GetUInt16(bb.data() + length_offset);
+            bb.resize(header_size + length);
+            if (!SuperClass::receive(bb.data() + header_size, length, abort, logger.report())) {
                 return false;
             }
         }
 
         // Analyze the message
-        MessageFactory mf (bb.data(), bb.size(), _protocol);
+        MessageFactory mf(bb.data(), bb.size(), _protocol);
         if (mf.errorStatus() == tlv::OK) {
             _invalid_msg_count = 0;
-            mf.factory (msg);
-            if (report.debug() && !msg.isNull()) {
-                report.debug(u"received message from %s\n%s", {peerName(), msg->dump(4)});
+            mf.factory(msg);
+            if (!msg.isNull()) {
+                logger.log(*msg, u"received message from " + peerName());
             }
             return true;
         }
@@ -143,16 +155,16 @@ bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface*
         // Send back an error message if necessary
         if (_auto_error_response) {
             MessagePtr resp;
-            mf.buildErrorResponse (resp);
-            if (!send (*resp, report)) {
+            mf.buildErrorResponse(resp);
+            if (!send(*resp, logger.report())) {
                 return false;
             }
         }
 
         // If invalid message max has been reached, break the connection
         if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
-            report.error(u"too many invalid messages from %s, disconnecting", {peerName()});
-            disconnect (report);
+            logger.report().error(u"too many invalid messages from %s, disconnecting", {peerName()});
+            disconnect(logger.report());
             return false;
         }
     }

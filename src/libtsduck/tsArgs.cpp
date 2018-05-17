@@ -372,7 +372,7 @@ void ts::Args::writeLog(int severity, const UString& message)
     _is_valid = _is_valid && severity > Severity::Error;
 
     // Immediately abort application is severity == Severity::Fatal.
-    if (severity <= Severity::Fatal) {
+    if (severity == Severity::Fatal) {
         ::exit(EXIT_FAILURE);
     }
 }

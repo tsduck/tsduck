@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsEnumeration.h"
 
 namespace ts {
     //!
@@ -46,7 +47,6 @@ namespace ts {
     //!
     struct TSDUCKDLL Severity {
 
-        static const int None    = -6;  //!< No message is reported at this level or below.
         static const int Fatal   = -5;  //!< Fatal error, typically aborts the application.
         static const int Severe  = -4;  //!< Severe errror.
         static const int Error   = -3;  //!< Regular error.
@@ -61,6 +61,11 @@ namespace ts {
         //! @return A string to prepend to messages. Empty for Info and Verbose levels.
         //!
         static UString Header(int severity);
+
+        //!
+        //! An enumeration to use severity values on the command line for instance.
+        //!
+        static const Enumeration Enums;
     };
 
     //!

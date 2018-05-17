@@ -138,6 +138,7 @@ namespace ts {
         UDPListener     _udp_listener;         // UDP listener thread.
         TSPacketQueue   _packet_queue;         // Queue of incoming TS packets.
         SectionQueue    _section_queue;        // Queue of incoming sections.
+        tlv::Logger     _logger;               // Message logger.
         volatile bool   _channel_established;  // Data channel open.
         volatile bool   _stream_established;   // Data stream open.
         volatile bool   _req_bitrate_changed;  // Requested bitrate has changed.
@@ -196,6 +197,7 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _udp_listener(this),
     _packet_queue(),
     _section_queue(),
+    _logger(ts::Severity::Debug, tsp_),
     _channel_established(false),
     _stream_established(false),
     _req_bitrate_changed(false),
@@ -210,6 +212,8 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     option(u"bitrate-max",      'b', POSITIVE);
     option(u"buffer-size",       0,  UNSIGNED);
     option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 1, 5);
+    option(u"log-data",          0,  ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol",      0,  ts::Severity::Enums, 0, 1, true);
     option(u"pid",              'p', PIDVAL, 1, 1);
     option(u"queue-size",       'q', UINT32);
     option(u"reuse-port",       'r');
@@ -233,6 +237,18 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
+            u"\n"
+            u"  --log-data[=level]\n"
+            u"      Same as --log-protocol but applies to data_provision messages only. To\n"
+            u"      debug the session management without being flooded by data messages, use\n"
+            u"      --log-protocol=info --log-data=debug.\n"
+            u"\n"
+            u"  --log-protocol[=level]\n"
+            u"      Log all EMMG/PDG <=> MUX protocol messages using the specified level. If\n"
+            u"      the option is not present, the messages are logged at debug level only.\n"
+            u"      If the option is present without value, the messages are logged at info\n"
+            u"      level. A level can be a numerical debug level or any of the following:\n"
+            u"      " + ts::Severity::Enums.nameList() + u".\n"
             u"\n"
             u"  -p value\n"
             u"  --pid value\n"
@@ -274,6 +290,12 @@ bool ts::DataInjectPlugin::start()
     const size_t queue_size = intValue<size_t>(u"queue-size", DEFAULT_QUEUE_SIZE);
     _reuse_port = present(u"reuse-port");
     _sock_buf_size = intValue<size_t>(u"buffer-size");
+
+    // Set logging levels.
+    const int log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
+    const int log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
+    _logger.setDefaultSeverity(log_protocol);
+    _logger.setSeverity(ts::emmgmux::Tags::data_provision, log_data);
 
     // Limit internal queues sizes.
     _packet_queue.setMaxMessages(queue_size);
@@ -613,7 +635,7 @@ void ts::DataInjectPlugin::TCPListener::main()
         tlv::MessagePtr msg;
 
         // Loop on message reception from the client
-        while (ok && _client.receive(msg, _tsp, *_tsp)) {
+        while (ok && _client.receive(msg, _tsp, _plugin->_logger)) {
 
             // Message handling.
             // We do not send errors back to client, we just disconnect
@@ -632,7 +654,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         channel_status.channel_id = m->channel_id;
                         channel_status.client_id = m->client_id;
                         channel_status.section_TSpkt_flag = m->section_TSpkt_flag;
-                        ok = _client.send(channel_status, *_tsp);
+                        ok = _client.send(channel_status, _plugin->_logger);
                         Guard lock(_plugin->_mutex);
                         _plugin->_client_id = m->client_id;
                         _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
@@ -644,7 +666,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                 case emmgmux::Tags::channel_test: {
                     if (_plugin->_channel_established) {
                         // Automatic reply to channel_test
-                        ok = _client.send(channel_status, *_tsp);
+                        ok = _client.send(channel_status, _plugin->_logger);
                     }
                     else {
                         _tsp->error(u"unexpected channel_test, channel not setup");
@@ -677,7 +699,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         stream_status.client_id = m->client_id;
                         stream_status.data_id = m->data_id;
                         stream_status.data_type = m->data_type;
-                        ok = _client.send(stream_status, *_tsp);
+                        ok = _client.send(stream_status, _plugin->_logger);
                         Guard lock(_plugin->_mutex);
                         _plugin->_data_id = m->data_id;
                         _plugin->_stream_established = true;
@@ -688,7 +710,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                 case emmgmux::Tags::stream_test: {
                     if (_plugin->_stream_established) {
                         // Automatic reply to stream_test
-                        ok = _client.send(stream_status, *_tsp);
+                        ok = _client.send(stream_status, _plugin->_logger);
                     }
                     else {
                         _tsp->error(u"unexpected stream_test, stream not setup");
@@ -710,7 +732,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         resp.channel_id = m->channel_id;
                         resp.stream_id = m->stream_id;
                         resp.client_id = m->client_id;
-                        ok = _client.send(resp, *_tsp);
+                        ok = _client.send(resp, _plugin->_logger);
                         _plugin->_stream_established = false;
                     }
                     break;
@@ -718,7 +740,7 @@ void ts::DataInjectPlugin::TCPListener::main()
 
                 case emmgmux::Tags::stream_BW_request: {
                     emmgmux::StreamBWAllocation response;
-                    ok = _plugin->processBandwidthRequest(msg, response) && _client.send(response, *_tsp);
+                    ok = _plugin->processBandwidthRequest(msg, response) && _client.send(response, _plugin->_logger);
                     break;
                 }
 
@@ -790,10 +812,8 @@ void ts::DataInjectPlugin::UDPListener::main()
             _tsp->error(u"received invalid message from %s, %d bytes", {sender.toString(), insize});
         }
         else {
-            // Log the message
-            if (_tsp->debug()) {
-                _tsp->debug(u"received UDP message from %s\n%s", {sender.toString(), msg->dump(4)});
-            }
+            // Log the message.
+            _plugin->_logger.log(*msg, u"received UDP message from " + sender.toString());
             // The only accepted message is data_provision.
             _plugin->processDataProvision(msg);
         }
