@@ -128,6 +128,13 @@ namespace ts {
             //!
             void log(const Message& msg, const UString& comment = UString(), Report* report = 0);
 
+            // Make sure the compiler knows that we understand the consequences of
+            // copying the Report* in the object: we point to the same external Report.
+            //! @cond doxygen
+            Logger(const Logger&) = default;
+            Logger& operator=(const Logger&) = default;
+            //! @endcond
+            
         private:
             Report* volatile  _report;         // Default report.
             int               _default_level;  // Default severity level.
