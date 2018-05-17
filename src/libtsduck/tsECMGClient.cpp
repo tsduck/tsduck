@@ -52,7 +52,7 @@ ts::ECMGClient::ECMGClient(size_t extra_handler_stack_size) :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE + extra_handler_stack_size)),
     _state(INITIAL),
     _abort(0),
-    _report(0),
+    _logger(),
     _connection(ecmgscs::Protocol::Instance(), true, 3),
     _channel_status(),
     _stream_status(),
@@ -75,7 +75,7 @@ ts::ECMGClient::~ECMGClient()
 
         // Break connection, if not already done
         _abort = 0;
-        _report = NullReport::Instance();
+        _logger.setReport(NullReport::Instance());
         _connection.disconnect(NULLREP);
         _connection.close(NULLREP);
 
@@ -94,15 +94,16 @@ ts::ECMGClient::~ECMGClient()
 bool ts::ECMGClient::abortConnection(const UString& message)
 {
     if (!message.empty()) {
-        _report->error(message);
+        _logger.report().error(message);
     }
 
     GuardCondition lock(_mutex, _work_to_do);
     _state = DISCONNECTED;
-    _connection.disconnect(*_report);
-    _connection.close(*_report);
+    _connection.disconnect(_logger.report());
+    _connection.close(_logger.report());
     lock.signal();
 
+    _logger.setReport(NullReport::Instance());
     return false;
 }
 
@@ -120,7 +121,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
                              ecmgscs::ChannelStatus& channel_status,
                              ecmgscs::StreamStatus& stream_status,
                              const AbortInterface* abort,
-                             Report* report)
+                             const tlv::Logger& logger)
 {
     // Initial state check
     {
@@ -131,22 +132,21 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
             Thread::start();
         }
         if (_state != DISCONNECTED) {
-            if (report != 0) {
-                report->error(u"ECMG client already connected");
-            }
+            tlv::Logger log(logger);
+            log.report().error(u"ECMG client already connected");
             return false;
         }
         _abort = abort;
-        _report = report ? report : NullReport::Instance();
+        _logger = logger;
     }
 
     // Perform TCP connection to ECMG server
     // Flawfinder: ignore: this is our open(), not ::open().
-    if (!_connection.open(*_report)) {
+    if (!_connection.open(_logger.report())) {
         return false;
     }
-    if (!_connection.connect(ecmg_address, *_report)) {
-        _connection.close(*_report);
+    if (!_connection.connect(ecmg_address, _logger.report())) {
+        _connection.close(_logger.report());
         return false;
     }
 
@@ -154,7 +154,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
     ecmgscs::ChannelSetup channel_setup;
     channel_setup.channel_id = ecm_channel_id;
     channel_setup.Super_CAS_id = super_cas_id;
-    if (!_connection.send(channel_setup, *_report)) {
+    if (!_connection.send(channel_setup, _logger)) {
         return abortConnection();
     }
 
@@ -183,7 +183,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
     stream_setup.stream_id = ecm_stream_id;
     stream_setup.ECM_id = ecm_id;
     stream_setup.nominal_CP_duration = nominal_cp_duration;
-    if (!_connection.send(stream_setup, *_report)) {
+    if (!_connection.send(stream_setup, _logger)) {
         return abortConnection();
     }
 
@@ -234,14 +234,14 @@ bool ts::ECMGClient::disconnect()
         tlv::MessagePtr resp;
         // Politely send a stream_close_request
         // and wait for a stream_close_response
-        ok = _connection.send(req, *_report) &&
+        ok = _connection.send(req, _logger) &&
             _response_queue.dequeue(resp, RESPONSE_TIMEOUT) &&
             resp->tag() == ecmgscs::Tags::stream_close_response;
         // If we get a polite reply, send a channel_close
         if (ok) {
             ecmgscs::ChannelClose cc;
             cc.channel_id = _channel_status.channel_id;
-            ok = _connection.send(cc, *_report);
+            ok = _connection.send(cc, _logger);
         }
     }
 
@@ -249,8 +249,8 @@ bool ts::ECMGClient::disconnect()
     GuardCondition lock(_mutex, _work_to_do);
     if (previous_state == CONNECTING || previous_state == CONNECTED) {
         _state = DISCONNECTED;
-        ok = _connection.disconnect(*_report) && ok;
-        ok = _connection.close(*_report) && ok;
+        ok = _connection.disconnect(_logger.report()) && ok;
+        ok = _connection.close(_logger.report()) && ok;
         lock.signal();
     }
 
@@ -304,7 +304,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     buildCWProvision(msg, cp_number, current_cw, next_cw, ac, cp_duration);
 
     // Send the CW_provision message
-    if (!_connection.send(msg, *_report)) {
+    if (!_connection.send(msg, _logger)) {
         return false;
     }
 
@@ -314,7 +314,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     // Wait for an ECM response from the ECMG
     tlv::MessagePtr resp;
     if (!_response_queue.dequeue(resp, timeout)) {
-        _report->error(u"ECM generation timeout");
+        _logger.report().error(u"ECM generation timeout");
         return false;
     }
     if (resp->tag() == ecmgscs::Tags::ECM_response) {
@@ -331,7 +331,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     // and status_test. They are automatically handled in the reception thread.
     // At this point, if we receive a message, this is an error or an truely
     // unexpected message.
-    _report->error(u"unexpected response to ECM request:\n%s", {resp->dump(4)});
+    _logger.report().error(u"unexpected response to ECM request:\n%s", {resp->dump(4)});
     return false;
 }
 
@@ -358,7 +358,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
     }
 
     // Send the CW_provision message
-    bool ok = _connection.send(msg, *_report);
+    bool ok = _connection.send(msg, _logger);
 
     // Clear asynchronous request on error
     if (!ok) {
@@ -380,7 +380,6 @@ void ts::ECMGClient::main()
     for (;;) {
 
         TS_UNUSED const AbortInterface* abort = 0;
-        Report* report = 0;
 
         // Wait for a connection to be managed
         {
@@ -395,25 +394,24 @@ void ts::ECMGClient::main()
             if (_state == DESTRUCTING) {
                 return;
             }
-            // Get abort and report handler
+            // Get abort handler
             abort = _abort;
-            report = _report;
             // Automatically release mutex
         }
 
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receive(msg, _abort, *report)) {
+        while (ok && _connection.receive(msg, _abort, _logger)) {
             switch (msg->tag()) {
                 case ecmgscs::Tags::channel_test: {
                     // Automatic reply to channel_test
-                    ok = _connection.send(_channel_status, *report);
+                    ok = _connection.send(_channel_status, _logger);
                     break;
                 }
                 case ecmgscs::Tags::stream_test: {
                     // Automatic reply to stream_test
-                    ok = _connection.send(_stream_status, *report);
+                    ok = _connection.send(_stream_status, _logger);
                     break;
                 }
                 case ecmgscs::Tags::ECM_response: {

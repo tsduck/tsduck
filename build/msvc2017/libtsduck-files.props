@@ -328,6 +328,7 @@
     <ClInclude Include="..\..\src\libtsduck\tstlvChannelMessage.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvConnectionTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tstlvLogger.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvMessage.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvMessageFactory.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvMessageFactoryTemplate.h" />
@@ -655,6 +656,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tstlvLogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvSerializer.cpp" />

@@ -200,7 +200,7 @@ void ReportTest::testString()
                                   u"FATAL ERROR: 7",
                                   log.getMessages());
 
-    _testStringSequence(log, ts::Severity::None);
+    _testStringSequence(log, ts::Severity::Fatal - 1);
     CPPUNIT_ASSERT(log.emptyMessages());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", log.getMessages());
 }
@@ -266,7 +266,7 @@ void ReportTest::testPrintf()
                                   u"FATAL ERROR: 7",
                                   log.getMessages());
 
-    _testPrintfSequence(log, ts::Severity::None);
+    _testPrintfSequence(log, ts::Severity::Fatal - 1);
     CPPUNIT_ASSERT(log.emptyMessages());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", log.getMessages());
 }

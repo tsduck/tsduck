@@ -85,7 +85,7 @@ namespace ts {
         //! @param [out] channel_status Initial response to channel_setup
         //! @param [out] stream_status Initial response to stream_setup
         //! @param [in] abort An interface to check if the application is interrupted.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
         bool connect(const SocketAddress& mux,
@@ -99,7 +99,7 @@ namespace ts {
                      emmgmux::ChannelStatus& channel_status,
                      emmgmux::StreamStatus& stream_status,
                      const AbortInterface* abort,
-                     Report* report);
+                     const tlv::Logger& logger);
 
         //!
         //! Send a bandwidth request.
@@ -202,7 +202,7 @@ namespace ts {
         SocketAddress          _udp_address;
         uint64_t               _total_bytes;
         const AbortInterface*  _abort;
-        Report*                _report;
+        tlv::Logger            _logger;
         tlv::Connection<Mutex> _connection;     // connection with MUX server
         UDPSocket              _udp_socket;     // where to send data_provision if UDP is used
         emmgmux::ChannelStatus _channel_status; // automatic response to channel_test

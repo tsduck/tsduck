@@ -982,6 +982,9 @@
     <ClInclude Include="..\..\src\libtsduck\tstlvConnectionTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tstlvLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tstlvMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1957,6 +1960,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tstlvLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp">

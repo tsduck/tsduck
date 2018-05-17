@@ -326,6 +326,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvChannelMessage.h \
     ../../../src/libtsduck/tstlvConnection.h \
     ../../../src/libtsduck/tstlvConnectionTemplate.h \
+    ../../../src/libtsduck/tstlvLogger.h \
     ../../../src/libtsduck/tstlvMessage.h \
     ../../../src/libtsduck/tstlvMessageFactory.h \
     ../../../src/libtsduck/tstlvMessageFactoryTemplate.h \
@@ -643,6 +644,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.cpp \
     ../../../src/libtsduck/tsTimeTrackerDemux.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
+    ../../../src/libtsduck/tstlvLogger.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \

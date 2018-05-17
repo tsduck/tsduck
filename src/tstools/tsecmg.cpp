@@ -72,6 +72,8 @@ struct ECMGOptions: public ts::Args
 {
     ECMGOptions(int argc, char *argv[]);
 
+    int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
+    int                        log_data;       // Log level for CW/ECM data messages.
     bool                       once;           // Accept only one client.
     ts::MilliSecond            ecmCompTime;    // ECM computation time.
     ts::SocketAddress          serverAddress;  // TCP server local address.
@@ -81,6 +83,8 @@ struct ECMGOptions: public ts::Args
 
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG.", u"[options]"),
+    log_protocol(ts::Severity::Debug),
+    log_data(ts::Severity::Debug),
     once(false),
     ecmCompTime(0),
     serverAddress(),
@@ -95,6 +99,8 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     option(u"delay-stop",             0,  INT16);
     option(u"ecmg-scs-version",       0,  INTEGER, 0, 1, 2, 3);
     option(u"max-comp-time",          0,  UNSIGNED);
+    option(u"log-data",               0,  ts::Severity::Enums, 0, 1, true);
+    option(u"log-protocol",           0,  ts::Severity::Enums, 0, 1, true);
     option(u"once",                  'o');
     option(u"port",                  'p', UINT16);
     option(u"repetition",            'r', UINT16);
@@ -140,6 +146,18 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
+            u"  --log-data[=level]\n"
+            u"      Same as --log-protocol but applies to CW_provision and ECM_response\n"
+            u"      messages only. To debug the session management without being flooded by\n"
+            u"      data messages, use --log-protocol=info --log-data=debug.\n"
+            u"\n"
+            u"  --log-protocol[=level]\n"
+            u"      Log all ECMG <=> SCS protocol messages using the specified level. If the\n"
+            u"      option is not present, the messages are logged at debug level only. If the\n"
+            u"      option is present without value, the messages are logged at info level.\n"
+            u"      A level can be a numerical debug level or any of the following:\n"
+            u"      " + ts::Severity::Enums.nameList() + u".\n"
+            u"\n"
             u"  --max-comp-time value\n"
             u"      Specify the maximum ECM computation time in milliseconds. This option sets\n"
             u"      the DVB SimulCrypt option 'max_comp_time'. By default, use the value of\n"
@@ -184,7 +202,10 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     serverAddress.setPort(intValue<uint16_t>(u"port", DEFAULT_SERVER_PORT));
     once = present(u"once");
     ecmCompTime = intValue<ts::MilliSecond>(u"comp-time", 0);
+    log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
+    log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
     const ts::tlv::VERSION protocolVersion = intValue<ts::tlv::VERSION>(u"ecmg-scs-version", 2);
+
     channelStatus.section_TSpkt_flag = !present(u"section-mode");
     channelStatus.CW_per_msg = intValue<uint8_t>(u"cw-per-ecm", 2);
     channelStatus.lead_CW = channelStatus.CW_per_msg - 1;
@@ -219,7 +240,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 // A class implementing the ECMG shared data, used from all threads.
 //----------------------------------------------------------------------------
 
-class ECMGSharedData : public ts::AsyncReport
+class ECMGSharedData
 {
 public:
     // Constructor.
@@ -231,7 +252,15 @@ public:
     // Release a ECM_channel_id. Return false if not active.
     bool closeChannel(uint16_t id);
 
+    // Get the shared asynchronous report facility.
+    ts::Report& report() { return _report; }
+
+    // Get the shared asynchronous protocol message logger.
+    ts::tlv::Logger& logger() { return _logger; }
+
 private:
+    ts::AsyncReport    _report;    // Asynchronous message report.
+    ts::tlv::Logger    _logger;    // Protocol message logger.
     ts::Mutex          _mutex;     // Protect shared data.
     std::set<uint16_t> _channels;  // Active channels.
 };
@@ -243,10 +272,14 @@ private:
 
 // Constructor.
 ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
-    ts::AsyncReport(opt.maxSeverity()),
+    _report(opt.maxSeverity()),
+    _logger(opt.log_protocol, &_report),
     _mutex(),
     _channels()
 {
+    // The CW/ECM data messages have a distinct log level.
+    _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.log_data);
+    _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.log_data);
 }
 
 // Declare a new ECM_channel_id. Return false if already active.
@@ -301,7 +334,10 @@ private:
     bool handleCWProvision(ts::ecmgscs::CWProvision* msg);
 
     // Send a response message.
-    bool send(const ts::tlv::Message* msg);
+    bool send(const ts::tlv::Message* msg)
+    {
+        return _conn->send(*msg, _shared->logger());
+    }
 
     // Send an error related to the msg.
     bool sendErrorResponse(const ts::tlv::Message* msg, uint16_t errorStatus);
@@ -346,7 +382,7 @@ ECMGClientHandler::ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectio
 void ECMGClientHandler::main()
 {
     _peer = _conn->peerName();
-    _shared->verbose(u"%s: %s: session started", {_peer, TimeStamp()});
+    _shared->report().verbose(u"%s: %s: session started", {_peer, TimeStamp()});
 
     // Normally, an ECMG should handle incoming and outgoing messages independently.
     // However, here we have a minimal implementation. We never send any request to
@@ -356,10 +392,7 @@ void ECMGClientHandler::main()
     // Loop on message reception
     ts::tlv::MessagePtr msg;
     bool ok = true;
-    while (ok && _conn->receive(msg, 0, *_shared)) {
-        // Display received messages.
-        _shared->verbose(u"%s: %s: received message:\n%s", {_peer, TimeStamp(), msg->dump(4)});
-
+    while (ok && _conn->receive(msg, 0, _shared->logger())) {
         switch (msg->tag()) {
             case ts::ecmgscs::Tags::channel_setup:
                 ok = handleChannelSetup(dynamic_cast<ts::ecmgscs::ChannelSetup*>(msg.pointer()));
@@ -397,7 +430,7 @@ void ECMGClientHandler::main()
 
     // Error while receiving or sending messages, most likely a client disconnection.
     _conn->disconnect(NULLREP);
-    _conn->close(*_shared);
+    _conn->close(_shared->report());
 
     // Make sure to release the channel if not done by the clients.
     if (_channel.set()) {
@@ -405,19 +438,7 @@ void ECMGClientHandler::main()
         _channel.reset();
     }
 
-    _shared->verbose(u"%s: %s: session completed", {_peer, TimeStamp()});
-}
-
-
-//----------------------------------------------------------------------------
-// Send a response message.
-//----------------------------------------------------------------------------
-
-bool ECMGClientHandler::send(const ts::tlv::Message* msg)
-{
-    // Display messages.
-    _shared->verbose(u"%s: %s: sending message:\n%s", {_peer, TimeStamp(), msg->dump(4)});
-    return _conn->send(*msg, *_shared);
+    _shared->report().verbose(u"%s: %s: session completed", {_peer, TimeStamp()});
 }
 
 
@@ -689,15 +710,15 @@ int main (int argc, char *argv[])
 
     // Initialize a TCP server.
     ts::TCPServer server;
-    if (!server.open(shared) ||
-        !server.reusePort(true, shared) ||
-        !server.bind(opt.serverAddress, shared) ||
-        !server.listen(5, shared))
+    if (!server.open(shared.report()) ||
+        !server.reusePort(true, shared.report()) ||
+        !server.bind(opt.serverAddress, shared.report()) ||
+        !server.listen(5, shared.report()))
     {
         return EXIT_FAILURE;
     }
-    shared.verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d",
-                   {opt.serverAddress.toString(), ts::ecmgscs::Protocol::Instance()->version()});
+    shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d",
+                            {opt.serverAddress.toString(), ts::ecmgscs::Protocol::Instance()->version()});
 
     // Manage incoming client connections.
     for (;;) {
@@ -706,7 +727,7 @@ int main (int argc, char *argv[])
         ts::SocketAddress clientAddress;
         ECMGConnectionPtr conn(new ECMGConnection(ts::ecmgscs::Protocol::Instance(), true, 3));
         ts::CheckNonNull(conn.pointer());
-        if (!server.accept(*conn, clientAddress, shared)) {
+        if (!server.accept(*conn, clientAddress, shared.report())) {
             break;
         }
 

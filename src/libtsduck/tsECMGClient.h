@@ -82,7 +82,7 @@ namespace ts {
         //! @param [out] channel_status Initial response to channel_setup
         //! @param [out] stream_status Initial response to stream_setup
         //! @param [in] abort An interface to check if the application is interrupted.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
         bool connect(const SocketAddress& ecmg,
@@ -94,7 +94,7 @@ namespace ts {
                      ecmgscs::ChannelStatus& channel_status,
                      ecmgscs::StreamStatus& stream_status,
                      const AbortInterface* abort,
-                     Report* report);
+                     const tlv::Logger& logger);
 
         //!
         //! Synchronously generate an ECM.
@@ -175,7 +175,7 @@ namespace ts {
         // Private members
         State                   _state;
         const AbortInterface*   _abort;
-        Report*                 _report;
+        tlv::Logger             _logger;
         tlv::Connection <Mutex> _connection;     // connection with ECMG server
         ecmgscs::ChannelStatus  _channel_status; // initial response to channel_setup
         ecmgscs::StreamStatus   _stream_status;  // initial response to stream_setup
