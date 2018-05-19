@@ -731,6 +731,11 @@
         service_provider_name="string, required"
         service_name="string, required"/>
 
+    <service_availability_descriptor availability="bool, required">
+      <!-- One per cell -->
+      <cell id="uint16, required"/>
+    </service_availability_descriptor>
+
     <service_identifier_descriptor service_identifier="string, required"/>
 
     <service_list_descriptor>
@@ -738,6 +743,11 @@
       <service service_id="uint16, required"
                service_type="uint8, required"/>
     </service_list_descriptor>
+
+    <service_move_descriptor
+        new_original_network_id="uint16, required"
+        new_transport_stream_id="uint16, required"
+        new_service_id="uint16, required"/>
 
     <short_event_descriptor language_code="char3, required">
       <event_name>String</event_name>
@@ -783,6 +793,10 @@
     <STD_descriptor leak_valid="bool, required"/>
 
     <stream_identifier_descriptor component_tag="uint8, required"/>
+
+    <stuffing_descriptor>
+      Hexadecimal content
+    </stuffing_descriptor>
 
     <subtitling_descriptor>
       <!-- One per subtitle -->

@@ -244,10 +244,12 @@ HEADERS += \
     ../../../src/libtsduck/tsSectionHandlerInterface.h \
     ../../../src/libtsduck/tsSectionProviderInterface.h \
     ../../../src/libtsduck/tsService.h \
+    ../../../src/libtsduck/tsServiceAvailabilityDescriptor.h \
     ../../../src/libtsduck/tsServiceDescriptor.h \
     ../../../src/libtsduck/tsServiceDiscovery.h \
     ../../../src/libtsduck/tsServiceIdentifierDescriptor.h \
     ../../../src/libtsduck/tsServiceListDescriptor.h \
+    ../../../src/libtsduck/tsServiceMoveDescriptor.h \
     ../../../src/libtsduck/tsServiceTemplate.h \
     ../../../src/libtsduck/tsSHA1.h \
     ../../../src/libtsduck/tsSHA256.h \
@@ -271,6 +273,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsSTDDescriptor.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsStuffingDescriptor.h \
     ../../../src/libtsduck/tsSubRipGenerator.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
@@ -574,10 +577,12 @@ SOURCES += \
     ../../../src/libtsduck/tsSectionDemux.cpp \
     ../../../src/libtsduck/tsSectionFile.cpp \
     ../../../src/libtsduck/tsService.cpp \
+    ../../../src/libtsduck/tsServiceAvailabilityDescriptor.cpp \
     ../../../src/libtsduck/tsServiceDescriptor.cpp \
     ../../../src/libtsduck/tsServiceDiscovery.cpp \
     ../../../src/libtsduck/tsServiceIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsServiceListDescriptor.cpp \
+    ../../../src/libtsduck/tsServiceMoveDescriptor.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \
     ../../../src/libtsduck/tsSHA512.cpp \
@@ -599,6 +604,7 @@ SOURCES += \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
     ../../../src/libtsduck/tsSTDDescriptor.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsStuffingDescriptor.cpp \
     ../../../src/libtsduck/tsSubRipGenerator.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \

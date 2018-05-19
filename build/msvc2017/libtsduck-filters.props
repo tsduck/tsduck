@@ -736,6 +736,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsService.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsServiceDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -746,6 +749,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsServiceListDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsServiceMoveDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsServiceTemplate.h">
@@ -815,6 +821,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h">
@@ -1752,6 +1761,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1762,6 +1774,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsServiceMoveDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSHA1.cpp">
@@ -1825,6 +1840,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp">
