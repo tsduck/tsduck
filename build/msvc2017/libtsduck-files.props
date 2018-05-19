@@ -246,10 +246,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsSectionHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionProviderInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsService.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceDiscovery.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceListDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsServiceMoveDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSHA1.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSHA256.h" />
@@ -273,6 +275,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsStaticInstance.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSTDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.h" />
@@ -586,10 +589,12 @@
     <ClCompile Include="..\..\src\libtsduck\tsSectionDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDiscovery.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsServiceMoveDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA1.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA256.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA512.cpp" />
@@ -611,6 +616,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsStandaloneTableDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSTDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.cpp" />

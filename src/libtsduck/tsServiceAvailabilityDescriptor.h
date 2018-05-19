@@ -28,20 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a service_availability_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 736
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a service_availability_descriptor
+    //! @see ETSI 300 468, 6.2.34.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ServiceAvailabilityDescriptor : public AbstractDescriptor
+    {
+    public:
+        //!
+        //! Maximum number of cells to fit in 255 bytes.
+        //!
+        static const size_t MAX_CELLS = 127;
+
+        // ServiceAvailabilityDescriptor public members:
+        bool                  availability;  //!< The service is available/unavailable in the listed cells.
+        std::vector<uint16_t> cell_ids;      //!< The cell ids.
+
+        //!
+        //! Default constructor.
+        //!
+        ServiceAvailabilityDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ServiceAvailabilityDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

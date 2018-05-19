@@ -137,8 +137,10 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(SatelliteDeliverySystemDescriptor);
     REF_TYPE(ScramblingDescriptor);
     REF_TYPE(ServiceDescriptor);
+    REF_TYPE(ServiceAvailabilityDescriptor);
     REF_TYPE(ServiceIdentifierDescriptor);
     REF_TYPE(ServiceListDescriptor);
+    REF_TYPE(ServiceMoveDescriptor);
     REF_TYPE(ShortEventDescriptor);
     REF_TYPE(SpliceAvailDescriptor);
     REF_TYPE(SpliceDTMFDescriptor);
@@ -148,6 +150,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(SSULinkageDescriptor);
     REF_TYPE(STDDescriptor);
     REF_TYPE(StreamIdentifierDescriptor);
+    REF_TYPE(StuffingDescriptor);
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
     REF_TYPE(T2MIDescriptor);

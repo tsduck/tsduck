@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Interface class for mutex objects.
-    //! @ingroup threads
+    //! @ingroup thread
     //!
     //! A mutex is a general mutual exclusion mechanism.
     //! This interface class defines the generic interface of a mutex.
