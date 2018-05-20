@@ -127,7 +127,7 @@ void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharse
     while ((section_number == 0 || start_index < descs.count()) && section_number < 256) {
 
         // Serialize as much descriptors as possible
-        start_index = descs.serialize (data, remain, start_index);
+        start_index = descs.serialize(data, remain, start_index);
 
         // Add section in the table
         table.addSection (new Section (_table_id,

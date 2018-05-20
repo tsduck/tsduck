@@ -71,7 +71,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (co
     AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
     entries ()
 {
-    deserialize (desc, charset);
+    deserialize(desc, charset);
 }
 
 
@@ -104,7 +104,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (in
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::HDSimulcastLogicalChannelDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -125,7 +125,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::serialize (Descriptor& desc, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::HDSimulcastLogicalChannelDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();

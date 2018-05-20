@@ -137,7 +137,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::VBIDataDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -163,7 +163,7 @@ void ts::VBIDataDescriptor::serialize (Descriptor& desc, const DVBCharset* chars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::VBIDataDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     services.clear();
 

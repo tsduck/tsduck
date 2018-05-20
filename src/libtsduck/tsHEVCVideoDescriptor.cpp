@@ -113,7 +113,7 @@ void ts::HEVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::HEVCVideoDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && (desc.payloadSize() == 13 || desc.payloadSize() == 15);
 

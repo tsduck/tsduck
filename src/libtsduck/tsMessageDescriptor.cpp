@@ -39,12 +39,12 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"message_descriptor"
-#define MY_DID ts::DID_EXTENSION
+#define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_MESSAGE
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MessageDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::MessageDescriptor, ts::EDID::Extension(MY_EDID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::MessageDescriptor::DisplayDescriptor, ts::EDID::Extension(MY_EDID));
+TS_ID_DESCRIPTOR_FACTORY(ts::MessageDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::MessageDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
 
 
 //----------------------------------------------------------------------------

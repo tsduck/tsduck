@@ -67,7 +67,7 @@ ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::RegistrationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(format_identifier);
@@ -80,7 +80,7 @@ void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::RegistrationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
     additional_identification_info.clear();

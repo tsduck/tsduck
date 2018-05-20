@@ -95,7 +95,7 @@ void ts::ContentDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::ContentDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 0;
     entries.clear();

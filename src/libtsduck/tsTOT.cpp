@@ -231,7 +231,7 @@ void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
     // Insert descriptor list (with leading length field).
     // Keep 4 bytes for CRC.
     remain -= 4;
-    size_t next_index = dlist.lengthSerialize (data, remain);
+    size_t next_index = dlist.lengthSerialize(data, remain);
     if (next_index != dlist.count()) {
         // Could not serialize all descriptors
         // No simple way to report this error.

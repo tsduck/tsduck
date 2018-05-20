@@ -879,7 +879,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_EXTENSION: {
+            case DID_DVB_EXTENSION: {
                 // Extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {

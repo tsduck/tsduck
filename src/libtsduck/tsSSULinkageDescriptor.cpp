@@ -162,7 +162,7 @@ void ts::SSULinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::SSULinkageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 8;
 

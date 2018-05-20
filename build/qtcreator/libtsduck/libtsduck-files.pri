@@ -43,6 +43,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAVCParser.h \
     ../../../src/libtsduck/tsAVCParserTemplate.h \
     ../../../src/libtsduck/tsAVCSequenceParameterSet.h \
+    ../../../src/libtsduck/tsAVCTimingAndHRDDescriptor.h \
     ../../../src/libtsduck/tsAVCVideoDescriptor.h \
     ../../../src/libtsduck/tsAVCVUIParameters.h \
     ../../../src/libtsduck/tsBAT.h \
@@ -136,6 +137,7 @@ HEADERS += \
     ../../../src/libtsduck/tsGuardCondition.h \
     ../../../src/libtsduck/tsHash.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
+    ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.h \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
     ../../../src/libtsduck/tsIDSA.h \
     ../../../src/libtsduck/tsInputRedirector.h \
@@ -425,6 +427,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAVCHRDParameters.cpp \
     ../../../src/libtsduck/tsAVCParser.cpp \
     ../../../src/libtsduck/tsAVCSequenceParameterSet.cpp \
+    ../../../src/libtsduck/tsAVCTimingAndHRDDescriptor.cpp \
     ../../../src/libtsduck/tsAVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsAVCVUIParameters.cpp \
     ../../../src/libtsduck/tsBAT.cpp \
@@ -496,6 +499,7 @@ SOURCES += \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
+    ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsIDSA.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \

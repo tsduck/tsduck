@@ -74,7 +74,7 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descrip
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::PrivateDataSpecifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[6];
     data[0] = _tag;
@@ -90,7 +90,7 @@ void ts::PrivateDataSpecifierDescriptor::serialize (Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::PrivateDataSpecifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 

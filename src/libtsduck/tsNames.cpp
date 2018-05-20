@@ -83,7 +83,7 @@ ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
 
 ts::UString ts::names::EDID(uint8_t edid, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"ExtendedDescriptorId", Names::Value(edid), flags, 8);
+    return NamesDVB::Instance().nameFromSection(u"DVBExtendedDescriptorId", Names::Value(edid), flags, 8);
 }
 
 ts::UString ts::names::StreamType(uint8_t type, Flags flags)

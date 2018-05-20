@@ -45,6 +45,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAVCParser.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCParserTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCSequenceParameterSet.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAVCTimingAndHRDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCVUIParameters.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBAT.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsGuardCondition.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHash.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIDSA.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
@@ -437,6 +439,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAVCHRDParameters.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCParser.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCSequenceParameterSet.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAVCTimingAndHRDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCVUIParameters.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBAT.cpp" />
@@ -508,6 +511,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsGuard.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuardCondition.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIDSA.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />

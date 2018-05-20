@@ -82,7 +82,7 @@ ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::deserialize (const BinaryTable& table, const DVBCharset* charset)
+void ts::PAT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;

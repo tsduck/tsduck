@@ -95,7 +95,7 @@ void ts::EacemStreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::EacemStreamIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

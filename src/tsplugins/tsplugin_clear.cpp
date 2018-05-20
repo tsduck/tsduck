@@ -227,7 +227,7 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
         case TID_TOT: {
             if (table.sourcePID() == PID_TOT) {
                 // Save last TOT
-                _last_tot.deserialize (table);
+                _last_tot.deserialize(table);
             }
             break;
         }

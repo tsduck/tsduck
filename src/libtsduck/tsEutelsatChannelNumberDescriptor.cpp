@@ -98,7 +98,7 @@ void ts::EutelsatChannelNumberDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::EutelsatChannelNumberDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 8 == 0;
     entries.clear();

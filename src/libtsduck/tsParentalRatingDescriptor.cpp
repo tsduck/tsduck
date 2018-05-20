@@ -90,7 +90,7 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::ParentalRatingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -110,7 +110,7 @@ void ts::ParentalRatingDescriptor::serialize (Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::ParentalRatingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();

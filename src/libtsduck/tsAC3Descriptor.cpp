@@ -106,7 +106,7 @@ void ts::AC3Descriptor::merge(const AC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AC3Descriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::AC3Descriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());

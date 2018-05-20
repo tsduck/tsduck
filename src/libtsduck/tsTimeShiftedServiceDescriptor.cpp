@@ -80,7 +80,7 @@ void ts::TimeShiftedServiceDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeShiftedServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 2;
 

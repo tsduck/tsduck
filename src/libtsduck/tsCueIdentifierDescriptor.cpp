@@ -79,7 +79,7 @@ ts::CueIdentifierDescriptor::CueIdentifierDescriptor(const Descriptor& desc, con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::CueIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(cue_stream_type);
@@ -91,7 +91,7 @@ void ts::CueIdentifierDescriptor::serialize (Descriptor& desc, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::CueIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

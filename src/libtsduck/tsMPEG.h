@@ -862,7 +862,7 @@ namespace ts {
         DID_STEREO_VIDEO_INFO   = 0x36, //!< DID for Stereoscopic Video Info descriptor
         DID_TRANSPORT_PROFILE   = 0x37, //!< DID for Transport Profile descriptor
         DID_HEVC_VIDEO          = 0x38, //!< DID for HEVC Video descriptor
-        DID_MPEG2_EXTENSION     = 0x3F, //!< DID for MPEG-2 Extension descriptor
+        DID_MPEG_EXTENSION      = 0x3F, //!< DID for MPEG-2 Extension descriptor
 
         // Valid in DVB context:
 
@@ -929,7 +929,7 @@ namespace ts {
         DID_AAC                 = 0x7C, //!< DID for DVB AAC_descriptor
         DID_XAIT_LOCATION       = 0x7D, //!< DID for DVB XAIT_location_descriptor (DVB-MHP)
         DID_FTA_CONTENT_MGMT    = 0x7E, //!< DID for DVB FTA_content_management_descriptor
-        DID_EXTENSION           = 0x7F, //!< DID for DVB extension_descriptor
+        DID_DVB_EXTENSION       = 0x7F, //!< DID for DVB extension_descriptor
 
         // Valid in an AIT (Application Information Table, ETSI TS 102 809):
 
@@ -1121,7 +1121,17 @@ namespace ts {
     };
 
     //---------------------------------------------------------------------
-    //! Extended descriptor tag values (in extension_descriptor)
+    //! MPEG extended descriptor tag values (in MPEG extension_descriptor)
+    //---------------------------------------------------------------------
+
+    enum : DID {
+        MPEG_EDID_OBJ_DESC_UPD  = 0x02, //!< Ext.DID for ObjectDescriptorUpdate.
+        MPEG_EDID_HEVC_TIM_HRD  = 0x03, //!< Ext.DID for HEVC_timing_and_HRD_descriptor.
+        MPEG_EDID_NULL          = 0xFF, //!< Invalid EDID value, can be used as placeholder.
+    };
+
+    //---------------------------------------------------------------------
+    //! DVB extended descriptor tag values (in DVB extension_descriptor)
     //---------------------------------------------------------------------
 
     enum : DID {

@@ -90,7 +90,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::SatelliteDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[13];
     data[0] = _tag;
@@ -114,7 +114,7 @@ void ts::SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc, const D
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::SatelliteDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 11)) {
         return;

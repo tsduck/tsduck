@@ -35,12 +35,12 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CP_descriptor"
-#define MY_DID ts::DID_EXTENSION
+#define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_CP
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CPDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::CPDescriptor, ts::EDID::Extension(MY_EDID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::CPDescriptor::DisplayDescriptor, ts::EDID::Extension(MY_EDID));
+TS_ID_DESCRIPTOR_FACTORY(ts::CPDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::CPDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
 
 
 //----------------------------------------------------------------------------

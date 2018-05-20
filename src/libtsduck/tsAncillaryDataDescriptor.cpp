@@ -81,7 +81,7 @@ void ts::AncillaryDataDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::AncillaryDataDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

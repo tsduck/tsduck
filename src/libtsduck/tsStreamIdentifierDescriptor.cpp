@@ -73,7 +73,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::StreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (3));
     CheckNonNull (bbp.pointer());
@@ -90,7 +90,7 @@ void ts::StreamIdentifierDescriptor::serialize (Descriptor& desc, const DVBChars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::StreamIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 

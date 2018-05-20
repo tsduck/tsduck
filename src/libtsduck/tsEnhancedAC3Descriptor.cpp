@@ -82,7 +82,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc, const 
     substream3(),
     additional_info()
 {
-    deserialize (desc, charset);
+    deserialize(desc, charset);
 }
 
 
@@ -124,7 +124,7 @@ void ts::EnhancedAC3Descriptor::merge (const EnhancedAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::EnhancedAC3Descriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -171,7 +171,7 @@ void ts::EnhancedAC3Descriptor::serialize (Descriptor& desc, const DVBCharset* c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::EnhancedAC3Descriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
