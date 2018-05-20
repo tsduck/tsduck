@@ -342,7 +342,7 @@ size_t ts::DescriptorList::serialize(ByteBlock& bb, size_t start) const
 // of the descriptor list.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::lengthSerialize (uint8_t*& addr, size_t& size, size_t start) const
+size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t start) const
 {
     assert (size >= 2);
 
@@ -352,7 +352,7 @@ size_t ts::DescriptorList::lengthSerialize (uint8_t*& addr, size_t& size, size_t
     size -= 2;
 
     // Insert descriptor list
-    size_t result (serialize (addr, size, start));
+    size_t result (serialize(addr, size, start));
 
     // Update length
     size_t length (addr - length_addr - 2);

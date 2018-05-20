@@ -89,7 +89,7 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::ISO639LanguageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -109,7 +109,7 @@ void ts::ISO639LanguageDescriptor::serialize (Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::ISO639LanguageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();

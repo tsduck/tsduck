@@ -71,7 +71,7 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (const Descri
     AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
     entries ()
 {
-    deserialize (desc, charset);
+    deserialize(desc, charset);
 }
 
 
@@ -104,7 +104,7 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (int service_
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::LogicalChannelNumberDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());

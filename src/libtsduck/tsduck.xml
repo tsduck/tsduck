@@ -351,6 +351,15 @@
       <!-- Must be in an AIT (table id 0x74) -->
     </application_usage_descriptor>
 
+    <AVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"
+        fixed_frame_rate="bool, required"
+        temporal_poc="bool, required"
+        picture_to_display_conversion="bool, required"/>
+
     <AVC_video_descriptor
         profile_idc="uint8, required"
         constraint_set0="bool, required"
@@ -535,6 +544,12 @@
                logical_channel_number="uint10, required"
                visible_service="bool, default=true"/>
     </HD_simulcast_logical_channel_descriptor>
+
+    <HEVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"/>
 
     <HEVC_video_descriptor
         profile_space="uint2, required"

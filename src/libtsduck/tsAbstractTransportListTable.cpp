@@ -291,7 +291,7 @@ void ts::AbstractTransportListTable::serialize(BinaryTable& table, const DVBChar
         // Reserve 2 extra bytes at end, for the rest of the section
         assert(remain > 2);
         remain -= 2;
-        start_index = descs.lengthSerialize (data, remain, start_index);
+        start_index = descs.lengthSerialize(data, remain, start_index);
         remain += 2;
 
         // If all descriptors were serialized, exit loop
@@ -365,7 +365,7 @@ void ts::AbstractTransportListTable::serialize(BinaryTable& table, const DVBChar
             remain -= 4;
 
             // Insert descriptors (all or some).
-            start_index = dlist.lengthSerialize (data, remain, start_index);
+            start_index = dlist.lengthSerialize(data, remain, start_index);
 
             // Exit loop when all descriptors were serialized.
             if (start_index >= dlist.count()) {

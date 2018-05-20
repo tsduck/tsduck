@@ -591,7 +591,12 @@ Bits = 8
 # With PDS for Eutelsat.
 0x0000055F83 = Eutelsat Channel Number
 
-[ExtendedDescriptorId]
+[MPEGExtendedDescriptorId]
+Bits = 8
+0x02 = Object Descriptor Update
+0x03 = HEVC Timing and HRD
+
+[DVBExtendedDescriptorId]
 Bits = 8
 0x00 = Image Icon
 0x01 = CPCM Delivery Signalling

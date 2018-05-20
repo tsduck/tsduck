@@ -81,7 +81,7 @@ void ts::ScramblingDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::ScramblingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

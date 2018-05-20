@@ -82,7 +82,7 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::S2SatelliteDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -109,7 +109,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::S2SatelliteDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1)) {
         return;

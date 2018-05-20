@@ -145,7 +145,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::ShortEventDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
     if (!SerializeLanguageCode(*bbp, language_code, charset)) {
@@ -162,7 +162,7 @@ void ts::ShortEventDescriptor::serialize (Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::ShortEventDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4)) {
         return;

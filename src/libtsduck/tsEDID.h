@@ -93,10 +93,17 @@ namespace ts {
 
         //!
         //! Build the EDID for a DVB extension descriptor.
-        //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_EXTENSION.
+        //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_DVB_EXTENSION.
         //! @return The corresponding EDID.
         //!
-        static EDID Extension(DID ext) { return EDID(TS_UCONST64(0xFFFFFFFFFFFF0000) | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_EXTENSION)); }
+        static EDID ExtensionDVB(DID ext) { return EDID(TS_UCONST64(0xFFFFFFFFFFFF0000) | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_DVB_EXTENSION)); }
+
+        //!
+        //! Build the EDID for an MPEG extension descriptor.
+        //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_MPEG_EXTENSION.
+        //! @return The corresponding EDID.
+        //!
+        static EDID ExtensionMPEG(DID ext) { return EDID(TS_UCONST64(0xFFFFFFFFFFFF0000) | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_MPEG_EXTENSION)); }
 
         //!
         //! Build the EDID for a table-specific descriptor.
@@ -137,16 +144,28 @@ namespace ts {
         PDS pds() const { return did() >= 0x80 ? PDS((_edid >> 32) & 0xFFFFFFFF) : PDS(PDS_NULL); }
 
         //!
-        //! Check if the descriptor is an extension descriptor.
-        //! @return True if the descriptor is an extension descriptor.
+        //! Check if the descriptor is a DVB extension descriptor.
+        //! @return True if the descriptor is a DVB extension descriptor.
         //!
-        bool isExtensionDescriptor() const { return didExt() != EDID_NULL; }
+        bool isExtensionDVB() const { return didExtDVB() != EDID_NULL; }
 
         //!
-        //! Get the descriptor tag extension.
-        //! @return The descriptor tag extension or EDID_NULL if this is not an extension descriptor.
+        //! Check if the descriptor is an MPEG extension descriptor.
+        //! @return True if the descriptor is an MPEG extension descriptor.
         //!
-        DID didExt() const { return did() == DID_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+        bool isExtensionMPEG() const { return didExtMPEG() != MPEG_EDID_NULL; }
+
+        //!
+        //! Get the DVB descriptor tag extension.
+        //! @return The descriptor tag extension or EDID_NULL if this is not a DVB extension descriptor.
+        //!
+        DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+
+        //!
+        //! Get the MPEG descriptor tag extension.
+        //! @return The descriptor tag extension or MPEG_EDID_NULL if this is not an MPEG extension descriptor.
+        //!
+        DID didExtMPEG() const { return did() == DID_MPEG_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(MPEG_EDID_NULL); }
 
         //!
         //! Check if the descriptor is table-specific.

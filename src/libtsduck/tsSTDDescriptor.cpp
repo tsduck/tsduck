@@ -89,7 +89,7 @@ void ts::STDDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::STDDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

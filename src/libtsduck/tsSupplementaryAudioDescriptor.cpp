@@ -39,12 +39,12 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"supplementary_audio_descriptor"
-#define MY_DID ts::DID_EXTENSION
+#define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_SUPPL_AUDIO
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID::Extension(MY_EDID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts::EDID::Extension(MY_EDID));
+TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
 
 
 //----------------------------------------------------------------------------

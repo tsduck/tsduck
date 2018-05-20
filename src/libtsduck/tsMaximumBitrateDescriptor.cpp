@@ -80,7 +80,7 @@ void ts::MaximumBitrateDescriptor::serialize(Descriptor& desc, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::MaximumBitrateDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 3;
 

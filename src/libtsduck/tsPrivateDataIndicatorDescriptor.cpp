@@ -80,7 +80,7 @@ void ts::PrivateDataIndicatorDescriptor::serialize(Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataIndicatorDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::PrivateDataIndicatorDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 

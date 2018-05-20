@@ -55,6 +55,7 @@
 
 #include "tsAACDescriptor.h"
 #include "tsAC3Descriptor.h"
+#include "tsAVCTimingAndHRDDescriptor.h"
 #include "tsAVCVideoDescriptor.h"
 #include "tsAdaptationFieldDataDescriptor.h"
 #include "tsAncillaryDataDescriptor.h"
@@ -88,6 +89,7 @@
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsExtendedEventDescriptor.h"
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
+#include "tsHEVCTimingAndHRDDescriptor.h"
 #include "tsHEVCVideoDescriptor.h"
 #include "tsIPMACPlatformNameDescriptor.h"
 #include "tsIPMACPlatformProviderNameDescriptor.h"

@@ -111,7 +111,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::DataBroadcastDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -133,7 +133,7 @@ void ts::DataBroadcastDescriptor::serialize (Descriptor& desc, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::DataBroadcastDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     selector_bytes.clear();
     language_code.clear();

@@ -123,9 +123,13 @@ ts::EDID ts::Descriptor::edid(PDS pds) const
         // Private descriptor.
         return EDID::Private(did, pds);
     }
-    else if (did == DID_EXTENSION && payloadSize() > 0) {
-        // Extension descriptor.
-        return EDID::Extension(payload()[0]);
+    else if (did == DID_DVB_EXTENSION && payloadSize() > 0) {
+        // DVB extension descriptor.
+        return EDID::ExtensionDVB(payload()[0]);
+    }
+    else if (did == DID_MPEG_EXTENSION && payloadSize() > 0) {
+        // MPEG extension descriptor.
+        return EDID::ExtensionMPEG(payload()[0]);
     }
     else {
         // Standard descriptor.

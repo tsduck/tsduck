@@ -105,7 +105,7 @@ void ts::AVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::AVCVideoDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 

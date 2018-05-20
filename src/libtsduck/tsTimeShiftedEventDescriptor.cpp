@@ -82,7 +82,7 @@ void ts::TimeShiftedEventDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeShiftedEventDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 

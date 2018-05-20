@@ -85,6 +85,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(ApplicationNameDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
+    REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
     REF_TYPE(BouquetNameDescriptor);
     REF_TYPE(CableDeliverySystemDescriptor);
@@ -112,6 +113,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(EutelsatChannelNumberDescriptor);
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
+    REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
     REF_TYPE(IPMACPlatformNameDescriptor);
     REF_TYPE(IPMACPlatformProviderNameDescriptor);

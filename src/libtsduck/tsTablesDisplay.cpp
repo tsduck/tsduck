@@ -582,10 +582,18 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
         // Private descriptor.
         edid = EDID::Private(did, actualPDS(pds));
     }
-    else if (did == DID_EXTENSION && size >= 1) {
+    else if (did == DID_MPEG_EXTENSION && size >= 1) {
+        // MPEG extension descriptor, the extension id is in the first byte of the payload.
+        const uint8_t ext = *payload++;
+        edid = EDID::ExtensionMPEG(ext);
+        size--;
+        // Display extended descriptor header
+        strm << std::string(indent, ' ') << "MPEG extended descriptor: " << DVBNameFromSection(u"MPEGExtendedDescriptorId", ext, names::VALUE | names::BOTH) << std::endl;
+    }
+    else if (did == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
-        edid = EDID::Extension(ext);
+        edid = EDID::ExtensionDVB(ext);
         size--;
         // Display extended descriptor header
         strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(ext, names::VALUE | names::BOTH) << std::endl;

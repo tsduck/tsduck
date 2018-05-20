@@ -130,7 +130,7 @@ void ts::SubtitlingDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::SubtitlingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     entries.clear();
 

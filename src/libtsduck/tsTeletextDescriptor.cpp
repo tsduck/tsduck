@@ -137,7 +137,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::TeletextDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -158,7 +158,7 @@ void ts::TeletextDescriptor::serialize (Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::TeletextDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     entries.clear();
 

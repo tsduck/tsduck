@@ -77,7 +77,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::DataBroadcastIdDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -96,7 +96,7 @@ void ts::DataBroadcastIdDescriptor::serialize (Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::DataBroadcastIdDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2;
 

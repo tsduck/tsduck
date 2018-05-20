@@ -390,7 +390,7 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
         // Loop on all extension_descriptors.
         const PID pid = it->first;
         const DescriptorList& dlist(it->second.descs);
-        for (size_t index = dlist.search(DID_EXTENSION); index < dlist.count(); index = dlist.search(DID_EXTENSION, index + 1)) {
+        for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
             if (!dlist[index].isNull()) {
                 const T2MIDescriptor desc(*dlist[index]);
                 if (desc.isValid() && _handler != 0) {

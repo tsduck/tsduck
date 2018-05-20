@@ -34,13 +34,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.62  metadata_STD_descriptor
   - 2.12.6  metadata_section
 
-  W5771 Amendment 3, Transport of AVC
-  - 2.6.56  AVC_timing_and_HRD_descriptor
-
-  H.222.0-201401 Amendment 3, Transport of HEVC
-  - 11) 2.6.90  extension_descriptor
-  - 13) 2.6.97  HEVC_timing_and_HRD_descriptor
-
   ETSI EN 300 468 (DVB SI)
   - 5.2.8    Stuffing Table (ST)
   - 6.2.3    announcement_support_descriptor
