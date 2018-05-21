@@ -330,7 +330,7 @@ Bits = 8
 0x2F = Auxiliary Video Stream
 0x30 = SVC Extension
 0x31 = MVC Extension
-0x32 = J2K Video
+0x32 = JPEG-2000 Video
 0x33 = MVC Operation Point
 0x34 = MPEG-2 Stereoscopic Video Format
 0x35 = Stereoscopic Program Info
@@ -595,6 +595,19 @@ Bits = 8
 Bits = 8
 0x02 = Object Descriptor Update
 0x03 = HEVC Timing and HRD
+0x04 = AF Extensions
+0x05 = HEVC Operation Point
+0x06 = HEVC Hierarchy Extension
+0x07 = Green Extension
+0x08 = MPEG-H 3D Audio
+0x09 = MPEG-H 3D Audio Config
+0x0A = MPEG-H 3D Audio Scene
+0x0B = MPEG-H 3D Audio Text Label
+0x0C = MPEG-H 3D Audio Multi-Stream
+0x0D = MPEG-H 3D Audio DRC Loudness
+0x0E = MPEG-H 3D Audio Command
+0x0F = Quality Extension
+0x10 = Virtual Segmentation
 
 [DVBExtendedDescriptorId]
 Bits = 8
@@ -848,6 +861,28 @@ Bits = 16
 0xBBB1 = BBG Data Caroussel
 0xBBB2 = BBG Object Caroussel
 0xBBBB = Bertelsmann Broadband Group
+
+[DataStreamAlignment]
+# In data_stream_alignment_descriptor
+Bits = 8
+0x01 = Slice or video access unit
+0x02 = Video access unit
+0x03 = GOP or SEQ
+0x04 = SEQ
+
+[HierarchyType]
+# In hierarchy_descriptor
+Bits = 8
+0x01 = Spatial Scalability
+0x02 = SNR Scalability
+0x03 = Temporal Scalability
+0x04 = Data partitioning
+0x05 = Extension bitstream
+0x06 = Private Stream
+0x07 = Multi-view Profile
+0x08 = Combined Scalability
+0x09 = MVC video sub-bitstream or MVCD video sub-bitstream
+0x0F = Base layer or base view sub-bitstream
 
 [StreamType]
 # In PMT
@@ -1231,6 +1266,19 @@ Bits = 8
 0xFC = MPEG-7 metadata stream
 0xFD = Extended stream id
 0xFF = Program stream directory
+
+[FrameRate]
+# In MPEG-2 video sequence.
+Bits = 8
+0 = forbidden
+1 = 23.976 fps (24000/1001)
+2 = 24 fps
+3 = 25 fps
+4 = 29.97 fps (30000/1001)
+5 = 30 fps
+6 = 50 fps
+7 = 59.94 fps (60000/1001)
+8 = 60 fps
 
 [AspectRatio]
 # In MPEG-1/2 video sequence header.

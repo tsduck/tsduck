@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a target_background_grid_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 739
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a target_background_grid_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.12.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL TargetBackgroundGridDescriptor : public AbstractDescriptor
+    {
+    public:
+        // TargetBackgroundGridDescriptor public members:
+        uint16_t horizontal_size;           //!< 14 bits, horizontal size.
+        uint16_t vertical_size;             //!< 14 bits, vertical size.
+        uint8_t  aspect_ratio_information;  //!< 4 bits, aspect ration code, one of AR_*.
+
+        //!
+        //! Default constructor.
+        //!
+        TargetBackgroundGridDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        TargetBackgroundGridDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

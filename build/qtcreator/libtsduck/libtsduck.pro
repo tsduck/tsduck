@@ -19,3 +19,9 @@ DISTFILES += \
     ../../../src/libtsduck/tsduck.mk
 
 include(libtsduck-files.pri)
+
+HEADERS += \
+    ../../../src/libtsduck/tsStaticReferencesDVB.h
+
+SOURCES += \
+    ../../../src/libtsduck/tsStaticReferencesDVB.cpp
