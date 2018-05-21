@@ -85,6 +85,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(ApplicationNameDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
+    REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
     REF_TYPE(BouquetNameDescriptor);
@@ -99,6 +100,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(CueIdentifierDescriptor);
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
+    REF_TYPE(DataStreamAlignmentDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
     REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);
@@ -112,9 +114,11 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(EnhancedAC3Descriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
     REF_TYPE(ExtendedEventDescriptor);
+    REF_TYPE(ExternalESIdDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
+    REF_TYPE(HierarchyDescriptor);
     REF_TYPE(IPMACPlatformNameDescriptor);
     REF_TYPE(IPMACPlatformProviderNameDescriptor);
     REF_TYPE(IPMACStreamLocationDescriptor);
@@ -124,6 +128,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(LocalTimeOffsetDescriptor);
     REF_TYPE(LogicalChannelNumberDescriptor);
     REF_TYPE(MessageDescriptor);
+    REF_TYPE(MPEG4AudioDescriptor);
+    REF_TYPE(MPEG4VideoDescriptor);
     REF_TYPE(MultilingualBouquetNameDescriptor);
     REF_TYPE(MultilingualComponentDescriptor);
     REF_TYPE(MultilingualNetworkNameDescriptor);
@@ -156,6 +162,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
     REF_TYPE(T2MIDescriptor);
+    REF_TYPE(TargetBackgroundGridDescriptor);
     REF_TYPE(TargetIPAddressDescriptor);
     REF_TYPE(TargetIPSlashDescriptor);
     REF_TYPE(TargetIPSourceSlashDescriptor);
@@ -170,4 +177,6 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
+    REF_TYPE(VideoStreamDescriptor);
+    REF_TYPE(VideoWindowDescriptor);
 }

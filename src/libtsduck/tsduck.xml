@@ -351,6 +351,12 @@
       <!-- Must be in an AIT (table id 0x74) -->
     </application_usage_descriptor>
 
+    <audio_stream_descriptor
+        free_format="bool, required"
+        ID="uint1, required"
+        layer="uint2, required"
+        variable_rate_audio="bool, required"/>
+
     <AVC_timing_and_HRD_descriptor
         hrd_management_valid="bool, required"
         N_90khz="uint32, optional"
@@ -441,6 +447,8 @@
     <data_broadcast_id_descriptor data_broadcast_id="uint16, required">
       <selector_bytes>Hexadecimal content</selector_bytes>
     </data_broadcast_id_descriptor>
+
+    <data_stream_alignment_descriptor alignment_type="uint8, required"/>
 
     <DII_location_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
@@ -538,6 +546,8 @@
       </item>
     </extended_event_descriptor>
 
+    <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+
     <HD_simulcast_logical_channel_descriptor>
       <!-- One per service -->
       <service service_id="uint16, required"
@@ -566,6 +576,16 @@
         HEVC_24hr_picture_present_flag="bool, required"
         temporal_id_min="uint3, optional, specify both min and max or none"
         temporal_id_max="uint3, optional, specify both min and max or none"/>
+
+    <hierarchy_descriptor
+        temporal_scalability="bool, required"
+        spatial_scalability="bool, required"
+        quality_scalability="bool, required"
+        hierarchy_type="uint4, required"
+        hierarchy_layer_index="uint6, required"
+        tref_present="bool, required"
+        hierarchy_embedded_layer_index="uint6, required"
+        hierarchy_channel="uint6, required"/>
 
     <IPMAC_generic_stream_location_descriptor
         interactive_network_id="uint16, required"
@@ -670,6 +690,10 @@
       <text>String</text>
     </message_descriptor>
 
+    <MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
+
+    <MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
+
     <multilingual_bouquet_name_descriptor>
       <!-- One per language -->
       <language code="char3, required" bouquet_name="string, required"/>
@@ -769,6 +793,10 @@
       <text>String</text>
     </short_event_descriptor>
 
+    <smoothing_buffer_descriptor
+        sb_leak_rate="uint22, required"
+        sb_size="uint22, required"/>
+
     <splice_avail_descriptor
         identifier="uint32, default=0x43554549"
         provider_avail_id="uint32, required"/>
@@ -838,6 +866,11 @@
         Hexadecimal content
       </reserved>
     </T2MI_descriptor>
+
+    <target_background_grid_descriptor
+        horizontal_size="uint14, required"
+        vertical_size="uint14, required"
+        aspect_ratio_information="uint4, required"/>
 
     <target_IP_address_descriptor IPv4_addr_mask="IPv4 address, required">
       <!-- Must be in an INT (table id 0x4C) -->
@@ -988,6 +1021,21 @@
                 teletext_type="uint5, required"
                 page_number="uint16, required"/>
     </VBI_teletext_descriptor>
+
+    <video_stream_descriptor
+        multiple_frame_rate="bool, required"
+        frame_rate_code="uint4, required"
+        MPEG_1_only="bool, required"
+        constrained_parameter="bool, required"
+        still_picture="bool, required"
+        profile_and_level_indication="uint8, required when MPEG_1_only='false'"
+        chroma_format="uint2, required when MPEG_1_only='false'"
+        frame_rate_extension="bool, required when MPEG_1_only='false'"/>
+
+    <video_window_descriptor
+        horizontal_offset="uint14, required"
+        vertical_offset="uint14, required"
+        window_priority="uint4, required"/>
 
   </_descriptors>
 
