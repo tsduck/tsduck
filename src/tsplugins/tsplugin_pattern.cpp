@@ -73,7 +73,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pattern, ts::PatternPlugin)
 //----------------------------------------------------------------------------
 
 ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Replace packet payload with a binary pattern on selected PID's.", u"[options] pattern"),
+    ProcessorPlugin(tsp_, u"Replace packet payload with a binary pattern on selected PID's", u"[options] pattern"),
     _offset_pusi(0),
     _offset_non_pusi(0),
     _pattern(),

@@ -52,7 +52,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"MPEG Transport Stream File Truncation Utility.", u"[options] filename ..."),
+    Args(u"Truncate an MPEG transport stream file", u"[options] filename ..."),
     check_only(false),
     trunc_pkt(0),
     files()

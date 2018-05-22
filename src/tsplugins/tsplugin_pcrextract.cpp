@@ -124,7 +124,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pcrextract, ts::PCRExtractPlugin)
 //----------------------------------------------------------------------------
 
 ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extracts PCR, OPCR, PTS, DTS from TS packet for analysis.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Extracts PCR, OPCR, PTS, DTS from TS packet for analysis", u"[options]"),
     _pids(),
     _separator(),
     _noheader(false),

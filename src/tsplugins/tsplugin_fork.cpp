@@ -75,7 +75,7 @@ TSPLUGIN_DECLARE_PROCESSOR(fork, ts::ForkPlugin)
 //----------------------------------------------------------------------------
 
 ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input.", u"[options] 'command'"),
+    ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
     _pipe(),
     _buffer_size(0),
     _buffer_count(0),

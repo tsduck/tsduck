@@ -58,7 +58,7 @@ public:
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", u"[options] [filename]"),
+    Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]"),
     no_tdt(false),
     no_tot(false),
     all(false),

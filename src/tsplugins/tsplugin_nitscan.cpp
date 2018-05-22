@@ -93,7 +93,7 @@ TSPLUGIN_DECLARE_PROCESSOR(nitscan, ts::NITScanPlugin)
 //----------------------------------------------------------------------------
 
 ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze the NIT and output a list of tuning information.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Analyze the NIT and output a list of tuning information", u"[options]"),
     _output_name(),
     _output_stream(),
     _output(0),

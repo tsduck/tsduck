@@ -57,7 +57,7 @@ public:
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"MPEG Transport Stream Fix Continuity Counters Utility.", u"[options] filename"),
+    Args(u"Fix continuity counters in a transport stream", u"[options] filename"),
     test(false),
     circular(false),
     filename(),

@@ -83,7 +83,7 @@ TSPLUGIN_DECLARE_PROCESSOR(rmorphan, ts::RMOrphanPlugin)
 //----------------------------------------------------------------------------
 
 ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove orphan (unreferenced) PID's.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Remove orphan (unreferenced) PID's", u"[options]"),
     _drop_status(TSP_DROP),
     _pass_pids(),
     _demux(this)

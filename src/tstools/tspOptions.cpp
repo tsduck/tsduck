@@ -34,6 +34,7 @@
 #include "tspOptions.h"
 #include "tsSysUtils.h"
 #include "tsAsyncReport.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
 #define DEF_BUFSIZE_MB           16  // mega-bytes
@@ -47,14 +48,24 @@ const ts::Enumeration ts::tsp::Options::PluginTypeNames({
     {u"packet processor", ts::tsp::Options::PROCESSOR},
 });
 
+// Options for --list-processor.
+//!
+const ts::Enumeration ts::tsp::Options::ListProcessorEnum({
+    {u"all",    ts::PluginRepository::LIST_ALL},
+    {u"input",  ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_COMPACT},
+    {u"output", ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_COMPACT},
+    {u"packet", ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_COMPACT},
+});
+
 
 //----------------------------------------------------------------------------
 // Constructor from command line options
 //----------------------------------------------------------------------------
 
 ts::tsp::Options::Options(int argc, char *argv[]) :
+    Args(),
     timed_log(false),
-    list_proc(false),
+    list_proc_flags(0),
     monitor(false),
     ignore_jt(false),
     sync_log(false),
@@ -79,7 +90,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option(u"bitrate-adjust-interval",   0,  Args::POSITIVE);
     option(u"buffer-size-mb",            0,  Args::POSITIVE);
     option(u"ignore-joint-termination", 'i');
-    option(u"list-processors",          'l');
+    option(u"list-processors",          'l', ListProcessorEnum, 0, 1, true);
     option(u"log-message-count",         0,  Args::POSITIVE);
     option(u"max-flushed-packets",       0,  Args::POSITIVE);
     option(u"max-input-packets",         0,  Args::POSITIVE);
@@ -102,17 +113,19 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 #define HELP_SEEMAN   u" See the man page of dlopen(3) for more details."
 #endif
 
-    setDescription(u"MPEG Transport Stream Processor: Receive a TS from a user-specified input\n"
-                   u"plug-in, apply MPEG packet processing through several user-specified packet\n"
-                   u"processor plug-in's and send the processed stream to a user-specified output\n"
-                   u"plug-in. All input, processors and output plug-in's are " HELP_SHLIBS u".");
+    setDescription(u"MPEG transport stream processor using a chain of plugins");
 
-    setSyntax(u" [tsp-options] \\\n"
+    setSyntax(u"[tsp-options] \\\n"
               u"    [-I input-name [input-options]] \\\n"
               u"    [-P processor-name [processor-options]] ... \\\n"
               u"    [-O output-name [output-options]]");
 
-    setHelp(u"All tsp-options must be placed on the command line before the input,\n"
+    setHelp(u"The transport stream processor receives a TS from a user-specified input\n"
+            u"plug-in, apply MPEG packet processing through several user-specified packet\n"
+            u"processor plug-in's and send the processed stream to a user-specified output\n"
+            u"plug-in. All input, processors and output plug-in's are " HELP_SHLIBS u".\n"
+            u"\n"
+            u"All tsp-options must be placed on the command line before the input,\n"
             u"processors and output specifications. The tsp-options are:\n"
             u"\n"
             u"  -a nullpkt/inpkt\n"
@@ -275,7 +288,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     analyze(app_name, UStringVector(args.begin(), args.begin() + plugin_index), false);
 
     timed_log = present(u"timed-log");
-    list_proc = present(u"list-processors");
+    list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", PluginRepository::LIST_ALL) : 0;
     monitor = present(u"monitor");
     sync_log = present(u"synchronous-log");
     bufsize = 1024 * 1024 * intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB);
@@ -402,7 +415,7 @@ std::ostream& ts::tsp::Options::display(std::ostream& strm, int indent) const
          << margin << "  --bitrate-adjust-interval: " << UString::Decimal(bitrate_adj) << " milliseconds" << std::endl
          << margin << "  --buffer-size-mb: " << UString::Decimal(bufsize) << " bytes" << std::endl
          << margin << "  --debug: " << maxSeverity() << std::endl
-         << margin << "  --list-processors: " << list_proc << std::endl
+         << margin << "  --list-processors: " << list_proc_flags << std::endl
          << margin << "  --max-flushed-packets: " << UString::Decimal(max_flush_pkt) << std::endl
          << margin << "  --max-input-packets: " << UString::Decimal(max_input_pkt) << std::endl
          << margin << "  --monitor: " << monitor << std::endl

@@ -96,7 +96,7 @@ TSPLUGIN_DECLARE_PROCESSOR(count, ts::CountPlugin)
 //----------------------------------------------------------------------------
 
 ts::CountPlugin::CountPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Count TS packets per PID.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Count TS packets per PID", u"[options]"),
     _outfile(),
     _negate(false),
     _pids(),

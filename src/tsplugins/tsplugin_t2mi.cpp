@@ -104,7 +104,7 @@ TSPLUGIN_DECLARE_PROCESSOR(t2mi, ts::T2MIPlugin)
 //----------------------------------------------------------------------------
 
 ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract T2-MI (DVB-T2 Modulator Interface) packets.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Extract T2-MI (DVB-T2 Modulator Interface) packets", u"[options]"),
     T2MIHandlerInterface(),
     _abort(false),
     _extract(false),

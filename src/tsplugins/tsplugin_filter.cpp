@@ -83,7 +83,7 @@ TSPLUGIN_DECLARE_PROCESSOR(filter, ts::FilterPlugin)
 //----------------------------------------------------------------------------
 
 ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions", u"[options]"),
     scrambling_ctrl(0),
     with_payload(false),
     with_af(false),

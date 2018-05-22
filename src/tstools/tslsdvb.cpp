@@ -59,7 +59,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"DVB Devices Listing Utility.", u"[options]"),
+    ts::Args(u"List DVB tuner devices", u"[options]"),
     tuner(true, true)
 #if defined(TS_WINDOWS)
     , test_type(ts::DirectShowTest::NONE)

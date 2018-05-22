@@ -91,7 +91,7 @@ TSPLUGIN_DECLARE_PROCESSOR(bat, ts::BATPlugin)
 //----------------------------------------------------------------------------
 
 ts::BATPlugin::BATPlugin (TSP* tsp_) :
-   ProcessorPlugin(tsp_, u"Perform various transformations on the BAT.", u"[options]"),
+   ProcessorPlugin(tsp_, u"Perform various transformations on the BAT", u"[options]"),
    _abort(false),
    _single_bat(false),
    _bouquet_id(0),

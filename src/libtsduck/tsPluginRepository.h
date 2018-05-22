@@ -131,14 +131,26 @@ namespace ts {
         void loadAllPlugins(Report& report);
 
         //!
+        //! Flags for listPlugins().
+        //!
+        enum ListFlags {
+            LIST_INPUT   = 0x0001,  //!< List input plugins.
+            LIST_PACKET  = 0x0002,  //!< List packet processor plugins.
+            LIST_OUTPUT  = 0x0004,  //!< List output plugins.
+            LIST_COMPACT = 0x0010,  //!< Compact output.
+            LIST_ALL     = LIST_INPUT | LIST_PACKET | LIST_OUTPUT,  //!< List all plugins.
+        };
+
+        //!
         //! List all tsp processors.
         //! This function is typically used to implement the <code>tsp -\-list-processors</code> option.
         //! @param [in] loadAll When true, all available plugins are loaded first.
         //! Ignored when dynamic loading of plugins is disabled.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] flags List options, an or'ed mask of ListFlags values.
         //! @return The text to display.
         //!
-        UString listPlugins(bool loadAll, Report& report);
+        UString listPlugins(bool loadAll, Report& report, int flags = LIST_ALL);
 
         //!
         //! A class to register plugins.
@@ -188,6 +200,6 @@ namespace ts {
         OutputMap    _outputPlugins;
 
         // List one plugin.
-        static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width);
+        static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width, int flags);
     };
 }

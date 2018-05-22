@@ -42,6 +42,15 @@ const int64_t ts::Args::UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
 // List of characters which are allowed thousands separators in integer values
 const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u",. ";
 
+// Enumeration description of HelpFormat.
+const ts::Enumeration ts::Args::HelpFormatEnum({
+    {u"name",        ts::Args::HELP_NAME},
+    {u"description", ts::Args::HELP_DESCRIPTION},
+    {u"usage",       ts::Args::HELP_USAGE},
+    {u"syntax",      ts::Args::HELP_SYNTAX},
+    {u"full",        ts::Args::HELP_FULL},
+});
+
 
 //----------------------------------------------------------------------------
 // Constructor for IOption
@@ -218,7 +227,7 @@ ts::Args::Args(const UString& description, const UString& syntax, const UString&
     _flags(flags)
 {
     // Add predefined options.
-    addOption(IOption(u"help",     0,  NONE, 0, 1, 0, 0, false, true));
+    addOption(IOption(u"help",     0,  HelpFormatEnum, 0, 1, true, true));
     addOption(IOption(u"version",  0,  VersionFormatEnum, 0, 1, true, true));
     addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, false, true));
     addOption(IOption(u"debug",   'd', POSITIVE, 0, 1, 0, 0, true, true));
@@ -761,21 +770,74 @@ bool ts::Args::analyze(bool processRedirections)
 
 
 //----------------------------------------------------------------------------
+// Get a formatted help text.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::getHelpText(HelpFormat format) const
+{
+    switch (format) {
+        case HELP_NAME: {
+            // Return the application name as set by the application.
+            return _app_name;
+        }
+        case HELP_DESCRIPTION: {
+            // Return the descripton string as set by the application.
+            return _description;
+        }
+        case HELP_USAGE: {
+            // Return the usage string with application name and syntax.
+            if (_shell.empty()) {
+                return _app_name + u" " + _syntax;
+            }
+            else {
+                return _shell + u" " + _app_name + u" " + _syntax;;
+            }
+        }
+        case HELP_SYNTAX: {
+            // Same as usage but on one line.
+            UString str(getHelpText(HELP_USAGE));
+            // Replace all backslash-newline by newline.
+            str.substitute(u"\\\n", u"\n");
+            // Remove all newlines and compact spaces.
+            size_t pos = 0;
+            while ((pos = str.find('\n')) != UString::NPOS) {
+                // Locate the first space in the sequence.
+                while (pos > 0 && IsSpace(str[pos - 1])) {
+                    pos--;
+                }
+                // Replace the first space with a true space.
+                str[pos] = ' ';
+                // Remove all subsequent spaces.
+                while (pos < str.length() - 1 && IsSpace(str[pos + 1])) {
+                    str.erase(pos + 1, 1);
+                }
+            }
+            return str;
+        }
+        case HELP_FULL: {
+            // Default full complete help text.
+            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE) + u"\n\n" + _help;
+        }
+        default: {
+            return UString();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Process --help predefined option.
 //----------------------------------------------------------------------------
 
 void ts::Args::processHelp()
 {
-    // Build the help text.
-    UString text(u"\n" + _description + u"\n\n" + u"Usage: ");
-    if (!_shell.empty()) {
-        text += _shell + u" ";
-    }
-    text += _app_name + u" " + _syntax + u"\n\n" + _help;
+    // Build the help text. Use full text by default.
+    const HelpFormat format = enumValue(u"help", HELP_FULL);
+    const UString text(getHelpText(format));
 
-    // Create a pager process if we intend to exit immediately after.
+    // Create a pager process if we intend to exit immediately after a full help text.
     OutputPager pager;
-    if ((_flags & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
+    if (format == HELP_FULL && (_flags & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
         pager.write(text, *this);
         pager.write(u"\n", *this);
         pager.close(*this);

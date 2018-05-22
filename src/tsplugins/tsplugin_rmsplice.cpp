@@ -146,7 +146,7 @@ TSPLUGIN_DECLARE_PROCESSOR(rmsplice, ts::RMSplicePlugin)
 //----------------------------------------------------------------------------
 
 ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove ads insertions from a program using SCTE 35 splice information.", u"[options] [service]"),
+    ProcessorPlugin(tsp_, u"Remove ads insertions from a program using SCTE 35 splice information", u"[options] [service]"),
     _abort(false),
     _continue(false),
     _adjustTime(false),

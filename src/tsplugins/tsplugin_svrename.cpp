@@ -99,7 +99,7 @@ TSPLUGIN_DECLARE_PROCESSOR(svrename, ts::SVRenamePlugin)
 //----------------------------------------------------------------------------
 
 ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Rename a service, assign a new service name and/or new service id.", u"[options] service"),
+    ProcessorPlugin(tsp_, u"Rename a service, assign a new service name and/or new service id", u"[options] service"),
     _abort(false),
     _pat_found(false),
     _ts_id(0),

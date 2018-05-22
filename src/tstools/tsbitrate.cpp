@@ -57,7 +57,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"MPEG Transport Stream Bitrate Evaluation Utility.", u"[options] [filename]"),
+    Args(u"Evaluate the bitrate of a transport stream", u"[options] [filename]"),
     min_pcr(0),
     min_pid(0),
     pcr_name(),

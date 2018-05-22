@@ -70,7 +70,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"MPEG Transport Stream Files Comparison Utility.", u"[options] filename-1 filename-2"),
+    Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
     filename1(),
     filename2(),
     byte_offset(0),

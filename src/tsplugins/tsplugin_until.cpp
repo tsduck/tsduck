@@ -82,7 +82,7 @@ TSPLUGIN_DECLARE_PROCESSOR(until, ts::UntilPlugin)
 //----------------------------------------------------------------------------
 
 ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Copy packets until one of the specified conditions is met.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Copy packets until one of the specified conditions is met", u"[options]"),
     _exclude_last(false),
     _pack_max(0),
     _pack_cnt(0),

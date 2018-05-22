@@ -51,15 +51,15 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Smartcard Listing Utility.", u"[options] [reader-name]"),
+    Args(u"List or control smartcards", u"[options] [reader-name]"),
     reader(),
     timeout_ms(0),
     reset_action(0)
 {
-    option(u"",            0, Args::STRING, 0, 1);
+    option(u"",            0,  STRING, 0, 1);
     option(u"cold-reset", 'c');
     option(u"eject",      'e');
-    option(u"timeout",    't', Args::UNSIGNED);
+    option(u"timeout",    't', UNSIGNED);
     option(u"warm-reset", 'w');
 
     setHelp(u"Parameters:\n"

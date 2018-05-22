@@ -58,7 +58,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"MPEG Transport Stream PSI Extraction Utility.", u"[options] [filename]"),
+    Args(u"Extract all standard PSI from an MPEG transport stream", u"[options] [filename]"),
     infile(),
     logger(),
     display()

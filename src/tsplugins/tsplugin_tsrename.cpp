@@ -101,7 +101,7 @@ TSPLUGIN_DECLARE_PROCESSOR(tsrename, ts::TSRenamePlugin)
 //----------------------------------------------------------------------------
 
 ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Rename a transport stream.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Rename a transport stream", u"[options]"),
     _abort(false),
     _ready(false),
     _nit_pid(PID_NIT),

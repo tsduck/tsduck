@@ -103,7 +103,7 @@ TSPLUGIN_DECLARE_PROCESSOR(nit, ts::NITPlugin)
 //----------------------------------------------------------------------------
 
 ts::NITPlugin::NITPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the NIT Actual.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Perform various transformations on the NIT Actual", u"[options]"),
     _abort(false),
     _nit_pid(PID_NIT),
     _incr_version(false),

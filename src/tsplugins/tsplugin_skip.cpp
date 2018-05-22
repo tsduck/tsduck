@@ -70,7 +70,7 @@ TSPLUGIN_DECLARE_PROCESSOR(skip, ts::SkipPlugin)
 //----------------------------------------------------------------------------
 
 ts::SkipPlugin::SkipPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Skip leading TS packets of a stream.", u"[options] count"),
+    ProcessorPlugin(tsp_, u"Skip leading TS packets of a stream", u"[options] count"),
     skip_count(0),
     use_stuffing(false)
 {

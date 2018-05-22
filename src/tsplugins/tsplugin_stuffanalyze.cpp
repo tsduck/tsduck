@@ -108,7 +108,7 @@ TSPLUGIN_DECLARE_PROCESSOR(stuffanalyze, ts::StuffAnalyzePlugin)
 //----------------------------------------------------------------------------
 
 ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze the level of stuffing in tables.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Analyze the level of stuffing in tables", u"[options]"),
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _output_name(),

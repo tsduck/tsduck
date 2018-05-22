@@ -83,7 +83,7 @@ TSPLUGIN_DECLARE_INPUT(dvb, ts::DVBInput)
 //----------------------------------------------------------------------------
 
 ts::DVBInput::DVBInput(TSP* tsp_) :
-    InputPlugin(tsp_, u"DVB receiver device input.", u"[options]"),
+    InputPlugin(tsp_, u"DVB receiver device input", u"[options]"),
     _com(*tsp_),
     _tuner(),
     _tuner_args(false, true),

@@ -106,7 +106,7 @@ const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 //----------------------------------------------------------------------------
 
 ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Verify PCR's from TS packets.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Verify PCR's from TS packets", u"[options]"),
     _absolute(false),
     _bitrate(0),
     _jitter_max(0),

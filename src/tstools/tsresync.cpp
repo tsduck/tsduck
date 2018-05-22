@@ -69,7 +69,7 @@ public:
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"MPEG Transport Stream Resynchronizer.", u"[options] [filename]"),
+    Args(u"Resynchronize a non-standard or corrupted MPEG transport stream", u"[options] [filename]"),
     sync_size(0),
     contig_size(0),
     packet_size(0),

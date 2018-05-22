@@ -92,7 +92,7 @@ TSPLUGIN_DECLARE_PROCESSOR(mux, ts::MuxPlugin)
 //----------------------------------------------------------------------------
 
 ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Insert TS packets in a TS.", u"[options] input-file"),
+    ProcessorPlugin(tsp_, u"Insert TS packets in a transport stream", u"[options] input-file"),
     _file(),
     _terminate(false),
     _update_cc(false),
