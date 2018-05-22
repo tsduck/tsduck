@@ -235,7 +235,7 @@ TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"DVB scrambler.", u"[options] [service]"),
+    ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]"),
     _service(this, *tsp),
     _use_service(false),
     _component_level(false),

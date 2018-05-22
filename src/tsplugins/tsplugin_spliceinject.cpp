@@ -249,7 +249,7 @@ TSPLUGIN_DECLARE_PROCESSOR(spliceinject, ts::SpliceInjectPlugin)
 //----------------------------------------------------------------------------
 
 ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Inject SCTE 35 splice commands in a transport stream.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Inject SCTE 35 splice commands in a transport stream", u"[options]"),
     _abort(false),
     _use_files(false),
     _use_udp(false),

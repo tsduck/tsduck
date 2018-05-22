@@ -100,7 +100,7 @@ TSPLUGIN_DECLARE_PROCESSOR(svremove, ts::SVRemovePlugin)
 //----------------------------------------------------------------------------
 
 ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove a service.", u"[options] service"),
+    ProcessorPlugin(tsp_, u"Remove a service", u"[options] service"),
     _abort(false),
     _ready(false),
     _transparent(false),

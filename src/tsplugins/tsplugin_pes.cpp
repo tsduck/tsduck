@@ -107,7 +107,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pes, ts::PESPlugin)
 //----------------------------------------------------------------------------
 
 ts::PESPlugin::PESPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze PES packets.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Analyze PES packets", u"[options]"),
     _abort(false),
     _outfile(),
     _trace_packets(false),

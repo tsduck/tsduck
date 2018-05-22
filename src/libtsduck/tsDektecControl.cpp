@@ -50,7 +50,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args(u"Control a Dektec Device.", u"[options] [device]"),
+    Args(u"Control Dektec devices", u"[options] [device]"),
     _list_all(false),
     _normalized(false),
     _wait_sec(0),

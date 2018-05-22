@@ -72,7 +72,7 @@ private:
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"PSI/SI tables compiler.", u"[options] filename ..."),
+    Args(u"PSI/SI tables compiler", u"[options] filename ..."),
     infiles(),
     outfile(),
     outdir(false),
@@ -81,11 +81,11 @@ Options::Options(int argc, char *argv[]) :
     xmlModel(false),
     defaultCharset(0)
 {
-    option(u"",                0,  ts::Args::STRING);
+    option(u"",                0,  STRING);
     option(u"compile",        'c');
     option(u"decompile",      'd');
-    option(u"default-charset", 0, Args::STRING);
-    option(u"output",         'o', ts::Args::STRING);
+    option(u"default-charset", 0,  STRING);
+    option(u"output",         'o', STRING);
     option(u"xml-model",      'x');
 
     setHelp(u"Input files:\n"

@@ -84,7 +84,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"DVB network scanning utility.", u"[options]"),
+    Args(u"Scan a DVB network", u"[options]"),
     tuner(false, true),
     uhf_scan(false),
     nit_scan(false),

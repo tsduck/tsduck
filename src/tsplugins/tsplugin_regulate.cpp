@@ -93,7 +93,7 @@ TSPLUGIN_DECLARE_PROCESSOR(regulate, ts::RegulatePlugin)
 //----------------------------------------------------------------------------
 
 ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Regulate the TS packets flow to a specified bitrate.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Regulate the TS packets flow to a specified bitrate", u"[options]"),
     _state(INITIAL),
     _opt_bitrate(0),
     _cur_bitrate(0),

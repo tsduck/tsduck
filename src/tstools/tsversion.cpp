@@ -73,7 +73,7 @@ private:
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Check version, download and upgrade TSDuck.", u"[options]"),
+    Args(u"Check version, download and upgrade TSDuck", u"[options]"),
     current(false),
     integer(false),
     latest(false),
@@ -94,12 +94,12 @@ Options::Options(int argc, char *argv[]) :
     option(u"force",            'f');
     option(u"integer",          'i');
     option(u"latest",           'l');
-    option(u"name",             'n', Args::STRING);
-    option(u"output-directory", 'o', Args::STRING);
-    option(u"proxy-host",        0,  Args::STRING);
-    option(u"proxy-password",    0,  Args::STRING);
-    option(u"proxy-port",        0,  Args::UINT16);
-    option(u"proxy-user",        0,  Args::STRING);
+    option(u"name",             'n', STRING);
+    option(u"output-directory", 'o', STRING);
+    option(u"proxy-host",        0,  STRING);
+    option(u"proxy-password",    0,  STRING);
+    option(u"proxy-port",        0,  UINT16);
+    option(u"proxy-user",        0,  STRING);
     option(u"source",           's');
     option(u"this",             't');
     option(u"upgrade",          'u');

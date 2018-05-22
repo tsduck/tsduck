@@ -105,7 +105,7 @@ TSPLUGIN_DECLARE_PROCESSOR(aes, ts::AESPlugin)
 //----------------------------------------------------------------------------
 
 ts::AESPlugin::AESPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets.", u"[options] [service]"),
+    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets", u"[options] [service]"),
     _abort(false),
     _descramble(false),
     _service(),

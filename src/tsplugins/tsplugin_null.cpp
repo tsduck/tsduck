@@ -70,7 +70,7 @@ TSPLUGIN_DECLARE_INPUT(null, ts::NullInput)
 //----------------------------------------------------------------------------
 
 ts::NullInput::NullInput(TSP* tsp_) :
-    InputPlugin(tsp_, u"Generate null packets.", u"[options] [count]"),
+    InputPlugin(tsp_, u"Generate null packets", u"[options] [count]"),
     _max_count(0),
     _count(0)
 {

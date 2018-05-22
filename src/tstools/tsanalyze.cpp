@@ -51,7 +51,7 @@ struct Options: public ts::TSAnalyzerOptions
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::TSAnalyzerOptions(u"MPEG Transport Stream Analysis Utility.", u"[options] [filename]"),
+    ts::TSAnalyzerOptions(u"Analyze the structure of a transport stream", u"[options] [filename]"),
     bitrate(0),
     infile()
 {

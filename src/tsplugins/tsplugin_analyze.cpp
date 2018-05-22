@@ -85,7 +85,7 @@ TSPLUGIN_DECLARE_PROCESSOR(analyze, ts::AnalyzePlugin)
 //----------------------------------------------------------------------------
 
 ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Transport Stream Analyzer.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Analyze the structure of a transport stream", u"[options]"),
     _output_name(),
     _output_stream(),
     _output(),

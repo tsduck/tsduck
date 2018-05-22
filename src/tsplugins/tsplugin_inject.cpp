@@ -104,7 +104,7 @@ TSPLUGIN_DECLARE_PROCESSOR(inject, ts::InjectPlugin)
 //----------------------------------------------------------------------------
 
 ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Inject tables and sections in a TS.", u"[options] input-file[=rate] ..."),
+    ProcessorPlugin(tsp_, u"Inject tables and sections in a TS", u"[options] input-file[=rate] ..."),
     _infiles(),
     _inType(SectionFile::UNSPECIFIED),
     _specific_rates(false),

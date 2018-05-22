@@ -111,7 +111,7 @@ TSPLUGIN_DECLARE_PROCESSOR(history, ts::HistoryPlugin)
 //----------------------------------------------------------------------------
 
 ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Report a history of major events on the transport stream.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Report a history of major events on the transport stream", u"[options]"),
     _outfile(),
     _current_pkt(0),
     _report_eit(false),

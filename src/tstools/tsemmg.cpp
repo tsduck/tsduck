@@ -101,7 +101,7 @@ public:
 
 // Constructor.
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
-    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG.", u"[options] [section-file ...]"),
+    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG", u"[options] [section-file ...]"),
     logger(ts::Severity::Debug, this),
     inputFiles(),
     sections(),

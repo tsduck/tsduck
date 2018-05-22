@@ -183,7 +183,7 @@ TSPLUGIN_DECLARE_PROCESSOR(datainject, ts::DataInjectPlugin)
 //----------------------------------------------------------------------------
 
 ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"DVB SimulCrypt data injector using EMMG/PDG <=> MUX protocol.", u"[options]"),
+    ProcessorPlugin(tsp_, u"DVB SimulCrypt data injector using EMMG/PDG <=> MUX protocol", u"[options]"),
     _pkt_current(0),
     _pkt_next_data(0),
     _data_pid(PID_NULL),

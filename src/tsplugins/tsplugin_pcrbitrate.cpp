@@ -86,7 +86,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pcrbitrate, ts::PCRBitratePlugin)
 //----------------------------------------------------------------------------
 
 ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Permanently recompute bitrate based on PCR analysis.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Permanently recompute bitrate based on PCR analysis", u"[options]"),
     _pcr_analyzer(),
     _bitrate(0),
     _pcr_name()

@@ -74,7 +74,7 @@ TSPLUGIN_DECLARE_PROCESSOR(psi, ts::PSIPlugin)
 //----------------------------------------------------------------------------
 
 ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract PSI Information.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Extract PSI Information", u"[options]"),
     _display_options(),
     _logger_options(),
     _display(_display_options, *tsp),

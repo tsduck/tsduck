@@ -98,7 +98,7 @@ namespace ts {
 
             // Option values
             bool          timed_log;       //!< Add time stamps in log messages.
-            bool          list_proc;       //!< List processors.
+            int           list_proc_flags; //!< List processors, mask of PluginRepository::ListFlag.
             bool          monitor;         //!< Run a resource monitoring thread.
             bool          ignore_jt;       //!< Ignore "joint termination" options in plugins.
             bool          sync_log;        //!< Synchronous log.
@@ -128,6 +128,11 @@ namespace ts {
             Options() = delete;
             Options(const Options&) = delete;
             Options& operator=(const Options&) = delete;
+
+            //!
+            //! Options for -\-list-processor.
+            //!
+            static const Enumeration ListProcessorEnum;
 
             //!
             //! Search the next plugin option.

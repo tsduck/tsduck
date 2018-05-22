@@ -103,7 +103,7 @@ const size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
 //----------------------------------------------------------------------------
 
 ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Monitor bitrate for a given pid.", u"[options] pid"),
+    ProcessorPlugin(tsp_, u"Monitor bitrate for a given pid", u"[options] pid"),
     _pid(PID_NULL),
     _min_bitrate(0),
     _max_bitrate(0),

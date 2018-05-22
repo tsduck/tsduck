@@ -87,7 +87,7 @@ TSPLUGIN_DECLARE_PROCESSOR(sdt, ts::SDTPlugin)
 //----------------------------------------------------------------------------
 
 ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the SDT Actual.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Perform various transformations on the SDT Actual", u"[options]"),
     _abort(false),
     _service(),
     _remove_serv(),

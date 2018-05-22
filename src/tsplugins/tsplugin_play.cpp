@@ -81,7 +81,7 @@ TSPLUGIN_DECLARE_OUTPUT(play, ts::PlayPlugin)
 //----------------------------------------------------------------------------
 
 ts::PlayPlugin::PlayPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Play output TS on any supported media player in the system.", u"[options]"),
+    OutputPlugin(tsp_, u"Play output TS on any supported media player in the system", u"[options]"),
     _use_mplayer(false),
     _use_xine(false),
     _pipe()

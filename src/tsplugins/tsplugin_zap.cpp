@@ -116,7 +116,7 @@ TSPLUGIN_DECLARE_PROCESSOR(zap, ts::ZapPlugin)
 //----------------------------------------------------------------------------
 
 ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Zap on one service: Produce an SPTS containing only the specified service.", u"[options] service"),
+    ProcessorPlugin(tsp_, u"Zap on one service: Produce an SPTS containing only the specified service", u"[options] service"),
     _abort(false),
     _service(),
     _audio(),

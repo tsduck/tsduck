@@ -84,7 +84,7 @@ TSPLUGIN_DECLARE_PROCESSOR(sifilter, ts::SIFilterPlugin)
 //----------------------------------------------------------------------------
 
 ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract PID's containing the specified PSI/SI.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Extract PID's containing the specified PSI/SI", u"[options]"),
     _cas_args(),
     _pass_pmt(false),
     _drop_status(TSP_DROP),

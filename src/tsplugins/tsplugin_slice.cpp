@@ -98,7 +98,7 @@ TSPLUGIN_DECLARE_PROCESSOR(slice, ts::SlicePlugin)
 //----------------------------------------------------------------------------
 
 ts::SlicePlugin::SlicePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Pass or drop packets based on packet numbers.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Pass or drop packets based on packet numbers", u"[options]"),
     _use_time(false),
     _ignore_pcr(false),
     _status(TSP_OK),

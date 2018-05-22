@@ -72,7 +72,7 @@ TSPLUGIN_DECLARE_PROCESSOR(reduce, ts::ReducePlugin)
 //----------------------------------------------------------------------------
 
 ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Reduce the TS bitrate by removing stuffing packets.", u"[options] rempkt inpkt"),
+    ProcessorPlugin(tsp_, u"Reduce the TS bitrate by removing stuffing packets", u"[options] rempkt inpkt"),
     _opt_rempkt(0),
     _opt_inpkt(0),
     _in_count(0),

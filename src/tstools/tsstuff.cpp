@@ -67,7 +67,7 @@ struct Options: public ts::Args
 
 // Constructor
 Options::Options(int argc, char *argv[]) :
-    Args(u"Add stuffing to a TS file to reach a target bitrate.", u"[options] [input-file]"),
+    Args(u"Add stuffing to a transport stream to reach a target bitrate", u"[options] [input-file]"),
     target_bitrate(0),
     reference_pid(ts::PID_NULL),
     buffer_size(0),
@@ -81,16 +81,16 @@ Options::Options(int argc, char *argv[]) :
     input_file(),
     output_file()
 {
-    option(u"",                      0,  Args::STRING, 0, 1);
-    option(u"bitrate",              'b', Args::POSITIVE, 1, 1);
-    option(u"buffer-size",           0,  Args::INTEGER, 0, 1, MIN_TS_BUFFER_SIZE, MAX_TS_BUFFER_SIZE);
+    option(u"",                      0,  STRING, 0, 1);
+    option(u"bitrate",              'b', POSITIVE, 1, 1);
+    option(u"buffer-size",           0,  INTEGER, 0, 1, MIN_TS_BUFFER_SIZE, MAX_TS_BUFFER_SIZE);
     option(u"dts-based",            'd');
-    option(u"final-inter-packet",   'f', Args::UNSIGNED);
-    option(u"initial-inter-packet", 'i', Args::UNSIGNED);
-    option(u"leading-packets",      'l', Args::UNSIGNED);
-    option(u"output-file",          'o', Args::STRING);
-    option(u"reference-pid",        'r', Args::PIDVAL);
-    option(u"trailing-packets",     't', Args::UNSIGNED);
+    option(u"final-inter-packet",   'f', UNSIGNED);
+    option(u"initial-inter-packet", 'i', UNSIGNED);
+    option(u"leading-packets",      'l', UNSIGNED);
+    option(u"output-file",          'o', STRING);
+    option(u"reference-pid",        'r', PIDVAL);
+    option(u"trailing-packets",     't', UNSIGNED);
 
     setHelp(u"Input file:\n"
             u"  The input file is a TS file, typically with variable bitrate content.\n"

@@ -68,7 +68,7 @@ TSPLUGIN_DECLARE_PROCESSOR(generic, ts::GenericPlugin)
 //----------------------------------------------------------------------------
 
 ts::GenericPlugin::GenericPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Generic packet processor.", u"[options]")
+    ProcessorPlugin(tsp_, u"Generic packet processor", u"[options]")
 {
     setHelp(u"Options:\n"
             u"\n"

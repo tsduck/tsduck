@@ -68,7 +68,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Dump PSI/SI tables, as saved by tstables.", u"[options] [filename ...]"),
+    Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
     infiles(),
     display(),
     udp(*this, false, false),
@@ -77,9 +77,10 @@ Options::Options(int argc, char *argv[]) :
     no_encapsulation(false)
 {
     // Warning, the following short options are already defined in TablesDisplayArgs: 'c', 'r'.
-    option(u"", 0, ts::Args::STRING);
-    option(u"max-tables", 'x', ts::Args::UNSIGNED);
+    option(u"",                 0,  STRING);
+    option(u"max-tables",      'x', UNSIGNED);
     option(u"no-encapsulation", 0);
+
     display.defineOptions(*this);
     udp.defineOptions(*this);
 

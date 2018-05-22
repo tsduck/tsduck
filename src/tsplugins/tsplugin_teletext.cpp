@@ -91,7 +91,7 @@ TSPLUGIN_DECLARE_PROCESSOR(teletext, ts::TeletextPlugin)
 //----------------------------------------------------------------------------
 
 ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract Teletext subtitles in SRT format.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Extract Teletext subtitles in SRT format", u"[options]"),
     _abort(false),
     _pid(PID_NULL),
     _page(-1),

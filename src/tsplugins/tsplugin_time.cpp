@@ -103,7 +103,7 @@ TSPLUGIN_DECLARE_PROCESSOR(time, ts::TimePlugin)
 //----------------------------------------------------------------------------
 
 ts::TimePlugin::TimePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Schedule packets pass or drop, based on time.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Schedule packets pass or drop, based on time", u"[options]"),
     _status(TSP_DROP),
     _relative(false),
     _use_utc(false),

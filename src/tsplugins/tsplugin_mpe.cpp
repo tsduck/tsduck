@@ -104,7 +104,7 @@ TSPLUGIN_DECLARE_PROCESSOR(mpe, ts::MPEPlugin)
 //----------------------------------------------------------------------------
 
 ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract MPE (Multi-Protocol Encapsulation) datagrams.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Extract MPE (Multi-Protocol Encapsulation) datagrams", u"[options]"),
     MPEHandlerInterface(),
     _abort(false),
     _log(false),

@@ -117,12 +117,16 @@ int main(int argc, char *argv[])
 #endif
 
     // Process the --list-processors option
-    if (opt.list_proc) {
+    if (opt.list_proc_flags != 0) {
         // Build the list of plugins.
-        const ts::UString text(plugins->listPlugins(true, opt));
+        const ts::UString text(plugins->listPlugins(true, opt, opt.list_proc_flags));
         // Try to page, raw output otherwise.
         ts::OutputPager pager;
-        if (pager.canPage() && pager.open(true, 0, opt)) {
+        if ((opt.list_proc_flags & ts::PluginRepository::LIST_COMPACT) != 0) {
+            // Compact output, no paging.
+            std::cerr << text;
+        }
+        else if (pager.canPage() && pager.open(true, 0, opt)) {
             pager.write(text, opt);
             pager.write(u"\n", opt);
             pager.close(opt);

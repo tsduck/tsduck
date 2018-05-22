@@ -115,7 +115,7 @@ TSPLUGIN_DECLARE_PROCESSOR(file, ts::FileProcessor)
 //----------------------------------------------------------------------------
 
 ts::FileInput::FileInput(TSP* tsp_) :
-    InputPlugin(tsp_, u"Read packets from one or more files.", u"[options] [file-name ...]"),
+    InputPlugin(tsp_, u"Read packets from one or more files", u"[options] [file-name ...]"),
     _filenames(),
     _current_file(0),
     _repeat_count(1),
@@ -168,7 +168,7 @@ ts::FileInput::FileInput(TSP* tsp_) :
 //----------------------------------------------------------------------------
 
 ts::FileOutput::FileOutput(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Write packets to a file.", u"[options] [file-name]"),
+    OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
     _file()
 {
     option(u"",        0,  STRING, 0, 1);
@@ -203,7 +203,7 @@ ts::FileOutput::FileOutput(TSP* tsp_) :
 //----------------------------------------------------------------------------
 
 ts::FileProcessor::FileProcessor(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin.", u"[options] file-name"),
+    ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
     _file()
 {
     option(u"",        0,  STRING, 1, 1);

@@ -60,7 +60,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Packetize PSI/SI sections in a transport stream PID.", u"[options] [input-file[=rate] ...]"),
+    Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
     continuous(false),
     stuffing_policy(ts::CyclingPacketizer::NEVER),
     crc_op(ts::CRC32::COMPUTE),

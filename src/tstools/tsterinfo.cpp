@@ -96,7 +96,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"DVB-Terrestrial information utility.", u"[options]"),
+    Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),
     frequency(0),
     uhf_channel(0),
     vhf_channel(0),
@@ -110,16 +110,16 @@ Options::Options(int argc, char *argv[]) :
     simple(false)
 {
     option(u"bandwidth",         'w', DVBTBandWidthEnum);
-    option(u"bitrate",           'b', Args::UINT32);
+    option(u"bitrate",           'b', UINT32);
     option(u"constellation",     'c', DVBTModulationEnum);
-    option(u"frequency",         'f', Args::UNSIGNED);
+    option(u"frequency",         'f', UNSIGNED);
     option(u"guard-interval",    'g', DVBTGuardIntervalEnum);
     option(u"high-priority-fec", 'h', DVBTHPFECEnum);
-    option(u"max-guess",         'm', Args::POSITIVE);
-    option(u"offset-count",      'o', Args::INTEGER, 0, 1, -3, 3);
+    option(u"max-guess",         'm', POSITIVE);
+    option(u"offset-count",      'o', INTEGER, 0, 1, -3, 3);
     option(u"simple",            's');
-    option(u"uhf-channel",       'u', Args::INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    option(u"vhf-channel",       'v', Args::INTEGER, 0, 1, ts::VHF::FIRST_CHANNEL, ts::VHF::LAST_CHANNEL);
+    option(u"uhf-channel",       'u', INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    option(u"vhf-channel",       'v', INTEGER, 0, 1, ts::VHF::FIRST_CHANNEL, ts::VHF::LAST_CHANNEL);
 
     setHelp(u"Options:\n"
             u"\n"

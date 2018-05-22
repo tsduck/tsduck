@@ -115,7 +115,7 @@ TSPLUGIN_DECLARE_PROCESSOR(eit, ts::EITPlugin)
 //----------------------------------------------------------------------------
 
 ts::EITPlugin::EITPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze EIT sections.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Analyze EIT sections", u"[options]"),
     _outfile(),
     _last_utc(),
     _eitpf_act_count(0),

@@ -75,7 +75,7 @@ TSPLUGIN_DECLARE_PROCESSOR(continuity, ts::ContinuityPlugin)
 //----------------------------------------------------------------------------
 
 ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Check or fix continuity counters on TS packets.", u"[options]"),
+    ProcessorPlugin(tsp_, u"Check or fix continuity counters on TS packets", u"[options]"),
     _tag(),
     _fix(),
     _log_level(Severity::Info),

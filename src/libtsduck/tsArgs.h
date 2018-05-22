@@ -481,6 +481,30 @@ namespace ts {
         int getFlags() const {return _flags;}
 
         //!
+        //! Types of help formatting, for getHelpText() and predefined option -\-help.
+        //!
+        enum HelpFormat {
+            HELP_NAME,          //!< Application name only.
+            HELP_DESCRIPTION,   //!< One-line description.
+            HELP_USAGE,         //!< Formatted command line syntax.
+            HELP_SYNTAX,        //!< One-line command line syntax.
+            HELP_FULL,          //!< Full help text.
+        };
+
+        //!
+        //! Enumeration description of HelpFormat.
+        //! Typically used to implement the -\-help command line option.
+        //!
+        static const Enumeration HelpFormatEnum;
+
+        //!
+        //! Get a formatted help text.
+        //! @param [in] format Requested format of the help text.
+        //! @return The formatted help text.
+        //!
+        UString getHelpText(HelpFormat format) const;
+
+        //!
         //! Set the "shell" string.
         //!
         //! The shell string is an optional prefix for the syntax line as
@@ -489,7 +513,7 @@ namespace ts {
         //!
         //! @param [in] shell Shell name string.
         //!
-        void setShell (const UString& shell) {_shell = shell;}
+        void setShell(const UString& shell) {_shell = shell;}
 
         //!
         //! Get the "shell" string.
