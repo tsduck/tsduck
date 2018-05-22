@@ -329,7 +329,7 @@ void ts::SpliceInsert::fromXML(const xml::Element* element)
             element->getIntAttribute<uint16_t>(program_id, u"unique_program_id", true) &&
             element->getIntAttribute<uint8_t>(avail_num, u"avail_num", false, 0) &&
             element->getIntAttribute<uint8_t>(avails_expected, u"avails_expected", false, 0) &&
-            element->getChildren(breakDuration, u"break_duration", 0, immediate ? 0 : 1) &&
+            element->getChildren(breakDuration, u"break_duration", 0, 1) &&
             element->getChildren(components, u"component", 0, 255);
         use_duration = !breakDuration.empty();
         program_splice = element->hasAttribute(u"pts_time") || (immediate && components.empty());

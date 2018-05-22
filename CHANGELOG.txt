@@ -9,6 +9,10 @@ Version 3.12-739
 
 - Many more descriptors are supported. See the user's guide.
 
+- Bug fix: If an XML representation of a splice information table contained a
+  splice_insert command, the <break_duration> structure was rejected when the
+  event was marked as immediate.
+
 - Bug fix: In "tsemmg", the TCP disconnection of the MUX was not detected in a
   timely fashion when data is injected using UDP.
 
