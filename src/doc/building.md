@@ -140,28 +140,30 @@ architecture as the build system.
 
 The following table summarizes the packages which are built and dropped
 into the `installers` directory, through a few examples, assuming that the
-current version of TSDuck is 3.9-580.
+current version of TSDuck is 3.12-745.
 
-| File name                            | Description
-| ------------------------------------ | -----------------------------------------------------
-| TSDduck-3.9-580-src.zip              | Source archive on Windows
-| tsduck-3.9-580.tgz                   | Source archive on Linux and macOS
-| tsduck_3.9-580_amd64.deb             | Binary package for 64-bit Ubuntu
-| tsduck_3.9-580_armhf.deb             | Binary package for 32-bit Raspbian (Raspberry Pi)
-| tsduck-3.9-580.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
-| tsduck-3.9-580.el7.x86_64.rpm        | Binary package for 64-bit Red Hat or CentOS 7.x
-| tsduck-3.9-580.el7.src.rpm           | Source package for Red Hat or CentOS 7.x
-| tsduck-3.9-580.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
-| tsduck-3.9-580.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
-| tsduck-3.9-580.fc25.src.rpm          | Source package for Fedora 25
-| tsduck-dev_3.9-580_amd64.deb         | Development package for 64-bit Ubuntu
-| tsduck-dev_3.9-580_armhf.deb         | Development package for 32-bit Raspbian (Raspberry Pi)
-| tsduck-devel-3.9-580.el7.i386.rpm    | Development package for 32-bit Red Hat or CentOS 7.x
-| tsduck-devel-3.9-580.el7.x86_64.rpm  | Development package for 64-bit Red Hat or CentOS 7.x
-| tsduck-devel-3.9-580.fc25.i386.rpm   | Development package for 32-bit Fedora 25
-| tsduck-devel-3.9-580.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
-| TSDuck-Win32-3.9-580.exe             | Binary package for 32-bit Windows
-| TSDuck-Win64-3.9-580.exe             | Binary package for 64-bit Windows
+| File name                             | Description
+| ------------------------------------- | -----------------------------------------------------
+| TSDduck-3.12-745-src.zip              | Source archive on Windows
+| tsduck-3.12-745.tgz                   | Source archive on Linux and macOS
+| tsduck_3.12-745_amd64.deb             | Binary package for 64-bit Ubuntu
+| tsduck_3.12-745_armhf.deb             | Binary package for 32-bit Raspbian (Raspberry Pi)
+| tsduck-3.12-745.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
+| tsduck-3.12-745.el7.x86_64.rpm        | Binary package for 64-bit Red Hat or CentOS 7.x
+| tsduck-3.12-745.el7.src.rpm           | Source package for Red Hat or CentOS 7.x
+| tsduck-3.12-745.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
+| tsduck-3.12-745.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
+| tsduck-3.12-745.fc25.src.rpm          | Source package for Fedora 25
+| tsduck-dev_3.12-745_amd64.deb         | Development package for 64-bit Ubuntu
+| tsduck-dev_3.12-745_armhf.deb         | Development package for 32-bit Raspbian (Raspberry Pi)
+| tsduck-devel-3.12-745.el7.i386.rpm    | Development package for 32-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.12-745.el7.x86_64.rpm  | Development package for 64-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.12-745.fc25.i386.rpm   | Development package for 32-bit Fedora 25
+| tsduck-devel-3.12-745.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
+| TSDuck-Win32-3.12-745.exe             | Binary installer for 32-bit Windows
+| TSDuck-Win64-3.12-745.exe             | Binary installer for 64-bit Windows
+| TSDuck-Win32-3.12-745-Portable.zip    | Portable package for 32-bit Windows
+| TSDuck-Win64-3.12-745-Portable.zip    | Portable package for 64-bit Windows
 
 On Linux systems, there are two different packages. The package `tsduck` contains
 the tools and plugins. This is the only required package if you just need to use
@@ -179,6 +181,9 @@ On systems where you have no administration privilege and consequently no right
 to use the standard installers, you may want to manually install TSDuck is some
 arbitrary directory.
 
+On Windows systems, a so-called _portable_ package is provided. This is a zip
+archive file which can be expanded anywhere.
+
 On Unix systems (which include Linux and macOS), you have to rebuild TSDuck from
 the source repository and install it using a command like this one:
 
@@ -186,8 +191,10 @@ the source repository and install it using a command like this one:
 make install SYSPREFIX=$HOME/usr/local
 ~~~~
 
-On Windows systems, a so-called _portable_ or _standalone_ package will be
-provided in a future version.
+In all cases, Windows or Unix, the TSDuck commands are located in the `bin`
+subdirectory and can be executed from here without any additional setup.
+It is probably a good idea to add this `bin` directory in your `PATH`
+environment variable.
 
 # Running from the build location {#runbuild}
 

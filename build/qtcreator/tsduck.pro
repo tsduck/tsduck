@@ -53,7 +53,6 @@ SUBDIRS += \
     tsplugin_file \
     tsplugin_filter \
     tsplugin_fork \
-    tsplugin_generic \
     tsplugin_history \
     tsplugin_inject \
     tsplugin_ip \
