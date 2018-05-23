@@ -49,7 +49,7 @@ TSPLUGINSDIR := $(SRCROOT)/tsplugins
 LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
 
 ifndef TSPLUGINS
-    export TSPLUGINS := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
+    export TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
     export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
                                             $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
 endif

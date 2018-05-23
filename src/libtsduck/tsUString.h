@@ -778,14 +778,14 @@ namespace ts {
         //!
         //! Remove all occurences of a substring.
         //! @param [in] substr Substring to remove.
-        //! @return This string with all occurences fo @a substr removed.
+        //! @return This string with all occurences of @a substr removed.
         //!
         UString toRemoved(const UString& substr) const;
 
         //!
         //! Remove all occurences of a character.
         //! @param [in] c Character to remove.
-        //! @return This string with all occurences fo @a substr removed.
+        //! @return This string with all occurences of @a substr removed.
         //!
         UString toRemoved(UChar c) const;
 

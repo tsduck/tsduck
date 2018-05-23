@@ -42,6 +42,8 @@ getlink() {
 }
 WIN32=$(getlink '/TSDuck-Win32-.*\.exe$')
 WIN64=$(getlink '/TSDuck-Win64-.*\.exe$')
+WIN32Z=$(getlink '/TSDuck-Win32-.*-Portable\.zip$')
+WIN64Z=$(getlink '/TSDuck-Win64-.*-Portable\.zip$')
 FC64=$(getlink '/tsduck-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64=$(getlink '/tsduck_[0-9].*_amd64\.deb$')
 ARM=$(getlink '/tsduck_[0-9].*_armhf\.deb$')
@@ -56,6 +58,8 @@ cat >$MDFILE <<EOF
 Binaries for command-line tools and plugins:
 * Windows 32 bits: $WIN32
 * Windows 64 bits: $WIN64
+* Windows 32 bits (portable): $WIN32Z
+* Windows 64 bits (portable): $WIN64Z
 * Fedora 64 bits: $FC64
 * Ubuntu 64 bits: $UB64
 * Raspbian 32 bits (Raspberry Pi): $ARM

@@ -9,6 +9,8 @@ Version 3.12-739
 
 - Many more descriptors are supported. See the user's guide.
 
+- On Windows, portable packages are now built for users without admin privilege.
+
 - Bug fix: If an XML representation of a splice information table contained a
   splice_insert command, the <break_duration> structure was rejected when the
   event was marked as immediate.

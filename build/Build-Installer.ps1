@@ -57,7 +57,11 @@
 
  .PARAMETER NoInstaller
 
-  Do not build the binary installer.
+  Do not build the binary installers.
+
+ .PARAMETER NoPortable
+
+  Do not build the portable packages.
 
  .PARAMETER NoSource
 
@@ -79,6 +83,7 @@ param(
     [switch]$NoPause = $false,
     [switch]$NoBuild = $false,
     [switch]$NoInstaller = $false,
+    [switch]$NoPortable = $false,
     [switch]$NoSource = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false
@@ -121,6 +126,12 @@ if (-not $NoInstaller) {
     $NsisScript = Join-Path $PSScriptRoot "tsduck.nsi"
 }
 
+# Get version name.
+$Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
+$Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
+$Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
+$Version = "${Major}.${Minor}-${Commit}"
+
 # Build the project.
 if (-not $NoBuild) {
     Push-Location
@@ -137,7 +148,7 @@ if (-not $NoInstaller) {
     & (Join-MultiPath @($MsvcDir, "redist", "Download-Vcredist.ps1")) -NoPause
 }
 
-# Build installers.
+# Build binary installers.
 if (-not $NoInstaller -and $Win32) {
     & $NsisExe "/DProjectDir=$MsvcDir" $NsisScript
 }
@@ -145,14 +156,60 @@ if (-not $NoInstaller -and $Win64) {
     & $NsisExe "/DProjectDir=$MsvcDir" "/DWin64" $NsisScript
 }
 
+# A function to build a portable package.
+function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$VcRedist)
+{
+    # Full bin directory.
+    $BinDir = (Join-Path $MsvcDir "Release-${BinSuffix}")
+
+    # Package name.
+    $ZipFile = (Join-Path $InstallerDir "TSDuck-${InstallerSuffix}-${Version}-Portable.zip")
+
+    # Create a temporary directory.
+    $TempDir = New-TempDirectory
+
+    Push-Location $TempDir
+    try {
+        # Build directory tree and copy files.
+        $TempRoot = (New-Directory @($TempDir, "TSDuck"))
+
+        $TempBin = (New-Directory @($TempRoot, "bin"))
+        Copy-Item (Join-Path $BinDir "ts*.exe") -Exclude "*_static.exe" -Destination $TempBin
+        Copy-Item (Join-Path $BinDir "ts*.dll") -Destination $TempBin
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "tsduck.xml")) -Destination $TempBin
+        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "tsduck.*.names")) -Destination $TempBin
+
+        $TempDoc = (New-Directory @($TempRoot, "doc"))
+        Copy-Item (Join-Multipath @($RootDir, "doc", "tsduck.pdf")) -Destination $TempDoc
+        Copy-Item (Join-Path $RootDir "CHANGELOG.txt") -Destination $TempDoc
+        Copy-Item (Join-Path $RootDir "LICENSE.txt") -Destination $TempDoc
+
+        $TempSetup = (New-Directory @($TempRoot, "setup"))
+        Copy-Item (Join-Path $BinDir "setpath.exe") -Destination $TempSetup
+        Copy-Item (Join-Multipath @($MsvcDir, "redist", $VcRedist)) -Destination $TempSetup
+
+        # Create the zip file.
+        Get-ChildItem -Recurse (Split-Path $TempRoot) | New-ZipFile $ZipFile -Force -Root $TempDir
+    }
+    finally {
+        # Delete the temporary directory.
+        Pop-Location
+        if (Test-Path $TempDir) {
+            Remove-Item $TempDir -Recurse -Force
+        }
+    }
+}
+
+# Build portable packages.
+if (-not $NoPortable -and $Win32) {
+    Build-Portable "Win32" "Win32" "vcredist32.exe"
+}
+if (-not $NoPortable -and $Win64) {
+    Build-Portable "x64" "Win64" "vcredist64.exe"
+}
+
 # Build the source archives.
 if (-not $NoSource) {
-
-    # Get version name.
-    $Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
-    $Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
-    $Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
-    $Version = "${Major}.${Minor}-${Commit}"
 
     # Source archive name.
     $SrcArchive = (Join-Path $InstallerDir "TSDduck-${Version}-src.zip")
