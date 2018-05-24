@@ -773,6 +773,8 @@ namespace ts {
 
         // Valid in Viaccess CAS context:
 
+        TID_VIA_EMM_FT_E  = 0x86, //!< Table id for Viaccess EMM-FT (even)
+        TID_VIA_EMM_FT_O  = 0x87, //!< Table id for Viaccess EMM-FT (odd)
         TID_VIA_EMM_U     = 0x88, //!< Table id for Viaccess EMM-U and EMM-D-U
         TID_VIA_EMM_GA_E  = 0x8A, //!< Table id for Viaccess EMM-GA and EMM-D-GA (even)
         TID_VIA_EMM_GA_O  = 0x8B, //!< Table id for Viaccess EMM-GA and EMM-D-GA (odd)
