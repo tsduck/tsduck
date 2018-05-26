@@ -36,17 +36,27 @@
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
+// Index of pipe file descriptors on UNIX.
+#define PIPE_READFD  0
+#define PIPE_WRITEFD 1
+#define PIPE_COUNT   2
+
 
 //----------------------------------------------------------------------------
 // Constructor / destructor
 //----------------------------------------------------------------------------
 
 ts::ForkPipe::ForkPipe() :
-    _in_mode(USE_PIPE),
+    _in_mode(STDIN_PIPE),
+    _out_mode(KEEP_BOTH),
     _is_open(false),
     _wait_mode(ASYNCHRONOUS),
+    _in_pipe(false),
+    _out_pipe(false),
+    _use_pipe(false),
     _ignore_abort(false),
     _broken_pipe(false),
+    _eof(false),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE),
     _process(INVALID_HANDLE_VALUE)
@@ -77,15 +87,28 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         return false;
     }
 
+    // Characterize the use of the pipe.
+    _in_pipe = in_mode == STDIN_PIPE;
+    _out_pipe = out_mode == STDOUT_PIPE || out_mode == STDOUTERR_PIPE;
+    _use_pipe = _in_pipe || _out_pipe;
+
     // We cannot use a pipe if we plan to exit immediately.
-    if (wait_mode == EXIT_PROCESS && in_mode == USE_PIPE) {
+    if (wait_mode == EXIT_PROCESS && _use_pipe) {
         report.error(u"cannot use a pipe with exit-process option");
         return false;
     }
 
+    // We can't use the pipe on both sides.
+    if (_in_pipe && _out_pipe) {
+        report.error(u"cannot use a pipe on both side at the same time");
+        return false;
+    }
+
     _in_mode = in_mode;
+    _out_mode = out_mode;
     _broken_pipe = false;
     _wait_mode = wait_mode;
+    _eof = !_out_pipe;
 
     report.debug(u"creating process \"%s\"", {command});
 
@@ -97,7 +120,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     ::HANDLE write_handle = INVALID_HANDLE_VALUE;
 
     // Create a pipe
-    if (_in_mode == USE_PIPE) {
+    if (_use_pipe) {
         ::DWORD bufsize = buffer_size == 0 ? 0 : ::DWORD(std::max<size_t>(32768, buffer_size));
         ::SECURITY_ATTRIBUTES sa;
         sa.nLength = sizeof(sa);
@@ -109,9 +132,9 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
 
         // CreatePipe can only inherit none or both handles. Since we need the
-        // read handle to be inherited by the child process, we said "inherit".
-        // Now, make sure that the write handle of the pipe is not inherited.
-        ::SetHandleInformation(write_handle, HANDLE_FLAG_INHERIT, 0);
+        // one handle to be inherited by the child process, we said "inherit".
+        // Now, make sure that our end of the pipe is not inherited.
+        ::SetHandleInformation(_in_pipe ? write_handle : read_handle, HANDLE_FLAG_INHERIT, 0);
     }
 
     // Our standard handles.
@@ -127,7 +150,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     si.dwFlags = STARTF_USESTDHANDLES;
 
     switch (_in_mode) {
-        case USE_PIPE:
+        case STDIN_PIPE:
             si.hStdInput = read_handle;
             break;
         case KEEP_STDIN:
@@ -136,7 +159,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             break;
         default:
             // Invalid enum value.
-            if (_in_mode == USE_PIPE) {
+            if (_use_pipe) {
                 ::CloseHandle(read_handle);
                 ::CloseHandle(write_handle);
             }
@@ -158,9 +181,17 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdOutput = si.hStdError = err_handle;
             break;
+        case STDOUT_PIPE:
+            ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            si.hStdError = err_handle;
+            si.hStdOutput = write_handle;
+            break;
+        case STDOUTERR_PIPE:
+            si.hStdOutput = si.hStdError = write_handle;
+            break;
         default:
             // Invalid enum value.
-            if (_in_mode == USE_PIPE) {
+            if (_use_pipe) {
                 ::CloseHandle(read_handle);
                 ::CloseHandle(write_handle);
             }
@@ -175,7 +206,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     ::PROCESS_INFORMATION pi;
     if (::CreateProcessW(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
         report.error(u"error creating process: %s", {ErrorCodeMessage()});
-        if (_in_mode == USE_PIPE) {
+        if (_use_pipe) {
             ::CloseHandle(read_handle);
             ::CloseHandle(write_handle);
         }
@@ -204,18 +235,22 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     }
     ::CloseHandle(pi.hThread);
 
-    // Keep the writing end-point of pipe for data transmission.
-    // Close the reading end-point of pipe.
-    if (_in_mode == USE_PIPE) {
+    // Keep our end-point of pipe for data transmission.
+    // Close the other end-point of pipe.
+    if (_in_pipe) {
         _handle = write_handle;
         ::CloseHandle(read_handle);
+    }
+    else if (_out_pipe) {
+        _handle = read_handle;
+        ::CloseHandle(write_handle);
     }
 
 #else // UNIX
 
     // Create a pipe
-    int filedes[2];
-    if (_in_mode == USE_PIPE && ::pipe(filedes) < 0) {
+    int filedes[PIPE_COUNT];
+    if (_use_pipe && ::pipe(filedes) < 0) {
         report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
         return false;
     }
@@ -227,21 +262,25 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     }
     else if ((_fpid = ::fork()) < 0) {
         report.error(u"fork error: %s", {ErrorCodeMessage()});
-        if (_in_mode == USE_PIPE) {
-            ::close(filedes[0]);
-            ::close(filedes[1]);
+        if (_use_pipe) {
+            ::close(filedes[PIPE_READFD]);
+            ::close(filedes[PIPE_WRITEFD]);
         }
         return false;
     }
 
     if (_fpid != 0) {
         // In the context of the parent process.
-
-        if (_in_mode == USE_PIPE) {
+        if (_in_pipe) {
             // Keep the writing end-point of pipe for data transmission.
             // Close the reading end-point of pipe.
-            _fd = filedes[1];
-            ::close(filedes[0]);
+            _fd = filedes[PIPE_WRITEFD];
+            ::close(filedes[PIPE_READFD]);
+        }
+        else if (_out_pipe) {
+            // Do the opposite.
+            _fd = filedes[PIPE_READFD];
+            ::close(filedes[PIPE_WRITEFD]);
         }
     }
     else {
@@ -250,22 +289,17 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         int error = 0;
         const char* message = 0;
 
-        // Setup input pipe.
-        if (_in_mode == USE_PIPE) {
-            // Close standard input.
-            ::close(STDIN_FILENO);
-
+        // Setup pipe.
+        if (_in_pipe) {
             // Close the writing end-point of the pipe.
-            ::close(filedes[1]);
-
+            ::close(filedes[PIPE_WRITEFD]);
             // Redirect the reading end-point of the pipe to standard input
-            if (::dup2(filedes[0], STDIN_FILENO) < 0) {
+            if (::dup2(filedes[PIPE_READFD], STDIN_FILENO) < 0) {
                 error = errno;
                 message = "error redirecting stdin in forked process";
             }
-
             // Close the now extraneous file descriptor.
-            ::close(filedes[0]);
+            ::close(filedes[PIPE_READFD]);
         }
 
         // Merge stdout and stderr if requested.
@@ -274,15 +308,32 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                 // Use stdout as stderr as well.
                 if (::dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
                     error = errno;
-                    message = "error redirecting stdout to stderr";
+                    message = "error redirecting stderr to stdout";
                 }
                 break;
             case STDERR_ONLY:
                 // Use stderr as stdout as well.
                 if (::dup2(STDERR_FILENO, STDOUT_FILENO) < 0) {
                     error = errno;
-                    message = "error redirecting stderr to stdout";
+                    message = "error redirecting stdout to stderr";
                 }
+                break;
+            case STDOUT_PIPE:
+            case STDOUTERR_PIPE:
+                // Close reading end-point of the pipe.
+                ::close(filedes[PIPE_READFD]);
+                // Redirect stdout to the write end-point of the pipe.
+                if (::dup2(filedes[PIPE_WRITEFD], STDOUT_FILENO) < 0) {
+                    error = errno;
+                    message = "error redirecting stdout to pipe";
+                }
+                // Same for stderr if requested.
+                if (out_mode == STDOUTERR_PIPE && ::dup2(filedes[PIPE_WRITEFD], STDERR_FILENO) < 0) {
+                    error = errno;
+                    message = "error redirecting stderr to pipe";
+                }
+                // Close the now extraneous file descriptor.
+                ::close(filedes[PIPE_WRITEFD]);
                 break;
             default:
                 // Nothing to do.
@@ -336,7 +387,7 @@ bool ts::ForkPipe::close (Report& report)
 #if defined (TS_WINDOWS)
 
     // Close the pipe handle
-    if (_in_mode == USE_PIPE) {
+    if (_use_pipe) {
         ::CloseHandle(_handle);
     }
 
@@ -353,7 +404,7 @@ bool ts::ForkPipe::close (Report& report)
 #else // UNIX
 
     // Close the pipe file descriptor
-    if (_in_mode == USE_PIPE) {
+    if (_use_pipe) {
         ::close(_fd);
     }
 
@@ -373,7 +424,6 @@ bool ts::ForkPipe::close (Report& report)
 
 //----------------------------------------------------------------------------
 // Write data to the pipe (received at process' standard input).
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
@@ -382,8 +432,8 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
         report.error(u"pipe is not open");
         return false;
     }
-    if (_in_mode != USE_PIPE) {
-        report.error(u"process was created without pipe");
+    if (!_in_pipe) {
+        report.error(u"process was created without input pipe");
         return false;
     }
 
@@ -397,9 +447,9 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
 
 #if defined (TS_WINDOWS)
 
-    const char* data = reinterpret_cast <const char*> (addr);
-    ::DWORD remain = ::DWORD (size);
-    ::DWORD outsize;
+    const char* data = reinterpret_cast<const char*>(addr);
+    ::DWORD remain = ::DWORD(size);
+    ::DWORD outsize = 0;
 
     while (remain > 0 && !error) {
         if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0) {
@@ -420,11 +470,11 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
 
 #else // UNIX
 
-    const char *data = reinterpret_cast <const char*> (addr);
+    const char *data = reinterpret_cast<const char*>(addr);
     size_t remain = size;
 
     while (remain > 0 && !error) {
-        ssize_t outsize = ::write (_fd, data, remain);
+        ssize_t outsize = ::write(_fd, data, remain);
         if (outsize > 0) {
             // Normal case, some data were written
             assert(size_t(outsize) <= remain);
@@ -460,4 +510,92 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
         // Broken pipe. Do not report a message, but report as error
         return false;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Read data from the pipe (sent from process' standard output or error).
+//----------------------------------------------------------------------------
+
+bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& ret_size, ts::Report& report)
+{
+    ret_size = 0;
+
+    if (!_is_open) {
+        report.error(u"pipe is not open");
+        return false;
+    }
+    if (!_out_pipe) {
+        report.error(u"process was created without output pipe");
+        return false;
+    }
+    if (_eof) {
+        // Already at end of file. Do not report error.
+        return false;
+    }
+
+    ErrorCode error_code = SYS_SUCCESS;
+
+#if defined (TS_WINDOWS)
+
+    char* data = reinterpret_cast<char*>(addr);
+    ::DWORD remain = ::DWORD(max_size);
+
+    for (;;) {
+        ::DWORD insize = 0;
+        if (::ReadFile(_handle, data, remain, &insize, NULL) != 0) {
+            // Normal case, some data were read.
+            assert(insize <= remain);
+            insize = std::max(::DWORD(0), insize);  // just in case we got a negative value
+            ret_size += insize;
+            data += insize;
+            remain -= std::max(remain, insize);
+            // Exit when we read an integral number of "units" or the buffer is full.
+            if (unit_size == 0 || remain == 0 || ret_size % unit_size == 0) {
+                return true;
+            }
+            // Need to read only the end of a "unit".
+            remain = std::min(remain, ::DWORD(unit_size - ret_size % unit_size));
+        }
+        else {
+            // Read error
+            error_code = LastErrorCode();
+            report.error(u"error writing to pipe: %s", {ErrorCodeMessage(error_code)});
+            return false;
+        }
+    }
+
+#else // UNIX
+
+    char *data = reinterpret_cast<char*>(addr);
+    size_t remain = max_size;
+
+    for (;;) {
+        const ssize_t insize = ::read(_fd, data, remain);
+        if (insize == 0) {
+            // End of file.
+            _eof = true;
+            // Not an error yet if we already read some data.
+            return ret_size > 0;
+        }
+        else if (insize > 0) {
+            // Normal case, some data were read.
+            assert(size_t(insize) <= remain);
+            ret_size += insize;
+            data += insize;
+            remain -= std::max(remain, size_t(insize));
+            // Exit when we read an integral number of "units" or the buffer is full.
+            if (unit_size == 0 || remain == 0 || ret_size % unit_size == 0) {
+                return true;
+            }
+            // Need to read only the end of a "unit".
+            remain = std::min(remain, unit_size - ret_size % unit_size);
+        }
+        else if ((error_code = LastErrorCode()) != EINTR) {
+            // Actual error (not an interrupt)
+            report.error(u"error writing to pipe: %s", {ErrorCodeMessage(error_code)});
+            return false;
+        }
+    }
+#endif
 }
