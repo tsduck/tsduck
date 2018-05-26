@@ -359,6 +359,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTSFileOutput.h \
     ../../../src/libtsduck/tsTSFileOutputResync.h \
     ../../../src/libtsduck/tsTSPacket.h \
+    ../../../src/libtsduck/tsTSPacketQueue.h \
     ../../../src/libtsduck/tsTSScanner.h \
     ../../../src/libtsduck/tsTSScrambling.h \
     ../../../src/libtsduck/tsTSSpeedMetrics.h \
@@ -688,6 +689,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTSFileOutput.cpp \
     ../../../src/libtsduck/tsTSFileOutputResync.cpp \
     ../../../src/libtsduck/tsTSPacket.cpp \
+    ../../../src/libtsduck/tsTSPacketQueue.cpp \
     ../../../src/libtsduck/tsTSScanner.cpp \
     ../../../src/libtsduck/tsTSScrambling.cpp \
     ../../../src/libtsduck/tsTSSpeedMetrics.cpp \
