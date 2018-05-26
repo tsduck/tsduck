@@ -441,7 +441,7 @@ bool RunUpgradeCommand(Options& opt, const ts::UString& command, bool needPrivil
 
     // Run the upgrade command and exit current process.
     ts::ForkPipe process;
-    bool success = process.open(cmd, ts::ForkPipe::EXIT_PROCESS, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
+    bool success = process.open(cmd, ts::ForkPipe::EXIT_PROCESS, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::STDIN_PARENT);
     process.close(NULLREP);
     return success;
 }

@@ -148,7 +148,7 @@ bool ts::ForkPlugin::start()
     }
 
     // Create pipe & process
-    return _pipe.open(command, nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS, PKT_SIZE * _buffer_size, *tsp);
+    return _pipe.open(command, nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS, PKT_SIZE * _buffer_size, *tsp, ForkPipe::KEEP_BOTH, ForkPipe::STDIN_PIPE);
 }
 
 

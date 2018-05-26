@@ -56,28 +56,36 @@ namespace ts {
 
         //!
         //! How to wait for the created process when close() is invoked.
+        //! No pipe can be used with EXIT_PROCESS because there would be
+        //! nobody on the other end of the pipe.
         //!
         enum WaitMode {
             ASYNCHRONOUS,  //!< Don't wait, close() will return immediately.
             SYNCHRONOUS,   //!< Wait for process completion during close().
-            EXIT_PROCESS,  //!< Exit parent process diring open(). UNIX: call exec(), Windows: call exit() @e after process creation.
+            EXIT_PROCESS,  //!< Exit parent process during open(). UNIX: call exec(), Windows: call exit() @e after process creation.
         };
 
         //!
         //! How to standard input in the created process.
         //!
+        //! The pipe can be used either on input or output, but not both.
+        //! So, STDIN_PIPE is also forbidden with output mode is either
+        //! STDOUT_PIPE or STDOUTERR_PIPE.
+        //!
         enum InputMode {
-            KEEP_STDIN,    //!< Keep same stdin as current process.
-            USE_PIPE,      //!< Use the pipe as stdin (forbidden when wait mode is EXIT_PROCESS).
+            STDIN_PARENT,  //!< Keep same stdin as current (parent) process.
+            STDIN_PIPE,    //!< Use the pipe as stdin.
         };
 
         //!
         //! How to merge standard output and standard error in the created process.
         //!
         enum OutputMode {
-            KEEP_BOTH,     //!< Keep same stdout and stderr as current process.
-            STDOUT_ONLY,   //!< Merge stderr into current stdout.
-            STDERR_ONLY,   //!< Merge stdout into current stderr.
+            KEEP_BOTH,       //!< Keep same stdout and stderr as current (parent) process.
+            STDOUT_ONLY,     //!< Merge stderr into current stdout.
+            STDERR_ONLY,     //!< Merge stdout into current stderr.
+            STDOUT_PIPE,     //!< Use the pipe to receive stdout, keep same stderr as current (parent) process.
+            STDOUTERR_PIPE,  //!< Use the pipe to receive a merge of stdout and stderr.
         };
 
         //!
@@ -92,7 +100,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Do not return on success when @a wait_mode is EXIT_PROCESS.
         //!
-        bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = USE_PIPE);
+        bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode);
 
         //!
         //! Close the pipe.
@@ -157,18 +165,42 @@ namespace ts {
         //!
         bool write(const void* addr, size_t size, Report& report);
 
+        //!
+        //! Read data from the pipe (sent from process' standard output or error).
+        //! @param [out] addr Address of the buffer for the incoming data.
+        //! @param [in] max_size Maximum size in bytes of the buffer.
+        //! @param [in] unit_size If not zero, make sure that the input size is always
+        //! a multiple of @a unit_size. If the initial read ends in the middle of a @e unit,
+        //! read again and again, up to the end of the current unit or end of file.
+        //! @param [out] ret_size Returned input size.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool read(void* addr, size_t max_size, size_t unit_size, size_t& ret_size, Report& report);
+
+        //!
+        //! Check if the input pipe is at end of file.
+        //! @return True if the input pipe is at end of file.
+        //!
+        bool eof() const { return _eof; }
+
     private:
-        InputMode _in_mode;       // Input mode for the created process.
-        bool      _is_open;       // Open and running.
-        WaitMode  _wait_mode;     // How to wait for child process termination in close().
-        bool      _ignore_abort;  // Ignore early termination of child process.
-        bool      _broken_pipe;   // Pipe is broken, do not attempt to write.
+        InputMode  _in_mode;       // Input mode for the created process.
+        OutputMode _out_mode;      // Output mode for the created process.
+        bool       _is_open;       // Open and running.
+        WaitMode   _wait_mode;     // How to wait for child process termination in close().
+        bool       _in_pipe;       // The process uses an input pipe.
+        bool       _out_pipe;      // The process uses an output pipe.
+        bool       _use_pipe;      // The process uses a pipe, somehow.
+        bool       _ignore_abort;  // Ignore early termination of child process.
+        bool       _broken_pipe;   // Pipe is broken, do not attempt to write.
+        bool       _eof;           // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
-        ::HANDLE  _handle;        // Pipe output handle.
-        ::HANDLE  _process;       // Handle to child process.
+        ::HANDLE   _handle;        // Pipe output handle.
+        ::HANDLE   _process;       // Handle to child process.
 #else
-        ::pid_t   _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
-        int       _fd;            // Pipe output file descriptor.
+        ::pid_t    _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
+        int        _fd;            // Pipe output file descriptor.
 #endif
 
         // Inacessible operations.

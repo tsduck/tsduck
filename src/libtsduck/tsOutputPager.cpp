@@ -69,13 +69,13 @@ ts::OutputPager::OutputPager(const UString& envName) :
         UStringList dirs;
         GetEnvironmentPath(dirs, TS_COMMAND_PATH);
 
-        // Predefined list of commands. 
+        // Predefined list of commands.
         struct PredefinedPager {
             UString command;
             UString parameters;
         };
         const std::list<PredefinedPager> pagers({
-            {u"less", u"-QFX"}, 
+            {u"less", u"-QFX"},
             {u"more", u""}
         });
 
@@ -116,7 +116,7 @@ bool ts::OutputPager::open(bool synchronous, size_t buffer_size, Report& report)
         return false;
     }
     else {
-        return ForkPipe::open(_pagerCommand, synchronous ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS, buffer_size, report, _outputMode);
+        return ForkPipe::open(_pagerCommand, synchronous ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS, buffer_size, report, _outputMode, STDIN_PIPE);
     }
 }
 
