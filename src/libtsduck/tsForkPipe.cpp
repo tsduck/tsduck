@@ -153,7 +153,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         case STDIN_PIPE:
             si.hStdInput = read_handle;
             break;
-        case KEEP_STDIN:
+        case STDIN_PARENT:
             ::SetHandleInformation(in_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdInput = in_handle;
             break;
