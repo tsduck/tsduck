@@ -118,6 +118,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     _process = INVALID_HANDLE_VALUE;
     ::HANDLE read_handle = INVALID_HANDLE_VALUE;
     ::HANDLE write_handle = INVALID_HANDLE_VALUE;
+    ::HANDLE null_handle = INVALID_HANDLE_VALUE;
 
     // Create a pipe
     if (_use_pipe) {
@@ -150,52 +151,79 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     si.dwFlags = STARTF_USESTDHANDLES;
 
     switch (_in_mode) {
-        case STDIN_PIPE:
+        case STDIN_PIPE: {
             si.hStdInput = read_handle;
             break;
-        case STDIN_PARENT:
+        }
+        case STDIN_PARENT: {
             ::SetHandleInformation(in_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdInput = in_handle;
             break;
-        default:
+        }
+        case STDIN_NONE: {
+            // Open the null device for reading.
+            ::OFSTRUCT unused;
+            TS_ZERO(unused);
+            null_handle = ::OpenFileA("NUL:", &unused, OF_READ);
+            if (null_handle == HFILE_ERROR) {
+                report.error(u"error opening NUL: %s", {ErrorCodeMessage()});
+                if (_use_pipe) {
+                    ::CloseHandle(read_handle);
+                    ::CloseHandle(write_handle);
+                }
+                return false;
+            }
+            // Set the null device as standard input.
+            ::SetHandleInformation(null_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            si.hStdInput = null_handle;
+            break;
+        }
+        default: {
             // Invalid enum value.
             if (_use_pipe) {
                 ::CloseHandle(read_handle);
                 ::CloseHandle(write_handle);
             }
             return false;
+        }
     }
 
     switch (out_mode) {
-        case KEEP_BOTH:
+        case KEEP_BOTH: {
             ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdOutput = out_handle;
             si.hStdError = err_handle;
             break;
-        case STDOUT_ONLY:
+        }
+        case STDOUT_ONLY: {
             ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdOutput = si.hStdError = out_handle;
             break;
-        case STDERR_ONLY:
+        }
+        case STDERR_ONLY: {
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdOutput = si.hStdError = err_handle;
             break;
-        case STDOUT_PIPE:
+        }
+        case STDOUT_PIPE: {
             ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
             si.hStdError = err_handle;
             si.hStdOutput = write_handle;
             break;
-        case STDOUTERR_PIPE:
+        }
+        case STDOUTERR_PIPE: {
             si.hStdOutput = si.hStdError = write_handle;
             break;
-        default:
+        }
+        default: {
             // Invalid enum value.
             if (_use_pipe) {
                 ::CloseHandle(read_handle);
                 ::CloseHandle(write_handle);
             }
             return false;
+        }
     }
 
     // ::CreateProcess may modify the user-supplied command line (ugly!)
@@ -215,23 +243,27 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     // Close unused handles
     switch (_wait_mode) {
-        case ASYNCHRONOUS:
+        case ASYNCHRONOUS: {
             // Process handle is useless, we won't use it.
             _process = INVALID_HANDLE_VALUE;
             ::CloseHandle(pi.hProcess);
             break;
-        case SYNCHRONOUS:
+        }
+        case SYNCHRONOUS: {
             // Keep process handle to wait for it.
             _process = pi.hProcess;
             break;
-        case EXIT_PROCESS:
+        }
+        case EXIT_PROCESS: {
             // Exit parent process.
             ::exit(EXIT_SUCCESS);
             break;
-        default:
+        }
+        default: {
             // Should not get there.
             assert(false);
             break;
+        }
     }
     ::CloseHandle(pi.hThread);
 
@@ -244,6 +276,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     else if (_out_pipe) {
         _handle = read_handle;
         ::CloseHandle(write_handle);
+    }
+
+    // Close other no longer used handles.
+    if (null_handle != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(null_handle);
     }
 
 #else // UNIX
@@ -289,37 +326,63 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         int error = 0;
         const char* message = 0;
 
-        // Setup pipe.
-        if (_in_pipe) {
-            // Close the writing end-point of the pipe.
-            ::close(filedes[PIPE_WRITEFD]);
-            // Redirect the reading end-point of the pipe to standard input
-            if (::dup2(filedes[PIPE_READFD], STDIN_FILENO) < 0) {
-                error = errno;
-                message = "error redirecting stdin in forked process";
+        // Setup stdin.
+        switch (in_mode) {
+            case STDIN_NONE: {
+                // Open the null device as stdin and redirect it to standard input.
+                const int infd = ::open("/dev/null", O_RDONLY);
+                if (infd < 0) {
+                    error = errno;
+                    message = "error opening /dev/null in forked process";
+                }
+                else if (::dup2(infd, STDIN_FILENO) < 0) {
+                    error = errno;
+                    message = "error redirecting stdin in forked process";
+                }
+                else {
+                    // Original file descriptor is no longer needed.
+                    ::close(infd);
+                }
+                break;
             }
-            // Close the now extraneous file descriptor.
-            ::close(filedes[PIPE_READFD]);
+            case STDIN_PIPE: {
+                // Close the writing end-point of the pipe.
+                ::close(filedes[PIPE_WRITEFD]);
+                // Redirect the reading end-point of the pipe to standard input
+                if (::dup2(filedes[PIPE_READFD], STDIN_FILENO) < 0) {
+                    error = errno;
+                    message = "error redirecting stdin in forked process";
+                }
+                // Close the now extraneous file descriptor.
+                ::close(filedes[PIPE_READFD]);
+                break;
+            }
+            default: {
+                // Nothing to do.
+                break;
+            }
         }
 
-        // Merge stdout and stderr if requested.
+        // Setup stdout and stderr.
         switch (out_mode) {
-            case STDOUT_ONLY:
+            case STDOUT_ONLY: {
                 // Use stdout as stderr as well.
                 if (::dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stderr to stdout";
                 }
                 break;
-            case STDERR_ONLY:
+            }
+            case STDERR_ONLY: {
                 // Use stderr as stdout as well.
                 if (::dup2(STDERR_FILENO, STDOUT_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stdout to stderr";
                 }
                 break;
+            }
             case STDOUT_PIPE:
-            case STDOUTERR_PIPE:
+            case STDOUTERR_PIPE: {
                 // Close reading end-point of the pipe.
                 ::close(filedes[PIPE_READFD]);
                 // Redirect stdout to the write end-point of the pipe.
@@ -335,9 +398,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                 // Close the now extraneous file descriptor.
                 ::close(filedes[PIPE_WRITEFD]);
                 break;
-            default:
+            }
+            default: {
                 // Nothing to do.
                 break;
+            }
         }
 
         // Execute the command if there was no prior error.

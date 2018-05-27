@@ -75,6 +75,7 @@ namespace ts {
         enum InputMode {
             STDIN_PARENT,  //!< Keep same stdin as current (parent) process.
             STDIN_PIPE,    //!< Use the pipe as stdin.
+            STDIN_NONE,    //!< No standard input (the null device in fact).
         };
 
         //!
@@ -172,7 +173,7 @@ namespace ts {
         //! @param [in] unit_size If not zero, make sure that the input size is always
         //! a multiple of @a unit_size. If the initial read ends in the middle of a @e unit,
         //! read again and again, up to the end of the current unit or end of file.
-        //! @param [out] ret_size Returned input size.
+        //! @param [out] ret_size Returned input size in bytes.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!

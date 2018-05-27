@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  Fork a process and send TS packets to its standard output (pipe)
+//  Fork a process and send TS packets to its standard input (pipe)
 //
 //----------------------------------------------------------------------------
 
