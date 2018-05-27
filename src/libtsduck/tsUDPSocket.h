@@ -35,6 +35,7 @@
 #pragma once
 #include "tsSocket.h"
 #include "tsSocketAddress.h"
+#include "tsIPUtils.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsMemoryUtils.h"
@@ -173,6 +174,26 @@ namespace ts {
         {
             return setTTL(ttl, _default_destination.isMulticast(), report);
         }
+
+        //!
+        //! Enable or disable the broadcast option.
+        //!
+        //! @param [in] on If true, broadcast is activated on the socket. Otherwise, it is disabled.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool setBroadcast(bool on, Report& report = CERR);
+
+        //!
+        //! Enable or disable the broadcast option, based on an IP address.
+        //!
+        //! @param [in] destination An hypothetical destination address. If this address
+        //! is the broadcast address of a local interface, the broadcast option is set.
+        //! Otherwise, the broadcast option is unchanged.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool setBroadcastIfRequired(const IPAddress destination, Report& report = CERR);
 
         //!
         //! Join a multicast group.

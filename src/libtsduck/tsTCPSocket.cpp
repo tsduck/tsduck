@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  TCP Socket
-//
-//----------------------------------------------------------------------------
 
 #include "tsTCPSocket.h"
+#include "tsIPUtils.h"
 #include "tsGuard.h"
 #include "tsMemoryUtils.h"
 #include "tsException.h"

@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsCerrReport.h"
-#include "tsIPUtils.h"
 
 namespace ts {
     //!
@@ -237,6 +236,11 @@ namespace ts {
     private:
         uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
     };
+
+    //!
+    //! Vector of IP addresses.
+    //!
+    typedef std::vector<IPAddress> IPAddressVector;
 }
 
 //!

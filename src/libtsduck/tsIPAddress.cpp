@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPAddress.h"
+#include "tsIPUtils.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 

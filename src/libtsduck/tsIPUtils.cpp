@@ -45,7 +45,7 @@ TSDUCK_SOURCE;
 
 bool ts::IPInitialize(Report& report)
 {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
     // Execute only once (except - harmless - race conditions during startup).
     static volatile bool done = false;
     if (!done) {
@@ -77,9 +77,10 @@ bool ts::IsLocalIPAddress(const IPAddress& address)
 
 //----------------------------------------------------------------------------
 // This method returns the list of all local IPv4 addresses in the system
+// with their network mask.
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
 {
     bool status = true;
     list.clear();
@@ -98,7 +99,7 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
         if (ifa->ifa_addr != 0) {
             IPAddress addr(*ifa->ifa_addr);
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(addr);
+                list.push_back(IPAddressMask(addr)); //@@@ TODO: add network mask
             }
         }
     }
@@ -109,19 +110,19 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
 #elif defined(TS_WINDOWS) || defined(TS_UNIX)
 
     // Create a socket to query the system on
-    TS_SOCKET_T sock = ::socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    TS_SOCKET_T sock = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == TS_SOCKET_T_INVALID) {
         report.error(u"error creating socket: %s", {SocketErrorCodeMessage()});
         return false;
     }
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
 
     ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
     ::DWORD retsize;
-    if (::WSAIoctl (sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD (sizeof(info)), &retsize, 0, 0) != 0) {
+    if (::WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD(sizeof(info)), &retsize, 0, 0) != 0) {
         report.error(u"error getting local addresses: %s", {SocketErrorCodeMessage()});
         status = false;
     }
@@ -131,7 +132,7 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
         for (size_t i = 0; i < count; ++i) {
             IPAddress addr(info[i].iiAddress.Address);
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back (addr);
+                list.push_back(IPAddressMask(addr, IPAddress(info[i].iiNetmask.Address)));
             }
         }
     }
@@ -155,8 +156,19 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
         size_t count = ifc.ifc_len / sizeof(::ifreq);
         for (size_t i = 0; i < count; ++i) {
             IPAddress addr(info[i].ifr_addr);
+            IPAddress mask;
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(addr);
+                // Get network mask for this interface.
+                ::ifreq req;
+                req = info[i];
+                if (::ioctl(sock, SIOCGIFNETMASK, &req) != 0) {
+                    const SocketErrorCode err = LastSocketErrorCode();
+                    report.error(u"error getting network mask for %s: %s", {addr.toString(), SocketErrorCodeMessage(err)});
+                }
+                else {
+                    mask = IPAddress(req.ifr_netmask);
+                }
+                list.push_back(IPAddressMask(addr, mask));
             }
         }
     }
@@ -164,7 +176,7 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
 #endif
 
     // Close socket
-    TS_SOCKET_CLOSE (sock);
+    TS_SOCKET_CLOSE(sock);
 
 #else
 
@@ -174,6 +186,28 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
 #endif
 
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// This method returns the list of all local IPv4 addresses in the system
+//----------------------------------------------------------------------------
+
+bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
+{
+    IPAddressMaskVector full_list;
+    list.clear();
+
+    if (GetLocalIPAddresses(full_list, report)) {
+        list.resize(full_list.size());
+        for (size_t i = 0; i < full_list.size(); ++i) {
+            list[i] = full_list[i].address;
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 

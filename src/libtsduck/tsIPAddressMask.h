@@ -28,20 +28,63 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  A combination of IP v4 address and network mask.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsIPAddress.h"
+
+namespace ts {
+    //!
+    //! A combination of IP v4 address and network mask.
+    //! @ingroup net
+    //!
+    class TSDUCKDLL IPAddressMask
+    {
+    public:
+        IPAddress address;  //!< IPv4 address.
+        IPAddress mask;     //!< Network mask.
+
+        //!
+        //! Default constructor.
+        //! @param [in] a IPv4 address.
+        //! @param [in] m Network mask.
+        //!
+        IPAddressMask(const IPAddress& a = IPAddress(), const IPAddress& m = IPAddress());
+
+        //!
+        //! Get the network mask size in bytes.
+        //! @return The mask size (e.g. 24 for mask 255.255.255.0).
+        //!
+        int maskSize() const;
+
+        //!
+        //! Get the associated broadcast address.
+        //! @return The associated broadcast address.
+        //!
+        IPAddress broadcastAddress() const;
+
+        //!
+        //! Convert to a string object in numeric format "a.b.c.d".
+        //! @return This object, converted as a string.
+        //!
+        UString toString() const;
+    };
+
+    //!
+    //! Vector of IP addresses and network masks.
+    //!
+    typedef std::vector<IPAddressMask> IPAddressMaskVector;
+}
+
 //!
-//! TSDuck major version.
+//! Output operator for the class @link ts::IPAddressMask @endlink on standard text streams.
+//! @param [in,out] strm An standard stream in output mode.
+//! @param [in] addr The IP address/mask object.
+//! @return A reference to the @a strm object.
 //!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 748
+inline std::ostream& operator<< (std::ostream& strm, const ts::IPAddressMask& addr)
+{
+    return strm << addr.toString();
+}

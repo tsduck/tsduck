@@ -188,26 +188,63 @@ bool ts::UDPSocket::setDefaultDestination(const SocketAddress& addr, Report& rep
 
 //----------------------------------------------------------------------------
 // Set the Time To Live (TTL) option.
-// If multicast is true, set "multicast TTL, otherwise set "unicast TTL".
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setTTL (int ttl, bool multicast, Report& report)
+bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 {
     if (multicast) {
         TS_SOCKET_MC_TTL_T mttl = (TS_SOCKET_MC_TTL_T) (ttl);
-        if (::setsockopt (getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T (&mttl), sizeof(mttl)) != 0) {
-            report.error(u"socket option multicast TTL: " + SocketErrorCodeMessage ());
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T (&mttl), sizeof(mttl)) != 0) {
+            report.error(u"socket option multicast TTL: " + SocketErrorCodeMessage());
             return false;
         }
     }
     else {
         TS_SOCKET_TTL_T uttl = (TS_SOCKET_TTL_T) (ttl);
-        if (::setsockopt (getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T (&uttl), sizeof(uttl)) != 0) {
-            report.error(u"socket option unicast TTL: " + SocketErrorCodeMessage ());
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T (&uttl), sizeof(uttl)) != 0) {
+            report.error(u"socket option unicast TTL: " + SocketErrorCodeMessage());
             return false;
         }
     }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Enable or disable the broadcast option.
+//----------------------------------------------------------------------------
+
+bool ts::UDPSocket::setBroadcast(bool on, Report& report)
+{
+    int enable = int(on);
+    if (::setsockopt(getSocket(), SOL_SOCKET, SO_BROADCAST, TS_SOCKOPT_T(&enable), sizeof(enable)) != 0) {
+        report.error(u"socket option broadcast: " + SocketErrorCodeMessage());
+        return false;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Enable or disable the broadcast option, based on an IP address.
+//----------------------------------------------------------------------------
+
+bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& report)
+{
+    // Get all local interfaces.
+    IPAddressMaskVector locals;
+    if (!GetLocalIPAddresses(locals, report)) {
+        return false;
+    }
+
+    // Loop on all local addresses and set broadcast when we match a local broadcast address.
+    for (auto it = locals.begin(); it != locals.end(); ++it) {
+        if (destination == it->broadcastAddress()) {
+            return setBroadcast(true, report);
+        }
+    }
+
+    // Not a broadcast address, nothing was done.
     return true;
 }
 
