@@ -31,6 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsIPUtils.h"
 #include "tsIPAddress.h"
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
@@ -310,13 +311,27 @@ void NetworkingTest::testGetLocalIPAddresses()
     ts::IPAddressVector addr;
     CPPUNIT_ASSERT(ts::GetLocalIPAddresses(addr));
 
-    utest::Out() << "NetworkingTest: GetLocalIPAddresses: " << addr.size() << " local addresses" << std::endl;
-    for (size_t i = 0; i < addr.size(); ++i) {
-        utest::Out() << "NetworkingTest: local address " << i << ": " << addr[i] << std::endl;
+    ts::IPAddressMaskVector addrMask;
+    CPPUNIT_ASSERT(ts::GetLocalIPAddresses(addrMask));
+
+    // The two calls must return the same number of addresses.
+    CPPUNIT_ASSERT(addr.size() == addrMask.size());
+
+    utest::Out() << "NetworkingTest: GetLocalIPAddresses: " << addrMask.size() << " local addresses" << std::endl;
+    for (size_t i = 0; i < addrMask.size(); ++i) {
+        utest::Out() << "NetworkingTest: local address " << i
+                     << ": " << addrMask[i].address
+                     << ", mask: " << addrMask[i].mask
+                     << ", broadcast: " << addrMask[i].broadcastAddress()
+                     << " (" << addrMask[i] << ")" << std::endl;
     }
 
-    for (ts::IPAddressVector::const_iterator it = addr.begin(); it != addr.end(); ++it) {
-        CPPUNIT_ASSERT(ts::IsLocalIPAddress(*it));
+    for (size_t i = 0; i < addr.size(); ++i) {
+        CPPUNIT_ASSERT(ts::IsLocalIPAddress(addr[i]));
+    }
+
+    for (size_t i = 0; i < addrMask.size(); ++i) {
+        CPPUNIT_ASSERT(ts::IsLocalIPAddress(addrMask[i].address));
     }
 }
 

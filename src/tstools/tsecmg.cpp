@@ -36,6 +36,7 @@
 #include "tsFatal.h"
 #include "tsMutex.h"
 #include "tsThread.h"
+#include "tsIPUtils.h"
 #include "tsSysUtils.h"
 #include "tsECMGSCS.h"
 #include "tsTCPServer.h"

@@ -27,82 +27,50 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTCPServer.h"
-#include "tsIPUtils.h"
-#include "tsGuard.h"
-#include "tsMemoryUtils.h"
+#include "tsIPAddressMask.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Start the server
+// Default constructor.
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::listen(int backlog, Report& report)
+ts::IPAddressMask::IPAddressMask(const IPAddress& a, const IPAddress& m) :
+    address(a),
+    mask(m)
 {
-    report.debug(u"server listen, backlog is %d", {backlog});
-    if (::listen(getSocket(), backlog) != 0) {
-        report.error(u"error starting TCP server: %s", {SocketErrorCodeMessage()});
-        return false;
-    }
-    return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Wait for a client
+// Get the network mask size in bytes.
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address, Report& report)
+int ts::IPAddressMask::maskSize() const
 {
-    if (client.isConnected()) {
-        report.error(u"invalid client in accept(): already connected");
-        return false;
+    int size = 0;
+    for (uint32_t m = mask.address(); m != 0; m = m << 1) {
+        size++;
     }
-
-    if (client.isOpen()) {
-        report.error(u"invalid client in accept(): already open");
-        return false;
-    }
-
-    report.debug(u"server accepting clients");
-    ::sockaddr sock_addr;
-    TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
-    TS_ZERO(sock_addr);
-    TS_SOCKET_T client_sock = ::accept(getSocket(), &sock_addr, &len);
-
-    if (client_sock == TS_SOCKET_T_INVALID) {
-        Guard lock(_mutex);
-        if (isOpen()) {
-            report.error(u"error accepting TCP client: %s", {SocketErrorCodeMessage()});
-        }
-        return false;
-    }
-
-    client_address = SocketAddress(sock_addr);
-    report.debug(u"received connection from %s", {client_address.toString()});
-
-    client.declareOpened(client_sock, report);
-    client.declareConnected(report);
-    return true;
+    return size;
 }
 
 
 //----------------------------------------------------------------------------
-// Inherited and overridden
+// Get the associated broadcast address.
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::close(Report& report)
+ts::IPAddress ts::IPAddressMask::broadcastAddress() const
 {
-    // Shutdown server socket.
-    // Do not report "not connected" errors since they are normal when the client disconnects first.
-    if (::shutdown(getSocket(), TS_SOCKET_SHUT_RDWR) != 0) {
-        const SocketErrorCode err_code = LastSocketErrorCode();
-        if (err_code != TS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutdowning server socket: %s", {SocketErrorCodeMessage()});
-        }
-    }
+    return IPAddress(address.address() | ~mask.address());
+}
 
-    // Then invoke superclass
-    return SuperClass::close(report);
+
+//----------------------------------------------------------------------------
+// Convert to a string object in numeric format "a.b.c.d".
+//----------------------------------------------------------------------------
+
+ts::UString ts::IPAddressMask::toString() const
+{
+    return UString::Format(u"%s/%d", {address.toString(), maskSize()});
 }

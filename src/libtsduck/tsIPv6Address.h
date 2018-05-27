@@ -260,6 +260,11 @@ namespace ts {
         //!
         bool operator<(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) < 0; }
     };
+
+    //!
+    //! Vector of IPv6 addresses.
+    //!
+    typedef std::vector<IPv6Address> IPv6AddressVector;
 }
 
 //!

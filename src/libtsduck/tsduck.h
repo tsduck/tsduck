@@ -165,6 +165,7 @@
 #include "tsIntegerUtils.h"
 #include "tsInterruptHandler.h"
 #include "tsIPAddress.h"
+#include "tsIPAddressMask.h"
 #include "tsIPMACGenericStreamLocationDescriptor.h"
 #include "tsIPMACPlatformNameDescriptor.h"
 #include "tsIPMACPlatformProviderNameDescriptor.h"

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEMMGClient.h"
+#include "tsIPUtils.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 #include "tsOneShotPacketizer.h"
@@ -199,7 +200,8 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     }
 
     // Create UDP socket if we need UDP.
-    if (_udp_address.hasPort() && !_udp_socket.open(_logger.report())) {
+    // If the UDP destination address is a broadast address, force it.
+    if (_udp_address.hasPort() && (!_udp_socket.open(_logger.report()) || !_udp_socket.setBroadcastIfRequired(_udp_address, _logger.report()))) {
         return abortConnection();
     }
 

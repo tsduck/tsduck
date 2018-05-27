@@ -152,6 +152,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtilsTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInterruptHandler.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPAddress.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsIPAddressMask.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPMACGenericStreamLocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPMACPlatformNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIPMACPlatformProviderNameDescriptor.h" />
@@ -533,6 +534,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsINT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIntegerUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPAddress.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsIPAddressMask.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPMACGenericStreamLocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPMACPlatformNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPMACPlatformProviderNameDescriptor.cpp" />

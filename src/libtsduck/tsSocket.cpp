@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSocket.h"
+#include "tsIPUtils.h"
 #include "tsException.h"
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
