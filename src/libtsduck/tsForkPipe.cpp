@@ -162,10 +162,8 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
         case STDIN_NONE: {
             // Open the null device for reading.
-            ::OFSTRUCT unused;
-            TS_ZERO(unused);
-            null_handle = ::OpenFileA("NUL:", &unused, OF_READ);
-            if (null_handle == HFILE_ERROR) {
+            null_handle = ::CreateFileA("NUL:", GENERIC_READ, FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+            if (null_handle == INVALID_HANDLE_VALUE) {
                 report.error(u"error opening NUL: %s", {ErrorCodeMessage()});
                 if (_use_pipe) {
                     ::CloseHandle(read_handle);
