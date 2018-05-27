@@ -56,6 +56,7 @@ SUBDIRS += \
     tsplugin_history \
     tsplugin_inject \
     tsplugin_ip \
+    tsplugin_merge  \
     tsplugin_mpe  \
     tsplugin_mpeinject  \
     tsplugin_mux \

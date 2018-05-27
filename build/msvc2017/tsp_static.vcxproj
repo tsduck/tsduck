@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -25,6 +25,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_history.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_inject.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_ip.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_merge.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_mpe.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_mpeinject.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_mux.cpp" />
