@@ -43,7 +43,7 @@ ts::IPAddressMask::IPAddressMask(const IPAddress& a, const IPAddress& m) :
 
 
 //----------------------------------------------------------------------------
-// Get the network mask size in bytes.
+// Get the network mask size in bits.
 //----------------------------------------------------------------------------
 
 int ts::IPAddressMask::maskSize() const

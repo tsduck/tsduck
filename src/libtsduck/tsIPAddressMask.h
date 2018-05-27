@@ -54,7 +54,7 @@ namespace ts {
         IPAddressMask(const IPAddress& a = IPAddress(), const IPAddress& m = IPAddress());
 
         //!
-        //! Get the network mask size in bytes.
+        //! Get the network mask size in bits.
         //! @return The mask size (e.g. 24 for mask 255.255.255.0).
         //!
         int maskSize() const;
