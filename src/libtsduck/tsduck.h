@@ -341,6 +341,7 @@
 #include "tsTime.h"
 #include "tsTimeShiftedEventDescriptor.h"
 #include "tsTimeShiftedServiceDescriptor.h"
+#include "tsTimeSliceFECIdentifierDescriptor.h"
 #include "tsTimeTrackerDemux.h"
 #include "tstlv.h"
 #include "tstlvAnalyzer.h"
