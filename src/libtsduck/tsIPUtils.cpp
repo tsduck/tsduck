@@ -99,7 +99,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
         if (ifa->ifa_addr != 0) {
             IPAddress addr(*ifa->ifa_addr);
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(IPAddressMask(addr)); //@@@ TODO: add network mask
+                list.push_back(IPAddressMask(addr, IPAddress(*ifa->ifa_netmask)));
             }
         }
     }
