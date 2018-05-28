@@ -33,7 +33,7 @@
 
 include ../Makefile.tsduck
 
-NORECURSE_SUBDIRS += sample-app
+NORECURSE_SUBDIRS += sample-app sample-plugin
 
 default:
 	@true

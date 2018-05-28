@@ -132,7 +132,7 @@ namespace ts {
         void analyzeCADescriptors(const DescriptorList& descs, bool is_ecm);
 
         // CAMapper private fields.
-        Report&  _report;
+        Report&           _report;
         SectionDemux      _demux;
         PIDDescriptionMap _pids;
 

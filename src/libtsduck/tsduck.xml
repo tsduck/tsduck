@@ -512,6 +512,14 @@
 
     <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
 
+    <ECM_repetition_rate_descriptor
+        CA_system_id="uint16, required"
+        ECM_repetition_rate="uint16, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ECM_repetition_rate_descriptor>
+
     <enhanced_AC3_descriptor
         mixinfoexists="bool, required"
         component_type="uint8, optional"
@@ -977,7 +985,7 @@
         frame_size="uint3, required"
         max_burst_duration="uint8, required"
         max_average_rate="uint4, required"
-        time_slice_fec_id="uint4, required">
+        time_slice_fec_id="uint4, default=0">
       <id_selector_bytes>Hexadecimal content</id_selector_bytes>
     </time_slice_fec_identifier_descriptor>
 

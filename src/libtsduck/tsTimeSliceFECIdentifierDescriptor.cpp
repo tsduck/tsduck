@@ -133,6 +133,8 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(xml::Element* root) const
 
 void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element)
 {
+    id_selector_bytes.clear();
+
     _is_valid =
         checkXMLName(element) &&
         element->getBoolAttribute(time_slicing, u"time_slicing", true) &&
@@ -140,7 +142,7 @@ void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(frame_size, u"frame_size", true, 0, 0x00, 0x07) &&
         element->getIntAttribute<uint8_t>(max_burst_duration, u"max_burst_duration", true) &&
         element->getIntAttribute<uint8_t>(max_average_rate, u"max_average_rate", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute<uint8_t>(time_slice_fec_id, u"time_slice_fec_id", true, 0, 0x00, 0x0F) &&
+        element->getIntAttribute<uint8_t>(time_slice_fec_id, u"time_slice_fec_id", false, 0, 0x00, 0x0F) &&
         element->getHexaTextChild(id_selector_bytes, u"id_selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 5);
 }
 

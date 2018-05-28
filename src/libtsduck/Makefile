@@ -72,14 +72,23 @@ OBJDIR_SUFFIX := $(if $(STATIC),-static,)
 include ../../Makefile.tsduck
 
 # Building the TSDuck library.
-default: tsduck.h libs
+default: headers libs
 	@true
 
-# This is the only module which explicitly depends on tsduck.h.
-# This header file is regenerated and, normally, make should know that tsduck.h must be
+# These headers are automatically generated.
+GENHEADERS := tsduck.h tsTables.h private/tsRefType.h
+.PHONY: headers
+headers: $(GENHEADERS)
+$(GENHEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(LIB_HEADERS)
+	@echo '  [REBUILD] $@'; \
+	$(BUILD_PROJ_FILES) $@
+
+# These header files are regenerated and, normally, make should know that they must be
 # finished before building tsVersionInfo.o. However, the .dep file contains full paths
-# of dependencies and make cannot realize it is the same tsduck.h!
-$(OBJDIR)/tsVersionInfo.o: tsduck.h
+# of dependencies and make cannot realize it is the same header files.
+
+$(OBJDIR)/tsVersionInfo.o: tsduck.h tsTables.h
+$(OBJDIR)/tsStaticReferencesDVB.o: private/tsRefType.h
 
 # Specific (per-module) compilation options:
 
@@ -115,12 +124,6 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
-
-# The header tsduck.h includes all headers
-
-tsduck.h: $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(LIB_HEADERS)
-	@echo '  [REBUILD] $@'; \
-	$(BUILD_PROJ_FILES) $@
 
 # Installing the shared library in same directory as executables
 
