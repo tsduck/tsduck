@@ -174,6 +174,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);
     REF_TYPE(TimeShiftedServiceDescriptor);
+    REF_TYPE(TimeSliceFECIdentifierDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);

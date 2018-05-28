@@ -334,6 +334,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTime.h \
     ../../../src/libtsduck/tsTimeShiftedEventDescriptor.h \
     ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.h \
+    ../../../src/libtsduck/tsTimeSliceFECIdentifierDescriptor.h \
     ../../../src/libtsduck/tsTimeTrackerDemux.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
@@ -673,6 +674,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTime.cpp \
     ../../../src/libtsduck/tsTimeShiftedEventDescriptor.cpp \
     ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.cpp \
+    ../../../src/libtsduck/tsTimeSliceFECIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsTimeTrackerDemux.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvLogger.cpp \

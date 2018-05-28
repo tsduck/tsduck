@@ -154,6 +154,7 @@
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsTimeShiftedEventDescriptor.h"
 #include "tsTimeShiftedServiceDescriptor.h"
+#include "tsTimeSliceFECIdentifierDescriptor.h"
 #include "tsTransportProtocolDescriptor.h"
 #include "tsVBIDataDescriptor.h"
 #include "tsVBITeletextDescriptor.h"

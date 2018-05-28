@@ -971,6 +971,16 @@
 
     <time_shifted_service_descriptor reference_service_id="uint16, required"/>
 
+    <time_slice_fec_identifier_descriptor
+        time_slicing="bool, required"
+        mpe_fec="uint2, required"
+        frame_size="uint3, required"
+        max_burst_duration="uint8, required"
+        max_average_rate="uint4, required"
+        time_slice_fec_id="uint4, required">
+      <id_selector_bytes>Hexadecimal content</id_selector_bytes>
+    </time_slice_fec_identifier_descriptor>
+
     <transport_protocol_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
       <!-- Only one of the following shall be present -->

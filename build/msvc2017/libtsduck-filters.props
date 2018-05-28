@@ -1006,6 +1006,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2047,6 +2050,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp">

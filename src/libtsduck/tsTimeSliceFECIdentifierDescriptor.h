@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a supplementary_audio_descriptor
+//!  Representation of a time_slice_fec_identifier_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,30 +38,33 @@
 
 namespace ts {
     //!
-    //! Representation of a supplementary_audio_descriptor.
-    //! @see ETSI 300 468, 6.4.10.
+    //! Representation of a time_slice_fec_identifier_descriptor.
+    //! @see ETSI EN 301 192, 9.5.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL SupplementaryAudioDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TimeSliceFECIdentifierDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        uint8_t   mix_type;                  //!< Complete or dependent stream, 1 bit.
-        uint8_t   editorial_classification;  //!< Editorial classification, 5 bits.
-        UString   language_code;             //!< ISO-639 language code, 3 characters or empty.
-        ByteBlock private_data;              //!< Private data.
+        bool      time_slicing;        //!< See ETSI EN 301 192, 9.5.
+        uint8_t   mpe_fec;             //!< See ETSI EN 301 192, 9.5, 2 bits.
+        uint8_t   frame_size;          //!< See ETSI EN 301 192, 9.5, 3 bits.
+        uint8_t   max_burst_duration;  //!< See ETSI EN 301 192, 9.5.
+        uint8_t   max_average_rate;    //!< See ETSI EN 301 192, 9.5, 4 bits.
+        uint8_t   time_slice_fec_id;   //!< See ETSI EN 301 192, 9.5, 4 bits.
+        ByteBlock id_selector_bytes;   //!< See ETSI EN 301 192, 9.5.
 
         //!
         //! Default constructor.
         //!
-        SupplementaryAudioDescriptor();
+        TimeSliceFECIdentifierDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SupplementaryAudioDescriptor(const Descriptor& bin, const DVBCharset* charset);
+        TimeSliceFECIdentifierDescriptor(const Descriptor& bin, const DVBCharset* charset);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

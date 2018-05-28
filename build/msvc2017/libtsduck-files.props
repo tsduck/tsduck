@@ -336,6 +336,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsTime.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlv.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvAnalyzer.h" />
@@ -685,6 +686,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvLogger.cpp" />
