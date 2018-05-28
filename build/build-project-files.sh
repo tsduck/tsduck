@@ -38,6 +38,8 @@
 #  - build/msvc2017/libtsduck-filters.props
 #  - build/qtcreator/libtsduck/libtsduck-files.pri
 #  - src/libtsduck/tsduck.h
+#  - src/libtsduck/tsTables.h
+#  - src/libtsduck/private/tsRefType.h
 #
 #  See the PowerShell script Build-Project-Files.ps1 for a Windows equivalent.
 #
@@ -48,7 +50,7 @@ SCRIPT=$(basename ${BASH_SOURCE[0]} .sh)
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Optional file to build.
-TARGET=$1
+TARGET=$(basename $1)
 
 # Get the project directories.
 BUILDDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)
@@ -81,6 +83,19 @@ GetSources()
 
     for f in $(find "$SRCDIR/$subdir" $FIND1 -type f -name "*.$type" "$@" | sort --ignore-case); do
         echo "${PREFIX}$(basename $f)${SUFFIX}"
+    done
+}
+
+# Generate includes based on doxygen group.
+GetGroup()
+{
+    local group="$1"; shift
+    local subdir="$1"; shift
+    local name=""
+
+    for f in $(grep -l "@ingroup *$group" "$SRCDIR/$subdir/ts"*.h | grep -v '/tsAbstract' | sort --ignore-case); do
+        name=$(basename $f .h | sed -e 's/^ts//')
+        echo "${PREFIX}${name}${SUFFIX}"
     done
 }
 
@@ -202,7 +217,7 @@ GenerateMainHeader()
     cat "$ROOTDIR/src/HEADER.txt"
     echo ''
     echo '#pragma once'
-    GetSources h "" ! -name "tsStaticReferences*" ! -name "*Template.h"
+    GetSources h "" ! -name "tsStaticReferences*" ! -name "*Template.h" ! -name "tsduck.h"
     echo ''
     echo '#if defined(TS_LINUX)'
     GetSources h unix ! -name "*Template.h"
@@ -219,10 +234,41 @@ GenerateMainHeader()
     echo '#endif'
 }
 
+# Generate the header file for PSI/SI tables and descriptors.
+GenerateTablesHeader()
+{
+    PREFIX="#include \"ts"
+    SUFFIX=".h\""
+
+    cat "$ROOTDIR/src/HEADER.txt"
+    echo ''
+    echo '//! @file'
+    echo '//! All headers for MPEG/DVB tables and descriptors.'
+    echo ''
+    echo '#pragma once'
+    echo ''
+    GetGroup table
+    echo ''
+    GetGroup descriptor
+}
+
+# Generate the header file containing static references to all tables and descriptors.
+GenerateRefType()
+{
+    PREFIX="    REF_TYPE("
+    SUFFIX=");"
+
+    GetGroup table
+    echo ''
+    GetGroup descriptor
+}
+
 # Generate the files.
 [[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject | unix2dos >"$MSVCDIR/libtsduck-files.props"
 [[ -z "$TARGET" || "$TARGET" == "libtsduck-filters.props" ]] && GenerateMSFilters | unix2dos >"$MSVCDIR/libtsduck-filters.props"
 [[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri"     ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
 [[ -z "$TARGET" || "$TARGET" == "tsduck.h"                ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
+[[ -z "$TARGET" || "$TARGET" == "tsTables.h"              ]] && GenerateTablesHeader >"$SRCDIR/tsTables.h"
+[[ -z "$TARGET" || "$TARGET" == "tsRefType.h"             ]] && GenerateRefType >"$SRCDIR/private/tsRefType.h"
 
 exit 0

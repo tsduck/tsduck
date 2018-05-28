@@ -26,3 +26,46 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Representation of an ECM_repetition_rate_descriptor.
+//!
+//----------------------------------------------------------------------------
+
+#pragma once
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an ECM_repetition_rate_descriptor.
+    //! @see ETSI EN 301 192, 9.7.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ECMRepetitionRateDescriptor : public AbstractDescriptor
+    {
+    public:
+        // Public members:
+        uint16_t  CA_system_id;         //!< Conditional access system id.
+        uint16_t  ECM_repetition_rate;  //!< ECM repetition rate in milliseconds.
+        ByteBlock private_data;         //!< CAS-dependent private data.
+
+        //!
+        //! Default constructor.
+        //!
+        ECMRepetitionRateDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ECMRepetitionRateDescriptor(const Descriptor& bin, const DVBCharset* charset);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

@@ -120,6 +120,7 @@ HEADERS += \
     ../../../src/libtsduck/tsECMGClient.h \
     ../../../src/libtsduck/tsECMGClientHandlerInterface.h \
     ../../../src/libtsduck/tsECMGSCS.h \
+    ../../../src/libtsduck/tsECMRepetitionRateDescriptor.h \
     ../../../src/libtsduck/tsEDID.h \
     ../../../src/libtsduck/tsEIT.h \
     ../../../src/libtsduck/tsEMMGClient.h \
@@ -404,6 +405,7 @@ HEADERS += \
     ../../../src/libtsduck/private/tsDektec.h \
     ../../../src/libtsduck/private/tsDektecDevice.h \
     ../../../src/libtsduck/private/tsDektecVPD.h \
+    ../../../src/libtsduck/private/tsRefType.h \
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -498,6 +500,7 @@ SOURCES += \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsECMGClient.cpp \
     ../../../src/libtsduck/tsECMGSCS.cpp \
+    ../../../src/libtsduck/tsECMRepetitionRateDescriptor.cpp \
     ../../../src/libtsduck/tsEIT.cpp \
     ../../../src/libtsduck/tsEMMGClient.cpp \
     ../../../src/libtsduck/tsEMMGMUX.cpp \

@@ -122,6 +122,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsECMGClient.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGClientHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGSCS.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsECMRepetitionRateDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEDID.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEMMGClient.h" />
@@ -406,6 +407,7 @@
     <ClInclude Include="..\..\src\libtsduck\private\tsDektec.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecDevice.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecVPD.h" />
+    <ClInclude Include="..\..\src\libtsduck\private\tsRefType.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtrTemplate.h" />
@@ -510,6 +512,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGSCS.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsECMRepetitionRateDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGMUX.cpp" />

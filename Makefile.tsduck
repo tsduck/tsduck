@@ -122,5 +122,5 @@ endif
 # It shall be used when source files are added or removed in the library.
 
 BUILD_PROJ_FILES = $(ROOTDIR)/build/build-project-files.sh
-LIB_HEADERS = $(filter-out %/tsduck.h, $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h))
+LIB_HEADERS = $(filter-out %/tsduck.h %/tsTables.h %/tsRefType.h, $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h))
 LIB_SOURCES = $(wildcard $(LIBTSDUCKDIR)/*.cpp $(LIBTSDUCKDIR)/*/*.cpp)

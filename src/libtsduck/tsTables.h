@@ -26,15 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  All headers for MPEG/DVB tables and descriptors.
-//!
-//----------------------------------------------------------------------------
+
+//! @file
+//! All headers for MPEG/DVB tables and descriptors.
 
 #pragma once
-
-// Tables
 
 #include "tsAIT.h"
 #include "tsBAT.h"
@@ -51,12 +47,9 @@
 #include "tsTOT.h"
 #include "tsTSDT.h"
 
-// Descriptors
-
 #include "tsAACDescriptor.h"
 #include "tsAC3Descriptor.h"
-#include "tsAVCTimingAndHRDDescriptor.h"
-#include "tsAVCVideoDescriptor.h"
+#include "tsAC4Descriptor.h"
 #include "tsAdaptationFieldDataDescriptor.h"
 #include "tsAncillaryDataDescriptor.h"
 #include "tsApplicationDescriptor.h"
@@ -64,10 +57,12 @@
 #include "tsApplicationSignallingDescriptor.h"
 #include "tsApplicationUsageDescriptor.h"
 #include "tsAudioStreamDescriptor.h"
+#include "tsAVCTimingAndHRDDescriptor.h"
+#include "tsAVCVideoDescriptor.h"
 #include "tsBouquetNameDescriptor.h"
+#include "tsCableDeliverySystemDescriptor.h"
 #include "tsCADescriptor.h"
 #include "tsCAIdentifierDescriptor.h"
-#include "tsCableDeliverySystemDescriptor.h"
 #include "tsComponentDescriptor.h"
 #include "tsContentDescriptor.h"
 #include "tsCountryAvailabilityDescriptor.h"
@@ -87,6 +82,7 @@
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
 #include "tsEacemPreferredNameListDescriptor.h"
 #include "tsEacemStreamIdentifierDescriptor.h"
+#include "tsECMRepetitionRateDescriptor.h"
 #include "tsEnhancedAC3Descriptor.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsExtendedEventDescriptor.h"
@@ -95,14 +91,17 @@
 #include "tsHEVCTimingAndHRDDescriptor.h"
 #include "tsHEVCVideoDescriptor.h"
 #include "tsHierarchyDescriptor.h"
+#include "tsIPMACGenericStreamLocationDescriptor.h"
 #include "tsIPMACPlatformNameDescriptor.h"
 #include "tsIPMACPlatformProviderNameDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"
 #include "tsIPSignallingDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
+#include "tsISPAccessModeDescriptor.h"
 #include "tsLinkageDescriptor.h"
 #include "tsLocalTimeOffsetDescriptor.h"
 #include "tsLogicalChannelNumberDescriptor.h"
+#include "tsMaximumBitrateDescriptor.h"
 #include "tsMessageDescriptor.h"
 #include "tsMPEG4AudioDescriptor.h"
 #include "tsMPEG4VideoDescriptor.h"
@@ -112,28 +111,28 @@
 #include "tsMultilingualServiceNameDescriptor.h"
 #include "tsNetworkNameDescriptor.h"
 #include "tsNVODReferenceDescriptor.h"
-#include "tsNetworkNameDescriptor.h"
 #include "tsParentalRatingDescriptor.h"
 #include "tsPrefetchDescriptor.h"
 #include "tsPrivateDataIndicatorDescriptor.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
-#include "tsSSUDataBroadcastIdDescriptor.h"
-#include "tsSSULinkageDescriptor.h"
-#include "tsSTDDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsScramblingDescriptor.h"
-#include "tsServiceDescriptor.h"
 #include "tsServiceAvailabilityDescriptor.h"
+#include "tsServiceDescriptor.h"
 #include "tsServiceIdentifierDescriptor.h"
 #include "tsServiceListDescriptor.h"
 #include "tsServiceMoveDescriptor.h"
 #include "tsShortEventDescriptor.h"
+#include "tsSmoothingBufferDescriptor.h"
 #include "tsSpliceAvailDescriptor.h"
 #include "tsSpliceDTMFDescriptor.h"
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsSpliceTimeDescriptor.h"
+#include "tsSSUDataBroadcastIdDescriptor.h"
+#include "tsSSULinkageDescriptor.h"
+#include "tsSTDDescriptor.h"
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsStuffingDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
