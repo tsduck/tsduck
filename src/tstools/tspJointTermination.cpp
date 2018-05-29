@@ -52,8 +52,8 @@ ts::PacketCounter ts::tsp::JointTermination::_jt_hightest_pkt = 0;
 ts::tsp::JointTermination::JointTermination(const Options* options, Mutex& global_mutex) :
     TSP(options->maxSeverity()),
     _global_mutex(global_mutex),
+    _options(options),
     _total_packets(0),
-    _ignore_jt(options->ignore_jt),
     _use_jt(false),
     _jt_completed(false)
 {
@@ -116,5 +116,5 @@ void ts::tsp::JointTermination::jointTerminate()
 ts::PacketCounter ts::tsp::JointTermination::totalPacketsBeforeJointTermination() const
 {
     Guard lock (_global_mutex);
-    return !_ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
+    return !_options->ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
 }

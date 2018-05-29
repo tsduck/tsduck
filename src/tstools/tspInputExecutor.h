@@ -72,11 +72,6 @@ namespace ts {
 
         private:
             InputPlugin*      _input;             // Plugin API
-            const size_t      _instuff_nullpkt;   // Add input stuffing: add nullpkt null...
-            const size_t      _instuff_inpkt;     // ... packets every inpkt input packets
-            const BitRate     _input_bitrate;     // User-specified fixed input bitrate
-            const MilliSecond _bitrate_adj;       // Bitrate adjust interval
-            const size_t      _max_input_pkt;     // Max packets per input operation
             PacketCounter     _total_in_packets;  // Total packets from plugin (exclude added stuffing)
             bool              _in_sync_lost;      // Input synchronization lost (no 0x47 at start of packet)
             size_t            _instuff_start_remain;
