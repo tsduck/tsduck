@@ -51,6 +51,7 @@ namespace ts {
         // Implementation of plugin API
         RegulatePlugin(TSP*);
         virtual bool start() override;
+        virtual bool isRealTime() override {return true;}
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:

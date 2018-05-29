@@ -2,7 +2,13 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.12-739
+Version 3.12-756
+
+- Added option --realtime to "tsp". This option selects appropriate default
+  options when operating on real-time streamings. The "default defaults" remain
+  appropriate for offline processing, such as working on transport streams files.
+  This option is also automatically set by some plugins which are designed for
+  real-time streaming ("dvb", "ip", dektec", "play", "regulate", "mpeinject").
 
 - Added options --log-protocol and --log-data to "tsecmg", "tsemmg" and plugins
   "scrambler", "datainject".

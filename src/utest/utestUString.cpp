@@ -82,6 +82,7 @@ public:
     void testLoadSave();
     void testToDigit();
     void testToInteger();
+    void testToTristate();
     void testHexaDecode();
     void testAppendContainer();
     void testAssignContainer();
@@ -126,6 +127,7 @@ public:
     CPPUNIT_TEST(testSimilarStrings);
     CPPUNIT_TEST(testLoadSave);
     CPPUNIT_TEST(testToInteger);
+    CPPUNIT_TEST(testToTristate);
     CPPUNIT_TEST(testHexaDecode);
     CPPUNIT_TEST(testAppendContainer);
     CPPUNIT_TEST(testAssignContainer);
@@ -1002,6 +1004,68 @@ void UStringTest::testToInteger()
 
     CPPUNIT_ASSERT(!ts::UString(u" , -12345    0x100 ,  0,  7  xxx 45").toIntegers(i32List));
     CPPUNIT_ASSERT(i32Ref == i32List);
+}
+
+void UStringTest::testToTristate()
+{
+    ts::Tristate t;
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"yes").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"True").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"ON").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"NO").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::FALSE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"FaLsE").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::FALSE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"off").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::FALSE, t);
+
+    t = ts::TRUE;
+    CPPUNIT_ASSERT(ts::UString(u"MayBe").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, t);
+
+    t = ts::TRUE;
+    CPPUNIT_ASSERT(ts::UString(u"Unknown").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, t);
+
+    t = ts::TRUE;
+    CPPUNIT_ASSERT(ts::UString(u"0x0000").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::FALSE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"1").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE, t);
+
+    t = ts::MAYBE;
+    CPPUNIT_ASSERT(ts::UString(u"56469").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE, t);
+
+    t = ts::TRUE;
+    CPPUNIT_ASSERT(ts::UString(u"-1").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, t);
+
+    t = ts::TRUE;
+    CPPUNIT_ASSERT(ts::UString(u"-56").toTristate(t));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, t);
+
+    CPPUNIT_ASSERT(!ts::UString(u"abcd").toTristate(t));
+    CPPUNIT_ASSERT(!ts::UString(u"0df").toTristate(t));
+    CPPUNIT_ASSERT(!ts::UString(u"").toTristate(t));
+    CPPUNIT_ASSERT(!ts::UString(u" ").toTristate(t));
 }
 
 void UStringTest::testHexaDecode()

@@ -87,10 +87,9 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
             u"      specified. By default, descramble the specified service.\n"
             u"\n"
             u"  --synchronous\n"
-            u"      Specify to synchronously decipher the ECM's. By default, continue\n"
-            u"      processing packets while processing ECM's. Use this option with\n"
-            u"      offline packet processing. Use the default (asynchronous) with live\n"
-            u"      packet processing.\n");
+            u"      Specify to synchronously decipher the ECM's. By default, in real-time\n"
+            u"      mode, the packet processing continues while processing ECM's. This option\n"
+            u"      is always on in offline mode.\n");
 
     _scrambling.defineOptions(*this);
     _scrambling.addHelp(*this);
@@ -142,7 +141,7 @@ bool ts::AbstractDescrambler::start()
     // Load command line arguments.
     _use_service = present(u"");
     _service.set(value(u""));
-    _synchronous = present(u"synchronous");
+    _synchronous = present(u"synchronous") || !tsp->realtime();
     getPIDSet(_pids, u"pid");
     if (!_scrambling.loadArgs(*this)) {
         return false;

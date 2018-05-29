@@ -320,6 +320,7 @@ namespace ts {
             INT8,     //!< Integer -128..127.
             INT16,    //!< Integer -32,768..32,767.
             INT32,    //!< Integer -2,147,483,648..2,147,483,647.
+            TRISTATE, //!< Tristate value, ts::MAYBE if absent.
         };
 
         //!
@@ -801,6 +802,40 @@ namespace ts {
         ENUM enumValue(const UChar* name = 0,
                        ENUM def_value = static_cast<ENUM>(0),
                        size_t index = 0) const;
+
+        //!
+        //! Get the value of tristate option in the last analyzed command line.
+        //!
+        //! @param [out] value A variable receiving the tristate value of the option or parameter.
+        //! The returned value is always one of the three valid Tristate values.
+        //! When the option or parameter is not present in the command line or with fewer occurences
+        //! than @a index, the returned value is MAYBE. For options with optional values, if the
+        //! the option is present without value, the returned value is TRUE.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        void getTristateValue(Tristate& value, const UChar* name = 0, size_t index = 0) const;
+
+        //!
+        //! Get the value of tristate option in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The tristate value of the option or parameter.
+        //! The returned value is always one of the three valid Tristate values.
+        //! When the option or parameter is not present in the command line or with fewer occurences
+        //! than @a index, the returned value is MAYBE. For options with optional values, if the
+        //! the option is present without value, the returned value is TRUE.
+        //!
+        Tristate tristateValue(const UChar* name = 0, size_t index = 0) const;
 
         //!
         //! Exit application when errors were reported in the last analyzed command line.

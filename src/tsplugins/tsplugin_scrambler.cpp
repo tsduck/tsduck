@@ -416,10 +416,9 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
             u"      is specified.\n"
             u"\n"
             u"  --synchronous\n"
-            u"      Specify to synchronously generate the ECM's. By default, continue\n"
-            u"      processing packets while generating ECM's. Use this option with\n"
-            u"      offline packet processing. Use the default (asynchronous) with live\n"
-            u"      packet processing.\n"
+            u"      Specify to synchronously generate the ECM's. By default, in real-time\n"
+            u"      mode, the packet processing continues while generating ECM's. This option\n"
+            u"      is always on in offline mode.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
@@ -453,7 +452,7 @@ bool ts::ScramblerPlugin::start()
     _use_service = present(u"");
     _service.set(value(u""));
     getPIDSet(_scrambled_pids, u"pid");
-    _synchronous_ecmg = present(u"synchronous");
+    _synchronous_ecmg = present(u"synchronous") || !tsp->realtime();
     _component_level = present(u"component-level");
     _scramble_audio = !present(u"no-audio");
     _scramble_video = !present(u"no-video");

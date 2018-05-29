@@ -41,7 +41,8 @@ ts::AbstractDemux::AbstractDemux(const PIDSet& pid_filter) :
     _in_handler(false),
     _pid_in_handler(PID_NULL),
     _reset_pending(false),
-    _pid_reset_pending(false)
+    _pid_reset_pending(false),
+    _demux_id(0)
 {
 }
 

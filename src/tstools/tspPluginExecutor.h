@@ -174,6 +174,15 @@ namespace ts {
             }
 
             //!
+            //! Inform if all plugins should use defaults for real-time.
+            //! @param [in] on True if all plugins should use defaults for real-time.
+            //!
+            void setRealtime(bool on)
+            {
+                _use_realtime = on;
+            }
+
+            //!
             //! This method sets the current packet processor in an abort state.
             //!
             void setAbort();

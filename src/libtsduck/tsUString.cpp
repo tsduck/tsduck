@@ -981,6 +981,21 @@ ts::UString ts::UString::OnOff(bool b)
     return b ? u"on" : u"off";
 }
 
+ts::UString ts::UString::TristateYesNo(Tristate b)
+{
+    return int(b) < 0 ? u"maybe" : YesNo(bool(b));
+}
+
+ts::UString ts::UString::TristateTrueFalse(Tristate b)
+{
+    return int(b) < 0 ? u"unknown" : TrueFalse(bool(b));
+}
+
+ts::UString ts::UString::TristateOnOff(Tristate b)
+{
+    return int(b) < 0 ? u"unknown" : OnOff(bool(b));
+}
+
 ts::UString ts::UString::AfterBytes(const std::streampos& position)
 {
     const int64_t bytes = int64_t(position);
@@ -1072,6 +1087,77 @@ bool ts::UString::getLine(std::istream& strm)
 
         // Convert from UTF-8 to UTF-16.
         assignFromUTF8(start, len);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a string into a Tristate value.
+//----------------------------------------------------------------------------
+
+// An enumeration for Tristate values. We use very large integer values
+// for predefined strings to avoid clash with user-specified values.
+namespace {
+    enum {
+        TSE_FALSE = std::numeric_limits<int>::min(),
+        TSE_TRUE,
+        TSE_YES,
+        TSE_NO,
+        TSE_ON,
+        TSE_OFF,
+        TSE_MAYBE,
+        TSE_UNKNOWN,
+        TSE_LAST  // Last predefined value
+    };
+    const ts::Enumeration TristateEnum({
+        {u"false",   TSE_FALSE},
+        {u"true",    TSE_TRUE},
+        {u"yes",     TSE_YES},
+        {u"no",      TSE_NO},
+        {u"on",      TSE_ON},
+        {u"off",     TSE_OFF},
+        {u"maybe",   TSE_MAYBE},
+        {u"unknown", TSE_UNKNOWN},
+    });
+}
+
+ts::UString ts::UString::TristateNamesList()
+{
+    return TristateEnum.nameList();
+}
+
+bool ts::UString::toTristate(Tristate& value) const
+{
+    const int iValue = TristateEnum.value(*this, false);
+
+    if (iValue == Enumeration::UNKNOWN) {
+        // Invalid string and invalid integer.
+        value = MAYBE;
+        return false;
+    }
+    else {
+        // Valid string or integer.
+        switch (iValue) {
+            case TSE_FALSE:
+            case TSE_NO: 
+            case TSE_OFF:
+                value = FALSE;
+                break;
+            case TSE_TRUE:
+            case TSE_YES:
+            case TSE_ON:
+                value = TRUE;
+                break;
+            case TSE_MAYBE:
+            case TSE_UNKNOWN:
+                value = MAYBE;
+                break;
+            default:
+                // Got an integer value.
+                value = ToTristate(iValue);
+                break;
+        }
         return true;
     }
 }

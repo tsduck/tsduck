@@ -58,6 +58,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;
+        virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
 

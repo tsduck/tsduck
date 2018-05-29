@@ -58,6 +58,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool send(const TSPacket*, size_t) override;
+        virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
 
     private:

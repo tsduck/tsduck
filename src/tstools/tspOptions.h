@@ -112,9 +112,16 @@ namespace ts {
             size_t        instuff_stop;    //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
             BitRate       bitrate;         //!< Fixed input bitrate.
             MilliSecond   bitrate_adj;     //!< Bitrate adjust interval.
+            Tristate      realtime;        //!< Use real-time options.
             PluginOptions input;           //!< Input plugin.
             PluginOptions output;          //!< Output plugin.
             PluginOptionsVector plugins;   //!< List of packet processor plugins.
+
+            //!
+            //! Apply default values to options which were not specified on the command line.
+            //! @param [in] realtime If true, apply real-time defaults. If false, apply offline defaults.
+            //!
+            void applyDefaults(bool realtime);
 
             //!
             //! Display the content of this object to a stream.

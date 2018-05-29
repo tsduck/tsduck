@@ -48,16 +48,15 @@ namespace ts {
     public:
         // Implementation of plugin API
         ForkPlugin (TSP*);
-        ~ForkPlugin();
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        ForkPipe  _pipe;
-        size_t    _buffer_size;   // Max number of packets in buffer
-        size_t    _buffer_count;  // Number of packets currently in buffer
-        TSPacket* _buffer;        // Packet buffer
+        ForkPipe       _pipe;
+        size_t         _buffer_size;   // Max number of packets in buffer
+        size_t         _buffer_count;  // Number of packets currently in buffer
+        TSPacketVector _buffer;        // Packet buffer
 
         // Inaccessible operations
         ForkPlugin() = delete;
@@ -79,7 +78,7 @@ ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
     _pipe(),
     _buffer_size(0),
     _buffer_count(0),
-    _buffer(0)
+    _buffer()
 {
     option(u"",                  0,  STRING, 1, 1);
     option(u"buffered-packets", 'b', POSITIVE);
@@ -93,9 +92,10 @@ ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
             u"\n"
             u"  -b value\n"
             u"  --buffered-packets value\n"
-            u"      Specifies the number of TS packets to buffer before sending them\n"
-            u"      through the pipe to the forked process. By default, the packets are\n"
-            u"      not buffered and sent one by one.\n"
+            u"      Specifies the number of TS packets to buffer before sending them through\n"
+            u"      the pipe to the forked process. When set to zero, the packets are not\n"
+            u"      buffered and sent one by one. The default is 500 packets in real-time mode\n"
+            u"      and 1000 packets in offline mode.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
@@ -115,19 +115,6 @@ ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
-ts::ForkPlugin::~ForkPlugin()
-{
-    if (_buffer != 0) {
-        delete[] _buffer;
-        _buffer = 0;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
@@ -136,16 +123,12 @@ bool ts::ForkPlugin::start()
     // Get command line arguments
     UString command(value());
     bool nowait = present(u"nowait");
-    _buffer_size = intValue<size_t>(u"buffered-packets", 0);
+    _buffer_size = intValue<size_t>(u"buffered-packets", tsp->realtime() ? 500 : 1000);
     _pipe.setIgnoreAbort(present(u"ignore-abort"));
 
     // If packet buffering is requested, allocate the buffer
-    _buffer = 0;
     _buffer_count = 0;
-    if (_buffer_size > 0 && (_buffer = new TSPacket[_buffer_size]) == 0) {
-        tsp->error(u"cannot allocate packet buffer, reduce --buffered-packets value");
-        return false;
-    }
+    _buffer.resize(_buffer_size);
 
     // Create pipe & process
     return _pipe.open(command, nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS, PKT_SIZE * _buffer_size, *tsp, ForkPipe::KEEP_BOTH, ForkPipe::STDIN_PIPE);
@@ -160,13 +143,7 @@ bool ts::ForkPlugin::stop()
 {
     // Flush buffered packets
     if (_buffer_count > 0) {
-        _pipe.write(_buffer, PKT_SIZE * _buffer_count, *tsp);
-    }
-
-    // Free packet buffer, if there is one
-    if (_buffer != 0) {
-        delete[] _buffer;
-        _buffer = 0;
+        _pipe.write(_buffer.data(), PKT_SIZE * _buffer_count, *tsp);
     }
 
     // Close the pipe
@@ -178,21 +155,21 @@ bool ts::ForkPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ForkPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::ForkPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // If packets are sent one by one, just send it
     if (_buffer_size == 0) {
-        return _pipe.write (&pkt, PKT_SIZE, *tsp) ? TSP_OK : TSP_END;
+        return _pipe.write(&pkt, PKT_SIZE, *tsp) ? TSP_OK : TSP_END;
     }
 
     // Add the packet to the buffer
-    assert (_buffer_count < _buffer_size);
-    _buffer [_buffer_count++] = pkt;
+    assert(_buffer_count < _buffer.size());
+    _buffer[_buffer_count++] = pkt;
 
     // Flush the buffer when full
-    if (_buffer_count == _buffer_size) {
+    if (_buffer_count == _buffer.size()) {
         _buffer_count = 0;
-        return _pipe.write (_buffer, PKT_SIZE * _buffer_size, *tsp) ? TSP_OK : TSP_END;
+        return _pipe.write(_buffer.data(), PKT_SIZE * _buffer.size(), *tsp) ? TSP_OK : TSP_END;
     }
 
     return TSP_OK;

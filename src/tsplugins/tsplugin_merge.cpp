@@ -36,11 +36,14 @@
 #include "tsPluginRepository.h"
 #include "tsForkPipe.h"
 #include "tsTSPacketQueue.h"
+#include "tsSectionDemux.h"
 #include "tsThread.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_MAX_QUEUED_PACKETS  1000
-#define SERVER_THREAD_STACK_SIZE    (128 * 1024)
+#define DEFAULT_MAX_QUEUED_PACKETS  1000            // Default size in packet of the inter-thread queue.
+#define SERVER_THREAD_STACK_SIZE    (128 * 1024)    // Size in byte of the thread stack.
+#define DEMUX_MAIN                  1               // Id of the demux from the main TS.
+#define DEMUX_MERGE                 2               // Id of the demux from the secondary TS to merge.
 
 
 //----------------------------------------------------------------------------
@@ -48,7 +51,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class MergePlugin: public ProcessorPlugin, private Thread
+    class MergePlugin: public ProcessorPlugin, private Thread, private TableHandlerInterface
     {
     public:
         // Implementation of plugin API
@@ -64,6 +67,9 @@ namespace ts {
         // There is one thread which receives packet from the created process and passes
         // them to the main plugin thread. The following method is the thread main code.
         virtual void main() override;
+
+        // Invoked when a complete table is available from any demux.
+        virtual void handleTable(SectionDemux& demux, const BinaryTable& table);
 
         // Inaccessible operations
         MergePlugin() = delete;
@@ -208,4 +214,14 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket (TSPacket& pkt, bool&
 {
     //@@ merge to be implemented.
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked when a complete table is available from any demux.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+{
+    //@@ merge to be implemented.
 }

@@ -115,6 +115,22 @@ namespace ts {
         virtual void resetPID(PID pid);
 
         //!
+        //! Set some arbitrary "demux id" value.
+        //! This value is chosen and set by the application.
+        //! It can be retrieved later if a table or section handler is used by several demux.
+        //! The demux id is not interpreted by the demux, it is only stored for the application.
+        //! The initial value of a demux id is zero.
+        //! @param [in] id Application-defined demux id to assign.
+        //!
+        void setDemuxId(int id) { _demux_id = id; }
+
+        //!
+        //! Get the "demux id" value, as previously stored by the application.
+        //! @return The application-defined demux id.
+        //!
+        int demuxId() const { return _demux_id; }
+
+        //!
         //! Destructor.
         //!
         virtual ~AbstractDemux();
@@ -182,5 +198,6 @@ namespace ts {
         PID  _pid_in_handler;    // PID which is currently processed by the handler
         bool _reset_pending;     // delayed reset()
         bool _pid_reset_pending; // delayed resetPID(_pid_in_handler)
+        bool _demux_id;          // demux identity (from application)
     };
 }

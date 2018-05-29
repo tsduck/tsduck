@@ -1127,6 +1127,27 @@ namespace ts {
         static UString OnOff(bool b);
 
         //!
+        //! Format a tristate value as "yes", "no", "maybe".
+        //! @param [in] b A tristate value.
+        //! @return One of "yes", "no", "maybe".
+        //!
+        static UString TristateYesNo(Tristate b);
+
+        //!
+        //! Format a tristate value as "true", "false", "unknown".
+        //! @param [in] b A tristate value.
+        //! @return One of "true", "false", "unknown".
+        //!
+        static UString TristateTrueFalse(Tristate b);
+
+        //!
+        //! Format a tristate value as "on", "off", "unknown".
+        //! @param [in] b A tristate value.
+        //! @return One of "on", "off", "unknown".
+        //!
+        static UString TristateOnOff(Tristate b);
+
+        //!
         //! Build an error message fragment indicating the number of bytes previously read in a binary file.
         //! @param [in] position A stream position.
         //! @return A string like " after XX bytes" if @a position is greater than zero, an empty string otherwise.
@@ -1283,6 +1304,24 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         bool getLine(std::istream& strm);
+
+        //!
+        //! Convert a string into a Tristate value.
+        //!
+        //! This string must contain the representation of an integer value in decimal or hexadecimal
+        //! (prefix @c 0x) or one of "false", "true", "yes", "no", "on", "off", "maybe", "unknown"
+        //! (not case sensitive).
+        //!
+        //! @param [out] value The returned decoded value. On error @a value contains MAYBE.
+        //! @return True on success, false on error (invalid string).
+        //!
+        bool toTristate(Tristate& value) const;
+
+        //!
+        //! Get the list of valid strings for Tristate values.
+        //! @return The list of valid strings for Tristate values.
+        //!
+        static UString TristateNamesList();
 
         //!
         //! Convert a string into an integer.
