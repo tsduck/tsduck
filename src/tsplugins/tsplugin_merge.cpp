@@ -38,6 +38,9 @@
 #include "tsTSPacketQueue.h"
 #include "tsSectionDemux.h"
 #include "tsThread.h"
+#include "tsPAT.h"
+#include "tsCAT.h"
+#include "tsSDT.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000            // Default size in packet of the inter-thread queue.
@@ -61,15 +64,25 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        ForkPipe      _pipe;
-        TSPacketQueue _queue;
+        ForkPipe      _pipe;         // Executed command.
+        TSPacketQueue _queue;        // TS packet queur from merge to main.
+        SectionDemux  _main_demux;   // Demux on main transport stream.
+        SectionDemux  _merge_demux;  // Demux on merged transport stream.
 
         // There is one thread which receives packet from the created process and passes
         // them to the main plugin thread. The following method is the thread main code.
         virtual void main() override;
 
         // Invoked when a complete table is available from any demux.
-        virtual void handleTable(SectionDemux& demux, const BinaryTable& table);
+        virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
+
+        // Process tables from various streams.
+        void processMainPAT(const PAT&);
+        void processMainCAT(const CAT&);
+        void processMainSDT(const SDT&);
+        void processMergePAT(const PAT&);
+        void processMergeCAT(const CAT&);
+        void processMergeSDT(const SDT&);
 
         // Inaccessible operations
         MergePlugin() = delete;
@@ -89,7 +102,9 @@ TSPLUGIN_DECLARE_PROCESSOR(merge, ts::MergePlugin)
 ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
     _pipe(),
-    _queue()
+    _queue(),
+    _main_demux(this),
+    _merge_demux(this)
 {
     option(u"",          0,  STRING, 1, 1);
     option(u"max-queue", 0,  POSITIVE);
@@ -130,6 +145,17 @@ bool ts::MergePlugin::start()
     // Resize the inter-thread packet queue.
     _queue.reset(max_queue);
 
+    // Configure the demux. We need to analyze and modify the PAT, CAT and SDT
+    // from the two transport streams.
+    _main_demux.setDemuxId(DEMUX_MAIN);
+    _main_demux.addPID(PID_PAT);
+    _main_demux.addPID(PID_CAT);
+    _main_demux.addPID(PID_SDT);
+    _merge_demux.setDemuxId(DEMUX_MERGE);
+    _merge_demux.addPID(PID_PAT);
+    _merge_demux.addPID(PID_CAT);
+    _merge_demux.addPID(PID_SDT);
+
     // Start the internal thread which receives the TS to merge.
     Thread::start();
 
@@ -159,6 +185,7 @@ bool ts::MergePlugin::stop()
     Thread::waitForTermination();
     return true;
 }
+
 
 //----------------------------------------------------------------------------
 // Implementation of the receiver thread.
@@ -212,7 +239,11 @@ void ts::MergePlugin::main()
 
 ts::ProcessorPlugin::Status ts::MergePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
+    // Demux sections from the main transport stream.
+    _main_demux.feedPacket(pkt);
+
     //@@ merge to be implemented.
+
     return TSP_OK;
 }
 
@@ -223,5 +254,137 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket (TSPacket& pkt, bool&
 
 void ts::MergePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
-    //@@ merge to be implemented.
+    switch (demux.demuxId()) {
+        case DEMUX_MAIN: {
+            // Table coming from the main transport stream.
+            switch (table.tableId()) {
+                case TID_PAT: {
+                    const PAT pat(table);
+                    if (pat.isValid()) {
+                        processMainPAT(pat);
+                    }
+                    break;
+                }
+                case TID_CAT: {
+                    const CAT cat(table);
+                    if (cat.isValid()) {
+                        processMainCAT(cat);
+                    }
+                    break;
+                }
+                case TID_SDT_ACT: {
+                    const SDT sdt(table);
+                    if (sdt.isValid()) {
+                        processMainSDT(sdt);
+                    }
+                    break;
+                }
+                case TID_BAT:
+                case TID_SDT_OTH: {
+                    // To be reinserted without modification in the SDT/BAT PID.
+                    //@@@@
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+            break;
+        }
+        case DEMUX_MERGE: {
+            // Table coming from the merged transport stream.
+            switch (table.tableId()) {
+                case TID_PAT: {
+                    const PAT pat(table);
+                    if (pat.isValid()) {
+                        processMergePAT(pat);
+                    }
+                    break;
+                }
+                case TID_CAT: {
+                    const CAT cat(table);
+                    if (cat.isValid()) {
+                        processMergeCAT(cat);
+                    }
+                    break;
+                }
+                case TID_SDT_ACT: {
+                    const SDT sdt(table);
+                    if (sdt.isValid()) {
+                        processMergeSDT(sdt);
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+            break;
+        }
+        default: {
+            // Should not get there.
+            assert(false);
+            break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a PAT from the main transport stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::processMainPAT(const PAT& pat)
+{
+    //@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Process a CAT from the main transport stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::processMainCAT(const CAT& cat)
+{
+    //@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Process an SDT from the main transport stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::processMainSDT(const SDT& sdt)
+{
+    //@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Process a PAT from the merge transport stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::processMergePAT(const PAT& pat)
+{
+    //@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Process a CAT from the merge transport stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::processMergeCAT(const CAT& cat)
+{
+    //@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Process an SDT from the merge transport stream.
+//----------------------------------------------------------------------------
+
+void ts::MergePlugin::processMergeSDT(const SDT& sdt)
+{
+    //@@@@
 }
