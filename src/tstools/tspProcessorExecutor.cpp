@@ -45,8 +45,7 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(Options* options,
                                               Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
-    _processor(dynamic_cast<ProcessorPlugin*>(_shlib)),
-    _max_flush_pkt(options->max_flush_pkt)
+    _processor(dynamic_cast<ProcessorPlugin*>(_shlib))
 {
 }
 
@@ -164,7 +163,7 @@ void ts::tsp::ProcessorExecutor::main()
             // the next processor. Perform periodic flush to avoid waiting
             // too long before two output operations.
 
-            if (flush_request || pkt_done == pkt_cnt || pkt_flush % _max_flush_pkt == 0) {
+            if (flush_request || pkt_done == pkt_cnt || (_options->max_flush_pkt > 0 && pkt_flush % _options->max_flush_pkt == 0)) {
                 passPackets (pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }

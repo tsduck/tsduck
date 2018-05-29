@@ -48,11 +48,6 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
     _input(dynamic_cast<InputPlugin*>(_shlib)),
-    _instuff_nullpkt(options->instuff_nullpkt),
-    _instuff_inpkt(options->instuff_inpkt),
-    _input_bitrate(options->bitrate),
-    _bitrate_adj(options->bitrate_adj),
-    _max_input_pkt(options->max_input_pkt),
     _total_in_packets(0),
     _in_sync_lost(false),
     _instuff_start_remain(options->instuff_start),
@@ -142,14 +137,14 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
 ts::BitRate ts::tsp::InputExecutor::getBitrate()
 {
     // Get bitrate from plugin
-    BitRate bitrate = _input_bitrate > 0 ? _input_bitrate : _input->getBitrate();
+    BitRate bitrate = _options->bitrate > 0 ? _options->bitrate : _input->getBitrate();
 
     // Adjust to input stuffing
-    if (bitrate == 0 || _instuff_inpkt == 0) {
+    if (bitrate == 0 || _options->instuff_inpkt == 0) {
         return bitrate;
     }
     else {
-        return BitRate((uint64_t(bitrate) * uint64_t(_instuff_nullpkt + _instuff_inpkt)) / uint64_t(_instuff_inpkt));
+        return BitRate((uint64_t(bitrate) * uint64_t(_options->instuff_nullpkt + _options->instuff_inpkt)) / uint64_t(_options->instuff_inpkt));
     }
 }
 
@@ -219,7 +214,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
     }
 
     // Now read real packets.
-    if (_instuff_inpkt == 0) {
+    if (_options->instuff_inpkt == 0) {
         // There is no --add-input-stuffing option, simply call the plugin
         pkt_from_input = receiveAndValidate(buffer, pkt_remain);
         pkt_done += pkt_from_input;
@@ -242,7 +237,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
             }
 
             if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
-                _instuff_inpkt_remain = _instuff_inpkt;
+                _instuff_inpkt_remain = _options->instuff_inpkt;
             }
 
             // Read input packets from the plugin
@@ -261,7 +256,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
             _instuff_inpkt_remain -= pkt_in;
 
             if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
-                _instuff_nullpkt_remain = _instuff_nullpkt;
+                _instuff_nullpkt_remain = _options->instuff_nullpkt;
             }
 
             // If input plugin returned less than expected, exit now
@@ -288,7 +283,7 @@ void ts::tsp::InputExecutor::main()
     debug(u"input thread started");
 
     Time current_time(Time::CurrentUTC());
-    Time bitrate_due_time(current_time + _bitrate_adj);
+    Time bitrate_due_time(current_time + _options->bitrate_adj);
     bool plugin_completed = false;
     bool input_end = false;
     bool aborted = false;
@@ -309,8 +304,8 @@ void ts::tsp::InputExecutor::main()
         }
 
         // Do not read more packets than request by --max-input-packets
-        if (_max_input_pkt > 0 && pkt_max > _max_input_pkt) {
-            pkt_max = _max_input_pkt;
+        if (_options->max_input_pkt > 0 && pkt_max > _options->max_input_pkt) {
+            pkt_max = _options->max_input_pkt;
         }
 
         // Now read at most the specified number of packets (pkt_max).
@@ -333,17 +328,17 @@ void ts::tsp::InputExecutor::main()
         input_end = plugin_completed && _instuff_stop_remain == 0;
 
         // Process periodic bitrate adjustment: get current input bitrate.
-        if (_input_bitrate == 0 && (current_time = Time::CurrentUTC()) > bitrate_due_time) {
+        if (_options->bitrate == 0 && (current_time = Time::CurrentUTC()) > bitrate_due_time) {
             // Compute time for next bitrate adjustment. Note that we do not
             // use a monotonic time (we use current time and not due time as
             // base for next calculation).
-            bitrate_due_time = current_time + _bitrate_adj;
+            bitrate_due_time = current_time + _options->bitrate_adj;
             // Call shared library to get input bitrate
             if ((bitrate = getBitrate()) > 0) {
                 // Keep this bitrate
                 _tsp_bitrate = bitrate;
                 if (debug()) {
-                    debug(u"input: got bitrate %'d b/s, next try in %'d ms", {bitrate, _bitrate_adj});
+                    debug(u"input: got bitrate %'d b/s, next try in %'d ms", {bitrate, _options->bitrate_adj});
                 }
             }
         }
