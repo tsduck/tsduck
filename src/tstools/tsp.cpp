@@ -161,10 +161,23 @@ int main(int argc, char *argv[])
     ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.output, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
     output->ringInsertAfter(input);
 
+    // Check if at least one plugin prefers real-time defaults.
+    bool realtime = opt.realtime == ts::TRUE || input->plugin()->isRealTime() || output->plugin()->isRealTime();
+
     for (ts::tsp::Options::PluginOptionsVector::const_iterator it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
         ts::tsp::PluginExecutor* p = new ts::tsp::ProcessorExecutor(&opt, &*it, ts::ThreadAttributes(), global_mutex);
         p->ringInsertBefore(output);
+        realtime = realtime || p->plugin()->isRealTime();
     }
+
+    // Check if realtime defaults are explicitly disabled.
+    if (opt.realtime == ts::FALSE) {
+        realtime = false;
+    }
+
+    // Now, we definitely know if we are in offline or realtime mode.
+    // Adjust some default parameters.
+    opt.applyDefaults(realtime);
 
     // Exit on error when initializing the plugins
     opt.exitOnError();
@@ -173,10 +186,12 @@ int main(int argc, char *argv[])
     ts::AsyncReport report(opt.maxSeverity(), opt.timed_log, opt.log_msg_count, opt.sync_log);
 
     // Set this logger as report method for all executors.
+    // Also set realtime defaults.
     ts::tsp::PluginExecutor* proc = input;
     do {
         proc->setReport(&report);
         proc->setMaxSeverity(report.maxSeverity());
+        proc->setRealtime(realtime);
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets

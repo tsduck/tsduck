@@ -63,6 +63,7 @@ namespace ts {
         virtual ~IPInput();
         virtual bool start() override;
         virtual bool stop() override;
+        virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
         virtual size_t receive(TSPacket*, size_t) override;
 
@@ -96,6 +97,7 @@ namespace ts {
         virtual ~IPOutput();
         virtual bool start() override;
         virtual bool stop() override;
+        virtual bool isRealTime() override {return true;}
         virtual bool send(const TSPacket*, size_t) override;
 
     private:

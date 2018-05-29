@@ -95,6 +95,12 @@ namespace ts {
         BitRate bitrate() const {return _tsp_bitrate;}
 
         //!
+        //! Check if the current plugin environment should use defaults for real-time.
+        //! @return True if the current plugin environment should use defaults for real-time.
+        //!
+        bool realtime() const {return _use_realtime;}
+
+        //!
         //! Check for aborting application.
         //!
         //! The plugin may invoke this method to check if the application is
@@ -135,6 +141,7 @@ namespace ts {
         virtual bool thisJointTerminated() const = 0;
 
     protected:
+        bool          _use_realtime;  //!< The plugin should use realtime defaults.
         BitRate       _tsp_bitrate;   //!< TSP input bitrate.
         volatile bool _tsp_aborting;  //!< TSP is currently aborting.
 
@@ -215,6 +222,27 @@ namespace ts {
         //!
         virtual BitRate getBitrate() {return 0;}
 
+        //!
+        //! Tell if the plugin a real time one.
+        //!
+        //! Some plugin behave more accurately when the responsiveness of the
+        //! environment is more accurate. Typically, input and output on tuners,
+        //! modulators or ASI devices are real-time plugins. On the opposite,
+        //! working on offline disk files is not.
+        //!
+        //! This method shall be implemented by real-time plugins and shall return
+        //! true. The default implementation returns false.
+        //!
+        //! A plugin should be defined as real-time by design, not based on the
+        //! interpretation of command-line parameters. Typically, the method
+        //! isRealTime() is invoked before starting the plugin and consequently
+        //! before the plugin has the opportunity to analyze its command-line
+        //! parameters.
+        //!
+        //! @return True if the plugin usually requires real-time responsiveness.
+        //!
+        virtual bool isRealTime() {return false;}
+        
         //!
         //! Constructor.
         //!

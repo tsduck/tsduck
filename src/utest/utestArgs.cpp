@@ -70,6 +70,7 @@ public:
     void testBitMask();
     void testGatherParameters();
     void testRedirection();
+    void testTristate();
 
     CPPUNIT_TEST_SUITE(ArgsTest);
     CPPUNIT_TEST(testAccessors);
@@ -91,6 +92,7 @@ public:
     CPPUNIT_TEST(testBitMask);
     CPPUNIT_TEST(testGatherParameters);
     CPPUNIT_TEST(testRedirection);
+    CPPUNIT_TEST(testTristate);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -641,4 +643,38 @@ void ArgsTest::testRedirection()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"@foo", args.value(u"opt2"));
     CPPUNIT_ASSERT_EQUAL(3, args.intValue<int>(u"opt4", 0, 0));
     CPPUNIT_ASSERT_EQUAL(5, args.intValue<int>(u"opt4", 0, 1));
+}
+
+// Test case: tristate parameters.
+void ArgsTest::testTristate()
+{
+    ts::Args args(u"description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    args.option(u"opt1", 0, ts::Args::TRISTATE);
+    args.option(u"opt2", 0, ts::Args::TRISTATE);
+    args.option(u"opt3", 0, ts::Args::TRISTATE);
+    args.option(u"opt4", 0, ts::Args::TRISTATE, 0, 1, -255, 256, true);
+    args.option(u"opt5", 0, ts::Args::TRISTATE, 0, 1, -255, 256, true);
+    args.option(u"opt6", 0, ts::Args::TRISTATE, 0, 1, -255, 256, true);
+    args.option(u"opt7", 0, ts::Args::TRISTATE, 0, 1, -255, 256, true);
+    args.option(u"opt8", 0, ts::Args::TRISTATE, 0, 1, -255, 256, true);
+
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"true", u"--opt2", u"no", u"--opt3", u"unknown", u"--opt4", u"--opt5=off", u"--opt6=yes", u"--opt7=maybe"}));
+
+    CPPUNIT_ASSERT(args.present(u"opt1"));
+    CPPUNIT_ASSERT(args.present(u"opt2"));
+    CPPUNIT_ASSERT(args.present(u"opt3"));
+    CPPUNIT_ASSERT(args.present(u"opt4"));
+    CPPUNIT_ASSERT(args.present(u"opt5"));
+    CPPUNIT_ASSERT(args.present(u"opt6"));
+    CPPUNIT_ASSERT(args.present(u"opt7"));
+    CPPUNIT_ASSERT(!args.present(u"opt8"));
+
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE,  args.tristateValue(u"opt1"));
+    CPPUNIT_ASSERT_EQUAL(ts::FALSE, args.tristateValue(u"opt2"));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, args.tristateValue(u"opt3"));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE,  args.tristateValue(u"opt4"));
+    CPPUNIT_ASSERT_EQUAL(ts::FALSE, args.tristateValue(u"opt5"));
+    CPPUNIT_ASSERT_EQUAL(ts::TRUE,  args.tristateValue(u"opt6"));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, args.tristateValue(u"opt7"));
+    CPPUNIT_ASSERT_EQUAL(ts::MAYBE, args.tristateValue(u"opt8"));
 }

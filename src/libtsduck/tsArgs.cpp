@@ -94,6 +94,7 @@ ts::Args::IOption::IOption(const UChar* name_,
     switch (type) {
         case NONE:
         case STRING:
+        case TRISTATE:
             min_value = 0;
             max_value = 0;
             break;
@@ -559,6 +560,38 @@ void ts::Args::getPIDSet(PIDSet& values, const UChar* name, bool defValue) const
 
 
 //----------------------------------------------------------------------------
+// Get the value of tristate option
+//----------------------------------------------------------------------------
+
+void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index) const
+{
+    const IOption& opt(getIOption(name));
+
+    if (index >= opt.values.size()) {
+        // Option not present, meaning unspecified.
+        value = MAYBE;
+    }
+    else if (!opt.values[index].set()) {
+        // Option present without value, meaning true.
+        value = TRUE;
+    }
+    else if (!opt.values[index].value().toTristate(value)) {
+        // Value present but not a valid tristate value. Should not occur if the
+        // option was declared using TRISTATE type. So, this must be some string
+        // option and we cannot decide the Tristate value.
+        value = MAYBE;
+    }
+}
+
+ts::Tristate ts::Args::tristateValue(const UChar* name, size_t index) const
+{
+    Tristate value = MAYBE;
+    getTristateValue(value, name, index);
+    return value;
+}
+
+
+//----------------------------------------------------------------------------
 // Load arguments and analyze them.
 //----------------------------------------------------------------------------
 
@@ -693,32 +726,38 @@ bool ts::Args::analyze(bool processRedirections)
         }
 
         // Validate values
-        if (val.set() && opt->type == INTEGER) {
-            int64_t ival = 0;
-            if (!opt->enumeration.empty()) {
-                // Enumeration value expected, get corresponding integer value (not case sensitive)
-                int i = opt->enumeration.value(val.value(), false);
-                if (i != Enumeration::UNKNOWN) {
-                    // Replace with actual integer value
+        if (val.set()) {
+            if (opt->type == INTEGER) {
+                int64_t ival = 0;
+                if (!opt->enumeration.empty()) {
+                    // Enumeration value expected, get corresponding integer value (not case sensitive)
+                    int i = opt->enumeration.value(val.value(), false);
+                    if (i == Enumeration::UNKNOWN) {
+                        error(u"invalid value %s for %s, use one of %s", {val.value(), opt->display(), opt->enumeration.nameList()});
+                        continue;
+                    }
+                    // Replace with actual integer value.
                     val = UString::Decimal(i, 0, true, UString());
                 }
-                else {
-                    error(u"invalid value " + val.value() + u" for " + opt->display() +
-                          u", use one of " + opt->enumeration.nameList());
+                else if (!val.value().toInteger(ival, THOUSANDS_SEPARATORS)) {
+                    error(u"invalid integer value %s for %s", {val.value(), opt->display()});
+                    continue;
+                }
+                else if (ival < opt->min_value) {
+                    error(u"value for %s must be >= %'d", {opt->display(), opt->min_value});
+                    continue;
+                }
+                else if (ival > opt->max_value) {
+                    error(u"value for %s must be <= %'d", {opt->display(), opt->max_value});
                     continue;
                 }
             }
-            else if (!val.value().toInteger(ival, THOUSANDS_SEPARATORS)) {
-                error(u"invalid integer value " + val.value() + u" for " + opt->display());
-                continue;
-            }
-            else if (ival < opt->min_value) {
-                error(u"value for " + opt->display() + u" must be >= " + UString::Decimal(opt->min_value));
-                continue;
-            }
-            else if (ival > opt->max_value) {
-                error(u"value for " + opt->display() + u" must be <= " + UString::Decimal(opt->max_value));
-                continue;
+            else if (opt->type == TRISTATE) {
+                Tristate t;
+                if (!val.value().toTristate(t)) {
+                    error(u"invalid value %s for %s, use one of %s", {val.value(), opt->display(), UString::TristateNamesList()});
+                    continue;
+                }
             }
         }
 

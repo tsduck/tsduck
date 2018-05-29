@@ -55,6 +55,7 @@ namespace ts {
         PlayPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
+        virtual bool isRealTime() override {return true;}
         virtual bool send(const TSPacket*, size_t) override;
 
     private:

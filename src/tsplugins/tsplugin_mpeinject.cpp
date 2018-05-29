@@ -59,6 +59,7 @@ namespace ts {
         MPEInjectPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
+        virtual bool isRealTime() override {return true;}
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:

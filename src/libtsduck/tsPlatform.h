@@ -670,6 +670,18 @@
 #undef max
 #endif
 
+#if defined(TRUE)
+#undef TRUE
+#endif
+
+#if defined(FALSE)
+#undef FALSE
+#endif
+
+#if defined(MAYBE)
+#undef MAYBE
+#endif
+
 #if defined(IGNORE)
 #undef IGNORE
 #endif
@@ -3090,6 +3102,35 @@ namespace ts {
         COPY,  //!< Data shall be copied.
         SHARE  //!< Data shall be shared.
     };
+}
+
+
+//----------------------------------------------------------------------------
+//  Tristate boolean.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    //!
+    //! Tristate boolean.
+    //! More generally:
+    //! - Zero means false.
+    //! - Any positive value means true.
+    //! - Any negative value means "maybe" or "dont't know".
+    //!
+    enum Tristate {
+        MAYBE = -1,  //! Undefined value (and more generally all negative values).
+        FALSE =  0,  //! Built-in false.
+        TRUE  =  1,  //! True value (and more generally all positive values).
+    };
+
+    //!
+    //! Normalize any integer value in the range of a Tristate value.
+    //! @tparam INT An integer type.
+    //! @param [in] i The integer value.
+    //! @return The corresponding Tristate value.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
 }
 
 
