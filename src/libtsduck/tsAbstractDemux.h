@@ -198,6 +198,6 @@ namespace ts {
         PID  _pid_in_handler;    // PID which is currently processed by the handler
         bool _reset_pending;     // delayed reset()
         bool _pid_reset_pending; // delayed resetPID(_pid_in_handler)
-        bool _demux_id;          // demux identity (from application)
+        int  _demux_id;          // demux identity (from application)
     };
 }

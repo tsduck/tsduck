@@ -623,8 +623,17 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
         else {
             // Read error
             error_code = LastErrorCode();
-            report.error(u"error writing to pipe: %s", {ErrorCodeMessage(error_code)});
-            return false;
+            if (error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE) {
+                // End of file, not a real "error".
+                _eof = true;
+                // Not an error yet if we already read some data.
+                return ret_size > 0;
+            }
+            else {
+                // This is a real error
+                report.error(u"error reading from pipe: %s", {ErrorCodeMessage(error_code)});
+                return false;
+            }
         }
     }
 
@@ -656,7 +665,7 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
         }
         else if ((error_code = LastErrorCode()) != EINTR) {
             // Actual error (not an interrupt)
-            report.error(u"error writing to pipe: %s", {ErrorCodeMessage(error_code)});
+            report.error(u"error reading from pipe: %s", {ErrorCodeMessage(error_code)});
             return false;
         }
     }

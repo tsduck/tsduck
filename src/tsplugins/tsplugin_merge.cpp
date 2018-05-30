@@ -67,6 +67,7 @@ namespace ts {
 
     private:
         bool              _abort;        // Error, give up asap.
+        bool              _got_eof;      // Got end of merged stream.
         ForkPipe          _pipe;         // Executed command.
         TSPacketQueue     _queue;        // TS packet queur from merge to main.
         PIDSet            _main_pids;    // Set of detected PID's in main stream.
@@ -128,6 +129,7 @@ TSPLUGIN_DECLARE_PROCESSOR(merge, ts::MergePlugin)
 ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
     _abort(false),
+    _got_eof(false),
     _pipe(),
     _queue(),
     _main_pids(),
@@ -213,18 +215,23 @@ bool ts::MergePlugin::start()
     // Other states.
     _main_pids.reset();
     _merge_pids.reset();
+    _got_eof = false;
     _abort = false;
 
-    // Start the internal thread which receives the TS to merge.
-    Thread::start();
-
     // Create pipe & process
-    return _pipe.open(command,
-                      nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
-                      PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
-                      *tsp,
-                      ForkPipe::STDOUT_PIPE,
-                      ForkPipe::STDIN_NONE);
+    const bool ok = _pipe.open(command,
+                               nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
+                               PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
+                               *tsp,
+                               ForkPipe::STDOUT_PIPE,
+                               ForkPipe::STDIN_NONE);
+
+    // Start the internal thread which receives the TS to merge.
+    if (ok) {
+        Thread::start();
+    }
+
+    return ok;
 }
 
 
@@ -370,6 +377,11 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
     // Replace current null packet in main stream with next packet from merged stream.
     if (!_queue.getPacket(pkt, merge_bitrate)) {
         // No packet available, keep original null packet.
+        if (!_got_eof && _queue.eof()) {
+            // Report end of input stream once.
+            _got_eof = true;
+            tsp->verbose(u"end of merged stream");
+        }
         return TSP_OK;
     }
 
