@@ -66,12 +66,33 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
+        // Definitions:
+        // - Main stream: the TS which is processed by tsp, including this plugin.
+        // - Merged stream: the additional TS which is read by this plugin through a pipe.
+
+        // Each PID with PCR's in the merged stream is described by a structure like this.
+        class PIDContext
+        {
+        public:
+            uint64_t      last_pcr;  // Last PCR value in this PID, after adjustment in main stream.
+            PacketCounter pcr_pkt;   // Index of teh packet with the last PCR in the main stream.
+
+            // Constructor:
+            PIDContext(uint64_t pcr = 0, PacketCounter pkt = 0) : last_pcr(pcr), pcr_pkt(pkt) {}
+        };
+
+        // Map of PID contexts, indexed by PID.
+        typedef std::map<PID,PIDContext> PIDContextMap;
+
+        // Plugin private data.
         bool              _abort;        // Error, give up asap.
         bool              _got_eof;      // Got end of merged stream.
+        PacketCounter     _pkt_count;    // Packet counter in the main stream.
         ForkPipe          _pipe;         // Executed command.
         TSPacketQueue     _queue;        // TS packet queur from merge to main.
         PIDSet            _main_pids;    // Set of detected PID's in main stream.
         PIDSet            _merge_pids;   // Set of detected PID's in merged stream that we pass min stream.
+        PIDContextMap     _pcr_pids;     // Description of PID's with PCR's from the merged stream.
         SectionDemux      _main_demux;   // Demux on main transport stream.
         SectionDemux      _merge_demux;  // Demux on merged transport stream.
         CyclingPacketizer _pat_pzer;     // Packetizer for modified PAT in main TS.
@@ -130,10 +151,12 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
     _abort(false),
     _got_eof(false),
+    _pkt_count(0),
     _pipe(),
     _queue(),
     _main_pids(),
     _merge_pids(),
+    _pcr_pids(),
     _main_demux(this),
     _merge_demux(this),
     _pat_pzer(),
@@ -215,6 +238,8 @@ bool ts::MergePlugin::start()
     // Other states.
     _main_pids.reset();
     _merge_pids.reset();
+    _pcr_pids.clear();
+    _pkt_count = 0;
     _got_eof = false;
     _abort = false;
 
@@ -362,6 +387,9 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, bool& 
         }
     }
 
+    // Count packets in the main stream.
+    _pkt_count++;
+
     return status;
 }
 
@@ -409,8 +437,45 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
         return TSP_NULL;
     }
 
-    //@@@@ current implementation is just raw insertion.
-    //@@@@ need to smoothen bitrate and adjust PTS values.
+    // Adjust PCR's in packets from the merge streams.
+    //
+    // In each PID with PCR's in the merge stream, we keep the first PCR
+    // value unchanged. Then, we need to adjust all subsequent PCR's.
+    // PCR's are system clock values. They must be synchronized with the
+    // transport stream rate. So, the difference between two PCR's shall
+    // be the transmission time in PCR units.
+    //
+    // We can compute new precise PCR values when the bitrate is fixed.
+    // However, with a variable bitrate, our computed values will be inaccurate.
+    //
+    // Also note that we do not modify DTS and PTS. First, we can't access
+    // PTS and DTS in scrambled streams (unlike PCR's). Second, we MUST NOT
+    // change them because they indicate at which time the frame shall be
+    // _processed_, not _transmitted_.
+    //
+    if (pkt.hasPCR()) {
+        const uint64_t pcr = pkt.getPCR();
+        const BitRate bitrate = tsp->bitrate();
+
+        // Check if we know this PID.
+        PIDContextMap::iterator ctx(_pcr_pids.find(pid));
+        if (ctx == _pcr_pids.end()) {
+            // First time we see a PCR in this PID, create the context.
+            _pcr_pids.insert(std::make_pair(pid, PIDContext(pcr, _pkt_count)));
+        }
+        else if (bitrate > 0) {
+            // We have seen PCR's in this PID.
+            // Compute the transmission time since last PCR in PCR units.
+            // We base the result on the main stream bitrate and the number of packets.
+            assert(_pkt_count > ctx->second.pcr_pkt);
+            ctx->second.last_pcr += ((_pkt_count - ctx->second.pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
+            ctx->second.pcr_pkt = _pkt_count;
+            // In debug mode, report the displacement of the PCR.
+            // This may go back and forth around zero but should never diverge.
+            const SubSecond moved = ctx->second.last_pcr - pcr;
+            tsp->debug(u"adjusted PCR by %'d (%'d ms) in PID 0x%X (%d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid, pid});
+        }
+    }
 
     return TSP_OK;
 }
