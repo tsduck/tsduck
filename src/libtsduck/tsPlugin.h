@@ -223,7 +223,7 @@ namespace ts {
         virtual BitRate getBitrate() {return 0;}
 
         //!
-        //! Tell if the plugin a real time one.
+        //! Tell if the plugin is a real time one.
         //!
         //! Some plugin behave more accurately when the responsiveness of the
         //! environment is more accurate. Typically, input and output on tuners,

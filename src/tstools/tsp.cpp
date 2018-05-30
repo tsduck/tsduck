@@ -162,12 +162,12 @@ int main(int argc, char *argv[])
     output->ringInsertAfter(input);
 
     // Check if at least one plugin prefers real-time defaults.
-    bool realtime = opt.realtime == ts::TRUE || input->plugin()->isRealTime() || output->plugin()->isRealTime();
+    bool realtime = opt.realtime == ts::TRUE || input->isRealTime() || output->isRealTime();
 
     for (ts::tsp::Options::PluginOptionsVector::const_iterator it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
         ts::tsp::PluginExecutor* p = new ts::tsp::ProcessorExecutor(&opt, &*it, ts::ThreadAttributes(), global_mutex);
         p->ringInsertBefore(output);
-        realtime = realtime || p->plugin()->isRealTime();
+        realtime = realtime || p->isRealTime();
     }
 
     // Check if realtime defaults are explicitly disabled.
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
     do {
         proc->setReport(&report);
         proc->setMaxSeverity(report.maxSeverity());
-        proc->setRealtime(realtime);
+        proc->setRealTimeForAll(realtime);
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets
