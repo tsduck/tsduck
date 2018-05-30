@@ -58,3 +58,8 @@ ts::CAT::CAT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractDescriptorsTable(MY_TID, MY_XML_NAME, table, charset)
 {
 }
+
+ts::CAT::CAT(const ts::CAT& other) :
+    AbstractDescriptorsTable(other)
+{
+}

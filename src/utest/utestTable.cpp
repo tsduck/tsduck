@@ -50,20 +50,24 @@ public:
     void testCopyPMT();
     void testAIT();
     void testBAT();
+    void testCAT();
     void testEIT();
     void testNIT();
     void testSDT();
     void testTOT();
+    void testTSDT();
 
     CPPUNIT_TEST_SUITE(TableTest);
     CPPUNIT_TEST(testAssignPMT);
     CPPUNIT_TEST(testCopyPMT);
     CPPUNIT_TEST(testAIT);
     CPPUNIT_TEST(testBAT);
+    CPPUNIT_TEST(testCAT);
     CPPUNIT_TEST(testEIT);
     CPPUNIT_TEST(testNIT);
     CPPUNIT_TEST(testSDT);
     CPPUNIT_TEST(testTOT);
+    CPPUNIT_TEST(testTSDT);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -214,6 +218,19 @@ void TableTest::testBAT()
     CPPUNIT_ASSERT(bat3.transports.begin()->second.descs.table() == &bat3);
 }
 
+void TableTest::testCAT()
+{
+    ts::CAT cat1;
+    CPPUNIT_ASSERT(cat1.descs.table() == &cat1);
+
+    ts::CAT cat2(cat1);
+    CPPUNIT_ASSERT(cat2.descs.table() == &cat2);
+
+    ts::CAT cat3;
+    cat3 = cat1;
+    CPPUNIT_ASSERT(cat3.descs.table() == &cat3);
+}
+
 void TableTest::testEIT()
 {
     ts::EIT eit1;
@@ -295,4 +312,17 @@ void TableTest::testTOT()
     CPPUNIT_ASSERT(tot3.descs.table() == &tot3);
     CPPUNIT_ASSERT_EQUAL(size_t(1), tot2.descs.count());
     CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_CA), tot2.descs[0]->tag());
+}
+
+void TableTest::testTSDT()
+{
+    ts::TSDT tsdt1;
+    CPPUNIT_ASSERT(tsdt1.descs.table() == &tsdt1);
+
+    ts::TSDT tsdt2(tsdt1);
+    CPPUNIT_ASSERT(tsdt2.descs.table() == &tsdt2);
+
+    ts::TSDT tsdt3;
+    tsdt3 = tsdt1;
+    CPPUNIT_ASSERT(tsdt3.descs.table() == &tsdt3);
 }

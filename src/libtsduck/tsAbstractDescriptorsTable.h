@@ -71,6 +71,12 @@ namespace ts {
         AbstractDescriptorsTable(TID tid, const UChar* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
 
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        AbstractDescriptorsTable(const AbstractDescriptorsTable& other);
+
+        //!
         //! Constructor from a binary table.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.

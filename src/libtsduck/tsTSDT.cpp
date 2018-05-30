@@ -58,3 +58,8 @@ ts::TSDT::TSDT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractDescriptorsTable(MY_TID, MY_XML_NAME, table, charset)
 {
 }
+
+ts::TSDT::TSDT(const ts::TSDT& other) :
+    AbstractDescriptorsTable(other)
+{
+}

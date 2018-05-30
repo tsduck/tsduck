@@ -56,5 +56,11 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         TSDT(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        TSDT(const TSDT& other);
     };
 }
