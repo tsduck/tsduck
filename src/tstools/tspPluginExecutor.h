@@ -177,7 +177,7 @@ namespace ts {
             //! Inform if all plugins should use defaults for real-time.
             //! @param [in] on True if all plugins should use defaults for real-time.
             //!
-            void setRealtime(bool on)
+            void setRealTimeForAll(bool on)
             {
                 _use_realtime = on;
             }
@@ -201,6 +201,15 @@ namespace ts {
             Plugin* plugin()
             {
                 return _shlib;
+            }
+
+            //!
+            //! Check if the plugin a real time one.
+            //! @return True if the plugin usually requires real-time responsiveness.
+            //!
+            bool isRealTime()
+            {
+                return _shlib != 0 && _shlib->isRealTime();
             }
 
         protected:
