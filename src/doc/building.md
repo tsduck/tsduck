@@ -38,7 +38,7 @@ macOS can only support files and IP for TS input and output.
 
 - Setup for a TSDuck native build:
 ~~~~
-dnf install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel
+dnf install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel rpmdevtools
 ~~~~
 
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
@@ -50,7 +50,7 @@ dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-d
 
 - Setup for a TSDuck native build:
 ~~~~
-yum install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel
+yum install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel rpmdevtools
 ~~~~
 
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
