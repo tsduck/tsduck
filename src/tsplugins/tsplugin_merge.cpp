@@ -42,6 +42,7 @@
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsSDT.h"
+#include "tsCADescriptor.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000            // Default size in packet of the inter-thread queue.
@@ -68,6 +69,8 @@ namespace ts {
         bool              _abort;        // Error, give up asap.
         ForkPipe          _pipe;         // Executed command.
         TSPacketQueue     _queue;        // TS packet queur from merge to main.
+        PIDSet            _main_pids;    // Set of detected PID's in main stream.
+        PIDSet            _merge_pids;   // Set of detected PID's in merged stream that we pass min stream.
         SectionDemux      _main_demux;   // Demux on main transport stream.
         SectionDemux      _merge_demux;  // Demux on merged transport stream.
         CyclingPacketizer _pat_pzer;     // Packetizer for modified PAT in main TS.
@@ -127,6 +130,8 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _abort(false),
     _pipe(),
     _queue(),
+    _main_pids(),
+    _merge_pids(),
     _main_demux(this),
     _merge_demux(this),
     _pat_pzer(),
@@ -206,6 +211,8 @@ bool ts::MergePlugin::start()
     _merge_sdt.invalidate();
 
     // Other states.
+    _main_pids.reset();
+    _merge_pids.reset();
     _abort = false;
 
     // Start the internal thread which receives the TS to merge.
@@ -291,8 +298,20 @@ void ts::MergePlugin::main()
 
 ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
+    const PID pid = pkt.getPID();
+
     // Demux sections from the main transport stream.
     _main_demux.feedPacket(pkt);
+
+    // Check PID conflicts.
+    if (pid != PID_NULL && !_main_pids.test(pid)) {
+        // First time we see that PID on the main stream.
+        _main_pids.set(pid);
+        if (_merge_pids.test(pid)) {
+            // We have already merged some packets from this PID.
+            tsp->error(u"PID conflict: PID 0x%X (%d) exists in the two streams, dropping from merged stream, but some packets were already merged", {pid, pid});
+        }
+    }
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -303,7 +322,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, bool& 
     Status status = TSP_OK;
 
     // Process packagets depending on PID.
-    switch (pkt.getPID()) {
+    switch (pid) {
         case PID_PAT: {
             // Replace PAT packets using packetizer if a new PAT was generated.
             if (_main_pat.isValid() && _merge_pat.isValid()) {
@@ -359,11 +378,27 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
 
     // Drop base PSI/SI (PAT, CAT, SDT, NIT, etc) from merged stream.
     // We selectively merge PAT, CAT and SDT information into tables from the main stream.
-    if (pkt.getPID() < 0x20) {
+    const PID pid = pkt.getPID();
+    if (pid < 0x20) {
         return TSP_NULL;
     }
 
-    //@@@@ current implementation is just raw insertion
+    // Check PID conflicts.
+    if (pid != PID_NULL && !_merge_pids.test(pid)) {
+        // First time we see that PID on the merged stream.
+        _merge_pids.set(pid);
+        if (_main_pids.test(pid)){
+            tsp->error(u"PID conflict: PID 0x%X (%d) exists in the two streams, dropping from merged stream", {pid, pid});
+        }
+    }
+    if (pid != PID_NULL && _main_pids.test(pid)) {
+        // The same PID already exists in the main PID, drop from merged stream.
+        // Error message already reported.
+        return TSP_NULL;
+    }
+
+    //@@@@ current implementation is just raw insertion.
+    //@@@@ need to smoothen bitrate and adjust PTS values.
 
     return TSP_OK;
 }
@@ -471,7 +506,33 @@ void ts::MergePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
 void ts::MergePlugin::mergePAT()
 {
-    //@@@@
+    // Check that we have valid tables to merge.
+    if (!_main_pat.isValid() || !_merge_pat.isValid()) {
+        return;
+    }
+
+    // Build a new PAT based on last main PAT with incremented version number.
+    PAT pat(_main_pat);
+    pat.version = (pat.version + 1) & SVERSION_MASK;
+
+    // Add all services from merged stream into main PAT.
+    for (auto merge = _merge_pat.pmts.begin(); merge != _merge_pat.pmts.end(); ++merge) {
+        // Check if the service already exists in the main PAT.
+        if (pat.pmts.find(merge->first) != pat.pmts.end()) {
+            tsp->error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+        }
+        else {
+            pat.pmts[merge->first] = merge->second;
+            tsp->verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge->first, merge->first});
+        }
+    }
+
+    // Replace the PAT in the packetizer.
+    _pat_pzer.removeSections(TID_PAT);
+    _pat_pzer.addTable(pat);
+
+    // Save PAT version number for later increment.
+    _main_pat.version = pat.version;
 }
 
 
@@ -481,7 +542,34 @@ void ts::MergePlugin::mergePAT()
 
 void ts::MergePlugin::mergeCAT()
 {
-    //@@@@
+    // Check that we have valid tables to merge.
+    if (!_main_cat.isValid() || !_merge_cat.isValid()) {
+        return;
+    }
+
+    // Build a new CAT based on last main CAT with incremented version number.
+    CAT cat(_main_cat);
+    cat.version = (cat.version + 1) & SVERSION_MASK;
+
+    // Add all CA descriptors from merged stream into main CAT.
+    for (size_t index = _merge_cat.descs.search(DID_CA); index < _merge_cat.descs.count(); index = _merge_cat.descs.search(DID_CA, index)) {
+        const CADescriptor ca(*_merge_cat.descs[index]);
+        // Check if the same EMM PID already exists in the main CAT.
+        if (CADescriptor::SearchByPID(_main_cat.descs, ca.ca_pid)) {
+            tsp->error(u"EMM PID conflict, PID 0x%X (%d) referenced in the two streams, dropping from merged stream", {ca.ca_pid, ca.ca_pid});
+        }
+        else {
+            cat.descs.add(_merge_cat.descs[index]);
+            tsp->verbose(u"adding EMM PID 0x%X (%d) in CAT from merged stream", {ca.ca_pid, ca.ca_pid});
+        }
+    }
+
+    // Replace the CAT in the packetizer.
+    _cat_pzer.removeSections(TID_CAT);
+    _cat_pzer.addTable(cat);
+
+    // Save CAT version number for later increment.
+    _main_cat.version = cat.version;
 }
 
 
@@ -491,5 +579,31 @@ void ts::MergePlugin::mergeCAT()
 
 void ts::MergePlugin::mergeSDT()
 {
-    //@@@@
+    // Check that we have valid tables to merge.
+    if (!_main_sdt.isValid() || !_merge_sdt.isValid()) {
+        return;
+    }
+
+    // Build a new SDT based on last main SDT with incremented version number.
+    SDT sdt(_main_sdt);
+    sdt.version = (sdt.version + 1) & SVERSION_MASK;
+
+    // Add all services from merged stream into main SDT.
+    for (auto merge = _merge_sdt.services.begin(); merge != _merge_sdt.services.end(); ++merge) {
+        // Check if the service already exists in the main SDT.
+        if (sdt.services.find(merge->first) != sdt.services.end()) {
+            tsp->error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+        }
+        else {
+            sdt.services[merge->first] = merge->second;
+            tsp->verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge->second.serviceName(), merge->first, merge->first});
+        }
+    }
+
+    // Replace the SDT in the packetizer.
+    _sdt_pzer.removeSections(TID_SDT_ACT, sdt.ts_id);
+    _sdt_pzer.addTable(sdt);
+
+    // Save SDT version number for later increment.
+    _main_sdt.version = sdt.version;
 }

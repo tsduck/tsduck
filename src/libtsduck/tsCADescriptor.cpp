@@ -82,17 +82,11 @@ ts::CADescriptor::CADescriptor(const Descriptor& desc, const DVBCharset* charset
 
 void ts::CADescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    bbp->appendUInt16 (cas_id);
-    bbp->appendUInt16 (0xE000 | (ca_pid & 0x1FFF));
-    bbp->append (private_data);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt16(cas_id);
+    bbp->appendUInt16(0xE000 | (ca_pid & 0x1FFF));
+    bbp->append(private_data);
+    serializeEnd(desc, bbp);
 }
 
 
@@ -228,4 +222,42 @@ bool ts::CADescriptor::AddFromCommandLine(DescriptorList& dlist, const UStringVe
         }
     }
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to search a CA_descriptor by ECM/EMM PID.
+//----------------------------------------------------------------------------
+
+size_t ts::CADescriptor::SearchByPID(const ts::DescriptorList& dlist, ts::PID pid, size_t start_index)
+{
+    bool found = false;
+    for (; !found && start_index < dlist.count(); start_index++) {
+        const DescriptorPtr& desc(dlist[start_index]);
+        found = !desc.isNull() &&
+            desc->isValid() &&
+            desc->tag() == DID_CA &&
+            desc->payloadSize() >= 4 &&
+            (GetUInt16(desc->payload() + 2) & 0x1FFF) == pid;
+    }
+    return start_index;
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to search a CA_descriptor by CA system id.
+//----------------------------------------------------------------------------
+
+size_t ts::CADescriptor::SearchByCAS(const ts::DescriptorList& dlist, uint16_t casid, size_t start_index)
+{
+    bool found = false;
+    for (; !found && start_index < dlist.count(); start_index++) {
+        const DescriptorPtr& desc(dlist[start_index]);
+        found = !desc.isNull() &&
+            desc->isValid() &&
+            desc->tag() == DID_CA &&
+            desc->payloadSize() >= 4 &&
+            GetUInt16(desc->payload()) == casid;
+    }
+    return start_index;
 }

@@ -91,6 +91,24 @@ namespace ts {
         //!
         static bool AddFromCommandLine(DescriptorList& dlist, const UStringVector& values, Report& report = NULLREP);
 
+        //!
+        //! Static method to search a CA_descriptor by ECM/EMM PID in a descriptor list.
+        //! @param [in] dlist Descriptor list to search
+        //! @param [in] pid ECM/EMM PID to search.
+        //! @param [in] start_index Start searching at this index.
+        //! @return The index of the descriptor in the list or its count() if no such descriptor is found.
+        //!
+        static size_t SearchByPID(const DescriptorList& dlist, PID pid, size_t start_index = 0);
+
+        //!
+        //! Static method to search a CA_descriptor by CA system id in a descriptor list.
+        //! @param [in] dlist Descriptor list to search
+        //! @param [in] casid CA system id to search.
+        //! @param [in] start_index Start searching at this index.
+        //! @return The index of the descriptor in the list or its count() if no such descriptor is found.
+        //!
+        static size_t SearchByCAS(const DescriptorList& dlist, uint16_t casid, size_t start_index = 0);
+
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
         virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
