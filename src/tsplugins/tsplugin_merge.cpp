@@ -75,7 +75,7 @@ namespace ts {
         {
         public:
             uint64_t      last_pcr;  // Last PCR value in this PID, after adjustment in main stream.
-            PacketCounter pcr_pkt;   // Index of teh packet with the last PCR in the main stream.
+            PacketCounter pcr_pkt;   // Index of the packet with the last PCR in the main stream.
 
             // Constructor:
             PIDContext(uint64_t pcr = 0, PacketCounter pkt = 0) : last_pcr(pcr), pcr_pkt(pkt) {}
@@ -85,25 +85,32 @@ namespace ts {
         typedef std::map<PID,PIDContext> PIDContextMap;
 
         // Plugin private data.
-        bool              _abort;        // Error, give up asap.
-        bool              _got_eof;      // Got end of merged stream.
-        PacketCounter     _pkt_count;    // Packet counter in the main stream.
-        ForkPipe          _pipe;         // Executed command.
-        TSPacketQueue     _queue;        // TS packet queur from merge to main.
-        PIDSet            _main_pids;    // Set of detected PID's in main stream.
-        PIDSet            _merge_pids;   // Set of detected PID's in merged stream that we pass min stream.
-        PIDContextMap     _pcr_pids;     // Description of PID's with PCR's from the merged stream.
-        SectionDemux      _main_demux;   // Demux on main transport stream.
-        SectionDemux      _merge_demux;  // Demux on merged transport stream.
-        CyclingPacketizer _pat_pzer;     // Packetizer for modified PAT in main TS.
-        CyclingPacketizer _cat_pzer;     // Packetizer for modified CAT in main TS.
-        CyclingPacketizer _sdt_pzer;     // Packetizer for modified SDT/BAT in main TS.
-        PAT               _main_pat;     // Last input PAT from main TS (version# is current output version).
-        PAT               _merge_pat;    // Last input PAT from merged TS.
-        CAT               _main_cat;     // Last input CAT from main TS (version# is current output version).
-        CAT               _merge_cat;    // Last input CAT from merged TS.
-        SDT               _main_sdt;     // Last input SDT from main TS (version# is current output version).
-        SDT               _merge_sdt;    // Last input SDT from merged TS.
+        bool              _merge_psi;         // Merge PSI/SI information.
+        bool              _pcr_restamp;       // Restamp PCR from the merged stream.
+        bool              _ignore_conflicts;  // Ignore PID conflicts.
+        PIDSet            _allowed_pids;      // List of PID's to merge.
+        bool              _abort;             // Error, give up asap.
+        bool              _got_eof;           // Got end of merged stream.
+        PacketCounter     _pkt_count;         // Packet counter in the main stream.
+        ForkPipe          _pipe;              // Executed command.
+        TSPacketQueue     _queue;             // TS packet queur from merge to main.
+        PIDSet            _main_pids;         // Set of detected PID's in main stream.
+        PIDSet            _merge_pids;        // Set of detected PID's in merged stream that we pass in main stream.
+        PIDContextMap     _pcr_pids;          // Description of PID's with PCR's from the merged stream.
+        SectionDemux      _main_demux;        // Demux on main transport stream.
+        SectionDemux      _merge_demux;       // Demux on merged transport stream.
+        CyclingPacketizer _pat_pzer;          // Packetizer for modified PAT in main TS.
+        CyclingPacketizer _cat_pzer;          // Packetizer for modified CAT in main TS.
+        CyclingPacketizer _sdt_pzer;          // Packetizer for modified SDT/BAT in main TS.
+        PAT               _main_pat;          // Last input PAT from main TS (version# is current output version).
+        PAT               _merge_pat;         // Last input PAT from merged TS.
+        CAT               _main_cat;          // Last input CAT from main TS (version# is current output version).
+        CAT               _merge_cat;         // Last input CAT from merged TS.
+        SDT               _main_sdt;          // Last input SDT from main TS (version# is current output version).
+        SDT               _merge_sdt;         // Last input SDT from merged TS.
+
+        // Process a --drop or --pass option.
+        bool processDropPassOption(const UChar* option, bool allowed);
 
         // There is one thread which receives packet from the created process and passes
         // them to the main plugin thread. The following method is the thread main code.
@@ -149,6 +156,10 @@ TSPLUGIN_DECLARE_PROCESSOR(merge, ts::MergePlugin)
 
 ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
+    _merge_psi(false),
+    _pcr_restamp(false),
+    _ignore_conflicts(false),
+    _allowed_pids(),
     _abort(false),
     _got_eof(false),
     _pkt_count(0),
@@ -169,25 +180,64 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _main_sdt(),
     _merge_sdt()
 {
-    option(u"",          0,  STRING, 1, 1);
-    option(u"max-queue", 0,  POSITIVE);
-    option(u"nowait",   'n');
+    option(u"",                 0,  STRING, 1, 1);
+    option(u"drop",            'd', STRING, 0, UNLIMITED_COUNT);
+    option(u"ignore-conflicts", 0);
+    option(u"max-queue",        0,  POSITIVE);
+    option(u"no-pcr-restamp",   0);
+    option(u"no-psi-merge",     0);
+    option(u"no-wait",          0);
+    option(u"pass",            'p', STRING, 0, UNLIMITED_COUNT);
 
     setHelp(u"Command:\n"
             u"  Specifies the command line to execute in the created process.\n"
             u"\n"
             u"Options:\n"
             u"\n"
+            u"  -d pid[-pid]\n"
+            u"  --drop pid[-pid]\n"
+            u"      Drop the specified PID or range of PID's from the merged stream. By\n"
+            u"      default, the PID's 0x00 to 0x1F are dropped and all other PID's are\n"
+            u"      passed. This can be modified using options --drop and --pass. Several\n"
+            u"      options --drop can be specified.\n"
+            u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
+            u"\n"
+            u"  --ignore-conflicts\n"
+            u"      Ignore PID conflicts. By default, when packets with the same PID are\n"
+            u"      present in the two streams, the PID is dropped from the merged stream.\n"
+            u"      Warning: this is a dangerous option which can result in an inconsistent\n"
+            u"      transport stream.\n"
             u"\n"
             u"  --max-queue value\n"
             u"      Specify the maximum number of queued TS packets before their\n"
             u"      insertion into the stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_PACKETS) u".\n"
             u"\n"
-            u"  -n\n"
-            u"  --nowait\n"
+            u"  --no-pcr-restamp\n"
+            u"      Do not restamp PCR's from the merged TS into the main TS. By default,\n"
+            u"      PCR's in the merged stream are restamped to match their position in the\n"
+            u"      final stream. The DTS and PTS are never restamped because they are\n"
+            u"      independent from their position in the stream. When the PCR's in the\n"
+            u"      merged stream have discontinuities (such as when cycling a TS file),\n"
+            u"      restamping the PCR's can break the video playout since they become\n"
+            u"      decorrelated with the DTS and PTS.\n"
+            u"\n"
+            u"  --no-psi-merge\n"
+            u"      Do not merge PSI/SI from the merged TS into the main TS. By default, the\n"
+            u"      PAT, CAT and SDT are merged so that the services from the merged stream\n"
+            u"      are properly referenced and PID's 0x00 to 0x1F are dropped from the merged\n"
+            u"      stream.\n"
+            u"\n"
+            u"  --no-wait\n"
             u"      Do not wait for child process termination at end of processing.\n"
+            u"\n"
+            u"  -p pid[-pid]\n"
+            u"  --pass pid[-pid]\n"
+            u"      Pass the specified PID or range of PID's from the merged stream. By\n"
+            u"      default, the PID's 0x00 to 0x1F are dropped and all other PID's are\n"
+            u"      passed. This can be modified using options --drop and --pass. Several\n"
+            u"      options --pass can be specified.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
@@ -202,8 +252,20 @@ bool ts::MergePlugin::start()
 {
     // Get command line arguments
     UString command(value());
-    const bool nowait = present(u"nowait");
+    const bool nowait = present(u"no-wait");
     const size_t max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
+    _merge_psi = !present(u"no-psi-merge");
+    _pcr_restamp = !present(u"no-pcr-restamp");
+    _ignore_conflicts = present(u"ignore-conflicts");
+
+    // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
+    _allowed_pids.set();
+    for (PID pid = 0x00; pid < 0x1F; ++pid) {
+        _allowed_pids.reset(pid);
+    }
+    if (!processDropPassOption(u"drop", false) || !processDropPassOption(u"pass", true)) {
+        return false;
+    }
 
     // Resize the inter-thread packet queue.
     _queue.reset(max_queue);
@@ -257,6 +319,41 @@ bool ts::MergePlugin::start()
     }
 
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Process a --drop or --pass option.
+//----------------------------------------------------------------------------
+
+bool ts::MergePlugin::processDropPassOption(const UChar* option, bool allowed)
+{
+    const size_t max = count(option);
+    bool status = true;
+
+    // Loop on all occurences of the option.
+    for (size_t i = 0; i < max; ++i) {
+
+        // Next occurence of the option.
+        const UString str(value(option, u"", i));
+        PID pid1 = PID_NULL;
+        PID pid2 = PID_NULL;
+        size_t num = 0;
+        size_t last = 0;
+
+        // The accepted format is: pid[-pid]
+        str.scan(num, last, u"%d-%d", {&pid1, &pid2});
+        if (num < 1 || last != str.size() || pid1 >= PID_MAX || pid2 >= PID_MAX || (num == 2 && pid1 > pid2)) {
+            tsp->error(u"invalid PID range \"%s\" for --%s, use \"pid[-pid]\"", {str, option});
+            status = false;
+        }
+        else {
+            while (pid1 <= pid2) {
+                _allowed_pids.set(pid1++, allowed);
+            }
+        }
+    }
+    return status;
 }
 
 
@@ -333,10 +430,13 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, bool& 
     const PID pid = pkt.getPID();
 
     // Demux sections from the main transport stream.
-    _main_demux.feedPacket(pkt);
+    // This is required only to merge PSI/SI.
+    if (_merge_psi) {
+        _main_demux.feedPacket(pkt);
+    }
 
     // Check PID conflicts.
-    if (pid != PID_NULL && !_main_pids.test(pid)) {
+    if (!_ignore_conflicts && pid != PID_NULL && !_main_pids.test(pid)) {
         // First time we see that PID on the main stream.
         _main_pids.set(pid);
         if (_merge_pids.test(pid)) {
@@ -414,62 +514,69 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
     }
 
     // Demux sections from the merged stream.
-    _merge_demux.feedPacket(pkt);
+    // This is required only to merge PSI/SI.
+    if (_merge_psi) {
+        _merge_demux.feedPacket(pkt);
+    }
 
-    // Drop base PSI/SI (PAT, CAT, SDT, NIT, etc) from merged stream.
-    // We selectively merge PAT, CAT and SDT information into tables from the main stream.
+    // Drop selected PID's from merged stream. Replace them with a null packet.
     const PID pid = pkt.getPID();
-    if (pid < 0x20) {
+    if (!_allowed_pids.test(pid)) {
         return TSP_NULL;
     }
 
     // Check PID conflicts.
-    if (pid != PID_NULL && !_merge_pids.test(pid)) {
-        // First time we see that PID on the merged stream.
-        _merge_pids.set(pid);
-        if (_main_pids.test(pid)){
-            tsp->error(u"PID conflict: PID 0x%X (%d) exists in the two streams, dropping from merged stream", {pid, pid});
+    if (!_ignore_conflicts) {
+        if (pid != PID_NULL && !_merge_pids.test(pid)) {
+            // First time we see that PID on the merged stream.
+            _merge_pids.set(pid);
+            if (_main_pids.test(pid)){
+                tsp->error(u"PID conflict: PID 0x%X (%d) exists in the two streams, dropping from merged stream", {pid, pid});
+            }
         }
-    }
-    if (pid != PID_NULL && _main_pids.test(pid)) {
-        // The same PID already exists in the main PID, drop from merged stream.
-        // Error message already reported.
-        return TSP_NULL;
+        if (pid != PID_NULL && _main_pids.test(pid)) {
+            // The same PID already exists in the main PID, drop from merged stream.
+            // Error message already reported.
+            return TSP_NULL;
+        }
     }
 
     // Adjust PCR's in packets from the merge streams.
-    //
-    // In each PID with PCR's in the merge stream, we keep the first PCR
-    // value unchanged. Then, we need to adjust all subsequent PCR's.
-    // PCR's are system clock values. They must be synchronized with the
-    // transport stream rate. So, the difference between two PCR's shall
-    // be the transmission time in PCR units.
-    //
-    // We can compute new precise PCR values when the bitrate is fixed.
-    // However, with a variable bitrate, our computed values will be inaccurate.
-    //
-    // Also note that we do not modify DTS and PTS. First, we can't access
-    // PTS and DTS in scrambled streams (unlike PCR's). Second, we MUST NOT
-    // change them because they indicate at which time the frame shall be
-    // _processed_, not _transmitted_.
-    //
-    if (pkt.hasPCR()) {
+    if (_pcr_restamp && pkt.hasPCR()) {
+
+        // In each PID with PCR's in the merge stream, we keep the first PCR
+        // value unchanged. Then, we need to adjust all subsequent PCR's.
+        // PCR's are system clock values. They must be synchronized with the
+        // transport stream rate. So, the difference between two PCR's shall
+        // be the transmission time in PCR units.
+        //
+        // We can compute new precise PCR values when the bitrate is fixed.
+        // However, with a variable bitrate, our computed values will be inaccurate.
+        //
+        // Also note that we do not modify DTS and PTS. First, we can't access
+        // PTS and DTS in scrambled streams (unlike PCR's). Second, we MUST NOT
+        // change them because they indicate at which time the frame shall be
+        // _processed_, not _transmitted_.
+
         const uint64_t pcr = pkt.getPCR();
-        const BitRate bitrate = tsp->bitrate();
+        const BitRate main_bitrate = tsp->bitrate();
 
         // Check if we know this PID.
         PIDContextMap::iterator ctx(_pcr_pids.find(pid));
         if (ctx == _pcr_pids.end()) {
             // First time we see a PCR in this PID, create the context.
+            // Save the initial PCR value bu do not modify it.
             _pcr_pids.insert(std::make_pair(pid, PIDContext(pcr, _pkt_count)));
         }
-        else if (bitrate > 0) {
+        else if (main_bitrate > 0) {
             // We have seen PCR's in this PID.
             // Compute the transmission time since last PCR in PCR units.
             // We base the result on the main stream bitrate and the number of packets.
             assert(_pkt_count > ctx->second.pcr_pkt);
-            ctx->second.last_pcr += ((_pkt_count - ctx->second.pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
+            ctx->second.last_pcr += ((_pkt_count - ctx->second.pcr_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
             ctx->second.pcr_pkt = _pkt_count;
+            // Update the PCR in the packet.
+            pkt.setPCR(ctx->second.last_pcr);
             // In debug mode, report the displacement of the PCR.
             // This may go back and forth around zero but should never diverge.
             const SubSecond moved = ctx->second.last_pcr - pcr;
