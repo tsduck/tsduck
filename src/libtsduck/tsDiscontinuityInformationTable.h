@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a Discontinuity Information Table (DIT)
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 767
+#include "tsAbstractTable.h"
+#include "tsTime.h"
+
+namespace ts {
+    //!
+    //! Representation of a Discontinuity Information Table (DIT)
+    //! @see ETSI 300 468, 7.1.1.
+    //! @ingroup table
+    //!
+    class TSDUCKDLL DiscontinuityInformationTable : public AbstractTable
+    {
+    public:
+        // Public members:
+        bool transition;  //!< Transport stream transition.
+
+        //!
+        //! Default constructor.
+        //! @param [in] tr Transport stream transition.
+        //!
+        DiscontinuityInformationTable(bool tr = false);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        DiscontinuityInformationTable(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplaySection();
+    };
+}

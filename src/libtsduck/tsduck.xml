@@ -196,6 +196,20 @@
     </application>
   </AIT>
 
+  <!-- Discontinuity Information Table -->
+  <discontinuity_information_table transition="bool, required"/>
+
+  <!-- Selection Information Table -->
+  <selection_information_table version="uint5, default=0" current="bool, default=true">
+    <!-- Common descriptors loop, for transmission parameters -->
+    <_any in="_descriptors"/>
+    <!-- One per service -->
+    <service service_id="uint16, required"
+             running_status="undefined|not-running|starting|pausing|running|off-air, required">
+      <_any in="_descriptors"/>
+    </service>
+  </selection_information_table>
+
   <!-- Splice Information Table (ANSI/SCTE 35) -->
   <splice_information_table
       protocol_version="uint8, default=0"
@@ -738,6 +752,11 @@
       <country country_code="char3, required"
                rating="uint8, required"/>
     </parental_rating_descriptor>
+
+    <partial_transport_stream_descriptor
+        peak_rate="uint22, required"
+        minimum_overall_smoothing_rate="uint22, default=0x3FFFFF"
+        maximum_overall_smoothing_buffer="uint14, default=0x3FFF"/>
 
     <prefetch_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->

@@ -96,6 +96,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDescriptorList.h \
     ../../../src/libtsduck/tsDescriptorListTemplate.h \
     ../../../src/libtsduck/tsDIILocationDescriptor.h \
+    ../../../src/libtsduck/tsDiscontinuityInformationTable.h \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
@@ -203,6 +204,7 @@ HEADERS += \
     ../../../src/libtsduck/tsOutputRedirector.h \
     ../../../src/libtsduck/tsPacketizer.h \
     ../../../src/libtsduck/tsParentalRatingDescriptor.h \
+    ../../../src/libtsduck/tsPartialTransportStreamDescriptor.h \
     ../../../src/libtsduck/tsPAT.h \
     ../../../src/libtsduck/tsPCR.h \
     ../../../src/libtsduck/tsPCRAnalyzer.h \
@@ -253,6 +255,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSectionFile.h \
     ../../../src/libtsduck/tsSectionHandlerInterface.h \
     ../../../src/libtsduck/tsSectionProviderInterface.h \
+    ../../../src/libtsduck/tsSelectionInformationTable.h \
     ../../../src/libtsduck/tsService.h \
     ../../../src/libtsduck/tsServiceAvailabilityDescriptor.h \
     ../../../src/libtsduck/tsServiceDescriptor.h \
@@ -483,6 +486,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDescriptor.cpp \
     ../../../src/libtsduck/tsDescriptorList.cpp \
     ../../../src/libtsduck/tsDIILocationDescriptor.cpp \
+    ../../../src/libtsduck/tsDiscontinuityInformationTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
@@ -570,6 +574,7 @@ SOURCES += \
     ../../../src/libtsduck/tsOutputRedirector.cpp \
     ../../../src/libtsduck/tsPacketizer.cpp \
     ../../../src/libtsduck/tsParentalRatingDescriptor.cpp \
+    ../../../src/libtsduck/tsPartialTransportStreamDescriptor.cpp \
     ../../../src/libtsduck/tsPAT.cpp \
     ../../../src/libtsduck/tsPCR.cpp \
     ../../../src/libtsduck/tsPCRAnalyzer.cpp \
@@ -603,6 +608,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSection.cpp \
     ../../../src/libtsduck/tsSectionDemux.cpp \
     ../../../src/libtsduck/tsSectionFile.cpp \
+    ../../../src/libtsduck/tsSelectionInformationTable.cpp \
     ../../../src/libtsduck/tsService.cpp \
     ../../../src/libtsduck/tsServiceAvailabilityDescriptor.cpp \
     ../../../src/libtsduck/tsServiceDescriptor.cpp \

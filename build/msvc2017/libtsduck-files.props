@@ -98,6 +98,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorList.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorListTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDIILocationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsOutputRedirector.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPacketizer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsParentalRatingDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPAT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPCR.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPCRAnalyzer.h" />
@@ -255,6 +257,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSectionFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionProviderInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSelectionInformationTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsService.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceDescriptor.h" />
@@ -495,6 +498,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDIILocationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
@@ -582,6 +586,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsOutputRedirector.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPacketizer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsParentalRatingDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPCR.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPCRAnalyzer.cpp" />
@@ -615,6 +620,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSelectionInformationTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp" />
