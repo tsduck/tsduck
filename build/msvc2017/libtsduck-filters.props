@@ -292,6 +292,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsDIILocationDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -613,6 +616,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsParentalRatingDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsPAT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -761,6 +767,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSectionProviderInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSelectionInformationTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsService.h">
@@ -1479,6 +1488,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsDIILocationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1740,6 +1752,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsParentalRatingDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsPAT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1837,6 +1852,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSelectionInformationTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp">

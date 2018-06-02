@@ -50,7 +50,7 @@ SCRIPT=$(basename ${BASH_SOURCE[0]} .sh)
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Optional file to build.
-TARGET=$(basename $1)
+TARGET=$(basename "$1")
 
 # Get the project directories.
 BUILDDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)

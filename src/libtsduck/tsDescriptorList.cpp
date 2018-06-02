@@ -336,18 +336,15 @@ size_t ts::DescriptorList::serialize(ByteBlock& bb, size_t start) const
 
 
 //----------------------------------------------------------------------------
-// Same as Serialize, but prepend a 2-byte length field
-// before the descriptor list. The 2-byte length field
-// has 4 reserved bits (all '1') and 12 bits for the length
-// of the descriptor list.
+// Same as Serialize, but prepend a 2-byte length field before the list.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t start) const
+size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t start, uint8_t reserved_bits) const
 {
     assert (size >= 2);
 
     // Reserve space for descriptor list length
-    uint8_t* length_addr (addr);
+    uint8_t* length_addr = addr;
     addr += 2;
     size -= 2;
 
@@ -356,7 +353,7 @@ size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t 
 
     // Update length
     size_t length (addr - length_addr - 2);
-    PutUInt16 (length_addr, uint16_t (length | 0xF000));
+    PutUInt16 (length_addr, uint16_t (length | (uint16_t(reserved_bits) << 12)));
 
     return result;
 }

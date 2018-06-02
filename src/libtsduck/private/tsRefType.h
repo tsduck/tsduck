@@ -1,6 +1,7 @@
     REF_TYPE(AIT);
     REF_TYPE(BAT);
     REF_TYPE(CAT);
+    REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(EIT);
     REF_TYPE(INT);
     REF_TYPE(NIT);
@@ -8,6 +9,7 @@
     REF_TYPE(PMT);
     REF_TYPE(RST);
     REF_TYPE(SDT);
+    REF_TYPE(SelectionInformationTable);
     REF_TYPE(SpliceInformationTable);
     REF_TYPE(TDT);
     REF_TYPE(TOT);
@@ -78,6 +80,7 @@
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
+    REF_TYPE(PartialTransportStreamDescriptor);
     REF_TYPE(PrefetchDescriptor);
     REF_TYPE(PrivateDataIndicatorDescriptor);
     REF_TYPE(PrivateDataSpecifierDescriptor);

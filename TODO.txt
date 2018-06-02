@@ -50,9 +50,6 @@ TSDuck - List of features to be implemented or fixed
   - 6.4.12   target_region_name_descriptor
   - 6.4.14   URI_linkage_descriptor
   - 6.4.15   video_depth_range_descriptor
-  - 7.1.1    Discontinuity Information Table (DIT)
-  - 7.1.2    Selection Information Table (SIT)
-  - 7.2.1    partial_transport_stream_descriptor
   - G.3.1    DTS-HD_audio_stream_descriptor
   - L.1      DTS_Neural_descriptor
 

@@ -28,20 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a partial_transport_stream_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 767
+#include "tsAbstractDescriptor.h"
+#include "tsUString.h"
+
+namespace ts {
+    //!
+    //! Representation of a partial_transport_stream_descriptor.
+    //! @see ETSI 300 468, 7.2.1.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL PartialTransportStreamDescriptor : public AbstractDescriptor
+    {
+    public:
+        // PartialTransportStreamDescriptor public members:
+        uint32_t peak_rate;                         //!< 22 bits
+        uint32_t minimum_overall_smoothing_rate;    //!< 22 bits
+        uint16_t maximum_overall_smoothing_buffer;  //!< 14 bits
+
+        static const uint32_t UNDEFINED_SMOOTHING_RATE   = 0x3FFFFF;  //!< "undefined" value for @a minimum_overall_smoothing_rate.
+        static const uint16_t UNDEFINED_SMOOTHING_BUFFER = 0x3FFF;    //!< "undefined" value for @a maximum_overall_smoothing_buffer.
+
+        //!
+        //! Default constructor.
+        //!
+        PartialTransportStreamDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        PartialTransportStreamDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}
