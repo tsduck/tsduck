@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a service_move_descriptor
+//!  Representation of an system_clock_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,29 +37,29 @@
 
 namespace ts {
     //!
-    //! Representation of a service_move_descriptor.
-    //! @see ETSI 300 468, 6.2.34.
+    //! Representation of an system_clock_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.20.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ServiceMoveDescriptor : public AbstractDescriptor
+    class TSDUCKDLL SystemClockDescriptor : public AbstractDescriptor
     {
     public:
-        // ServiceMoveDescriptor public members:
-        uint16_t new_original_network_id;   //!< New original network id.
-        uint16_t new_transport_stream_id;   //!< New transport stream id.
-        uint16_t new_service_id;            //!< New service id.
+        // SystemClockDescriptor public members:
+        bool    external_clock_reference;  //!< Has an external clock reference.
+        uint8_t clock_accuracy_integer;    //!< 6 bits, fractional frequency accuracy of the system clock in parts per million.
+        uint8_t clock_accuracy_exponent;   //!< 3 bits, exponent for @a clock_accuracy_integer.
 
         //!
         //! Default constructor.
         //!
-        ServiceMoveDescriptor();
+        SystemClockDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        ServiceMoveDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        SystemClockDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
