@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.12-767
+Version 3.12-770
 
 - Added plugin "merge" which merges two transport streams.
 
