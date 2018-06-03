@@ -427,6 +427,12 @@
                user_byte="uint8, required"/>
     </content_descriptor>
 
+    <copyright_descriptor copyright_identifier="uint32, required">
+      <additional_copyright_info>
+        Hexadecimal content
+      </additional_copyright_info>
+    </copyright_descriptor>
+
     <country_availability_descriptor country_availability="bool, required">
       <!-- One per country -->
       <country country_code="char3, required"/>
@@ -609,6 +615,11 @@
         hierarchy_embedded_layer_index="uint6, required"
         hierarchy_channel="uint6, required"/>
 
+    <IBP_descriptor
+        closed_gop="bool, required"
+        identical_gop="bool, required"
+        max_gop_length="uint14, required"/>
+
     <IPMAC_generic_stream_location_descriptor
         interactive_network_id="uint16, required"
         modulation_system_type="DVB-S2|DVB-T2|DVB-C2|DVB-NGH|uint8, required"
@@ -738,6 +749,10 @@
                 service_name="string, required"/>
     </multilingual_service_name_descriptor>
 
+    <multiplex_buffer_utilization_descriptor
+        LTW_offset_lower_bound="uint15, optional"
+        LTW_offset_upper_bound="uint15, optional"/>
+
     <network_name_descriptor network_name="string, required"/>
 
     <NVOD_reference_descriptor>
@@ -824,6 +839,8 @@
       <event_name>String</event_name>
       <text>String</text>
     </short_event_descriptor>
+
+    <SL_descriptor ES_ID="uint16, required"/>
 
     <smoothing_buffer_descriptor
         sb_leak_rate="uint22, required"

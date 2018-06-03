@@ -214,6 +214,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCopyrightDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -439,6 +442,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsIBPDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsIDSA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -572,6 +578,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsMultiplexBufferUtilizationDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMutex.h">
@@ -818,6 +827,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSingletonManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSLDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSmoothingBufferDescriptor.h">
@@ -1443,6 +1455,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsCopyrightDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1611,6 +1626,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsIBPDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsIDSA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1720,6 +1738,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsMultiplexBufferUtilizationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp">
@@ -1906,6 +1927,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSingletonManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSLDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSmoothingBufferDescriptor.cpp">

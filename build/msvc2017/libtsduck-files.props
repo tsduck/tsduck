@@ -72,6 +72,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsComponentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCondition.h" />
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCopyrightDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCPDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCPIdentifierDescriptor.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsIBPDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIDSA.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
     <ClInclude Include="..\..\src\libtsduck\tsINT.h" />
@@ -192,6 +194,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsMultilingualComponentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMultilingualNetworkNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMultiplexBufferUtilizationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutexInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNames.h" />
@@ -274,6 +277,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsShortEventDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSimulCryptDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSingletonManager.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSLDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSmoothingBufferDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSocketAddress.h" />
@@ -483,6 +487,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsComponentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCondition.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCopyrightDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCPDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCPIdentifierDescriptor.cpp" />
@@ -539,6 +544,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsIBPDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIDSA.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsINT.cpp" />
@@ -576,6 +582,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualComponentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMultiplexBufferUtilizationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
@@ -638,6 +645,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsShortEventDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSimulCryptDate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSingletonManager.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSLDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSmoothingBufferDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSocketAddress.cpp" />

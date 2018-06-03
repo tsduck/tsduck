@@ -70,6 +70,7 @@ HEADERS += \
     ../../../src/libtsduck/tsComponentDescriptor.h \
     ../../../src/libtsduck/tsCondition.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
+    ../../../src/libtsduck/tsCopyrightDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
     ../../../src/libtsduck/tsCPDescriptor.h \
     ../../../src/libtsduck/tsCPIdentifierDescriptor.h \
@@ -145,6 +146,7 @@ HEADERS += \
     ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.h \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
     ../../../src/libtsduck/tsHierarchyDescriptor.h \
+    ../../../src/libtsduck/tsIBPDescriptor.h \
     ../../../src/libtsduck/tsIDSA.h \
     ../../../src/libtsduck/tsInputRedirector.h \
     ../../../src/libtsduck/tsINT.h \
@@ -190,6 +192,7 @@ HEADERS += \
     ../../../src/libtsduck/tsMultilingualComponentDescriptor.h \
     ../../../src/libtsduck/tsMultilingualNetworkNameDescriptor.h \
     ../../../src/libtsduck/tsMultilingualServiceNameDescriptor.h \
+    ../../../src/libtsduck/tsMultiplexBufferUtilizationDescriptor.h \
     ../../../src/libtsduck/tsMutex.h \
     ../../../src/libtsduck/tsMutexInterface.h \
     ../../../src/libtsduck/tsNames.h \
@@ -272,6 +275,7 @@ HEADERS += \
     ../../../src/libtsduck/tsShortEventDescriptor.h \
     ../../../src/libtsduck/tsSimulCryptDate.h \
     ../../../src/libtsduck/tsSingletonManager.h \
+    ../../../src/libtsduck/tsSLDescriptor.h \
     ../../../src/libtsduck/tsSmoothingBufferDescriptor.h \
     ../../../src/libtsduck/tsSocket.h \
     ../../../src/libtsduck/tsSocketAddress.h \
@@ -471,6 +475,7 @@ SOURCES += \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
     ../../../src/libtsduck/tsCondition.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
+    ../../../src/libtsduck/tsCopyrightDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
     ../../../src/libtsduck/tsCPDescriptor.cpp \
     ../../../src/libtsduck/tsCPIdentifierDescriptor.cpp \
@@ -527,6 +532,7 @@ SOURCES += \
     ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsHierarchyDescriptor.cpp \
+    ../../../src/libtsduck/tsIBPDescriptor.cpp \
     ../../../src/libtsduck/tsIDSA.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \
     ../../../src/libtsduck/tsINT.cpp \
@@ -564,6 +570,7 @@ SOURCES += \
     ../../../src/libtsduck/tsMultilingualComponentDescriptor.cpp \
     ../../../src/libtsduck/tsMultilingualNetworkNameDescriptor.cpp \
     ../../../src/libtsduck/tsMultilingualServiceNameDescriptor.cpp \
+    ../../../src/libtsduck/tsMultiplexBufferUtilizationDescriptor.cpp \
     ../../../src/libtsduck/tsMutex.cpp \
     ../../../src/libtsduck/tsNames.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
@@ -626,6 +633,7 @@ SOURCES += \
     ../../../src/libtsduck/tsShortEventDescriptor.cpp \
     ../../../src/libtsduck/tsSimulCryptDate.cpp \
     ../../../src/libtsduck/tsSingletonManager.cpp \
+    ../../../src/libtsduck/tsSLDescriptor.cpp \
     ../../../src/libtsduck/tsSmoothingBufferDescriptor.cpp \
     ../../../src/libtsduck/tsSocket.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
