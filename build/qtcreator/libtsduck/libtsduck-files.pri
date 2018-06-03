@@ -263,6 +263,7 @@ HEADERS += \
     ../../../src/libtsduck/tsServiceIdentifierDescriptor.h \
     ../../../src/libtsduck/tsServiceListDescriptor.h \
     ../../../src/libtsduck/tsServiceMoveDescriptor.h \
+    ../../../src/libtsduck/tsServiceRelocatedDescriptor.h \
     ../../../src/libtsduck/tsServiceTemplate.h \
     ../../../src/libtsduck/tsSHA1.h \
     ../../../src/libtsduck/tsSHA256.h \
@@ -292,6 +293,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
     ../../../src/libtsduck/tsSysInfo.h \
+    ../../../src/libtsduck/tsSystemClockDescriptor.h \
     ../../../src/libtsduck/tsSystemMonitor.h \
     ../../../src/libtsduck/tsSystemRandomGenerator.h \
     ../../../src/libtsduck/tsSysUtils.h \
@@ -616,6 +618,7 @@ SOURCES += \
     ../../../src/libtsduck/tsServiceIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsServiceListDescriptor.cpp \
     ../../../src/libtsduck/tsServiceMoveDescriptor.cpp \
+    ../../../src/libtsduck/tsServiceRelocatedDescriptor.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \
     ../../../src/libtsduck/tsSHA512.cpp \
@@ -643,6 +646,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
     ../../../src/libtsduck/tsSysInfo.cpp \
+    ../../../src/libtsduck/tsSystemClockDescriptor.cpp \
     ../../../src/libtsduck/tsSystemMonitor.cpp \
     ../../../src/libtsduck/tsSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsSysUtils.cpp \

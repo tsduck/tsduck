@@ -815,6 +815,11 @@
         new_transport_stream_id="uint16, required"
         new_service_id="uint16, required"/>
 
+    <service_relocated_descriptor
+        old_original_network_id="uint16, required"
+        old_transport_stream_id="uint16, required"
+        old_service_id="uint16, required"/>
+
     <short_event_descriptor language_code="char3, required">
       <event_name>String</event_name>
       <text>String</text>
@@ -884,6 +889,11 @@
         Hexadecimal content
       </private_data>
     </supplementary_audio_descriptor>
+
+    <system_clock_descriptor
+        external_clock_reference="bool required"
+        clock_accuracy_integer="uint6, required"
+        clock_accuracy_exponent="uint3, required"/>
 
     <T2MI_descriptor
         t2mi_stream_id="uint3, required"

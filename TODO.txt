@@ -5,7 +5,6 @@ TSDuck - List of features to be implemented or fixed
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
-  - 2.6.20  system_clock_descriptor
   - 2.6.22  multiplex_buffer_utilization_descriptor
   - 2.6.24  copyright_descriptor
   - 2.6.34  IBP_descriptor
@@ -45,7 +44,6 @@ TSDuck - List of features to be implemented or fixed
   - 6.4.5.4  C2_bundle_delivery_system_descriptor
   - 6.4.6    image_icon_descriptor
   - 6.4.8    network_change_notify_descriptor
-  - 6.4.9    service_relocated_descriptor
   - 6.4.11   target_region_descriptor
   - 6.4.12   target_region_name_descriptor
   - 6.4.14   URI_linkage_descriptor

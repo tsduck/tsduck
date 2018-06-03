@@ -265,6 +265,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsServiceIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceListDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceMoveDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsServiceRelocatedDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSHA1.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSHA256.h" />
@@ -294,6 +295,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSysInfo.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSystemClockDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSystemMonitor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSystemRandomGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSysUtils.h" />
@@ -628,6 +630,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsServiceIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceMoveDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsServiceRelocatedDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA1.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA256.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA512.cpp" />
@@ -655,6 +658,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSysInfo.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSystemClockDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSystemMonitor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSysUtils.cpp" />

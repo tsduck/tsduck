@@ -93,6 +93,7 @@
     REF_TYPE(ServiceIdentifierDescriptor);
     REF_TYPE(ServiceListDescriptor);
     REF_TYPE(ServiceMoveDescriptor);
+    REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(ShortEventDescriptor);
     REF_TYPE(SmoothingBufferDescriptor);
     REF_TYPE(SpliceAvailDescriptor);
@@ -106,6 +107,7 @@
     REF_TYPE(StuffingDescriptor);
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
+    REF_TYPE(SystemClockDescriptor);
     REF_TYPE(T2MIDescriptor);
     REF_TYPE(TargetBackgroundGridDescriptor);
     REF_TYPE(TargetIPAddressDescriptor);

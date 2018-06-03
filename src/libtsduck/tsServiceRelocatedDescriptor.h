@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a service_move_descriptor
+//!  Representation of a service_relocated_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -37,29 +37,29 @@
 
 namespace ts {
     //!
-    //! Representation of a service_move_descriptor.
-    //! @see ETSI 300 468, 6.2.34.
+    //! Representation of a service_relocated_descriptor.
+    //! @see ETSI 300 468, 6.4.9.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ServiceMoveDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ServiceRelocatedDescriptor : public AbstractDescriptor
     {
     public:
-        // ServiceMoveDescriptor public members:
-        uint16_t new_original_network_id;   //!< New original network id.
-        uint16_t new_transport_stream_id;   //!< New transport stream id.
-        uint16_t new_service_id;            //!< New service id.
+        // ServiceRelocatedDescriptor public members:
+        uint16_t old_original_network_id;   //!< Old original network id.
+        uint16_t old_transport_stream_id;   //!< Old transport stream id.
+        uint16_t old_service_id;            //!< Old service id.
 
         //!
         //! Default constructor.
         //!
-        ServiceMoveDescriptor();
+        ServiceRelocatedDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        ServiceMoveDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        ServiceRelocatedDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
