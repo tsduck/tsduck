@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a multiplex_buffer_utilization_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 769
+#include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
+
+namespace ts {
+    //!
+    //! Representation of an multiplex_buffer_utilization_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.22.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL MultiplexBufferUtilizationDescriptor : public AbstractDescriptor
+    {
+    public:
+        // MultiplexBufferUtilizationDescriptor public members:
+        Variable<uint16_t> LTW_offset_lower_bound;  //!< 15 bits, in units of (27 MHz/300) clock periods
+        Variable<uint16_t> LTW_offset_upper_bound;  //!< 15 bits, in units of (27 MHz/300) clock periods
+
+        //!
+        //! Default constructor.
+        //!
+        MultiplexBufferUtilizationDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        MultiplexBufferUtilizationDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

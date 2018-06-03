@@ -28,20 +28,43 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a copyright_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 769
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an copyright_descriptor.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.24.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL CopyrightDescriptor : public AbstractDescriptor
+    {
+    public:
+        // CopyrightDescriptor public members:
+        uint32_t  copyright_identifier;       //!< Copyright identifier.
+        ByteBlock additional_copyright_info;  //!< Optional additional information.
+
+        //!
+        //! Default constructor.
+        //!
+        CopyrightDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        CopyrightDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

@@ -33,6 +33,7 @@
     REF_TYPE(CAIdentifierDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ContentDescriptor);
+    REF_TYPE(CopyrightDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);
     REF_TYPE(CPDescriptor);
     REF_TYPE(CPIdentifierDescriptor);
@@ -59,6 +60,7 @@
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
     REF_TYPE(HierarchyDescriptor);
+    REF_TYPE(IBPDescriptor);
     REF_TYPE(IPMACGenericStreamLocationDescriptor);
     REF_TYPE(IPMACPlatformNameDescriptor);
     REF_TYPE(IPMACPlatformProviderNameDescriptor);
@@ -77,6 +79,7 @@
     REF_TYPE(MultilingualComponentDescriptor);
     REF_TYPE(MultilingualNetworkNameDescriptor);
     REF_TYPE(MultilingualServiceNameDescriptor);
+    REF_TYPE(MultiplexBufferUtilizationDescriptor);
     REF_TYPE(NetworkNameDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
@@ -95,6 +98,7 @@
     REF_TYPE(ServiceMoveDescriptor);
     REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(ShortEventDescriptor);
+    REF_TYPE(SLDescriptor);
     REF_TYPE(SmoothingBufferDescriptor);
     REF_TYPE(SpliceAvailDescriptor);
     REF_TYPE(SpliceDTMFDescriptor);
