@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        explicit IBPDescriptor();
+        IBPDescriptor();
 
         //!
         //! Constructor from a binary descriptor
