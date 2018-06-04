@@ -66,11 +66,11 @@ namespace ts {
 
     private:
         // TS packets or sections are passed from the server thread to the plugin thread using a message queue.
-        typedef MessageQueue<TSPacket, Mutex> TSPacketQueue;
+        typedef MessageQueue<TSPacket, Mutex> PacketQueue;
         typedef MessageQueue<Section, Mutex> SectionQueue;
 
         // Message queues enqueue smart pointers to the message type (MT = Multi-Thread).
-        typedef TSPacketQueue::MessagePtr TSPacketPtrMT;
+        typedef PacketQueue::MessagePtr PacketPtrMT;
         typedef SectionQueue::MessagePtr SectionPtrMT;
 
         // TCP listener thread.
@@ -130,13 +130,15 @@ namespace ts {
         PID             _data_pid;             // PID for data (constant after start)
         uint8_t         _data_cc;              // Continuity counter in data PID.
         BitRate         _max_bitrate;          // Max data PID's bitrate (constant after start)
-        SocketAddress   _server_address;       // TCP/UDP port and optional local address.
+        bool            _unregulated;          // Insert data packet as soon as received.
+        SocketAddress   _tcp_address;          // TCP port and optional local address.
+        SocketAddress   _udp_address;          // UDP port and optional local address.
         bool            _reuse_port;           // Reuse port option.
         size_t          _sock_buf_size;        // Socket receive buffer size.
         TCPServer       _server;               // EMMG/PDG <=> MUX TCP server
         TCPListener     _tcp_listener;         // TCP listener thread.
         UDPListener     _udp_listener;         // UDP listener thread.
-        TSPacketQueue   _packet_queue;         // Queue of incoming TS packets.
+        PacketQueue     _packet_queue;         // Queue of incoming TS packets.
         SectionQueue    _section_queue;        // Queue of incoming sections.
         tlv::Logger     _logger;               // Message logger.
         volatile bool   _channel_established;  // Data channel open.
@@ -189,7 +191,9 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _data_pid(PID_NULL),
     _data_cc(0),
     _max_bitrate(0),
-    _server_address(),
+    _unregulated(false),
+    _tcp_address(),
+    _udp_address(),
     _reuse_port(false),
     _sock_buf_size(0),
     _server(),
@@ -218,6 +222,8 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     option(u"queue-size",       'q', UINT32);
     option(u"reuse-port",       'r');
     option(u"server",           's', STRING, 1, 1);
+    option(u"udp",              'u', STRING);
+    option(u"unregulated",       0);
 
     setHelp(u"Options:\n"
             u"\n"
@@ -273,6 +279,17 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"      interface). This plugin behaves as a MUX, ie. a TCP server, and accepts\n"
             u"      only one EMMG/PDG connection at a time.\n"
             u"\n"
+            u"  -u [address:]port\n"
+            u"  --udp [address:]port\n"
+            u"      Specifies the local UDP port on which the plugin listens for data\n"
+            u"      provision messages (these messages can be sent using TCP or UDP). By\n"
+            u"      default, use the same port and optional local address as specified for\n"
+            u"      TCP using option --server.\n"
+            u"\n"
+            u"  --unregulated\n"
+            u"      Insert data packets immediately. Do not regulate insertion, do not limit\n"
+            u"      the data bitrate.\n"
+            u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 }
@@ -290,6 +307,7 @@ bool ts::DataInjectPlugin::start()
     const size_t queue_size = intValue<size_t>(u"queue-size", DEFAULT_QUEUE_SIZE);
     _reuse_port = present(u"reuse-port");
     _sock_buf_size = intValue<size_t>(u"buffer-size");
+    _unregulated = present(u"unregulated");
 
     // Set logging levels.
     const int log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
@@ -304,14 +322,32 @@ bool ts::DataInjectPlugin::start()
     // Specify which EMMG/PDG <=> MUX version to use.
     emmgmux::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"emmg-mux-version", DEFAULT_PROTOCOL_VERSION));
 
-    // Initialize the TCP server.
-    if (!_server_address.resolve(value(u"server"), *tsp)) {
+    // Get TCP server address. The only mandatory part is the TCP port.
+    if (!_tcp_address.resolve(value(u"server"), *tsp)) {
         return false;
     }
+    if (!_tcp_address.hasPort()) {
+        tsp->error(u"no TCP server port specified");
+        return false;
+    }
+
+    // Get UDP server address. Same as TCP by default.
+    _udp_address.clear();
+    if (present(u"udp") && !_udp_address.resolve(value(u"udp"), *tsp)) {
+        return false;
+    }
+    if (!_udp_address.hasAddress()) {
+        _udp_address.setAddress(_tcp_address.address());
+    }
+    if (!_udp_address.hasPort()) {
+        _udp_address.setPort(_tcp_address.port());
+    }
+
+    // Initialize the TCP server.
     if (!_server.open(*tsp)) {
         return false;
     }
-    if (!_server.reusePort(_reuse_port, *tsp) || !_server.bind(_server_address, *tsp) || !_server.listen(SERVER_BACKLOG, *tsp)) {
+    if (!_server.reusePort(_reuse_port, *tsp) || !_server.bind(_tcp_address, *tsp) || !_server.listen(SERVER_BACKLOG, *tsp)) {
         _server.close(*tsp);
         return false;
     }
@@ -404,7 +440,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, b
         }
 
         // Try to insert data
-        if (_pkt_next_data <= _pkt_current) {
+        if (_unregulated || _pkt_next_data <= _pkt_current) {
             // Time to insert data packet, if any is available immediately.
             Guard lock(_mutex);
 
@@ -416,7 +452,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, b
             }
             else {
                 // Packet mode: Dequeue a packet immediately.
-                TSPacketPtrMT pp;
+                PacketPtrMT pp;
                 got_packet = _packet_queue.dequeue(pp, 0);
                 if (got_packet) {
                     pkt = *pp;
@@ -431,7 +467,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, b
                 _data_cc = (_data_cc + 1) & CC_MASK;
                 // Compute next insertion point if the data PID bitrate is specified.
                 // Otherwise, try to update any null packet (unbounded bitrate).
-                if (_req_bitrate != 0) {
+                if (!_unregulated || _req_bitrate != 0) {
                     // TODO: refine this, works only for low injection bitrates.
                     _pkt_next_data += tsp->bitrate() / _req_bitrate;
                 }
@@ -557,7 +593,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                     tsp->error(u"invalid TS packet");
                 }
                 else {
-                    TSPacketPtrMT p(new TSPacket());
+                    PacketPtrMT p(new TSPacket());
                     p->copyFrom(data);
                     processPacketLoss(u"packets", _packet_queue.enqueue(p, 0));
                     data += PKT_SIZE;
@@ -778,7 +814,7 @@ ts::DataInjectPlugin::UDPListener::UDPListener(DataInjectPlugin* plugin) :
 
 bool ts::DataInjectPlugin::UDPListener::open()
 {
-    _client.setParameters(_plugin->_server_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
+    _client.setParameters(_plugin->_udp_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
     return _client.open(*_tsp);
 }
 
