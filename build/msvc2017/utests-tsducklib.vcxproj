@@ -46,6 +46,7 @@
     <ClCompile Include="..\..\src\utest\utestSysUtils.cpp" />
     <ClCompile Include="..\..\src\utest\utestTable.cpp" />
     <ClCompile Include="..\..\src\utest\utestTablesFactory.cpp" />
+    <ClCompile Include="..\..\src\utest\utestTagLengthValue.cpp" />
     <ClCompile Include="..\..\src\utest\utestThread.cpp" />
     <ClCompile Include="..\..\src\utest\utestThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\utest\utestTime.cpp" />

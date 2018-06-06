@@ -34,6 +34,7 @@
 #include "tsECMGSCS.h"
 #include "tstlvMessageFactory.h"
 #include "tsMPEG.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 // Define protocol singleton instance
@@ -164,6 +165,16 @@ void ts::ecmgscs::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
         default:
             throw tlv::DeserializationInternalError(UString::Format(u"ECMG<=>SCS Message 0x%X unimplemented", {fact.commandTag()}));
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Return a message for a given protocol error status.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ecmgscs::Errors::Name(uint16_t status)
+{
+    return DVBNameFromSection(u"EcmgScsErrors", status, names::HEXA_FIRST);
 }
 
 
@@ -443,7 +454,7 @@ ts::UString ts::ecmgscs::ChannelError::dump (size_t indent) const
     return UString::Format(u"%*schannel_error (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
-        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_status", error_status, Errors::Name) +
         dumpVector(indent, u"error_information", error_information);
 }
 
@@ -661,7 +672,7 @@ ts::UString ts::ecmgscs::StreamError::dump (size_t indent) const
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id) +
-        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_status", error_status, Errors::Name) +
         dumpVector(indent, u"error_information", error_information);
 }
 

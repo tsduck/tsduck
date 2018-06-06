@@ -127,6 +127,9 @@
     <ClCompile Include="..\..\src\utest\utestTablesFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\utest\utestTagLengthValue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\utest\utestUString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
