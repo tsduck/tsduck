@@ -29,9 +29,11 @@
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithmTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsApplicationIdentifier.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsApplicationStorageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
@@ -135,6 +137,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsEutelsatChannelNumberDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsException.h" />
     <ClInclude Include="..\..\src\libtsduck\tsExtendedEventDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsExternalApplicationAuthorizationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsExternalESIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFatal.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFileNameRate.h" />
@@ -453,6 +456,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsApplicationNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsApplicationStorageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgs.cpp" />
@@ -532,6 +536,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsEutelsatChannelNumberDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsException.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsExtendedEventDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsExternalApplicationAuthorizationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsExternalESIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFatal.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFileNameRate.cpp" />

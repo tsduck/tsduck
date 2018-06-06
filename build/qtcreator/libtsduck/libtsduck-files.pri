@@ -27,9 +27,11 @@ HEADERS += \
     ../../../src/libtsduck/tsAlgorithmTemplate.h \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.h \
     ../../../src/libtsduck/tsApplicationDescriptor.h \
+    ../../../src/libtsduck/tsApplicationIdentifier.h \
     ../../../src/libtsduck/tsApplicationNameDescriptor.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.h \
+    ../../../src/libtsduck/tsApplicationStorageDescriptor.h \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.h \
     ../../../src/libtsduck/tsArgMix.h \
     ../../../src/libtsduck/tsArgMixTemplate.h \
@@ -133,6 +135,7 @@ HEADERS += \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.h \
     ../../../src/libtsduck/tsException.h \
     ../../../src/libtsduck/tsExtendedEventDescriptor.h \
+    ../../../src/libtsduck/tsExternalApplicationAuthorizationDescriptor.h \
     ../../../src/libtsduck/tsExternalESIdDescriptor.h \
     ../../../src/libtsduck/tsFatal.h \
     ../../../src/libtsduck/tsFileNameRate.h \
@@ -441,6 +444,7 @@ SOURCES += \
     ../../../src/libtsduck/tsApplicationNameDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
+    ../../../src/libtsduck/tsApplicationStorageDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
     ../../../src/libtsduck/tsArgs.cpp \
@@ -520,6 +524,7 @@ SOURCES += \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.cpp \
     ../../../src/libtsduck/tsException.cpp \
     ../../../src/libtsduck/tsExtendedEventDescriptor.cpp \
+    ../../../src/libtsduck/tsExternalApplicationAuthorizationDescriptor.cpp \
     ../../../src/libtsduck/tsExternalESIdDescriptor.cpp \
     ../../../src/libtsduck/tsFatal.cpp \
     ../../../src/libtsduck/tsFileNameRate.cpp \

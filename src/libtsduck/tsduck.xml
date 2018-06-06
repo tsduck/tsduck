@@ -191,7 +191,7 @@
     <_any in="_descriptors"/>
     <!-- One per application -->
     <application control_code="uint8, required">
-      <application_identifier organisation_id="uint32, required" application_id="uint16, required" />
+      <application_identifier organisation_id="uint32, required" application_id="uint16, required"/>
       <_any in="_descriptors"/>
     </application>
   </AIT>
@@ -360,6 +360,16 @@
       <application application_type="uint15, required"
                    AIT_version_number="uint5, required"/>
     </application_signalling_descriptor>
+
+    <application_storage_descriptor
+        storage_property="uint8, required"
+        not_launchable_from_broadcast="bool, required"
+        launchable_completely_from_cache="bool, required"
+        is_launchable_with_older_version="bool, required"
+        version="uint31, required"
+        priority="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </application_storage_descriptor>
 
     <application_usage_descriptor usage_type="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
@@ -573,6 +583,15 @@
         <name>String</name>
       </item>
     </extended_event_descriptor>
+
+    <external_application_authorization_descriptor>
+      <!-- One per application -->
+      <application
+          organisation_id="uint32, required"
+          application_id="uint16, required"
+          application_priority="uint8, required"/>
+      <!-- Must be in an AIT (table id 0x74) -->
+    </external_application_authorization_descriptor>
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
 
