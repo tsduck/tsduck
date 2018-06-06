@@ -187,7 +187,7 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
     for (ApplicationMap::const_iterator it = applications.begin(); it != applications.end() && remain >= 9; ++it) {
 
         // Insert stream type and pid
-        PutUInt32(data, it->first.organisation_id);
+        PutUInt32(data, it->first.organization_id);
         PutUInt16(data + 4, it->first.application_id);
         data[6] = it->second.control_code;
         data += 7;
@@ -291,7 +291,7 @@ void ts::AIT::buildXML(xml::Element* root) const
         xml::Element* e = root->addElement(u"application");
         e->setIntAttribute(u"control_code", it->second.control_code, true);
         xml::Element* id = e->addElement(u"application_identifier");
-        id->setIntAttribute(u"organisation_id", it->first.organisation_id, true);
+        id->setIntAttribute(u"organization_id", it->first.organization_id, true);
         id->setIntAttribute(u"application_id", it->first.application_id, true);
 
         it->second.descs.toXML(e);
@@ -319,7 +319,7 @@ void ts::AIT::fromXML(const xml::Element* element)
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 
-        _is_valid = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) && application.descs.fromXML(others, children[index], allowed) && id != 0 && id->getIntAttribute<uint32_t>(identifier.organisation_id, u"organisation_id", true, 0, 0, 0xFFFFFFFF) && id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
+        _is_valid = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) && application.descs.fromXML(others, children[index], allowed) && id != 0 && id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) && id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
 
         if (_is_valid) {
             applications[identifier] = application;

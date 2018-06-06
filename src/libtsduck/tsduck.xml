@@ -191,7 +191,7 @@
     <_any in="_descriptors"/>
     <!-- One per application -->
     <application control_code="uint8, required">
-      <application_identifier organisation_id="uint32, required" application_id="uint16, required"/>
+      <application_identifier organization_id="uint32, required" application_id="uint16, required"/>
       <_any in="_descriptors"/>
     </application>
   </AIT>
@@ -587,7 +587,7 @@
     <external_application_authorization_descriptor>
       <!-- One per application -->
       <application
-          organisation_id="uint32, required"
+          organization_id="uint32, required"
           application_id="uint16, required"
           application_priority="uint8, required"/>
       <!-- Must be in an AIT (table id 0x74) -->
