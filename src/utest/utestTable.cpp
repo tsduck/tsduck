@@ -176,7 +176,7 @@ void TableTest::testCopyPMT()
 
 void TableTest::testAIT()
 {
-    ts::AIT::ApplicationIdentifier id;
+    ts::ApplicationIdentifier id;
     ts::AIT ait1;
     ait1.applications[id].descs.add(ts::CADescriptor());
     CPPUNIT_ASSERT_EQUAL(size_t(1), ait1.applications.size());

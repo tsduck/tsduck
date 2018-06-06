@@ -23,6 +23,7 @@
     REF_TYPE(ApplicationDescriptor);
     REF_TYPE(ApplicationNameDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
+    REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
@@ -55,6 +56,7 @@
     REF_TYPE(EnhancedAC3Descriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
     REF_TYPE(ExtendedEventDescriptor);
+    REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);

@@ -58,8 +58,8 @@ TSDuck - List of features to be implemented or fixed
   - 9.5.2.15  ssu_uri_descriptor
 
   ETSI TS 102 809 (DVB HbbTV)
-  - 5.3.5.4    application_recording_descriptor
-  - 5.3.5.6.2  application_icons_descriptor
-  - 5.3.5.7    external_application_authorization_descriptor
-  - 5.3.5.8    graphics_constraints_descriptor
-  - 5.3.10.1   application_storage_descriptor
+  - 5.3.5.4   application_recording_descriptor
+  - 5.3.5.6.2 application_icons_descriptor
+  - 5.3.5.8   graphics_constraints_descriptor
+  - 5.3.7     simple_application_location_descriptor
+  - 5.3.8     simple_application_boundary_descriptor
