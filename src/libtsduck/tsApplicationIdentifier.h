@@ -43,16 +43,16 @@ namespace ts {
     //!
     struct TSDUCKDLL ApplicationIdentifier
     {
-        uint32_t organisation_id; //!< The organisation identifier
+        uint32_t organization_id; //!< The organization identifier
         uint16_t application_id;  //!< The application identifier
          
         //!
         //! Constructor from two ids.
-        //! @param [in] org_id Organisation identifier.
+        //! @param [in] org_id Organization identifier.
         //! @param [in] app_id Application identifier.
         //!
         ApplicationIdentifier(uint32_t org_id = 0, uint16_t app_id = 0) :
-             organisation_id(org_id),
+             organization_id(org_id),
              application_id(app_id)
         {
         }
@@ -64,7 +64,7 @@ namespace ts {
         //!
         bool operator==(const ApplicationIdentifier& that) const
         {
-            return organisation_id == that.organisation_id && application_id == that.application_id;
+            return organization_id == that.organization_id && application_id == that.application_id;
         }
 
         //!
@@ -74,17 +74,17 @@ namespace ts {
         //!
         bool operator!=(const ApplicationIdentifier& that) const
         {
-            return organisation_id != that.organisation_id || application_id != that.application_id;
+            return organization_id != that.organization_id || application_id != that.application_id;
         }
 
         //!
-        //! Lower than operator. It compares first the organisation id, then the application id.
+        //! Lower than operator. It compares first the organization id, then the application id.
         //! @param[in] that Identifier to compare to.
         //! @return True if the identifier is lower than the other one, False otherwise.
         //!
         bool operator<(const ApplicationIdentifier& that) const
         {
-            return organisation_id < that.organisation_id || (organisation_id == that.organisation_id && application_id < that.application_id);
+            return organization_id < that.organization_id || (organization_id == that.organization_id && application_id < that.application_id);
         }
     };
 }

@@ -73,7 +73,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::serialize(Descriptor& desc,
 {
     ByteBlockPtr bbp(serializeStart());
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt32(it->application_identifier.organisation_id);
+        bbp->appendUInt32(it->application_identifier.organization_id);
         bbp->appendUInt16(it->application_identifier.application_id);
         bbp->appendUInt8(it->application_priority);
     }
@@ -133,7 +133,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::buildXML(xml::Element* root
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"application");
-        e->setIntAttribute(u"organisation_id", it->application_identifier.organisation_id, true);
+        e->setIntAttribute(u"organization_id", it->application_identifier.organization_id, true);
         e->setIntAttribute(u"application_id", it->application_identifier.application_id, true);
         e->setIntAttribute(u"application_priority", it->application_priority, false);
     }
@@ -156,7 +156,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::fromXML(const xml::Element*
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            children[i]->getIntAttribute<uint32_t>(entry.application_identifier.organisation_id, u"organisation_id", true) &&
+            children[i]->getIntAttribute<uint32_t>(entry.application_identifier.organization_id, u"organization_id", true) &&
             children[i]->getIntAttribute<uint16_t>(entry.application_identifier.application_id, u"application_id", true) &&
             children[i]->getIntAttribute<uint8_t>(entry.application_priority, u"application_priority", true);
         if (_is_valid) {

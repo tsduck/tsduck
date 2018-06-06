@@ -60,7 +60,7 @@ namespace ts {
 
             //!
             //! Default constructor.
-            //! @param [in] org_id Organisation identifier.
+            //! @param [in] org_id Organization identifier.
             //! @param [in] app_id Application identifier.
             //! @param [in] prio Application priority.
             //!
