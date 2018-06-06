@@ -54,6 +54,7 @@ SOURCES += \
     ../../../src/utest/utestSysUtils.cpp \
     ../../../src/utest/utestTable.cpp \
     ../../../src/utest/utestTablesFactory.cpp \
+    ../../../src/utest/utestTagLengthValue.cpp \
     ../../../src/utest/utestThread.cpp \
     ../../../src/utest/utestThreadAttributes.cpp \
     ../../../src/utest/utestTime.cpp \

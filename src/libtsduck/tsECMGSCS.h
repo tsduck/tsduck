@@ -61,7 +61,7 @@ namespace ts {
             //!
             //! ECMG <=> SCS command tags.
             //!
-            enum Command {
+            enum Command : uint16_t {
                 channel_setup                 = 0x0001,  //!< The channel_setup message tag.
                 channel_test                  = 0x0002,  //!< The channel_test message tag.
                 channel_status                = 0x0003,  //!< The channel_status message tag.
@@ -79,7 +79,7 @@ namespace ts {
             //!
             //! ECMG <=> SCS parameter tags.
             //!
-            enum Parameter {
+            enum Parameter : uint16_t {
                 Super_CAS_id                  = 0x0001,  //!< The Super_CAS_id parameter tag.
                 section_TSpkt_flag            = 0x0002,  //!< The section_TSpkt_flag parameter tag.
                 delay_start                   = 0x0003,  //!< The delay_start parameter tag.
@@ -117,7 +117,7 @@ namespace ts {
             //!
             //! All error status values
             //!
-            enum StatusValue {
+            enum StatusValue : uint16_t {
                 inv_message           = 0x0001,  //!< The inv_message error status value.
                 inv_proto_version     = 0x0002,  //!< The inv_proto_version error status value.
                 inv_message_type      = 0x0003,  //!< The inv_message_type error status value.
@@ -142,6 +142,12 @@ namespace ts {
                 unknown_error         = 0x7000,  //!< The unknown_error error status value.
                 unrecoverable_error   = 0x7001,  //!< The unrecoverable_error error status value.
             };
+            //!
+            //! Return a message for a given protocol error status.
+            //! @param [in] status
+            //! @return Error message.
+            //!
+            static UString Name(uint16_t status);
         };
 
 

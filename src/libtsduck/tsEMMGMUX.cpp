@@ -34,6 +34,7 @@
 #include "tsEMMGMUX.h"
 #include "tstlvMessageFactory.h"
 #include "tsMPEG.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 // Define protocol singleton instance
@@ -169,6 +170,16 @@ void ts::emmgmux::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
         default:
             throw tlv::DeserializationInternalError(UString::Format(u"EMMG/PDG<=>MUX Message 0x%X unimplemented", {fact.commandTag()}));
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Return a message for a given protocol error status.
+//----------------------------------------------------------------------------
+
+ts::UString ts::emmgmux::Errors::Name(uint16_t status)
+{
+    return DVBNameFromSection(u"EmmgPdgMuxErrors", status, names::HEXA_FIRST);
 }
 
 
@@ -404,7 +415,7 @@ ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
-        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_status", error_status, Errors::Name) +
         dumpVector(indent, u"error_information", error_information);
 }
 
@@ -646,7 +657,7 @@ ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id) +
-        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_status", error_status, Errors::Name) +
         dumpVector(indent, u"error_information", error_information);
 }
 

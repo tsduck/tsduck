@@ -326,14 +326,20 @@ namespace ts {
             //! @param [in] indent Left indentation size.
             //! @param [in] name Parameter name.
             //! @param [in] val Vector of integer values.
+            //! @param [in] toString Optional function to convert an @a INT value into a string.
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val)
+            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = 0)
             {
                 UString s;
                 for (typename std::vector<INT>::const_iterator it = val.begin(); it != val.end(); ++it) {
-                    s += dumpInteger(indent, name, *it);
+                    if (toString == 0) {
+                        s += dumpInteger(indent, name, *it);
+                    }
+                    else {
+                        s += UString::Format(u"%*s%s = %s\n", {indent, u"", name, toString(*it)});
+                    }
                 }
                 return s;
             }
