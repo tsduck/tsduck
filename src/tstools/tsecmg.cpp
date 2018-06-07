@@ -76,6 +76,7 @@ struct ECMGOptions: public ts::Args
     int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
     int                        log_data;       // Log level for CW/ECM data messages.
     bool                       once;           // Accept only one client.
+    bool                       reusePort;      // Socket option.
     ts::MilliSecond            ecmCompTime;    // ECM computation time.
     ts::SocketAddress          serverAddress;  // TCP server local address.
     ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
@@ -87,6 +88,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     log_protocol(ts::Severity::Debug),
     log_data(ts::Severity::Debug),
     once(false),
+    reusePort(false),
     ecmCompTime(0),
     serverAddress(),
     channelStatus(),
@@ -102,6 +104,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     option(u"max-comp-time",          0,  UNSIGNED);
     option(u"log-data",               0,  ts::Severity::Enums, 0, 1, true);
     option(u"log-protocol",           0,  ts::Severity::Enums, 0, 1, true);
+    option(u"no-reuse-port",          0);
     option(u"once",                  'o');
     option(u"port",                  'p', UINT16);
     option(u"repetition",            'r', UINT16);
@@ -164,6 +167,9 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
             u"      the DVB SimulCrypt option 'max_comp_time'. By default, use the value of\n"
             u"      --comp-time (which is itself zero by default) plus 100 ms.\n"
             u"\n"
+            u"  --no-reuse-port\n"
+            u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
+            u"\n"
             u"  -o\n"
             u"  --once\n"
             u"      Accept only one client and exit at the end of the session.\n"
@@ -202,6 +208,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
     serverAddress.setPort(intValue<uint16_t>(u"port", DEFAULT_SERVER_PORT));
     once = present(u"once");
+    reusePort = !present(u"no-reuse-port");
     ecmCompTime = intValue<ts::MilliSecond>(u"comp-time", 0);
     log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
     log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
@@ -712,7 +719,7 @@ int main (int argc, char *argv[])
     // Initialize a TCP server.
     ts::TCPServer server;
     if (!server.open(shared.report()) ||
-        !server.reusePort(true, shared.report()) ||
+        !server.reusePort(opt.reusePort, shared.report()) ||
         !server.bind(opt.serverAddress, shared.report()) ||
         !server.listen(5, shared.report()))
     {
