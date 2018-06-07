@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 // Convert the SpliceTime structure to string.
 ts::UString ts::SpliceTime::toString() const
 {
-    return set() ? UString::Decimal(value()) : u"unset";
+    return set() ? UString::Format(u"0x%09X", {value()}) : u"unset";
 }
 
 // Deserialize a SpliceTime structure from binary data.
