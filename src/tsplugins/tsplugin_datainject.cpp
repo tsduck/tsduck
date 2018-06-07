@@ -218,6 +218,7 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 1, 5);
     option(u"log-data",          0,  ts::Severity::Enums, 0, 1, true);
     option(u"log-protocol",      0,  ts::Severity::Enums, 0, 1, true);
+    option(u"no-reuse-port",     0);
     option(u"pid",              'p', PIDVAL, 1, 1);
     option(u"queue-size",       'q', UINT32);
     option(u"reuse-port",       'r');
@@ -256,6 +257,9 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"      level. A level can be a numerical debug level or any of the following:\n"
             u"      " + ts::Severity::Enums.nameList() + u".\n"
             u"\n"
+            u"  --no-reuse-port\n"
+            u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
+            u"\n"
             u"  -p value\n"
             u"  --pid value\n"
             u"      Specifies the PID for the data insertion. This option is mandatory.\n"
@@ -268,7 +272,8 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"\n"
             u"  -r\n"
             u"  --reuse-port\n"
-            u"      Set the \"reuse port\" (or \"reuse address\") TCP option on the server.\n"
+            u"      Set the reuse port socket option. This is now enabled by default, the option\n"
+            u"      is present for legacy only.\n"
             u"\n"
             u"  -s [address:]port\n"
             u"  --server [address:]port\n"
@@ -305,7 +310,7 @@ bool ts::DataInjectPlugin::start()
     _max_bitrate = intValue<BitRate>(u"bitrate-max", 0);
     _data_pid = intValue<PID>(u"pid");
     const size_t queue_size = intValue<size_t>(u"queue-size", DEFAULT_QUEUE_SIZE);
-    _reuse_port = present(u"reuse-port");
+    _reuse_port = !present(u"no-reuse-port");
     _sock_buf_size = intValue<size_t>(u"buffer-size");
     _unregulated = present(u"unregulated");
 

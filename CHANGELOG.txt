@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.12-770
+Version 3.12-778
 
 - Added plugin "merge" which merges two transport streams.
 
@@ -11,6 +11,10 @@ Version 3.12-770
   appropriate for offline processing, such as working on transport streams files.
   This option is also automatically set by some plugins which are designed for
   real-time streaming ("dvb", "ip", dektec", "play", "regulate", "mpeinject").
+
+- The option --reuse-port is now on by default on all commands and plugins which
+  use it. A new option --no-reuse-port has been added everywhere to disable the
+  option explicitly (although probably never used).
 
 - Added options --log-protocol and --log-data to "tsecmg", "tsemmg" and plugins
   "scrambler", "datainject".

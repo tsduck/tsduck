@@ -72,6 +72,7 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
     args.option(u"default-interface", 0);
     args.option(u"first-source",      _with_short_options ? 'f' : 0);
     args.option(u"local-address",     _with_short_options ? 'l' : 0, Args::STRING);
+    args.option(u"no-reuse-port",     0);
     args.option(u"reuse-port",        _with_short_options ? 'r' : 0);
     args.option(u"source",            _with_short_options ? 's' : 0, Args::STRING);
 }
@@ -128,10 +129,14 @@ void ts::UDPReceiver::addHelp(ts::Args& args) const
         u"      Specify the IP address of the local interface on which to listen.\n"
         u"      It can be also a host name that translates to a local address.\n"
         u"      By default, listen on all local interfaces.\n"
+        u"\n"
+        u"  --no-reuse-port\n"
+        u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
         u"\n" +
         UString(_with_short_options ? u"  -r\n" : u"") +
         u"  --reuse-port\n"
-        u"      Set the reuse port socket option.\n"
+        u"      Set the reuse port socket option. This is now enabled by default, the option\n"
+        u"      is present for legacy only.\n"
         u"\n" +
         UString(_with_short_options ? u"  -s address[:port]\n" : u"") +
         u"  --source address[:port]\n"
@@ -167,7 +172,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
     }
 
     // General UDP options.
-    _reuse_port = args.present(u"reuse-port");
+    _reuse_port = !args.present(u"no-reuse-port");
     _default_interface = args.present(u"default-interface");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);

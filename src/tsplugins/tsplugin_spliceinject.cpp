@@ -286,6 +286,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     option(u"inject-interval",  0,  UNSIGNED);
     option(u"max-file-size",    0,  UNSIGNED);
     option(u"min-stable-delay", 0,  UNSIGNED);
+    option(u"no-reuse-port",    0);
     option(u"pcr-pid",          0,  PIDVAL);
     option(u"pid",             'p', PIDVAL);
     option(u"pts-pid",          0,  PIDVAL);
@@ -398,9 +399,13 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
             u"  --buffer-size value\n"
             u"      Specifies the UDP socket receive buffer size (socket option).\n"
             u"\n"
+            u"  --no-reuse-port\n"
+            u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
+            u"\n"
             u"  -r\n"
             u"  --reuse-port\n"
-            u"      Set the \"reuse port\" (or \"reuse address\") UDP option on the server.\n"
+            u"      Set the reuse port socket option. This is now enabled by default, the option\n"
+            u"      is present for legacy only.\n"
             u"\n"
             u"  -u [address:]port\n"
             u"  --udp [address:]port\n"
@@ -432,7 +437,7 @@ bool ts::SpliceInjectPlugin::start()
     _pcr_pid = intValue<PID>(u"pcr-pid", PID_NULL);
     _pts_pid = intValue<PID>(u"pts-pid", PID_NULL);
     _delete_files = present(u"delete-files");
-    _reuse_port = present(u"reuse-port");
+    _reuse_port = !present(u"no-reuse-port");
     _sock_buf_size = intValue<size_t>(u"buffer-size");
     _inject_count = intValue<size_t>(u"inject-count", DEFAULT_INJECT_COUNT);
     _inject_interval = intValue<MilliSecond>(u"inject-interval", DEFAULT_INJECT_INTERVAL);
