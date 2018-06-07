@@ -295,7 +295,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
-        tsp->verbose(u"adding splice %s at PTS 0x%09X", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString()});
+        tsp->verbose(u"adding splice %s at PTS %s", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString()});
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.addEvent(cmd, _tagsByPID);
         }
