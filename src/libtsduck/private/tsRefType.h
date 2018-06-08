@@ -21,6 +21,7 @@
     REF_TYPE(AdaptationFieldDataDescriptor);
     REF_TYPE(AncillaryDataDescriptor);
     REF_TYPE(ApplicationDescriptor);
+    REF_TYPE(ApplicationIconsDescriptor);
     REF_TYPE(ApplicationNameDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationStorageDescriptor);
@@ -100,6 +101,8 @@
     REF_TYPE(ServiceMoveDescriptor);
     REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(ShortEventDescriptor);
+    REF_TYPE(SimpleApplicationBoundaryDescriptor);
+    REF_TYPE(SimpleApplicationLocationDescriptor);
     REF_TYPE(SLDescriptor);
     REF_TYPE(SmoothingBufferDescriptor);
     REF_TYPE(SpliceAvailDescriptor);

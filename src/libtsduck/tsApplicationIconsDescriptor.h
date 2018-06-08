@@ -28,20 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an application_icons_descriptor (AIT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 12
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 780
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an application_icons_descriptor (AIT specific).
+    //!
+    //! This descriptor cannot be present in other tables than an AIT
+    //! because its tag reuses an MPEG-defined one.
+    //!
+    //! @see ETSI TS 102 809, 5.3.5.6.2.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ApplicationIconsDescriptor : public AbstractDescriptor
+    {
+    public:
+        // ApplicationIconsDescriptor public members:
+        UString   icon_locator;         //!< Icon locator.
+        uint16_t  icon_flags;           //!< Icon size flags.
+        ByteBlock reserved_future_use;  //!< Reserved.
+
+        //!
+        //! Default constructor.
+        //!
+        ApplicationIconsDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ApplicationIconsDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}
