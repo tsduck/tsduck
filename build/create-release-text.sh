@@ -30,7 +30,7 @@ wget -q -O "$HTMLFILE" "$URL" || error "error getting $URL"
 
 # Extract all href in HTML file. We assume that there is at most 1 href by line.
 sed -e '/href="/!d' -e 's|^.*href="||' -e 's|".*$||' -e "s|^/|$HOST/|" $HTMLFILE | \
-    grep -e '\.exe' -e '\.deb' -e '\.rpm' >$LINKFILE 
+    grep -e '\.exe' -e '\.deb' -e '\.rpm' -e '\.zip' >$LINKFILE 
 
 # Get links for all expected targets.
 getlink() {
