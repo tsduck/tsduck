@@ -228,7 +228,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     channelStatus.transition_delay_start = intValue<int16_t>(u"transition-delay-start", DEFAULT_TRANS_DELAY_START);
     channelStatus.has_transition_delay_stop = true;
     channelStatus.transition_delay_stop = intValue<int16_t>(u"transition-delay-stop", DEFAULT_TRANS_DELAY_STOP);
-    channelStatus.max_comp_time = intValue<uint16_t>(u"max-comp-time", ecmCompTime + 100);
+    channelStatus.max_comp_time = intValue<uint16_t>(u"max-comp-time", uint16_t(ecmCompTime + 100));
 
     // Specify which ECMG <=> SCS version to use.
     ts::ecmgscs::Protocol::Instance()->setVersion(protocolVersion);
