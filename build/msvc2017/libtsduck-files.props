@@ -29,6 +29,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithmTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsApplicationIconsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationIdentifier.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSharedLibrary.h" />
@@ -278,6 +279,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsSHA512.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsShortEventDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSimpleApplicationBoundaryDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSimpleApplicationLocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSimulCryptDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSingletonManager.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSLDescriptor.h" />
@@ -453,6 +456,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAncillaryDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsApplicationIconsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.cpp" />
@@ -648,6 +652,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsSHA512.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsShortEventDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSimpleApplicationBoundaryDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSimpleApplicationLocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSimulCryptDate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSingletonManager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSLDescriptor.cpp" />

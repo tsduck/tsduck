@@ -27,6 +27,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAlgorithmTemplate.h \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.h \
     ../../../src/libtsduck/tsApplicationDescriptor.h \
+    ../../../src/libtsduck/tsApplicationIconsDescriptor.h \
     ../../../src/libtsduck/tsApplicationIdentifier.h \
     ../../../src/libtsduck/tsApplicationNameDescriptor.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
@@ -276,6 +277,8 @@ HEADERS += \
     ../../../src/libtsduck/tsSHA512.h \
     ../../../src/libtsduck/tsSharedLibrary.h \
     ../../../src/libtsduck/tsShortEventDescriptor.h \
+    ../../../src/libtsduck/tsSimpleApplicationBoundaryDescriptor.h \
+    ../../../src/libtsduck/tsSimpleApplicationLocationDescriptor.h \
     ../../../src/libtsduck/tsSimulCryptDate.h \
     ../../../src/libtsduck/tsSingletonManager.h \
     ../../../src/libtsduck/tsSLDescriptor.h \
@@ -441,6 +444,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAIT.cpp \
     ../../../src/libtsduck/tsAncillaryDataDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationDescriptor.cpp \
+    ../../../src/libtsduck/tsApplicationIconsDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationNameDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
@@ -636,6 +640,8 @@ SOURCES += \
     ../../../src/libtsduck/tsSHA512.cpp \
     ../../../src/libtsduck/tsSharedLibrary.cpp \
     ../../../src/libtsduck/tsShortEventDescriptor.cpp \
+    ../../../src/libtsduck/tsSimpleApplicationBoundaryDescriptor.cpp \
+    ../../../src/libtsduck/tsSimpleApplicationLocationDescriptor.cpp \
     ../../../src/libtsduck/tsSimulCryptDate.cpp \
     ../../../src/libtsduck/tsSingletonManager.cpp \
     ../../../src/libtsduck/tsSLDescriptor.cpp \

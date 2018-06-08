@@ -37,6 +37,8 @@ Version 3.12-778
   broadcast remains not possible (because this is usually not a good thing to
   route broadcast).
 
+- Bug fix: In "tsecmg", the option --max-comp-time was not used.
+
 - Regression fix: In plugin "datainject", the section mode was no longer handled
   correctly since version 3.10.
 

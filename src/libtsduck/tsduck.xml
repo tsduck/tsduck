@@ -349,6 +349,15 @@
       <transport_protocol label="uint8, required"/>
     </application_descriptor>
 
+    <application_icons_descriptor
+        icon_locator="string, required"
+        icon_flags="uint16, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </application_icons_descriptor>
+
     <application_name_descriptor>
       <!-- Must be in an AIT (table id 0x74) -->
       <!-- One per language -->
@@ -858,6 +867,16 @@
       <event_name>String</event_name>
       <text>String</text>
     </short_event_descriptor>
+
+    <simple_application_boundary_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per prefix: -->
+      <prefix boundary_extension="string, required"/>
+    </simple_application_boundary_descriptor>
+
+    <simple_application_location_descriptor initial_path="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </simple_application_location_descriptor>
 
     <SL_descriptor ES_ID="uint16, required"/>
 
