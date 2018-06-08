@@ -228,6 +228,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     channelStatus.transition_delay_start = intValue<int16_t>(u"transition-delay-start", DEFAULT_TRANS_DELAY_START);
     channelStatus.has_transition_delay_stop = true;
     channelStatus.transition_delay_stop = intValue<int16_t>(u"transition-delay-stop", DEFAULT_TRANS_DELAY_STOP);
+    channelStatus.max_comp_time = intValue<uint16_t>(u"max-comp-time", ecmCompTime + 100);
 
     // Specify which ECMG <=> SCS version to use.
     ts::ecmgscs::Protocol::Instance()->setVersion(protocolVersion);
@@ -236,7 +237,6 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
     // Other hard-coded ECMG parameters.
     channelStatus.max_streams = 0;       // No specified max number of streams per channel.
-    channelStatus.max_comp_time = uint16_t(ecmCompTime + 100);
     channelStatus.min_CP_duration = 10;  // Minimum crypto period in 100 x ms, 1 second here.
     streamStatus.access_criteria_transfer_mode = false;  // We don't really need access criteria.
 
