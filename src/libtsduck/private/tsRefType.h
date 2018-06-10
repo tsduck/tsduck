@@ -26,6 +26,7 @@
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
+    REF_TYPE(AssociationTagDescriptor);
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);
@@ -33,6 +34,7 @@
     REF_TYPE(CableDeliverySystemDescriptor);
     REF_TYPE(CADescriptor);
     REF_TYPE(CAIdentifierDescriptor);
+    REF_TYPE(CarouselIdentifierDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ContentDescriptor);
     REF_TYPE(CopyrightDescriptor);
@@ -43,6 +45,7 @@
     REF_TYPE(DataBroadcastDescriptor);
     REF_TYPE(DataBroadcastIdDescriptor);
     REF_TYPE(DataStreamAlignmentDescriptor);
+    REF_TYPE(DeferredAssociationTagsDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
     REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);

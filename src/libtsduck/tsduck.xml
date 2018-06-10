@@ -384,6 +384,17 @@
       <!-- Must be in an AIT (table id 0x74) -->
     </application_usage_descriptor>
 
+    <association_tag_descriptor
+        association_tag="uint16, required"
+        use="uint16, required">
+      <selector_bytes>
+        Hexadecimal content
+      </selector_bytes>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </association_tag_descriptor>
+
     <audio_stream_descriptor
         free_format="bool, required"
         ID="uint1, required"
@@ -430,6 +441,12 @@
         modulation="auto|16-QAM|32-QAM|64-QAM|128-QAM|256-QAM, default=16-QAM"
         symbol_rate="SymbolRate, required"
         FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none, required"/>
+
+    <carousel_identifier_descriptor carousel_id="uint32, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </carousel_identifier_descriptor>
 
     <component_descriptor
         stream_content="uint4, required"
@@ -488,6 +505,16 @@
     </data_broadcast_id_descriptor>
 
     <data_stream_alignment_descriptor alignment_type="uint8, required"/>
+
+    <deferred_association_tags_descriptor
+        transport_stream_id="uint16, required"
+        program_number="uint16, required">
+      <!-- One per association tag -->
+      <association tag="uint16, required"/>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </deferred_association_tags_descriptor>
 
     <DII_location_descriptor transport_protocol_label="uint8, required">
       <!-- Must be in an AIT (table id 0x74) -->
