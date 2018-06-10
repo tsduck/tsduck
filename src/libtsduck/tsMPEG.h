@@ -847,8 +847,14 @@ namespace ts {
         DID_PRIV_DATA_IND       = 0x0F, //!< DID for private data indicator descriptor
         DID_SMOOTH_BUF          = 0x10, //!< DID for smoothing buffer descriptor
         DID_STD                 = 0x11, //!< DID for STD_descriptor
-        DID_IBP                 = 0x12, //!< DID for IBP descriptor
-                                        // Values 0x13 to 0x1A defined by DSM-CC
+        DID_IBP                 = 0x12, //!< DID for IBP_descriptor
+        DID_CAROUSEL_IDENTIFIER = 0x13, //!< DID for DSM-CC carousel identifier descriptor
+        DID_ASSOCIATION_TAG     = 0x14, //!< DID for DSM-CC association tag descriptor
+        DID_DEFERRED_ASSOC_TAGS = 0x15, //!< DID for DSM-CC deferred association tags descriptor
+        DID_NPT_REFERENCE       = 0x17, //!< DID for DSM-CC NPT reference descriptor
+        DID_NPT_ENDPOINT        = 0x18, //!< DID for DSM-CC NPT endpoint descriptor
+        DID_STREAM_MODE         = 0x19, //!< DID for DSM-CC stream mode descriptor
+        DID_STREAM_EVENT        = 0x1A, //!< DID for DSM-CC stream event descriptor
         DID_MPEG4_VIDEO         = 0x1B, //!< DID for MPEG-4_video_descriptor
         DID_MPEG4_AUDIO         = 0x1C, //!< DID for MPEG-4_audio_descriptor
         DID_IOD                 = 0x1D, //!< DID for IOD_descriptor

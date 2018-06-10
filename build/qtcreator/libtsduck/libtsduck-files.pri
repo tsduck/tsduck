@@ -38,6 +38,7 @@ HEADERS += \
     ../../../src/libtsduck/tsArgMixTemplate.h \
     ../../../src/libtsduck/tsArgs.h \
     ../../../src/libtsduck/tsArgsTemplate.h \
+    ../../../src/libtsduck/tsAssociationTagDescriptor.h \
     ../../../src/libtsduck/tsAsyncReport.h \
     ../../../src/libtsduck/tsAudioAttributes.h \
     ../../../src/libtsduck/tsAudioLanguageOptions.h \
@@ -61,6 +62,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsCADescriptor.h \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsCarouselIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCASFamily.h \
     ../../../src/libtsduck/tsCASMapper.h \
     ../../../src/libtsduck/tsCASSelectionArgs.h \
@@ -91,6 +93,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.h \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.h \
     ../../../src/libtsduck/tsDataStreamAlignmentDescriptor.h \
+    ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.h \
     ../../../src/libtsduck/tsDektecControl.h \
     ../../../src/libtsduck/tsDektecInputPlugin.h \
     ../../../src/libtsduck/tsDektecOutputPlugin.h \
@@ -452,6 +455,7 @@ SOURCES += \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
     ../../../src/libtsduck/tsArgs.cpp \
+    ../../../src/libtsduck/tsAssociationTagDescriptor.cpp \
     ../../../src/libtsduck/tsAsyncReport.cpp \
     ../../../src/libtsduck/tsAudioAttributes.cpp \
     ../../../src/libtsduck/tsAudioLanguageOptions.cpp \
@@ -473,6 +477,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsCADescriptor.cpp \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsCarouselIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCASFamily.cpp \
     ../../../src/libtsduck/tsCASMapper.cpp \
     ../../../src/libtsduck/tsCASSelectionArgs.cpp \
@@ -493,6 +498,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.cpp \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsDataStreamAlignmentDescriptor.cpp \
+    ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.cpp \
     ../../../src/libtsduck/tsDektecControl.cpp \
     ../../../src/libtsduck/tsDektecInputPlugin.cpp \
     ../../../src/libtsduck/tsDektecOutputPlugin.cpp \

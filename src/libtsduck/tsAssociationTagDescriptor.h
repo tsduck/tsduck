@@ -28,20 +28,45 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an association_tag_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 13
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 783
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of an association_tag_descriptor.
+    //! @see ISO/IEC 13818-6 (DSM-CC), 11.4.2.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL AssociationTagDescriptor : public AbstractDescriptor
+    {
+    public:
+        // AssociationTagDescriptor public members:
+        uint16_t  association_tag;  //!< Association tag.
+        uint16_t  use;              //!< Usage of associated bitstream.
+        ByteBlock selector_bytes;   //!< Selector bytes, depend on @a use.
+        ByteBlock private_data;     //!< Private data.
+
+        //!
+        //! Default constructor.
+        //!
+        AssociationTagDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        AssociationTagDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

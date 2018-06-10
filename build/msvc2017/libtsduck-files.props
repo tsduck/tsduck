@@ -40,6 +40,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgsTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAssociationTagDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioLanguageOptions.h" />
@@ -63,6 +64,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCADescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASFamily.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASMapper.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASSelectionArgs.h" />
@@ -93,6 +95,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDataBroadcastDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDataBroadcastIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecControl.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecOutputPlugin.h" />
@@ -464,6 +467,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAssociationTagDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioLanguageOptions.cpp" />
@@ -485,6 +489,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCADescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASFamily.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASMapper.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
@@ -505,6 +510,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDataBroadcastDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDataBroadcastIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecControl.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecOutputPlugin.cpp" />

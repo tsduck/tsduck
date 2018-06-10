@@ -118,6 +118,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgsTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsAssociationTagDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -185,6 +188,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCASFamily.h">
@@ -275,6 +281,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDektecControl.h">
@@ -1386,6 +1395,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsAssociationTagDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1449,6 +1461,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCASFamily.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1507,6 +1522,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDektecControl.cpp">

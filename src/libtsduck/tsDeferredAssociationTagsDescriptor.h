@@ -28,20 +28,45 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a deferred_association_tags_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 13
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 783
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a deferred_association_tags_descriptor.
+    //! @see ISO/IEC 13818-6 (DSM-CC), 11.4.3.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL DeferredAssociationTagsDescriptor : public AbstractDescriptor
+    {
+    public:
+        // DeferredAssociationTagsDescriptor public members:
+        std::vector<uint16_t> association_tags;     //!< Association tags.
+        uint16_t              transport_stream_id;  //!< Transport stream id.
+        uint16_t              program_number;       //!< Program number.
+        ByteBlock             private_data;         //!< Private data.
+
+        //!
+        //! Default constructor.
+        //!
+        DeferredAssociationTagsDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        DeferredAssociationTagsDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}
