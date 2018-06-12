@@ -28,20 +28,69 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  An encapsulation of a HiDes modulator device.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 13
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 786
+#include "tsUString.h"
+#include "tsModulation.h"
+#include "tsCerrReport.h"
+
+namespace ts {
+    //!
+    //! Encapsulation of a HiDes modulator device.
+    //! @ingroup hardware
+    //!
+    class TSDUCKDLL HiDesDevice
+    {
+    public:
+        //!
+        //! Constructor.
+        //!
+        HiDesDevice();
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~HiDesDevice();
+
+        //!
+        //! Information about a device.
+        //!
+        class TSDUCKDLL Info
+        {
+        public:
+            int     index;   //!< Adapter index.
+            UString name;    //!< Device name.
+
+            //!
+            //! Default constructor.
+            //!
+            Info() : index(0), name() {}
+        };
+
+        //!
+        //! A list of device information.
+        //!
+        typedef std::list<Info> InfoList;
+
+        //!
+        //! Get all HiDes devices in the system.
+        //! @param [out] devices Returned list of devices.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool GetAllDevices(InfoList& devices, Report& report = CERR);
+
+    private:
+        // The implementation is highly system-dependent.
+        // Redirect it to an internal "guts" class.
+        class Guts;
+        Guts* _guts;
+
+        // Inaccessible operations.
+        HiDesDevice(const HiDesDevice&) = delete;
+        HiDesDevice& operator=(const HiDesDevice&) = delete;
+    };
+}

@@ -26,22 +26,66 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+//
+//  An encapsulation of a HiDes modulator device - Unix implementation.
+//  Currently, the ITE 950x is implemented on Linux only.
+//  On other Unix flavors, this code compiles but no device wil be found.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 13
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 786
+#include "tsHiDesDevice.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Class internals, the "guts" internal class.
+//----------------------------------------------------------------------------
+
+class ts::HiDesDevice::Guts
+{
+public:
+    Guts();   // Constructor.
+};
+
+
+//----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
+
+ts::HiDesDevice::HiDesDevice() :
+    _guts(new Guts)
+{
+}
+
+ts::HiDesDevice::Guts::Guts()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Destructor
+//----------------------------------------------------------------------------
+
+ts::HiDesDevice::~HiDesDevice()
+{
+    // Free internal resources.
+    if (_guts != 0) {
+        delete _guts;
+        _guts = 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get all HiDes devices in the system.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::GetAllDevices(InfoList& devices, Report& report)
+{
+    // Clear returned array.
+    devices.clear();
+
+    //@@@@@@@@@@@
+
+    return true;
+}
