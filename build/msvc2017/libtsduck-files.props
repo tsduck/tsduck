@@ -154,6 +154,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsHiDesDevice.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIBPDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIDSA.h" />
@@ -783,6 +784,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowGraph.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowTest.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\windows\tsHiDesDevice.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsTuner.cpp" />
