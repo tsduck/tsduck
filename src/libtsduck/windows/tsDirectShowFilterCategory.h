@@ -125,7 +125,7 @@ namespace ts {
             ComPtr<::IBaseFilter> filter;   // Pointer to its IBaseFilter interface.
         };
 
-        Report&         _report;
+        Report&                  _report;
         ComPtr<::ICreateDevEnum> _enum;
         ComPtr<::IEnumMoniker>   _moniker;
         std::vector<Filter>      _filters;
