@@ -63,11 +63,12 @@ namespace ts {
         public:
             int     index;   //!< Adapter index.
             UString name;    //!< Device name.
+            UString path;    //!< Device path name, can be identical to @a name.
 
             //!
             //! Default constructor.
             //!
-            Info() : index(0), name() {}
+            Info() : index(0), name(), path() {}
         };
 
         //!
@@ -84,8 +85,7 @@ namespace ts {
         static bool GetAllDevices(InfoList& devices, Report& report = CERR);
 
     private:
-        // The implementation is highly system-dependent.
-        // Redirect it to an internal "guts" class.
+        // The implementation is highly system-dependent. Redirect it to an internal "guts" class.
         class Guts;
         Guts* _guts;
 

@@ -50,7 +50,7 @@ public:
 
 // Constructor.
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :
-    ts::Args(u"Control HiDes modulator devices", u"[options]")
+    ts::Args(u"List HiDes modulator devices", u"[options]")
 {
     setHelp(u"Options:\n"
             u"\n"
@@ -61,7 +61,6 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
             u"      Display the version number.\n");
 
     analyze(argc, argv);
-
     exitOnError();
 }
 
@@ -74,7 +73,22 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
 namespace {
     void MainCode(HiDesOptions& opt)
     {
-
+        // Get all HiDes devices.
+        ts::HiDesDevice::InfoList devices;
+        if (ts::HiDesDevice::GetAllDevices(devices, opt)) {
+            if (devices.empty()) {
+                std::cout << "No HiDes device found" << std::endl;
+            }
+            else {
+                std::cout << "Found " << devices.size() << " HiDes devices" << std::endl;
+                for (auto dev = devices.begin(); dev != devices.end(); ++dev) {
+                    std::cout << std::endl
+                              << ts::UString::Format(u"%2d: \"%s\"", {dev->index, dev->name})
+                              << std::endl;
+                }
+                std::cout << std::endl;
+            }
+        }
     }
 }
 
