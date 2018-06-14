@@ -168,6 +168,7 @@
 #include "tsHEVCTimingAndHRDDescriptor.h"
 #include "tsHEVCVideoDescriptor.h"
 #include "tsHiDesDevice.h"
+#include "tsHiDesDeviceInfo.h"
 #include "tsHierarchyDescriptor.h"
 #include "tsIBPDescriptor.h"
 #include "tsIDSA.h"

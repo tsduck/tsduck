@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
-#include "tsModulation.h"
+#include "tsHiDesDeviceInfo.h"
 #include "tsCerrReport.h"
 
 namespace ts {
@@ -56,37 +55,48 @@ namespace ts {
         virtual ~HiDesDevice();
 
         //!
-        //! Information about a device.
-        //!
-        class TSDUCKDLL Info
-        {
-        public:
-            int     index;   //!< Adapter index.
-            UString name;    //!< Device name.
-            UString path;    //!< Device path name, can be identical to @a name.
-
-            //!
-            //! Default constructor.
-            //!
-            Info() : index(0), name(), path() {}
-        };
-
-        //!
-        //! A list of device information.
-        //!
-        typedef std::list<Info> InfoList;
-
-        //!
         //! Get all HiDes devices in the system.
         //! @param [out] devices Returned list of devices.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool GetAllDevices(InfoList& devices, Report& report = CERR);
+        static bool GetAllDevices(HiDesDeviceInfoList& devices, Report& report = CERR);
+
+        //!
+        //! Open the HiDes device by adapter number.
+        //! @param [in] index Adapter number.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool open(int index, Report& report = CERR);
+
+        //!
+        //! Open the HiDes device by adapter name or device name.
+        //! @param [in] name Adapter name or device name.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool open(const UString& name, Report& report = CERR);
+
+        //!
+        //! Check if the HiDes device is open.
+        //! @return True if the HiDes device is open.
+        //!
+        bool isOpen() const { return _is_open; }
+
+        //!
+        //! Close the device.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool close(Report& report = CERR);
 
     private:
-        // The implementation is highly system-dependent. Redirect it to an internal "guts" class.
+        // The implementation is highly system-dependent.
+        // Redirect it to an internal system-dependent "guts" class.
         class Guts;
+
+        bool  _is_open;
         Guts* _guts;
 
         // Inaccessible operations.
