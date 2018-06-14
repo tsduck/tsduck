@@ -260,10 +260,16 @@ bool ts::ComExpose(::IUnknown* object, const ::IID& iid)
 
 
 //-----------------------------------------------------------------------------
-// Get the handle of a COM object (Windows-specific).
+// Get the handle of a COM object.
 //-----------------------------------------------------------------------------
 
-// Here, we are doing some weird here...
+// WARNING: We are doing something weird here...
+// The IKsObject interface is supposedly declared in ksproxy.h.
+// However, the declaraction is not inlined, unless the Windows driver
+// development kit is installed and Streams.h included. We do not want
+// to require the DDK to be installed in order to compile TSDuck. This
+// is why it is redeclared here. However, in case of incorrect declaraction,
+// you may expect a crash....
 MIDL_INTERFACE("423c13a2-2070-11d0-9ef7-00aa00a216a1")
 IKsObject : public IUnknown
 {
