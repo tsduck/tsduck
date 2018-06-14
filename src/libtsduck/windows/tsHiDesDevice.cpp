@@ -177,7 +177,7 @@ public:
     ::HANDLE              handle;             // Handle to it950x device.
     ::OVERLAPPED          overlapped;         // For overlapped operations.
     ::KSPROPERTY          kslist[KSLIST_MAX]; // Non-const version of KSLIST (required by DeviceIoControl).
-    Info                  info;               // Portable device information.
+    HiDesDeviceInfo       info;               // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -193,10 +193,16 @@ public:
     // Get one or all devices.
     // If 'list' is non-zero, get all devices here.
     // If 'index' >= 0 or 'name' is not empty, only search this one and fully initialize the device.
-    bool getDevices(InfoList* list, int index, const UString& name, Report& report);
+    bool getDevices(HiDesDeviceInfoList* list, int index, const UString& name, Report& report);
 
     // Get information about one it950x device.
     bool getDeviceInfo(const ComPtr<::IMoniker>& moniker, Report& report);
+
+    // Close the device.
+    void close();
+
+    // Format a 32-bit firmware version as a string.
+    static UString FormatVersion(uint32_t v);
 };
 
 
@@ -205,6 +211,7 @@ public:
 //----------------------------------------------------------------------------
 
 ts::HiDesDevice::HiDesDevice() :
+    _is_open(false),
     _guts(new Guts)
 {
 }
@@ -237,9 +244,35 @@ ts::HiDesDevice::Guts::Guts() :
 
 ts::HiDesDevice::Guts::~Guts()
 {
+    close();
+}
+
+
+//----------------------------------------------------------------------------
+// Close a Guts internal object (close references to objects).
+//----------------------------------------------------------------------------
+
+void ts::HiDesDevice::Guts::close()
+{
+    // Release pointer to COM object.
+    filter.release();
+
+    // Close handle. 
+    // WARNING: It is unclear if this handle should be closed here or not.
+    // The handle is returned by IKsObject::KsGetObjectHandle. There is no
+    // evidence if this is a permanent handle which was returned (and we
+    // should not close it) or if this handle was specially created for
+    // us in KsGetObjectHandle (and we should close it).
+
     if (handle != INVALID_HANDLE_VALUE) {
         ::CloseHandle(handle);
         handle = INVALID_HANDLE_VALUE;
+    }
+
+    // Close event handle used in overlapped operations.
+    if (overlapped.hEvent != 0 && overlapped.hEvent != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(overlapped.hEvent);
+        overlapped.hEvent = INVALID_HANDLE_VALUE;
     }
 }
 
@@ -283,12 +316,17 @@ bool ts::HiDesDevice::Guts::ioctlSet(void *data, ::DWORD size, Report& report)
 // Get one or all devices.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::Guts::getDevices(InfoList* list, int index, const UString& name, Report& report)
+bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, const UString& name, Report& report)
 {
-    // Check if we are looking for one specific device.
+    // Check if we are looking for one specific or all devices.
     const bool searchOne = index >= 0 || !name.empty();
 
+    // There must be exactly one operation: search one (and open it) or get all (and open none).
+    assert(searchOne || list != 0);
+    assert(!searchOne || list == 0);
+
     // Get monikers to all devices with categories of ITE devices.
+    // For some reason, the category is "audio device".
     std::vector<ComPtr<::IMoniker>> monikers;
     if (!EnumerateDevicesByClass(KSCATEGORY_AUDIO_DEVICE, monikers, report, CDEF_DEVMON_PNP_DEVICE)) {
         return false;
@@ -333,7 +371,7 @@ bool ts::HiDesDevice::Guts::getDevices(InfoList* list, int index, const UString&
             }
 
             // We need to continue on this device, initialize its info block.
-            info = Info(); // clear all
+            info.clear();
             info.index = currentIndex;
             info.name = fname;
             info.path = path;
@@ -344,13 +382,15 @@ bool ts::HiDesDevice::Guts::getDevices(InfoList* list, int index, const UString&
             // Keep this device in the list, if we need a list.
             if (list != 0) {
                 list->push_back(info);
+                // And we also don't keep them open.
+                close();
             }
         }
     }
 
     // Error when:
     // - Looking for one specific device and did not find it.
-    // - Looking for one specific device, found it but but could not fetch its properties.
+    // - Looking for one specific device, found it but could not fetch its properties.
     // There is no error at this point if we just wanted to get the list of devices.
     return !searchOne || (found && infoOK);
 }
@@ -372,6 +412,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     // WARNING: in case of problem here, see GetHandleFromObject in tsWinUtils.cpp.
     handle = GetHandleFromObject(filter.pointer(), report);
     if (handle == INVALID_HANDLE_VALUE) {
+        close();
         return false;
     }
 
@@ -379,6 +420,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
     if (overlapped.hEvent == NULL) {
         report.error(u"CreateEvent error: %s", {WinErrorMessage(::GetLastError())});
+        close();
         return false;
     }
 
@@ -445,9 +487,13 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     {
         status = false;
     }
+    else {
+        info.driver_version = FormatVersion(driverInfo.drv_version);
+        info.link_fw_version = FormatVersion(driverInfo.fw_link);
+        info.ofdm_fw_version = FormatVersion(driverInfo.fw_ofdm);
+    }
 
     // Get chip type.
-    uint16_t chipType = 0;
     uint32_t lsb = 0;
     uint32_t msb = 0;
     IoctlGeneric ioc_lsb(IOCTL_IT95X_RD_REG_LINK, REG_CHIP_VERSION + 1);
@@ -460,11 +506,10 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
         status = false;
     }
     else {
-        chipType = uint16_t(((msb & 0xFF) << 8) | (lsb & 0xFF));
+        info.chip_type = uint16_t(((msb & 0xFF) << 8) | (lsb & 0xFF));
     }
 
     // Get device type.
-    uint8_t deviceType = 0;
     IoctlGeneric iocDeviceType(IOCTL_IT95X_GET_DEVICE_TYPE);
     if (!ioctlSet(&iocDeviceType, sizeof(iocDeviceType), report) ||
         !ioctlGet(&iocDeviceType, sizeof(iocDeviceType), report))
@@ -472,10 +517,24 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
         status = false;
     }
     else {
-        deviceType = uint8_t(iocDeviceType.param2);
+        info.device_type = int(iocDeviceType.param2);
     }
 
+    // Free resources on error.
+    if (!status) {
+        close();
+    }
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Format a 32-bit firmware version as a string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HiDesDevice::Guts::FormatVersion(uint32_t v)
+{
+    return v == 0 ? UString() : UString::Format(u"%d.%d.%d.%d", {(v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF});
 }
 
 
@@ -483,7 +542,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
 // Get all HiDes devices in the system.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::GetAllDevices(InfoList& devices, Report& report)
+bool ts::HiDesDevice::GetAllDevices(HiDesDeviceInfoList& devices, Report& report)
 {
     // Clear previous content.
     devices.clear();
@@ -491,4 +550,48 @@ bool ts::HiDesDevice::GetAllDevices(InfoList& devices, Report& report)
     // Use a dummy Guts object to get the list of devices.
     Guts guts;
     return guts.getDevices(&devices, -1, UString(), report);
+}
+
+
+//----------------------------------------------------------------------------
+// Open the HiDes device.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::open(int index, Report& report)
+{
+    // Error if already open.
+    if (_is_open) {
+        report.error(u"%s already open", {_guts->info.path});
+        return false;
+    }
+
+    // Perform opening. No name is provided.
+    _is_open = _guts->getDevices(0, index, UString(), report);
+    return _is_open;
+}
+
+bool ts::HiDesDevice::open(const UString& name, Report& report)
+{
+    // Error if already open.
+    if (_is_open) {
+        report.error(u"%s already open", {_guts->info.path});
+        return false;
+    }
+
+    // Perform opening. No index provided.
+    _is_open = _guts->getDevices(0, -1, name, report);
+    return _is_open;
+}
+
+
+//----------------------------------------------------------------------------
+// Close the device.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::close(Report& report)
+{
+    // Silently ignore "already closed".
+    _guts->close();
+    _is_open = false;
+    return true;
 }
