@@ -463,6 +463,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsHiDesDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsHiDesDeviceInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1669,6 +1672,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsHiDesDeviceInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp">

@@ -193,7 +193,7 @@ bool ts::WebRequest::SystemGuts::init()
     if (status == ::CURLE_OK && !_request._userAgent.empty()) {
         status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._userAgent.toUTF8().c_str());
     }
-    
+
     // Set the starting URL.
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());

@@ -155,6 +155,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHiDesDevice.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsHiDesDeviceInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIBPDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIDSA.h" />
@@ -559,6 +560,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsHiDesDeviceInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIBPDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIDSA.cpp" />

@@ -423,6 +423,11 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     if (!ksProperty(kslist[KSLIST_BUS_INFO_GET], &busInfo, sizeof(busInfo), report)) {
         status = false;
     }
+    else {
+        info.usb_mode = busInfo.usb_mode;
+        info.vendor_id = busInfo.vendor_id ;
+        info.product_id = busInfo.product_id;
+    }
 
     // Get driver info. These information are different between Windows and Linux.
     IoctlGeneric ioc1(IOCTL_IT95X_GET_DRV_INFO);

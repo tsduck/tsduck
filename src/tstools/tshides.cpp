@@ -74,7 +74,7 @@ namespace {
     void MainCode(HiDesOptions& opt)
     {
         // Get all HiDes devices.
-        ts::HiDesDevice::InfoList devices;
+        ts::HiDesDeviceInfoList devices;
         if (ts::HiDesDevice::GetAllDevices(devices, opt)) {
             if (devices.empty()) {
                 std::cout << "No HiDes device found" << std::endl;
@@ -82,9 +82,7 @@ namespace {
             else {
                 std::cout << "Found " << devices.size() << " HiDes devices" << std::endl;
                 for (auto dev = devices.begin(); dev != devices.end(); ++dev) {
-                    std::cout << std::endl
-                              << ts::UString::Format(u"%2d: \"%s\"", {dev->index, dev->name})
-                              << std::endl;
+                    std::cout << std::endl << dev->toString();
                 }
                 std::cout << std::endl;
             }
