@@ -1398,8 +1398,13 @@ void ts::HiDesDevice::Guts::GetAllDeviceNames(UStringVector& names)
     ExpandWildcard(names, u"/dev/usb-it95?x*");
 
     // Then, filter out receiver devices (we keep only transmitters / modulators).
-    for (auto it = names.begin(); it != names.end(); ++it) {
-
+    for (auto it = names.begin(); it != names.end(); ) {
+        if (it->contain(u"-rx")) {
+            it = names.erase(it);
+        }
+        else {
+            ++it;
+        }
     }
 }
 
