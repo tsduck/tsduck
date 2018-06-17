@@ -281,13 +281,16 @@ public:
 {
     // Query IKsObject interface on the object.
     ComPtr<::IKsObject> ks;
+    report.log(2, u"WinUtils.GetHandleFromObject: getting IKsObject interface");
     ks.queryInterface(obj, IID_IKsObject, report);
     if (ks.isNull()) {
         return INVALID_HANDLE_VALUE;
     }
 
     // Return the handle. Note that KsGetObjectHandle returns zero on error, not INVALID_HANDLE_VALUE.
+    report.log(2, u"WinUtils.GetHandleFromObject: IKsObject found, calling KsGetObjectHandle");
     const ::HANDLE h = ks->KsGetObjectHandle();
+    report.log(2, u"WinUtils.GetHandleFromObject: handle: 0x%X", {uintptr_t(h)});
     return h == 0 ? INVALID_HANDLE_VALUE : h;
 }
 
