@@ -56,7 +56,7 @@ TSDUCK_SOURCE;
 
 namespace {
 
-    // Properties 
+    // Properties
     enum {
         KSPROPERTY_IT95X_DRV_INFO = 0,  // in KSPROPSETID_IT9500Properties
         KSPROPERTY_IT95X_IOCTL    = 1,  // in KSPROPSETID_IT9500Properties
@@ -107,7 +107,7 @@ namespace {
         }}},
     };
 
-    // IOCTL codes for modulator 
+    // IOCTL codes for modulator
     enum {
         IOCTL_IT95X_GET_DRV_INFO = 1,
         IOCTL_IT95X_SET_POWER = 4,
@@ -257,7 +257,7 @@ void ts::HiDesDevice::Guts::close()
     // Release pointer to COM object.
     filter.release();
 
-    // Close handle. 
+    // Close handle.
     // WARNING: It is unclear if this handle should be closed here or not.
     // The handle is returned by IKsObject::KsGetObjectHandle. There is no
     // evidence if this is a permanent handle which was returned (and we
@@ -461,7 +461,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
         uint16_t product_id;
     } busInfo;
     TS_ZERO(busInfo);
- 
+
     if (!ksProperty(kslist[KSLIST_BUS_INFO_GET], &busInfo, sizeof(busInfo), report)) {
         status = false;
     }
@@ -594,4 +594,44 @@ bool ts::HiDesDevice::close(Report& report)
     _guts->close();
     _is_open = false;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Tune the modulator with DVB-T modulation parameters.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
+{
+    return false; //@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Start transmission (after having set tuning parameters).
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::startTransmission(Report& report)
+{
+    return false; //@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Stop transmission.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::stopTransmission(Report& report)
+{
+    return false; //@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Send TS packets.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::send(const TSPacket* data, size_t packet_count, Report& report)
+{
+    return false; //@@@@@@
 }
