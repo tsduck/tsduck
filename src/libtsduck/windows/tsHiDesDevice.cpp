@@ -402,7 +402,13 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
 
 bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Report& report)
 {
+    // This method dives into DirectShow.
+    // Unclear what happens when compiled for 32-bit and running on 64-bit system.
+    // Use --debug=2 to activate these traces.
+    report.log(2, u"HiDesDevice: getting device information");
+
     // Create an instance of this filter from moniker.
+    report.log(2, u"HiDesDevice: get filter instance");
     filter.bindToObject(moniker.pointer(), ::IID_IBaseFilter, report);
     if (filter.isNull()) {
         return false;
@@ -410,13 +416,16 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
 
     // Get the device handle to the filter.
     // WARNING: in case of problem here, see GetHandleFromObject in tsWinUtils.cpp.
+    report.log(2, u"HiDesDevice: calling GetHandleFromObject");
     handle = GetHandleFromObject(filter.pointer(), report);
     if (handle == INVALID_HANDLE_VALUE) {
         close();
         return false;
     }
+    report.log(2, u"HiDesDevice: GetHandleFromObject successful");
 
     // Create an event for overlapped operations.
+    report.log(2, u"HiDesDevice: creating event for overlapped");
     overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
     if (overlapped.hEvent == NULL) {
         report.error(u"CreateEvent error: %s", {WinErrorMessage(::GetLastError())});
@@ -434,6 +443,8 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
         const ::ULONG flags = prop.Flags;
         prop.Flags = KSPROPERTY_TYPE_BASICSUPPORT;
         ::DWORD want = 0;
+
+        report.log(2, u"HiDesDevice: checking support for property %d, index %d", {prop.Id, i});
 
         // Check that basic support is provided.
         ::DWORD got = 0;
@@ -462,6 +473,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     } busInfo;
     TS_ZERO(busInfo);
 
+    report.log(2, u"HiDesDevice: getting USB mode");
     if (!ksProperty(kslist[KSLIST_BUS_INFO_GET], &busInfo, sizeof(busInfo), report)) {
         status = false;
     }
@@ -482,6 +494,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     } driverInfo;
     TS_ZERO(driverInfo);
 
+    report.log(2, u"HiDesDevice: getting driver information");
     if (!ksProperty(kslist[KSLIST_DRV_INFO_SET], &ioc1, sizeof(ioc1), report) ||
         !ksProperty(kslist[KSLIST_DRV_INFO_GET], &driverInfo, sizeof(driverInfo), report))
     {
@@ -498,6 +511,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     uint32_t msb = 0;
     IoctlGeneric ioc_lsb(IOCTL_IT95X_RD_REG_LINK, REG_CHIP_VERSION + 1);
     IoctlGeneric ioc_msb(IOCTL_IT95X_RD_REG_LINK, REG_CHIP_VERSION + 2);
+    report.log(2, u"HiDesDevice: getting chip type");
     if (!ioctlSet(&ioc_lsb, sizeof(ioc_lsb), report) ||
         !ioctlGet(&lsb, sizeof(lsb), report) ||
         !ioctlSet(&ioc_msb, sizeof(ioc_msb), report) ||
@@ -511,6 +525,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
 
     // Get device type.
     IoctlGeneric iocDeviceType(IOCTL_IT95X_GET_DEVICE_TYPE);
+    report.log(2, u"HiDesDevice: getting device type");
     if (!ioctlSet(&iocDeviceType, sizeof(iocDeviceType), report) ||
         !ioctlGet(&iocDeviceType, sizeof(iocDeviceType), report))
     {
