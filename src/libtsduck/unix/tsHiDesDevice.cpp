@@ -481,20 +481,20 @@ typedef enum {
 typedef struct {
     Byte            chip;
     Processor       processor;
-    __u32           registerAddress;
+    uint32_t        registerAddress;
     Byte            bufferLength;
     Byte            buffer[256];
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } WriteRegistersRequest, *PWriteRegistersRequest;
 
 typedef struct {
     Byte            chip;
     Processor       processor;
-    __u32           registerAddress;
+    uint32_t        registerAddress;
     Byte            bufferLength;
     Byte            buffer[256];
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxWriteRegistersRequest, *PTxWriteRegistersRequest;
 
@@ -503,27 +503,27 @@ typedef struct {
     Word            registerAddress;
     Byte            bufferLength;
     Byte            buffer[256];
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxWriteEepromValuesRequest, *PTxWriteEepromValuesRequest;
 
 typedef struct {
     Byte            chip;
     Processor       processor;
-    __u32           registerAddress;
+    uint32_t        registerAddress;
     Byte            bufferLength;
     Byte            buffer[256];
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } ReadRegistersRequest, *PReadRegistersRequest;
 
 typedef struct {
     Byte            chip;
     Processor       processor;
-    __u32           registerAddress;
+    uint32_t        registerAddress;
     Byte            bufferLength;
     Byte            buffer[256];
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxReadRegistersRequest, *PTxReadRegistersRequest;
 
@@ -532,15 +532,15 @@ typedef struct {
     Word            registerAddress;
     Byte            bufferLength;
     Byte            buffer[256];
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxReadEepromValuesRequest, *PTxReadEepromValuesRequest;
 
 typedef struct {
     Byte                chip;
     Word                bandwidth;
-    __u32               frequency;
-    __u32               error;
+    uint32_t            frequency;
+    uint32_t            error;
     Byte                reserved[16];
 } AcquireChannelRequest, *PAcquireChannelRequest;
 
@@ -550,39 +550,39 @@ typedef struct {
     Byte                constellation;
     Byte                interval;
     Byte                highCodeRate;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetModuleRequest, *PTxSetModuleRequest;
 
 typedef struct {
     Byte                chip;
     Word                bandwidth;
-    __u32               frequency;
-    __u32               error;
+    uint32_t            frequency;
+    uint32_t            error;
     Byte                reserved[16];
 } TxAcquireChannelRequest, *PTxAcquireChannelRequest;
 
 typedef struct {
     Byte                OnOff;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxModeRequest, *PTxModeRequest;
 
 typedef struct {
     Byte                DeviceType;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetDeviceTypeRequest, *PTxSetDeviceTypeRequest;
 
 typedef struct {
     Byte                DeviceType;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxGetDeviceTypeRequest, *PTxGetDeviceTypeRequest;
 
 typedef struct {
     int             GainValue;
-    __u32           error;
+    uint32_t        error;
 } TxSetGainRequest, *PTxSetGainRequest;
 
 typedef struct {
@@ -603,7 +603,7 @@ typedef struct {
     Byte                chip;
     Byte                index;
     Pid                 pid;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } AddPidAtRequest, *PAddPidAtRequest;
 
@@ -611,61 +611,61 @@ typedef struct {
     Byte                chip;
     Byte                index;
     Pid                 pid;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxAddPidAtRequest, *PTxAddPidAtRequest;
 
 typedef struct {
     Byte            chip;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } ResetPidRequest, *PResetPidRequest;
 
 typedef struct {
     Byte            chip;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxResetPidRequest, *PTxResetPidRequest;
 
 typedef struct {
     Byte                chip;
-    __u32               channelStatisticAddr;       // ChannelStatistic*
-    __u32               error;
+    uint32_t            channelStatisticAddr;       // ChannelStatistic*
+    uint32_t            error;
     Byte                reserved[16];
 } GetChannelStatisticRequest, *PGetChannelStatisticRequest;
 
 typedef struct {
     Byte                chip;
     Statistic           statistic;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } GetStatisticRequest, *PGetStatisticRequest;
 
 typedef struct {
     Byte            chip;
     Byte            control;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } ControlPidFilterRequest, *PControlPidFilterRequest;
 
 typedef struct {
     Byte            control;
     Byte            enable;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxControlPidFilterRequest, *PTxControlPidFilterRequest;
 
 typedef struct {
     Byte                chip;
     Byte                control;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } ControlPowerSavingRequest, *PControlPowerSavingRequest;
 
 typedef struct {
     Byte                chip;
     Byte                control;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxControlPowerSavingRequest, *PTxControlPowerSavingRequest;
 
@@ -677,7 +677,7 @@ typedef struct {
     Byte                DateTime[24];       /** Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__  definitions */
     Byte                Company[8];         /** Ex.,"ITEtech"                   */
     Byte                SupportHWInfo[32];  /** Ex.,"Jupiter DVBT/DVBH"         */
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[128];
 } DemodDriverInfo, *PDemodDriverInfo;
 
@@ -689,7 +689,7 @@ typedef struct {
     Byte                DateTime[24];       /** Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__  definitions */
     Byte                Company[8];         /** Ex.,"ITEtech"                   */
     Byte                SupportHWInfo[32];  /** Ex.,"Jupiter DVBT/DVBH"         */
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[128];
 } TxModDriverInfo, *PTxModDriverInfo;
 
@@ -721,15 +721,15 @@ typedef struct {
 } StopCaptureRequest, *PStopCaptureRequest;
 
 typedef struct {
-    __u32           len;
-    __u32           cmdAddr;        // Byte*
-    __u32           error;
+    uint32_t        len;
+    uint32_t        cmdAddr;        // Byte*
+    uint32_t        error;
     Byte            reserved[16];
 } TxCmdRequest, *PTxCmdRequest;
 
 typedef struct {
-    __u32           error;
-    __u32          frequency;
+    uint32_t        error;
+    uint32_t       frequency;
     Word           bandwidth;
     int             maxGain;
     int             minGain;
@@ -738,92 +738,92 @@ typedef struct {
 
 typedef struct {
     TPS             tps;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxGetTPSRequest, *PTxGetTPSRequest;
 
 typedef struct {
     TPS            tps;
     Bool           actualInfo;
-    __u32          error;
+    uint32_t       error;
     Byte           reserved[16];
 } TxSetTPSRequest, *PTxSetTPSRequest;
 
 typedef struct {
     int            gain;
-    __u32          error;
+    uint32_t       error;
     Byte           reserved[16];
 } TxGetOutputGainRequest, *PTxGetOutputGainRequest;
 
 typedef struct {
-    __u32          error;
-    __u32         pbufferAddr;
+    uint32_t       error;
+    uint32_t      pbufferAddr;
     Byte           reserved[16];
 } TxSendHwPSITableRequest, *PTxSendHwPSITableRequest;
 
 typedef struct {
     Byte           psiTableIndex;
-    __u32          pbufferAddr;
-    __u32          error;
+    uint32_t       pbufferAddr;
+    uint32_t       error;
     Byte           reserved[16];
 } TxAccessFwPSITableRequest, *PTxAccessFwPSITableRequest;
 
 typedef struct {
     Byte            psiTableIndex;
     Word            timer;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxSetFwPSITableTimerRequest, *PTxSetFwPSITableTimerRequest;
 
 typedef struct {
-    __u32               pBufferAddr;            // Byte*
-    __u32               pdwBufferLength;
-    __u32               error;
+    uint32_t            pBufferAddr;            // Byte*
+    uint32_t            pdwBufferLength;
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetLowBitRateTransferRequest, *PTxSetLowBitRateTransferRequest;
 
 typedef struct {
-    __u32               pIQtableAddr;       // Byte*
+    uint32_t            pIQtableAddr;       // Byte*
     Word                IQtableSize;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetIQTableRequest, *PTxSetIQTableRequest;
 
 typedef struct {
     int                 dc_i;
     int                 dc_q;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetDCCalibrationValueRequest, *PTxSetDCCalibrationValueRequest;
 
 typedef struct {
     Word            chipType;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxGetChipTypeRequest, *PTxGetChipTypeRequest;
 
 typedef struct {
-    __u32               isdbtModulationAddr;    //  ISDBTModulation
-    __u32               error;
+    uint32_t            isdbtModulationAddr;    //  ISDBTModulation
+    uint32_t            error;
     Byte                reserved[16];
 } TXSetISDBTChannelModulationRequest, *PTXSetISDBTChannelModulationRequest;
 
 typedef struct {
     TMCCINFO            TmccInfo;
     Bool                actualInfo;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TXSetTMCCInfoRequest, *PTXSetTMCCInfoRequest;
 
 typedef struct {
     TMCCINFO            TmccInfo;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TXGetTMCCInfoRequest, *PTXGetTMCCInfoRequest;
 
 typedef struct {
     Word                BitRate_Kbps;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TXGetTSinputBitRateRequest, *PTXGetTSinputBitRateRequest;
 
@@ -831,55 +831,55 @@ typedef struct {
     Byte                index;
     Pid                 pid;
     TransportLayer      layer;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TXAddPidToISDBTPidFilterRequest, *PTXAddPidToISDBTPidFilterRequest;
 
 typedef struct {
     PcrMode         mode;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetPcrModeRequest, *PTxSetPcrModeRequest;
 
 typedef struct {
-    __u32               DCInfoAddr; //DCInfo*
-    __u32               error;
+    uint32_t            DCInfoAddr; //DCInfo*
+    uint32_t            error;
     Byte                reserved[16];
 } TxSetDCTableRequest, *PTxSetDCTableRequest;
 
 typedef struct {
     Byte                frequencyindex;
-    __u32               error;
+    uint32_t            error;
     Byte                reserved[16];
 } TxGetFrequencyIndexRequest, *PTxGetFrequencyIndexRequest;
 
 typedef struct {
     Byte            DTVMode;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxGetDTVModeRequest, *PTxGetDTVModeRequest;
 
 typedef struct {
-    __u32           key ;
-    __u32           error;
+    uint32_t        key ;
+    uint32_t        error;
     Byte            reserved[16];
 } TxEnableTpsEncryptionRequest, *PTxEnableTpsEncryptionRequest;
 
 typedef struct {
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxDisableTpsEncryptionRequest, *PTxDisableTpsEncryptionRequest;
 
 typedef struct {
-    __u32           decryptKey;
+    uint32_t        decryptKey;
     Byte            decryptEnable;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxSetDecryptRequest, *PTxSetDecryptRequest;
 
 typedef struct {
     Bool            isInversion;
-    __u32           error;
+    uint32_t        error;
     Byte            reserved[16];
 } TxSetSpectralInversionRequest, *PTxSetSpectralInversionRequest;
 
