@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsHiDesDeviceInfo.h"
+#include "tsTunerParametersDVBT.h"
+#include "tsTSPacket.h"
 #include "tsCerrReport.h"
 
 namespace ts {
@@ -90,6 +92,37 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool close(Report& report = CERR);
+
+        //!
+        //! Tune the modulator with DVB-T modulation parameters.
+        //! @param [in] params Tuning parameters.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool tune(const TunerParametersDVBT& params, Report& report = CERR);
+
+        //!
+        //! Start transmission (after having set tuning parameters).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool startTransmission(Report& report = CERR);
+
+        //!
+        //! Stop transmission.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool stopTransmission(Report& report = CERR);
+
+        //!
+        //! Send TS packets.
+        //! @param [in] data Address of first TS packet to send.
+        //! @param [in] packet_count Number of contiguous packets to send.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool send(const TSPacket* data, size_t packet_count, Report& report = CERR);
 
     private:
         // The implementation is highly system-dependent.

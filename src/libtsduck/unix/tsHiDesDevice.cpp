@@ -1394,7 +1394,13 @@ void ts::HiDesDevice::Guts::close()
 
 void ts::HiDesDevice::Guts::GetAllDeviceNames(UStringVector& names)
 {
+    // First, get all /dev/usb-it95?x* devices.
     ExpandWildcard(names, u"/dev/usb-it95?x*");
+
+    // Then, filter out receiver devices (we keep only transmitters / modulators).
+    for (auto it = names.begin(); it != names.end(); ++it) {
+
+    }
 }
 
 
@@ -1557,4 +1563,51 @@ bool ts::HiDesDevice::close(Report& report)
     _guts->close();
     _is_open = false;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Tune the modulator with DVB-T modulation parameters.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
+{
+    // g_ITEAPI_TxSetChannel (frequency)
+    // g_ITEAPI_TxSetChannelModulation
+    // g_ITEAPI_TxSetSpectralInversion
+    return false; //@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Start transmission (after having set tuning parameters).
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::startTransmission(Report& report)
+{
+    // g_ITEAPI_StartTransfer
+    return false; //@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Stop transmission.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::stopTransmission(Report& report)
+{
+    // g_ITEAPI_StopTransfer
+    return false; //@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Send TS packets.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::send(const TSPacket* data, size_t packet_count, Report& report)
+{
+    // g_ITEAPI_TxSendTSData
+    // suspend or regulated by driver ?
+    return false; //@@@@@@
 }
