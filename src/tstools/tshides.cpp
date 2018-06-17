@@ -45,22 +45,37 @@ TSDUCK_SOURCE;
 class HiDesOptions: public ts::Args
 {
 public:
+    bool count;  // Only display device count.
+
+    // Constructor:
     HiDesOptions(int argc, char *argv[]);
 };
 
 // Constructor.
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :
-    ts::Args(u"List HiDes modulator devices", u"[options]")
+    ts::Args(u"List HiDes modulator devices", u"[options]"),
+    count(false)
 {
+    option(u"count", 'c');
+
     setHelp(u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --count\n"
+            u"      Only display the number of devices.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 
     analyze(argc, argv);
+    count = present(u"count");
     exitOnError();
 }
 
@@ -76,15 +91,19 @@ namespace {
         // Get all HiDes devices.
         ts::HiDesDeviceInfoList devices;
         if (ts::HiDesDevice::GetAllDevices(devices, opt)) {
-            if (devices.empty()) {
+            if (opt.count) {
+                std::cout << devices.size() << std::endl;
+            }
+            else if (devices.empty()) {
                 std::cout << "No HiDes device found" << std::endl;
             }
             else {
-                std::cout << "Found " << devices.size() << " HiDes devices" << std::endl;
-                for (auto dev = devices.begin(); dev != devices.end(); ++dev) {
-                    std::cout << std::endl << dev->toString();
+                if (opt.verbose()) {
+                    std::cout << "Found " << devices.size() << " HiDes devices" << std::endl << std::endl;
                 }
-                std::cout << std::endl;
+                for (auto dev = devices.begin(); dev != devices.end(); ++dev) {
+                    std::cout << dev->toString(opt.verbose()) << std::endl;
+                }
             }
         }
     }
@@ -95,7 +114,7 @@ namespace {
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     TSDuckLibCheckVersion();
     HiDesOptions opt(argc, argv);

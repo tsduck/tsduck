@@ -381,6 +381,15 @@ namespace ts {
                      bool                optional = false);
 
         //!
+        //! When an option has an Enumeration type, get a list of all valid names.
+        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] separator The separator to be used between values, a comma by default.
+        //! @return A comma-separated list of all possible names.
+        //! @see Enumeration::nameList()
+        //!
+        UString optionNames(const UChar* name, const UString& separator = u", ") const;
+
+        //!
         //! Copy all option definitions from another Args object into this one.
         //!
         //! This method is typically invoked in the constructor of a subclass

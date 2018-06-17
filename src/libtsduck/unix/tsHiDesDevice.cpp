@@ -73,7 +73,7 @@ typedef short Short;
 // 32-bits signed type <== incorrect on x86_64
 typedef long Long;
 
-/* Use 'k' as magic number */
+// Use 'k' as magic number.
 #define AFA_IOC_MAGIC  'k'
 
 typedef enum {
@@ -100,8 +100,8 @@ typedef struct {
 
 typedef struct {
     IQtable *ptrIQtableEx;
-    Word    tableGroups;        //Number of IQtable groups;
-    Dword   tableVersion;       //tableVersion;
+    Word    tableGroups;   // Number of IQtable groups
+    Dword   tableVersion;
     int     outputGain;
     Word    c1DefaultValue;
     Word    c2DefaultValue;
@@ -117,7 +117,7 @@ typedef struct {
 typedef struct {
     DCtable *ptrDCtable;
     DCtable *ptrOFStable;
-    Word    tableGroups;        //Number of IQtable groups;
+    Word    tableGroups;   // Number of IQtable groups
 } DCInfo;
 
 typedef enum {
@@ -143,15 +143,15 @@ typedef enum {
 } BurstSize;
 
 typedef struct {
-    Byte segmentType;           /** 0:Firmware download 1:Rom copy 2:Direct command */
+    Byte segmentType;       // 0:Firmware download 1:Rom copy 2:Direct command
     Dword segmentLength;
 } Segment;
 
 typedef enum {
-    Bandwidth_6M = 0,           /** Signal bandwidth is 6MHz */
-    Bandwidth_7M,               /** Signal bandwidth is 7MHz */
-    Bandwidth_8M,               /** Signal bandwidth is 8MHz */
-    Bandwidth_5M                /** Signal bandwidth is 5MHz */
+    Bandwidth_6M = 0,       // Signal bandwidth is 6MHz
+    Bandwidth_7M,           // Signal bandwidth is 7MHz
+    Bandwidth_8M,           // Signal bandwidth is 8MHz
+    Bandwidth_5M            // Signal bandwidth is 5MHz
 } Bandwidth;
 
 typedef enum {
@@ -167,31 +167,31 @@ typedef enum {
 } Fft;
 
 typedef enum {
-    Interval_1_OVER_32 = 0,     /** Guard interval is 1/32 of symbol length */
-    Interval_1_OVER_16,         /** Guard interval is 1/16 of symbol length */
-    Interval_1_OVER_8,          /** Guard interval is 1/8 of symbol length  */
-    Interval_1_OVER_4           /** Guard interval is 1/4 of symbol length  */
+    Interval_1_OVER_32 = 0, // Guard interval is 1/32 of symbol length
+    Interval_1_OVER_16,     // Guard interval is 1/16 of symbol length
+    Interval_1_OVER_8,      // Guard interval is 1/8 of symbol length
+    Interval_1_OVER_4       // Guard interval is 1/4 of symbol length
 } Interval;
 
 typedef enum {
-    Priority_HIGH = 0,          /** DVB-T - identifies high-priority stream */
-    Priority_LOW                /** DVB-T - identifies low-priority stream  */
-} Priority;             // High Priority or Low Priority
+    Priority_HIGH = 0,      // DVB-T - identifies high-priority stream
+    Priority_LOW            // DVB-T - identifies low-priority stream
+} Priority;                 // High Priority or Low Priority
 
 typedef enum {
-    CodeRate_1_OVER_2 = 0,      /** Signal uses FEC coding ratio of 1/2 */
-    CodeRate_2_OVER_3,          /** Signal uses FEC coding ratio of 2/3 */
-    CodeRate_3_OVER_4,          /** Signal uses FEC coding ratio of 3/4 */
-    CodeRate_5_OVER_6,          /** Signal uses FEC coding ratio of 5/6 */
-    CodeRate_7_OVER_8,          /** Signal uses FEC coding ratio of 7/8 */
-    CodeRate_NONE               /** None, NXT doesn't have this one     */
+    CodeRate_1_OVER_2 = 0,  // Signal uses FEC coding ratio of 1/2
+    CodeRate_2_OVER_3,      // Signal uses FEC coding ratio of 2/3
+    CodeRate_3_OVER_4,      // Signal uses FEC coding ratio of 3/4
+    CodeRate_5_OVER_6,      // Signal uses FEC coding ratio of 5/6
+    CodeRate_7_OVER_8,      // Signal uses FEC coding ratio of 7/8
+    CodeRate_NONE           // None, NXT doesn't have this one
 } CodeRate;
 
 typedef enum {
-    Hierarchy_NONE = 0,         /** Signal is non-hierarchical        */
-    Hierarchy_ALPHA_1,          /** Signalling format uses alpha of 1 */
-    Hierarchy_ALPHA_2,          /** Signalling format uses alpha of 2 */
-    Hierarchy_ALPHA_4           /** Signalling format uses alpha of 4 */
+    Hierarchy_NONE = 0,     // Signal is non-hierarchical
+    Hierarchy_ALPHA_1,      // Signalling format uses alpha of 1
+    Hierarchy_ALPHA_2,      // Signalling format uses alpha of 2
+    Hierarchy_ALPHA_4       // Signalling format uses alpha of 4
 } Hierarchy;
 
 typedef enum {
@@ -234,7 +234,7 @@ typedef struct {
     Byte subchannelId;
     Word subchannelSize;
     Word bitRate;
-    Byte transmissionMode;				// transmissionMode = 1, 2, 3, 4
+    Byte transmissionMode;   // transmissionMode = 1, 2, 3, 4
     ProtectionLevel protectionLevel;
     SubchannelType subchannelType;
     Byte conditionalAccess;
@@ -282,7 +282,7 @@ typedef struct
 } Ensemble;
 
 typedef struct {
-    Byte serviceType;		// Service Type(P/D): 0x00: Program, 0x80: Data
+    Byte serviceType;    // Service Type(P/D): 0x00: Program, 0x80: Data
     Dword serviceId;
     Dword frequency;
     Label serviceLabel;
@@ -290,16 +290,16 @@ typedef struct {
 } Service;
 
 typedef struct {
-    Byte serviceType;			// Service Type(P/D): 0x00: Program, 0x80: Data
-    Dword serviceId;			// Service ID
-    Word componentId;			// Stream audio/data is subchid, packet mode is SCId
-    Byte componentIdService;	// Component ID within Service
+    Byte serviceType;        // Service Type(P/D): 0x00: Program, 0x80: Data
+    Dword serviceId;         // Service ID
+    Word componentId;        // Stream audio/data is subchid, packet mode is SCId
+    Byte componentIdService; // Component ID within Service
     Label componentLabel;
-    Byte language;				// Language code
-    Byte primary;				// Primary/Secondary
-    Byte conditionalAccess;		// Conditional Access flag
-    Byte componentType;			// Component Type (A/D)
-    Byte transmissionId;		// Transmission Mechanism ID
+    Byte language;           // Language code
+    Byte primary;            // Primary/Secondary
+    Byte conditionalAccess;  // Conditional Access flag
+    Byte componentType;      // Component Type (A/D)
+    Byte transmissionId;     // Transmission Mechanism ID
 } Component;
 
 typedef enum {
@@ -315,26 +315,26 @@ typedef enum {
     FrameRow_1024
 } FrameRow;
 
-/*
- * In DVB-T mode, only value is valid. In DVB-H mode,
- * as sectionType = SectionType_SIPSI: only value is valid.
- * as sectionType = SectionType_TABLE: both value and table is valid.
- * as sectionType = SectionType_MPE: except table all other fields is valid.
- */
+//
+// In DVB-T mode, only value is valid. In DVB-H mode,
+// as sectionType = SectionType_SIPSI: only value is valid.
+// as sectionType = SectionType_TABLE: both value and table is valid.
+// as sectionType = SectionType_MPE: except table all other fields is valid.
+//
 typedef struct {
-    Byte table;                 /** The table ID. Which is used to filter specific SI/PSI table.                                  */
-    Byte duration;              /** The maximum burst duration. It can be specify to 0xFF if user don't know the exact value.     */
-    FrameRow frameRow;          /** The frame row of MPE-FEC. It means the exact number of rows for each column in MPE-FEC frame. */
-    SectionType sectionType;    /** The section type of pid. See the defination of SectionType.                                   */
-    Priority priority;          /** The priority of MPE data. Only valid when sectionType is set to SectionType_MPE.              */
-    IpVersion version;          /** The IP version of MPE data. Only valid when sectionType is set to SectionType_MPE.            */
-    Bool cache;                 /** True: MPE data will be cached in device's buffer. Fasle: MPE will be transfer to host.        */
-    Word value;                 /** The 13 bits Packet ID.                                                                        */
+    Byte table;                 // The table ID. Which is used to filter specific SI/PSI table.
+    Byte duration;              // The maximum burst duration. It can be specify to 0xFF if user don't know the exact value.
+    FrameRow frameRow;          // The frame row of MPE-FEC. It means the exact number of rows for each column in MPE-FEC frame.
+    SectionType sectionType;    // The section type of pid. See the defination of SectionType.
+    Priority priority;          // The priority of MPE data. Only valid when sectionType is set to SectionType_MPE.
+    IpVersion version;          // The IP version of MPE data. Only valid when sectionType is set to SectionType_MPE.
+    Bool cache;                 // True: MPE data will be cached in device's buffer. Fasle: MPE will be transfer to host.
+    Word value;                 // The 13 bits Packet ID.
 } Pid;
 
 typedef struct {
-    Dword address;      /** The address of target register */
-    Byte value;         /** The value of target register   */
+    Dword address;      // The address of target register
+    Byte value;         // The value of target register
 } ValueSet;
 
 typedef struct {
@@ -416,9 +416,9 @@ typedef struct {
 #endif
 
 typedef enum {
-    Constellation_QPSK = 0,     /** Signal uses QPSK constellation  */
-    Constellation_16QAM,        /** Signal uses 16QAM constellation */
-    Constellation_64QAM         /** Signal uses 64QAM constellation */
+    Constellation_QPSK = 0,  // Signal uses QPSK constellation
+    Constellation_16QAM,     // Signal uses 16QAM constellation
+    Constellation_64QAM      // Signal uses 64QAM constellation
 } Constellation;
 
 typedef enum {
@@ -427,45 +427,45 @@ typedef enum {
 } SystemIdentification;
 
 typedef struct {
-    Constellation   constellation;        /** Constellation scheme (FFT mode) in use                   */
-    CodeRate        codeRate;             /** FEC coding ratio of high-priority stream                 */
+    Constellation constellation; // Constellation scheme (FFT mode) in use
+    CodeRate      codeRate;      // FEC coding ratio of high-priority stream
 } TMCC;
 
 typedef struct _TMCCINFO{
-    TMCC                    layerA;
-    TMCC                    layerB;
-    Bool                    isPartialReception;
-    SystemIdentification    systemIdentification;
-} TMCCINFO, *pTMCCINFO;
+    TMCC                 layerA;
+    TMCC                 layerB;
+    Bool                 isPartialReception;
+    SystemIdentification systemIdentification;
+} TMCCINFO;
 
 typedef enum {
-   filter = 0,
-   LayerB = 1,
-   LayerA = 2,
+   filter  = 0,
+   LayerB  = 1,
+   LayerA  = 2,
    LayerAB = 3
 } TransportLayer;
 
 typedef enum {
-    DownSampleRate_21_OVER_1 = 0,      /** Signal uses FEC coding ratio of 21/1 */
-    DownSampleRate_21_OVER_2,          /** Signal uses FEC coding ratio of 21/2 */
-    DownSampleRate_21_OVER_3,          /** Signal uses FEC coding ratio of 21/3 */
-    DownSampleRate_21_OVER_4,          /** Signal uses FEC coding ratio of 21/4 */
-    DownSampleRate_21_OVER_5,          /** Signal uses FEC coding ratio of 21/5 */
-    DownSampleRate_21_OVER_6,          /** Signal uses FEC coding ratio of 21/6 */
+    DownSampleRate_21_OVER_1 = 0,  // Signal uses FEC coding ratio of 21/1
+    DownSampleRate_21_OVER_2,      // Signal uses FEC coding ratio of 21/2
+    DownSampleRate_21_OVER_3,      // Signal uses FEC coding ratio of 21/3
+    DownSampleRate_21_OVER_4,      // Signal uses FEC coding ratio of 21/4
+    DownSampleRate_21_OVER_5,      // Signal uses FEC coding ratio of 21/5
+    DownSampleRate_21_OVER_6,      // Signal uses FEC coding ratio of 21/6
 } DownSampleRate;
 
 typedef enum {
-    TransmissionMode_2K = 0,    /** OFDM frame consists of 2048 different carriers (2K FFT mode) */
-    TransmissionMode_8K = 1,    /** OFDM frame consists of 8192 different carriers (8K FFT mode) */
-    TransmissionMode_4K = 2     /** OFDM frame consists of 4096 different carriers (4K FFT mode) */
+    TransmissionMode_2K = 0,    // OFDM frame consists of 2048 different carriers (2K FFT mode)
+    TransmissionMode_8K = 1,    // OFDM frame consists of 8192 different carriers (8K FFT mode)
+    TransmissionMode_4K = 2     // OFDM frame consists of 4096 different carriers (4K FFT mode)
 } TransmissionModes;
 
 typedef struct {
-    Dword       frequency;                /** Channel frequency in KHz.                                */
+    Dword       frequency;              // Channel frequency in KHz.
     Bandwidth   bandwidth;
-    TransmissionModes transmissionMode; /** Number of carriers used for OFDM signal                  */
-    Interval    interval;                 /** Fraction of symbol length used as guard (Guard Interval) */
-    //DownSampleRate ds;
+    TransmissionModes transmissionMode; // Number of carriers used for OFDM signal
+    Interval    interval;               // Fraction of symbol length used as guard (Guard Interval)
+    // DownSampleRate ds;
     TMCC        layerA;
     TMCC        layerB;
     Bool        isPartialReception;
@@ -479,844 +479,723 @@ typedef enum {
 } PcrMode;
 
 typedef struct {
-    Byte            chip;
-    Processor       processor;
-    uint32_t        registerAddress;
-    Byte            bufferLength;
-    Byte            buffer[256];
-    uint32_t        error;
-    Byte            reserved[16];
-} WriteRegistersRequest, *PWriteRegistersRequest;
+    Byte      chip;
+    Processor processor;
+    uint32_t  registerAddress;
+    Byte      bufferLength;
+    Byte      buffer[256];
+    uint32_t  error;
+    Byte      reserved[16];
+} WriteRegistersRequest;
 
 typedef struct {
-    Byte            chip;
-    Processor       processor;
-    uint32_t        registerAddress;
-    Byte            bufferLength;
-    Byte            buffer[256];
-    uint32_t        error;
-    Byte            reserved[16];
-} TxWriteRegistersRequest, *PTxWriteRegistersRequest;
+    Byte      chip;
+    Processor processor;
+    uint32_t  registerAddress;
+    Byte      bufferLength;
+    Byte      buffer[256];
+    uint32_t  error;
+    Byte      reserved[16];
+} TxWriteRegistersRequest;
 
 typedef struct {
-    Byte            chip;
-    Word            registerAddress;
-    Byte            bufferLength;
-    Byte            buffer[256];
-    uint32_t        error;
-    Byte            reserved[16];
-} TxWriteEepromValuesRequest, *PTxWriteEepromValuesRequest;
+    Byte     chip;
+    Word     registerAddress;
+    Byte     bufferLength;
+    Byte     buffer[256];
+    uint32_t error;
+    Byte     reserved[16];
+} TxWriteEepromValuesRequest;
 
 typedef struct {
-    Byte            chip;
-    Processor       processor;
-    uint32_t        registerAddress;
-    Byte            bufferLength;
-    Byte            buffer[256];
-    uint32_t        error;
-    Byte            reserved[16];
-} ReadRegistersRequest, *PReadRegistersRequest;
+    Byte      chip;
+    Processor processor;
+    uint32_t  registerAddress;
+    Byte      bufferLength;
+    Byte      buffer[256];
+    uint32_t  error;
+    Byte      reserved[16];
+} ReadRegistersRequest;
 
 typedef struct {
-    Byte            chip;
-    Processor       processor;
-    uint32_t        registerAddress;
-    Byte            bufferLength;
-    Byte            buffer[256];
-    uint32_t        error;
-    Byte            reserved[16];
-} TxReadRegistersRequest, *PTxReadRegistersRequest;
+    Byte      chip;
+    Processor processor;
+    uint32_t  registerAddress;
+    Byte      bufferLength;
+    Byte      buffer[256];
+    uint32_t  error;
+    Byte      reserved[16];
+} TxReadRegistersRequest;
 
 typedef struct {
-    Byte            chip;
-    Word            registerAddress;
-    Byte            bufferLength;
-    Byte            buffer[256];
-    uint32_t        error;
-    Byte            reserved[16];
-} TxReadEepromValuesRequest, *PTxReadEepromValuesRequest;
+    Byte     chip;
+    Word     registerAddress;
+    Byte     bufferLength;
+    Byte     buffer[256];
+    uint32_t error;
+    Byte     reserved[16];
+} TxReadEepromValuesRequest;
 
 typedef struct {
-    Byte                chip;
-    Word                bandwidth;
-    uint32_t            frequency;
-    uint32_t            error;
-    Byte                reserved[16];
-} AcquireChannelRequest, *PAcquireChannelRequest;
+    Byte     chip;
+    Word     bandwidth;
+    uint32_t frequency;
+    uint32_t error;
+    Byte     reserved[16];
+} AcquireChannelRequest;
 
 typedef struct {
-    Byte                chip;
-    Byte                transmissionMode;
-    Byte                constellation;
-    Byte                interval;
-    Byte                highCodeRate;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetModuleRequest, *PTxSetModuleRequest;
+    Byte     chip;
+    Byte     transmissionMode;
+    Byte     constellation;
+    Byte     interval;
+    Byte     highCodeRate;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetModuleRequest;
 
 typedef struct {
-    Byte                chip;
-    Word                bandwidth;
-    uint32_t            frequency;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxAcquireChannelRequest, *PTxAcquireChannelRequest;
+    Byte     chip;
+    Word     bandwidth;
+    uint32_t frequency;
+    uint32_t error;
+    Byte     reserved[16];
+} TxAcquireChannelRequest;
 
 typedef struct {
-    Byte                OnOff;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxModeRequest, *PTxModeRequest;
+    Byte     OnOff;
+    uint32_t error;
+    Byte     reserved[16];
+} TxModeRequest;
 
 typedef struct {
-    Byte                DeviceType;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetDeviceTypeRequest, *PTxSetDeviceTypeRequest;
+    Byte     DeviceType;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetDeviceTypeRequest;
 
 typedef struct {
-    Byte                DeviceType;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxGetDeviceTypeRequest, *PTxGetDeviceTypeRequest;
+    Byte     DeviceType;
+    uint32_t error;
+    Byte     reserved[16];
+} TxGetDeviceTypeRequest;
 
 typedef struct {
-    int             GainValue;
-    uint32_t        error;
-} TxSetGainRequest, *PTxSetGainRequest;
+    int      GainValue;
+    uint32_t error;
+} TxSetGainRequest;
 
 typedef struct {
-    Byte                chip;
-    Bool                locked;
-    Dword               error;
-    Byte                reserved[16];
-} IsLockedRequest, *PIsLockedRequest;
+    Byte  chip;
+    Bool  locked;
+    Dword error;
+    Byte  reserved[16];
+} IsLockedRequest;
 
 typedef struct {
-    Byte*               platformLength;
-    Platform*           platforms;
-    Dword               error;
-    Byte                reserved[16];
-} AcquirePlatformRequest, *PAcquirePlatformRequest;
+    Byte*     platformLength;
+    Platform* platforms;
+    Dword     error;
+    Byte      reserved[16];
+} AcquirePlatformRequest;
 
 typedef struct {
-    Byte                chip;
-    Byte                index;
-    Pid                 pid;
-    uint32_t            error;
-    Byte                reserved[16];
-} AddPidAtRequest, *PAddPidAtRequest;
+    Byte     chip;
+    Byte     index;
+    Pid      pid;
+    uint32_t error;
+    Byte     reserved[16];
+} AddPidAtRequest;
 
 typedef struct {
-    Byte                chip;
-    Byte                index;
-    Pid                 pid;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxAddPidAtRequest, *PTxAddPidAtRequest;
+    Byte     chip;
+    Byte     index;
+    Pid      pid;
+    uint32_t error;
+    Byte     reserved[16];
+} TxAddPidAtRequest;
 
 typedef struct {
-    Byte            chip;
-    uint32_t        error;
-    Byte            reserved[16];
-} ResetPidRequest, *PResetPidRequest;
+    Byte     chip;
+    uint32_t error;
+    Byte     reserved[16];
+} ResetPidRequest;
 
 typedef struct {
-    Byte            chip;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxResetPidRequest, *PTxResetPidRequest;
+    Byte     chip;
+    uint32_t error;
+    Byte     reserved[16];
+} TxResetPidRequest;
 
 typedef struct {
-    Byte                chip;
-    uint32_t            channelStatisticAddr;       // ChannelStatistic*
-    uint32_t            error;
-    Byte                reserved[16];
-} GetChannelStatisticRequest, *PGetChannelStatisticRequest;
+    Byte     chip;
+    uint32_t channelStatisticAddr;  // ChannelStatistic*
+    uint32_t error;
+    Byte     reserved[16];
+} GetChannelStatisticRequest;
 
 typedef struct {
-    Byte                chip;
-    Statistic           statistic;
-    uint32_t            error;
-    Byte                reserved[16];
-} GetStatisticRequest, *PGetStatisticRequest;
+    Byte      chip;
+    Statistic statistic;
+    uint32_t  error;
+    Byte      reserved[16];
+} GetStatisticRequest;
 
 typedef struct {
-    Byte            chip;
-    Byte            control;
-    uint32_t        error;
-    Byte            reserved[16];
-} ControlPidFilterRequest, *PControlPidFilterRequest;
+    Byte     chip;
+    Byte     control;
+    uint32_t error;
+    Byte     reserved[16];
+} ControlPidFilterRequest;
 
 typedef struct {
-    Byte            control;
-    Byte            enable;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxControlPidFilterRequest, *PTxControlPidFilterRequest;
+    Byte     control;
+    Byte     enable;
+    uint32_t error;
+    Byte     reserved[16];
+} TxControlPidFilterRequest;
 
 typedef struct {
-    Byte                chip;
-    Byte                control;
-    uint32_t            error;
-    Byte                reserved[16];
-} ControlPowerSavingRequest, *PControlPowerSavingRequest;
+    Byte     chip;
+    Byte     control;
+    uint32_t error;
+    Byte     reserved[16];
+} ControlPowerSavingRequest;
 
 typedef struct {
-    Byte                chip;
-    Byte                control;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxControlPowerSavingRequest, *PTxControlPowerSavingRequest;
+    Byte     chip;
+    Byte     control;
+    uint32_t error;
+    Byte     reserved[16];
+} TxControlPowerSavingRequest;
 
 typedef struct {
-    Byte                DriverVerion[16];   /** XX.XX.XX.XX Ex., 1.2.3.4            */
-    Byte                APIVerion[32];      /** XX.XX.XXXXXXXX.XX Ex., 1.2.3.4  */
-    Byte                FWVerionLink[16];   /** XX.XX.XX.XX Ex., 1.2.3.4            */
-    Byte                FWVerionOFDM[16];   /** XX.XX.XX.XX Ex., 1.2.3.4            */
-    Byte                DateTime[24];       /** Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__  definitions */
-    Byte                Company[8];         /** Ex.,"ITEtech"                   */
-    Byte                SupportHWInfo[32];  /** Ex.,"Jupiter DVBT/DVBH"         */
-    uint32_t            error;
-    Byte                reserved[128];
-} DemodDriverInfo, *PDemodDriverInfo;
+    Byte     DriverVerion[16];   // XX.XX.XX.XX Ex., 1.2.3.4
+    Byte     APIVerion[32];      // XX.XX.XXXXXXXX.XX Ex., 1.2.3.4
+    Byte     FWVerionLink[16];   // XX.XX.XX.XX Ex., 1.2.3.4
+    Byte     FWVerionOFDM[16];   // XX.XX.XX.XX Ex., 1.2.3.4
+    Byte     DateTime[24];       // Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__
+    Byte     Company[8];         // Ex.,"ITEtech"
+    Byte     SupportHWInfo[32];  // Ex.,"Jupiter DVBT/DVBH"
+    uint32_t error;
+    Byte     reserved[128];
+} DemodDriverInfo;
 
 typedef struct {
-    Byte                DriverVerion[16];   /** XX.XX.XX.XX Ex., 1.2.3.4            */
-    Byte                APIVerion[32];      /** XX.XX.XXXXXXXX.XX Ex., 1.2.3.4  */
-    Byte                FWVerionLink[16];   /** XX.XX.XX.XX Ex., 1.2.3.4            */
-    Byte                FWVerionOFDM[16];   /** XX.XX.XX.XX Ex., 1.2.3.4            */
-    Byte                DateTime[24];       /** Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__  definitions */
-    Byte                Company[8];         /** Ex.,"ITEtech"                   */
-    Byte                SupportHWInfo[32];  /** Ex.,"Jupiter DVBT/DVBH"         */
-    uint32_t            error;
-    Byte                reserved[128];
-} TxModDriverInfo, *PTxModDriverInfo;
+    Byte     DriverVerion[16];   // XX.XX.XX.XX Ex., 1.2.3.4
+    Byte     APIVerion[32];      // XX.XX.XXXXXXXX.XX Ex., 1.2.3.4
+    Byte     FWVerionLink[16];   // XX.XX.XX.XX Ex., 1.2.3.4
+    Byte     FWVerionOFDM[16];   // XX.XX.XX.XX Ex., 1.2.3.4
+    Byte     DateTime[24];       // Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__
+    Byte     Company[8];         // Ex.,"ITEtech"
+    Byte     SupportHWInfo[32];  // Ex.,"Jupiter DVBT/DVBH"
+    uint32_t error;
+    Byte     reserved[128];
+} TxModDriverInfo;
 
-/**
- * Demodulator Stream control API commands
- */
+// Demodulator Stream control API commands
 typedef struct {
-    Byte            chip;
-    Dword           error;
-    Byte            reserved[16];
-} StartCaptureRequest, *PStartCaptureRequest;
+    Byte  chip;
+    Dword error;
+    Byte  reserved[16];
+} StartCaptureRequest;
 
 typedef struct {
-    Byte            chip;
-    Dword           error;
-    Byte            reserved[16];
-} TxStartTransferRequest, *PTxStartTransferRequest;
+    Byte  chip;
+    Dword error;
+    Byte  reserved[16];
+} TxStartTransferRequest;
 
 typedef struct {
-    Byte            chip;
-    Dword           error;
-    Byte            reserved[16];
-} TxStopTransferRequest, *PTxStopTransferRequest;
+    Byte  chip;
+    Dword error;
+    Byte  reserved[16];
+} TxStopTransferRequest;
 
 typedef struct {
-    Byte            chip;
-    Dword           error;
-    Byte            reserved[16];
-} StopCaptureRequest, *PStopCaptureRequest;
+    Byte  chip;
+    Dword error;
+    Byte  reserved[16];
+} StopCaptureRequest;
 
 typedef struct {
-    uint32_t        len;
-    uint32_t        cmdAddr;        // Byte*
-    uint32_t        error;
-    Byte            reserved[16];
-} TxCmdRequest, *PTxCmdRequest;
+    uint32_t len;
+    uint32_t cmdAddr;        // Byte*
+    uint32_t error;
+    Byte     reserved[16];
+} TxCmdRequest;
 
 typedef struct {
-    uint32_t        error;
-    uint32_t       frequency;
-    Word           bandwidth;
-    int             maxGain;
-    int             minGain;
-    Byte            reserved[16];
-} TxGetGainRangeRequest, *PTxGetGainRangeRequest;
+    uint32_t error;
+    uint32_t frequency;
+    Word     bandwidth;
+    int      maxGain;
+    int      minGain;
+    Byte     reserved[16];
+} TxGetGainRangeRequest;
 
 typedef struct {
-    TPS             tps;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxGetTPSRequest, *PTxGetTPSRequest;
+    TPS      tps;
+    uint32_t error;
+    Byte     reserved[16];
+} TxGetTPSRequest;
 
 typedef struct {
-    TPS            tps;
-    Bool           actualInfo;
+    TPS      tps;
+    Bool     actualInfo;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetTPSRequest;
+
+typedef struct {
+    int      gain;
+    uint32_t error;
+    Byte     reserved[16];
+} TxGetOutputGainRequest;
+
+typedef struct {
+    uint32_t error;
+    uint32_t pbufferAddr;
+    Byte     reserved[16];
+} TxSendHwPSITableRequest;
+
+typedef struct {
+    Byte     psiTableIndex;
+    uint32_t pbufferAddr;
+    uint32_t error;
+    Byte     reserved[16];
+} TxAccessFwPSITableRequest;
+
+typedef struct {
+    Byte     psiTableIndex;
+    Word     timer;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetFwPSITableTimerRequest;
+
+typedef struct {
+    uint32_t pBufferAddr;            // Byte*
+    uint32_t pdwBufferLength;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetLowBitRateTransferRequest;
+
+typedef struct {
+    uint32_t pIQtableAddr;       // Byte*
+    Word     IQtableSize;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetIQTableRequest;
+
+typedef struct {
+    int      dc_i;
+    int      dc_q;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetDCCalibrationValueRequest;
+
+typedef struct {
+    Word     chipType;
+    uint32_t error;
+    Byte     reserved[16];
+} TxGetChipTypeRequest;
+
+typedef struct {
+    uint32_t isdbtModulationAddr;    //  ISDBTModulation
+    uint32_t error;
+    Byte     reserved[16];
+} TXSetISDBTChannelModulationRequest;
+
+typedef struct {
+    TMCCINFO TmccInfo;
+    Bool     actualInfo;
+    uint32_t error;
+    Byte     reserved[16];
+} TXSetTMCCInfoRequest;
+
+typedef struct {
+    TMCCINFO TmccInfo;
+    uint32_t error;
+    Byte     reserved[16];
+} TXGetTMCCInfoRequest;
+
+typedef struct {
+    Word     BitRate_Kbps;
+    uint32_t error;
+    Byte     reserved[16];
+} TXGetTSinputBitRateRequest;
+
+typedef struct {
+    Byte           index;
+    Pid            pid;
+    TransportLayer layer;
     uint32_t       error;
     Byte           reserved[16];
-} TxSetTPSRequest, *PTxSetTPSRequest;
+} TXAddPidToISDBTPidFilterRequest;
 
 typedef struct {
-    int            gain;
-    uint32_t       error;
-    Byte           reserved[16];
-} TxGetOutputGainRequest, *PTxGetOutputGainRequest;
+    PcrMode  mode;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetPcrModeRequest;
 
 typedef struct {
-    uint32_t       error;
-    uint32_t      pbufferAddr;
-    Byte           reserved[16];
-} TxSendHwPSITableRequest, *PTxSendHwPSITableRequest;
+    uint32_t DCInfoAddr; //DCInfo*
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetDCTableRequest;
 
 typedef struct {
-    Byte           psiTableIndex;
-    uint32_t       pbufferAddr;
-    uint32_t       error;
-    Byte           reserved[16];
-} TxAccessFwPSITableRequest, *PTxAccessFwPSITableRequest;
+    Byte     frequencyindex;
+    uint32_t error;
+    Byte     reserved[16];
+} TxGetFrequencyIndexRequest;
 
 typedef struct {
-    Byte            psiTableIndex;
-    Word            timer;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxSetFwPSITableTimerRequest, *PTxSetFwPSITableTimerRequest;
+    Byte     Mode;
+    uint32_t error;
+    Byte     reserved[16];
+} TxGetDTVModeRequest;
 
 typedef struct {
-    uint32_t            pBufferAddr;            // Byte*
-    uint32_t            pdwBufferLength;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetLowBitRateTransferRequest, *PTxSetLowBitRateTransferRequest;
+    uint32_t key;
+    uint32_t error;
+    Byte     reserved[16];
+} TxEnableTpsEncryptionRequest;
 
 typedef struct {
-    uint32_t            pIQtableAddr;       // Byte*
-    Word                IQtableSize;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetIQTableRequest, *PTxSetIQTableRequest;
+    uint32_t error;
+    Byte     reserved[16];
+} TxDisableTpsEncryptionRequest;
 
 typedef struct {
-    int                 dc_i;
-    int                 dc_q;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetDCCalibrationValueRequest, *PTxSetDCCalibrationValueRequest;
+    uint32_t decryptKey;
+    Byte     decryptEnable;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetDecryptRequest;
 
 typedef struct {
-    Word            chipType;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxGetChipTypeRequest, *PTxGetChipTypeRequest;
-
-typedef struct {
-    uint32_t            isdbtModulationAddr;    //  ISDBTModulation
-    uint32_t            error;
-    Byte                reserved[16];
-} TXSetISDBTChannelModulationRequest, *PTXSetISDBTChannelModulationRequest;
-
-typedef struct {
-    TMCCINFO            TmccInfo;
-    Bool                actualInfo;
-    uint32_t            error;
-    Byte                reserved[16];
-} TXSetTMCCInfoRequest, *PTXSetTMCCInfoRequest;
-
-typedef struct {
-    TMCCINFO            TmccInfo;
-    uint32_t            error;
-    Byte                reserved[16];
-} TXGetTMCCInfoRequest, *PTXGetTMCCInfoRequest;
-
-typedef struct {
-    Word                BitRate_Kbps;
-    uint32_t            error;
-    Byte                reserved[16];
-} TXGetTSinputBitRateRequest, *PTXGetTSinputBitRateRequest;
-
-typedef struct {
-    Byte                index;
-    Pid                 pid;
-    TransportLayer      layer;
-    uint32_t            error;
-    Byte                reserved[16];
-} TXAddPidToISDBTPidFilterRequest, *PTXAddPidToISDBTPidFilterRequest;
-
-typedef struct {
-    PcrMode         mode;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetPcrModeRequest, *PTxSetPcrModeRequest;
-
-typedef struct {
-    uint32_t            DCInfoAddr; //DCInfo*
-    uint32_t            error;
-    Byte                reserved[16];
-} TxSetDCTableRequest, *PTxSetDCTableRequest;
-
-typedef struct {
-    Byte                frequencyindex;
-    uint32_t            error;
-    Byte                reserved[16];
-} TxGetFrequencyIndexRequest, *PTxGetFrequencyIndexRequest;
-
-typedef struct {
-    Byte            DTVMode;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxGetDTVModeRequest, *PTxGetDTVModeRequest;
-
-typedef struct {
-    uint32_t        key ;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxEnableTpsEncryptionRequest, *PTxEnableTpsEncryptionRequest;
-
-typedef struct {
-    uint32_t        error;
-    Byte            reserved[16];
-} TxDisableTpsEncryptionRequest, *PTxDisableTpsEncryptionRequest;
-
-typedef struct {
-    uint32_t        decryptKey;
-    Byte            decryptEnable;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxSetDecryptRequest, *PTxSetDecryptRequest;
-
-typedef struct {
-    Bool            isInversion;
-    uint32_t        error;
-    Byte            reserved[16];
-} TxSetSpectralInversionRequest, *PTxSetSpectralInversionRequest;
-
-/**
- * Modulator & Demodulator API commands
- */
-#define IOCTRL_ITE_GROUP_STANDARD           0x000
-#define IOCTRL_ITE_GROUP_DVBT               0x100
-#define IOCTRL_ITE_GROUP_DVBH               0x200
-#define IOCTRL_ITE_GROUP_FM                 0x300
-#define IOCTRL_ITE_GROUP_TDMB               0x400
-#define IOCTRL_ITE_GROUP_OTHER              0x500
-#define IOCTRL_ITE_GROUP_ISDBT              0x600
-#define IOCTRL_ITE_GROUP_SECURITY           0x700
-
-/* STANDARD */
-
-/**
- * Write a sequence of bytes to the contiguous registers in demodulator.
- * Paramters:   WriteRegistersRequest struct
- */
-#define IOCTL_ITE_DEMOD_WRITEREGISTERS \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x00, WriteRegistersRequest)
-
-/**
- * Read a sequence of bytes from the contiguous registers in demodulator.
- * Paramters:   ReadRegistersRequest struct
- */
-#define IOCTL_ITE_DEMOD_READREGISTERS \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x06, ReadRegistersRequest)
-
-/**
- * Specify the bandwidth of channel and tune the channel to the specific
- * frequency. Afterwards, host could use output parameter dvbH to determine
- * if there is a DVB-H signal.
- * In DVB-T mode, after calling this function output parameter dvbH should
- * be False and host could use output parameter "locked" to indicate if the
- * TS is correct.
- * In DVB-H mode, after calling this function output parameter dvbH should
- * be True and host could use Jupiter_acquirePlatorm to get platform.
- * Paramters:   AcquireChannelRequest struct
- */
-#define IOCTL_ITE_DEMOD_ACQUIRECHANNEL \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x14, AcquireChannelRequest)
-
-/**
- * Get all the platforms found in current frequency.
- * Paramters:   IsLockedRequest struct
- */
-#define IOCTL_ITE_DEMOD_ISLOCKED \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x15, IsLockedRequest)
-
-/**
- * Get the statistic values of demodulator, it includes Pre-Viterbi BER,
- * Post-Viterbi BER, Abort Count, Signal Presented Flag, Signal Locked Flag,
- * Signal Quality, Signal Strength, Delta-T for DVB-H time slicing.
- * Paramters:   GetStatisticRequest struct
- */
-#define IOCTL_ITE_DEMOD_GETSTATISTIC \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x18, GetStatisticRequest)
-
-/**
- * Get the statistic values of demodulator, it includes Pre-Viterbi BER,
- * Post-Viterbi BER, Abort Count, Signal Presented Flag, Signal Locked Flag,
- * Signal Quality, Signal Strength, Delta-T for DVB-H time slicing.
- * Paramters:   GetChannelStatisticRequest struct
- */
-#define IOCTL_ITE_DEMOD_GETCHANNELSTATISTIC \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x19, GetChannelStatisticRequest)
-
-/**
- * Paramters:   ControlPowerSavingRequest struct
- */
-#define IOCTL_ITE_DEMOD_CONTROLPOWERSAVING \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x1E, ControlPowerSavingRequest)
-
-/**
- * Modulator Set Modulation.
- * Paramters:   TxSetModuleRequest struct
- */
-#define IOCTL_ITE_MOD_SETMODULE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x21, TxSetModuleRequest)
-
-/**
- * Modulator Acquire Channel.
- * Paramters:   TxAcquireChannelRequest struct
- */
-#define IOCTL_ITE_MOD_ACQUIRECHANNEL \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x22, TxAcquireChannelRequest)
-
-/**
- * Modulator Null Packet Enable.
- * Paramters:   TxModeRequest struct
- */
-#define IOCTL_ITE_MOD_ENABLETXMODE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x23, TxModeRequest)
-
-/**
- * Read a sequence of bytes from the contiguous registers in demodulator.
- * Paramters:   ReadRegistersRequest struct
- */
-#define IOCTL_ITE_MOD_READREGISTERS \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x24, TxReadRegistersRequest)
-
-/**
- * Write a sequence of bytes to the contiguous registers in demodulator.
- * Paramters:   TxWriteRegistersRequest struct
- */
-#define IOCTL_ITE_MOD_WRITEREGISTERS \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x27, TxWriteRegistersRequest)
-
-/**
- * Modulator Device Type Setting.
- * Paramters:   TxSetDeviceTypeRequest struct
- */
-#define IOCTL_ITE_MOD_SETDEVICETYPE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x28, TxSetDeviceTypeRequest)
-
-/**
- * Modulator Device Type Getting.
- * Paramters:   TxGetDeviceTypeRequest struct
- */
-#define IOCTL_ITE_MOD_GETDEVICETYPE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x29, TxGetDeviceTypeRequest)
-
-/**
- * Modulator Set Gain Range.
- * Paramters:   TxSetGainRequest struct
- */
-#define IOCTL_ITE_MOD_ADJUSTOUTPUTGAIN \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2B, TxSetGainRequest)
-
-/**
- * Modulator Get Gain Range.
- * Paramters:   TxGetGainRangeRequest struct
- */
-#define IOCTL_ITE_MOD_GETGAINRANGE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2C, TxGetGainRangeRequest)
-
-/**
- * Modulator Get Output Gain Range.
- * Paramters:   TxGetOutputGainRangeRequest struct
- */
-#define IOCTL_ITE_MOD_GETOUTPUTGAIN \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2D, TxGetOutputGainRequest)
-
-/**
- * Paramters:   TxControlPowerSavingRequest struct
- */
-#define IOCTL_ITE_MOD_CONTROLPOWERSAVING \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2F, TxControlPowerSavingRequest)
-
-/**
- * Write a sequence of bytes to the contiguous cells in the EEPROM.
- * Paramters:   WriteEepromValuesRequest struct
- */
-#define IOCTL_ITE_MOD_WRITEEEPROMVALUES \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x31, TxWriteEepromValuesRequest)
-
-/**
- * Read a sequence of bytes from the contiguous cells in the EEPROM.
- * Paramters:   ReadEepromValuesRequest struct
- */
-#define IOCTL_ITE_MOD_READEEPROMVALUES \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x32, TxReadEepromValuesRequest)
-
-/**
- * Get Chip Type IT9507/IT9503 in modulator.
- * Paramters:   TxGetChipTypeRequest struct
- */
-#define IOCTL_ITE_MOD_GETCHIPTYPE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3B, TxGetChipTypeRequest)
-
-/**
- * Get Chip Type IT9507/IT9503 in modulator.
- * Paramters:   TxSetSpectralInversion struct
- */
-#define IOCTL_ITE_MOD_SETSPECTRALINVERSION \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3C, TxSetSpectralInversionRequest)
-
-/* DVBT */
-
-/**
- * Reset PID from PID filter.
- * Paramters:   ResetPidRequest struct
- */
-#define IOCTL_ITE_DEMOD_RESETPID \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x02, ResetPidRequest)
-
-/**
- * Enable PID filter.
- * Paramters:   ControlPidFilterRequest struct
- */
-#define IOCTL_ITE_DEMOD_CONTROLPIDFILTER \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x03, ControlPidFilterRequest)
-
-/**
- * Add PID to PID filter.
- * Paramters:   AddPidAtRequest struct
- */
-#define IOCTL_ITE_DEMOD_ADDPIDAT \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x04, AddPidAtRequest)
-
-/**
- * Add PID to PID filter.
- * Paramters:   AddPidAtRequest struct
- */
-#define IOCTL_ITE_MOD_ADDPIDAT \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x08, TxAddPidAtRequest)
-
-/**
- * Reset PID from PID filter.
- * Paramters:   ResetPidRequest struct
- */
-#define IOCTL_ITE_MOD_RESETPID \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x10, TxResetPidRequest)
-
-/**
- * Enable PID filter.
- * Paramters:   TxControlPidFilterRequest struct
- */
-#define IOCTL_ITE_MOD_CONTROLPIDFILTER \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x11, TxControlPidFilterRequest)
-
-/**
- * Enable Set IQTable From File.
- * Paramters:   TxSetIQTableRequest struct
- */
-#define IOCTL_ITE_MOD_SETIQTABLE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x12, TxSetIQTableRequest)
-
-/**
- * Enable Set DC Calibration Value From File.
- * Paramters:   TxSetDCCalibrationValueRequest struct
- */
-#define IOCTL_ITE_MOD_SETDCCALIBRATIONVALUE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x13, TxSetDCCalibrationValueRequest)
-
-/* OTHER */
-
-/**
- * Get driver information.
- * Paramters:   DemodDriverInfo struct
- */
-#define IOCTL_ITE_DEMOD_GETDRIVERINFO \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x00, DemodDriverInfo)
-
-/**
- * Start capture data stream
- * Paramters: StartCaptureRequest struct
- */
-#define IOCTL_ITE_DEMOD_STARTCAPTURE \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x01, StartCaptureRequest)
-
-/**
- * Stop capture data stream
- * Paramters: StopCaptureRequest struct
- */
-#define IOCTL_ITE_DEMOD_STOPCAPTURE \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x02, StopCaptureRequest)
-
-/**
- * Start Transfer data stream
- * Paramters: StartTransferRequest struct
- */
-#define IOCTL_ITE_MOD_STARTTRANSFER \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x07, TxStartTransferRequest)
-
-/**
- * Stop capture data stream
- * Paramters: StopTransferRequest struct
- */
-#define IOCTL_ITE_MOD_STOPTRANSFER \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x08, TxStopTransferRequest)
-
-/**
- * Modulator: Get Driver information.
- * Paramters: TxModDriverInfo struct
- */
-#define IOCTL_ITE_MOD_GETDRIVERINFO \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x09, TxModDriverInfo)
-
-/**
- * Modulator: Set Start Transfer data Streaming.
- * Paramters: StopTransferRequest struct
- */
-#define IOCTL_ITE_MOD_STARTTRANSFER_CMD \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0A, TxStartTransferRequest)
-
-/**
- * Modulator: Set Stop Transfer data Streaming.
- * Paramters: TxStopTransferRequest struct
- */
-#define IOCTL_ITE_MOD_STOPTRANSFER_CMD \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0B, TxStopTransferRequest)
-
-/**
- * Modulator: Set Command.
- * Paramters: TxCmdRequest struct
- */
-#define IOCTL_ITE_MOD_WRITE_CMD \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0C, TxCmdRequest)
-
-/**
- * Modulator: Get TPS.
- * Paramters: TxGetTPSRequest struct
- */
-#define IOCTL_ITE_MOD_GETTPS \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0D, TxGetTPSRequest)
-
-/**
- * Modulator: Set TPS.
- * Paramters: TxSetTPSRequest struct
- */
-#define IOCTL_ITE_MOD_SETTPS \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0E, TxSetTPSRequest)
-
-/**
- * Modulator: Send PSI Table to Hardware.
- * Paramters: TxSetTPSRequest struct
- */
-#define IOCTL_ITE_MOD_SENDHWPSITABLE \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0F, TxSendHwPSITableRequest)
-
-/**
- * Modulator: Access PSI Table to firmware.
- * Paramters: TxSetTPSRequest struct
- */
-#define IOCTL_ITE_MOD_ACCESSFWPSITABLE \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x10, TxAccessFwPSITableRequest)
-
-/**
- * Modulator: Access PSI Table to firmware.
- * Paramters: TxSetTPSRequest struct
- */
-#define IOCTL_ITE_MOD_SETFWPSITABLETIMER \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x11, TxSetFwPSITableTimerRequest)
-
-/**
- * Modulator: Write Low Bit Rate Date.
- * Paramters: TxSetLowBitRateTransferRequest struct
- */
-#define IOCTL_ITE_MOD_WRITE_LOWBITRATEDATA \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x12, TxSetLowBitRateTransferRequest)
-
-/**
- * Modulator: Set PCR Mode.
- * Paramters: TxSetPcrModeRequest struct
- */
-#define IOCTL_ITE_MOD_SETPCRMODE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x13, TxSetPcrModeRequest)
-
-/**
- * Modulator: Set DC Table.
- * Paramters: TxSetPcrModeRequest struct
- */
-#define IOCTL_ITE_MOD_SETDCTABLE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x14, TxSetDCTableRequest)
-
-/**
- * Enable Get Frequency Index Value From API.
- * Paramters:   GetFrequencyIndexRequest struct
- */
-#define IOCTL_ITE_MOD_GETFREQUENCYINDEX \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x15, TxGetFrequencyIndexRequest)
-
-/* ISDB-T */
-
-/**
- * Set ISDB-T Channel Modulation.
- * Paramters:   TXSetISDBTChannelModulationRequest struct
- */
-#define IOCTL_ITE_MOD_SETISDBTCHANNELMODULATION \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x00, TXSetISDBTChannelModulationRequest)
-
-/**
- * Set TMCC Information.
- * Paramters:   TXSetTMCCInfoRequest struct
- */
-#define IOCTL_ITE_MOD_SETTMCCINFO \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x01, TXSetTMCCInfoRequest)
-
-/**
- * Get TMCC Information.
- * Paramters:   TXGetTMCCInfoRequest struct
- */
-#define IOCTL_ITE_MOD_GETTMCCINFO \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x02, TXGetTMCCInfoRequest)
-
-/**
- * Get TS Input Bit Rate.
- * Paramters:   TXGetTSinputBitRate struct
- */
-#define IOCTL_ITE_MOD_GETTSINPUTBITRATE \
-    _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x03, TXGetTSinputBitRateRequest)
-
-/**
- * Get Add Pid To ISDBT Pid Filter.
- * Paramters:   TXGetTSinputBitRate struct
- */
-#define IOCTL_ITE_MOD_ADDPIDTOISDBTPIDFILTER \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x04, TXAddPidToISDBTPidFilterRequest)
-
-/**
- * Get DTV Mode.
- * Paramters:   TxGetDTVModeRequest struct
- */
-#define IOCTL_ITE_MOD_GETDTVMODE \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x05, TxGetDTVModeRequest)
-
-/* SECURITY */
-
-/**
- * Enable TPS Encryption.
- * Paramters:   TxEnableTpsEncryptionRequest struct
- */
-#define IOCTL_ITE_MOD_ENABLETPSENCRYPTION \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x01, TxEnableTpsEncryptionRequest)
-
-/**
- * Disable TPS Encryption.
- * Paramters:   TxDisableTpsEncryptionRequest struct
- */
-#define IOCTL_ITE_MOD_DISABLETPSENCRYPTION \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x02, TxDisableTpsEncryptionRequest)
-
-/**
- * Set TPS Decryption.
- * Paramters:   TxSetDecryptRequest struct
- */
-#define IOCTL_ITE_DEMOD_SETDECRYPT \
-    _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x03, TxSetDecryptRequest)
-
-Dword DemodIOCTLFun(
-    void *        handle,
-    Dword         IOCTLCode,
-    unsigned long pIOBuffer);
+    Bool     isInversion;
+    uint32_t error;
+    Byte     reserved[16];
+} TxSetSpectralInversionRequest;
+
+//
+// Modulator & Demodulator API commands.
+//
+#define IOCTRL_ITE_GROUP_STANDARD  0x000
+#define IOCTRL_ITE_GROUP_DVBT      0x100
+#define IOCTRL_ITE_GROUP_DVBH      0x200
+#define IOCTRL_ITE_GROUP_FM        0x300
+#define IOCTRL_ITE_GROUP_TDMB      0x400
+#define IOCTRL_ITE_GROUP_OTHER     0x500
+#define IOCTRL_ITE_GROUP_ISDBT     0x600
+#define IOCTRL_ITE_GROUP_SECURITY  0x700
+//
+// == STANDARD ==
+//
+// Write a sequence of bytes to the contiguous registers in demodulator.
+// Parameters: WriteRegistersRequest struct
+//
+#define IOCTL_ITE_DEMOD_WRITEREGISTERS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x00, WriteRegistersRequest)
+//
+// Read a sequence of bytes from the contiguous registers in demodulator.
+// Parameters: ReadRegistersRequest struct
+//
+#define IOCTL_ITE_DEMOD_READREGISTERS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x06, ReadRegistersRequest)
+//
+// Specify the bandwidth of channel and tune the channel to the specific
+// frequency. Afterwards, host could use output parameter dvbH to determine
+// if there is a DVB-H signal.
+// In DVB-T mode, after calling this function output parameter dvbH should
+// be False and host could use output parameter "locked" to indicate if the
+// TS is correct.
+// In DVB-H mode, after calling this function output parameter dvbH should
+// be True and host could use Jupiter_acquirePlatorm to get platform.
+// Parameters: AcquireChannelRequest struct
+//
+#define IOCTL_ITE_DEMOD_ACQUIRECHANNEL _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x14, AcquireChannelRequest)
+//
+// Get all the platforms found in current frequency.
+// Parameters: IsLockedRequest struct
+//
+#define IOCTL_ITE_DEMOD_ISLOCKED _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x15, IsLockedRequest)
+//
+// Get the statistic values of demodulator, it includes Pre-Viterbi BER,
+// Post-Viterbi BER, Abort Count, Signal Presented Flag, Signal Locked Flag,
+// Signal Quality, Signal Strength, Delta-T for DVB-H time slicing.
+// Parameters: GetStatisticRequest struct
+//
+#define IOCTL_ITE_DEMOD_GETSTATISTIC _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x18, GetStatisticRequest)
+//
+// Get the statistic values of demodulator, it includes Pre-Viterbi BER,
+// Post-Viterbi BER, Abort Count, Signal Presented Flag, Signal Locked Flag,
+// Signal Quality, Signal Strength, Delta-T for DVB-H time slicing.
+// Parameters: GetChannelStatisticRequest struct
+//
+#define IOCTL_ITE_DEMOD_GETCHANNELSTATISTIC _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x19, GetChannelStatisticRequest)
+//
+// Parameters: ControlPowerSavingRequest struct
+//
+#define IOCTL_ITE_DEMOD_CONTROLPOWERSAVING _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x1E, ControlPowerSavingRequest)
+//
+// Modulator Set Modulation.
+// Parameters: TxSetModuleRequest struct
+//
+#define IOCTL_ITE_MOD_SETMODULE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x21, TxSetModuleRequest)
+//
+// Modulator Acquire Channel.
+// Parameters: TxAcquireChannelRequest struct
+//
+#define IOCTL_ITE_MOD_ACQUIRECHANNEL _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x22, TxAcquireChannelRequest)
+//
+// Modulator Null Packet Enable.
+// Parameters: TxModeRequest struct
+//
+#define IOCTL_ITE_MOD_ENABLETXMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x23, TxModeRequest)
+//
+// Read a sequence of bytes from the contiguous registers in demodulator.
+// Parameters: ReadRegistersRequest struct
+//
+#define IOCTL_ITE_MOD_READREGISTERS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x24, TxReadRegistersRequest)
+//
+// Write a sequence of bytes to the contiguous registers in demodulator.
+// Parameters: TxWriteRegistersRequest struct
+//
+#define IOCTL_ITE_MOD_WRITEREGISTERS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x27, TxWriteRegistersRequest)
+//
+// Modulator Device Type Setting.
+// Parameters: TxSetDeviceTypeRequest struct
+//
+#define IOCTL_ITE_MOD_SETDEVICETYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x28, TxSetDeviceTypeRequest)
+//
+// Modulator Device Type Getting.
+// Parameters: TxGetDeviceTypeRequest struct
+//
+#define IOCTL_ITE_MOD_GETDEVICETYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x29, TxGetDeviceTypeRequest)
+//
+// Modulator Set Gain Range.
+// Parameters: TxSetGainRequest struct
+//
+#define IOCTL_ITE_MOD_ADJUSTOUTPUTGAIN _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2B, TxSetGainRequest)
+//
+// Modulator Get Gain Range.
+// Parameters: TxGetGainRangeRequest struct
+//
+#define IOCTL_ITE_MOD_GETGAINRANGE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2C, TxGetGainRangeRequest)
+//
+// Modulator Get Output Gain Range.
+// Parameters: TxGetOutputGainRangeRequest struct
+//
+#define IOCTL_ITE_MOD_GETOUTPUTGAIN _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2D, TxGetOutputGainRequest)
+//
+// Parameters: TxControlPowerSavingRequest struct
+//
+#define IOCTL_ITE_MOD_CONTROLPOWERSAVING _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2F, TxControlPowerSavingRequest)
+//
+// Write a sequence of bytes to the contiguous cells in the EEPROM.
+// Parameters: WriteEepromValuesRequest struct
+//
+#define IOCTL_ITE_MOD_WRITEEEPROMVALUES _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x31, TxWriteEepromValuesRequest)
+//
+// Read a sequence of bytes from the contiguous cells in the EEPROM.
+// Parameters: ReadEepromValuesRequest struct
+//
+#define IOCTL_ITE_MOD_READEEPROMVALUES _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x32, TxReadEepromValuesRequest)
+//
+// Get Chip Type IT9507/IT9503 in modulator.
+// Parameters: TxGetChipTypeRequest struct
+//
+#define IOCTL_ITE_MOD_GETCHIPTYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3B, TxGetChipTypeRequest)
+//
+// Get Chip Type IT9507/IT9503 in modulator.
+// Parameters: TxSetSpectralInversion struct
+//
+#define IOCTL_ITE_MOD_SETSPECTRALINVERSION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3C, TxSetSpectralInversionRequest)
+//
+// == DVB-T ==
+//
+// Reset PID from PID filter.
+// Parameters: ResetPidRequest struct
+//
+#define IOCTL_ITE_DEMOD_RESETPID _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x02, ResetPidRequest)
+//
+// Enable PID filter.
+// Parameters: ControlPidFilterRequest struct
+//
+#define IOCTL_ITE_DEMOD_CONTROLPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x03, ControlPidFilterRequest)
+//
+// Add PID to PID filter.
+// Parameters: AddPidAtRequest struct
+//
+#define IOCTL_ITE_DEMOD_ADDPIDAT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x04, AddPidAtRequest)
+//
+// Add PID to PID filter.
+// Parameters: AddPidAtRequest struct
+//
+#define IOCTL_ITE_MOD_ADDPIDAT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x08, TxAddPidAtRequest)
+//
+// Reset PID from PID filter.
+// Parameters: ResetPidRequest struct
+//
+#define IOCTL_ITE_MOD_RESETPID _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x10, TxResetPidRequest)
+//
+// Enable PID filter.
+// Parameters: TxControlPidFilterRequest struct
+//
+#define IOCTL_ITE_MOD_CONTROLPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x11, TxControlPidFilterRequest)
+//
+// Enable Set IQTable From File.
+// Parameters: TxSetIQTableRequest struct
+//
+#define IOCTL_ITE_MOD_SETIQTABLE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x12, TxSetIQTableRequest)
+//
+// Enable Set DC Calibration Value From File.
+// Parameters: TxSetDCCalibrationValueRequest struct
+//
+#define IOCTL_ITE_MOD_SETDCCALIBRATIONVALUE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x13, TxSetDCCalibrationValueRequest)
+//
+// == OTHER ==
+//
+// Get driver information.
+// Parameters: DemodDriverInfo struct
+//
+#define IOCTL_ITE_DEMOD_GETDRIVERINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x00, DemodDriverInfo)
+//
+// Start capture data stream
+// Parameters: StartCaptureRequest struct
+//
+#define IOCTL_ITE_DEMOD_STARTCAPTURE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x01, StartCaptureRequest)
+//
+// Stop capture data stream
+// Parameters: StopCaptureRequest struct
+//
+#define IOCTL_ITE_DEMOD_STOPCAPTURE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x02, StopCaptureRequest)
+//
+// Start Transfer data stream
+// Parameters: StartTransferRequest struct
+//
+#define IOCTL_ITE_MOD_STARTTRANSFER _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x07, TxStartTransferRequest)
+//
+// Stop capture data stream
+// Parameters: StopTransferRequest struct
+//
+#define IOCTL_ITE_MOD_STOPTRANSFER _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x08, TxStopTransferRequest)
+//
+// Modulator: Get Driver information.
+// Parameters: TxModDriverInfo struct
+//
+#define IOCTL_ITE_MOD_GETDRIVERINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x09, TxModDriverInfo)
+//
+// Modulator: Set Start Transfer data Streaming.
+// Parameters: StopTransferRequest struct
+//
+#define IOCTL_ITE_MOD_STARTTRANSFER_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0A, TxStartTransferRequest)
+//
+// Modulator: Set Stop Transfer data Streaming.
+// Parameters: TxStopTransferRequest struct
+//
+#define IOCTL_ITE_MOD_STOPTRANSFER_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0B, TxStopTransferRequest)
+//
+// Modulator: Set Command.
+// Parameters: TxCmdRequest struct
+//
+#define IOCTL_ITE_MOD_WRITE_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0C, TxCmdRequest)
+//
+// Modulator: Get TPS.
+// Parameters: TxGetTPSRequest struct
+//
+#define IOCTL_ITE_MOD_GETTPS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0D, TxGetTPSRequest)
+//
+// Modulator: Set TPS.
+// Parameters: TxSetTPSRequest struct
+//
+#define IOCTL_ITE_MOD_SETTPS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0E, TxSetTPSRequest)
+//
+// Modulator: Send PSI Table to Hardware.
+// Parameters: TxSetTPSRequest struct
+//
+#define IOCTL_ITE_MOD_SENDHWPSITABLE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0F, TxSendHwPSITableRequest)
+//
+// Modulator: Access PSI Table to firmware.
+// Parameters: TxSetTPSRequest struct
+//
+#define IOCTL_ITE_MOD_ACCESSFWPSITABLE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x10, TxAccessFwPSITableRequest)
+//
+// Modulator: Access PSI Table to firmware.
+// Parameters: TxSetTPSRequest struct
+//
+#define IOCTL_ITE_MOD_SETFWPSITABLETIMER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x11, TxSetFwPSITableTimerRequest)
+//
+// Modulator: Write Low Bit Rate Date.
+// Parameters: TxSetLowBitRateTransferRequest struct
+//
+#define IOCTL_ITE_MOD_WRITE_LOWBITRATEDATA _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x12, TxSetLowBitRateTransferRequest)
+//
+// Modulator: Set PCR Mode.
+// Parameters: TxSetPcrModeRequest struct
+//
+#define IOCTL_ITE_MOD_SETPCRMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x13, TxSetPcrModeRequest)
+//
+// Modulator: Set DC Table.
+// Parameters: TxSetPcrModeRequest struct
+//
+#define IOCTL_ITE_MOD_SETDCTABLE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x14, TxSetDCTableRequest)
+//
+// Enable Get Frequency Index Value From API.
+// Parameters: GetFrequencyIndexRequest struct
+//
+#define IOCTL_ITE_MOD_GETFREQUENCYINDEX _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x15, TxGetFrequencyIndexRequest)
+//
+// == ISDB-T ==
+//
+// Set ISDB-T Channel Modulation.
+// Parameters: TXSetISDBTChannelModulationRequest struct
+//
+#define IOCTL_ITE_MOD_SETISDBTCHANNELMODULATION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x00, TXSetISDBTChannelModulationRequest)
+//
+// Set TMCC Information.
+// Parameters: TXSetTMCCInfoRequest struct
+//
+#define IOCTL_ITE_MOD_SETTMCCINFO _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x01, TXSetTMCCInfoRequest)
+//
+// Get TMCC Information.
+// Parameters: TXGetTMCCInfoRequest struct
+//
+#define IOCTL_ITE_MOD_GETTMCCINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x02, TXGetTMCCInfoRequest)
+//
+// Get TS Input Bit Rate.
+// Parameters: TXGetTSinputBitRate struct
+//
+#define IOCTL_ITE_MOD_GETTSINPUTBITRATE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x03, TXGetTSinputBitRateRequest)
+//
+// Get Add Pid To ISDBT Pid Filter.
+// Parameters: TXGetTSinputBitRate struct
+//
+#define IOCTL_ITE_MOD_ADDPIDTOISDBTPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x04, TXAddPidToISDBTPidFilterRequest)
+//
+// Get DTV Mode.
+// Parameters: TxGetDTVModeRequest struct
+//
+#define IOCTL_ITE_MOD_GETDTVMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x05, TxGetDTVModeRequest)
+//
+// == SECURITY ==
+//
+// Enable TPS Encryption.
+// Parameters: TxEnableTpsEncryptionRequest struct
+//
+#define IOCTL_ITE_MOD_ENABLETPSENCRYPTION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x01, TxEnableTpsEncryptionRequest)
+//
+// Disable TPS Encryption.
+// Parameters: TxDisableTpsEncryptionRequest struct
+//
+#define IOCTL_ITE_MOD_DISABLETPSENCRYPTION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x02, TxDisableTpsEncryptionRequest)
+//
+// Set TPS Decryption.
+// Parameters: TxSetDecryptRequest struct
+//
+#define IOCTL_ITE_DEMOD_SETDECRYPT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x03, TxSetDecryptRequest)
 
 
 //----------------------------------------------------------------------------
@@ -1326,8 +1205,9 @@ Dword DemodIOCTLFun(
 class ts::HiDesDevice::Guts
 {
 public:
-    int             fd;    // File descriptor.
-    HiDesDeviceInfo info;  // Portable device information.
+    int             fd;            // File descriptor.
+    bool            transmitting;  // Transmission in progress.
+    HiDesDeviceInfo info;        // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -1336,8 +1216,10 @@ public:
     // Open a device. Index is optional.
     bool open(int index, const UString& name, Report& report);
 
-    // Close the device.
+    // Redirected services for enclosing class.
     void close();
+    bool startTransmission(Report& report);
+    bool stopTransmission(Report& report);
 
     // Get all HiDes device names.
     static void GetAllDeviceNames(UStringVector& names);
@@ -1370,6 +1252,7 @@ ts::HiDesDevice::~HiDesDevice()
 
 ts::HiDesDevice::Guts::Guts() :
     fd(-1),
+    transmitting(false),
     info()
 {
 }
@@ -1377,14 +1260,6 @@ ts::HiDesDevice::Guts::Guts() :
 ts::HiDesDevice::Guts::~Guts()
 {
     close();
-}
-
-void ts::HiDesDevice::Guts::close()
-{
-    if (fd >= 0) {
-        ::close(fd);
-        fd = -1;
-    }
 }
 
 
@@ -1559,6 +1434,23 @@ bool ts::HiDesDevice::open(const UString& name, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Get information about the device.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::getInfo(HiDesDeviceInfo& info, Report& report) const
+{
+    if (_is_open) {
+        info = _guts->info;
+        return true;
+    }
+    else {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Close the device.
 //----------------------------------------------------------------------------
 
@@ -1570,6 +1462,18 @@ bool ts::HiDesDevice::close(Report& report)
     return true;
 }
 
+void ts::HiDesDevice::Guts::close()
+{
+    if (fd >= 0) {
+        if (transmitting) {
+            stopTransmission(NULLREP);
+        }
+        ::close(fd);
+    }
+    transmitting = false;
+    fd = -1;
+}
+
 
 //----------------------------------------------------------------------------
 // Tune the modulator with DVB-T modulation parameters.
@@ -1577,10 +1481,135 @@ bool ts::HiDesDevice::close(Report& report)
 
 bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 {
-    // g_ITEAPI_TxSetChannel (frequency)
-    // g_ITEAPI_TxSetChannelModulation
-    // g_ITEAPI_TxSetSpectralInversion
-    return false; //@@@@@@
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
+    // Build frequency + bandwidth parameters.
+    TxAcquireChannelRequest acqRequest;
+    TS_ZERO(acqRequest);
+
+    // Frequency is in kHz.
+    acqRequest.frequency = uint32_t(params.frequency / 1000);
+
+    // Bandwidth is in kHz
+    acqRequest.bandwidth = BandWidthValueHz(params.bandwidth) / 1000;
+    if (acqRequest.bandwidth == 0) {
+        report.error(u"unsupported bandwidth");
+        return false;
+    }
+
+    // Build modulation parameters.
+    // Translate TSDuck enums into HiDes codes.
+    TxSetModuleRequest modRequest;
+    TS_ZERO(modRequest);
+
+    switch (params.modulation) {
+        case QPSK:
+            modRequest.constellation = Byte(Mode_QPSK);
+            break;
+        case QAM_16:
+            modRequest.constellation = Byte(Mode_16QAM);
+            break;
+        case QAM_64:
+            modRequest.constellation = Byte(Mode_64QAM);
+            break;
+        default:
+            report.error(u"unsupported constellation");
+            return false;
+    }
+
+    switch (params.fec_hp) {
+        case FEC_1_2:
+            modRequest.highCodeRate = Byte(CodeRate_1_OVER_2);
+            break;
+        case FEC_2_3:
+            modRequest.highCodeRate = Byte(CodeRate_2_OVER_3);
+            break;
+        case FEC_3_4:
+            modRequest.highCodeRate = Byte(CodeRate_3_OVER_4);
+            break;
+        case FEC_5_6:
+            modRequest.highCodeRate = Byte(CodeRate_5_OVER_6);
+            break;
+        case FEC_7_8:
+            modRequest.highCodeRate = Byte(CodeRate_7_OVER_8);
+            break;
+        default:
+            report.error(u"unsupported high priority code rate");
+            return false;
+    }
+
+    switch (params.guard_interval) {
+        case GUARD_1_32:
+            modRequest.interval = Byte(Interval_1_OVER_32);
+            break;
+        case GUARD_1_16:
+            modRequest.interval = Byte(Interval_1_OVER_16);
+            break;
+        case GUARD_1_8:
+            modRequest.interval = Byte(Interval_1_OVER_8);
+            break;
+        case GUARD_1_4:
+            modRequest.interval = Byte(Interval_1_OVER_4);
+            break;
+        default:
+            report.error(u"unsupported guard interval");
+            return false;
+    }
+
+    switch (params.transmission_mode) {
+        case TM_2K:
+            modRequest.transmissionMode = Byte(TransmissionMode_2K);
+            break;
+        case TM_4K:
+            modRequest.transmissionMode = Byte(TransmissionMode_4K);
+            break;
+        case TM_8K:
+            modRequest.transmissionMode = Byte(TransmissionMode_8K);
+            break;
+        default:
+            report.error(u"unsupported transmission mode");
+            return false;
+    }
+
+    // Build spectral inversion parameters.
+    TxSetSpectralInversionRequest invRequest;
+    TS_ZERO(invRequest);
+    bool setInversion = true;
+
+    switch (params.inversion) {
+        case SPINV_OFF:
+            invRequest.isInversion = False;
+            break;
+        case SPINV_ON:
+            invRequest.isInversion = True;
+            break;
+        case SPINV_AUTO:
+            setInversion = false;
+            break;
+        default:
+            report.error(u"unsupported spectral inversion");
+            return false;
+    }
+
+    // Now all parameters are validated, call the driver.
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_ACQUIRECHANNEL, &acqRequest) < 0) {
+        report.error(u"error setting frequency & bandwidth: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else if (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETMODULE, &modRequest) < 0) {
+        report.error(u"error setting modulation parameters: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else if (setInversion && ::ioctl(_guts->fd, IOCTL_ITE_MOD_SETSPECTRALINVERSION, &invRequest) < 0) {
+        report.error(u"error setting spectral inversion: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 
@@ -1590,8 +1619,33 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
 bool ts::HiDesDevice::startTransmission(Report& report)
 {
-    // g_ITEAPI_StartTransfer
-    return false; //@@@@@@
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+    else {
+        return _guts->startTransmission(report);
+    }
+}
+
+bool ts::HiDesDevice::Guts::startTransmission(Report& report)
+{
+    TxModeRequest request;
+    TS_ZERO(request);
+    request.OnOff = 1;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &request) < 0) {
+        report.error(u"error enabling transmission: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else if (::ioctl(fd, IOCTL_ITE_MOD_STARTTRANSFER) < 0) {
+        report.error(u"error starting transmission: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else {
+        transmitting = true;
+        return true;
+    }
 }
 
 
@@ -1601,8 +1655,33 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 
 bool ts::HiDesDevice::stopTransmission(Report& report)
 {
-    // g_ITEAPI_StopTransfer
-    return false; //@@@@@@
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+    else {
+        return _guts->stopTransmission(report);
+    }
+}
+
+bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
+{
+    TxModeRequest request;
+    TS_ZERO(request);
+    request.OnOff = 0;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_STOPTRANSFER) < 0) {
+        report.error(u"error starting transmission: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &request) < 0) {
+        report.error(u"error disabling transmission: %s", {ErrorCodeMessage()});
+        return false;
+    }
+    else {
+        transmitting = false;
+        return true;
+    }
 }
 
 
@@ -1610,9 +1689,40 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 // Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::send(const TSPacket* data, size_t packet_count, Report& report)
+bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
 {
-    // g_ITEAPI_TxSendTSData
-    // suspend or regulated by driver ?
-    return false; //@@@@@@
+    // Check that we are ready to transmit.
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+    else if (!_guts->transmitting) {
+        report.error(u"transmission not started");
+        return false;
+    }
+
+    // Retry several write operations until everything is gone.
+    const char* data = reinterpret_cast<const char*>(packets);
+    size_t remain = packet_count * PKT_SIZE;
+
+    while (remain > 0) {
+        const ssize_t gone = ::write(_guts->fd, data, remain);
+        if (gone > 0) {
+            assert(size_t(gone) <= remain);
+            data += gone;
+            remain -= gone;
+        }
+#if !defined(TS_WINDOWS)
+        else if (errno == EINTR) {
+            // Ignore signal, retry
+            report.debug(u"send() interrupted by signal, retrying");
+        }
+#endif
+        else {
+            report.error(u"error sending data: %s", {ErrorCodeMessage()});
+            return false;
+        }
+    }
+
+    return true;
 }
