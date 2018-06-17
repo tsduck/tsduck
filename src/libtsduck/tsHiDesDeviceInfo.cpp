@@ -80,52 +80,63 @@ void ts::HiDesDeviceInfo::clear()
 // Format the structure as a string.
 //----------------------------------------------------------------------------
 
-ts::UString ts::HiDesDeviceInfo::toString(size_t indent) const
+ts::UString ts::HiDesDeviceInfo::toString(bool full, size_t indent) const
 {
     UString s;
 
-    if (index >= 0) {
-        s += UString::Format(u"%*sIndex: %d\n", {indent, u"", index});
+    if (full) {
+        // One line per characteristics, when present.
+        if (index >= 0) {
+            s += UString::Format(u"%*sIndex: %d\n", {indent, u"", index});
+        }
+        if (!name.empty()) {
+            s += UString::Format(u"%*sName: \"%s\"\n", {indent, u"", name});
+        }
+        if (!path.empty() && path != name) {
+            s += UString::Format(u"%*sDevice: %s\n", {indent, u"", path});
+        }
+        if (usb_mode != 0) {
+            s += UString::Format(u"%*sUSB mode: 0x%X\n", {indent, u"", usb_mode});
+        }
+        if (vendor_id != 0) {
+            s += UString::Format(u"%*sVendor id: 0x%X\n", {indent, u"", vendor_id});
+        }
+        if (product_id != 0) {
+            s += UString::Format(u"%*sProduct id: 0x%X\n", {indent, u"", product_id});
+        }
+        if (chip_type != 0) {
+            s += UString::Format(u"%*sChip type: 0x%X\n", {indent, u"", chip_type});
+        }
+        if (device_type >= 0) {
+            // TODO: replace by names if possible.
+            s += UString::Format(u"%*sDevice type: %d\n", {indent, u"", device_type});
+        }
+        if (!driver_version.empty()) {
+            s += UString::Format(u"%*sDriver version: %s\n", {indent, u"", driver_version});
+        }
+        if (!api_version.empty()) {
+            s += UString::Format(u"%*sAPI version: %s\n", {indent, u"", api_version});
+        }
+        if (!link_fw_version.empty()) {
+            s += UString::Format(u"%*sLink-level firmware version: %s\n", {indent, u"", link_fw_version});
+        }
+        if (!ofdm_fw_version.empty()) {
+            s += UString::Format(u"%*sOFDM firmware version: %s\n", {indent, u"", ofdm_fw_version});
+        }
+        if (!company.empty()) {
+            s += UString::Format(u"%*sCompany: %s\n", {indent, u"", company});
+        }
+        if (!hw_info.empty()) {
+            s += UString::Format(u"%*sHardware info: %s\n", {indent, u"", hw_info});
+        }
     }
-    if (!name.empty()) {
-        s += UString::Format(u"%*sName: \"%s\"\n", {indent, u"", name});
-    }
-    if (!path.empty() && path != name) {
-        s += UString::Format(u"%*sDevice: %s\n", {indent, u"", path});
-    }
-    if (usb_mode != 0) {
-        s += UString::Format(u"%*sUSB mode: 0x%X\n", {indent, u"", usb_mode});
-    }
-    if (vendor_id != 0) {
-        s += UString::Format(u"%*sVendor id: 0x%X\n", {indent, u"", vendor_id});
-    }
-    if (product_id != 0) {
-        s += UString::Format(u"%*sProduct id: 0x%X\n", {indent, u"", product_id});
-    }
-    if (chip_type != 0) {
-        s += UString::Format(u"%*sChip type: 0x%X\n", {indent, u"", chip_type});
-    }
-    if (device_type >= 0) {
-        // TODO: replace by names if possible.
-        s += UString::Format(u"%*sDevice type: %d\n", {indent, u"", device_type});
-    }
-    if (!driver_version.empty()) {
-        s += UString::Format(u"%*sDriver version: %s\n", {indent, u"", driver_version});
-    }
-    if (!api_version.empty()) {
-        s += UString::Format(u"%*sAPI version: %s\n", {indent, u"", api_version});
-    }
-    if (!link_fw_version.empty()) {
-        s += UString::Format(u"%*sLink-level firmware version: %s\n", {indent, u"", link_fw_version});
-    }
-    if (!ofdm_fw_version.empty()) {
-        s += UString::Format(u"%*sOFDM firmware version: %s\n", {indent, u"", ofdm_fw_version});
-    }
-    if (!company.empty()) {
-        s += UString::Format(u"%*sCompany: %s\n", {indent, u"", company});
-    }
-    if (!hw_info.empty()) {
-        s += UString::Format(u"%*sHardware info: %s\n", {indent, u"", hw_info});
+    else {
+        // Short form.
+        s = UString::Format(u"%d: \"%s\"\n", {index, name});
+        // Add the device path if different and "not too long" (avoid ugly endless Windows device names).
+        if (!path.empty() && path != name && path.length() < 40) {
+            s += UString::Format(u" (%s)", {path});
+        }
     }
 
     return s;

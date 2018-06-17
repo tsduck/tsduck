@@ -71,10 +71,11 @@ namespace ts {
 
         //!
         //! Format the structure as a string.
-        //! @param [in] indent Margin width.
+        //! @param [in] full If true, display all characteristics in multi-line format.
+        //! @param [in] indent Margin width (when @a full is true).
         //! @return A multi-line description of this object.
         //!
-        UString toString(size_t indent = 0) const;
+        UString toString(bool full = false, size_t indent = 0) const;
     };
 
     //!

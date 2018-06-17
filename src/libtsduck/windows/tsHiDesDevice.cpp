@@ -585,6 +585,23 @@ bool ts::HiDesDevice::open(const UString& name, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Get information about the device.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::getInfo(HiDesDeviceInfo& info, Report& report) const
+{
+    if (_is_open) {
+        info = _guts->info;
+        return true;
+    }
+    else {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Close the device.
 //----------------------------------------------------------------------------
 
@@ -603,6 +620,11 @@ bool ts::HiDesDevice::close(Report& report)
 
 bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 {
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
     return false; //@@@@@@
 }
 
@@ -613,6 +635,11 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
 bool ts::HiDesDevice::startTransmission(Report& report)
 {
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
     return false; //@@@@@@
 }
 
@@ -623,6 +650,11 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 
 bool ts::HiDesDevice::stopTransmission(Report& report)
 {
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
     return false; //@@@@@@
 }
 
@@ -633,5 +665,11 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::send(const TSPacket* data, size_t packet_count, Report& report)
 {
+    // Check that we are ready to transmit.
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
     return false; //@@@@@@
 }

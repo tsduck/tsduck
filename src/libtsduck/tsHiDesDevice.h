@@ -87,6 +87,14 @@ namespace ts {
         bool isOpen() const { return _is_open; }
 
         //!
+        //! Get information about the device.
+        //! @param [out] info Returned information.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool getInfo(HiDesDeviceInfo& info, Report& report = CERR) const;
+
+        //!
         //! Close the device.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
@@ -122,6 +130,11 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
+        // @@@ WARNING @@@ It is currently unclear if the driver can regulate the
+        // output (as Dektec modulators do) or if sending packets too fast results
+        // in dropping packets. In the latter case, explicit regulation at the
+        // theoretical bitrate will be required.
+        //
         bool send(const TSPacket* data, size_t packet_count, Report& report = CERR);
 
     private:
