@@ -274,7 +274,7 @@ MIDL_INTERFACE("423c13a2-2070-11d0-9ef7-00aa00a216a1")
 IKsObject : public IUnknown
 {
 public:
-    virtual HANDLE KsGetObjectHandle();
+    virtual HANDLE STDMETHODCALLTYPE KsGetObjectHandle();
 };
 
 ::HANDLE ts::GetHandleFromObject(::IUnknown* obj, Report& report)
