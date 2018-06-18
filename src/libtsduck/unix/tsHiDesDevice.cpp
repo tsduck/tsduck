@@ -1207,7 +1207,7 @@ class ts::HiDesDevice::Guts
 public:
     int             fd;            // File descriptor.
     bool            transmitting;  // Transmission in progress.
-    HiDesDeviceInfo info;        // Portable device information.
+    HiDesDeviceInfo info;          // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -1712,12 +1712,10 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
             data += gone;
             remain -= gone;
         }
-#if !defined(TS_WINDOWS)
         else if (errno == EINTR) {
             // Ignore signal, retry
             report.debug(u"send() interrupted by signal, retrying");
         }
-#endif
         else {
             report.error(u"error sending data: %s", {ErrorCodeMessage()});
             return false;

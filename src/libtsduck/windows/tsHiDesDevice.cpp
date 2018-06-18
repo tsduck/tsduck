@@ -34,6 +34,8 @@
 #include "tsHiDesDevice.h"
 #include "tsDirectShowUtils.h"
 #include "tsMemoryUtils.h"
+#include "tsNullReport.h"
+#include "tsMPEG.h"
 #include <winioctl.h>
 #include <ksproxy.h>
 TSDUCK_SOURCE;
@@ -51,10 +53,48 @@ TSDUCK_SOURCE;
 // used by some vendors where engineers don't run guidgen.exe.
 #define STATIC_KSPROPSETID_IT9500PropertiesAux 0xc6efe5eb,0x855a,0x4f1b,{0xb7,0xaa,0x87,0xb5,0xe1,0xdc,0x41,0x13}
 
+// Maximum nulber of TS packets to send to modulator.
+#define IT95X_TX_BLOCK_PKTS 348
+
 // For get chip type.
 #define REG_CHIP_VERSION 0x1222
 
 namespace {
+
+    // FEC code rate
+    enum {
+        IT95X_CODERATE_UNKNOWN = -1,
+        IT95X_CODERATE_1_2     = 0,
+        IT95X_CODERATE_2_3     = 1,
+        IT95X_CODERATE_3_4     = 2,
+        IT95X_CODERATE_5_6     = 3,
+        IT95X_CODERATE_7_8     = 4,
+    };
+
+    // Constellation.
+    enum {
+        IT95X_CONSTELLATION_UNKNOWN = -1,
+        IT95X_CONSTELLATION_QPSK    = 0,
+        IT95X_CONSTELLATION_16QAM   = 1,
+        IT95X_CONSTELLATION_64QAM   = 2,
+    };
+
+    // Transmission mode.
+    enum {
+        IT95X_TX_MODE_UNKNOWN = -1,
+        IT95X_TX_MODE_2K      = 0,
+        IT95X_TX_MODE_8K      = 1,
+        IT95X_TX_MODE_4K      = 2,
+    };
+
+    // Guard interval.
+    enum {
+        IT95X_GUARD_UNKNOWN = -1,
+        IT95X_GUARD_1_32    = 0,
+        IT95X_GUARD_1_16    = 1,
+        IT95X_GUARD_1_8     = 2,
+        IT95X_GUARD_1_4     = 3,
+    };
 
     // Properties
     enum {
@@ -109,41 +149,41 @@ namespace {
 
     // IOCTL codes for modulator
     enum {
-        IOCTL_IT95X_GET_DRV_INFO = 1,
-        IOCTL_IT95X_SET_POWER = 4,
-        IOCTL_IT95X_SET_DVBT_MODULATION = 8,
-        IOCTL_IT95X_SET_RF_OUTPUT = 9,
-        IOCTL_IT95X_SEND_TS_DATA = 30,
-        IOCTL_IT95X_SET_CHANNEL = 31,
-        IOCTL_IT95X_SET_DEVICE_TYPE = 32,
-        IOCTL_IT95X_GET_DEVICE_TYPE = 33,
-        IOCTL_IT95X_SET_GAIN = 34,
-        IOCTL_IT95X_RD_REG_OFDM = 35,
-        IOCTL_IT95X_WR_REG_OFDM = 36,
-        IOCTL_IT95X_RD_REG_LINK = 37,
-        IOCTL_IT95X_WR_REG_LINK = 38,
-        IOCTL_IT95X_SEND_PSI_ONCE = 39,
-        IOCTL_IT95X_SET_PSI_PACKET = 40,
-        IOCTL_IT95X_SET_PSI_TIMER = 41,
-        IOCTL_IT95X_GET_GAIN_RANGE = 42,
-        IOCTL_IT95X_SET_TPS = 43,
-        IOCTL_IT95X_GET_TPS = 44,
-        IOCTL_IT95X_GET_GAIN = 45,
-        IOCTL_IT95X_SET_IQ_TABLE = 46,
-        IOCTL_IT95X_SET_DC_CAL = 47,
-        IOCTL_IT95X_SET_ISDBT_MODULATION = 60,
-        IOCTL_IT95X_ADD_ISDBT_PID_FILTER = 61,
-        IOCTL_IT95X_SET_TMCC = 62,
-        IOCTL_IT95X_SET_TMCC2 = 63,
-        IOCTL_IT95X_GET_TMCC = 64,
-        IOCTL_IT95X_GET_TS_BITRATE = 65,
+        IOCTL_IT95X_GET_DRV_INFO             =  1,
+        IOCTL_IT95X_SET_POWER                =  4,
+        IOCTL_IT95X_SET_DVBT_MODULATION      =  8,
+        IOCTL_IT95X_SET_RF_OUTPUT            =  9,
+        IOCTL_IT95X_SEND_TS_DATA             = 30,
+        IOCTL_IT95X_SET_CHANNEL              = 31,
+        IOCTL_IT95X_SET_DEVICE_TYPE          = 32,
+        IOCTL_IT95X_GET_DEVICE_TYPE          = 33,
+        IOCTL_IT95X_SET_GAIN                 = 34,
+        IOCTL_IT95X_RD_REG_OFDM              = 35,
+        IOCTL_IT95X_WR_REG_OFDM              = 36,
+        IOCTL_IT95X_RD_REG_LINK              = 37,
+        IOCTL_IT95X_WR_REG_LINK              = 38,
+        IOCTL_IT95X_SEND_PSI_ONCE            = 39,
+        IOCTL_IT95X_SET_PSI_PACKET           = 40,
+        IOCTL_IT95X_SET_PSI_TIMER            = 41,
+        IOCTL_IT95X_GET_GAIN_RANGE           = 42,
+        IOCTL_IT95X_SET_TPS                  = 43,
+        IOCTL_IT95X_GET_TPS                  = 44,
+        IOCTL_IT95X_GET_GAIN                 = 45,
+        IOCTL_IT95X_SET_IQ_TABLE             = 46,
+        IOCTL_IT95X_SET_DC_CAL               = 47,
+        IOCTL_IT95X_SET_ISDBT_MODULATION     = 60,
+        IOCTL_IT95X_ADD_ISDBT_PID_FILTER     = 61,
+        IOCTL_IT95X_SET_TMCC                 = 62,
+        IOCTL_IT95X_SET_TMCC2                = 63,
+        IOCTL_IT95X_GET_TMCC                 = 64,
+        IOCTL_IT95X_GET_TS_BITRATE           = 65,
         IOCTL_IT95X_CONTROL_ISDBT_PID_FILTER = 66,
-        IOCTL_IT95X_SET_PCR_MODE = 67,
-        IOCTL_IT95X_SET_PCR_ENABLE = 68,
-        IOCTL_IT95X_RESET_ISDBT_PID_FILTER = 69,
-        IOCTL_IT95X_SET_OFS_CAL = 70,
-        IOCTL_IT95X_ENABLE_TPS_CRYPT = 71,
-        IOCTL_IT95X_DISABLE_TPS_CRYPT = 72,
+        IOCTL_IT95X_SET_PCR_MODE             = 67,
+        IOCTL_IT95X_SET_PCR_ENABLE           = 68,
+        IOCTL_IT95X_RESET_ISDBT_PID_FILTER   = 69,
+        IOCTL_IT95X_SET_OFS_CAL              = 70,
+        IOCTL_IT95X_ENABLE_TPS_CRYPT         = 71,
+        IOCTL_IT95X_DISABLE_TPS_CRYPT        = 72,
     };
 
     enum {
@@ -162,7 +202,29 @@ namespace {
         IoctlGeneric(uint32_t c = 0, uint32_t p1 = 0, uint32_t p2 = 0) : code(c), param1(p1), param2(p2) {}
     };
 
+    // Parameter structure for DVB-T DeviceIoControl.
+    struct IoctlDVBT
+    {
+        uint32_t code;
+        uint8_t  code_rate;
+        uint8_t  tx_mode;
+        uint8_t  constellation;
+        uint8_t  guard_interval;
 
+        // Constructor.
+        IoctlDVBT(uint32_t c = 0) : code(c), code_rate(0), tx_mode(0), constellation(0), guard_interval(0) {}
+    };
+
+    // Parameter structure for transmission of TS data.
+    struct IoctlTransmission
+    {
+        uint32_t code;
+        uint32_t size;
+        uint8_t  data[IT95X_TX_BLOCK_PKTS * ts::PKT_SIZE];
+
+        // Constructor.
+        IoctlTransmission(uint32_t c = 0) : code(c), size(0) {}
+    };
 }
 
 
@@ -177,6 +239,7 @@ public:
     ::HANDLE              handle;             // Handle to it950x device.
     ::OVERLAPPED          overlapped;         // For overlapped operations.
     ::KSPROPERTY          kslist[KSLIST_MAX]; // Non-const version of KSLIST (required by DeviceIoControl).
+    bool                  transmitting;       // Transmission in progress.
     HiDesDeviceInfo       info;               // Portable device information.
 
     // Constructor, destructor.
@@ -198,8 +261,11 @@ public:
     // Get information about one it950x device.
     bool getDeviceInfo(const ComPtr<::IMoniker>& moniker, Report& report);
 
-    // Close the device.
+    // Redirected services for enclosing class.
     void close();
+    bool setTransmission(bool enable, Report& report);
+    bool setPower(bool enable, Report& report);
+
 
     // Format a 32-bit firmware version as a string.
     static UString FormatVersion(uint32_t v);
@@ -235,6 +301,7 @@ ts::HiDesDevice::Guts::Guts() :
     handle(INVALID_HANDLE_VALUE),
     overlapped(),
     kslist(),
+    transmitting(false),
     info()
 {
     TS_ZERO(overlapped);
@@ -245,35 +312,6 @@ ts::HiDesDevice::Guts::Guts() :
 ts::HiDesDevice::Guts::~Guts()
 {
     close();
-}
-
-
-//----------------------------------------------------------------------------
-// Close a Guts internal object (close references to objects).
-//----------------------------------------------------------------------------
-
-void ts::HiDesDevice::Guts::close()
-{
-    // Release pointer to COM object.
-    filter.release();
-
-    // Close handle.
-    // WARNING: It is unclear if this handle should be closed here or not.
-    // The handle is returned by IKsObject::KsGetObjectHandle. There is no
-    // evidence if this is a permanent handle which was returned (and we
-    // should not close it) or if this handle was specially created for
-    // us in KsGetObjectHandle (and we should close it).
-
-    if (handle != INVALID_HANDLE_VALUE) {
-        ::CloseHandle(handle);
-        handle = INVALID_HANDLE_VALUE;
-    }
-
-    // Close event handle used in overlapped operations.
-    if (overlapped.hEvent != 0 && overlapped.hEvent != INVALID_HANDLE_VALUE) {
-        ::CloseHandle(overlapped.hEvent);
-        overlapped.hEvent = INVALID_HANDLE_VALUE;
-    }
 }
 
 
@@ -628,6 +666,64 @@ bool ts::HiDesDevice::close(Report& report)
     return true;
 }
 
+void ts::HiDesDevice::Guts::close()
+{
+    // Stop transmission, if currently in progress, and power off.
+    setTransmission(false, NULLREP);
+    setPower(false, NULLREP);
+
+    // Release pointer to COM object.
+    filter.release();
+
+    // Close handle.
+    // WARNING: It is unclear if this handle should be closed here or not.
+    // The handle is returned by IKsObject::KsGetObjectHandle. There is no
+    // evidence if this is a permanent handle which was returned (and we
+    // should not close it) or if this handle was specially created for
+    // us in KsGetObjectHandle (and we should close it).
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(handle);
+        handle = INVALID_HANDLE_VALUE;
+    }
+
+    // Close event handle used in overlapped operations.
+    if (overlapped.hEvent != 0 && overlapped.hEvent != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(overlapped.hEvent);
+        overlapped.hEvent = INVALID_HANDLE_VALUE;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Enable or disable power and transmission.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::Guts::setTransmission(bool enable, Report& report)
+{
+    IoctlGeneric ioc(IOCTL_IT95X_SET_RF_OUTPUT, enable);
+    if (!ioctlSet(&ioc, sizeof(ioc), report)) {
+        report.error(u"error setting transmission %s", {UString::OnOff(enable)});
+        return false;
+    }
+    else {
+        transmitting = enable;
+        return true;
+    }
+}
+
+bool ts::HiDesDevice::Guts::setPower(bool enable, Report& report)
+{
+    IoctlGeneric ioc(IOCTL_IT95X_SET_POWER, enable);
+    if (!ioctlSet(&ioc, sizeof(ioc), report)) {
+        report.error(u"error setting power %s", {UString::OnOff(enable)});
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Tune the modulator with DVB-T modulation parameters.
@@ -640,12 +736,114 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
         return false;
     }
 
-    return false; //@@@@@@
+    // Stop transmission while tuning.
+    if (!_guts->setTransmission(false, report)) {
+        return false;
+    }
+
+    // Build frequency + bandwidth parameters.
+    // Frequency and bandwidth is in kHz
+    IoctlGeneric freqRequest(IOCTL_IT95X_SET_CHANNEL);
+    freqRequest.param1 = uint32_t(params.frequency / 1000);
+    freqRequest.param2 = BandWidthValueHz(params.bandwidth) / 1000;
+
+    if (freqRequest.param2 == 0) {
+        report.error(u"unsupported bandwidth");
+        return false;
+    }
+
+    // Build modulation parameters.
+    // Translate TSDuck enums into HiDes codes.
+    IoctlDVBT modRequest(IOCTL_IT95X_SET_DVBT_MODULATION);
+
+    switch (params.modulation) {
+        case QPSK:
+            modRequest.constellation = uint8_t(IT95X_CONSTELLATION_QPSK);
+            break;
+        case QAM_16:
+            modRequest.constellation = uint8_t(IT95X_CONSTELLATION_16QAM);
+            break;
+        case QAM_64:
+            modRequest.constellation = uint8_t(IT95X_CONSTELLATION_64QAM);
+            break;
+        default:
+            report.error(u"unsupported constellation");
+            return false;
+    }
+
+    switch (params.fec_hp) {
+        case FEC_1_2:
+            modRequest.code_rate = uint8_t(IT95X_CODERATE_1_2);
+            break;
+        case FEC_2_3:
+            modRequest.code_rate = uint8_t(IT95X_CODERATE_2_3);
+            break;
+        case FEC_3_4:
+            modRequest.code_rate = uint8_t(IT95X_CODERATE_3_4);
+            break;
+        case FEC_5_6:
+            modRequest.code_rate = uint8_t(IT95X_CODERATE_5_6);
+            break;
+        case FEC_7_8:
+            modRequest.code_rate = uint8_t(IT95X_CODERATE_7_8);
+            break;
+        default:
+            report.error(u"unsupported high priority code rate");
+            return false;
+    }
+
+    switch (params.guard_interval) {
+        case GUARD_1_32:
+            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_32);
+            break;
+        case GUARD_1_16:
+            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_16);
+            break;
+        case GUARD_1_8:
+            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_8);
+            break;
+        case GUARD_1_4:
+            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_4);
+            break;
+        default:
+            report.error(u"unsupported guard guard_interval");
+            return false;
+    }
+
+    switch (params.transmission_mode) {
+        case TM_2K:
+            modRequest.tx_mode = uint8_t(IT95X_TX_MODE_2K);
+            break;
+        case TM_4K:
+            modRequest.tx_mode = uint8_t(IT95X_TX_MODE_4K);
+            break;
+        case TM_8K:
+            modRequest.tx_mode = uint8_t(IT95X_TX_MODE_8K);
+            break;
+        default:
+            report.error(u"unsupported transmission mode");
+            return false;
+    }
+
+    // Don't know how to set spectral inversion on Windows.
+
+    // Now all parameters are validated, call the driver.
+    if (!_guts->ioctlSet(&freqRequest, sizeof(freqRequest), report)) {
+        report.error(u"error setting frequency & bandwidth");
+        return false;
+    }
+    else if (!_guts->ioctlSet(&modRequest, sizeof(modRequest), report)) {
+        report.error(u"error setting modulation parameters");
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 
 //----------------------------------------------------------------------------
-// Start transmission (after having set tuning parameters).
+// Start / stop transmission.
 //----------------------------------------------------------------------------
 
 bool ts::HiDesDevice::startTransmission(Report& report)
@@ -654,14 +852,10 @@ bool ts::HiDesDevice::startTransmission(Report& report)
         report.error(u"HiDes device not open");
         return false;
     }
-
-    return false; //@@@@@@
+    else {
+        return _guts->setTransmission(true, report);
+    }
 }
-
-
-//----------------------------------------------------------------------------
-// Stop transmission.
-//----------------------------------------------------------------------------
 
 bool ts::HiDesDevice::stopTransmission(Report& report)
 {
@@ -669,8 +863,9 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
         report.error(u"HiDes device not open");
         return false;
     }
-
-    return false; //@@@@@@
+    else {
+        return _guts->setTransmission(false, report);
+    }
 }
 
 
@@ -678,7 +873,7 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 // Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::send(const TSPacket* data, size_t packet_count, Report& report)
+bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
 {
     // Check that we are ready to transmit.
     if (!_is_open) {
@@ -686,5 +881,31 @@ bool ts::HiDesDevice::send(const TSPacket* data, size_t packet_count, Report& re
         return false;
     }
 
-    return false; //@@@@@@
+    // Prepare a data block for transmission. We cannot "write" to the device.
+    // We must send an ioctl with a data block containing the TS packets.
+    IoctlTransmission ioc(IOCTL_IT95X_SEND_TS_DATA);
+
+    // Send packets by chunks of 348 (IT95X_TX_BLOCK_PKTS).
+    while (packet_count > 0) {
+
+        // Copy a chunk of packets in the transmission control block.
+        const size_t count = std::min<size_t>(packet_count, IT95X_TX_BLOCK_PKTS);
+        ioc.size = uint32_t(count * PKT_SIZE);
+        ::memcpy(ioc.data, packets, ioc.size);
+
+        report.log(2, u"HiDesDevice: calling IOCTL_IT95X_SEND_TS_DATA, size = %d, packets: %d", {ioc.size, count});
+
+        // Send packets.
+        if (!_guts->ioctlSet(&ioc, sizeof(ioc), report)) {
+            report.error(u"error sending data");
+            return false;
+        }
+
+        report.log(2, u"HiDesDevice: after IOCTL_IT95X_SEND_TS_DATA, size = %d", {ioc.size});
+
+        packets += count;
+        packet_count -= count;
+    }
+
+    return true;
 }
