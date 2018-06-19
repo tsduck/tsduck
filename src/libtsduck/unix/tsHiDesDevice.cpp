@@ -37,12 +37,21 @@
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
 #include "tsSysUtils.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
 // Type definitions from HiDes / ITE.
 //----------------------------------------------------------------------------
+
+// The documented limitation for transmission size is 348 packets.
+// The it950x driver contains an internal buffer named "URB" to store packets.
+// The size of the URB is #define URB_BUFSIZE_TX 32712 (172 packets, 348/2).
+// To avoid issues, we limit our I/O's to 172 packets at a time, the URB size.
+
+#define ITE_MAX_SEND_PACKETS  172
+#define ITE_MAX_SEND_BYTES    (ITE_MAX_SEND_PACKETS * 188)
 
 // WARNING: There are INCONSISTENCIES between the int types and the associated
 // comment. Typically, the size of a 'long' depends on the platform (32 vs.
@@ -352,18 +361,14 @@ typedef struct {
     Word milliseconds;
 } Datetime;
 
-typedef struct _TPS{
+typedef struct {
     Byte highCodeRate;
     Byte lowCodeRate;
     Byte transmissionMode;
     Byte constellation;
     Byte interval;
     Word cellid;
-} TPS, *pTPS;
-
-typedef struct {
-    Word pid[32];
-} PidTable;
+} TPS;
 
 typedef struct {
     Product product;
@@ -379,41 +384,6 @@ typedef struct {
     Byte frameErrorRatio;       // Frame Error Ratio (error ratio before MPE-FEC) = frameErrorRate / 128
     Byte mpefecFrameErrorRatio; // MPE-FEC Frame Error Ratio (error ratio after MPE-FEC) = mpefecFrameErrorCount / 128
 } Statistic;
-
-typedef struct {
-    Word abortCount;
-    Dword postVitBitCount;
-    Dword postVitErrorCount;
-#ifdef User_FLOATING_POINT
-    Dword softBitCount;
-    Dword softErrorCount;
-    Dword preVitBitCount;
-    Dword preVitErrorCount;
-    double snr;
-#endif
-} ChannelStatistic;
-
-typedef struct {
-    Word abortCount;
-    Dword postVitBitCount;
-    Dword postVitErrorCount;
-    Word ficCount;              // Total FIC error count
-    Word ficErrorCount;         // Total FIC count
-#ifdef User_FLOATING_POINT
-    Dword softBitCount;
-    Dword softErrorCount;
-    Dword preVitBitCount;
-    Dword preVitErrorCount;
-    double snr;
-#endif
-} SubchannelStatistic;
-
-#ifdef User_FLOATING_POINT
-typedef struct {
-    double doSetVolt;
-    double doPuUpVolt;
-} AgcVoltage;
-#endif
 
 typedef enum {
     Constellation_QPSK = 0,  // Signal uses QPSK constellation
@@ -460,81 +430,12 @@ typedef enum {
     TransmissionMode_4K = 2     // OFDM frame consists of 4096 different carriers (4K FFT mode)
 } TransmissionModes;
 
-typedef struct {
-    Dword       frequency;              // Channel frequency in KHz.
-    Bandwidth   bandwidth;
-    TransmissionModes transmissionMode; // Number of carriers used for OFDM signal
-    Interval    interval;               // Fraction of symbol length used as guard (Guard Interval)
-    // DownSampleRate ds;
-    TMCC        layerA;
-    TMCC        layerB;
-    Bool        isPartialReception;
-} ISDBTModulation;
-
 typedef enum {
     PcrModeDisable = 0,
     PcrMode1 = 1,
     PcrMode2,
     PcrMode3
 } PcrMode;
-
-typedef struct {
-    Byte      chip;
-    Processor processor;
-    uint32_t  registerAddress;
-    Byte      bufferLength;
-    Byte      buffer[256];
-    uint32_t  error;
-    Byte      reserved[16];
-} WriteRegistersRequest;
-
-typedef struct {
-    Byte      chip;
-    Processor processor;
-    uint32_t  registerAddress;
-    Byte      bufferLength;
-    Byte      buffer[256];
-    uint32_t  error;
-    Byte      reserved[16];
-} TxWriteRegistersRequest;
-
-typedef struct {
-    Byte     chip;
-    Word     registerAddress;
-    Byte     bufferLength;
-    Byte     buffer[256];
-    uint32_t error;
-    Byte     reserved[16];
-} TxWriteEepromValuesRequest;
-
-typedef struct {
-    Byte      chip;
-    Processor processor;
-    uint32_t  registerAddress;
-    Byte      bufferLength;
-    Byte      buffer[256];
-    uint32_t  error;
-    Byte      reserved[16];
-} ReadRegistersRequest;
-
-typedef struct {
-    Byte      chip;
-    Processor processor;
-    uint32_t  registerAddress;
-    Byte      bufferLength;
-    Byte      buffer[256];
-    uint32_t  error;
-    Byte      reserved[16];
-} TxReadRegistersRequest;
-
-typedef struct {
-    Byte     chip;
-    Word     registerAddress;
-    Byte     bufferLength;
-    Byte     buffer[256];
-    uint32_t error;
-    Byte     reserved[16];
-} TxReadEepromValuesRequest;
 
 typedef struct {
     Byte     chip;
@@ -1207,6 +1108,7 @@ class ts::HiDesDevice::Guts
 public:
     int             fd;            // File descriptor.
     bool            transmitting;  // Transmission in progress.
+    BitRate         bitrate;       // Nominal bitrate from last tune operation.
     HiDesDeviceInfo info;          // Portable device information.
 
     // Constructor, destructor.
@@ -1223,6 +1125,9 @@ public:
 
     // Get all HiDes device names.
     static void GetAllDeviceNames(UStringVector& names);
+
+    // Get HiDes error message.
+    static UString HiDesErrorMessage(ssize_t driver_status, int errno_status);
 };
 
 
@@ -1253,6 +1158,7 @@ ts::HiDesDevice::~HiDesDevice()
 ts::HiDesDevice::Guts::Guts() :
     fd(-1),
     transmitting(false),
+    bitrate(0),
     info()
 {
 }
@@ -1260,6 +1166,31 @@ ts::HiDesDevice::Guts::Guts() :
 ts::HiDesDevice::Guts::~Guts()
 {
     close();
+}
+
+
+//----------------------------------------------------------------------------
+// Get HiDes error message.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int errno_status)
+{
+    UString msg;
+
+    // Returned status can be a negative value.
+    if (driver_status != 0) {
+        msg = DVBNameFromSection(u"HiDesError", std::abs(driver_status), names::HEXA_FIRST);
+    }
+
+    // In case errno was also set.
+    if (errno_status != 0 && errno_status != driver_status) {
+        if (!msg.empty()) {
+            msg.append(u", ");
+        }
+        msg.append(ErrorCodeMessage(errno_status));
+    }
+
+    return msg;
 }
 
 
@@ -1608,6 +1539,8 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
         return false;
     }
     else {
+        // Keep nominal bitrate.
+        _guts->bitrate = params.theoreticalBitrate();
         return true;
     }
 }
@@ -1691,6 +1624,8 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
 {
+    report.log(2, u"HiDesDevice::send: %d packets", {packet_count});
+
     // Check that we are ready to transmit.
     if (!_is_open) {
         report.error(u"HiDes device not open");
@@ -1705,19 +1640,61 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
     const char* data = reinterpret_cast<const char*>(packets);
     size_t remain = packet_count * PKT_SIZE;
 
+    // In case or error, the HiDes sample code infinitely retries after 100 micro-seconds.
+    // So, it seems that errors can be "normal". However, infinitely retrying is not.
+    // We decide to retry a few times only. We retry during the time which is required
+    // to empty the complete URB buffer in the driver, based on the nominal bitrate.
+    // Waiting longer is worthless since the URB is empty and we never attempt to
+    // write more than the URB capacity.
+    const ::useconds_t errorDelay = 100;
+    const MicroSecond maxRetryDuration = std::max<MicroSecond>(100 * errorDelay, MicroSecPerMilliSec * PacketInterval(_guts->bitrate, ITE_MAX_SEND_PACKETS));
+    size_t retryCount = size_t(maxRetryDuration / errorDelay);
+
+    report.log(2, u"HiDesDevice:: error delay = %'d us, retry count = %'d, bitrate = %'d b/s", {errorDelay, retryCount, _guts->bitrate});
+
     while (remain > 0) {
-        const ssize_t gone = ::write(_guts->fd, data, remain);
-        if (gone > 0) {
-            assert(size_t(gone) <= remain);
-            data += gone;
-            remain -= gone;
+        
+        // Send one burst. Get max burst size.
+        const size_t burst = std::min<size_t>(remain, ITE_MAX_SEND_BYTES);
+
+        // WARNING: Insane driver specification !!!
+        //
+        // For more than 40 years, write(2) is documented as returning the number
+        // of written bytes or -1 on error. In Linux kernel, the write(2) returned
+        // value is computed by the driver. And the it950x driver is completely
+        // insane here: It returns a status code (0 on success). Doing this clearly
+        // breaks the Unix file system paradigm "a file is a file" and writing to
+        // a file is a consistent operation on all file systems.
+        //
+        // Additional considerations:
+        // - In case of success, we have no clue on the written size (assume all).
+        // - No idea of what is going on with errno, better reset it first.
+
+        errno = 0;
+        const ssize_t status = ::write(_guts->fd, data, burst);
+        const int err = errno;
+
+        report.log(2, u"HiDesDevice:: write = %d, errno = %d", {status, err});
+
+        if (status == 0) {
+            // Success, assume that the complete burst was sent.
+            data += burst;
+            remain -= burst;
+            // Reset retry count if there are errors in subsequent chunks.
+            retryCount = size_t(maxRetryDuration / errorDelay);
         }
         else if (errno == EINTR) {
             // Ignore signal, retry
-            report.debug(u"send() interrupted by signal, retrying");
+            report.debug(u"HiDesDevice::send: interrupted by signal, retrying");
+        }
+        else if (retryCount > 0) {
+            // Wait and retry same I/O.
+            ::usleep(errorDelay);
+            --retryCount;
         }
         else {
-            report.error(u"error sending data: %s", {ErrorCodeMessage()});
+            // Error and no more retry allowed.
+            report.error(u"error sending data: %s", {Guts::HiDesErrorMessage(status, err)});
             return false;
         }
     }
