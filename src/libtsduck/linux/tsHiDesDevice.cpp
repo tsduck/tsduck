@@ -27,9 +27,70 @@
 //
 //----------------------------------------------------------------------------
 //
-//  An encapsulation of a HiDes modulator device - Unix implementation.
-//  Currently, the ITE 950x is implemented on Linux only.
-//  On other Unix flavors, this code compiles but no device wil be found.
+//  An encapsulation of a HiDes modulator device - Linux implementation.
+//
+//  An insane driver:
+//
+//  The it950x driver is probably the worst Linux driver in terms of design
+//  and interface. Here is a non-exhaustive list of discrepancies that were
+//  discovered and which have an impact on the application:
+//
+//  1. The driver interface defines its own integer type and there are
+//     INCONSISTENCIES between the int types and the associated comment.
+//     Typically, the size of a 'long' depends on the platform (32 vs. 64 bits).
+//     And a 'long long' is often 64-bit on 32-bit platforms despite the comment
+//     (32 bits). So, there is a bug somewhere:
+//     - Either the definitions are correct and consistently used in the driver
+//       code and application code. And the comments are incorrect.
+//     - Or the comments are correct and the definitions are broken on some
+//       platforms. Extensive testing is required on 32 and 64-bit platforms.
+//
+//  2. The write(2) system call returns an error code instead of a size.
+//     For more than 40 years, write(2) is documented as returning the number
+//     of written bytes or -1 on error. In Linux kernel, the write(2) returned
+//     value is computed by the driver. And the it950x driver is completely
+//     insane here: It returns a status code (0 on success). Doing this clearly
+//     breaks the Unix file system paradigm "a file is a file" and writing to
+//     a file is a consistent operation on all file systems. Additionally, in
+//     case of success, we have no clue on the written size (assume all).
+//
+//  3. The Linux driver cannot regulate its output. The data are written to an
+//     internal buffer of the driver and control is immediately returned to
+//     the application. Unlike any well-behaved driver, the driver cannot
+//     suspend the application when the buffer is full, waiting for space
+//     in the buffer. When the buffer is full, the write operation fails with
+//     an error, forcing the application to do some polling. This is exactly
+//     what a drvier should NOT do! Polling is the enemy of performance and
+//     accuracy.
+//
+//  Implementation notes:
+//
+//  The documented limitation for transmission size is 348 packets. The it950x
+//  driver contains an internal buffer named "URB" to store packets. The size
+//  of the URB is #define URB_BUFSIZE_TX 32712 (172 packets, 348/2). To avoid
+//  issues, we limit our I/O's to 172 packets at a time, the URB size.
+//
+//  Any write(2) operation may fail because of the absence of regulation. The
+//  "normal" error is an insufficient free buffer size, error code 59. In that
+//  case, the application must do some polling (wait and retry). All other
+//  error codes are probably "real" errors.
+//
+//  First, to avoid issues in case of other "normal" error or when the error
+//  code values change in a future version, we treat all errors equally. This
+//  means that we always retry, but not infinitely.
+//
+//  Then, t challenge with polling is to wait:
+//  - not too long to avoid missed deadlines and holes in the transmission,
+//  - not too short to avoid excessince CPU load,
+//  - not too many times to avoid hanging an application on real errors.
+//
+//  In the original HiDes / ITE sample test code, the application infinitely
+//  retries after waiting 100 micro-seconds. This is insane...
+//
+//  Here, we keep track of the transmission time and bitrate since the first
+//  transmitted packet. Before a write, we try to predict the amount of time
+//  to wait until write will be possible without retry. Then, if retry is
+//  needed anyway, we loop a few times on short waits.
 //
 //----------------------------------------------------------------------------
 
@@ -37,30 +98,19 @@
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
 #include "tsSysUtils.h"
+#include "tsMonotonic.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
+
+
+// Maximum size of our transfers. See comments above.
+#define ITE_MAX_SEND_PACKETS  172
+#define ITE_MAX_SEND_BYTES    (ITE_MAX_SEND_PACKETS * 188)
 
 
 //----------------------------------------------------------------------------
 // Type definitions from HiDes / ITE.
 //----------------------------------------------------------------------------
-
-// The documented limitation for transmission size is 348 packets.
-// The it950x driver contains an internal buffer named "URB" to store packets.
-// The size of the URB is #define URB_BUFSIZE_TX 32712 (172 packets, 348/2).
-// To avoid issues, we limit our I/O's to 172 packets at a time, the URB size.
-
-#define ITE_MAX_SEND_PACKETS  172
-#define ITE_MAX_SEND_BYTES    (ITE_MAX_SEND_PACKETS * 188)
-
-// WARNING: There are INCONSISTENCIES between the int types and the associated
-// comment. Typically, the size of a 'long' depends on the platform (32 vs.
-// 64 bits). And a 'long long' is often 64-bit on 32-bit platforms despite
-// the comment (32 bits). So, there is a bug somewhere:
-// - Either the definitions are correct and consistently used in the driver
-//   code and application code. And the comments are incorrect.
-// - Or the comments are correct and the definitions are broken on some
-//   platforms. Extensive testing is required on 32 and 64-bit platforms.
 
 typedef void* Handle;
 
@@ -1109,6 +1159,10 @@ public:
     int             fd;            // File descriptor.
     bool            transmitting;  // Transmission in progress.
     BitRate         bitrate;       // Nominal bitrate from last tune operation.
+    Monotonic       due_time;      // Expected time of buffer availability.
+    PacketCounter   pkt_sent;      // Total packets sent.
+    uint64_t        all_write;     // Statistics: total number of write(2) operations.
+    uint64_t        fail_write;    // Statistics: number of failed write(2) operations.
     HiDesDeviceInfo info;          // Portable device information.
 
     // Constructor, destructor.
@@ -1122,6 +1176,7 @@ public:
     void close();
     bool startTransmission(Report& report);
     bool stopTransmission(Report& report);
+    bool send(const TSPacket* data, size_t packet_count, Report& report);
 
     // Get all HiDes device names.
     static void GetAllDeviceNames(UStringVector& names);
@@ -1129,6 +1184,28 @@ public:
     // Get HiDes error message.
     static UString HiDesErrorMessage(ssize_t driver_status, int errno_status);
 };
+
+
+//----------------------------------------------------------------------------
+// Guts, constructor and destructor.
+//----------------------------------------------------------------------------
+
+ts::HiDesDevice::Guts::Guts() :
+    fd(-1),
+    transmitting(false),
+    bitrate(0),
+    due_time(),
+    pkt_sent(0),
+    all_write(0),
+    fail_write(0),
+    info()
+{
+}
+
+ts::HiDesDevice::Guts::~Guts()
+{
+    close();
+}
 
 
 //----------------------------------------------------------------------------
@@ -1148,24 +1225,6 @@ ts::HiDesDevice::~HiDesDevice()
         delete _guts;
         _guts = 0;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Guts, constructor and destructor.
-//----------------------------------------------------------------------------
-
-ts::HiDesDevice::Guts::Guts() :
-    fd(-1),
-    transmitting(false),
-    bitrate(0),
-    info()
-{
-}
-
-ts::HiDesDevice::Guts::~Guts()
-{
-    close();
 }
 
 
@@ -1665,6 +1724,10 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 {
+    // Request of a clock precision of 1 millisecond if possible.
+    const NanoSecond prec = Monotonic::SetPrecision(NanoSecPerMilliSec);
+    report.log(2, u"HiDesDevice: get system precision of %'d non-second", {prec});
+
     TxModeRequest modeRequest;
     TS_ZERO(modeRequest);
     modeRequest.OnOff = 1;
@@ -1687,6 +1750,9 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
     }
 
     transmitting = true;
+    pkt_sent = 0;
+    all_write = 0;
+    fail_write = 0;
     return true;
 }
 
@@ -1740,77 +1806,100 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
 {
-    report.log(2, u"HiDesDevice::send: %d packets", {packet_count});
-
-    // Check that we are ready to transmit.
     if (!_is_open) {
         report.error(u"HiDes device not open");
         return false;
     }
-    else if (!_guts->transmitting) {
+    else {
+        return _guts->send(packets, packet_count, report);
+    }
+}
+
+bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, Report& report)
+{
+    if (!transmitting) {
         report.error(u"transmission not started");
         return false;
     }
 
+    if (bitrate != 0) {
+        if (pkt_sent == 0) {
+            // This is the first send operation, initialize timer.
+            due_time.getSystemTime();
+        }
+        else {
+            // Check if due time of all previous packets is in the past. In that case, the application
+            // was late, we have lost synchronization and we should reset the timer.
+            Monotonic now;
+            now.getSystemTime();
+            if (due_time < now) {
+                report.log(2, u"HiDesDevice: late by %'d nano-seconds", {now - due_time});
+                due_time = now;
+                pkt_sent = 0;
+            }
+        }
+    }
+
     // Retry several write operations until everything is gone.
+    report.log(2, u"HiDesDevice: send %d packets, bitrate = %'d b/s", {packet_count, bitrate});
     const char* data = reinterpret_cast<const char*>(packets);
     size_t remain = packet_count * PKT_SIZE;
 
-    // In case or error, the HiDes sample code infinitely retries after 100 micro-seconds.
-    // So, it seems that errors can be "normal". However, infinitely retrying is not.
-    // We decide to retry a few times only. We retry during the time which is required
-    // to empty the complete URB buffer in the driver, based on the nominal bitrate.
-    // Waiting longer is worthless since the URB is empty and we never attempt to
-    // write more than the URB capacity.
-    const ::useconds_t errorDelay = 100;
-    const MicroSecond maxRetryDuration = std::max<MicroSecond>(100 * errorDelay, MicroSecPerMilliSec * PacketInterval(_guts->bitrate, ITE_MAX_SEND_PACKETS));
-    size_t retryCount = size_t(maxRetryDuration / errorDelay);
-
-    report.log(2, u"HiDesDevice:: error delay = %'d us, retry count = %'d, bitrate = %'d b/s", {errorDelay, retryCount, _guts->bitrate});
+    // Normally, we wait before each write operation to be right on time.
+    // But, in case we wake up just before the buffer is emptied, we allow
+    // a number of short wait timers. These values are arbitrary and may
+    // require some tuing in the future.
+    const ::useconds_t error_delay = 100;
+    const size_t max_retry = 100;
+    size_t retry_count = 0;
 
     while (remain > 0) {
-        
+
         // Send one burst. Get max burst size.
         const size_t burst = std::min<size_t>(remain, ITE_MAX_SEND_BYTES);
 
-        // WARNING: Insane driver specification !!!
-        //
-        // For more than 40 years, write(2) is documented as returning the number
-        // of written bytes or -1 on error. In Linux kernel, the write(2) returned
-        // value is computed by the driver. And the it950x driver is completely
-        // insane here: It returns a status code (0 on success). Doing this clearly
-        // breaks the Unix file system paradigm "a file is a file" and writing to
-        // a file is a consistent operation on all file systems.
-        //
-        // Additional considerations:
-        // - In case of success, we have no clue on the written size (assume all).
-        // - No idea of what is going on with errno, better reset it first.
+        // If this is the first attempt for this chunk, wait until due time.
+        if (retry_count == 0 && bitrate != 0) {
+            due_time.wait();
+        }
 
+        // Send the chunk.
+        // WARNING: write returns an error code, not a size, see comments at beginning of file.
         errno = 0;
-        const ssize_t status = ::write(_guts->fd, data, burst);
+        const ssize_t status = ::write(fd, data, burst);
         const int err = errno;
 
-        report.log(2, u"HiDesDevice:: write = %d, errno = %d", {status, err});
+        // Keep statistics on all write operations.
+        all_write++;
+        if (status != 0) {
+            fail_write++;
+        }
+        report.log(2, u"HiDesDevice:: write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d))", {status, err, retry_count, all_write, fail_write});
 
         if (status == 0) {
-            // Success, assume that the complete burst was sent.
+            // Success, assume that the complete burst was sent (ie. written in the buffer in the driver).
             data += burst;
             remain -= burst;
+            pkt_sent += burst;
+            // Add expected transmission time to our monotonic timer.
+            if (bitrate != 0) {
+                due_time += (burst * 8 * PKT_SIZE * NanoSecPerSec) / NanoSecond(bitrate);
+            }
             // Reset retry count if there are errors in subsequent chunks.
-            retryCount = size_t(maxRetryDuration / errorDelay);
+            retry_count = 0;
         }
         else if (errno == EINTR) {
             // Ignore signal, retry
             report.debug(u"HiDesDevice::send: interrupted by signal, retrying");
         }
-        else if (retryCount > 0) {
-            // Wait and retry same I/O.
-            ::usleep(errorDelay);
-            --retryCount;
+        else if (retry_count < max_retry) {
+            // Short wait and retry same I/O.
+            ::usleep(error_delay);
+            retry_count++;
         }
         else {
             // Error and no more retry allowed.
-            report.error(u"error sending data: %s", {Guts::HiDesErrorMessage(status, err)});
+            report.error(u"error sending data: %s", {HiDesErrorMessage(status, err)});
             return false;
         }
     }

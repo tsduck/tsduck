@@ -240,6 +240,7 @@ bool ts::HiDesOutput::start()
         return false;
     }
     if (!_device.getInfo(_dev_info, *tsp)) {
+        _device.close(*tsp);
         return false;
     }
     tsp->verbose(u"using device %s", {_dev_info.toString()});
