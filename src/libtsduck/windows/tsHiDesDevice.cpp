@@ -215,6 +215,19 @@ namespace {
         IoctlDVBT(uint32_t c = 0) : code(c), code_rate(0), tx_mode(0), constellation(0), guard_interval(0) {}
     };
 
+    // Parameter structure for gain range DeviceIoControl.
+    struct IoctlGainRange
+    {
+        uint32_t code;
+        uint32_t frequency;  // in kHz
+        uint32_t bandwidth;  // in kHz
+        int32_t  max_gain;
+        int32_t  min_gain;
+
+        // Constructor.
+        IoctlGainRange(uint32_t c = 0) : code(c), frequency(0), bandwidth(0), max_gain(0), min_gain(0) {}
+    };
+
     // Parameter structure for transmission of TS data.
     struct IoctlTransmission
     {
@@ -247,24 +260,25 @@ public:
     ~Guts();
 
     // Get or set a KS property.
-    bool ksProperty(KSPROPERTY& prop, void *data, ::DWORD size, Report& report);
+    bool ksProperty(KSPROPERTY& prop, void *data, ::DWORD size, Report&);
 
     // Get or set IOCTL's.
-    bool ioctlGet(void *data, ::DWORD size, Report& report);
-    bool ioctlSet(void *data, ::DWORD size, Report& report);
+    bool ioctlGet(void *data, ::DWORD size, Report&);
+    bool ioctlSet(void *data, ::DWORD size, Report&);
 
     // Get one or all devices.
     // If 'list' is non-zero, get all devices here.
     // If 'index' >= 0 or 'name' is not empty, only search this one and fully initialize the device.
-    bool getDevices(HiDesDeviceInfoList* list, int index, const UString& name, Report& report);
+    bool getDevices(HiDesDeviceInfoList* list, int index, const UString& name, Report&);
 
     // Get information about one it950x device.
-    bool getDeviceInfo(const ComPtr<::IMoniker>& moniker, Report& report);
+    bool getDeviceInfo(const ComPtr<::IMoniker>& moniker, Report&);
 
     // Redirected services for enclosing class.
     void close();
-    bool setTransmission(bool enable, Report& report);
-    bool setPower(bool enable, Report& report);
+    bool setGetGain(uint32_t code, int& gain, Report&);
+    bool setTransmission(bool enable, Report&);
+    bool setPower(bool enable, Report&);
 
 
     // Format a 32-bit firmware version as a string.
@@ -430,7 +444,17 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
     // - Looking for one specific device and did not find it.
     // - Looking for one specific device, found it but could not fetch its properties.
     // There is no error at this point if we just wanted to get the list of devices.
-    return !searchOne || (found && infoOK);
+    if (!searchOne || (found && infoOK)) {
+        return true;
+    }
+    else if (index >= 0) {
+        report.error(u"device index %d not found", {index});
+        return false;
+    }
+    else {
+        report.error(u"device %s not found", {name});
+        return false;
+    }
 }
 
 
@@ -726,6 +750,75 @@ bool ts::HiDesDevice::Guts::setPower(bool enable, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Set or get the output gain in dB.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::setGain(int& gain, Report& report)
+{
+    return _guts->setGetGain(IOCTL_IT95X_SET_GAIN, gain, report);
+}
+
+bool ts::HiDesDevice::getGain(int& gain, Report& report)
+{
+    gain = 0;
+    return _guts->setGetGain(IOCTL_IT95X_GET_GAIN, gain, report);
+}
+
+bool ts::HiDesDevice::Guts::setGetGain(uint32_t code, int& gain, Report& report)
+{
+    IoctlGeneric ioc(code, std::abs(gain), gain < 0 ? GAIN_NEGATIVE : GAIN_POSITIVE);
+    if (!ioctlSet(&ioc, sizeof(ioc), report) || !ioctlGet(&ioc, sizeof(ioc), report)) {
+        report.error(u"error accessing output gain");
+        return false;
+    }
+    else {
+        switch (ioc.param2) {
+            case GAIN_POSITIVE:
+                gain = int(ioc.param1);
+                break;
+            case GAIN_NEGATIVE:
+                gain = - int(ioc.param1);
+                break;
+            default:
+                report.error(u"error setting output gain, invalid returned sign value: %d", {ioc.param2});
+                return false;
+        }
+        return true;
+    }
+
+}
+
+
+//----------------------------------------------------------------------------
+// Get the allowed range of output gain in dB.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report)
+{
+    minGain = maxGain = 0;
+    IoctlGainRange ioc(IOCTL_IT95X_GET_GAIN_RANGE);
+
+    // Frequency and bandwidth are in kHz
+    ioc.frequency = uint32_t(frequency / 1000);
+    ioc.bandwidth = BandWidthValueHz(bandwidth) / 1000;
+
+    if (ioc.bandwidth == 0) {
+        report.error(u"unsupported bandwidth");
+        return false;
+    }
+    else if (!_guts->ioctlSet(&ioc, sizeof(ioc), report) || !_guts->ioctlGet(&ioc, sizeof(ioc), report)) {
+        report.error(u"error getting output gain range");
+        return false;
+    }
+    else {
+        maxGain = ioc.max_gain;
+        minGain = ioc.min_gain;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Tune the modulator with DVB-T modulation parameters.
 //----------------------------------------------------------------------------
 
@@ -742,7 +835,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     }
 
     // Build frequency + bandwidth parameters.
-    // Frequency and bandwidth is in kHz
+    // Frequency and bandwidth are in kHz
     IoctlGeneric freqRequest(IOCTL_IT95X_SET_CHANNEL);
     freqRequest.param1 = uint32_t(params.frequency / 1000);
     freqRequest.param2 = BandWidthValueHz(params.bandwidth) / 1000;
