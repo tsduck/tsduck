@@ -1177,7 +1177,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 {
     UString msg;
 
-    // Returned status can be a negative value.
+    // HiDes status can be a negative value. Zero means no error.
     if (driver_status != 0) {
         msg = DVBNameFromSection(u"HiDesError", std::abs(driver_status), names::HEXA_FIRST);
     }
@@ -1271,9 +1271,11 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     // Get chip type.
     TxGetChipTypeRequest chipTypeRequest;
     TS_ZERO(chipTypeRequest);
-    if (::ioctl(fd, IOCTL_ITE_MOD_GETCHIPTYPE, &chipTypeRequest) < 0) {
-        const int err = LastErrorCode();
-        report.error(u"error getting chip type on %s: %s", {info.path, ErrorCodeMessage(err)});
+    errno = 0;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_GETCHIPTYPE, &chipTypeRequest) < 0 || chipTypeRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error getting chip type on %s: %s", {info.path, HiDesErrorMessage(chipTypeRequest.error, err)});
         status = false;
     }
     else {
@@ -1283,9 +1285,11 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     // Get device type
     TxGetDeviceTypeRequest devTypeRequest;
     TS_ZERO(devTypeRequest);
-    if (::ioctl(fd, IOCTL_ITE_MOD_GETDEVICETYPE, &devTypeRequest) < 0) {
-        const int err = LastErrorCode();
-        report.error(u"error getting device type on %s: %s", {info.path, ErrorCodeMessage(err)});
+    errno = 0;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_GETDEVICETYPE, &devTypeRequest) < 0 || devTypeRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error getting device type on %s: %s", {info.path, HiDesErrorMessage(devTypeRequest.error, err)});
         status = false;
     }
     else {
@@ -1295,9 +1299,11 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     // Get driver information.
     TxModDriverInfo driverRequest;
     TS_ZERO(driverRequest);
-    if (::ioctl(fd, IOCTL_ITE_MOD_GETDRIVERINFO, &driverRequest) < 0) {
-        const int err = LastErrorCode();
-        report.error(u"error getting driver info on %s: %s", {info.path, ErrorCodeMessage(err)});
+    errno = 0;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_GETDRIVERINFO, &driverRequest) < 0 || driverRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error getting driver info on %s: %s", {info.path, HiDesErrorMessage(driverRequest.error, err)});
         status = false;
     }
     else {
@@ -1403,6 +1409,95 @@ void ts::HiDesDevice::Guts::close()
     }
     transmitting = false;
     fd = -1;
+}
+
+
+//----------------------------------------------------------------------------
+// Set or get the output gain in dB.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::setGain(int& gain, Report& report)
+{
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
+    TxSetGainRequest request;
+    TS_ZERO(request);
+    request.GainValue = gain;
+    errno = 0;
+
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_ADJUSTOUTPUTGAIN, &request) < 0 || request.error != 0) {
+        const int err = errno;
+        report.error(u"error setting gain on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        return false;
+    }
+
+    // Updated value.
+    gain = request.GainValue;
+    return true;
+}
+
+bool ts::HiDesDevice::getGain(int& gain, Report& report)
+{
+    gain = 0;
+
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
+    TxGetOutputGainRequest request;
+    TS_ZERO(request);
+    errno = 0;
+
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_GETOUTPUTGAIN, &request) < 0 || request.error != 0) {
+        const int err = errno;
+        report.error(u"error getting gain on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        return false;
+    }
+
+    // Updated value.
+    gain = request.gain;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the allowed range of output gain in dB.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report)
+{
+    minGain = maxGain = 0;
+
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
+    // Frequency and bandwidth are in kHz
+    TxGetGainRangeRequest request;
+    TS_ZERO(request);
+    request.frequency = uint32_t(frequency / 1000);
+    request.bandwidth = BandWidthValueHz(bandwidth) / 1000;
+    errno = 0;
+
+    if (request.bandwidth == 0) {
+        report.error(u"unsupported bandwidth");
+        return false;
+    }
+
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_GETGAINRANGE, &request) < 0 || request.error != 0) {
+        const int err = errno;
+        report.error(u"error getting gain range on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        return false;
+    }
+
+    maxGain = request.maxGain;
+    minGain = request.minGain;
+    return true;
 }
 
 
@@ -1526,23 +1621,30 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     }
 
     // Now all parameters are validated, call the driver.
-    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_ACQUIRECHANNEL, &acqRequest) < 0) {
-        report.error(u"error setting frequency & bandwidth: %s", {ErrorCodeMessage()});
+    errno = 0;
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_ACQUIRECHANNEL, &acqRequest) < 0 || acqRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error setting frequency & bandwidth: %s", {Guts::HiDesErrorMessage(acqRequest.error, err)});
         return false;
     }
-    else if (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETMODULE, &modRequest) < 0) {
-        report.error(u"error setting modulation parameters: %s", {ErrorCodeMessage()});
+
+    errno = 0;
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETMODULE, &modRequest) < 0 || modRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error setting modulation parameters: %s", {Guts::HiDesErrorMessage(modRequest.error, err)});
         return false;
     }
-    else if (setInversion && ::ioctl(_guts->fd, IOCTL_ITE_MOD_SETSPECTRALINVERSION, &invRequest) < 0) {
-        report.error(u"error setting spectral inversion: %s", {ErrorCodeMessage()});
+
+    errno = 0;
+    if (setInversion && (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETSPECTRALINVERSION, &invRequest) < 0 || invRequest.error != 0)) {
+        const int err = errno;
+        report.error(u"error setting spectral inversion: %s", {Guts::HiDesErrorMessage(invRequest.error, err)});
         return false;
     }
-    else {
-        // Keep nominal bitrate.
-        _guts->bitrate = params.theoreticalBitrate();
-        return true;
-    }
+
+    // Keep nominal bitrate.
+    _guts->bitrate = params.theoreticalBitrate();
+    return true;
 }
 
 
@@ -1563,22 +1665,29 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 {
-    TxModeRequest request;
-    TS_ZERO(request);
-    request.OnOff = 1;
+    TxModeRequest modeRequest;
+    TS_ZERO(modeRequest);
+    modeRequest.OnOff = 1;
+    errno = 0;
 
-    if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &request) < 0) {
-        report.error(u"error enabling transmission: %s", {ErrorCodeMessage()});
+    if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &modeRequest) < 0 || modeRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error enabling transmission: %s", {Guts::HiDesErrorMessage(modeRequest.error, err)});
         return false;
     }
-    else if (::ioctl(fd, IOCTL_ITE_MOD_STARTTRANSFER) < 0) {
-        report.error(u"error starting transmission: %s", {ErrorCodeMessage()});
+
+    TxStartTransferRequest startRequest;
+    TS_ZERO(startRequest);
+    errno = 0;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_STARTTRANSFER, &startRequest) < 0 || startRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error starting transmission: %s", {Guts::HiDesErrorMessage(startRequest.error, err)});
         return false;
     }
-    else {
-        transmitting = true;
-        return true;
-    }
+
+    transmitting = true;
+    return true;
 }
 
 
@@ -1599,22 +1708,29 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 {
-    TxModeRequest request;
-    TS_ZERO(request);
-    request.OnOff = 0;
+    TxStopTransferRequest stopRequest;
+    TS_ZERO(stopRequest);
+    errno = 0;
 
-    if (::ioctl(fd, IOCTL_ITE_MOD_STOPTRANSFER) < 0) {
-        report.error(u"error starting transmission: %s", {ErrorCodeMessage()});
+    if (::ioctl(fd, IOCTL_ITE_MOD_STOPTRANSFER, &stopRequest) < 0 || stopRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error stopping transmission: %s", {Guts::HiDesErrorMessage(stopRequest.error, err)});
         return false;
     }
-    else if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &request) < 0) {
-        report.error(u"error disabling transmission: %s", {ErrorCodeMessage()});
+
+    TxModeRequest modeRequest;
+    TS_ZERO(modeRequest);
+    modeRequest.OnOff = 0;
+    errno = 0;
+
+    if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &modeRequest) < 0 || modeRequest.error != 0) {
+        const int err = errno;
+        report.error(u"error disabling transmission: %s", {Guts::HiDesErrorMessage(modeRequest.error, err)});
         return false;
     }
-    else {
-        transmitting = false;
-        return true;
-    }
+
+    transmitting = false;
+    return true;
 }
 
 

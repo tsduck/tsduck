@@ -60,6 +60,8 @@ namespace ts {
         COM                 _com;         // COM initialization helper
         int                 _dev_number;  // Device adapter number.
         UString             _dev_name;    // Device name.
+        bool                _set_gain;    // Adjust output gain.
+        int                 _gain;        // Requested output gain in dB.
         TunerParametersDVBT _params;      // Tuning parameters.
         BitRate             _bitrate;     // Nominal output bitrate.
         HiDesDevice         _device;      // HiDes device object.
@@ -85,6 +87,8 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
     _com(*tsp_),
     _dev_number(-1),
     _dev_name(),
+    _set_gain(false),
+    _gain(0),
     _params(),
     _bitrate(0),
     _device(),
@@ -104,6 +108,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
     }));
     option(u"device",         'd', STRING);
     option(u"frequency",      'f', POSITIVE);
+    option(u"gain",            0,  INTEGER);
     option(u"guard-interval", 'g', Enumeration({
         {u"1/32", GUARD_1_32},
         {u"1/16", GUARD_1_16},
@@ -149,6 +154,9 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
             u"  -f value\n"
             u"  --frequency value\n"
             u"      Frequency, in Hz, of the output carrier. There is no default.\n"
+            u"\n"
+            u"  --gain value\n"
+            u"      Adjust the output gain to the specified value in dB.\n"
             u"\n"
             u"  -g value\n"
             u"  --guard-interval value\n"
@@ -197,6 +205,8 @@ bool ts::HiDesOutput::start()
     // Get options.
     _dev_number = intValue<int>(u"adapter", -1);
     _dev_name = value(u"device");
+    _set_gain = present(u"gain");
+    _gain = intValue<int>(u"gain");
     _params.bandwidth = enumValue<BandWidth>(u"bandwidth", BW_8_MHZ);
     _params.modulation = enumValue<Modulation>(u"constellation", QAM_64);
     _params.frequency = intValue<uint64_t>(u"frequency", 0);
@@ -234,8 +244,25 @@ bool ts::HiDesOutput::start()
     }
     tsp->verbose(u"using device %s", {_dev_info.toString()});
 
-    // Tune and start transmission.
-    if (!_device.tune(_params, *tsp) || !_device.startTransmission(*tsp)) {
+    // Tune to frequency.
+    if (!_device.tune(_params, *tsp)) {
+        _device.close(*tsp);
+        return false;
+    }
+
+    // Adjust output gain if required.
+    if (_set_gain) {
+        int gain = _gain;
+        if (!_device.setGain(gain, *tsp)) {
+            _device.close(*tsp);
+            return false;
+        }
+        // The value of gain is updated to effective value.
+        tsp->verbose(u"adjusted output gain, requested %d dB, set to %d dB", {_gain, gain});
+    }
+
+    // Start transmission.
+    if (!_device.startTransmission(*tsp)) {
         _device.close(*tsp);
         return false;
     }
