@@ -102,6 +102,37 @@ namespace ts {
         bool close(Report& report = CERR);
 
         //!
+        //! Set the output gain in dB.
+        //! @param [in,out] gain The gain (if positive) or attenuation (if negative) in dB.
+        //! Upon return, @a gain contains the actually set value. The range of valid gain
+        //! values depends on the frequency and the bandwidth.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //! @see getGainRange()
+        //!
+        bool setGain(int& gain, Report& report = CERR);
+
+        //!
+        //! Get the output gain in dB.
+        //! @param [out] gain The gain (if positive) or attenuation (if negative) in dB.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool getGain(int& gain, Report& report = CERR);
+
+        //!
+        //! Get the allowed range of output gain in dB.
+        //! The range of valid gain values depends on the frequency and the bandwidth.
+        //! @param [out] minGain Minimum allowed gain value in dB.
+        //! @param [out] maxGain Maximum allowed gain value in dB.
+        //! @param [in] frequency Target frequency in Hz.
+        //! @param [in] bandwidth Target bandwidth.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report = CERR);
+
+        //!
         //! Tune the modulator with DVB-T modulation parameters.
         //! @param [in] params Tuning parameters.
         //! @param [in,out] report Where to report errors.

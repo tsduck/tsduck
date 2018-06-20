@@ -45,7 +45,12 @@ TSDUCK_SOURCE;
 class HiDesOptions: public ts::Args
 {
 public:
-    bool count;  // Only display device count.
+    bool          count;       // Only display device count.
+    bool          gain_range;  // Only display output gain range.
+    int           dev_number;  // Device adapter number.
+    ts::UString   dev_name;    // Device name.
+    uint64_t      frequency;   // Carrier frequency, in Hz.
+    ts::BandWidth bandwidth;   // Bandwidth.
 
     // Constructor:
     HiDesOptions(int argc, char *argv[]);
@@ -56,13 +61,47 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     ts::Args(u"List HiDes modulator devices", u"[options]"),
     count(false)
 {
-    option(u"count", 'c');
+    option(u"adapter",    'a', UNSIGNED);
+    option(u"bandwidth",  'b', ts::Enumeration({
+        {u"5", ts::BW_5_MHZ},
+        {u"6", ts::BW_5_MHZ},
+        {u"7", ts::BW_7_MHZ},
+        {u"8", ts::BW_8_MHZ},
+    }));
+    option(u"count",      'c');
+    option(u"device",     'd', STRING);
+    option(u"frequency",  'f', POSITIVE);
+    option(u"gain-range", 'g');
 
     setHelp(u"Options:\n"
+            u"\n"
+            u"  -a value\n"
+            u"  --adapter value\n"
+            u"      Specify the HiDes adapter number to list. By default, list all HiDes\n"
+            u"      devices.\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bandwidth value\n"
+            u"      Bandwidth in MHz with --gain-range. Must be one of " + optionNames(u"bandwidth") + ".\n"
+            u"      The default is 8 MHz.\n"
             u"\n"
             u"  -c\n"
             u"  --count\n"
             u"      Only display the number of devices.\n"
+            u"\n"
+            u"  -d name\n"
+            u"  --device name\n"
+            u"      Specify the HiDes device name to list. By default, list all HiDes devices.\n"
+            u"\n"
+            u"  -f value\n"
+            u"  --frequency value\n"
+            u"      Frequency, in Hz, of the output carrier with --gain-range. The default is\n"
+            u"      the first UHF channel.\n"
+            u"\n"
+            u"  -g\n"
+            u"  --gain-range\n"
+            u"      Display the allowed range of output gain for the specified device, using\n"
+            u"      the specified frequency and bandwidth.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
@@ -75,7 +114,18 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
             u"      Display the version number.\n");
 
     analyze(argc, argv);
+
     count = present(u"count");
+    gain_range = present(u"gain-range");
+    dev_number = intValue<int>(u"adapter", -1);
+    dev_name = value(u"device");
+    bandwidth = enumValue<ts::BandWidth>(u"bandwidth", ts::BW_8_MHZ);
+    frequency = intValue<uint64_t>(u"frequency", ts::UHF::Frequency(ts::UHF::FIRST_CHANNEL));
+
+    if (count && gain_range) {
+        error(u"--count and --gain-range are mutually exclusive");
+    }
+
     exitOnError();
 }
 
@@ -88,22 +138,60 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
 namespace {
     void MainCode(HiDesOptions& opt)
     {
-        // Get all HiDes devices.
+        ts::HiDesDevice dev;
+        ts::HiDesDeviceInfo info;
         ts::HiDesDeviceInfoList devices;
-        if (ts::HiDesDevice::GetAllDevices(devices, opt)) {
-            if (opt.count) {
-                std::cout << devices.size() << std::endl;
+        const bool one_device = opt.dev_number >= 0 || !opt.dev_name.empty();
+        bool ok = false;
+
+        // Open one device or get all devices.
+        if (!opt.gain_range && !one_device) {
+            // Get all HiDes devices.
+            ok = ts::HiDesDevice::GetAllDevices(devices, opt);
+        }
+        else if (!opt.dev_name.empty()) {
+            // Open one device by name.
+            ok = dev.open(opt.dev_name, opt);
+        }
+        else {
+            // One one device by number (default: first device).
+            ok = dev.open(std::max<int>(0, opt.dev_number), opt);
+        }
+
+        if (!ok) {
+            return;
+        }
+        else if (opt.count) {
+            // Display device count.
+            std::cout << devices.size() << std::endl;
+        }
+        else if (opt.gain_range) {
+            // Display gain range.
+            int min, max;
+            if (dev.getInfo(info, opt) && dev.getGainRange(min, max, opt.frequency, opt.bandwidth, opt)) {
+                std::cout << ts::UString::Format(u"Device: %s", {info.toString()}) << std::endl
+                          << ts::UString::Format(u"Frequency: %'d Hz", {opt.frequency}) << std::endl
+                          << ts::UString::Format(u"Bandwidth: %s MHz", {ts::BandWidthEnum.name(opt.bandwidth)}) << std::endl
+                          << ts::UString::Format(u"Min. gain: %d dB", {min}) << std::endl
+                          << ts::UString::Format(u"Max. gain: %d dB", {max}) << std::endl;
             }
-            else if (devices.empty()) {
-                std::cout << "No HiDes device found" << std::endl;
+        }
+        else if (one_device) {
+            // Display one device.
+            if (dev.getInfo(info, opt)) {
+                std::cout << info.toString(opt.verbose()) << std::endl;
             }
-            else {
-                if (opt.verbose()) {
-                    std::cout << "Found " << devices.size() << " HiDes devices" << std::endl << std::endl;
-                }
-                for (auto dev = devices.begin(); dev != devices.end(); ++dev) {
-                    std::cout << dev->toString(opt.verbose()) << std::endl;
-                }
+        }
+        else if (devices.empty()) {
+            std::cout << "No HiDes device found" << std::endl;
+        }
+        else {
+            // Display all devices.
+            if (opt.verbose()) {
+                std::cout << "Found " << devices.size() << " HiDes devices" << std::endl << std::endl;
+            }
+            for (auto it = devices.begin(); it != devices.end(); ++it) {
+                std::cout << it->toString(opt.verbose()) << std::endl;
             }
         }
     }
