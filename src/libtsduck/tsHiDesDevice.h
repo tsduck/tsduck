@@ -161,11 +161,6 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        // @@@ WARNING @@@ It is currently unclear if the driver can regulate the
-        // output (as Dektec modulators do) or if sending packets too fast results
-        // in dropping packets. In the latter case, explicit regulation at the
-        // theoretical bitrate will be required.
-        //
         bool send(const TSPacket* data, size_t packet_count, Report& report = CERR);
 
     private:

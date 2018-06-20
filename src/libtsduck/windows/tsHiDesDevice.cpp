@@ -402,7 +402,8 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
         report.debug(u"HiDes: checking \"%s\", CLSID %s", {fname, clsid});
 
         // Check if the name has the required prefix and class id for an it950x device.
-        if (fname.startWith(u"IT95") && CanonicalGUID(clsid) == itclsid) {
+        // Filter out names containing " RX " in case this means a receiver (not verified yet).
+        if (fname.startWith(u"IT95") && !fname.contain(u" RX ") && CanonicalGUID(clsid) == itclsid) {
             report.debug(u"HiDes: found device \"%s\"", {fname});
 
             // We must increment deviceIndex now because this is an index of all it950x devices.
@@ -755,13 +756,25 @@ bool ts::HiDesDevice::Guts::setPower(bool enable, Report& report)
 
 bool ts::HiDesDevice::setGain(int& gain, Report& report)
 {
-    return _guts->setGetGain(IOCTL_IT95X_SET_GAIN, gain, report);
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+    else {
+        return _guts->setGetGain(IOCTL_IT95X_SET_GAIN, gain, report);
+    }
 }
 
 bool ts::HiDesDevice::getGain(int& gain, Report& report)
 {
     gain = 0;
-    return _guts->setGetGain(IOCTL_IT95X_GET_GAIN, gain, report);
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+    else {
+        return _guts->setGetGain(IOCTL_IT95X_GET_GAIN, gain, report);
+    }
 }
 
 bool ts::HiDesDevice::Guts::setGetGain(uint32_t code, int& gain, Report& report)
@@ -796,9 +809,14 @@ bool ts::HiDesDevice::Guts::setGetGain(uint32_t code, int& gain, Report& report)
 bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report)
 {
     minGain = maxGain = 0;
-    IoctlGainRange ioc(IOCTL_IT95X_GET_GAIN_RANGE);
+
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
 
     // Frequency and bandwidth are in kHz
+    IoctlGainRange ioc(IOCTL_IT95X_GET_GAIN_RANGE);
     ioc.frequency = uint32_t(frequency / 1000);
     ioc.bandwidth = BandWidthValueHz(bandwidth) / 1000;
 

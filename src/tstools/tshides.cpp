@@ -59,7 +59,12 @@ public:
 // Constructor.
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     ts::Args(u"List HiDes modulator devices", u"[options]"),
-    count(false)
+    count(false),
+    gain_range(false),
+    dev_number(-1),
+    dev_name(),
+    frequency(0),
+    bandwidth(ts::BW_8_MHZ)
 {
     option(u"adapter",    'a', UNSIGNED);
     option(u"bandwidth",  'b', ts::Enumeration({
