@@ -108,7 +108,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
     }));
     option(u"device",         'd', STRING);
     option(u"frequency",      'f', POSITIVE);
-    option(u"gain",            0,  INTEGER);
+    option(u"gain",            0,  INT32);
     option(u"guard-interval", 'g', Enumeration({
         {u"1/32", GUARD_1_32},
         {u"1/16", GUARD_1_16},
