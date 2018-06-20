@@ -776,9 +776,9 @@ linux {
         ../../../src/libtsduck/linux/tsSignalAllocator.h \
 
     SOURCES += \
-        ../../../src/libtsduck/unix/tsHiDesDevice.cpp \
         ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/linux/tsDTVProperties.cpp \
+        ../../../src/libtsduck/linux/tsHiDesDevice.cpp \
         ../../../src/libtsduck/linux/tsSignalAllocator.cpp \
         ../../../src/libtsduck/linux/tsTuner.cpp \
 
@@ -789,8 +789,8 @@ mac {
         ../../../src/libtsduck/mac/tsMacPList.h \
 
     SOURCES += \
-        ../../../src/libtsduck/unix/tsHiDesDevice.cpp \
         ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
+        ../../../src/libtsduck/mac/tsHiDesDevice.cpp \
         ../../../src/libtsduck/mac/tsMacPList.cpp \
         ../../../src/libtsduck/mac/tsTuner.cpp \
 
