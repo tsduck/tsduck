@@ -2,6 +2,11 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.13-303
+
+- Added support for HiDes UT-100C modulator device using utility "tshides" and
+  output plugin "hides".
+
 Version 3.12-778
 
 - Added plugin "merge" which merges two transport streams.
