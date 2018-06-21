@@ -14,7 +14,7 @@ In practice, TSDuck is used for:
 - On-the-fly transformation or injection of content and signalization.
 - Modify, remove, rename, extract services.
 - Work on live transport streams, DVB-S/C/T, ASI, IP-TV or offline transport stream files.
-- Use specialized hardware such as cheap DVB tuners (USB, PCI) or professional Dektec devices.
+- Use specialized hardware such as cheap DVB tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators.
 - Re-route transport streams to other applications.
 - Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
 - Analyze and inject SCTE 35 splice information.
