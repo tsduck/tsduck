@@ -152,6 +152,8 @@ HEADERS += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
     ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.h \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
+    ../../../src/libtsduck/tsHiDesDevice.h \
+    ../../../src/libtsduck/tsHiDesDeviceInfo.h \
     ../../../src/libtsduck/tsHierarchyDescriptor.h \
     ../../../src/libtsduck/tsIBPDescriptor.h \
     ../../../src/libtsduck/tsIDSA.h \
@@ -546,6 +548,7 @@ SOURCES += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
+    ../../../src/libtsduck/tsHiDesDeviceInfo.cpp \
     ../../../src/libtsduck/tsHierarchyDescriptor.cpp \
     ../../../src/libtsduck/tsIBPDescriptor.cpp \
     ../../../src/libtsduck/tsIDSA.cpp \
@@ -775,6 +778,7 @@ linux {
     SOURCES += \
         ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/linux/tsDTVProperties.cpp \
+        ../../../src/libtsduck/linux/tsHiDesDevice.cpp \
         ../../../src/libtsduck/linux/tsSignalAllocator.cpp \
         ../../../src/libtsduck/linux/tsTuner.cpp \
 
@@ -786,6 +790,7 @@ mac {
 
     SOURCES += \
         ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
+        ../../../src/libtsduck/mac/tsHiDesDevice.cpp \
         ../../../src/libtsduck/mac/tsMacPList.cpp \
         ../../../src/libtsduck/mac/tsTuner.cpp \
 
@@ -810,6 +815,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsDirectShowGraph.cpp \
         ../../../src/libtsduck/windows/tsDirectShowTest.cpp \
         ../../../src/libtsduck/windows/tsDirectShowUtils.cpp \
+        ../../../src/libtsduck/windows/tsHiDesDevice.cpp \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
         ../../../src/libtsduck/windows/tsTuner.cpp \

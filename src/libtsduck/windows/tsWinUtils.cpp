@@ -260,6 +260,42 @@ bool ts::ComExpose(::IUnknown* object, const ::IID& iid)
 
 
 //-----------------------------------------------------------------------------
+// Get the handle of a COM object.
+//-----------------------------------------------------------------------------
+
+// WARNING: We are doing something weird here...
+// The IKsObject interface is supposedly declared in ksproxy.h.
+// However, the declaraction is not inlined, unless the Windows driver
+// development kit is installed and Streams.h included. We do not want
+// to require the DDK to be installed in order to compile TSDuck. This
+// is why it is redeclared here. However, in case of incorrect declaraction,
+// you may expect a crash....
+MIDL_INTERFACE("423c13a2-2070-11d0-9ef7-00aa00a216a1")
+IKsObject : public IUnknown
+{
+public:
+    virtual HANDLE STDMETHODCALLTYPE KsGetObjectHandle();
+};
+
+::HANDLE ts::GetHandleFromObject(::IUnknown* obj, Report& report)
+{
+    // Query IKsObject interface on the object.
+    ComPtr<::IKsObject> ks;
+    report.log(2, u"WinUtils.GetHandleFromObject: getting IKsObject interface");
+    ks.queryInterface(obj, IID_IKsObject, report);
+    if (ks.isNull()) {
+        return INVALID_HANDLE_VALUE;
+    }
+
+    // Return the handle. Note that KsGetObjectHandle returns zero on error, not INVALID_HANDLE_VALUE.
+    report.log(2, u"WinUtils.GetHandleFromObject: IKsObject found, calling KsGetObjectHandle");
+    const ::HANDLE h = ks->KsGetObjectHandle();
+    report.log(2, u"WinUtils.GetHandleFromObject: handle: 0x%X", {uintptr_t(h)});
+    return h == 0 ? INVALID_HANDLE_VALUE : h;
+}
+
+
+//-----------------------------------------------------------------------------
 // Return a string property from the "property bag" of an object
 // (defined by an object moniker)
 //-----------------------------------------------------------------------------
@@ -302,6 +338,30 @@ ts::UString ts::FormatGUID(const ::GUID& guid, bool with_braces)
                                      guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
                                      guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]}));
     return with_braces ? u"{" + s + u"}" : s;
+}
+
+
+//-----------------------------------------------------------------------------
+// Get a "canonical" version of a GUID string (Windows-specific).
+//-----------------------------------------------------------------------------
+
+ts::UString ts::CanonicalGUID(const ::GUID& guid)
+{
+    return UString::Format(u"%08x%04x%04x%02x%02x%02x%02x%02x%02x%02x%02x",
+                           {guid.Data1, guid.Data2, guid.Data3,
+                            guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+                            guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]});
+}
+
+ts::UString ts::CanonicalGUID(const UString& guid)
+{
+    UString result;
+    for (size_t i = 0; i < guid.length(); ++i) {
+        if (IsHexa(guid[i])) {
+            result.append(ToLower(guid[i]));
+        }
+    }
+    return result;
 }
 
 

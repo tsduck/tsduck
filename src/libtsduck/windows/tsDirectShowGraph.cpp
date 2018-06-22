@@ -79,7 +79,7 @@ bool ts::DirectShowGraph::initialize(Report& report)
     // Create the FilterGraph object and get its GraphBuilder interface.
     _graph_builder.createInstance(::CLSID_FilterGraph, ::IID_IGraphBuilder, report);
     if (!_graph_builder.isNull()) {
-            // Get its MediaControl interface.
+        // Get its MediaControl interface.
         _media_control.queryInterface(_graph_builder.pointer(), ::IID_IMediaControl, report);
         if (_media_control.isNull()) {
             _graph_builder.release();

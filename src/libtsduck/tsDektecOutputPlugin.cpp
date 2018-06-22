@@ -128,7 +128,7 @@ ts::DektecOutputPlugin::Guts::Guts() :
 //----------------------------------------------------------------------------
 
 ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device.", u"[options]"),
+    OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device", u"[options]"),
     _guts(new Guts)
 {
     CheckNonNull(_guts);

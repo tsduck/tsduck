@@ -430,6 +430,7 @@ ts::BitRate ts::TunerParametersDVBT::theoreticalBitrate() const
     //    = (SR * BPS * FECM * 188) / (FECD * 204)
     //    = (6048 * GID * BW * BPS * FECM * 188) / (7168 * (GID + GIM) * FECD * 204)
     //    = (1137024 * GID * BW * BPS * FECM) / (1462272 * (GID + GIM) * FECD)
+    // And 1137024 / 1462272 = 423 / 544
 
-    return BitRate((1137024 * guard_div * bw * bitpersym * fec_mul) / (1462272 * (guard_div + guard_mul) * fec_div));
+    return BitRate((423 * guard_div * bw * bitpersym * fec_mul) / (544 * (guard_div + guard_mul) * fec_div));
 }

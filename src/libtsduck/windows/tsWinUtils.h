@@ -121,6 +121,20 @@ namespace ts {
     TSDUCKDLL UString FormatGUID(const ::GUID& guid, bool with_braces = true);
 
     //!
+    //! Get a "canonical" version of a GUID (Windows-specific).
+    //! @param [in] guid A GUID.
+    //! @return The equivalent string with only lower-case hexa digits.
+    //!
+    TSDUCKDLL UString CanonicalGUID(const ::GUID& guid);
+
+    //!
+    //! Get a "canonical" version of a GUID string (Windows-specific).
+    //! @param [in] guid A GUID string.
+    //! @return The equivalent string with only lower-case hexa digits.
+    //!
+    TSDUCKDLL UString CanonicalGUID(const UString& guid);
+
+    //!
     //! Format a GUID as string and resolve a few known names (Windows-specific).
     //! Warning: Very slow, eat CPU time, use with care.
     //! @param [in] guid A GUID.
@@ -136,6 +150,14 @@ namespace ts {
     //! @return The property value.
     //!
     TSDUCKDLL UString GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, Report& report);
+
+    //!
+    //! Get the handle of a COM object (Windows-specific).
+    //! @param [in] obj COM object.
+    //! @param [in,out] report Where to report errors.
+    //! @return The handle or INVALID_HANDLE_VALUE on error.
+    //!
+    TSDUCKDLL ::HANDLE GetHandleFromObject(::IUnknown* obj, Report& report);
 
     //!
     //! Get the device or file name from a Windows handle (Windows-specific).

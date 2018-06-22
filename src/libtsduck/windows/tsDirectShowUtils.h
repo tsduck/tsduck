@@ -48,11 +48,13 @@ namespace ts {
     //! @param [in] clsid Device class to enumerate.
     //! @param [out] monikers Returned vector of monikers to all devices of class @a clsid.
     //! @param [in,out] report Where to report errors.
+    //! @param [in] flags Flags for CreateClassEnumerator().
     //! @return True on success, false on error.
     //!
     TSDUCKDLL bool EnumerateDevicesByClass(const ::CLSID& clsid,
                                            std::vector<ComPtr<::IMoniker>>& monikers,
-                                           Report& report);
+                                           Report& report,
+                                           ::DWORD flags = 0);
 
     //!
     //! Get the user-friendly name of a DirectShow tuning space (Windows-specific).
