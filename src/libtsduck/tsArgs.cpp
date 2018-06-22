@@ -315,6 +315,17 @@ ts::Args& ts::Args::option(const UChar*       name,
 
 
 //----------------------------------------------------------------------------
+// When an option has an Enumeration type, get a list of all valid names.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::optionNames(const ts::UChar* name, const ts::UString& separator) const
+{
+    const IOption& opt(getIOption(name));
+    return opt.enumeration.nameList(separator);
+}
+
+
+//----------------------------------------------------------------------------
 // Copy all option definitions from another Args object. Return this object.
 // If override is true, override duplicated options.
 //----------------------------------------------------------------------------

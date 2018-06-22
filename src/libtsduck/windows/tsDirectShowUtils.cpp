@@ -50,7 +50,7 @@ TSDUCK_SOURCE;
 // Return true on success, false on error.
 //-----------------------------------------------------------------------------
 
-bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IMoniker>>& monikers, Report& report)
+bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IMoniker>>& monikers, Report& report, ::DWORD flags)
 {
     // Reset content of vector
     monikers.clear();
@@ -63,7 +63,7 @@ bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IM
 
     // Enumerate devices
     ComPtr <::IEnumMoniker> enum_monikers;
-    ::HRESULT hr = enum_devices->CreateClassEnumerator(clsid, enum_monikers.creator(), 0);
+    ::HRESULT hr = enum_devices->CreateClassEnumerator(clsid, enum_monikers.creator(), flags);
     if (!ComSuccess(hr, u"CreateClassEnumerator", report)) {
         return false;
     }

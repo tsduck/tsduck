@@ -3,9 +3,8 @@
 
 TSDuck can be built on Windows, Linux and macOS.
 
-Support for Dektec devices and DVB tuners is implemented only on Windows and Linux.
-macOS can only support files and IP for TS input and output.
-
+Support for Dektec devices, DVB tuners and HiDes modulators is implemented only
+on Windows and Linux. macOS can only support files and IP for TS input and output.
 
 # Pre-requisites: build tools {#buildreq}
 

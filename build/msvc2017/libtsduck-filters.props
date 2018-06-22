@@ -460,6 +460,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsHiDesDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsHiDesDeviceInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1668,6 +1674,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsHiDesDeviceInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2341,6 +2350,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\windows\tsHiDesDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp">

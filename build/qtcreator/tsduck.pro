@@ -53,6 +53,7 @@ SUBDIRS += \
     tsplugin_file \
     tsplugin_filter \
     tsplugin_fork \
+    tsplugin_hides \
     tsplugin_history \
     tsplugin_inject \
     tsplugin_ip \
@@ -105,6 +106,7 @@ SUBDIRS += \
     tsemmg \
     tsfixcc \
     tsftrunc \
+    tshides \
     tslsdvb \
     tsp \
     tspacketize \
