@@ -412,6 +412,7 @@ HEADERS += \
     ../../../src/libtsduck/tsVideoStreamDescriptor.h \
     ../../../src/libtsduck/tsVideoWindowDescriptor.h \
     ../../../src/libtsduck/tsWebRequest.h \
+    ../../../src/libtsduck/tsWebRequestHandlerInterface.h \
     ../../../src/libtsduck/tsxml.h \
     ../../../src/libtsduck/tsxmlAttribute.h \
     ../../../src/libtsduck/tsxmlComment.h \

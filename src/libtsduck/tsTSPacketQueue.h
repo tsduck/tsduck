@@ -130,7 +130,7 @@ namespace ts {
 
         //!
         //! Called by the reader thread to get the next packet.
-        //! The reader thread is never suspended. If no packet is available, returnss false.
+        //! The reader thread is never suspended. If no packet is available, return false.
         //! @param [out] packet The returned packet. Unmodified when no packet is available.
         //! @param [out] bitrate Input bitrate or zero if unknown.
         //! @return True if a packet was returned in @a packet. False if none was available
