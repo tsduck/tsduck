@@ -64,6 +64,7 @@ ts::WebRequest::WebRequest(Report& report) :
     _headerContentSize(0),
     _dlData(0),
     _dlFile(),
+    _dlHandler(0),
     _guts(0)
 {
     allocateGuts();
@@ -246,6 +247,12 @@ bool ts::WebRequest::copyData(const void* addr, size_t size)
         }
     }
 
+    // Pass data to application if a handler is defined.
+    if (_dlHandler != 0 && !_dlHandler->handleWebData(*this, addr, size)) {
+        _report.debug(u"Web transfer is interrupted by application");
+        return false;
+    }
+
     _contentSize += size;
     return true;
 }
@@ -307,6 +314,8 @@ bool ts::WebRequest::clearTransferResults()
     _contentSize = 0;
     _headerContentSize = 0;
     _finalURL = _originalURL;
+    _dlData = 0;
+    _dlHandler = 0;
 
     // Close spurious file (should not happen).
     if (_dlFile.is_open()) {
@@ -372,5 +381,37 @@ bool ts::WebRequest::downloadFile(const UString& fileName)
     // Actual transfer.
     const bool ok = download();
     _dlFile.close();
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Download the content of the URL and pass data to the application.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::download(WebRequestHandlerInterface* handler)
+{
+    // Transfer initialization.
+    bool ok = handler != 0 && clearTransferResults() && downloadInitialize();
+
+    // Actual transfer.
+    if (ok) {
+        try {
+            _dlHandler = handler;
+            ok = handler->handleWebStart(*this, _headerContentSize);
+            if (ok) {
+                ok = download();
+            }
+            else {
+                _report.debug(u"Web request is aborted by application before transfer");
+                downloadAbort();
+            }
+        }
+        catch (...) {
+            ok = false;
+        }
+        _dlHandler = 0;
+    }
+
     return ok;
 }

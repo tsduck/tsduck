@@ -28,20 +28,49 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Web request handler interface.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 13
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 807
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class WebRequest;
+
+    //!
+    //! Web request handler interface.
+    //! @ingroup net
+    //!
+    //! This abstract interface must be implemented by classes which need to be
+    //! notified of Web data transfer.
+    //!
+    class TSDUCKDLL WebRequestHandlerInterface
+    {
+    public:
+        //!
+        //! This hook is invoked at the beginning of the transfer.
+        //! The application may inspect the response headers from @a request.
+        //! @param [in] request The Web request.
+        //! @param [in] size Potential content size in bytes. This size is just
+        //! a hint, not a guaranteed size. Zero if the content size is unknown.
+        //! @return True to proceed, false to abort the transfer.
+        //!
+        virtual bool handleWebStart(const WebRequest& request, size_t size) = 0;
+
+        //!
+        //! This hook is invoked when a data chunk is available.
+        //! @param [in] request The Web request.
+        //! @param [in] data Address of data chunk.
+        //! @param [in] size Size of data chunk.
+        //! @return True to proceed, false to abort the transfer.
+        //!
+        virtual bool handleWebData(const WebRequest& request, const void* data, size_t size) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~WebRequestHandlerInterface() {}
+    };
+}

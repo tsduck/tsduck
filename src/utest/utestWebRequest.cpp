@@ -196,6 +196,41 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     if (expectInvariant) {
         CPPUNIT_ASSERT(fileContent == data);
     }
+
+    // Reset URL's.
+    request.setURL(ts::UString());
+    CPPUNIT_ASSERT(request.originalURL().empty());
+    CPPUNIT_ASSERT(request.finalURL().empty());
+
+    // Test with application callback.
+    class Transfer : public ts::WebRequestHandlerInterface
+    {
+    public:
+        ts::ByteBlock data;
+
+        Transfer(): data() {}
+
+        virtual bool handleWebStart(const ts::WebRequest& req, size_t size) override
+        {
+            utest::Out() << "WebRequestTest::handleWebStart: size: " << size << std::endl;
+            return true;
+        }
+
+        virtual bool handleWebData(const ts::WebRequest& req, const void* addr, size_t size) override
+        {
+            data.append(addr, size);
+            return true;
+        }
+    };
+
+    Transfer transfer;
+    request.setURL(url);
+    CPPUNIT_ASSERT(request.download(&transfer));
+    utest::Out() << "WebRequestTest::testURL: downloaded size by callback: " << transfer.data.size() << std::endl;
+    CPPUNIT_ASSERT(!transfer.data.empty());
+    if (expectInvariant) {
+        CPPUNIT_ASSERT(transfer.data == data);
+    }
 }
 
 

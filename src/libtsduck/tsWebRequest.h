@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsWebRequestHandlerInterface.h"
 #include "tsReport.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
@@ -181,6 +182,14 @@ namespace ts {
         bool downloadFile(const UString& fileName);
 
         //!
+        //! Download the content of the URL and pass data to the application.
+        //! No transformation is applied to the data.
+        //! @param [in] handler Application-defined handler to process received data.
+        //! @return True on success, false on error.
+        //!
+        bool download(WebRequestHandlerInterface* handler);
+
+        //!
         //! Representation of request or reponse headers.
         //! The keys of the map are the header names.
         //!
@@ -238,14 +247,15 @@ namespace ts {
         uint16_t      _proxyPort;
         UString       _proxyUser;
         UString       _proxyPassword;
-        HeadersMap    _requestHeaders;     // all request headers (to send)
-        HeadersMap    _responseHeaders;    // all response headers (received)
-        int           _httpStatus;         // 200, 404, etc.
-        size_t        _contentSize;        // actually downloaded size
-        size_t        _headerContentSize;  // content size, as announced in response header
-        ByteBlock*    _dlData;             // download data buffer
-        std::ofstream _dlFile;             // download file
-        SystemGuts*   _guts;               // system-specific data
+        HeadersMap    _requestHeaders;           // all request headers (to send)
+        HeadersMap    _responseHeaders;          // all response headers (received)
+        int           _httpStatus;               // 200, 404, etc.
+        size_t        _contentSize;              // actually downloaded size
+        size_t        _headerContentSize;        // content size, as announced in response header
+        ByteBlock*    _dlData;                   // download data buffer
+        std::ofstream _dlFile;                   // download file
+        WebRequestHandlerInterface* _dlHandler;  // application-defined handler
+        SystemGuts*   _guts;                     // system-specific data
 
         static UString  _defaultProxyHost;
         static uint16_t _defaultProxyPort;

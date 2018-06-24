@@ -415,6 +415,7 @@
 #include "tsVideoStreamDescriptor.h"
 #include "tsVideoWindowDescriptor.h"
 #include "tsWebRequest.h"
+#include "tsWebRequestHandlerInterface.h"
 #include "tsxml.h"
 #include "tsxmlAttribute.h"
 #include "tsxmlComment.h"

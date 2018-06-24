@@ -1240,6 +1240,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsWebRequest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsWebRequestHandlerInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsxml.h">
       <Filter>Header Files</Filter>
     </ClInclude>

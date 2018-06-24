@@ -414,6 +414,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVideoStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoWindowDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsWebRequest.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsWebRequestHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxml.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlAttribute.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlComment.h" />
