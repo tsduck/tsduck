@@ -239,6 +239,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
     ../../../src/libtsduck/tsPSILoggerArgs.h \
+    ../../../src/libtsduck/tsPushInputPlugin.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
     ../../../src/libtsduck/tsRegistrationDescriptor.h \
     ../../../src/libtsduck/tsRegistry.h \
@@ -621,6 +622,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
     ../../../src/libtsduck/tsPSILoggerArgs.cpp \
+    ../../../src/libtsduck/tsPushInputPlugin.cpp \
     ../../../src/libtsduck/tsRandomGenerator.cpp \
     ../../../src/libtsduck/tsRegistrationDescriptor.cpp \
     ../../../src/libtsduck/tsRegistry.cpp \

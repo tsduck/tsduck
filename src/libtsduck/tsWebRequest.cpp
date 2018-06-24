@@ -389,7 +389,7 @@ bool ts::WebRequest::downloadFile(const UString& fileName)
 // Download the content of the URL and pass data to the application.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::download(WebRequestHandlerInterface* handler)
+bool ts::WebRequest::downloadToApplication(WebRequestHandlerInterface* handler)
 {
     // Transfer initialization.
     bool ok = handler != 0 && clearTransferResults() && downloadInitialize();

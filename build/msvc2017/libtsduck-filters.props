@@ -721,6 +721,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsPushInputPlugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsRandomGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1891,6 +1894,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsPushInputPlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsRandomGenerator.cpp">

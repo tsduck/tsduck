@@ -251,6 +251,7 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsPSILogger.h"
 #include "tsPSILoggerArgs.h"
+#include "tsPushInputPlugin.h"
 #include "tsRandomGenerator.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsRegistry.h"

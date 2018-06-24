@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_fork.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_hides.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_history.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_http.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_inject.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_ip.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_merge.cpp" />

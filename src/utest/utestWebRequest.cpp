@@ -225,7 +225,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 
     Transfer transfer;
     request.setURL(url);
-    CPPUNIT_ASSERT(request.download(&transfer));
+    CPPUNIT_ASSERT(request.downloadToApplication(&transfer));
     utest::Out() << "WebRequestTest::testURL: downloaded size by callback: " << transfer.data.size() << std::endl;
     CPPUNIT_ASSERT(!transfer.data.empty());
     if (expectInvariant) {

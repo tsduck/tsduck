@@ -510,6 +510,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tshides", "tshides.vcxproj"
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_http", "tsplugin_http.vcxproj", "{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1238,6 +1243,14 @@ Global
 		{5FE4036B-AFBF-4252-9B13-D54D1F866973}.Release|Win32.Build.0 = Release|Win32
 		{5FE4036B-AFBF-4252-9B13-D54D1F866973}.Release|x64.ActiveCfg = Release|x64
 		{5FE4036B-AFBF-4252-9B13-D54D1F866973}.Release|x64.Build.0 = Release|x64
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Debug|Win32.Build.0 = Debug|Win32
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Debug|x64.ActiveCfg = Debug|x64
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Debug|x64.Build.0 = Debug|x64
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Release|Win32.ActiveCfg = Release|Win32
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Release|Win32.Build.0 = Release|Win32
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Release|x64.ActiveCfg = Release|x64
+		{021CCE48-DAD5-4CEA-84A3-D9EECAC9B9BB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
