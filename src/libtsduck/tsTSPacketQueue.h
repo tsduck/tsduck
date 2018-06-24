@@ -129,7 +129,7 @@ namespace ts {
         bool stopped() const { return _stopped; }
 
         //!
-        //! Called by the reader thread to get the next packet.
+        //! Called by the reader thread to get the next packet without waiting.
         //! The reader thread is never suspended. If no packet is available, return false.
         //! @param [out] packet The returned packet. Unmodified when no packet is available.
         //! @param [out] bitrate Input bitrate or zero if unknown.
@@ -139,10 +139,21 @@ namespace ts {
         bool getPacket(TSPacket& packet, BitRate& bitrate);
 
         //!
+        //! Called by the reader thread to wait for packets.
+        //! The reader thread is suspended until at least one packet is available.
+        //! @param [out] buffer Address of packet buffer.
+        //! @param [in] buffer_count Size of @a buffer in number of packets.
+        //! @param [out] actual_count Number of returned packets in @a buffer.
+        //! @param [out] bitrate Input bitrate or zero if unknown.
+        //! @return True if a packets were returned in @a buffer. False on error or end of file.
+        //!
+        bool waitPackets(TSPacket* buffer, size_t buffer_count, size_t& actual_count, BitRate& bitrate);
+
+        //!
         //! Check if the writer thread has reported an end of file condition.
         //! @return True if the writer thread has reported an end of file condition.
         //!
-        bool eof() const { return _eof; }
+        bool eof() const;
 
         //!
         //! Called by the reader thread to tell the writer thread to stop immediately.
@@ -150,16 +161,20 @@ namespace ts {
         void stop();
 
     private:
-        volatile bool  _eof;         // The writer thread has reported an end of file.
-        volatile bool  _stopped;     // The read thread has reported a stop condition.
-        mutable Mutex  _mutex;       // Protect access to shared data.
-        Condition      _freed;       // Condition to signal when packets were freed.
-        TSPacketVector _buffer;      // The packet buffer.
-        PCRAnalyzer    _pcr;         // PCR analyzer to get the bitrate.
-        size_t         _inCount;     // Number of packets currently inside the buffer.
-        size_t         _readIndex;   // Index of next packet to read.
-        size_t         _writeIndex;  // Index of next packet to write.
-        BitRate        _bitrate;     // Bitrate as set by the writer thread.
+        volatile bool     _eof;         // The writer thread has reported an end of file.
+        volatile bool     _stopped;     // The read thread has reported a stop condition.
+        mutable Mutex     _mutex;       // Protect access to shared data.
+        mutable Condition _enqueued;    // Signaled when packets are inserted.
+        mutable Condition _dequeued;    // Signaled when packets were freed.
+        TSPacketVector    _buffer;      // The packet buffer.
+        PCRAnalyzer       _pcr;         // PCR analyzer to get the bitrate.
+        size_t            _inCount;     // Number of packets currently inside the buffer.
+        size_t            _readIndex;   // Index of next packet to read.
+        size_t            _writeIndex;  // Index of next packet to write.
+        BitRate           _bitrate;     // Bitrate as set by the writer thread.
+
+        // Get bitrate, must be called with mutex held.
+        BitRate getBitrate() const;
 
         // Inaccessible operations
         TSPacketQueue(const TSPacketQueue&) = delete;

@@ -241,6 +241,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPushInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRandomGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRegistrationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRegistry.h" />
@@ -633,6 +634,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPushInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRegistrationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRegistry.cpp" />

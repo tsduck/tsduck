@@ -187,7 +187,7 @@ namespace ts {
         //! @param [in] handler Application-defined handler to process received data.
         //! @return True on success, false on error.
         //!
-        bool download(WebRequestHandlerInterface* handler);
+        bool downloadToApplication(WebRequestHandlerInterface* handler);
 
         //!
         //! Representation of request or reponse headers.

@@ -41,7 +41,8 @@ ts::TSPacketQueue::TSPacketQueue(size_t size) :
     _eof(false),
     _stopped(false),
     _mutex(),
-    _freed(),
+    _enqueued(),
+    _dequeued(),
     _buffer(size),
     _pcr(1, 12),
     _inCount(0),
@@ -89,7 +90,7 @@ size_t ts::TSPacketQueue::bufferSize() const
 
 bool ts::TSPacketQueue::lockWriteBuffer(TSPacket*& buffer, size_t& buffer_size, size_t min_size)
 {
-    GuardCondition lock(_mutex, _freed);
+    GuardCondition lock(_mutex, _dequeued);
 
     // Maximum size we can allocate to the write window.
     assert(_readIndex < _buffer.size());
@@ -132,7 +133,7 @@ bool ts::TSPacketQueue::lockWriteBuffer(TSPacket*& buffer, size_t& buffer_size, 
 
 void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
 {
-    Guard lock(_mutex);
+    GuardCondition lock(_mutex, _enqueued);
 
     // Verify that the specified size is compatible with the current write window.
     assert(_readIndex < _buffer.size());
@@ -157,6 +158,9 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
     // Mark written packets as part of the buffer.
     _inCount += count;
     _writeIndex = (_writeIndex + count) % _buffer.size();
+
+    // Signal that packets have been enqueued
+    lock.signal();
 }
 
 
@@ -179,13 +183,45 @@ void ts::TSPacketQueue::setBitrate(BitRate bitrate)
 
 
 //----------------------------------------------------------------------------
+// Check if the writer thread has reported an end of file condition.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacketQueue::eof() const
+{
+    Guard lock(_mutex);
+    return _eof && _inCount == 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Called by the writer thread to report the end of input thread.
 //----------------------------------------------------------------------------
 
 void ts::TSPacketQueue::setEOF()
 {
-    // No explicit synchronization required here because the reader thread is never suspended.
+    GuardCondition lock(_mutex, _enqueued);
     _eof = true;
+
+    // We did not really enqueue packets but if a reader thread is waiting we need to wake it up.
+    lock.signal();
+}
+
+
+//----------------------------------------------------------------------------
+// Get bitrate, must be called with mutex held.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::TSPacketQueue::getBitrate() const
+{
+    if (_bitrate != 0) {
+        return _bitrate;
+    }
+    else if (_pcr.bitrateIsValid()) {
+        return _pcr.bitrate188();
+    }
+    else {
+        return 0;
+    }
 }
 
 
@@ -195,18 +231,10 @@ void ts::TSPacketQueue::setEOF()
 
 bool ts::TSPacketQueue::getPacket(TSPacket& packet, BitRate& bitrate)
 {
-    GuardCondition lock(_mutex, _freed);
+    GuardCondition lock(_mutex, _dequeued);
 
     // Get bitrate, either from reader thread or from PCR analysis.
-    if (_bitrate != 0) {
-        bitrate = _bitrate;
-    }
-    else if (_pcr.bitrateIsValid()) {
-        bitrate = _pcr.bitrate188();
-    }
-    else {
-        bitrate = 0;
-    }
+    bitrate = getBitrate();
 
     // Get packet when available.
     if (_inCount == 0) {
@@ -228,12 +256,48 @@ bool ts::TSPacketQueue::getPacket(TSPacket& packet, BitRate& bitrate)
 
 
 //----------------------------------------------------------------------------
+// Called by the reader thread to wait for packets.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacketQueue::waitPackets(TSPacket* buffer, size_t buffer_count, size_t& actual_count, BitRate& bitrate)
+{
+    // Clear out params.
+    actual_count = 0;
+
+    // Wait until there is some packet in the buffer.
+    GuardCondition lock(_mutex, _enqueued);
+    while (!_eof && !_stopped && _inCount == 0) {
+        lock.waitCondition();
+    }
+
+    // Return as many packets as we can. Ignore eof for now.
+    while (_inCount > 0 && buffer_count > 0) {
+        *buffer++ = _buffer[_readIndex];
+        buffer_count--;
+        actual_count++;
+        _readIndex = (_readIndex + 1) % _buffer.size();
+        _inCount--;
+    }
+
+    // Get bitrate, either from reader thread or from PCR analysis.
+    bitrate = getBitrate();
+
+    // Signal that packets were freed.
+    _dequeued.signal();
+
+    // Return false when no packet is returned. Do not return false immediately
+    // when _eof is true, wait for all enqueued packets to be returned.
+    return actual_count > 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Called by the reader thread to tell the writer thread to stop immediately.
 //----------------------------------------------------------------------------
 
 void ts::TSPacketQueue::stop()
 {
-    GuardCondition lock(_mutex, _freed);
+    GuardCondition lock(_mutex, _dequeued);
 
     // Report a stop condition.
     _stopped = true;
