@@ -129,6 +129,11 @@ namespace ts {
 
             // Thread main.
             virtual void main() override;
+
+            // Inaccessible operations
+            Receiver() = delete;
+            Receiver(const Receiver&) = delete;
+            Receiver& operator=(const Receiver&) = delete;
         };
 
         // Plugin private data.
