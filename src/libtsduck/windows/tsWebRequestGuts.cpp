@@ -197,6 +197,26 @@ bool ts::WebRequest::SystemGuts::init()
         }
     }
 
+    // Specify the various timeouts.
+    if (_request._connectionTimeout > 0) {
+        ::DWORD timeout = ::DWORD(_request._connectionTimeout);
+        if (!::InternetSetOptionW(_inet, INTERNET_OPTION_CONNECT_TIMEOUT, &timeout, ::DWORD(sizeof(timeout)))) {
+            error(u"error setting connection timeout");
+            clear();
+            return false;
+        }
+    }
+    if (_request._receiveTimeout > 0) {
+        ::DWORD timeout = ::DWORD(_request._receiveTimeout);
+        if (!::InternetSetOptionW(_inet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, ::DWORD(sizeof(timeout))) ||
+            !::InternetSetOptionW(_inet, INTERNET_OPTION_DATA_RECEIVE_TIMEOUT, &timeout, ::DWORD(sizeof(timeout))))
+        {
+            error(u"error setting receive timeout");
+            clear();
+            return false;
+        }
+    }
+
     // URL connection flags. Always disable redirections (see comment on top of file).
     const ::DWORD urlFlags =
         INTERNET_FLAG_KEEP_CONNECTION |

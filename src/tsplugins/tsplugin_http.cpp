@@ -90,21 +90,27 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
     _partial(),
     _partial_size(0)
 {
-    option(u"",                 0,  STRING, 1, 1);
-    option(u"ignore-errors",    0);
-    option(u"infinite",        'i');
-    option(u"max-queue",        0,  POSITIVE);
-    option(u"proxy-host",       0,  STRING);
-    option(u"proxy-password",   0,  STRING);
-    option(u"proxy-port",       0,  UINT16);
-    option(u"proxy-user",       0,  STRING);
-    option(u"reconnect-delay",  0,  UNSIGNED);
-    option(u"repeat",          'r', POSITIVE);
+    option(u"",                    0,  STRING, 1, 1);
+    option(u"connection-timeout",  0,  POSITIVE);
+    option(u"ignore-errors",       0);
+    option(u"infinite",           'i');
+    option(u"max-queue",           0,  POSITIVE);
+    option(u"proxy-host",          0,  STRING);
+    option(u"proxy-password",      0,  STRING);
+    option(u"proxy-port",          0,  UINT16);
+    option(u"proxy-user",          0,  STRING);
+    option(u"receive-timeout",     0,  POSITIVE);
+    option(u"reconnect-delay",     0,  UNSIGNED);
+    option(u"repeat",             'r', POSITIVE);
 
     setHelp(u"Parameter:\n"
             u"  Specify the URL from which to read the transport stream.\n"
             u"\n"
             u"Options:\n"
+            u"\n"
+            u"  --connection-timeout value\n"
+            u"      Specify the connection timeout in milliseconds. By default, let the\n"
+            u"      operating system decide.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
@@ -133,6 +139,11 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
             u"\n"
             u"  --proxy-user name\n"
             u"      Optional proxy user name for Internet access.\n"
+            u"\n"
+            u"  --receive-timeout value\n"
+            u"      Specify the data reception timeout in milliseconds. This timeout applies\n"
+            u"      to each receive operation, individually. By default, let the operating\n"
+            u"      system decide.\n"
             u"\n"
             u"  -r count\n"
             u"  --repeat count\n"
@@ -173,6 +184,9 @@ bool ts::HttpInput::start()
     _request.setAutoRedirect(true);
     _request.setProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"));
     _request.setProxyUser(value(u"proxy-user"), value(u"proxy-password"));
+    if (present(u"connection-timeout")) {
+        _request.setConnectionTimeout(intValue<MilliSecond>(u"connection-timeout"));
+    }
 
     _partial_size = 0;
     return true;

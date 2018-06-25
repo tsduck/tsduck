@@ -53,6 +53,8 @@ ts::WebRequest::WebRequest(Report& report) :
     _autoRedirect(true),
     _originalURL(),
     _finalURL(),
+    _connectionTimeout(0),
+    _receiveTimeout(0),
     _proxyHost(),
     _proxyPort(0),
     _proxyUser(),
@@ -97,8 +99,18 @@ void ts::WebRequest::setURL(const UString& url)
 
 
 //----------------------------------------------------------------------------
-// Set the optional proxy data.
+// Set other options.
 //----------------------------------------------------------------------------
+
+void ts::WebRequest::setConnectionTimeout(MilliSecond timeout)
+{
+    _connectionTimeout = timeout;
+}
+
+void ts::WebRequest::setReceiveTimeout(MilliSecond timeout)
+{
+    _receiveTimeout = timeout;
+}
 
 void ts::WebRequest::setProxyHost(const UString& host, uint16_t port)
 {

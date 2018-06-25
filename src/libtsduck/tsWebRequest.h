@@ -99,6 +99,18 @@ namespace ts {
         }
 
         //!
+        //! Set the connection timeout for this request.
+        //! @param [in] timeout Connection timeout in milliseconds.
+        //!
+        void setConnectionTimeout(MilliSecond timeout);
+
+        //!
+        //! Set the timeout for each receive operation.
+        //! @param [in] timeout Reception timeout in milliseconds.
+        //!
+        void setReceiveTimeout(MilliSecond timeout);
+
+        //!
         //! Set the optional proxy host and port for this request.
         //! @param [in] host Proxy host name or address.
         //! @param [in] port Proxy port number.
@@ -243,6 +255,8 @@ namespace ts {
         bool          _autoRedirect;
         UString       _originalURL;
         UString       _finalURL;
+        MilliSecond   _connectionTimeout;
+        MilliSecond   _receiveTimeout;
         UString       _proxyHost;
         uint16_t      _proxyPort;
         UString       _proxyUser;
