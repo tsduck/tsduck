@@ -35,7 +35,10 @@
 #include "tsPushInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsWebRequest.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+#define DEFAULT_MAX_QUEUED_PACKETS  1000    // Default size in packet of the inter-thread queue.
 
 
 //----------------------------------------------------------------------------
@@ -56,10 +59,12 @@ namespace ts {
         virtual bool handleWebData(const WebRequest& request, const void* data, size_t size) override;
 
     private:
-        size_t     _repeat_count;
-        WebRequest _request;
-        TSPacket   _partial;       // Buffer for incomplete packets.
-        size_t     _partial_size;  // Number of bytes in partial.
+        size_t      _repeat_count;
+        bool        _ignore_errors;
+        MilliSecond _reconnect_delay;
+        WebRequest  _request;
+        TSPacket    _partial;       // Buffer for incomplete packets.
+        size_t      _partial_size;  // Number of bytes in partial.
 
         // Inaccessible operations
         HttpInput() = delete;
@@ -79,17 +84,22 @@ TSPLUGIN_DECLARE_INPUT(http, ts::HttpInput)
 ts::HttpInput::HttpInput(TSP* tsp_) :
     PushInputPlugin(tsp_, u"Read a transport stream from an HTTP server", u"[options] url"),
     _repeat_count(0),
+    _ignore_errors(false),
+    _reconnect_delay(0),
     _request(*tsp),
     _partial(),
     _partial_size(0)
 {
-    option(u"",               0,  STRING, 1, 1);
-    option(u"infinite",      'i');
-    option(u"proxy-host",     0,  STRING);
-    option(u"proxy-password", 0,  STRING);
-    option(u"proxy-port",     0,  UINT16);
-    option(u"proxy-user",     0,  STRING);
-    option(u"repeat",        'r', POSITIVE);
+    option(u"",                 0,  STRING, 1, 1);
+    option(u"ignore-errors",    0);
+    option(u"infinite",        'i');
+    option(u"max-queue",        0,  POSITIVE);
+    option(u"proxy-host",       0,  STRING);
+    option(u"proxy-password",   0,  STRING);
+    option(u"proxy-port",       0,  UINT16);
+    option(u"proxy-user",       0,  STRING);
+    option(u"reconnect-delay",  0,  UNSIGNED);
+    option(u"repeat",          'r', POSITIVE);
 
     setHelp(u"Parameter:\n"
             u"  Specify the URL from which to read the transport stream.\n"
@@ -99,10 +109,18 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
+            u"  --ignore-errors\n"
+            u"      With --repeat or --infinite, repeat also in case of error. By default,\n"
+            u"      repetition stops on error.\n"
+            u"\n"
             u"  -i\n"
             u"  --infinite\n"
             u"      Repeat the playout of the content infinitely (default: only once).\n"
             u"      The URL is re-opened each time and the content may be different.\n"
+            u"\n"
+            u"  --max-queue value\n"
+            u"      Specify the maximum number of queued TS packets before their\n"
+            u"      insertion into the stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_PACKETS) u".\n"
             u"\n"
             u"  --proxy-host name\n"
             u"      Optional proxy host name for Internet access.\n"
@@ -122,6 +140,10 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
             u"      (default: only once). The URL is re-opened each time and the content\n"
             u"      may be different.\n"
             u"\n"
+            u"  --reconnect-delay value\n"
+            u"      With --repeat or --infinite, wait the specified number of milliseconds.\n"
+            u"      By default, repeat immediately.\n"
+            u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 }
@@ -140,6 +162,11 @@ bool ts::HttpInput::start()
 
     // Decode options.
     _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
+    _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
+    _ignore_errors = present(u"ignore-errors");
+
+    // Resize the inter-thread packet queue.
+    setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));
 
     // Prepare web request.
     _request.setURL(value(u""));
@@ -153,16 +180,21 @@ bool ts::HttpInput::start()
 
 
 //----------------------------------------------------------------------------
-// Input method
+// Input method. Executed in a separate thread.
 //----------------------------------------------------------------------------
 
 void ts::HttpInput::processInput()
 {
+    bool ok = true;
+
     // Loop on request count.
-    for (size_t i = 0; i < _repeat_count; i++) {
-        if (!_request.downloadToApplication(this)) {
-            break;
+    for (size_t count = 0; count < _repeat_count && (ok || _ignore_errors); count++) {
+        // Wait between reconnections.
+        if (count > 0 && _reconnect_delay > 0) {
+            SleepThread(_reconnect_delay);
         }
+        // Perform one download.
+        ok = _request.downloadToApplication(this);
     }
 }
 
