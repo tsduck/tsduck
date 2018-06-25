@@ -199,6 +199,22 @@ bool ts::WebRequest::SystemGuts::init()
         status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
     }
 
+    // Set the connection timeout.
+    if (status == ::CURLE_OK && _request._connectionTimeout > 0) {
+        status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connectionTimeout));
+    }
+
+    // Set the receive timeout. There is no such parameter in libcurl.
+    // We set this timeout to the max duration of low speed = 1 B/s.
+    if (status == ::CURLE_OK && _request._receiveTimeout > 0) {
+        // The LOW_SPEED_TIME option is in seconds. Round to higher.
+        const long timeout = long((_request._receiveTimeout + 999) / 1000);
+        status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_TIME, timeout);
+        if (status == ::CURLE_OK) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_LIMIT, long(1)); // bytes/second
+        }
+    }
+    
     // Set the response callbacks.
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, &SystemGuts::writeCallback);
