@@ -1285,6 +1285,9 @@
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecVPD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\private\tsIT950x.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\private\tsRefType.h">
       <Filter>Header Files</Filter>
     </ClInclude>

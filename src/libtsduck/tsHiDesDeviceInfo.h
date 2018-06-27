@@ -76,6 +76,10 @@ namespace ts {
         //! @return A multi-line description of this object.
         //!
         UString toString(bool full = false, size_t indent = 0) const;
+
+    private:
+        // Left part of full listing.
+        UString title(size_t indent, const UString& title_name) const;
     };
 
     //!

@@ -176,7 +176,7 @@ namespace {
             if (dev.getInfo(info, opt) && dev.getGainRange(min, max, opt.frequency, opt.bandwidth, opt)) {
                 std::cout << ts::UString::Format(u"Device: %s", {info.toString()}) << std::endl
                           << ts::UString::Format(u"Frequency: %'d Hz", {opt.frequency}) << std::endl
-                          << ts::UString::Format(u"Bandwidth: %s MHz", {ts::BandWidthEnum.name(opt.bandwidth)}) << std::endl
+                          << ts::UString::Format(u"Bandwidth: %s", {ts::BandWidthEnum.name(opt.bandwidth)}) << std::endl
                           << ts::UString::Format(u"Min. gain: %d dB", {min}) << std::endl
                           << ts::UString::Format(u"Max. gain: %d dB", {max}) << std::endl;
             }
@@ -193,7 +193,7 @@ namespace {
         else {
             // Display all devices.
             if (opt.verbose()) {
-                std::cout << "Found " << devices.size() << " HiDes devices" << std::endl << std::endl;
+                std::cout << "Found " << devices.size() << " HiDes device" << (devices.size() > 1 ? "s" : "") << std::endl << std::endl;
             }
             for (auto it = devices.begin(); it != devices.end(); ++it) {
                 std::cout << it->toString(opt.verbose()) << std::endl;

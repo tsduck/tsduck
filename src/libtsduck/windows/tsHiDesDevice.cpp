@@ -31,6 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsIT950x.h"
 #include "tsHiDesDevice.h"
 #include "tsDirectShowUtils.h"
 #include "tsMemoryUtils.h"
@@ -40,203 +41,41 @@
 #include <ksproxy.h>
 TSDUCK_SOURCE;
 
-
-//----------------------------------------------------------------------------
-// KS property sets for it950x devices.
-//----------------------------------------------------------------------------
-
-// Main property set. Control device operation and send TS data blocks.
-#define STATIC_KSPROPSETID_IT9500Properties 0xf23fac2d,0xe1af,0x48e0,{0x8b,0xbe,0xa1,0x40,0x29,0xc9,0x2f,0x11}
-
-// Auxiliary property set. Query USB mode and device IDs.
-// This value is actually KSPROPERTYSET_Wd3KsproxySample, an example GUID
-// used by some vendors where engineers don't run guidgen.exe.
-#define STATIC_KSPROPSETID_IT9500PropertiesAux 0xc6efe5eb,0x855a,0x4f1b,{0xb7,0xaa,0x87,0xb5,0xe1,0xdc,0x41,0x13}
-
-// Maximum nulber of TS packets to send to modulator.
-#define IT95X_TX_BLOCK_PKTS 348
-
-// For get chip type.
-#define REG_CHIP_VERSION 0x1222
+using namespace ite;
 
 namespace {
-
-    // FEC code rate
-    enum {
-        IT95X_CODERATE_UNKNOWN = -1,
-        IT95X_CODERATE_1_2     = 0,
-        IT95X_CODERATE_2_3     = 1,
-        IT95X_CODERATE_3_4     = 2,
-        IT95X_CODERATE_5_6     = 3,
-        IT95X_CODERATE_7_8     = 4,
-    };
-
-    // Constellation.
-    enum {
-        IT95X_CONSTELLATION_UNKNOWN = -1,
-        IT95X_CONSTELLATION_QPSK    = 0,
-        IT95X_CONSTELLATION_16QAM   = 1,
-        IT95X_CONSTELLATION_64QAM   = 2,
-    };
-
-    // Transmission mode.
-    enum {
-        IT95X_TX_MODE_UNKNOWN = -1,
-        IT95X_TX_MODE_2K      = 0,
-        IT95X_TX_MODE_8K      = 1,
-        IT95X_TX_MODE_4K      = 2,
-    };
-
-    // Guard interval.
-    enum {
-        IT95X_GUARD_UNKNOWN = -1,
-        IT95X_GUARD_1_32    = 0,
-        IT95X_GUARD_1_16    = 1,
-        IT95X_GUARD_1_8     = 2,
-        IT95X_GUARD_1_4     = 3,
-    };
-
-    // Properties
-    enum {
-        KSPROPERTY_IT95X_DRV_INFO = 0,  // in KSPROPSETID_IT9500Properties
-        KSPROPERTY_IT95X_IOCTL    = 1,  // in KSPROPSETID_IT9500Properties
-        KSPROPERTY_IT95X_BUS_INFO = 5,  // in KSPROPSETID_IT9500PropertiesAux
-    };
-
-    // KS property list indexes for DeviceIoControl
-    enum {
-        KSLIST_DRV_INFO_GET = 0,
-        KSLIST_DRV_INFO_SET = 1,
-        KSLIST_IOCTL_GET    = 2,
-        KSLIST_IOCTL_SET    = 3,
-        KSLIST_BUS_INFO_GET = 4,
-        KSLIST_MAX          = 5,
-    };
-
     // KS property list definitions for DeviceIoControl
     const ::KSPROPERTY kslist_template[KSLIST_MAX] = {
         {{{
             // KSLIST_DRV_INFO_GET
-            {STATIC_KSPROPSETID_IT9500Properties},
+            {ITE_STATIC_KSPROPSETID_IT9500Properties},
             KSPROPERTY_IT95X_DRV_INFO,
             KSPROPERTY_TYPE_GET,
         }}},
         {{{
             // KSLIST_DRV_INFO_SET
-            {STATIC_KSPROPSETID_IT9500Properties},
+            {ITE_STATIC_KSPROPSETID_IT9500Properties},
             KSPROPERTY_IT95X_DRV_INFO,
             KSPROPERTY_TYPE_SET,
         }}},
         {{{
             // KSLIST_IOCTL_GET
-            {STATIC_KSPROPSETID_IT9500Properties},
+            {ITE_STATIC_KSPROPSETID_IT9500Properties},
             KSPROPERTY_IT95X_IOCTL,
             KSPROPERTY_TYPE_GET,
         }}},
         {{{
             // KSLIST_IOCTL_SET
-            {STATIC_KSPROPSETID_IT9500Properties},
+            {ITE_STATIC_KSPROPSETID_IT9500Properties},
             KSPROPERTY_IT95X_IOCTL,
             KSPROPERTY_TYPE_SET,
         }}},
         {{{
             // KSLIST_BUS_INFO_GET
-            {STATIC_KSPROPSETID_IT9500PropertiesAux},
+            {ITE_STATIC_KSPROPSETID_IT9500PropertiesAux},
             KSPROPERTY_IT95X_BUS_INFO,
             KSPROPERTY_TYPE_GET,
         }}},
-    };
-
-    // IOCTL codes for modulator
-    enum {
-        IOCTL_IT95X_GET_DRV_INFO             =  1,
-        IOCTL_IT95X_SET_POWER                =  4,
-        IOCTL_IT95X_SET_DVBT_MODULATION      =  8,
-        IOCTL_IT95X_SET_RF_OUTPUT            =  9,
-        IOCTL_IT95X_SEND_TS_DATA             = 30,
-        IOCTL_IT95X_SET_CHANNEL              = 31,
-        IOCTL_IT95X_SET_DEVICE_TYPE          = 32,
-        IOCTL_IT95X_GET_DEVICE_TYPE          = 33,
-        IOCTL_IT95X_SET_GAIN                 = 34,
-        IOCTL_IT95X_RD_REG_OFDM              = 35,
-        IOCTL_IT95X_WR_REG_OFDM              = 36,
-        IOCTL_IT95X_RD_REG_LINK              = 37,
-        IOCTL_IT95X_WR_REG_LINK              = 38,
-        IOCTL_IT95X_SEND_PSI_ONCE            = 39,
-        IOCTL_IT95X_SET_PSI_PACKET           = 40,
-        IOCTL_IT95X_SET_PSI_TIMER            = 41,
-        IOCTL_IT95X_GET_GAIN_RANGE           = 42,
-        IOCTL_IT95X_SET_TPS                  = 43,
-        IOCTL_IT95X_GET_TPS                  = 44,
-        IOCTL_IT95X_GET_GAIN                 = 45,
-        IOCTL_IT95X_SET_IQ_TABLE             = 46,
-        IOCTL_IT95X_SET_DC_CAL               = 47,
-        IOCTL_IT95X_SET_ISDBT_MODULATION     = 60,
-        IOCTL_IT95X_ADD_ISDBT_PID_FILTER     = 61,
-        IOCTL_IT95X_SET_TMCC                 = 62,
-        IOCTL_IT95X_SET_TMCC2                = 63,
-        IOCTL_IT95X_GET_TMCC                 = 64,
-        IOCTL_IT95X_GET_TS_BITRATE           = 65,
-        IOCTL_IT95X_CONTROL_ISDBT_PID_FILTER = 66,
-        IOCTL_IT95X_SET_PCR_MODE             = 67,
-        IOCTL_IT95X_SET_PCR_ENABLE           = 68,
-        IOCTL_IT95X_RESET_ISDBT_PID_FILTER   = 69,
-        IOCTL_IT95X_SET_OFS_CAL              = 70,
-        IOCTL_IT95X_ENABLE_TPS_CRYPT         = 71,
-        IOCTL_IT95X_DISABLE_TPS_CRYPT        = 72,
-    };
-
-    enum {
-        GAIN_POSITIVE = 1,
-        GAIN_NEGATIVE = 2,
-    };
-
-    // Parameter structure for generic DeviceIoControl.
-    struct IoctlGeneric
-    {
-        uint32_t code;
-        uint32_t param1;
-        uint32_t param2;
-
-        // Constructor.
-        IoctlGeneric(uint32_t c = 0, uint32_t p1 = 0, uint32_t p2 = 0) : code(c), param1(p1), param2(p2) {}
-    };
-
-    // Parameter structure for DVB-T DeviceIoControl.
-    struct IoctlDVBT
-    {
-        uint32_t code;
-        uint8_t  code_rate;
-        uint8_t  tx_mode;
-        uint8_t  constellation;
-        uint8_t  guard_interval;
-
-        // Constructor.
-        IoctlDVBT(uint32_t c = 0) : code(c), code_rate(0), tx_mode(0), constellation(0), guard_interval(0) {}
-    };
-
-    // Parameter structure for gain range DeviceIoControl.
-    struct IoctlGainRange
-    {
-        uint32_t code;
-        uint32_t frequency;  // in kHz
-        uint32_t bandwidth;  // in kHz
-        int32_t  max_gain;
-        int32_t  min_gain;
-
-        // Constructor.
-        IoctlGainRange(uint32_t c = 0) : code(c), frequency(0), bandwidth(0), max_gain(0), min_gain(0) {}
-    };
-
-    // Parameter structure for transmission of TS data.
-    struct IoctlTransmission
-    {
-        uint32_t code;
-        uint32_t size;
-        uint8_t  data[IT95X_TX_BLOCK_PKTS * ts::PKT_SIZE];
-
-        // Constructor.
-        IoctlTransmission(uint32_t c = 0) : code(c), size(0) {}
     };
 }
 
@@ -572,8 +411,8 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     // Get chip type.
     uint32_t lsb = 0;
     uint32_t msb = 0;
-    IoctlGeneric ioc_lsb(IOCTL_IT95X_RD_REG_LINK, REG_CHIP_VERSION + 1);
-    IoctlGeneric ioc_msb(IOCTL_IT95X_RD_REG_LINK, REG_CHIP_VERSION + 2);
+    IoctlGeneric ioc_lsb(IOCTL_IT95X_RD_REG_LINK, IT95X_REG_CHIP_VERSION + 1);
+    IoctlGeneric ioc_msb(IOCTL_IT95X_RD_REG_LINK, IT95X_REG_CHIP_VERSION + 2);
     report.log(2, u"HiDesDevice: getting chip type");
     if (!ioctlSet(&ioc_lsb, sizeof(ioc_lsb), report) ||
         !ioctlGet(&lsb, sizeof(lsb), report) ||

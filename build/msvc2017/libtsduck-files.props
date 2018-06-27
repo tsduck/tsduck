@@ -429,6 +429,7 @@
     <ClInclude Include="..\..\src\libtsduck\private\tsDektec.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecDevice.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecVPD.h" />
+    <ClInclude Include="..\..\src\libtsduck\private\tsIT950x.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsRefType.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
