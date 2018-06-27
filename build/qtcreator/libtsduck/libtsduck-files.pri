@@ -427,6 +427,7 @@ HEADERS += \
     ../../../src/libtsduck/private/tsDektec.h \
     ../../../src/libtsduck/private/tsDektecDevice.h \
     ../../../src/libtsduck/private/tsDektecVPD.h \
+    ../../../src/libtsduck/private/tsIT950x.h \
     ../../../src/libtsduck/private/tsRefType.h \
 
 SOURCES += \
