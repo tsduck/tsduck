@@ -37,6 +37,7 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTSPacket.h"
 #include "tsCerrReport.h"
+#include "tsAbortInterface.h"
 
 namespace ts {
     //!
@@ -161,7 +162,13 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool send(const TSPacket* data, size_t packet_count, Report& report = CERR);
+        bool send(const TSPacket* data, size_t packet_count, Report& report = CERR, AbortInterface* abort = 0);
+
+        //!
+        //! Set auto regulation on or off (useful on Linux only).
+        //! @param [in] on Set autoregulation to this value. On by default.
+        //!
+        void setAutoRegulation(bool on);
 
     private:
         // The implementation is highly system-dependent.

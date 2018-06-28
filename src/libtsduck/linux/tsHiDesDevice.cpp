@@ -120,6 +120,8 @@ public:
     int             fd;            // File descriptor.
     bool            transmitting;  // Transmission in progress.
     BitRate         bitrate;       // Nominal bitrate from last tune operation.
+    bool            auto_regulate; // Use auto-regulation, wait for buffer to be available.
+    NanoSecond      precision;     // System precision for due_time.
     Monotonic       due_time;      // Expected time of buffer availability.
     PacketCounter   pkt_sent;      // Total packets sent.
     uint64_t        all_write;     // Statistics: total number of write(2) operations.
@@ -137,7 +139,7 @@ public:
     void close();
     bool startTransmission(Report& report);
     bool stopTransmission(Report& report);
-    bool send(const TSPacket* data, size_t packet_count, Report& report);
+    bool send(const TSPacket* data, size_t packet_count, Report& report, AbortInterface* abort);
 
     // Get all HiDes device names.
     static void GetAllDeviceNames(UStringVector& names);
@@ -155,6 +157,8 @@ ts::HiDesDevice::Guts::Guts() :
     fd(-1),
     transmitting(false),
     bitrate(0),
+    auto_regulate(true),
+    precision(0),
     due_time(),
     pkt_sent(0),
     all_write(0),
@@ -186,6 +190,16 @@ ts::HiDesDevice::~HiDesDevice()
         delete _guts;
         _guts = 0;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Set auto regulation on or off (useful on Linux only).
+//----------------------------------------------------------------------------
+
+void ts::HiDesDevice::setAutoRegulation(bool on)
+{
+    _guts->auto_regulate = on;
 }
 
 
@@ -686,8 +700,8 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 {
     // Request of a clock precision of 1 millisecond if possible.
-    const NanoSecond prec = Monotonic::SetPrecision(NanoSecPerMilliSec);
-    report.log(2, u"HiDesDevice: get system precision of %'d non-second", {prec});
+    precision = Monotonic::SetPrecision(NanoSecPerMilliSec);
+    report.log(2, u"HiDesDevice: get system precision of %'d nano-second", {precision});
 
     TxModeRequest modeRequest;
     TS_ZERO(modeRequest);
@@ -765,18 +779,18 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 // Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
+bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report, AbortInterface* abort)
 {
     if (!_is_open) {
         report.error(u"HiDes device not open");
         return false;
     }
     else {
-        return _guts->send(packets, packet_count, report);
+        return _guts->send(packets, packet_count, report, abort);
     }
 }
 
-bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, Report& report)
+bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, Report& report, AbortInterface* abort)
 {
     if (!transmitting) {
         report.error(u"transmission not started");
@@ -816,12 +830,29 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
 
     while (remain > 0) {
 
+        // Abort on user's request.
+        if (abort != 0 && abort->aborting()) {
+            report.debug(u"HiDesDevice: user requested abort");
+            return false;
+        }
+
         // Send one burst. Get max burst size.
         const size_t burst = std::min<size_t>(remain, ITE_MAX_SEND_BYTES);
 
         // If this is the first attempt for this chunk, wait until due time.
-        if (retry_count == 0 && bitrate != 0) {
+        if (auto_regulate && retry_count == 0 && bitrate != 0) {
+            //@@++ test code
+            Monotonic start;
+            start.getSystemTime();
+            const NanoSecond expected = due_time - start;
+            //@@--
             due_time.wait();
+            //@@++ test code
+            Monotonic end;
+            end.getSystemTime();
+            const NanoSecond actual = end - start;
+            report.log(2, u"HiDesDevice: wait due time, expected %'d ns, waited %'s ns", {expected, actual});
+            //@@--
         }
 
         // Send the chunk.
@@ -835,7 +866,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         if (status != 0) {
             fail_write++;
         }
-        report.log(2, u"HiDesDevice:: write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d))", {status, err, retry_count, all_write, fail_write});
+        report.log(2, u"HiDesDevice: write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d))", {status, err, retry_count, all_write, fail_write});
 
         if (status == 0) {
             // Success, assume that the complete burst was sent (ie. written in the buffer in the driver).
@@ -851,7 +882,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         }
         else if (errno == EINTR) {
             // Ignore signal, retry
-            report.debug(u"HiDesDevice::send: interrupted by signal, retrying");
+            report.debug(u"HiDesDevice: interrupted by signal, retrying");
         }
         else if (retry_count < max_retry) {
             // Short wait and retry same I/O.
