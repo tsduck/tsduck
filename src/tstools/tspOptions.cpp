@@ -405,7 +405,7 @@ void ts::tsp::Options::applyDefaults(bool rt)
     if (max_input_pkt == 0) {
         max_input_pkt = rt ? DEF_MAX_INPUT_PKT_RT: DEF_MAX_INPUT_PKT_OFL;
     }
-    debug(u"using --max-input-packets %'d --max-flushed-packets %'d", {max_input_pkt, max_flush_pkt});
+    debug(u"realtime: %s, using --max-input-packets %'d --max-flushed-packets %'d", {UString::YesNo(rt), max_input_pkt, max_flush_pkt});
 }
 
 

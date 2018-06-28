@@ -169,6 +169,15 @@ ts::HiDesDevice::Guts::~Guts()
 
 
 //----------------------------------------------------------------------------
+// Set auto regulation on or off (useful on Linux only).
+//----------------------------------------------------------------------------
+
+void ts::HiDesDevice::setAutoRegulation(bool on)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Get or set a KS property via device handle.
 //----------------------------------------------------------------------------
 
@@ -823,7 +832,7 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 // Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
+bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report, AbortInterface* abort)
 {
     // Check that we are ready to transmit.
     if (!_is_open) {
@@ -837,6 +846,12 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
 
     // Send packets by chunks of 348 (IT95X_TX_BLOCK_PKTS).
     while (packet_count > 0) {
+
+        // Abort on user's request.
+        if (abort != 0 && abort->aborting()) {
+            report.debug(u"HiDesDevice: user requested abort");
+            return false;
+        }
 
         // Copy a chunk of packets in the transmission control block.
         const size_t count = std::min<size_t>(packet_count, IT95X_TX_BLOCK_PKTS);
