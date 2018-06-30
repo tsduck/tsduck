@@ -57,6 +57,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsBCD.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBetterSystemRandomGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBinaryTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsBitRateRegulator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBitStream.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBlockCipher.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBouquetNameDescriptor.h" />
@@ -488,6 +489,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsBCD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBetterSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBinaryTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsBitRateRegulator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBlockCipher.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBouquetNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsByteBlock.cpp" />

@@ -82,6 +82,10 @@ bool ts::HiDesDevice::close(Report& report)
     return NotImplemented(report);
 }
 
+void ts::HiDesDevice::setAutoRegulation(bool on)
+{
+}
+
 bool ts::HiDesDevice::setGain(int& gain, Report& report)
 {
     gain = 0;
@@ -93,7 +97,6 @@ bool ts::HiDesDevice::getGain(int& gain, Report& report)
     gain = 0;
     return NotImplemented(report);
 }
-
 
 bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report)
 {
@@ -116,7 +119,7 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
     return NotImplemented(report);
 }
 
-bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report)
+bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report& report, AbortInterface* abort)
 {
     return NotImplemented(report);
 }
