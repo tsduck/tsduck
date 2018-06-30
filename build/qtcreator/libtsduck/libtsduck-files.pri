@@ -55,6 +55,7 @@ HEADERS += \
     ../../../src/libtsduck/tsBCD.h \
     ../../../src/libtsduck/tsBetterSystemRandomGenerator.h \
     ../../../src/libtsduck/tsBinaryTable.h \
+    ../../../src/libtsduck/tsBitRateRegulator.h \
     ../../../src/libtsduck/tsBitStream.h \
     ../../../src/libtsduck/tsBlockCipher.h \
     ../../../src/libtsduck/tsBouquetNameDescriptor.h \
@@ -476,6 +477,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBCD.cpp \
     ../../../src/libtsduck/tsBetterSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsBinaryTable.cpp \
+    ../../../src/libtsduck/tsBitRateRegulator.cpp \
     ../../../src/libtsduck/tsBlockCipher.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \

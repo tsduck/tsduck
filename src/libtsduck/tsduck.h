@@ -79,6 +79,7 @@
 #include "tsBCD.h"
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsBinaryTable.h"
+#include "tsBitRateRegulator.h"
 #include "tsBitStream.h"
 #include "tsBlockCipher.h"
 #include "tsBouquetNameDescriptor.h"
