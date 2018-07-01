@@ -128,7 +128,6 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
         {u"4K", TM_4K},
         {u"8K", TM_8K},
     }));
-    option(u"unregulated");
 
     setHelp(u"Options:\n"
             u"\n"
@@ -184,10 +183,6 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
-
-    // The undocumented option --unregulated removes the auto-regulation which is
-    // made in the Linux implementation to compensate the pooling design of the
-    // Linux driver.
 }
 
 
@@ -249,11 +244,6 @@ bool ts::HiDesOutput::start()
         return false;
     }
     tsp->verbose(u"using device %s", {_dev_info.toString()});
-
-    // Undocumented option for Linux implementation.
-    if (present(u"unregulated")) {
-        _device.setAutoRegulation(false);
-    }
 
     // Tune to frequency.
     if (!_device.tune(_params, *tsp)) {
