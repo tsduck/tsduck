@@ -99,7 +99,7 @@
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
 #include "tsSysUtils.h"
-#include "tsMonotonic.h"
+#include "tsBitRateRegulator.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -109,6 +109,9 @@ using namespace ite;
 #define ITE_MAX_SEND_PACKETS  172
 #define ITE_MAX_SEND_BYTES    (ITE_MAX_SEND_PACKETS * 188)
 
+// Percentage of fixed bitrate to add in autoregulation.
+#define DEFAULT_ADJUST_BITRATE_PERCENT -5
+
 
 //----------------------------------------------------------------------------
 // Class internals, the "guts" internal class.
@@ -117,16 +120,16 @@ using namespace ite;
 class ts::HiDesDevice::Guts
 {
 public:
-    int             fd;            // File descriptor.
-    bool            transmitting;  // Transmission in progress.
-    BitRate         bitrate;       // Nominal bitrate from last tune operation.
-    bool            auto_regulate; // Use auto-regulation, wait for buffer to be available.
-    NanoSecond      precision;     // System precision for due_time.
-    Monotonic       due_time;      // Expected time of buffer availability.
-    PacketCounter   pkt_sent;      // Total packets sent.
-    uint64_t        all_write;     // Statistics: total number of write(2) operations.
-    uint64_t        fail_write;    // Statistics: number of failed write(2) operations.
-    HiDesDeviceInfo info;          // Portable device information.
+    int              fd;             // File descriptor.
+    bool             transmitting;   // Transmission in progress.
+    BitRate          bitrate;        // Nominal bitrate from last tune operation.
+    int              adjust_percent; // Percentage of fixed bitrate to add in autoregulation (signed).
+    bool             auto_regulate;  // Use auto-regulation, wait for buffer to be available.
+    BitRateRegulator regulator;      // Used for bitrate regulation.
+    size_t           regulated_wait; // Number of packets awaiting regulation.
+    uint64_t         all_write;      // Statistics: total number of write(2) operations.
+    uint64_t         fail_write;     // Statistics: number of failed write(2) operations.
+    HiDesDeviceInfo  info;           // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -157,10 +160,10 @@ ts::HiDesDevice::Guts::Guts() :
     fd(-1),
     transmitting(false),
     bitrate(0),
+    adjust_percent(DEFAULT_ADJUST_BITRATE_PERCENT),
     auto_regulate(true),
-    precision(0),
-    due_time(),
-    pkt_sent(0),
+    regulator(),
+    regulated_wait(0),
     all_write(0),
     fail_write(0),
     info()
@@ -199,7 +202,10 @@ ts::HiDesDevice::~HiDesDevice()
 
 void ts::HiDesDevice::setAutoRegulation(bool on)
 {
-    _guts->auto_regulate = on;
+    // Auto-regulation can be changed only when not transmitting.
+    if (!_guts->transmitting) {
+        _guts->auto_regulate = on;
+    }
 }
 
 
@@ -699,10 +705,7 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 {
-    // Request of a clock precision of 1 millisecond if possible.
-    precision = Monotonic::SetPrecision(NanoSecPerMilliSec);
-    report.log(2, u"HiDesDevice: get system precision of %'d nano-second", {precision});
-
+    // Enable transmission mode.
     TxModeRequest modeRequest;
     TS_ZERO(modeRequest);
     modeRequest.OnOff = 1;
@@ -714,6 +717,7 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
         return false;
     }
 
+    // Start transfer.
     TxStartTransferRequest startRequest;
     TS_ZERO(startRequest);
     errno = 0;
@@ -724,8 +728,16 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
         return false;
     }
 
+    // Initialize the auto-regulation.
+    regulator.setReport(&report, Severity::Debug);
+    regulator.setFixedBitRate(BitRate(((100 + adjust_percent) * bitrate) / 100));
+    if (auto_regulate) {
+        regulator.start();
+    }
+
+    // Initialize state.
     transmitting = true;
-    pkt_sent = 0;
+    regulated_wait = 0;
     all_write = 0;
     fail_write = 0;
     return true;
@@ -749,6 +761,9 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 {
+    report.log(2, u"HiDesDevice: total write: %'d, failed: %'d", {all_write, fail_write});
+
+    // Stop transfer.
     TxStopTransferRequest stopRequest;
     TS_ZERO(stopRequest);
     errno = 0;
@@ -759,6 +774,7 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
         return false;
     }
 
+    // Disable transmission mode.
     TxModeRequest modeRequest;
     TS_ZERO(modeRequest);
     modeRequest.OnOff = 0;
@@ -797,24 +813,6 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         return false;
     }
 
-    if (bitrate != 0) {
-        if (pkt_sent == 0) {
-            // This is the first send operation, initialize timer.
-            due_time.getSystemTime();
-        }
-        else {
-            // Check if due time of all previous packets is in the past. In that case, the application
-            // was late, we have lost synchronization and we should reset the timer.
-            Monotonic now;
-            now.getSystemTime();
-            if (due_time < now) {
-                report.log(2, u"HiDesDevice: late by %'d nano-seconds", {now - due_time});
-                due_time = now;
-                pkt_sent = 0;
-            }
-        }
-    }
-
     // Retry several write operations until everything is gone.
     report.log(2, u"HiDesDevice: send %d packets, bitrate = %'d b/s", {packet_count, bitrate});
     const char* data = reinterpret_cast<const char*>(packets);
@@ -825,7 +823,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
     // a number of short wait timers. These values are arbitrary and may
     // require some tuing in the future.
     const ::useconds_t error_delay = 100;
-    const size_t max_retry = 100;
+    const size_t max_retry = auto_regulate ? 100 : 500;
     size_t retry_count = 0;
 
     while (remain > 0) {
@@ -841,18 +839,11 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
 
         // If this is the first attempt for this chunk, wait until due time.
         if (auto_regulate && retry_count == 0 && bitrate != 0) {
-            //@@++ test code
-            Monotonic start;
-            start.getSystemTime();
-            const NanoSecond expected = due_time - start;
-            //@@--
-            due_time.wait();
-            //@@++ test code
-            Monotonic end;
-            end.getSystemTime();
-            const NanoSecond actual = end - start;
-            report.log(2, u"HiDesDevice: wait due time, expected %'d ns, waited %'s ns", {expected, actual});
-            //@@--
+            // We simulate the wait by calling the regulator as many times as previously sent packets.
+            while (regulated_wait > 0) {
+                regulated_wait--;
+                regulator.regulate();
+            }
         }
 
         // Send the chunk.
@@ -866,16 +857,15 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         if (status != 0) {
             fail_write++;
         }
-        report.log(2, u"HiDesDevice: write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d))", {status, err, retry_count, all_write, fail_write});
+        report.log(2, u"HiDesDevice: write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d)", {status, err, retry_count, all_write, fail_write});
 
         if (status == 0) {
             // Success, assume that the complete burst was sent (ie. written in the buffer in the driver).
             data += burst;
             remain -= burst;
-            pkt_sent += burst;
-            // Add expected transmission time to our monotonic timer.
-            if (bitrate != 0) {
-                due_time += (burst * 8 * PKT_SIZE * NanoSecPerSec) / NanoSecond(bitrate);
+            // We will need to regulate that amount of packets, waiting for them to go out of the buffer.
+            if (auto_regulate) {
+                regulated_wait += burst;
             }
             // Reset retry count if there are errors in subsequent chunks.
             retry_count = 0;

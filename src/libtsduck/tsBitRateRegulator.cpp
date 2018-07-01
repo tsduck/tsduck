@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsBitRateRegulator.h"
+#include "tsNullReport.h"
 TSDUCK_SOURCE;
 
 
@@ -35,8 +36,8 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::BitRateRegulator::BitRateRegulator(ts::Report& report, int log_level) :
-    _report(report),
+ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
+    _report(report == 0 ? NullReport::Instance() : report),
     _log_level(log_level),
     _state(INITIAL),
     _opt_bitrate(0),
@@ -50,6 +51,17 @@ ts::BitRateRegulator::BitRateRegulator(ts::Report& report, int log_level) :
     _bitrate_start(),
     _bitrate_pkt_cnt(0)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Set a new report.
+//----------------------------------------------------------------------------
+
+void ts::BitRateRegulator::setReport(ts::Report *report, int log_level)
+{
+    _report = report == 0 ? NullReport::Instance() : report;
+    _log_level = log_level;
 }
 
 
@@ -68,7 +80,7 @@ void ts::BitRateRegulator::start()
 
     _burst_min = Monotonic::SetPrecision(2000000); // 2 milliseconds in nanoseconds
 
-    _report.log(_log_level, u"minimum packet burst duration is %'d nano-seconds", {_burst_min});
+    _report->log(_log_level, u"minimum packet burst duration is %'d nano-seconds", {_burst_min});
 
     // Reset state
     _state = INITIAL;
@@ -76,7 +88,6 @@ void ts::BitRateRegulator::start()
     _burst_pkt_max = 0;
     _burst_pkt_cnt = 0;
     _burst_duration = 0;
-
 }
 
 
@@ -100,7 +111,7 @@ void ts::BitRateRegulator::handleNewBitrate()
         _burst_pkt_max = (_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
     }
 
-    _report.debug(u"new regulation, burst: %'d nano-seconds, %'d packets", {_burst_duration, _burst_pkt_max});
+    _report->debug(u"new regulation, burst: %'d nano-seconds, %'d packets", {_burst_duration, _burst_pkt_max});
 
     // Register start of bitrate sequence.
     _bitrate_pkt_cnt = 0;
@@ -147,6 +158,19 @@ void ts::BitRateRegulator::regulatePacket(bool& flush, bool smoothen)
 
 //----------------------------------------------------------------------------
 // Regulate the flow, to be called at each packet.
+// This version is suitable for fixed bitrate.
+//----------------------------------------------------------------------------
+
+void ts::BitRateRegulator::regulate()
+{
+    bool flush = false;
+    bool bitrate_changed = false;
+    regulate(0, flush, bitrate_changed);
+}
+
+
+//----------------------------------------------------------------------------
+// Regulate the flow, to be called at each packet.
 //----------------------------------------------------------------------------
 
 void ts::BitRateRegulator::regulate(ts::BitRate current_bitrate, bool& flush, bool& bitrate_changed)
@@ -161,10 +185,10 @@ void ts::BitRateRegulator::regulate(ts::BitRate current_bitrate, bool& flush, bo
     if (_cur_bitrate != old_bitrate || _state == INITIAL) {
         // Initial state or new bitrate
         if (_cur_bitrate == 0) {
-            _report.log(_log_level, u"unknown bitrate, cannot regulate.");
+            _report->log(_log_level, u"unknown bitrate, cannot regulate.");
         }
         else {
-            _report.log(_log_level, u"regulated at bitrate %'d b/s", {_cur_bitrate});
+            _report->log(_log_level, u"regulated at bitrate %'d b/s", {_cur_bitrate});
         }
     }
 
