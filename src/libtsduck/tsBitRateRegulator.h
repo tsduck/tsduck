@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsMPEG.h"
-#include "tsCerrReport.h"
+#include "tsReport.h"
 #include "tsMonotonic.h"
 
 namespace ts {
@@ -50,7 +50,14 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @param [in] log_level Severity level for information messages.
         //!
-        BitRateRegulator(Report& report = CERR, int log_level = Severity::Verbose);
+        BitRateRegulator(Report* report = 0, int log_level = Severity::Verbose);
+
+        //!
+        //! Set a new report.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] log_level Severity level for information messages.
+        //!
+        void setReport(Report* report = 0, int log_level = Severity::Verbose);
 
         //!
         //! Set the number of packets to burst at a time.
@@ -84,12 +91,19 @@ namespace ts {
         //!
         void regulate(BitRate current_bitrate, bool& flush, bool& bitrate_changed);
 
+        //!
+        //! Regulate the flow, to be called at each packet.
+        //! Suspend the process when necessary.
+        //! This version is suitable for fixed bitrate.
+        //!
+        void regulate();
+
     private:
         // Regulation state
         enum State {INITIAL, REGULATED, UNREGULATED};
 
         // Private members.
-        Report&       _report;
+        Report*       _report;
         int           _log_level;
         State         _state;           // Current regulation state
         BitRate       _opt_bitrate;     // Bitrate option, zero means use input

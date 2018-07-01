@@ -74,7 +74,7 @@ TSPLUGIN_DECLARE_PROCESSOR(regulate, ts::RegulatePlugin)
 
 ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Regulate the TS packets flow to a specified bitrate", u"[options]"),
-    _regulator(*tsp, Severity::Verbose)
+    _regulator(tsp, Severity::Verbose)
 {
     option(u"bitrate",      'b', POSITIVE);
     option(u"packet-burst", 'p', POSITIVE);
