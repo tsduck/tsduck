@@ -82,10 +82,6 @@ bool ts::HiDesDevice::close(Report& report)
     return NotImplemented(report);
 }
 
-void ts::HiDesDevice::setAutoRegulation(bool on)
-{
-}
-
 bool ts::HiDesDevice::setGain(int& gain, Report& report)
 {
     gain = 0;

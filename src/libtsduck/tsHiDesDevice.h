@@ -164,12 +164,6 @@ namespace ts {
         //!
         bool send(const TSPacket* data, size_t packet_count, Report& report = CERR, AbortInterface* abort = 0);
 
-        //!
-        //! Set auto regulation on or off (useful on Linux only).
-        //! @param [in] on Set autoregulation to this value. On by default.
-        //!
-        void setAutoRegulation(bool on);
-
     private:
         // The implementation is highly system-dependent.
         // Redirect it to an internal system-dependent "guts" class.

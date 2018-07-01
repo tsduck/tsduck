@@ -70,27 +70,12 @@
 //  of the URB is #define URB_BUFSIZE_TX 32712 (172 packets, 348/2). To avoid
 //  issues, we limit our I/O's to 172 packets at a time, the URB size.
 //
-//  Any write(2) operation may fail because of the absence of regulation. The
-//  "normal" error is an insufficient free buffer size, error code 59. In that
-//  case, the application must do some polling (wait and retry). All other
-//  error codes are probably "real" errors.
+//  A patched version of the orginal driver from HiDes / ITE is available in
+//  https://github.com/tsduck/hides-drivers
 //
-//  First, to avoid issues in case of other "normal" error or when the error
-//  code values change in a future version, we treat all errors equally. This
-//  means that we always retry, but not infinitely.
-//
-//  Then, the challenge with polling is to wait:
-//  - not too long to avoid missed deadlines and holes in the transmission,
-//  - not too short to avoid excessince CPU load,
-//  - not too many times to avoid hanging an application on real errors.
-//
-//  In the original HiDes / ITE sample test code, the application infinitely
-//  retries after waiting 100 micro-seconds. This is insane...
-//
-//  Here, we keep track of the transmission time and bitrate since the first
-//  transmitted packet. Before a write, we try to predict the amount of time
-//  to wait until write will be possible without retry. Then, if retry is
-//  needed anyway, we loop a few times on short waits.
+//  The patched driver suspends the process when the buffer is full and waits
+//  for space in the buffer. This version of the driver contains a trailing
+//  "w" (for "wait") in its version string.
 //
 //----------------------------------------------------------------------------
 
@@ -99,7 +84,6 @@
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
 #include "tsSysUtils.h"
-#include "tsBitRateRegulator.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -109,9 +93,6 @@ using namespace ite;
 #define ITE_MAX_SEND_PACKETS  172
 #define ITE_MAX_SEND_BYTES    (ITE_MAX_SEND_PACKETS * 188)
 
-// Percentage of fixed bitrate to add in autoregulation.
-#define DEFAULT_ADJUST_BITRATE_PERCENT -5
-
 
 //----------------------------------------------------------------------------
 // Class internals, the "guts" internal class.
@@ -120,16 +101,12 @@ using namespace ite;
 class ts::HiDesDevice::Guts
 {
 public:
-    int              fd;             // File descriptor.
-    bool             transmitting;   // Transmission in progress.
-    BitRate          bitrate;        // Nominal bitrate from last tune operation.
-    int              adjust_percent; // Percentage of fixed bitrate to add in autoregulation (signed).
-    bool             auto_regulate;  // Use auto-regulation, wait for buffer to be available.
-    BitRateRegulator regulator;      // Used for bitrate regulation.
-    size_t           regulated_wait; // Number of packets awaiting regulation.
-    uint64_t         all_write;      // Statistics: total number of write(2) operations.
-    uint64_t         fail_write;     // Statistics: number of failed write(2) operations.
-    HiDesDeviceInfo  info;           // Portable device information.
+    int             fd;             // File descriptor.
+    bool            transmitting;   // Transmission in progress.
+    bool            waiting_write;  // The driver supports waiting write.
+    uint64_t        all_write;      // Statistics: total number of write(2) operations.
+    uint64_t        fail_write;     // Statistics: number of failed write(2) operations.
+    HiDesDeviceInfo info;           // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -159,11 +136,7 @@ public:
 ts::HiDesDevice::Guts::Guts() :
     fd(-1),
     transmitting(false),
-    bitrate(0),
-    adjust_percent(DEFAULT_ADJUST_BITRATE_PERCENT),
-    auto_regulate(true),
-    regulator(),
-    regulated_wait(0),
+    waiting_write(false),
     all_write(0),
     fail_write(0),
     info()
@@ -192,19 +165,6 @@ ts::HiDesDevice::~HiDesDevice()
     if (_guts != 0) {
         delete _guts;
         _guts = 0;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Set auto regulation on or off (useful on Linux only).
-//----------------------------------------------------------------------------
-
-void ts::HiDesDevice::setAutoRegulation(bool on)
-{
-    // Auto-regulation can be changed only when not transmitting.
-    if (!_guts->transmitting) {
-        _guts->auto_regulate = on;
     }
 }
 
@@ -361,12 +321,27 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
         TS_ZCOPY(ofdm_fw_version, FWVerionOFDM);
         TS_ZCOPY(company, Company);
         TS_ZCOPY(hw_info, SupportHWInfo);
+
+        // The patched driver, implementing waiting wait, has a patched version number ending with "w".
+        waiting_write = info.driver_version.endWith(u"w", CASE_INSENSITIVE);
     }
 
     // In case of error, close file descriptor.
     if (!status) {
         close();
     }
+    else if (!waiting_write) {
+        // If the driver does not implement waiting write, display a warning once in the life of the process.
+        static bool displayed = false;
+        if (!displayed) {
+            displayed = true;
+            report.warning(u"obsolete HiDes/it950x driver, "
+                           u"this version uses polling, "
+                           u"risk of performance hit, "
+                           u"use version from https://tsduck.io/download/hides/");
+        }
+    }
+
     return status;
 }
 
@@ -682,8 +657,6 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
         return false;
     }
 
-    // Keep nominal bitrate.
-    _guts->bitrate = params.theoreticalBitrate();
     return true;
 }
 
@@ -728,18 +701,12 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
         return false;
     }
 
-    // Initialize the auto-regulation.
-    regulator.setReport(&report, Severity::Debug);
-    regulator.setFixedBitRate(BitRate(((100 + adjust_percent) * bitrate) / 100));
-    if (auto_regulate) {
-        regulator.start();
-    }
-
     // Initialize state.
     transmitting = true;
-    regulated_wait = 0;
     all_write = 0;
     fail_write = 0;
+
+    report.debug(u"HiDesDevice: starting transmission");
     return true;
 }
 
@@ -761,7 +728,7 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 {
-    report.log(2, u"HiDesDevice: total write: %'d, failed: %'d", {all_write, fail_write});
+    report.debug(u"HiDesDevice: stopping transmission, total write: %'d, failed: %'d", {all_write, fail_write});
 
     // Stop transfer.
     TxStopTransferRequest stopRequest;
@@ -814,16 +781,16 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
     }
 
     // Retry several write operations until everything is gone.
-    report.log(2, u"HiDesDevice: send %d packets, bitrate = %'d b/s", {packet_count, bitrate});
+    report.log(2, u"HiDesDevice: sending %d packets", {packet_count});
     const char* data = reinterpret_cast<const char*>(packets);
     size_t remain = packet_count * PKT_SIZE;
 
-    // Normally, we wait before each write operation to be right on time.
-    // But, in case we wake up just before the buffer is emptied, we allow
-    // a number of short wait timers. These values are arbitrary and may
-    // require some tuing in the future.
+    // With the patched it950x driver, a write operation waits for free space in
+    // the device buffer. But, with the original driver, it immediately fails and
+    // we must retry later. In that case, we need to retry a number of times using
+    // short wait timers. These values are arbitrary and may require some tuning.
     const ::useconds_t error_delay = 100;
-    const size_t max_retry = auto_regulate ? 100 : 500;
+    const size_t max_retry = waiting_write ? 0 : 500;
     size_t retry_count = 0;
 
     while (remain > 0) {
@@ -837,15 +804,6 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         // Send one burst. Get max burst size.
         const size_t burst = std::min<size_t>(remain, ITE_MAX_SEND_BYTES);
 
-        // If this is the first attempt for this chunk, wait until due time.
-        if (auto_regulate && retry_count == 0 && bitrate != 0) {
-            // We simulate the wait by calling the regulator as many times as previously sent packets.
-            while (regulated_wait > 0) {
-                regulated_wait--;
-                regulator.regulate();
-            }
-        }
-
         // Send the chunk.
         // WARNING: write returns an error code, not a size, see comments at beginning of file.
         errno = 0;
@@ -857,16 +815,13 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         if (status != 0) {
             fail_write++;
         }
-        report.log(2, u"HiDesDevice: write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d)", {status, err, retry_count, all_write, fail_write});
+        report.log(2, u"HiDesDevice: sent %d packets, write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d)",
+                   {burst / PKT_SIZE, status, err, retry_count, all_write, fail_write});
 
         if (status == 0) {
             // Success, assume that the complete burst was sent (ie. written in the buffer in the driver).
             data += burst;
             remain -= burst;
-            // We will need to regulate that amount of packets, waiting for them to go out of the buffer.
-            if (auto_regulate) {
-                regulated_wait += burst;
-            }
             // Reset retry count if there are errors in subsequent chunks.
             retry_count = 0;
         }
