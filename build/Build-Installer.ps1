@@ -59,6 +59,10 @@
 
   Do not build the binary installers.
 
+ .PARAMETER NoLowPriority
+
+  Do not lower the process priority.
+
  .PARAMETER NoPortable
 
   Do not build the portable packages.
@@ -83,6 +87,7 @@ param(
     [switch]$NoPause = $false,
     [switch]$NoBuild = $false,
     [switch]$NoInstaller = $false,
+    [switch]$NoLowPriority = $false,
     [switch]$NoPortable = $false,
     [switch]$NoSource = $false,
     [switch]$Win32 = $false,
@@ -131,6 +136,11 @@ $Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#
 $Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
 $Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
 $Version = "${Major}.${Minor}-${Commit}"
+
+# Lower process priority so that the build does not eat up all CPU.
+if (-not $NoLowPriority) {
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
+}
 
 # Build the project.
 if (-not $NoBuild) {
