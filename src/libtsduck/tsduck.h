@@ -147,6 +147,7 @@
 #include "tsECMRepetitionRateDescriptor.h"
 #include "tsEDID.h"
 #include "tsEIT.h"
+#include "tsEITProcessor.h"
 #include "tsEMMGClient.h"
 #include "tsEMMGMUX.h"
 #include "tsEnhancedAC3Descriptor.h"

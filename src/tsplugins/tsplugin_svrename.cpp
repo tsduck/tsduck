@@ -38,6 +38,7 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
+#include "tsEITProcessor.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
@@ -66,12 +67,14 @@ namespace ts {
         Service           _new_service;    // New service name & id
         Service           _old_service;    // Old service name & id
         bool              _ignore_bat;     // Do not modify the BAT
+        bool              _ignore_eit;     // Do not modify the EIT's
         bool              _ignore_nit;     // Do not modify the NIT
         SectionDemux      _demux;          // Section demux
         CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
         CyclingPacketizer _pzer_pmt;       // Packetizer for modified PMT
         CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
         CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
+        EITProcessor      _eit_process;    // Modify EIT's
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -106,17 +109,20 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
     _new_service(),
     _old_service(),
     _ignore_bat(false),
+    _ignore_eit(false),
     _ignore_nit(false),
     _demux(this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
+    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
+    _eit_process(PID_EIT, tsp_)
 {
     option(u"",                0,  STRING, 1, 1);
     option(u"free-ca-mode",   'f', INTEGER, 0, 1, 0, 1);
     option(u"id",             'i', UINT16);
     option(u"ignore-bat",      0);
+    option(u"ignore-eit",      0);
     option(u"ignore-nit",      0);
     option(u"lcn",            'l', UINT16);
     option(u"name",           'n', STRING);
@@ -144,6 +150,9 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
             u"\n"
             u"  --ignore-bat\n"
             u"      Do not modify the BAT.\n"
+            u"\n"
+            u"  --ignore-eit\n"
+            u"      Do not modify the EIT's.\n"
             u"\n"
             u"  --ignore-nit\n"
             u"      Do not modify the NIT.\n"
@@ -178,6 +187,7 @@ bool ts::SVRenamePlugin::start()
     // Get option values
     _old_service.set(value(u""));
     _ignore_bat = present(u"ignore-bat");
+    _ignore_eit = present(u"ignore-eit");
     _ignore_nit = present(u"ignore-nit");
     _new_service.clear();
     if (present(u"name")) {
@@ -202,6 +212,14 @@ bool ts::SVRenamePlugin::start()
     // Initialize the demux
     _demux.reset();
     _demux.addPID(PID_SDT);
+
+    // Initialize the EIT processing.
+    _eit_process.reset();
+
+    // No need to modify EIT's if there is no new service id.
+    if (!_new_service.hasId()) {
+        _ignore_eit = true;
+    }
 
     // When the service id is known, we wait for the PAT. If it is not yet
     // known (only the service name is known), we do not know how to modify
@@ -406,10 +424,11 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::SVRenamePlugin::processPAT (PAT& pat)
+void ts::SVRenamePlugin::processPAT(PAT& pat)
 {
     // Save the TS id
     _ts_id = pat.ts_id;
+    _old_service.setTSId(pat.ts_id);
 
     // Locate the service in the PAT
     assert(_old_service.hasId());
@@ -417,13 +436,13 @@ void ts::SVRenamePlugin::processPAT (PAT& pat)
 
     // If service not found, error
     if (it == pat.pmts.end()) {
-        if (_ignore_nit && _ignore_bat) {
+        if (_ignore_nit && _ignore_bat && _ignore_eit) {
             tsp->error(u"service id 0x%X not found in PAT", {_old_service.getId()});
             _abort = true;
             return;
         }
         else {
-            tsp->info(u"service id 0x%X not found in PAT, will still update NIT and/or BAT", {_old_service.getId()});
+            tsp->info(u"service id 0x%X not found in PAT, will still update NIT, BAT, EIT's", {_old_service.getId()});
         }
     }
     else {
@@ -452,6 +471,11 @@ void ts::SVRenamePlugin::processPAT (PAT& pat)
         const PID nit_pid = pat.nit_pid != PID_NULL ? pat.nit_pid : PID(PID_NIT);
         _pzer_nit.setPID(nit_pid);
         _demux.addPID(nit_pid);
+    }
+
+    // Rename the service in EIT's.
+    if (!_ignore_eit) {
+        _eit_process.renameService(_old_service, _new_service);
     }
 }
 
@@ -574,6 +598,9 @@ ts::ProcessorPlugin::Status ts::SVRenamePlugin::processPacket(TSPacket& pkt, boo
     }
     else if (!_ignore_nit && pid != PID_NULL && pid == _pzer_nit.getPID()) {
         _pzer_nit.getNextPacket(pkt);
+    }
+    else if (!_ignore_eit && pid == PID_EIT) {
+        _eit_process.processPacket(pkt);
     }
 
     return TSP_OK;

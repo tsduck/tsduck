@@ -498,6 +498,22 @@ namespace ts {
         void setLastSectionNumber(uint8_t num, bool recompute_crc = true);
 
         //!
+        //! Set one byte in the payload of the section.
+        //! @param [in] offset Byte offset in the payload.
+        //! @param [in] value The value to set in the payload.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of the section.
+        //!
+        void setUInt8(size_t offset, uint8_t value, bool recompute_crc = true);
+
+        //!
+        //! Set a 16-bit integer in the payload of the section.
+        //! @param [in] offset Byte offset in the payload.
+        //! @param [in] value The value to set in the payload.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of the section.
+        //!
+        void setUInt16(size_t offset, uint16_t value, bool recompute_crc = true);
+
+        //!
         //! Set the source PID.
         //! @param [in] pid The source PID.
         //!

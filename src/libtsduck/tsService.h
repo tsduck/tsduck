@@ -55,6 +55,12 @@ namespace ts {
         Service();
 
         //!
+        //! Constructor using a service id.
+        //! @param [in] id Service id.
+        //!
+        Service(uint16_t id);
+
+        //!
         //! Constructor using a string description.
         //! @param [in] desc Service description string.
         //! If the string evaluates to an integer (decimal or hexa),

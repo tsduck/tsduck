@@ -229,12 +229,12 @@ bool ts::HttpInput::handleWebStart(const WebRequest& request, size_t size)
 
     // Print a message.
     tsp->verbose(u"downloading from %s", {request.finalURL()});
-    tsp->verbose(u"MIME type: %s, expected size: %d bytes", {mime.empty() ? u"unknown" : mime, size});
+    tsp->verbose(u"MIME type: %s, expected size: %s", {mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", {size})});
     if (!types[0].empty() && !types[0].similar(u"video/mp2t")) {
         tsp->warning(u"MIME type is %d, maybe not a valid transport stream", {types[0]});
     }
 
-    // Reinitialize partial packet if some byes were left from a previous iteration.
+    // Reinitialize partial packet if some bytes were left from a previous iteration.
     _partial_size = 0;
     return true;
 }
