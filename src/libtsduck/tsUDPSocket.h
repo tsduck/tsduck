@@ -176,6 +176,18 @@ namespace ts {
         }
 
         //!
+        //! Set the Type Of Service (TOS) option.
+        //!
+        //! Note that correct support for this option depends on the operating
+        //! system. Typically, it never worked correctly on Windows.
+        //!
+        //! @param [in] tos The TOS value.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool setTOS(int tos, Report& report = CERR);
+
+        //!
         //! Enable or disable the broadcast option.
         //!
         //! @param [in] on If true, broadcast is activated on the socket. Otherwise, it is disabled.

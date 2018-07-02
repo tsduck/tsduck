@@ -2837,6 +2837,11 @@ namespace ts {
 #define TS_SOCKET_TTL_T platform_specific
 
 //!
+//! Integer data type for the TOS socket option.
+//!
+#define TS_SOCKET_TOS_T platform_specific
+
+//!
 //! Integer data type for the multicast Time To Live (TTL) socket option.
 //! Example:
 //! @code
@@ -2965,6 +2970,7 @@ namespace ts {
 #define TS_SOCKET_T_INVALID     INVALID_SOCKET
 #define TS_SOCKET_SOCKLEN_T     int
 #define TS_SOCKET_SSIZE_T       int
+#define TS_SOCKET_TOS_T         ::DWORD
 #define TS_SOCKET_TTL_T         ::DWORD
 #define TS_SOCKET_MC_TTL_T      ::DWORD
 #define TS_SOCKET_L_LINGER_T(x) (static_cast<u_short>(x))
@@ -2986,6 +2992,7 @@ namespace ts {
 #define TS_SOCKET_T_INVALID     (-1)
 #define TS_SOCKET_SOCKLEN_T     ::socklen_t
 #define TS_SOCKET_SSIZE_T       ::ssize_t
+#define TS_SOCKET_TOS_T         int
 #define TS_SOCKET_TTL_T         int
 #define TS_SOCKET_MC_TTL_T      unsigned char
 #define TS_SOCKET_L_LINGER_T(x) (static_cast<int>(x))

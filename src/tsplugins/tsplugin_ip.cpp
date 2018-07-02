@@ -179,6 +179,7 @@ ts::IPOutput::IPOutput(TSP* tsp_) :
     option(u"",               0,  STRING, 1, 1);
     option(u"local-address", 'l', STRING);
     option(u"packet-burst",  'p', INTEGER, 0, 1, 1, MAX_PACKET_BURST);
+    option(u"tos",           's', INTEGER, 0, 1, 1, 255);
     option(u"ttl",           't', INTEGER, 0, 1, 1, 255);
 
     setHelp(u"Parameter:\n"
@@ -203,6 +204,11 @@ ts::IPOutput::IPOutput(TSP* tsp_) :
             u"      Specifies how many TS packets should be grouped into a UDP packet.\n"
             u"      The default is " TS_STRINGIFY(DEF_PACKET_BURST) u", the maximum is "
             TS_STRINGIFY(MAX_PACKET_BURST) u".\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --tos value\n"
+            u"      Specifies the TOS (Type-Of-Service) socket option. Setting this value\n"
+            u"      may depend on the user's privilege or operating system configuration.\n"
             u"\n"
             u"  -t value\n"
             u"  --ttl value\n"
@@ -419,7 +425,8 @@ bool ts::IPOutput::start()
     // Get command line arguments
     UString dest_name(value(u""));
     UString loc_name(value(u"local-address"));
-    int ttl = intValue(u"ttl", 0);
+    const int ttl = intValue(u"ttl", 0);
+    const int tos = intValue(u"tos", -1);
     _pkt_burst = intValue(u"packet-burst", DEF_PACKET_BURST);
 
     // Create UDP socket
@@ -428,7 +435,8 @@ bool ts::IPOutput::start()
     if (ok) {
         ok = _sock.setDefaultDestination(dest_name, *tsp) &&
             (loc_name.empty() || _sock.setOutgoingMulticast(loc_name, *tsp)) &&
-            (ttl <= 0 || _sock.setTTL(ttl, _sock.setTTL(ttl, *tsp)));
+            (tos < 0 || _sock.setTOS(tos, *tsp)) &&
+            (ttl <= 0 || _sock.setTTL(ttl, *tsp));
         if (!ok) {
             _sock.close();
         }
