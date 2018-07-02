@@ -38,6 +38,7 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
+#include "tsEITProcessor.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
@@ -69,6 +70,7 @@ namespace ts {
         bool              _set_onet_id;    // Update original network id
         uint16_t          _new_onet_id;    // New original network id
         bool              _ignore_bat;     // Do not modify the BAT
+        bool              _ignore_eit;     // Do not modify the EIT's
         bool              _ignore_nit;     // Do not modify the NIT
         bool              _add_bat;        // Add a new TS entry in the BAT instead of replacing
         bool              _add_nit;        // Add a new TS entry in the NIT instead of replacing
@@ -76,6 +78,7 @@ namespace ts {
         CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
         CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
         CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
+        EITProcessor      _eit_process;    // Modify EIT's
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -111,18 +114,21 @@ ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
     _set_onet_id(false),
     _new_onet_id(0),
     _ignore_bat(false),
+    _ignore_eit(false),
     _ignore_nit(false),
     _add_bat(false),
     _add_nit(false),
     _demux(this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
+    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
+    _eit_process(PID_EIT, tsp_)
 {
     option(u"add",                 'a');
     option(u"add-bat",              0);
     option(u"add-nit",              0);
     option(u"ignore-bat",           0);
+    option(u"ignore-eit",           0);
     option(u"ignore-nit",           0);
     option(u"original-network-id", 'o',  UINT16);
     option(u"ts-id",               't',  UINT16);
@@ -146,6 +152,9 @@ ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
             u"\n"
             u"  --ignore-bat\n"
             u"      Do not modify the BAT.\n"
+            u"\n"
+            u"  --ignore-eit\n"
+            u"      Do not modify the EIT's.\n"
             u"\n"
             u"  --ignore-nit\n"
             u"      Do not modify the NIT.\n"
@@ -173,6 +182,7 @@ bool ts::TSRenamePlugin::start()
     _add_bat = present(u"add") || present(u"add-bat");
     _add_nit = present(u"add") || present(u"add-nit");
     _ignore_bat = present(u"ignore-bat");
+    _ignore_eit = present(u"ignore-eit");
     _ignore_nit = present(u"ignore-nit");
     _set_onet_id = present(u"original-network-id");
     _new_onet_id = intValue<uint16_t>(u"original-network-id", 0);
@@ -182,6 +192,14 @@ bool ts::TSRenamePlugin::start()
     // Initialize the demux
     _demux.reset();
     _demux.addPID(PID_PAT);
+
+    // Initialize the EIT processing.
+    _eit_process.reset();
+
+    // No need to modify EIT's if there is no new TS id and no new net id.
+    if (!_set_ts_id && !_set_onet_id) {
+        _ignore_eit = true;
+    }
 
     // Reset other states
     _abort = false;
@@ -290,10 +308,10 @@ void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::TSRenamePlugin::processPAT (PAT& pat)
+void ts::TSRenamePlugin::processPAT(PAT& pat)
 {
     // Save the NIT PID
-    _nit_pid = pat.nit_pid != PID_NULL ? pat.nit_pid : uint16_t (PID_NIT);
+    _nit_pid = pat.nit_pid != PID_NULL ? pat.nit_pid : uint16_t(PID_NIT);
     _pzer_nit.setPID(_nit_pid);
 
     // Rename the TS
@@ -302,11 +320,25 @@ void ts::TSRenamePlugin::processPAT (PAT& pat)
         pat.ts_id = _new_ts_id;
     }
 
-    // Replace the PAT.in the PID
+    // Rename the TS in EIT's.
+    if (!_ignore_eit) {
+        // Use Service classes for flexibility.
+        Service old_srv, new_srv;
+        old_srv.setTSId(_old_ts_id);        // for all EIT's with old TS id ...
+        if (_set_ts_id) {
+            new_srv.setTSId(_new_ts_id);    // ... rename TS id ...
+        }
+        if (_set_onet_id) {
+            new_srv.setONId(_new_onet_id);  // ... an/or rename netw id.
+        }
+        _eit_process.renameService(old_srv, new_srv);
+    }
+
+    // Replace the PAT in the packetizer.
     _pzer_pat.removeSections(TID_PAT);
     _pzer_pat.addTable(pat);
 
-    // We are now ready to process the TS
+    // We are now ready to process the TS.
     _demux.addPID(PID_SDT);
     if (!_ignore_nit) {
         _demux.addPID(_nit_pid);
@@ -339,10 +371,10 @@ void ts::TSRenamePlugin::processSDT(SDT& sdt)
 //  This method processes a NIT or a BAT
 //----------------------------------------------------------------------------
 
-void ts::TSRenamePlugin::processNITBAT (AbstractTransportListTable& table, bool add_entry)
+void ts::TSRenamePlugin::processNITBAT(AbstractTransportListTable& table, bool add_entry)
 {
     // Locate the transport stream, ignore original network id
-    for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
+    for (auto it = table.transports.begin(); it != table.transports.end(); ++it) {
         if (it->first.transport_stream_id == _old_ts_id) {
 
             const TransportStreamId new_tsid(_set_ts_id ? _new_ts_id : it->first.transport_stream_id,
@@ -366,7 +398,7 @@ void ts::TSRenamePlugin::processNITBAT (AbstractTransportListTable& table, bool 
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TSRenamePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::TSRenamePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
 
@@ -392,6 +424,9 @@ ts::ProcessorPlugin::Status ts::TSRenamePlugin::processPacket (TSPacket& pkt, bo
     }
     else if (!_ignore_nit && pid == _nit_pid) {
         _pzer_nit.getNextPacket(pkt);
+    }
+    else if (!_ignore_eit && pid == PID_EIT) {
+        _eit_process.processPacket(pkt);
     }
 
     return TSP_OK;

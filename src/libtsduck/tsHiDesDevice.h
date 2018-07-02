@@ -160,6 +160,8 @@ namespace ts {
         //! @param [in] data Address of first TS packet to send.
         //! @param [in] packet_count Number of contiguous packets to send.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
         //! @return True on success, false on error.
         //!
         bool send(const TSPacket* data, size_t packet_count, Report& report = CERR, AbortInterface* abort = 0);

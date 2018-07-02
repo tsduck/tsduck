@@ -132,6 +132,7 @@ HEADERS += \
     ../../../src/libtsduck/tsECMRepetitionRateDescriptor.h \
     ../../../src/libtsduck/tsEDID.h \
     ../../../src/libtsduck/tsEIT.h \
+    ../../../src/libtsduck/tsEITProcessor.h \
     ../../../src/libtsduck/tsEMMGClient.h \
     ../../../src/libtsduck/tsEMMGMUX.h \
     ../../../src/libtsduck/tsEnhancedAC3Descriptor.h \
@@ -534,6 +535,7 @@ SOURCES += \
     ../../../src/libtsduck/tsECMGSCS.cpp \
     ../../../src/libtsduck/tsECMRepetitionRateDescriptor.cpp \
     ../../../src/libtsduck/tsEIT.cpp \
+    ../../../src/libtsduck/tsEITProcessor.cpp \
     ../../../src/libtsduck/tsEMMGClient.cpp \
     ../../../src/libtsduck/tsEMMGMUX.cpp \
     ../../../src/libtsduck/tsEnhancedAC3Descriptor.cpp \

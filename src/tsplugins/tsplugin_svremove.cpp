@@ -39,6 +39,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
 #include "tsTables.h"
+#include "tsEITProcessor.h"
 TSDUCK_SOURCE;
 
 
@@ -62,6 +63,7 @@ namespace ts {
         Service           _service;        // Service name & id
         bool              _ignore_absent;  // Ignore service if absent
         bool              _ignore_bat;     // Do not modify the BAT
+        bool              _ignore_eit;     // Do not modify the EIT's
         bool              _ignore_nit;     // Do not modify the NIT
         Status            _drop_status;    // Status for dropped packets
         PIDSet            _drop_pids;      // List of PIDs to drop
@@ -70,6 +72,7 @@ namespace ts {
         CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
         CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
         CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
+        EITProcessor      _eit_process;    // Modify EIT's
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -107,6 +110,7 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _service(),
     _ignore_absent(false),
     _ignore_bat(false),
+    _ignore_eit(false),
     _ignore_nit(false),
     _drop_status(TSP_DROP),
     _drop_pids(),
@@ -114,11 +118,13 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _demux(this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
+    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
+    _eit_process(PID_EIT, tsp_)
 {
     option(u"",               0,  STRING, 1, 1);
     option(u"ignore-absent", 'a');
     option(u"ignore-bat",    'b');
+    option(u"ignore-eit",    'e');
     option(u"ignore-nit",    'n');
     option(u"stuffing",      's');
 
@@ -142,6 +148,10 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
             u"  --ignore-bat\n"
             u"      Do not modify the BAT.\n"
             u"\n"
+            u"  -e\n"
+            u"  --ignore-eit\n"
+            u"      Do not modify the EIT's.\n"
+            u"\n"
             u"  -n\n"
             u"  --ignore-nit\n"
             u"      Do not modify the NIT.\n"
@@ -163,15 +173,16 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
 bool ts::SVRemovePlugin::start()
 {
     // Get option values
-    _service.set (value(u""));
+    _service.set(value(u""));
     _ignore_absent = present(u"ignore-absent");
     _ignore_bat = present(u"ignore-bat");
+    _ignore_eit = present(u"ignore-eit");
     _ignore_nit = present(u"ignore-nit");
     _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 
     // Initialize the demux
     _demux.reset();
-    _demux.addPID (PID_SDT);
+    _demux.addPID(PID_SDT);
 
     // When the service id is known, we wait for the PAT. If it is not yet
     // known (only the service name is known), we do not know how to modify
@@ -179,11 +190,14 @@ bool ts::SVRemovePlugin::start()
     // Packets from PAT PID are analyzed but not passed. When a complete
     // PAT is read, a modified PAT will be transmitted.
     if (_service.hasId()) {
-        _demux.addPID (PID_PAT);
+        _demux.addPID(PID_PAT);
         if (!_ignore_nit) {
             _demux.addPID(PID_NIT);
         }
     }
+
+    // Initialize the EIT processing.
+    _eit_process.reset();
 
     // Build a list of referenced PID's (except those in the removed service).
     // Prevent predefined PID's from being removed.
@@ -221,7 +235,7 @@ bool ts::SVRemovePlugin::start()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     if (tsp->debug()) {
         tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
@@ -336,7 +350,7 @@ void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
 //  This method processes a Service Description Table (SDT).
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::processSDT (SDT& sdt)
+void ts::SVRemovePlugin::processSDT(SDT& sdt)
 {
     bool found = false;
 
@@ -365,7 +379,7 @@ void ts::SVRemovePlugin::processSDT (SDT& sdt)
             return;
         }
         // The service id was previously unknown, now wait for the PAT
-        _demux.addPID (PID_PAT);
+        _demux.addPID(PID_PAT);
         if (!_ignore_nit) {
             _demux.addPID(PID_NIT);
         }
@@ -402,25 +416,25 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
     bool found = false;
     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
         // Scan all PMT's
-        _demux.addPID (it->second);
+        _demux.addPID(it->second);
 
         // Check if service to remove is here
         if (it->first == _service.getId()) {
             found = true;
-            _service.setPMTPID (it->second);
+            _service.setPMTPID(it->second);
             tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_service.getId(), _service.getPMTPID()});
             // Drop PMT of the service
-            _drop_pids.set (it->second);
+            _drop_pids.set(it->second);
         }
         else {
             // Mark other PMT's as referenced
-            _ref_pids.set (it->second);
+            _ref_pids.set(it->second);
         }
     }
 
     if (found) {
         // Remove the service from the PAT
-        pat.pmts.erase (_service.getId());
+        pat.pmts.erase(_service.getId());
     }
     else if (_ignore_absent || !_ignore_nit || !_ignore_bat) {
         // Service is not present in current TS, but continue
@@ -436,6 +450,11 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
     // Replace the PAT.in the PID
     _pzer_pat.removeSections(TID_PAT);
     _pzer_pat.addTable(pat);
+
+    // Remove EIT's for this service.
+    if (!_ignore_eit) {
+        _eit_process.removeService(_service);
+    }
 }
 
 
@@ -474,7 +493,7 @@ void ts::SVRemovePlugin::processPMT(PMT& pmt)
 // Mark all ECM PIDs from the descriptor list in the PID set
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::addECMPID (const DescriptorList& dlist, PIDSet& pid_set)
+void ts::SVRemovePlugin::addECMPID(const DescriptorList& dlist, PIDSet& pid_set)
 {
     // Loop on all CA descriptors
     for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
@@ -601,6 +620,9 @@ ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket(TSPacket& pkt, boo
     }
     else if (!_ignore_nit && pid == _pzer_nit.getPID()) {
         _pzer_nit.getNextPacket(pkt);
+    }
+    else if (!_ignore_eit && pid == PID_EIT) {
+        _eit_process.processPacket(pkt);
     }
 
     return TSP_OK;

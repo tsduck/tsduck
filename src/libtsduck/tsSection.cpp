@@ -374,12 +374,12 @@ bool ts::Section::hasDiversifiedPayload() const
 // Modifiable properties.
 //----------------------------------------------------------------------------
 
-void ts::Section::setTableIdExtension (uint16_t tid_ext, bool recompute_crc)
+void ts::Section::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 {
     if (isLongSection()) {
-        PutUInt16 (_data->data() + 3, tid_ext);
+        PutUInt16(_data->data() + 3, tid_ext);
         if (recompute_crc) {
-            recomputeCRC ();
+            recomputeCRC();
         }
     }
 }
@@ -389,37 +389,57 @@ void ts::Section::setVersion (uint8_t version, bool recompute_crc)
     if (isLongSection()) {
         (*_data)[5] = ((*_data)[5] & 0xC1) | ((version & 0x1F) << 1);
         if (recompute_crc) {
-            recomputeCRC ();
+            recomputeCRC();
         }
     }
 }
 
-void ts::Section::setIsCurrent (bool is_current, bool recompute_crc)
+void ts::Section::setIsCurrent(bool is_current, bool recompute_crc)
 {
     if (isLongSection()) {
         (*_data)[5] = ((*_data)[5] & 0xFE) | (is_current ? 0x01 : 0x00);
         if (recompute_crc) {
-            recomputeCRC ();
+            recomputeCRC();
         }
     }
 }
 
-void ts::Section::setSectionNumber (uint8_t num, bool recompute_crc)
+void ts::Section::setSectionNumber(uint8_t num, bool recompute_crc)
 {
     if (isLongSection()) {
         (*_data)[6] = num;
         if (recompute_crc) {
-            recomputeCRC ();
+            recomputeCRC();
         }
     }
 }
 
-void ts::Section::setLastSectionNumber (uint8_t num, bool recompute_crc)
+void ts::Section::setLastSectionNumber(uint8_t num, bool recompute_crc)
 {
     if (isLongSection()) {
         (*_data)[7] = num;
         if (recompute_crc) {
-            recomputeCRC ();
+            recomputeCRC();
+        }
+    }
+}
+
+void ts::Section::setUInt8(size_t offset, uint8_t value, bool recompute_crc)
+{
+    if (_is_valid && offset < payloadSize()) {
+        PutUInt8(_data->data() + headerSize() + offset, value);
+        if (recompute_crc) {
+            recomputeCRC();
+        }
+    }
+}
+
+void ts::Section::setUInt16(size_t offset, uint16_t value, bool recompute_crc)
+{
+    if (_is_valid && offset + 1 < payloadSize()) {
+        PutUInt16(_data->data() + headerSize() + offset, value);
+        if (recompute_crc) {
+            recomputeCRC();
         }
     }
 }

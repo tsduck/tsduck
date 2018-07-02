@@ -2,12 +2,17 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.13-308
+Version 3.13-819
 
 - Added support for HiDes UT-100C modulator device using utility "tshides" and
-  output plugin "hides".
+  output plugin "hides". Be sure to install the right device drivers from
+  https://tsduck.io/download/hides/
 
 - Added input plugin "http" to receive a transport stream using a URL.
+
+- With plugins "svremove", "svrename" and "tsrename", the removal or renaming
+  now also apply to EIT's. The new option --ignore-eit can be used to prevent
+  this.
 
 Version 3.12-778
 
