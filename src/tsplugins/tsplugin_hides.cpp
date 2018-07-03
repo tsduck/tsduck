@@ -57,15 +57,12 @@ namespace ts {
         virtual BitRate getBitrate() override;
 
     private:
-        COM                 _com;         // COM initialization helper
-        int                 _dev_number;  // Device adapter number.
-        UString             _dev_name;    // Device name.
-        bool                _set_gain;    // Adjust output gain.
-        int                 _gain;        // Requested output gain in dB.
-        TunerParametersDVBT _params;      // Tuning parameters.
-        BitRate             _bitrate;     // Nominal output bitrate.
-        HiDesDevice         _device;      // HiDes device object.
-        HiDesDeviceInfo     _dev_info;    // HiDes device information.
+        COM             _com;         // COM initialization helper
+        int             _dev_number;  // Device adapter number.
+        UString         _dev_name;    // Device name.
+        BitRate         _bitrate;     // Nominal output bitrate.
+        HiDesDevice     _device;      // HiDes device object.
+        HiDesDeviceInfo _dev_info;    // HiDes device information.
 
         // Inaccessible operations
         HiDesOutput() = delete;
@@ -87,9 +84,6 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
     _com(*tsp_),
     _dev_number(-1),
     _dev_name(),
-    _set_gain(false),
-    _gain(0),
-    _params(),
     _bitrate(0),
     _device(),
     _dev_info()
@@ -106,6 +100,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
         {u"16-QAM", QAM_16},
         {u"64-QAM", QAM_64},
     }));
+    option(u"dc-compensation", 0,  STRING);
     option(u"device",         'd', STRING);
     option(u"frequency",      'f', POSITIVE);
     option(u"gain",            0,  INT32);
@@ -146,6 +141,10 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
             u"      Constellation type. Must be one of " + optionNames(u"constellation") + ".\n"
             u"      The default is 64-QAM.\n"
             u"\n"
+            u"  --dc-compensation i-value/q-value\n"
+            u"      Specify the DC offset compensation values for I and Q. Each offset value\n"
+            u"      shall be in the range " + UString::Decimal(HiDesDevice::IT95X_DC_CAL_MIN) + u" to " + UString::Decimal(HiDesDevice::IT95X_DC_CAL_MAX) + u".\n"
+            u"\n"
             u"  -d name\n"
             u"  --device name\n"
             u"      Specify the HiDes device name to use. By default, the first HiDes device\n"
@@ -166,12 +165,12 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
-            u"  --h value\n"
+            u"  -h value\n"
             u"  --high-priority-fec value\n"
             u"      Error correction for high priority streams. Must be one of " + optionNames(u"high-priority-fec") + ".\n"
             u"      The default is 2/3.\n"
             u"\n"
-            u"  --s value\n"
+            u"  -s value\n"
             u"  --spectral-inversion value\n"
             u"      Spectral inversion. Must be one of " + optionNames(u"spectral-inversion") + ".\n"
             u"      The default is auto.\n"
@@ -205,15 +204,21 @@ bool ts::HiDesOutput::start()
     // Get options.
     _dev_number = intValue<int>(u"adapter", -1);
     _dev_name = value(u"device");
-    _set_gain = present(u"gain");
-    _gain = intValue<int>(u"gain");
-    _params.bandwidth = enumValue<BandWidth>(u"bandwidth", BW_8_MHZ);
-    _params.modulation = enumValue<Modulation>(u"constellation", QAM_64);
-    _params.frequency = intValue<uint64_t>(u"frequency", 0);
-    _params.guard_interval = enumValue<GuardInterval>(u"guard-interval", GUARD_1_32);
-    _params.fec_hp = enumValue<InnerFEC>(u"high-priority-fec", FEC_2_3);
-    _params.inversion = enumValue<SpectralInversion>(u"spectral-inversion", SPINV_AUTO);
-    _params.transmission_mode = enumValue<TransmissionMode>(u"transmission-mode", TM_8K);
+    const bool set_gain = present(u"gain");
+    const int gain = intValue<int>(u"gain");
+    const bool set_dc = present(u"dc-compensation");
+    const UString dc_string(value(u"dc-compensation"));
+    int dc_i = 0;
+    int dc_q = 0;
+
+    TunerParametersDVBT params;
+    params.bandwidth = enumValue<BandWidth>(u"bandwidth", BW_8_MHZ);
+    params.modulation = enumValue<Modulation>(u"constellation", QAM_64);
+    params.frequency = intValue<uint64_t>(u"frequency", 0);
+    params.guard_interval = enumValue<GuardInterval>(u"guard-interval", GUARD_1_32);
+    params.fec_hp = enumValue<InnerFEC>(u"high-priority-fec", FEC_2_3);
+    params.inversion = enumValue<SpectralInversion>(u"spectral-inversion", SPINV_AUTO);
+    params.transmission_mode = enumValue<TransmissionMode>(u"transmission-mode", TM_8K);
 
     // Check option consistency.
     if (_dev_number < 0 && _dev_name.empty()) {
@@ -224,13 +229,22 @@ bool ts::HiDesOutput::start()
         tsp->error(u"specify either HiDes adapter number or device name but not both");
         return false;
     }
-    if (_params.frequency == 0) {
+    if (params.frequency == 0) {
         tsp->error(u"no carrier frequency specified");
+        return false;
+    }
+    if (set_dc && (!dc_string.scan(u"%d/%d", {&dc_i, &dc_q}) ||
+                   dc_i < HiDesDevice::IT95X_DC_CAL_MIN ||
+                   dc_i > HiDesDevice::IT95X_DC_CAL_MAX ||
+                   dc_q < HiDesDevice::IT95X_DC_CAL_MIN ||
+                   dc_q > HiDesDevice::IT95X_DC_CAL_MAX))
+    {
+        tsp->error(u"invalid DC compensation value \"%s\"", {dc_string});
         return false;
     }
 
     // Nominal output bitrate is computed from the modulation parameters.
-    _bitrate = _params.theoreticalBitrate();
+    _bitrate = params.theoreticalBitrate();
 
     // Open the device, either by number or by name.
     if (_dev_number >= 0 && !_device.open(_dev_number, *tsp)) {
@@ -246,20 +260,26 @@ bool ts::HiDesOutput::start()
     tsp->verbose(u"using device %s", {_dev_info.toString()});
 
     // Tune to frequency.
-    if (!_device.tune(_params, *tsp)) {
+    if (!_device.tune(params, *tsp)) {
         _device.close(*tsp);
         return false;
     }
 
     // Adjust output gain if required.
-    if (_set_gain) {
-        int gain = _gain;
-        if (!_device.setGain(gain, *tsp)) {
+    if (set_gain) {
+        int new_gain = gain;
+        if (!_device.setGain(new_gain, *tsp)) {
             _device.close(*tsp);
             return false;
         }
         // The value of gain is updated to effective value.
-        tsp->verbose(u"adjusted output gain, requested %d dB, set to %d dB", {_gain, gain});
+        tsp->verbose(u"adjusted output gain, requested %d dB, set to %d dB", {gain, new_gain});
+    }
+
+    // Set DC calibration
+    if (set_dc && !_device.setDCCalibration(dc_i, dc_q, *tsp)) {
+        _device.close(*tsp);
+        return false;
     }
 
     // Start transmission.
