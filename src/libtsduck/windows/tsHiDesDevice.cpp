@@ -676,6 +676,23 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
 
 
 //----------------------------------------------------------------------------
+// Set DC calibration values.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
+{
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
+    //@@@@@ TODO
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Tune the modulator with DVB-T modulation parameters.
 //----------------------------------------------------------------------------
 

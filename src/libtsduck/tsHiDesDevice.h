@@ -133,6 +133,19 @@ namespace ts {
         //!
         bool getGainRange(int& minGain, int& maxGain, uint64_t frequency, BandWidth bandwidth, Report& report = CERR);
 
+        // Allowed range for DC calibration values.
+        static const int IT95X_DC_CAL_MIN = -512;  //!< Minimum DC calibration value.
+        static const int IT95X_DC_CAL_MAX =  512;  //!< Maximum DC calibration value.
+
+        //!
+        //! Set DC calibration values.
+        //! @param [in] dcI DC offset compensation for I (-512 to +512).
+        //! @param [in] dcQ DC offset compensation for Q (-512 to +512).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool setDCCalibration(int dcI, int dcQ, Report& report = CERR);
+
         //!
         //! Tune the modulator with DVB-T modulation parameters.
         //! @param [in] params Tuning parameters.

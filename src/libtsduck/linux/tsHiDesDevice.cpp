@@ -87,8 +87,6 @@
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
-using namespace ite;
-
 // Maximum size of our transfers. See comments above.
 #define ITE_MAX_SEND_PACKETS  172
 #define ITE_MAX_SEND_BYTES    (ITE_MAX_SEND_PACKETS * 188)
@@ -269,7 +267,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     bool status = true;
 
     // Get chip type.
-    TxGetChipTypeRequest chipTypeRequest;
+    ite::TxGetChipTypeRequest chipTypeRequest;
     TS_ZERO(chipTypeRequest);
     errno = 0;
 
@@ -283,7 +281,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     }
 
     // Get device type
-    TxGetDeviceTypeRequest devTypeRequest;
+    ite::TxGetDeviceTypeRequest devTypeRequest;
     TS_ZERO(devTypeRequest);
     errno = 0;
 
@@ -297,7 +295,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     }
 
     // Get driver information.
-    TxModDriverInfo driverRequest;
+    ite::TxModDriverInfo driverRequest;
     TS_ZERO(driverRequest);
     errno = 0;
 
@@ -438,7 +436,7 @@ bool ts::HiDesDevice::setGain(int& gain, Report& report)
         return false;
     }
 
-    TxSetGainRequest request;
+    ite::TxSetGainRequest request;
     TS_ZERO(request);
     request.GainValue = gain;
     errno = 0;
@@ -463,7 +461,7 @@ bool ts::HiDesDevice::getGain(int& gain, Report& report)
         return false;
     }
 
-    TxGetOutputGainRequest request;
+    ite::TxGetOutputGainRequest request;
     TS_ZERO(request);
     errno = 0;
 
@@ -493,7 +491,7 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
     }
 
     // Frequency and bandwidth are in kHz
-    TxGetGainRangeRequest request;
+    ite::TxGetGainRangeRequest request;
     TS_ZERO(request);
     request.frequency = uint32_t(frequency / 1000);
     request.bandwidth = BandWidthValueHz(bandwidth) / 1000;
@@ -517,6 +515,32 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
 
 
 //----------------------------------------------------------------------------
+// Set DC calibration values.
+//----------------------------------------------------------------------------
+
+bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
+{
+    if (!_is_open) {
+        report.error(u"HiDes device not open");
+        return false;
+    }
+
+    ite::TxSetDCCalibrationValueRequest request;
+    TS_ZERO(request);
+    request.dc_i = dcI;
+    request.dc_q = dcQ;
+    errno = 0;
+
+    if (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETDCCALIBRATIONVALUE, &request) < 0 || request.error != 0) {
+        const int err = errno;
+        report.error(u"error setting DC calibration on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        return false;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Tune the modulator with DVB-T modulation parameters.
 //----------------------------------------------------------------------------
 
@@ -528,7 +552,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     }
 
     // Build frequency + bandwidth parameters.
-    TxAcquireChannelRequest acqRequest;
+    ite::TxAcquireChannelRequest acqRequest;
     TS_ZERO(acqRequest);
 
     // Frequency is in kHz.
@@ -543,18 +567,18 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     // Build modulation parameters.
     // Translate TSDuck enums into HiDes codes.
-    TxSetModuleRequest modRequest;
+    ite::TxSetModuleRequest modRequest;
     TS_ZERO(modRequest);
 
     switch (params.modulation) {
         case QPSK:
-            modRequest.constellation = Byte(Mode_QPSK);
+            modRequest.constellation = ite::Byte(ite::Mode_QPSK);
             break;
         case QAM_16:
-            modRequest.constellation = Byte(Mode_16QAM);
+            modRequest.constellation = ite::Byte(ite::Mode_16QAM);
             break;
         case QAM_64:
-            modRequest.constellation = Byte(Mode_64QAM);
+            modRequest.constellation = ite::Byte(ite::Mode_64QAM);
             break;
         default:
             report.error(u"unsupported constellation");
@@ -563,19 +587,19 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     switch (params.fec_hp) {
         case FEC_1_2:
-            modRequest.highCodeRate = Byte(CodeRate_1_OVER_2);
+            modRequest.highCodeRate = ite::Byte(ite::CodeRate_1_OVER_2);
             break;
         case FEC_2_3:
-            modRequest.highCodeRate = Byte(CodeRate_2_OVER_3);
+            modRequest.highCodeRate = ite::Byte(ite::CodeRate_2_OVER_3);
             break;
         case FEC_3_4:
-            modRequest.highCodeRate = Byte(CodeRate_3_OVER_4);
+            modRequest.highCodeRate = ite::Byte(ite::CodeRate_3_OVER_4);
             break;
         case FEC_5_6:
-            modRequest.highCodeRate = Byte(CodeRate_5_OVER_6);
+            modRequest.highCodeRate = ite::Byte(ite::CodeRate_5_OVER_6);
             break;
         case FEC_7_8:
-            modRequest.highCodeRate = Byte(CodeRate_7_OVER_8);
+            modRequest.highCodeRate = ite::Byte(ite::CodeRate_7_OVER_8);
             break;
         default:
             report.error(u"unsupported high priority code rate");
@@ -584,16 +608,16 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     switch (params.guard_interval) {
         case GUARD_1_32:
-            modRequest.interval = Byte(Interval_1_OVER_32);
+            modRequest.interval = ite::Byte(ite::Interval_1_OVER_32);
             break;
         case GUARD_1_16:
-            modRequest.interval = Byte(Interval_1_OVER_16);
+            modRequest.interval = ite::Byte(ite::Interval_1_OVER_16);
             break;
         case GUARD_1_8:
-            modRequest.interval = Byte(Interval_1_OVER_8);
+            modRequest.interval = ite::Byte(ite::Interval_1_OVER_8);
             break;
         case GUARD_1_4:
-            modRequest.interval = Byte(Interval_1_OVER_4);
+            modRequest.interval = ite::Byte(ite::Interval_1_OVER_4);
             break;
         default:
             report.error(u"unsupported guard interval");
@@ -602,13 +626,13 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     switch (params.transmission_mode) {
         case TM_2K:
-            modRequest.transmissionMode = Byte(TransmissionMode_2K);
+            modRequest.transmissionMode = ite::Byte(ite::TransmissionMode_2K);
             break;
         case TM_4K:
-            modRequest.transmissionMode = Byte(TransmissionMode_4K);
+            modRequest.transmissionMode = ite::Byte(ite::TransmissionMode_4K);
             break;
         case TM_8K:
-            modRequest.transmissionMode = Byte(TransmissionMode_8K);
+            modRequest.transmissionMode = ite::Byte(ite::TransmissionMode_8K);
             break;
         default:
             report.error(u"unsupported transmission mode");
@@ -616,16 +640,16 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     }
 
     // Build spectral inversion parameters.
-    TxSetSpectralInversionRequest invRequest;
+    ite::TxSetSpectralInversionRequest invRequest;
     TS_ZERO(invRequest);
     bool setInversion = true;
 
     switch (params.inversion) {
         case SPINV_OFF:
-            invRequest.isInversion = False;
+            invRequest.isInversion = ite::False;
             break;
         case SPINV_ON:
-            invRequest.isInversion = True;
+            invRequest.isInversion = ite::True;
             break;
         case SPINV_AUTO:
             setInversion = false;
@@ -679,7 +703,7 @@ bool ts::HiDesDevice::startTransmission(Report& report)
 bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 {
     // Enable transmission mode.
-    TxModeRequest modeRequest;
+    ite::TxModeRequest modeRequest;
     TS_ZERO(modeRequest);
     modeRequest.OnOff = 1;
     errno = 0;
@@ -691,7 +715,7 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
     }
 
     // Start transfer.
-    TxStartTransferRequest startRequest;
+    ite::TxStartTransferRequest startRequest;
     TS_ZERO(startRequest);
     errno = 0;
 
@@ -731,7 +755,7 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
     report.debug(u"HiDesDevice: stopping transmission, total write: %'d, failed: %'d", {all_write, fail_write});
 
     // Stop transfer.
-    TxStopTransferRequest stopRequest;
+    ite::TxStopTransferRequest stopRequest;
     TS_ZERO(stopRequest);
     errno = 0;
 
@@ -742,7 +766,7 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
     }
 
     // Disable transmission mode.
-    TxModeRequest modeRequest;
+    ite::TxModeRequest modeRequest;
     TS_ZERO(modeRequest);
     modeRequest.OnOff = 0;
     errno = 0;

@@ -568,6 +568,64 @@ namespace ite {
     } PcrMode;
 
     typedef struct {
+        Byte      chip;
+        Processor processor;
+        uint32_t  registerAddress;
+        Byte      bufferLength;
+        Byte      buffer[256];
+        uint32_t  error;
+        Byte      reserved[16];
+    } WriteRegistersRequest;
+
+    typedef struct {
+        Byte      chip;
+        Processor processor;
+        uint32_t  registerAddress;
+        Byte      bufferLength;
+        Byte      buffer[256];
+        uint32_t  error;
+        Byte      reserved[16];
+    } TxWriteRegistersRequest;
+
+    typedef struct {
+        Byte     chip;
+        Word     registerAddress;
+        Byte     bufferLength;
+        Byte     buffer[256];
+        uint32_t error;
+        Byte     reserved[16];
+    } TxWriteEepromValuesRequest;
+
+    typedef struct {
+        Byte      chip;
+        Processor processor;
+        uint32_t  registerAddress;
+        Byte      bufferLength;
+        Byte      buffer[256];
+        uint32_t  error;
+        Byte      reserved[16];
+    } ReadRegistersRequest;
+
+    typedef struct {
+        Byte      chip;
+        Processor processor;
+        uint32_t  registerAddress;
+        Byte      bufferLength;
+        Byte      buffer[256];
+        uint32_t  error;
+        Byte      reserved[16];
+    } TxReadRegistersRequest;
+
+    typedef struct {
+        Byte     chip;
+        Word     registerAddress;
+        Byte     bufferLength;
+        Byte     buffer[256];
+        uint32_t error;
+        Byte     reserved[16];
+    } TxReadEepromValuesRequest;
+
+    typedef struct {
         Byte     chip;
         Word     bandwidth;
         uint32_t frequency;
@@ -934,12 +992,12 @@ namespace ite {
 // Write a sequence of bytes to the contiguous registers in demodulator.
 // Parameters: WriteRegistersRequest struct
 //
-#define IOCTL_ITE_DEMOD_WRITEREGISTERS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x00, WriteRegistersRequest)
+#define IOCTL_ITE_DEMOD_WRITEREGISTERS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x00, ite::WriteRegistersRequest)
 //
 // Read a sequence of bytes from the contiguous registers in demodulator.
 // Parameters: ReadRegistersRequest struct
 //
-#define IOCTL_ITE_DEMOD_READREGISTERS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x06, ReadRegistersRequest)
+#define IOCTL_ITE_DEMOD_READREGISTERS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x06, ite::ReadRegistersRequest)
 //
 // Specify the bandwidth of channel and tune the channel to the specific
 // frequency. Afterwards, host could use output parameter dvbH to determine
@@ -951,286 +1009,286 @@ namespace ite {
 // be True and host could use Jupiter_acquirePlatorm to get platform.
 // Parameters: AcquireChannelRequest struct
 //
-#define IOCTL_ITE_DEMOD_ACQUIRECHANNEL _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x14, AcquireChannelRequest)
+#define IOCTL_ITE_DEMOD_ACQUIRECHANNEL _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x14, ite::AcquireChannelRequest)
 //
 // Get all the platforms found in current frequency.
 // Parameters: IsLockedRequest struct
 //
-#define IOCTL_ITE_DEMOD_ISLOCKED _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x15, IsLockedRequest)
+#define IOCTL_ITE_DEMOD_ISLOCKED _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x15, ite::IsLockedRequest)
 //
 // Get the statistic values of demodulator, it includes Pre-Viterbi BER,
 // Post-Viterbi BER, Abort Count, Signal Presented Flag, Signal Locked Flag,
 // Signal Quality, Signal Strength, Delta-T for DVB-H time slicing.
 // Parameters: GetStatisticRequest struct
 //
-#define IOCTL_ITE_DEMOD_GETSTATISTIC _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x18, GetStatisticRequest)
+#define IOCTL_ITE_DEMOD_GETSTATISTIC _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x18, ite::GetStatisticRequest)
 //
 // Get the statistic values of demodulator, it includes Pre-Viterbi BER,
 // Post-Viterbi BER, Abort Count, Signal Presented Flag, Signal Locked Flag,
 // Signal Quality, Signal Strength, Delta-T for DVB-H time slicing.
 // Parameters: GetChannelStatisticRequest struct
 //
-#define IOCTL_ITE_DEMOD_GETCHANNELSTATISTIC _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x19, GetChannelStatisticRequest)
+#define IOCTL_ITE_DEMOD_GETCHANNELSTATISTIC _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x19, ite::GetChannelStatisticRequest)
 //
 // Parameters: ControlPowerSavingRequest struct
 //
-#define IOCTL_ITE_DEMOD_CONTROLPOWERSAVING _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x1E, ControlPowerSavingRequest)
+#define IOCTL_ITE_DEMOD_CONTROLPOWERSAVING _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x1E, ite::ControlPowerSavingRequest)
 //
 // Modulator Set Modulation.
 // Parameters: TxSetModuleRequest struct
 //
-#define IOCTL_ITE_MOD_SETMODULE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x21, TxSetModuleRequest)
+#define IOCTL_ITE_MOD_SETMODULE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x21, ite::TxSetModuleRequest)
 //
 // Modulator Acquire Channel.
 // Parameters: TxAcquireChannelRequest struct
 //
-#define IOCTL_ITE_MOD_ACQUIRECHANNEL _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x22, TxAcquireChannelRequest)
+#define IOCTL_ITE_MOD_ACQUIRECHANNEL _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x22, ite::TxAcquireChannelRequest)
 //
 // Modulator Null Packet Enable.
 // Parameters: TxModeRequest struct
 //
-#define IOCTL_ITE_MOD_ENABLETXMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x23, TxModeRequest)
+#define IOCTL_ITE_MOD_ENABLETXMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x23, ite::TxModeRequest)
 //
 // Read a sequence of bytes from the contiguous registers in demodulator.
 // Parameters: ReadRegistersRequest struct
 //
-#define IOCTL_ITE_MOD_READREGISTERS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x24, TxReadRegistersRequest)
+#define IOCTL_ITE_MOD_READREGISTERS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x24, ite::TxReadRegistersRequest)
 //
 // Write a sequence of bytes to the contiguous registers in demodulator.
 // Parameters: TxWriteRegistersRequest struct
 //
-#define IOCTL_ITE_MOD_WRITEREGISTERS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x27, TxWriteRegistersRequest)
+#define IOCTL_ITE_MOD_WRITEREGISTERS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x27, ite::TxWriteRegistersRequest)
 //
 // Modulator Device Type Setting.
 // Parameters: TxSetDeviceTypeRequest struct
 //
-#define IOCTL_ITE_MOD_SETDEVICETYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x28, TxSetDeviceTypeRequest)
+#define IOCTL_ITE_MOD_SETDEVICETYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x28, ite::TxSetDeviceTypeRequest)
 //
 // Modulator Device Type Getting.
 // Parameters: TxGetDeviceTypeRequest struct
 //
-#define IOCTL_ITE_MOD_GETDEVICETYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x29, TxGetDeviceTypeRequest)
+#define IOCTL_ITE_MOD_GETDEVICETYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x29, ite::TxGetDeviceTypeRequest)
 //
 // Modulator Set Gain Range.
 // Parameters: TxSetGainRequest struct
 //
-#define IOCTL_ITE_MOD_ADJUSTOUTPUTGAIN _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2B, TxSetGainRequest)
+#define IOCTL_ITE_MOD_ADJUSTOUTPUTGAIN _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2B, ite::TxSetGainRequest)
 //
 // Modulator Get Gain Range.
 // Parameters: TxGetGainRangeRequest struct
 //
-#define IOCTL_ITE_MOD_GETGAINRANGE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2C, TxGetGainRangeRequest)
+#define IOCTL_ITE_MOD_GETGAINRANGE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2C, ite::TxGetGainRangeRequest)
 //
 // Modulator Get Output Gain Range.
 // Parameters: TxGetOutputGainRangeRequest struct
 //
-#define IOCTL_ITE_MOD_GETOUTPUTGAIN _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2D, TxGetOutputGainRequest)
+#define IOCTL_ITE_MOD_GETOUTPUTGAIN _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2D, ite::TxGetOutputGainRequest)
 //
 // Parameters: TxControlPowerSavingRequest struct
 //
-#define IOCTL_ITE_MOD_CONTROLPOWERSAVING _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2F, TxControlPowerSavingRequest)
+#define IOCTL_ITE_MOD_CONTROLPOWERSAVING _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x2F, ite::TxControlPowerSavingRequest)
 //
 // Write a sequence of bytes to the contiguous cells in the EEPROM.
 // Parameters: WriteEepromValuesRequest struct
 //
-#define IOCTL_ITE_MOD_WRITEEEPROMVALUES _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x31, TxWriteEepromValuesRequest)
+#define IOCTL_ITE_MOD_WRITEEEPROMVALUES _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x31, ite::TxWriteEepromValuesRequest)
 //
 // Read a sequence of bytes from the contiguous cells in the EEPROM.
 // Parameters: ReadEepromValuesRequest struct
 //
-#define IOCTL_ITE_MOD_READEEPROMVALUES _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x32, TxReadEepromValuesRequest)
+#define IOCTL_ITE_MOD_READEEPROMVALUES _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x32, ite::TxReadEepromValuesRequest)
 //
 // Get Chip Type IT9507/IT9503 in modulator.
 // Parameters: TxGetChipTypeRequest struct
 //
-#define IOCTL_ITE_MOD_GETCHIPTYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3B, TxGetChipTypeRequest)
+#define IOCTL_ITE_MOD_GETCHIPTYPE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3B, ite::TxGetChipTypeRequest)
 //
 // Get Chip Type IT9507/IT9503 in modulator.
 // Parameters: TxSetSpectralInversion struct
 //
-#define IOCTL_ITE_MOD_SETSPECTRALINVERSION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3C, TxSetSpectralInversionRequest)
+#define IOCTL_ITE_MOD_SETSPECTRALINVERSION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3C, ite::TxSetSpectralInversionRequest)
 //
 // == DVB-T ==
 //
 // Reset PID from PID filter.
 // Parameters: ResetPidRequest struct
 //
-#define IOCTL_ITE_DEMOD_RESETPID _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x02, ResetPidRequest)
+#define IOCTL_ITE_DEMOD_RESETPID _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x02, ite::ResetPidRequest)
 //
 // Enable PID filter.
 // Parameters: ControlPidFilterRequest struct
 //
-#define IOCTL_ITE_DEMOD_CONTROLPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x03, ControlPidFilterRequest)
+#define IOCTL_ITE_DEMOD_CONTROLPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x03, ite::ControlPidFilterRequest)
 //
 // Add PID to PID filter.
 // Parameters: AddPidAtRequest struct
 //
-#define IOCTL_ITE_DEMOD_ADDPIDAT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x04, AddPidAtRequest)
+#define IOCTL_ITE_DEMOD_ADDPIDAT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x04, ite::AddPidAtRequest)
 //
 // Add PID to PID filter.
 // Parameters: AddPidAtRequest struct
 //
-#define IOCTL_ITE_MOD_ADDPIDAT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x08, TxAddPidAtRequest)
+#define IOCTL_ITE_MOD_ADDPIDAT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x08, ite::TxAddPidAtRequest)
 //
 // Reset PID from PID filter.
 // Parameters: ResetPidRequest struct
 //
-#define IOCTL_ITE_MOD_RESETPID _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x10, TxResetPidRequest)
+#define IOCTL_ITE_MOD_RESETPID _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x10, ite::TxResetPidRequest)
 //
 // Enable PID filter.
 // Parameters: TxControlPidFilterRequest struct
 //
-#define IOCTL_ITE_MOD_CONTROLPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x11, TxControlPidFilterRequest)
+#define IOCTL_ITE_MOD_CONTROLPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x11, ite::TxControlPidFilterRequest)
 //
 // Enable Set IQTable From File.
 // Parameters: TxSetIQTableRequest struct
 //
-#define IOCTL_ITE_MOD_SETIQTABLE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x12, TxSetIQTableRequest)
+#define IOCTL_ITE_MOD_SETIQTABLE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x12, ite::TxSetIQTableRequest)
 //
 // Enable Set DC Calibration Value From File.
 // Parameters: TxSetDCCalibrationValueRequest struct
 //
-#define IOCTL_ITE_MOD_SETDCCALIBRATIONVALUE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x13, TxSetDCCalibrationValueRequest)
+#define IOCTL_ITE_MOD_SETDCCALIBRATIONVALUE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_DVBT + 0x13, ite::TxSetDCCalibrationValueRequest)
 //
 // == OTHER ==
 //
 // Get driver information.
 // Parameters: DemodDriverInfo struct
 //
-#define IOCTL_ITE_DEMOD_GETDRIVERINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x00, DemodDriverInfo)
+#define IOCTL_ITE_DEMOD_GETDRIVERINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x00, ite::DemodDriverInfo)
 //
 // Start capture data stream
 // Parameters: StartCaptureRequest struct
 //
-#define IOCTL_ITE_DEMOD_STARTCAPTURE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x01, StartCaptureRequest)
+#define IOCTL_ITE_DEMOD_STARTCAPTURE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x01, ite::StartCaptureRequest)
 //
 // Stop capture data stream
 // Parameters: StopCaptureRequest struct
 //
-#define IOCTL_ITE_DEMOD_STOPCAPTURE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x02, StopCaptureRequest)
+#define IOCTL_ITE_DEMOD_STOPCAPTURE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x02, ite::StopCaptureRequest)
 //
 // Start Transfer data stream
 // Parameters: StartTransferRequest struct
 //
-#define IOCTL_ITE_MOD_STARTTRANSFER _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x07, TxStartTransferRequest)
+#define IOCTL_ITE_MOD_STARTTRANSFER _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x07, ite::TxStartTransferRequest)
 //
 // Stop capture data stream
 // Parameters: StopTransferRequest struct
 //
-#define IOCTL_ITE_MOD_STOPTRANSFER _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x08, TxStopTransferRequest)
+#define IOCTL_ITE_MOD_STOPTRANSFER _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x08, ite::TxStopTransferRequest)
 //
 // Modulator: Get Driver information.
 // Parameters: TxModDriverInfo struct
 //
-#define IOCTL_ITE_MOD_GETDRIVERINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x09, TxModDriverInfo)
+#define IOCTL_ITE_MOD_GETDRIVERINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x09, ite::TxModDriverInfo)
 //
 // Modulator: Set Start Transfer data Streaming.
 // Parameters: StopTransferRequest struct
 //
-#define IOCTL_ITE_MOD_STARTTRANSFER_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0A, TxStartTransferRequest)
+#define IOCTL_ITE_MOD_STARTTRANSFER_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0A, ite::TxStartTransferRequest)
 //
 // Modulator: Set Stop Transfer data Streaming.
 // Parameters: TxStopTransferRequest struct
 //
-#define IOCTL_ITE_MOD_STOPTRANSFER_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0B, TxStopTransferRequest)
+#define IOCTL_ITE_MOD_STOPTRANSFER_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0B, ite::TxStopTransferRequest)
 //
 // Modulator: Set Command.
 // Parameters: TxCmdRequest struct
 //
-#define IOCTL_ITE_MOD_WRITE_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0C, TxCmdRequest)
+#define IOCTL_ITE_MOD_WRITE_CMD _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0C, ite::TxCmdRequest)
 //
 // Modulator: Get TPS.
 // Parameters: TxGetTPSRequest struct
 //
-#define IOCTL_ITE_MOD_GETTPS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0D, TxGetTPSRequest)
+#define IOCTL_ITE_MOD_GETTPS _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0D, ite::TxGetTPSRequest)
 //
 // Modulator: Set TPS.
 // Parameters: TxSetTPSRequest struct
 //
-#define IOCTL_ITE_MOD_SETTPS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0E, TxSetTPSRequest)
+#define IOCTL_ITE_MOD_SETTPS _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0E, ite::TxSetTPSRequest)
 //
 // Modulator: Send PSI Table to Hardware.
 // Parameters: TxSetTPSRequest struct
 //
-#define IOCTL_ITE_MOD_SENDHWPSITABLE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0F, TxSendHwPSITableRequest)
+#define IOCTL_ITE_MOD_SENDHWPSITABLE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0F, ite::TxSendHwPSITableRequest)
 //
 // Modulator: Access PSI Table to firmware.
 // Parameters: TxSetTPSRequest struct
 //
-#define IOCTL_ITE_MOD_ACCESSFWPSITABLE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x10, TxAccessFwPSITableRequest)
+#define IOCTL_ITE_MOD_ACCESSFWPSITABLE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x10, ite::TxAccessFwPSITableRequest)
 //
 // Modulator: Access PSI Table to firmware.
 // Parameters: TxSetTPSRequest struct
 //
-#define IOCTL_ITE_MOD_SETFWPSITABLETIMER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x11, TxSetFwPSITableTimerRequest)
+#define IOCTL_ITE_MOD_SETFWPSITABLETIMER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x11, ite::TxSetFwPSITableTimerRequest)
 //
 // Modulator: Write Low Bit Rate Date.
 // Parameters: TxSetLowBitRateTransferRequest struct
 //
-#define IOCTL_ITE_MOD_WRITE_LOWBITRATEDATA _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x12, TxSetLowBitRateTransferRequest)
+#define IOCTL_ITE_MOD_WRITE_LOWBITRATEDATA _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x12, ite::TxSetLowBitRateTransferRequest)
 //
 // Modulator: Set PCR Mode.
 // Parameters: TxSetPcrModeRequest struct
 //
-#define IOCTL_ITE_MOD_SETPCRMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x13, TxSetPcrModeRequest)
+#define IOCTL_ITE_MOD_SETPCRMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x13, ite::TxSetPcrModeRequest)
 //
 // Modulator: Set DC Table.
 // Parameters: TxSetPcrModeRequest struct
 //
-#define IOCTL_ITE_MOD_SETDCTABLE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x14, TxSetDCTableRequest)
+#define IOCTL_ITE_MOD_SETDCTABLE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x14, ite::TxSetDCTableRequest)
 //
 // Enable Get Frequency Index Value From API.
 // Parameters: GetFrequencyIndexRequest struct
 //
-#define IOCTL_ITE_MOD_GETFREQUENCYINDEX _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x15, TxGetFrequencyIndexRequest)
+#define IOCTL_ITE_MOD_GETFREQUENCYINDEX _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x15, ite::TxGetFrequencyIndexRequest)
 //
 // == ISDB-T ==
 //
 // Set ISDB-T Channel Modulation.
 // Parameters: TXSetISDBTChannelModulationRequest struct
 //
-#define IOCTL_ITE_MOD_SETISDBTCHANNELMODULATION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x00, TXSetISDBTChannelModulationRequest)
+#define IOCTL_ITE_MOD_SETISDBTCHANNELMODULATION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x00, ite::TXSetISDBTChannelModulationRequest)
 //
 // Set TMCC Information.
 // Parameters: TXSetTMCCInfoRequest struct
 //
-#define IOCTL_ITE_MOD_SETTMCCINFO _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x01, TXSetTMCCInfoRequest)
+#define IOCTL_ITE_MOD_SETTMCCINFO _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x01, ite::TXSetTMCCInfoRequest)
 //
 // Get TMCC Information.
 // Parameters: TXGetTMCCInfoRequest struct
 //
-#define IOCTL_ITE_MOD_GETTMCCINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x02, TXGetTMCCInfoRequest)
+#define IOCTL_ITE_MOD_GETTMCCINFO _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x02, ite::TXGetTMCCInfoRequest)
 //
 // Get TS Input Bit Rate.
 // Parameters: TXGetTSinputBitRate struct
 //
-#define IOCTL_ITE_MOD_GETTSINPUTBITRATE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x03, TXGetTSinputBitRateRequest)
+#define IOCTL_ITE_MOD_GETTSINPUTBITRATE _IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x03, ite::TXGetTSinputBitRateRequest)
 //
 // Get Add Pid To ISDBT Pid Filter.
 // Parameters: TXGetTSinputBitRate struct
 //
-#define IOCTL_ITE_MOD_ADDPIDTOISDBTPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x04, TXAddPidToISDBTPidFilterRequest)
+#define IOCTL_ITE_MOD_ADDPIDTOISDBTPIDFILTER _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x04, ite::TXAddPidToISDBTPidFilterRequest)
 //
 // Get DTV Mode.
 // Parameters: TxGetDTVModeRequest struct
 //
-#define IOCTL_ITE_MOD_GETDTVMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x05, TxGetDTVModeRequest)
+#define IOCTL_ITE_MOD_GETDTVMODE _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x05, ite::TxGetDTVModeRequest)
 //
 // == SECURITY ==
 //
 // Enable TPS Encryption.
 // Parameters: TxEnableTpsEncryptionRequest struct
 //
-#define IOCTL_ITE_MOD_ENABLETPSENCRYPTION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x01, TxEnableTpsEncryptionRequest)
+#define IOCTL_ITE_MOD_ENABLETPSENCRYPTION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x01, ite::TxEnableTpsEncryptionRequest)
 //
 // Disable TPS Encryption.
 // Parameters: TxDisableTpsEncryptionRequest struct
 //
-#define IOCTL_ITE_MOD_DISABLETPSENCRYPTION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x02, TxDisableTpsEncryptionRequest)
+#define IOCTL_ITE_MOD_DISABLETPSENCRYPTION _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x02, ite::TxDisableTpsEncryptionRequest)
 //
 // Set TPS Decryption.
 // Parameters: TxSetDecryptRequest struct
 //
-#define IOCTL_ITE_DEMOD_SETDECRYPT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x03, TxSetDecryptRequest)
+#define IOCTL_ITE_DEMOD_SETDECRYPT _IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x03, ite::TxSetDecryptRequest)
 
 #endif // Windows, Linux
