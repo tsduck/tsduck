@@ -211,48 +211,54 @@ namespace ts {
         //! Join a multicast group.
         //!
         //! This method indicates that the application wishes to receive multicast
-        //! packets which are sent to a specific multicast address.
+        //! packets which are sent to a specific multicast address. Specifying a
+        //! non-default @a source address, source-specific multicast (SSM) is used.
         //!
         //! @param [in] multicast Multicast IP address to listen to.
         //! @param [in] local IP address of a local interface on which to listen.
         //! If set to @link IPAddress::AnyAddress @endlink, the application lets
         //! the system selects the appropriate local interface.
+        //! @param [in] source Source address for SSM.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembership(const IPAddress& multicast, const IPAddress& local, Report& report = CERR);
+        bool addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source = IPAddress(), Report& report = CERR);
 
         //!
         //! Join a multicast group.
         //!
         //! This method indicates that the application wishes to receive multicast
-        //! packets which are sent to a specific multicast address.
+        //! packets which are sent to a specific multicast address. Specifying a
+        //! non-default @a source address, source-specific multicast (SSM) is used.
         //!
         //! Using this method, the application listens on all local interfaces.
         //!
         //! @param [in] multicast Multicast IP address to listen to.
+        //! @param [in] source Source address for SSM.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembershipAll(const IPAddress& multicast, Report& report = CERR);
+        bool addMembershipAll(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR);
 
         //!
         //! Join a multicast group.
         //!
         //! This method indicates that the application wishes to receive multicast
-        //! packets which are sent to a specific multicast address.
+        //! packets which are sent to a specific multicast address. Specifying a
+        //! non-default @a source address, source-specific multicast (SSM) is used.
         //!
         //! Using this method, the application lets the system selects the appropriate
         //! local interface.
         //!
         //! @param [in] multicast Multicast IP address to listen to.
+        //! @param [in] source Source address for SSM.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembershipDefault(const IPAddress& multicast, Report& report = CERR);
+        bool addMembershipDefault(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR);
 
         //!
-        //! Drop all multicast membership requests.
+        //! Drop all multicast membership requests, including source-specific multicast.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
@@ -313,37 +319,60 @@ namespace ts {
         virtual bool close(Report& report = CERR) override;
 
     private:
-        // Encapsulate an ::ip_mreq
-        struct MReq {
+        // Encapsulate a Plain Old C Structure.
+        template <typename STRUCT>
+        struct POCS
+        {
             // Encapsulated structure
-            ::ip_mreq req;
+            STRUCT data;
 
-            // Constructor
-            MReq() : req()
+            // Default constructor, zeroe the C structure.
+            POCS() : data()
             {
-                TS_ZERO(req);
-            }
-
-            // Constructor
-            MReq(const IPAddress& multicast_, const IPAddress& interface_) : req()
-            {
-                TS_ZERO(req);
-                multicast_.copy(req.imr_multiaddr);
-                interface_.copy(req.imr_interface);
+                TS_ZERO(data);
             }
 
             // Comparator for containers, no real semantic
-            bool operator<(const MReq& other) const
+            bool operator<(const POCS<STRUCT>& other) const
             {
-                return ::memcmp(&req, &other.req, sizeof(req)) < 0;
+                return ::memcmp(&data, &other.data, sizeof(data)) < 0;
             }
         };
+
+        // Encapsulate an ip_mreq
+        struct MReq : public POCS<::ip_mreq>
+        {
+            typedef POCS<::ip_mreq> SuperClass;
+            MReq() : SuperClass() {}
+            MReq(const IPAddress& multicast_, const IPAddress& interface_) : SuperClass()
+            {
+                multicast_.copy(data.imr_multiaddr);
+                interface_.copy(data.imr_interface);
+            }
+        };
+
+        // Encapsulate an ip_mreq_source
+        struct SSMReq : public POCS<::ip_mreq_source>
+        {
+            typedef POCS<::ip_mreq_source> SuperClass;
+            SSMReq() : SuperClass() {}
+            SSMReq(const IPAddress& multicast_, const IPAddress& interface_, const IPAddress& source_) : SuperClass()
+            {
+                multicast_.copy(data.imr_multiaddr);
+                interface_.copy(data.imr_interface);
+                source_.copy(data.imr_sourceaddr);
+            }
+        };
+
+        // Set of established multicast groups.
         typedef std::set<MReq> MReqSet;
+        typedef std::set<SSMReq> SSMReqSet;
 
         // Private members
         SocketAddress _local_address;
         SocketAddress _default_destination;
-        MReqSet       _mcast; // Current list of multicast memberships
+        MReqSet       _mcast;    // Current set of multicast memberships
+        SSMReqSet     _ssmcast;  // Current set of source-specific multicast memberships
 
         // Perform one receive operation. Hide the system mud.
         SocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination, Report& report);

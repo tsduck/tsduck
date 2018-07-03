@@ -169,6 +169,13 @@ namespace ts {
         bool isMulticast() const { return IN_MULTICAST(_addr); }
 
         //!
+        //! Check if the address is a source specific multicast (SSM) address.
+        //! Note: SSM addresses are in the range 232.0.0.0/8.
+        //! @return True if the address is an SSM address, false otherwise.
+        //!
+        bool isSSM() const { return (_addr & 0xFF000000) == 0xE8000000; }
+
+        //!
         //! Check if this object is set to a valid address (ie not AnyAddress).
         //! @return True if this object is set to a valid address (ie not AnyAddress),
         //! false otherwise.

@@ -104,13 +104,14 @@ namespace ts {
         bool                    _with_short_options;
         bool                    _dest_as_param;
         bool                    _receiver_specified; // An address is specified.
+        bool                    _use_ssm;            // Use source-specific multicast.
         SocketAddress           _dest_addr;          // Expected destination of packets.
         IPAddress               _local_address;      // Local address on which to listen.
         bool                    _reuse_port;         // Reuse port socket option.
         bool                    _default_interface;  // Use default local interface.
         bool                    _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
         size_t                  _recv_bufsize;       // Socket receive buffer size.
-        SocketAddress           _use_source;         // Filter on this socket address of sender.
+        SocketAddress           _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
         SocketAddress           _first_source;       // Socket address of first received packet.
         std::set<SocketAddress> _sources;            // Set of all detected packet sources.
 

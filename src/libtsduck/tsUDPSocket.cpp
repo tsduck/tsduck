@@ -49,7 +49,8 @@ ts::UDPSocket::UDPSocket(bool auto_open, Report& report) :
     Socket(),
     _local_address(),
     _default_destination(),
-    _mcast()
+    _mcast(),
+    _ssmcast()
 {
     if (auto_open) {
         // Returned value ignored on purpose, the socket is marked as closed in the object on error.
@@ -101,10 +102,7 @@ bool ts::UDPSocket::close(Report& report)
 {
     // Leave all multicast groups.
     if (isOpen()) {
-        for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
-            ::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req));
-        }
-        _mcast.clear();
+        dropMembership(report);
     }
 
     // Close socket
@@ -268,23 +266,45 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& 
 // Join one multicast group on one local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, Report& report)
+bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source, Report& report)
 {
+    // Verbose message about joining the group.
+    UString groupString;
+    if (source.hasAddress()) {
+        groupString = source.toString() + u"@";
+    }
+    groupString += multicast.toString();
     if (local.hasAddress()) {
-        report.verbose(u"joining multicast group %s from local address %s", {multicast.toString(), local.toString()});
+        report.verbose(u"joining multicast group %s from local address %s", {groupString, local.toString()});
     }
     else {
-        report.verbose(u"joining multicast group %s from default interface", {multicast.toString()});
+        report.verbose(u"joining multicast group %s from default interface", {groupString});
     }
 
-    MReq req(multicast, local);
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
-        report.error(u"error adding multicast membership to %s from local address %s: %s", {multicast.toString(), local.toString(), SocketErrorCodeMessage()});
-        return false;
+    // Now join the group.
+    if (source.hasAddress()) {
+        // Source-specific multicast (SSM).
+        SSMReq req(multicast, local, source);
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, TS_SOCKOPT_T(&req.data), sizeof(req.data)) != 0) {
+            report.error(u"error adding SSM membership to %s from local address %s: %s", {groupString, local.toString(), SocketErrorCodeMessage()});
+            return false;
+        }
+        else {
+            _ssmcast.insert(req);
+            return true;
+        }
     }
     else {
-        _mcast.insert(req);
-        return true;
+        // Standard multicast.
+        MReq req(multicast, local);
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.data), sizeof(req.data)) != 0) {
+            report.error(u"error adding multicast membership to %s from local address %s: %s", {groupString, local.toString(), SocketErrorCodeMessage()});
+            return false;
+        }
+        else {
+            _mcast.insert(req);
+            return true;
+        }
     }
 }
 
@@ -293,9 +313,9 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& l
 // Join one multicast group, let the system select the local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, Report& report)
+bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, const IPAddress& source, Report& report)
 {
-    return addMembership(multicast, IPAddress(), report);
+    return addMembership(multicast, IPAddress(), source, report);
 }
 
 
@@ -303,7 +323,7 @@ bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, Report& rep
 // Join one multicast group on all local interfaces.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, Report& report)
+bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress& source, Report& report)
 {
     // There is no implicit way to listen on all interfaces.
     // If no local address is specified, we must get the list
@@ -320,7 +340,7 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, Report& report)
     bool ok = true;
     for (size_t i = 0; i < loc_if.size(); ++i) {
         if (loc_if[i].hasAddress()) {
-            ok = addMembership(multicast, loc_if[i], report) && ok;
+            ok = addMembership(multicast, loc_if[i], source, report) && ok;
         }
     }
     return ok;
@@ -329,28 +349,41 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, Report& report)
 
 //----------------------------------------------------------------------------
 // Leave all multicast groups.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::dropMembership(Report& report)
 {
     bool ok = true;
-    for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
-        report.verbose(u"leaving multicast group %s from local address %s", {IPAddress(it->req.imr_multiaddr).toString(), IPAddress(it->req.imr_interface).toString()});
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req)) != 0) {
-            report.error(u"error dropping multicast membership: " + SocketErrorCodeMessage());
+
+    // Drop all standard multicast groups.
+    for (auto it = _mcast.begin(); it != _mcast.end(); ++it) {
+        report.verbose(u"leaving multicast group %s from local address %s",
+                       {IPAddress(it->data.imr_multiaddr).toString(), IPAddress(it->data.imr_interface).toString()});
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->data), sizeof(it->data)) != 0) {
+            report.error(u"error dropping multicast membership: %s", {SocketErrorCodeMessage()});
             ok = false;
         }
     }
+
+    // Drop all source-specific multicast groups.
+    for (auto it = _ssmcast.begin(); it != _ssmcast.end(); ++it) {
+        report.verbose(u"leaving multicast group %s@%s from local address %s",
+                       {IPAddress(it->data.imr_sourceaddr).toString(), IPAddress(it->data.imr_multiaddr).toString(), IPAddress(it->data.imr_interface).toString()});
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, TS_SOCKOPT_T(&it->data), sizeof(it->data)) != 0) {
+            report.error(u"error dropping multicast membership: %s", {SocketErrorCodeMessage()});
+            ok = false;
+        }
+    }
+
     _mcast.clear();
+    _ssmcast.clear();
+
     return ok;
 }
 
 
 //----------------------------------------------------------------------------
 // Send a message to a destination address and port.
-// Address and port are mandatory in SocketAddress.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::send(const void* data, size_t size, const SocketAddress& dest, Report& report)
