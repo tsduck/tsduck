@@ -224,6 +224,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPAT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPCR.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPCRAnalyzer.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPCRRegulator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPCSC.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPESDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPESHandlerInterface.h" />
@@ -624,6 +625,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPCR.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPCRAnalyzer.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPCRRegulator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPCSC.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPESDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPESPacket.cpp" />

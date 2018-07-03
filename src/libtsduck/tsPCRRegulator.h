@@ -28,22 +28,23 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Regulate execution speed based on a bitrate.
+//!  Regulate execution speed based on PCR's in one reference PID.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsMPEG.h"
 #include "tsReport.h"
+#include "tsTSPacket.h"
 #include "tsMonotonic.h"
 
 namespace ts {
     //!
-    //! Regulate execution speed based on a bitrate.
+    //! Regulate execution speed based on PCR's in one reference PID.
     //! @ingroup mpeg
-    //! @see PCRRegulator
+    //! @see BitRateRegulator
     //!
-    class TSDUCKDLL BitRateRegulator
+    class TSDUCKDLL PCRRegulator
     {
     public:
         //!
@@ -51,7 +52,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @param [in] log_level Severity level for information messages.
         //!
-        BitRateRegulator(Report* report = 0, int log_level = Severity::Verbose);
+        PCRRegulator(Report* report = 0, int log_level = Severity::Verbose);
 
         //!
         //! Set a new report.
@@ -70,63 +71,56 @@ namespace ts {
         }
 
         //!
-        //! Set a fixed bitrate for regulation, ignore current bitrate.
-        //! @param [in] bitrate Fixed bitrate to use. When zero, use current bitrate.
+        //! Set the PCR reference PID.
+        //! @param [in] pid Reference PID. If PID_NULL, use the first PID containing PCR's.
         //!
-        void setFixedBitRate(BitRate bitrate)
-        {
-            _opt_bitrate = bitrate;
-        }
+        void setReferencePID(PID pid);
 
         //!
-        //! Start regulation, initialize all timers.
+        //! Get the current PCR reference PID.
+        //! @return Current reference PID or PID_NULL if none was set or found.
         //!
-        void start();
+        PID getReferencePID() const { return _pid; }
+
+        //!
+        //! Default minimum wait interval in nano-seconds.
+        //!
+        static const NanoSecond DEFAULT_MIN_WAIT_NS = 50 * NanoSecPerMilliSec;
+
+        //!
+        //! Set the minimum wait interval.
+        //! @param [in] ns Minimum duration interval in nano-seconds.
+        //!
+        void setMinimimWait(NanoSecond ns = DEFAULT_MIN_WAIT_NS);
+
+        //!
+        //! Re-initialize state.
+        //!
+        void reset();
 
         //!
         //! Regulate the flow, to be called at each packet.
         //! Suspend the process when necessary.
-        //! @param [in] current_bitrate Current bitrate. Ignored if a fixed bitrate was set.
-        //! @param [out] flush Set to true if all previously processed and buffered packets should be flushed.
-        //! @param [out] bitrate_changed Set to true if the bitrate has changed.
+        //! @param [in] pkt TS packet from the stream.
+        //! @return True if all previously processed and buffered packets should be flushed.
         //!
-        void regulate(BitRate current_bitrate, bool& flush, bool& bitrate_changed);
-
-        //!
-        //! Regulate the flow, to be called at each packet.
-        //! Suspend the process when necessary.
-        //! This version is suitable for fixed bitrate.
-        //!
-        void regulate();
+        bool regulate(const TSPacket& pkt);
 
     private:
-        // Regulation state
-        enum State {INITIAL, REGULATED, UNREGULATED};
-
-        // Private members.
         Report*       _report;
         int           _log_level;
-        State         _state;           // Current regulation state
-        BitRate       _opt_bitrate;     // Bitrate option, zero means use input
-        BitRate       _cur_bitrate;     // Current bitrate
+        PID           _user_pid;        // User-specified reference PID.
+        PID           _pid;             // Current reference PID.
         PacketCounter _opt_burst;       // Number of packets to burst at a time
-        PacketCounter _burst_pkt_max;   // Total packets in current burst
-        PacketCounter _burst_pkt_cnt;   // Countdown of packets in current burst
-        NanoSecond    _burst_min;       // Minimum delay between two bursts (ns)
-        NanoSecond    _burst_duration;  // Delay between two bursts (nano-seconds)
-        Monotonic     _burst_end;       // End of current burst
-        Monotonic     _bitrate_start;   // Time of last bitrate change
-        PacketCounter _bitrate_pkt_cnt; // Passed packets since last bitrate change
-
-        // Compute burst duration (_burst_duration and _burst_pkt_max), based on
-        // required packets/burst (command line option) and current bitrate.
-        void handleNewBitrate();
-
-        // Process one packet in a regulated burst. Wait at end of burst.
-        void regulatePacket(bool& flush, bool smoothen);
+        PacketCounter _burst_pkt_cnt;   // Number of packets in current burst
+        NanoSecond    _wait_min;        // Minimum delay between two waits (ns)
+        bool          _started;         // First PCR found, regulation started.
+        uint64_t      _pcr_first;       // First PCR value.
+        Monotonic     _clock_first;     // System time at first PCR.
+        Monotonic     _clock_last;      // System time at last wait
 
         // Inaccessible operations
-        BitRateRegulator(const BitRateRegulator&) = delete;
-        BitRateRegulator& operator=(const BitRateRegulator&) = delete;
+        PCRRegulator(const PCRRegulator&) = delete;
+        PCRRegulator& operator=(const PCRRegulator&) = delete;
     };
 }

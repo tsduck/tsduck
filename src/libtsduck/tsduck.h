@@ -234,6 +234,7 @@
 #include "tsPAT.h"
 #include "tsPCR.h"
 #include "tsPCRAnalyzer.h"
+#include "tsPCRRegulator.h"
 #include "tsPCSC.h"
 #include "tsPESDemux.h"
 #include "tsPESHandlerInterface.h"
