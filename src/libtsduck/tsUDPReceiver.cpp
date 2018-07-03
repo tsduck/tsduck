@@ -40,6 +40,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
     _with_short_options(with_short_options),
     _dest_as_param(dest_as_param),
     _receiver_specified(false),
+    _use_ssm(false),
     _dest_addr(),
     _local_address(),
     _reuse_port(false),
@@ -60,11 +61,11 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
 void ts::UDPReceiver::defineOptions(ts::Args& args) const
 {
     if (_dest_as_param) {
-        // [address:]port is a mandatory parameter.
+        // [[source@]address:]port is a mandatory parameter.
         args.option(u"", 0, Args::STRING, 1, 1);
     }
     else {
-        // [address:]port is an option.
+        // [[source@]address:]port is an option.
         args.option(u"ip-udp", _with_short_options ? 'i' : 0, Args::STRING);
     }
 
@@ -75,6 +76,7 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
     args.option(u"no-reuse-port",     0);
     args.option(u"reuse-port",        _with_short_options ? 'r' : 0);
     args.option(u"source",            _with_short_options ? 's' : 0, Args::STRING);
+    args.option(u"ssm",               0);
 }
 
 
@@ -84,12 +86,13 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
 
 void ts::UDPReceiver::addHelp(ts::Args& args) const
 {
-    // Format the help text for the [address:]port parameter / option.
+    // Format the help text for the [[source@]address:]port parameter / option.
     const UString destText(args.helpLines(_dest_as_param ? 1 : 2,
         u"The parameter [address:]port describes the destination of UDP packets to receive. "
         u"The 'port' part is mandatory and specifies the UDP port to listen on. "
         u"The 'address' part is optional. It specifies an IP multicast address to listen on. "
-        u"It can be also a host name that translates to a multicast address."));
+        u"It can be also a host name that translates to a multicast address. "
+        u"An optional source address can be specified as 'source@address:port' in the case of SSM."));
     UString destParameter;
     UString destOption;
 
@@ -144,7 +147,12 @@ void ts::UDPReceiver::addHelp(ts::Args& args) const
         u"      useful when several sources send packets to the same destination address\n"
         u"      and port. Accepting all packets could result in a corrupted stream and\n"
         u"      only one sender shall be accepted. Options --first-source and --source\n"
-        u"      are mutually exclusive.\n";
+        u"      are mutually exclusive.\n"
+        u"\n"
+        u"  --ssm\n"
+        u"      Force the usage of Source-Specific Multicast (SSM) using the source which\n"
+        u"      is specified by the option --source. The --ssm option is implicit when the\n"
+        u"      syntax 'source@address:port' is used.\n";
 
     if (_dest_as_param) {
         args.setHelp(help + args.getHelp());
@@ -162,7 +170,7 @@ void ts::UDPReceiver::addHelp(ts::Args& args) const
 bool ts::UDPReceiver::load(ts::Args& args)
 {
     // Get destination address.
-    const UString destination(args.value(_dest_as_param ? u"" : u"ip-udp"));
+    UString destination(args.value(_dest_as_param ? u"" : u"ip-udp"));
     _receiver_specified = !destination.empty();
 
     // When --ip-udp is specified as an option, the presence of a UDP received is optional.
@@ -174,17 +182,45 @@ bool ts::UDPReceiver::load(ts::Args& args)
     // General UDP options.
     _reuse_port = !args.present(u"no-reuse-port");
     _default_interface = args.present(u"default-interface");
+    _use_ssm = args.present(u"ssm");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
+
+    // Check the presence of the '@' indicating a source address.
+    const size_t sep = destination.find(u'@');
+    _use_source.clear();
+    if (sep != UString::NPOS) {
+        // Resolve source address.
+        if (!_use_source.resolve(destination.substr(0, sep), args)) {
+            return false;
+        }
+        // Force SSM.
+        _use_ssm = true;
+        // Remove the source from the string.
+        destination.erase(0, sep + 1);
+    }
 
     // Resolve destination address.
     if (!_dest_addr.resolve(destination, args)) {
         return false;
     }
 
-    // If a destination address is specified, it must be a multicast address
+    // If a destination address is specified, it must be a multicast address.
     if (_dest_addr.hasAddress() && !_dest_addr.isMulticast()) {
         args.error(u"address %s is not multicast", {_dest_addr.toString()});
+        return false;
+    }
+
+    // In case of SSM, it should be in the SSM range, but let it a warning only.
+    if (_use_ssm && !_dest_addr.hasAddress()) {
+        args.error(u"multicast group address is missing with SSM");
+        return false;
+    }
+    if (_use_ssm && !_dest_addr.isSSM()) {
+        args.warning(u"address %s is not an SSM address", {_dest_addr.toString()});
+    }
+    if (_use_ssm && _use_first_source) {
+        args.error(u"SSM and --first-source are mutually exclusive");
         return false;
     }
 
@@ -210,7 +246,11 @@ bool ts::UDPReceiver::load(ts::Args& args)
 
     // Translate optional source address.
     UString source(args.value(u"source"));
-    if (source.empty()) {
+    if (_use_source.hasAddress() && !source.empty()) {
+        args.error(u"SSM source address specified twice");
+        return false;
+    }
+    else if (source.empty()) {
         _use_source.clear();
     }
     else if (!_use_source.resolve(source, args)) {
@@ -225,6 +265,10 @@ bool ts::UDPReceiver::load(ts::Args& args)
         args.error(u"--first-source and --source are mutually exclusive");
         return false;
     }
+    if (_use_ssm && !_use_source.hasAddress()) {
+        args.error(u"missing source address with --ssm");
+        return false;
+    }
 
     return true;
 }
@@ -237,6 +281,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
 void ts::UDPReceiver::setParameters(const SocketAddress& localAddress, bool reusePort, size_t bufferSize)
 {
     _receiver_specified = true;
+    _use_ssm = false;
     _dest_addr.clear();
     _dest_addr.setPort(localAddress.port());
     _local_address = localAddress;
@@ -281,17 +326,23 @@ bool ts::UDPReceiver::open(ts::Report& report)
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
         bind(local_addr, report);
 
+    // Optional SSM source address.
+    IPAddress ssm_source;
+    if (_use_ssm) {
+        ssm_source = _use_source;
+    }
+
     // Join multicast group.
     if (ok && _dest_addr.hasAddress()) {
         if (_default_interface) {
-            ok = addMembershipDefault(_dest_addr, report);
+            ok = addMembershipDefault(_dest_addr, ssm_source, report);
         }
         else if (_local_address.hasAddress()) {
-            ok = addMembership(_dest_addr, _local_address, report);
+            ok = addMembership(_dest_addr, _local_address, ssm_source, report);
         }
         else {
             // By default, listen on all interfaces.
-            ok = addMembershipAll(_dest_addr, report);
+            ok = addMembershipAll(_dest_addr, ssm_source, report);
         }
     }
 
