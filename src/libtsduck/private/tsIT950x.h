@@ -164,6 +164,18 @@ namespace ite {
         IoctlGainRange(uint32_t c = 0) : code(c), frequency(0), bandwidth(0), max_gain(0), min_gain(0) {}
     };
 
+    // Parameter structure for DC calibration DeviceIoControl.
+    struct IoctlDCCalibration
+    {
+        uint32_t code;
+        int32_t  dc_i;
+        int32_t  dc_q;
+        uint8_t  reserved[8];
+
+        // Constructor.
+        IoctlDCCalibration(uint32_t c = 0) : code(c), dc_i(0), dc_q(0), reserved() {}
+    };
+
     // Parameter structure for transmission of TS data.
     struct IoctlTransmission
     {

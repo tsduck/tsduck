@@ -41,39 +41,37 @@
 #include <ksproxy.h>
 TSDUCK_SOURCE;
 
-using namespace ite;
-
 namespace {
     // KS property list definitions for DeviceIoControl
-    const ::KSPROPERTY kslist_template[KSLIST_MAX] = {
+    const ::KSPROPERTY kslist_template[ite::KSLIST_MAX] = {
         {{{
             // KSLIST_DRV_INFO_GET
             {ITE_STATIC_KSPROPSETID_IT9500Properties},
-            KSPROPERTY_IT95X_DRV_INFO,
+            ite::KSPROPERTY_IT95X_DRV_INFO,
             KSPROPERTY_TYPE_GET,
         }}},
         {{{
             // KSLIST_DRV_INFO_SET
             {ITE_STATIC_KSPROPSETID_IT9500Properties},
-            KSPROPERTY_IT95X_DRV_INFO,
+            ite::KSPROPERTY_IT95X_DRV_INFO,
             KSPROPERTY_TYPE_SET,
         }}},
         {{{
             // KSLIST_IOCTL_GET
             {ITE_STATIC_KSPROPSETID_IT9500Properties},
-            KSPROPERTY_IT95X_IOCTL,
+            ite::KSPROPERTY_IT95X_IOCTL,
             KSPROPERTY_TYPE_GET,
         }}},
         {{{
             // KSLIST_IOCTL_SET
             {ITE_STATIC_KSPROPSETID_IT9500Properties},
-            KSPROPERTY_IT95X_IOCTL,
+            ite::KSPROPERTY_IT95X_IOCTL,
             KSPROPERTY_TYPE_SET,
         }}},
         {{{
             // KSLIST_BUS_INFO_GET
             {ITE_STATIC_KSPROPSETID_IT9500PropertiesAux},
-            KSPROPERTY_IT95X_BUS_INFO,
+            ite::KSPROPERTY_IT95X_BUS_INFO,
             KSPROPERTY_TYPE_GET,
         }}},
     };
@@ -87,12 +85,12 @@ namespace {
 class ts::HiDesDevice::Guts
 {
 public:
-    ComPtr<::IBaseFilter> filter;             // Associated DirectShow filter.
-    ::HANDLE              handle;             // Handle to it950x device.
-    ::OVERLAPPED          overlapped;         // For overlapped operations.
-    ::KSPROPERTY          kslist[KSLIST_MAX]; // Non-const version of KSLIST (required by DeviceIoControl).
-    bool                  transmitting;       // Transmission in progress.
-    HiDesDeviceInfo       info;               // Portable device information.
+    ComPtr<::IBaseFilter> filter;                  // Associated DirectShow filter.
+    ::HANDLE              handle;                  // Handle to it950x device.
+    ::OVERLAPPED          overlapped;              // For overlapped operations.
+    ::KSPROPERTY          kslist[ite::KSLIST_MAX]; // Non-const version of KSLIST (required by DeviceIoControl).
+    bool                  transmitting;            // Transmission in progress.
+    HiDesDeviceInfo       info;                    // Portable device information.
 
     // Constructor, destructor.
     Guts();
@@ -194,12 +192,12 @@ bool ts::HiDesDevice::Guts::ksProperty(KSPROPERTY& prop, void *data, ::DWORD siz
 
 bool ts::HiDesDevice::Guts::ioctlGet(void *data, ::DWORD size, Report& report)
 {
-    return ksProperty(kslist[KSLIST_IOCTL_GET], data, size, report);
+    return ksProperty(kslist[ite::KSLIST_IOCTL_GET], data, size, report);
 }
 
 bool ts::HiDesDevice::Guts::ioctlSet(void *data, ::DWORD size, Report& report)
 {
-    return ksProperty(kslist[KSLIST_IOCTL_SET], data, size, report);
+    return ksProperty(kslist[ite::KSLIST_IOCTL_SET], data, size, report);
 }
 
 
@@ -339,7 +337,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     bool status = true;
 
     // Check that all expected properties are supported by the device.
-    for (size_t i = 0; i < KSLIST_MAX; i++) {
+    for (size_t i = 0; i < ite::KSLIST_MAX; i++) {
 
         ::KSPROPERTY prop = kslist[i];
         const ::ULONG flags = prop.Flags;
@@ -376,7 +374,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     TS_ZERO(busInfo);
 
     report.log(2, u"HiDesDevice: getting USB mode");
-    if (!ksProperty(kslist[KSLIST_BUS_INFO_GET], &busInfo, sizeof(busInfo), report)) {
+    if (!ksProperty(kslist[ite::KSLIST_BUS_INFO_GET], &busInfo, sizeof(busInfo), report)) {
         status = false;
     }
     else {
@@ -386,7 +384,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     }
 
     // Get driver info. These information are different between Windows and Linux.
-    IoctlGeneric ioc1(IOCTL_IT95X_GET_DRV_INFO);
+    ite::IoctlGeneric ioc1(ite::IOCTL_IT95X_GET_DRV_INFO);
     struct {
         uint32_t drv_pid;
         uint32_t drv_version;
@@ -397,8 +395,8 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     TS_ZERO(driverInfo);
 
     report.log(2, u"HiDesDevice: getting driver information");
-    if (!ksProperty(kslist[KSLIST_DRV_INFO_SET], &ioc1, sizeof(ioc1), report) ||
-        !ksProperty(kslist[KSLIST_DRV_INFO_GET], &driverInfo, sizeof(driverInfo), report))
+    if (!ksProperty(kslist[ite::KSLIST_DRV_INFO_SET], &ioc1, sizeof(ioc1), report) ||
+        !ksProperty(kslist[ite::KSLIST_DRV_INFO_GET], &driverInfo, sizeof(driverInfo), report))
     {
         status = false;
     }
@@ -411,8 +409,8 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     // Get chip type.
     uint32_t lsb = 0;
     uint32_t msb = 0;
-    IoctlGeneric ioc_lsb(IOCTL_IT95X_RD_REG_LINK, IT95X_REG_CHIP_VERSION + 1);
-    IoctlGeneric ioc_msb(IOCTL_IT95X_RD_REG_LINK, IT95X_REG_CHIP_VERSION + 2);
+    ite::IoctlGeneric ioc_lsb(ite::IOCTL_IT95X_RD_REG_LINK, IT95X_REG_CHIP_VERSION + 1);
+    ite::IoctlGeneric ioc_msb(ite::IOCTL_IT95X_RD_REG_LINK, IT95X_REG_CHIP_VERSION + 2);
     report.log(2, u"HiDesDevice: getting chip type");
     if (!ioctlSet(&ioc_lsb, sizeof(ioc_lsb), report) ||
         !ioctlGet(&lsb, sizeof(lsb), report) ||
@@ -426,7 +424,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     }
 
     // Get device type.
-    IoctlGeneric iocDeviceType(IOCTL_IT95X_GET_DEVICE_TYPE);
+    ite::IoctlGeneric iocDeviceType(ite::IOCTL_IT95X_GET_DEVICE_TYPE);
     report.log(2, u"HiDesDevice: getting device type");
     if (!ioctlSet(&iocDeviceType, sizeof(iocDeviceType), report) ||
         !ioctlGet(&iocDeviceType, sizeof(iocDeviceType), report))
@@ -565,7 +563,7 @@ void ts::HiDesDevice::Guts::close()
 
 bool ts::HiDesDevice::Guts::setTransmission(bool enable, Report& report)
 {
-    IoctlGeneric ioc(IOCTL_IT95X_SET_RF_OUTPUT, enable);
+    ite::IoctlGeneric ioc(ite::IOCTL_IT95X_SET_RF_OUTPUT, enable);
     if (!ioctlSet(&ioc, sizeof(ioc), report)) {
         report.error(u"error setting transmission %s", {UString::OnOff(enable)});
         return false;
@@ -578,7 +576,7 @@ bool ts::HiDesDevice::Guts::setTransmission(bool enable, Report& report)
 
 bool ts::HiDesDevice::Guts::setPower(bool enable, Report& report)
 {
-    IoctlGeneric ioc(IOCTL_IT95X_SET_POWER, enable);
+    ite::IoctlGeneric ioc(ite::IOCTL_IT95X_SET_POWER, enable);
     if (!ioctlSet(&ioc, sizeof(ioc), report)) {
         report.error(u"error setting power %s", {UString::OnOff(enable)});
         return false;
@@ -600,7 +598,7 @@ bool ts::HiDesDevice::setGain(int& gain, Report& report)
         return false;
     }
     else {
-        return _guts->setGetGain(IOCTL_IT95X_SET_GAIN, gain, report);
+        return _guts->setGetGain(ite::IOCTL_IT95X_SET_GAIN, gain, report);
     }
 }
 
@@ -612,23 +610,23 @@ bool ts::HiDesDevice::getGain(int& gain, Report& report)
         return false;
     }
     else {
-        return _guts->setGetGain(IOCTL_IT95X_GET_GAIN, gain, report);
+        return _guts->setGetGain(ite::IOCTL_IT95X_GET_GAIN, gain, report);
     }
 }
 
 bool ts::HiDesDevice::Guts::setGetGain(uint32_t code, int& gain, Report& report)
 {
-    IoctlGeneric ioc(code, std::abs(gain), gain < 0 ? GAIN_NEGATIVE : GAIN_POSITIVE);
+    ite::IoctlGeneric ioc(code, std::abs(gain), gain < 0 ? ite::GAIN_NEGATIVE : ite::GAIN_POSITIVE);
     if (!ioctlSet(&ioc, sizeof(ioc), report) || !ioctlGet(&ioc, sizeof(ioc), report)) {
         report.error(u"error accessing output gain");
         return false;
     }
     else {
         switch (ioc.param2) {
-            case GAIN_POSITIVE:
+            case ite::GAIN_POSITIVE:
                 gain = int(ioc.param1);
                 break;
-            case GAIN_NEGATIVE:
+            case ite::GAIN_NEGATIVE:
                 gain = - int(ioc.param1);
                 break;
             default:
@@ -655,7 +653,7 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
     }
 
     // Frequency and bandwidth are in kHz
-    IoctlGainRange ioc(IOCTL_IT95X_GET_GAIN_RANGE);
+    ite::IoctlGainRange ioc(ite::IOCTL_IT95X_GET_GAIN_RANGE);
     ioc.frequency = uint32_t(frequency / 1000);
     ioc.bandwidth = BandWidthValueHz(bandwidth) / 1000;
 
@@ -686,7 +684,14 @@ bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
         return false;
     }
 
-    //@@@@@ TODO
+    ite::IoctlDCCalibration ioc(ite::IOCTL_IT95X_SET_DC_CAL);
+    ioc.dc_i = int32_t(dcI);
+    ioc.dc_q = int32_t(dcQ);
+
+    if (!_guts->ioctlSet(&ioc, sizeof(ioc), report)) {
+        report.error(u"error setting DC calibration");
+        return false;
+    }
 
     return true;
 }
@@ -710,7 +715,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     // Build frequency + bandwidth parameters.
     // Frequency and bandwidth are in kHz
-    IoctlGeneric freqRequest(IOCTL_IT95X_SET_CHANNEL);
+    ite::IoctlGeneric freqRequest(ite::IOCTL_IT95X_SET_CHANNEL);
     freqRequest.param1 = uint32_t(params.frequency / 1000);
     freqRequest.param2 = BandWidthValueHz(params.bandwidth) / 1000;
 
@@ -721,17 +726,17 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     // Build modulation parameters.
     // Translate TSDuck enums into HiDes codes.
-    IoctlDVBT modRequest(IOCTL_IT95X_SET_DVBT_MODULATION);
+    ite::IoctlDVBT modRequest(ite::IOCTL_IT95X_SET_DVBT_MODULATION);
 
     switch (params.modulation) {
         case QPSK:
-            modRequest.constellation = uint8_t(IT95X_CONSTELLATION_QPSK);
+            modRequest.constellation = uint8_t(ite::IT95X_CONSTELLATION_QPSK);
             break;
         case QAM_16:
-            modRequest.constellation = uint8_t(IT95X_CONSTELLATION_16QAM);
+            modRequest.constellation = uint8_t(ite::IT95X_CONSTELLATION_16QAM);
             break;
         case QAM_64:
-            modRequest.constellation = uint8_t(IT95X_CONSTELLATION_64QAM);
+            modRequest.constellation = uint8_t(ite::IT95X_CONSTELLATION_64QAM);
             break;
         default:
             report.error(u"unsupported constellation");
@@ -740,19 +745,19 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     switch (params.fec_hp) {
         case FEC_1_2:
-            modRequest.code_rate = uint8_t(IT95X_CODERATE_1_2);
+            modRequest.code_rate = uint8_t(ite::IT95X_CODERATE_1_2);
             break;
         case FEC_2_3:
-            modRequest.code_rate = uint8_t(IT95X_CODERATE_2_3);
+            modRequest.code_rate = uint8_t(ite::IT95X_CODERATE_2_3);
             break;
         case FEC_3_4:
-            modRequest.code_rate = uint8_t(IT95X_CODERATE_3_4);
+            modRequest.code_rate = uint8_t(ite::IT95X_CODERATE_3_4);
             break;
         case FEC_5_6:
-            modRequest.code_rate = uint8_t(IT95X_CODERATE_5_6);
+            modRequest.code_rate = uint8_t(ite::IT95X_CODERATE_5_6);
             break;
         case FEC_7_8:
-            modRequest.code_rate = uint8_t(IT95X_CODERATE_7_8);
+            modRequest.code_rate = uint8_t(ite::IT95X_CODERATE_7_8);
             break;
         default:
             report.error(u"unsupported high priority code rate");
@@ -761,16 +766,16 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     switch (params.guard_interval) {
         case GUARD_1_32:
-            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_32);
+            modRequest.guard_interval = uint8_t(ite::IT95X_GUARD_1_32);
             break;
         case GUARD_1_16:
-            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_16);
+            modRequest.guard_interval = uint8_t(ite::IT95X_GUARD_1_16);
             break;
         case GUARD_1_8:
-            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_8);
+            modRequest.guard_interval = uint8_t(ite::IT95X_GUARD_1_8);
             break;
         case GUARD_1_4:
-            modRequest.guard_interval = uint8_t(IT95X_GUARD_1_4);
+            modRequest.guard_interval = uint8_t(ite::IT95X_GUARD_1_4);
             break;
         default:
             report.error(u"unsupported guard guard_interval");
@@ -779,13 +784,13 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
 
     switch (params.transmission_mode) {
         case TM_2K:
-            modRequest.tx_mode = uint8_t(IT95X_TX_MODE_2K);
+            modRequest.tx_mode = uint8_t(ite::IT95X_TX_MODE_2K);
             break;
         case TM_4K:
-            modRequest.tx_mode = uint8_t(IT95X_TX_MODE_4K);
+            modRequest.tx_mode = uint8_t(ite::IT95X_TX_MODE_4K);
             break;
         case TM_8K:
-            modRequest.tx_mode = uint8_t(IT95X_TX_MODE_8K);
+            modRequest.tx_mode = uint8_t(ite::IT95X_TX_MODE_8K);
             break;
         default:
             report.error(u"unsupported transmission mode");
@@ -850,7 +855,7 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
 
     // Prepare a data block for transmission. We cannot "write" to the device.
     // We must send an ioctl with a data block containing the TS packets.
-    IoctlTransmission ioc(IOCTL_IT95X_SEND_TS_DATA);
+    ite::IoctlTransmission ioc(ite::IOCTL_IT95X_SEND_TS_DATA);
 
     // Send packets by chunks of 348 (IT95X_TX_BLOCK_PKTS).
     while (packet_count > 0) {
