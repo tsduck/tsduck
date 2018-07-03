@@ -222,6 +222,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPAT.h \
     ../../../src/libtsduck/tsPCR.h \
     ../../../src/libtsduck/tsPCRAnalyzer.h \
+    ../../../src/libtsduck/tsPCRRegulator.h \
     ../../../src/libtsduck/tsPCSC.h \
     ../../../src/libtsduck/tsPESDemux.h \
     ../../../src/libtsduck/tsPESHandlerInterface.h \
@@ -612,6 +613,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPAT.cpp \
     ../../../src/libtsduck/tsPCR.cpp \
     ../../../src/libtsduck/tsPCRAnalyzer.cpp \
+    ../../../src/libtsduck/tsPCRRegulator.cpp \
     ../../../src/libtsduck/tsPCSC.cpp \
     ../../../src/libtsduck/tsPESDemux.cpp \
     ../../../src/libtsduck/tsPESPacket.cpp \
