@@ -251,7 +251,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
         return false;
     }
     else if (source.empty()) {
-        _use_source.clear();
+        // Keep optional source address in source@address:port
     }
     else if (!_use_source.resolve(source, args)) {
         return false;

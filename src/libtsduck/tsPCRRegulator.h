@@ -116,6 +116,7 @@ namespace ts {
         NanoSecond    _wait_min;        // Minimum delay between two waits (ns)
         bool          _started;         // First PCR found, regulation started.
         uint64_t      _pcr_first;       // First PCR value.
+        uint64_t      _pcr_last;        // Last PCR value.
         Monotonic     _clock_first;     // System time at first PCR.
         Monotonic     _clock_last;      // System time at last wait
 

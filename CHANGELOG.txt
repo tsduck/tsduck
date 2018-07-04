@@ -18,6 +18,11 @@ Version 3.13-825
   transmission. Previously, the regulation was done on bitrate only. Added
   options are --pcr-synchronous, --pid-pcr and --wait-min.
 
+- The input plugin "ip" and the plugin "mpeinject" now accept the syntax
+  'source-ip@multicast-ip:port' for source-specific multicast (SSM). As a
+  side effect, the command "tstabdump" also accepts this syntax when receiving
+  PSI/SI tables.
+
 - Added option --tos to output plugin "ip".
 
 Version 3.12-778
