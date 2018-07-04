@@ -66,57 +66,28 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     frequency(0),
     bandwidth(ts::BW_8_MHZ)
 {
-    option(u"adapter",    'a', UNSIGNED);
-    option(u"bandwidth",  'b', ts::Enumeration({
+    option(u"adapter", 'a', UNSIGNED);
+    help(u"adapter", u"Specify the HiDes adapter number to list. By default, list all HiDes devices.");
+
+    option(u"bandwidth", 'b', ts::Enumeration({
         {u"5", ts::BW_5_MHZ},
         {u"6", ts::BW_5_MHZ},
         {u"7", ts::BW_7_MHZ},
         {u"8", ts::BW_8_MHZ},
     }));
-    option(u"count",      'c');
-    option(u"device",     'd', STRING);
-    option(u"frequency",  'f', POSITIVE);
-    option(u"gain-range", 'g');
+    help(u"bandwidth", u"Bandwidth in MHz with --gain-range. The default is 8 MHz.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a value\n"
-            u"  --adapter value\n"
-            u"      Specify the HiDes adapter number to list. By default, list all HiDes\n"
-            u"      devices.\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bandwidth value\n"
-            u"      Bandwidth in MHz with --gain-range. Must be one of " + optionNames(u"bandwidth") + ".\n"
-            u"      The default is 8 MHz.\n"
-            u"\n"
-            u"  -c\n"
-            u"  --count\n"
-            u"      Only display the number of devices.\n"
-            u"\n"
-            u"  -d name\n"
-            u"  --device name\n"
-            u"      Specify the HiDes device name to list. By default, list all HiDes devices.\n"
-            u"\n"
-            u"  -f value\n"
-            u"  --frequency value\n"
-            u"      Frequency, in Hz, of the output carrier with --gain-range. The default is\n"
-            u"      the first UHF channel.\n"
-            u"\n"
-            u"  -g\n"
-            u"  --gain-range\n"
-            u"      Display the allowed range of output gain for the specified device, using\n"
-            u"      the specified frequency and bandwidth.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"count", 'c');
+    help(u"count", u"Only display the number of devices.");
+
+    option(u"device", 'd', STRING);
+    help(u"device", u"name", u"Specify the HiDes device name to list. By default, list all HiDes devices.");
+
+    option(u"frequency", 'f', POSITIVE);
+    help(u"frequency", u"Frequency, in Hz, of the output carrier with --gain-range. The default is the first UHF channel.");
+
+    option(u"gain-range", 'g');
+    help(u"gain-range", u"Display the allowed range of output gain for the specified device, using the specified frequency and bandwidth.");
 
     analyze(argc, argv);
 

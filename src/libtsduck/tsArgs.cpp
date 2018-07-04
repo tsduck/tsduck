@@ -66,17 +66,19 @@ ts::Args::IOption::IOption(const UChar* name_,
                            bool         optional_,
                            bool         predefined_) :
 
-    name        (name_ == 0 ? UString() : name_),
-    short_name  (short_name_),
-    type        (type_),
-    min_occur   (min_occur_),
-    max_occur   (max_occur_),
-    min_value   (min_value_),
-    max_value   (max_value_),
-    optional    (optional_),
-    predefined  (predefined_),
-    enumeration (),
-    values      ()
+    name(name_ == 0 ? UString() : name_),
+    short_name(short_name_),
+    type(type_),
+    min_occur(min_occur_),
+    max_occur(max_occur_),
+    min_value(min_value_),
+    max_value(max_value_),
+    optional(optional_),
+    predefined(predefined_),
+    enumeration(),
+    syntax(),
+    help(),
+    values()
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -166,17 +168,19 @@ ts::Args::IOption::IOption(const UChar*       name_,
                            bool               optional_,
                            bool               predefined_) :
 
-    name        (name_ == 0 ? UString() : name_),
-    short_name  (short_name_),
-    type        (INTEGER),
-    min_occur   (min_occur_),
-    max_occur   (max_occur_),
-    min_value   (std::numeric_limits<int>::min()),
-    max_value   (std::numeric_limits<int>::max()),
-    optional    (optional_),
-    predefined  (predefined_),
-    enumeration (enumeration_),
-    values      ()
+    name(name_ == 0 ? UString() : name_),
+    short_name(short_name_),
+    type(INTEGER),
+    min_occur(min_occur_),
+    max_occur(max_occur_),
+    min_value(std::numeric_limits<int>::min()),
+    max_value(std::numeric_limits<int>::max()),
+    optional(optional_),
+    predefined(predefined_),
+    enumeration(enumeration_),
+    syntax(),
+    help(),
+    values()
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -212,26 +216,54 @@ ts::UString ts::Args::IOption::display() const
 
 
 //----------------------------------------------------------------------------
+// Description of the option value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
+{
+    const UString s(syntax.empty() ? u"value" : syntax);
+
+    if (type == NONE || (optional && predefined)) {
+        return UString();
+    }
+    else if (optional) {
+        return (ctx == LONG ? u"[=" : u"[") + s + u"]";
+    }
+    else if (ctx == ALONE) {
+        return s;
+    }
+    else {
+        return SPACE + s;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Constructor for Args
 //----------------------------------------------------------------------------
 
-ts::Args::Args(const UString& description, const UString& syntax, const UString& help, int flags) :
+ts::Args::Args(const UString& description, const UString& syntax, const UString& full_help, int flags) :
     _subreport(0),
     _iopts(),
     _description(description),
     _shell(),
     _syntax(syntax),
-    _help(help),
+    _help(full_help),
     _app_name(),
     _args(),
     _is_valid(false),
     _flags(flags)
 {
-    // Add predefined options.
+    // Add predefined options. The short one-letter names may be overwritten later.
     addOption(IOption(u"help",     0,  HelpFormatEnum, 0, 1, true, true));
     addOption(IOption(u"version",  0,  VersionFormatEnum, 0, 1, true, true));
     addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, false, true));
     addOption(IOption(u"debug",   'd', POSITIVE, 0, 1, 0, 0, true, true));
+
+    help(u"help", u"Display this help text.");
+    help(u"version", u"Display the TSDuck version number.");
+    help(u"verbose", u"Produce verbose output.");
+    help(u"debug", u"level", u"Produce debug traces.");
 }
 
 
@@ -239,7 +271,7 @@ ts::Args::Args(const UString& description, const UString& syntax, const UString&
 // Format help lines from a long text.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Args::helpLines(int level, const UString& text, size_t line_width)
+ts::UString ts::Args::HelpLines(int level, const UString& text, size_t line_width)
 {
     // Actual indentation width.
     size_t indent = 0;
@@ -253,6 +285,58 @@ ts::UString ts::Args::helpLines(int level, const UString& text, size_t line_widt
     // Format the line.
     const UString margin(indent, SPACE);
     return (margin + text.toTrimmed()).toSplitLines(line_width, u".,;:", margin) + u"\n";
+}
+
+
+//----------------------------------------------------------------------------
+// Get the help description of the command.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::getHelp() const
+{
+    // Legacy: return application-defined help.
+    if (!_help.empty()) {
+        return _help;
+    }
+
+    // Build a descriptive string from individual options.
+    UString text;
+    bool titleDone = false;
+    for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
+        const IOption& opt(it->second);
+        if (opt.name.empty()) {
+            // This is the parameters (ie. not options).
+            UString title(u"Parameter");
+            if (opt.max_occur > 1) {
+                title += u's';
+            }
+            text += HelpLines(0, title + u':');
+            text += LINE_FEED;
+            text += HelpLines(1, opt.help.empty() ? opt.syntax : opt.help);
+        }
+        else {
+            // This is an option. Add 'Options:' the first time.
+            if (!titleDone) {
+                titleDone = true;
+                if (!text.empty()) {
+                    text += LINE_FEED;
+                }
+                text += HelpLines(0, u"Options:");
+            }
+            text += LINE_FEED;
+            if (opt.short_name != 0) {
+                text += HelpLines(1, UString::Format(u"-%c%s", {opt.short_name, opt.valueDescription(IOption::SHORT)}));
+            }
+            text += HelpLines(1, UString::Format(u"--%s%s", {opt.name, opt.valueDescription(IOption::LONG)}));
+            if (!opt.help.empty()) {
+                text += HelpLines(2, opt.help);
+            }
+            if (!opt.enumeration.empty() && (!opt.predefined || !opt.optional)) {
+                text += HelpLines(2, u"Must be one of " + opt.enumeration.nameList() + u".");
+            }
+        }
+    }
+    return text;
 }
 
 
@@ -310,6 +394,24 @@ ts::Args& ts::Args::option(const UChar*       name,
                            bool               optional)
 {
     addOption(IOption(name, short_name, enumeration, min_occur, max_occur, optional, false));
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
+// Add the help text of an exiting option.
+//----------------------------------------------------------------------------
+
+ts::Args& ts::Args::help(const UChar* name, const UString& text)
+{
+    return help(name, UString(), text);
+}
+
+ts::Args& ts::Args::help(const UChar* name, const UString& syntax, const UString& text)
+{
+    IOption& opt(getIOption(name));
+    opt.syntax = syntax;
+    opt.help = text;
     return *this;
 }
 
@@ -474,16 +576,24 @@ ts::Args::IOption* ts::Args::search(const UString& name)
 // Throw ArgsError if option does not exist (application internal error)
 //----------------------------------------------------------------------------
 
-const ts::Args::IOption& ts::Args::getIOption(const UChar* name) const
+ts::Args::IOption& ts::Args::getIOption(const UChar* name)
 {
     const UString name1(name == 0 ? u"" : name);
-    IOptionMap::const_iterator it = _iopts.find(name1);
+    IOptionMap::iterator it = _iopts.find(name1);
     if (it != _iopts.end()) {
         return it->second;
     }
     else {
         throw ArgsError(_app_name + u": application internal error, option " + name1 + u" undefined");
     }
+
+}
+
+const ts::Args::IOption& ts::Args::getIOption(const UChar* name) const
+{
+    // The non-const version above does not modify the object,
+    // it just return a non-const reference.
+    return const_cast<Args*>(this)->getIOption(name);
 }
 
 
@@ -866,7 +976,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format) const
         }
         case HELP_FULL: {
             // Default full complete help text.
-            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE) + u"\n\n" + _help;
+            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE) + u"\n\n" + getHelp();
         }
         default: {
             return UString();

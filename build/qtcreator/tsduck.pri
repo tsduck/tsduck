@@ -69,6 +69,8 @@ linux|mac|mingw {
         -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual
     greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
+    QMAKE_CXXFLAGS += $$system(curl-config --cflags)
+    LIBS += $$system(curl-config --libs)
 }
 linux|mingw {
     QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel

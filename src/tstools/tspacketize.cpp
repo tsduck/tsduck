@@ -70,78 +70,50 @@ Options::Options(int argc, char *argv[]) :
     infiles(),
     inType(ts::SectionFile::UNSPECIFIED)
 {
-    option(u"",            0,  Args::STRING);
-    option(u"binary",      0);
-    option(u"bitrate",    'b', Args::UNSIGNED);
-    option(u"continuous", 'c');
-    option(u"force-crc",  'f');
-    option(u"output",     'o', Args::STRING);
-    option(u"pid",        'p', Args::PIDVAL, 1, 1);
-    option(u"stuffing",   's');
-    option(u"xml",         0);
+    option(u"", 0, STRING);
+    help(u"",
+         u"Input binary or XML files containing one or more sections or tables. By default, "
+         u"files ending in .xml are XML and files ending in .bin are binary. For other "
+         u"file names, explicitly specify --binary or --xml. If the file name is "
+         u"omitted, the standard input is used (binary by default, specify --xml "
+         u"otherwise)."
+         u"\n\n"
+         u"If different repetition rates are required for different files, "
+         u"a parameter can be \"filename=value\" where value is the "
+         u"repetition rate in milliseconds for all sections in that file. "
+         u"For repetition rates to be effective, the bitrate of the target "
+         u"PID must be specified, see option -b or --bitrate.");
 
-    setHelp(u"Input files:\n"
-            u"\n"
-            u"  Binary or XML files containing one or more sections or tables. By default,\n"
-            u"  files ending in .xml are XML and files ending in .bin are binary. For other\n"
-            u"  file names, explicitly specify --binary or --xml. If the file name is\n"
-            u"  omitted, the standard input is used (binary by default, specify --xml\n"
-            u"  otherwise).\n"
-            u"\n"
-            u"  If different repetition rates are required for different files,\n"
-            u"  a parameter can be \"filename=value\" where value is the\n"
-            u"  repetition rate in milliseconds for all sections in that file.\n"
-            u"  For repetition rates to be effective, the bitrate of the target\n"
-            u"  PID must be specified, see option -b or --bitrate.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --binary\n"
-            u"      Specify that all input files are binary, regardless of their file name.\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Specifies the bitrate (in bits/second) of the target PID. This\n"
-            u"      information is used to schedule sections in the output list of\n"
-            u"      packets when specific bitrates are specified for sections.\n"
-            u"\n"
-            u"  -c\n"
-            u"  --continuous\n"
-            u"      Continuous packetization. By default, generate one cycle of sections.\n"
-            u"\n"
-            u"  -f\n"
-            u"  --force-crc\n"
-            u"      Force recomputation of CRC32 in long sections. Ignore the CRC32\n"
-            u"      values in the input files.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -o file-name\n"
-            u"  --output file-name\n"
-            u"      Output file name for TS packets. By default, use standard output.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      PID of the output TS packets. This is a required parameter, there is\n"
-            u"      no default value.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Insert stuffing at end of each section, up to the next TS packet\n"
-            u"      boundary. By default, sections are packed and start in the middle\n"
-            u"      of a TS packet, after the previous section. Note, however, that\n"
-            u"      section headers are never scattered over a packet boundary.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Display verbose information.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-            u"\n"
-            u"  --xml\n"
-            u"      Specify that all input files are XML, regardless of their file name.\n");
+    option(u"binary", 0);
+    help(u"binary", u"Specify that all input files are binary, regardless of their file name.");
+
+    option(u"bitrate", 'b', UNSIGNED);
+    help(u"bitrate",
+         u"Specifies the bitrate (in bits/second) of the target PID. This "
+         u"information is used to schedule sections in the output list of "
+         u"packets when specific bitrates are specified for sections.");
+
+    option(u"continuous", 'c');
+    help(u"continuous", u"Continuous packetization. By default, generate one cycle of sections.");
+
+    option(u"force-crc", 'f');
+    help(u"force-crc", u"Force recomputation of CRC32 in long sections. Ignore the CRC32 values in the input files.");
+
+    option(u"output", 'o', STRING);
+    help(u"output", u"Output file name for TS packets. By default, use standard output.");
+
+    option(u"pid", 'p', PIDVAL, 1, 1);
+    help(u"pid", u"PID of the output TS packets. This is a required parameter, there is no default value.");
+
+    option(u"stuffing", 's');
+    help(u"stuffing",
+         u"Insert stuffing at end of each section, up to the next TS packet "
+         u"boundary. By default, sections are packed and start in the middle "
+         u"of a TS packet, after the previous section. Note, however, that "
+         u"section headers are never scattered over a packet boundary.");
+
+    option(u"xml", 0);
+    help(u"xml", u"Specify that all input files are XML, regardless of their file name.");
 
     analyze(argc, argv);
 

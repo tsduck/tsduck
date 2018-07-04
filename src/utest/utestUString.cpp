@@ -702,6 +702,24 @@ void UStringTest::testBreakLines()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v5[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dkvyfngo", v5[1]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fnb ff", v5[2]);
+
+    std::vector<ts::UString> v6;
+    ts::UString(u"abc def ghi\nfoo bar tom").splitLines(v6, 8);
+    CPPUNIT_ASSERT(v6.size() == 4);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc def", v6[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ghi", v6[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo bar", v6[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"tom", v6[3]);
+
+    std::vector<ts::UString> v7;
+    ts::UString(u"abc def ghi\n\n\nfoo bar tom").splitLines(v7, 8);
+    CPPUNIT_ASSERT(v7.size() == 6);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc def", v7[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ghi", v7[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", v7[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", v7[3]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo bar", v7[4]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"tom", v7[5]);
 }
 
 void UStringTest::testRemovePrefix()
