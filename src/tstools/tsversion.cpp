@@ -87,102 +87,63 @@ Options::Options(int argc, char *argv[]) :
     name(),
     out_dir()
 {
-    option(u"all",              'a');
-    option(u"binary",           'b');
-    option(u"check",            'c');
-    option(u"download",         'd');
-    option(u"force",            'f');
-    option(u"integer",          'i');
-    option(u"latest",           'l');
-    option(u"name",             'n', STRING);
-    option(u"output-directory", 'o', STRING);
-    option(u"proxy-host",        0,  STRING);
-    option(u"proxy-password",    0,  STRING);
-    option(u"proxy-port",        0,  UINT16);
-    option(u"proxy-user",        0,  STRING);
-    option(u"source",           's');
-    option(u"this",             't');
-    option(u"upgrade",          'u');
+    option(u"all", 'a');
+    help(u"all", u"List all available versions of TSDuck from GitHub.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --all\n"
-            u"      List all available versions of TSDuck from GitHub.\n"
-            u"\n"
-            u"  -b\n"
-            u"  --binary\n"
-            u"      With --download, fetch the binary installers of the latest version. This\n"
-            u"      is the default. When --source is specified, specify --binary if you also\n"
-            u"      need the binary installers.\n"
-            u"\n"
-            u"  -c\n"
-            u"  --check\n"
-            u"      Check if a new version of TSDuck is available from GitHub.\n"
-            u"\n"
-            u"  -d\n"
-            u"  --download\n"
-            u"      Download the latest version (or the version specified by --name) from\n"
-            u"      GitHub. By default, download the binary installers for the current\n"
-            u"      operating system and architecture. Specify --source to download the\n"
-            u"      source code.\n"
-            u"\n"
-            u"  -f\n"
-            u"  --force\n"
-            u"      Force downloads even if a file with same name and size already exists.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --integer\n"
-            u"      Display the current version of TSDuck in integer format, suitable for\n"
-            u"      comparison in a script. Example: " + ts::GetVersion(ts::VERSION_INTEGER) + u" for " + ts::GetVersion(ts::VERSION_SHORT) + u".\n"
-            u"\n"
-            u"  -l\n"
-            u"  --latest\n"
-            u"      Display the latest version of TSDuck from GitHub.\n"
-            u"\n"
-            u"  -n version-name\n"
-            u"  --name version-name\n"
-            u"      Get information for or download from GitHub the specified version, not\n"
-            u"      the latest one.\n"
-            u"\n"
-            u"  -o dir-name\n"
-            u"  --output-directory dir-name\n"
-            u"      Output directory for downloaded files (current directory by default).\n"
-            u"\n"
-            u"  --proxy-host name\n"
-            u"      Optional proxy host name for Internet access.\n"
-            u"\n"
-            u"  --proxy-password string\n"
-            u"      Optional proxy password for Internet access (for use with --proxy-user).\n"
-            u"\n"
-            u"  --proxy-port value\n"
-            u"      Optional proxy port for Internet access (for use with --proxy-host).\n"
-            u"\n"
-            u"  --proxy-user name\n"
-            u"      Optional proxy user name for Internet access.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --source\n"
-            u"      With --download, download the source code archive instead of the binary\n"
-            u"      installers.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --this\n"
-            u"      Display the current version of TSDuck (this executable).\n"
-            u"\n"
-            u"  -u\n"
-            u"  --upgrade\n"
-            u"      Upgrade TSDuck to the latest version.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"binary", 'b');
+    help(u"binary",
+         u"With --download, fetch the binary installers of the latest version. "
+         u"This is the default. When --source is specified, specify --binary if you also "
+         u"need the binary installers.");
+
+    option(u"check", 'c');
+    help(u"check", u"Check if a new version of TSDuck is available from GitHub.");
+
+    option(u"download", 'd');
+    help(u"download",
+         u"Download the latest version (or the version specified by --name) from "
+         u"GitHub. By default, download the binary installers for the current "
+         u"operating system and architecture. Specify --source to download the "
+         u"source code.");
+
+    option(u"force", 'f');
+    help(u"force", u"Force downloads even if a file with same name and size already exists.");
+
+    option(u"integer", 'i');
+    help(u"integer",
+         u"Display the current version of TSDuck in integer format, suitable for "
+         u"comparison in a script. Example: " + ts::GetVersion(ts::VERSION_INTEGER) +
+         u" for " + ts::GetVersion(ts::VERSION_SHORT) + u".");
+
+    option(u"latest", 'l');
+    help(u"latest", u"Display the latest version of TSDuck from GitHub.");
+
+    option(u"name", 'n', STRING);
+    help(u"name", u"version-name", u"Get information for or download from GitHub the specified version, not the latest one.");
+
+    option(u"output-directory", 'o', STRING);
+    help(u"output-directory", u"dir-name", u"Output directory for downloaded files (current directory by default).");
+
+    option(u"proxy-host", 0, STRING);
+    help(u"proxy-host", u"name", u"Optional proxy host name for Internet access.");
+
+    option(u"proxy-password", 0, STRING);
+    help(u"proxy-password", u"string", u"Optional proxy password for Internet access (for use with --proxy-user).");
+
+    option(u"proxy-port", 0, UINT16);
+    help(u"proxy-port", u"Optional proxy port for Internet access (for use with --proxy-host).");
+
+    option(u"proxy-user", 0, STRING);
+    help(u"proxy-user", u"name", u"Optional proxy user name for Internet access.");
+
+    option(u"source", 's');
+    help(u"source", u"With --download, download the source code archive instead of the binary installers.");
+
+    option(u"this", 't');
+    help(u"this", u"Display the current version of TSDuck (this executable).");
+
+    option(u"upgrade", 'u');
+    help(u"upgrade", u"Upgrade TSDuck to the latest version.");
 
     analyze(argc, argv);
 

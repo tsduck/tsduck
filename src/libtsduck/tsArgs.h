@@ -381,6 +381,26 @@ namespace ts {
                      bool                optional = false);
 
         //!
+        //! Add the help text of an exiting option.
+        //!
+        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] syntax String to display for the option value instead of the default "value".
+        //! For instance: "address:port" "'string'".
+        //! @param [in] text Help text. Unformatted, line breaks will be added automatically.
+        //! @return A reference to this instance.
+        //!
+        Args& help(const UChar* name, const UString& syntax, const UString& text);
+
+        //!
+        //! Add the help text of an exiting option.
+        //!
+        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] text Help text. Unformatted, line breaks will be added automatically.
+        //! @return A reference to this instance.
+        //!
+        Args& help(const UChar* name, const UString& text);
+
+        //!
         //! When an option has an Enumeration type, get a list of all valid names.
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] separator The separator to be used between values, a comma by default.
@@ -453,7 +473,7 @@ namespace ts {
         //! @return A string with embedded margins and new-lines.
         //! Always terminated with a new line.
         //!
-        UString helpLines(int level, const UString& text, size_t line_width = 79);
+        static UString HelpLines(int level, const UString& text, size_t line_width = 79);
 
         //!
         //! Set the option flags of the command.
@@ -481,7 +501,7 @@ namespace ts {
         //!
         //! @return A multi-line string describing the usage of options and parameters.
         //!
-        const UString& getHelp() const {return _help;}
+        UString getHelp() const;
 
         //!
         //! Get the option flags of the command.
@@ -903,31 +923,39 @@ namespace ts {
             bool           optional;    // Optional value
             bool           predefined;  // Internally defined in this class
             Enumeration    enumeration; // Enumeration values (if not empty)
+            UString        syntax;      // Syntax of value (informational, "address:port" for instance)
+            UString        help;        // Help description.
             ArgValueVector values;      // Set of values after analysis
 
             // Constructor:
-            IOption (const UChar* name,
-                     UChar        short_name,
-                     ArgType      type,
-                     size_t       min_occur,
-                     size_t       max_occur,
-                     int64_t      min_value,
-                     int64_t      max_value,
-                     bool         optional,
-                     bool         predefined);
+            IOption(const UChar* name,
+                    UChar        short_name,
+                    ArgType      type,
+                    size_t       min_occur,
+                    size_t       max_occur,
+                    int64_t      min_value,
+                    int64_t      max_value,
+                    bool         optional,
+                    bool         predefined);
 
             // Constructor:
-            IOption (const UChar*       name,
-                     UChar              short_name,
-                     const Enumeration& enumeration,
-                     size_t             min_occur,
-                     size_t             max_occur,
-                     bool               optional,
-                     bool               predefined);
+            IOption(const UChar*       name,
+                    UChar              short_name,
+                    const Enumeration& enumeration,
+                    size_t             min_occur,
+                    size_t             max_occur,
+                    bool               optional,
+                    bool               predefined);
 
             // Displayable name
             UString display() const;
+
+            // Description of the option value.
+            enum ValueContext {ALONE, SHORT, LONG};
+            UString valueDescription(ValueContext ctx) const;
         };
+
+        // Map of options by name.
         typedef std::map <UString, IOption> IOptionMap;
 
         // Private fields
@@ -963,6 +991,7 @@ namespace ts {
         // Locate an option description. Used by application to get values.
         // Throw exception if not found.
         const IOption& getIOption(const UChar* name) const;
+        IOption& getIOption(const UChar* name);
     };
 }
 

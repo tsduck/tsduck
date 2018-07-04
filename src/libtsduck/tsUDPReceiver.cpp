@@ -87,7 +87,7 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
 void ts::UDPReceiver::addHelp(ts::Args& args) const
 {
     // Format the help text for the [[source@]address:]port parameter / option.
-    const UString destText(args.helpLines(_dest_as_param ? 1 : 2,
+    const UString destText(Args::HelpLines(_dest_as_param ? 1 : 2,
         u"The parameter [address:]port describes the destination of UDP packets to receive. "
         u"The 'port' part is mandatory and specifies the UDP port to listen on. "
         u"The 'address' part is optional. It specifies an IP multicast address to listen on. "

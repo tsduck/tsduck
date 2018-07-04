@@ -236,12 +236,14 @@ void ts::UString::splitLines(CONTAINER& lines, size_t maxWidth, const UString& o
 
     // Cut lines
     while (cur < length()) {
+        // If @cur is a space or if the previous character is a possible separator, we may cut at cur.
         if (IsSpace(at(cur)) || (cur > start && otherSeparators.find(at(cur-1)) != NPOS)) {
             // Possible end of line here
             eol = cur;
         }
-        bool cut = false;
-        if (marginLength + cur - start >= maxWidth) { // Reached max width
+        // Determine if we need to cut here.
+        bool cut = at(cur) == LINE_FEED;
+        if (!cut && marginLength + cur - start >= maxWidth) { // Reached max width
             if (eol > start) {
                 // Found a previous possible end-of-line
                 cut = true;
@@ -252,12 +254,13 @@ void ts::UString::splitLines(CONTAINER& lines, size_t maxWidth, const UString& o
                 cut = true;
             }
         }
+        // Perform line cut if necessary.
         if (cut) {
             lines.push_back((marginLength == 0 ? UString() : nextMargin) + substr(start, eol - start));
             marginLength = nextMargin.length();
             // Start new line, skip leading spaces
-            start = eol;
-            while (start < length() && IsSpace(at(start))) {
+            start = eol < length() && at(eol) == LINE_FEED ? eol + 1 : eol;
+            while (start < length() && IsSpace(at(start)) && at(start) != LINE_FEED) {
                 start++;
             }
             cur = eol = start;
