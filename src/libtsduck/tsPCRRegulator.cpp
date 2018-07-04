@@ -46,6 +46,7 @@ ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
     _wait_min(0),
     _started(false),
     _pcr_first(0),
+    _pcr_last(0),
     _clock_first(),
     _clock_last()
 {
@@ -85,12 +86,12 @@ void ts::PCRRegulator::setMinimimWait(NanoSecond ns)
 {
     if (ns != _wait_min && ns > 0) {
         // Request at least this precision.
-        const NanoSecond precision = Monotonic::SetPrecision(ns);
+        const NanoSecond precision = Monotonic::SetPrecision(2000000); // 2 milliseconds in nanoseconds
 
         // We must wait at least the returned precision.
         _wait_min = std::max(ns, precision);
 
-        _report->log(_log_level, u"minimum wait: %'d nano-seconds", {_wait_min});
+        _report->log(_log_level, u"minimum wait: %'d nano-seconds, using %'d ns", {precision, _wait_min});
     }
 }
 
@@ -129,6 +130,12 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         // PCR value, this is the reference system clock.
         const uint64_t pcr = pkt.getPCR();
 
+        // Try to detect incorrect PCR sequences (such as cycling input).
+        if (_started && pcr < _pcr_last && !WrapUpPCR(_pcr_last, pcr)) {
+            _report->warning(u"out of sequence PCR, maybe source was cycling, restarting regulation");
+            _started = false;
+        }
+
         if (!_started) {
             // Initialize regulation at the first PCR.
             _started = true;
@@ -165,6 +172,9 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
                 flush = true;
             }
         }
+
+        // Always keep last PCR value.
+        _pcr_last = pcr;
     }
 
     // One more packet in current burst.
