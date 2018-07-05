@@ -290,7 +290,7 @@ void SysUtilsTest::testRegistry()
     utest::Out() << "SysUtilsTest: Path = " << path << std::endl;
     CPPUNIT_ASSERT(!path.empty());
 
-    
+
     ts::Registry::Handle root;
     ts::UString subkey, endkey;
     CPPUNIT_ASSERT(ts::Registry::SplitKey(u"HKLM\\FOO\\BAR\\TOE", root, subkey));

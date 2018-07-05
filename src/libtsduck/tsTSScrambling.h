@@ -191,7 +191,7 @@ namespace ts {
         CWList::iterator _next_cw;
         uint8_t          _encrypt_scv;  // Encryption: key to use (SC_EVEN_KEY or SC_ODD_KEY).
         uint8_t          _decrypt_scv;  // Decryption: previous scrambling_control value.
-        DVBCSA2          _dvbcsa[2];    // Index 0 = even key, 1 = odd key. 
+        DVBCSA2          _dvbcsa[2];    // Index 0 = even key, 1 = odd key.
         IDSA             _idsa[2];
         CipherChaining*  _scrambler[2];
 

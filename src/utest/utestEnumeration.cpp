@@ -96,7 +96,7 @@ void EnumerationTest::testEnumeration()
     CPPUNIT_ASSERT(e1 == e2);
 
     ts::Enumeration e3({{u"FirstElement", -1},
-                        {u"SecondElement", 7}, 
+                        {u"SecondElement", 7},
                         {u"FirstRepetition", 47},
                         {u"OtherValue", -123}});
 

@@ -564,7 +564,7 @@ void ArgsTest::testInvalidEnum()
 
     CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt9", u"x", u"a", u"b"}));
     utest::Out() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of val1, val2, val3", log.getMessages());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of \"val1\", \"val2\", \"val3\"", log.getMessages());
 }
 
 // Test case:

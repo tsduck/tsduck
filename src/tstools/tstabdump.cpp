@@ -126,7 +126,7 @@ Options::Options(int argc, char *argv[]) :
     if (!infiles.empty() && udp.receiverSpecified()) {
         error(u"specify input files or --ip-udp, but not both");
     }
-    
+
     exitOnError();
 }
 
@@ -245,7 +245,7 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 int main(int argc, char *argv[])
 {
     TSDuckLibCheckVersion();
-    
+
     // Need to initialize IP before resolving addresses in argument list..
     if (!ts::IPInitialize()) {
         return EXIT_FAILURE;

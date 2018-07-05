@@ -64,37 +64,17 @@ Options::Options(int argc, char *argv[]) :
     all(false),
     infile()
 {
-    option(u"",         0, Args::STRING, 0, 1);
-    option(u"all",     'a');
-    option(u"notdt",    0);
-    option(u"notot",    0);
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"MPEG capture file (standard input if omitted).");
 
-    setHelp(u"Input file:\n"
-            u"\n"
-            u"  MPEG capture file (standard input if omitted).\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --all\n"
-            u"      Report all TDT/TOT tables (default: report only the first table\n"
-            u"      of each type).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --notdt\n"
-            u"      Ignore Time & Date Table (TDT).\n"
-            u"\n"
-            u"  --notot\n"
-            u"      Ignore Time Offset Table (TOT).\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"all", 'a');
+    help(u"all", u"Report all TDT/TOT tables (default: report only the first table of each type).");
+
+    option(u"notdt", 0);
+    help(u"notdt", u"Ignore Time & Date Table (TDT).");
+
+    option(u"notot", 0);
+    help(u"notot", u"Ignore Time Offset Table (TOT).");
 
     analyze(argc, argv);
 

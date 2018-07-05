@@ -13,7 +13,7 @@ small wrappers around this library.
 The TSDuck library offers generic C++ classes for operating systems features
 as well as specialized classes for MPEG/DVB transport streams. This library
 can be used as a general-purpose C++ library for third-party applications,
-outside the TSDuck tools and plugins. 
+outside the TSDuck tools and plugins.
 
 This set of documentation is a reference for the TSDuck library. It can be
 used either by TSDuck maintainers and developers of third-party applications.

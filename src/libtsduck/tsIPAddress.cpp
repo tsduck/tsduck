@@ -128,7 +128,7 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
     return false;
 
 #else
-    
+
     ::addrinfo hints;
     TS_ZERO(hints);
     hints.ai_family = AF_INET;

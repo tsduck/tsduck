@@ -64,7 +64,7 @@ ts::DirectShowFilterCategory::~DirectShowFilterCategory()
     // Enforce cleanup in the right order
     clear();
 }
-        
+
 void ts::DirectShowFilterCategory::clear()
 {
     _filters.clear();

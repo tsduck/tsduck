@@ -250,7 +250,7 @@ variables are defined in the current shell.
 
 Example:
 ~~~~
-$ source src/tstools/release-x86_64/setenv.sh 
+$ source src/tstools/release-x86_64/setenv.sh
 $ which tsp
 ~/tsduck/src/tstools/release-x86_64/tsp
 $ tsp --version

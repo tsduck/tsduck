@@ -83,7 +83,7 @@ getversion:
 	curl -D /dev/stdout '$(DEKTEC_URL)' | grep -i 'Location:' | sed -e 's/.*: *//' -e 's/.*\///' -e 's/\r//g' >$(DTNAME_FILE)
 
 # Forced expand of LinuxSDK.
-expand: 
+expand:
 	rm -rf $(DTAPI_DIR)
 	tar xfz $(DTAPI_FILE)
 	find $(DTAPI_DIR) -print0 | xargs -0 touch

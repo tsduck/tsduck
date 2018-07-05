@@ -66,7 +66,7 @@ namespace ts {
             //!
             Address(const IPAddress& addr = IPAddress(), uint8_t mask = 0);
         };
-        
+
         // TargetIPSlashDescriptor public members:
         std::vector<Address> addresses;  //!< IPv4 addresses
 

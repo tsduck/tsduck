@@ -61,13 +61,20 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_input(0),
     _set_output(0)
 {
-    option(u"", 0, Args::UNSIGNED, 0, 1); // parameter is an optional integer
+    option(u"", 0, UNSIGNED, 0, 1);
+    help(u"",
+         u"Device index, from 0 to N-1 (with N being the number of Dektec devices "
+         u"in the system). The default is 0. Use option --all to have a "
+         u"complete list of devices in the system.");
+
     option(u"all", 'a');
-    option(u"input", 'i', Args::UNSIGNED);
-    option(u"normalized", 'n');
-    option(u"output", 'o', Args::UNSIGNED);
-    option(u"reset", 'r');
-    option(u"wait", 'w', Args::UNSIGNED);
+    help(u"all", u"List all Dektec devices available on the system. ");
+
+    option(u"input", 'i', UNSIGNED);
+    help(u"input", u"port-number",
+         u"Set the specified port in input mode. This applies to bidirectional "
+         u"ports which can be either set in input or output mode.");
+
     option(u"led", 'l', Enumeration({
         {u"off", DTAPI_LED_OFF},
         {u"green", DTAPI_LED_GREEN},
@@ -75,60 +82,27 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
         {u"yellow", DTAPI_LED_YELLOW},
         {u"hardware", DTAPI_LED_HARDWARE},
     }));
+    help(u"led", u"state",
+         u"Set the state of the LED on the rear panel. Useful to identify a "
+         u"Dektec device when more than one is present. See also "
+         u"option --wait (the led state is automatically returned to "
+         u"\"hardware\" after exit).");
 
-    setHelp(u"Device:\n"
-            u"\n"
-            u"  Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
-            u"  in the system). The default is 0. Use option --list-all to have a\n"
-            u"  complete list of devices in the system.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --all\n"
-            u"      List all Dektec devices available on the system.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i port-number\n"
-            u"  --input port-number\n"
-            u"      Set the specified port in input mode. This applies to bidirectional\n"
-            u"      ports which can be either set in input or output mode.\n"
-            u"\n"
-            u"  -l state\n"
-            u"  --led state\n"
-            u"      Set the state of the LED on the rear panel. Useful to identify a\n"
-            u"      Dektec device when more than one is present. The state is one of\n"
-            u"      \"off\", \"green\", \"red\", \"yellow\", \"hardware\". See also\n"
-            u"      option --wait (the led state is automatically returned to\n"
-            u"      \"hardware\" after exit).\n"
-            u"\n"
-            u"  -n\n"
-            u"  --normalized\n"
-            u"      With --all, list the Dektec devices in a normalized output format\n"
-            u"      (useful for automatic analysis).\n"
-            u"\n"
-            u"  -o port-number\n"
-            u"  --output port-number\n"
-            u"      Set the specified port in output mode. This applies to bidirectional\n"
-            u"      ports which can be either set in input or output mode.\n"
-            u"\n"
-            u"  -r\n"
-            u"  --reset\n"
-            u"      Reset the device.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-            u"\n"
-            u"  -w seconds\n"
-            u"  --wait seconds\n"
-            u"      Wait the specified number of seconds before exiting. The default\n"
-            u"      if 5 seconds if option --led is specified and 0 otherwise.\n");
+    option(u"normalized", 'n');
+    help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");
+
+    option(u"output", 'o', UNSIGNED);
+    help(u"output", u"port-number",
+         u"Set the specified port in output mode. This applies to bidirectional "
+         u"ports which can be either set in input or output mode.");
+
+    option(u"reset", 'r');
+    help(u"reset", u"Reset the device.");
+
+    option(u"wait", 'w', UNSIGNED);
+    help(u"wait", u"seconds",
+         u"Wait the specified number of seconds before exiting. The default "
+         u"if 5 seconds if option --led is specified and 0 otherwise.");
 
     analyze(argc, argv);
 

@@ -45,7 +45,7 @@ namespace ts {
     {
         uint32_t organization_id; //!< The organization identifier
         uint16_t application_id;  //!< The application identifier
-         
+
         //!
         //! Constructor from two ids.
         //! @param [in] org_id Organization identifier.

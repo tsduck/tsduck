@@ -221,9 +221,11 @@ namespace ts {
         //! Return a comma-separated list of all possible names.
         //!
         //! @param [in] separator The separator to be used between values, a comma by default.
+        //! @param [in] inQuote Opening quote for each name.
+        //! @param [in] outQuote Closing quote for each name.
         //! @return A comma-separated list of all possible names.
         //!
-        UString nameList(const UString& separator = u", ") const;
+        UString nameList(const UString& separator = u", ", const UString& inQuote = UString(), const UString& outQuote = UString()) const;
 
         //!
         //! A constant iterator type for the content of the object.

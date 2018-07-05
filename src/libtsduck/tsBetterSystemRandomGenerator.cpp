@@ -118,7 +118,7 @@ bool ts::BetterSystemRandomGenerator::updatePool()
         return false;
     }
 
-    // R1 = read SystemRandomGenerator 
+    // R1 = read SystemRandomGenerator
     if (!SystemRandomGenerator::read(r1, sizeof(r1))) {
         return false;
     }

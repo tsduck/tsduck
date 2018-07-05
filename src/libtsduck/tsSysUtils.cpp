@@ -310,12 +310,12 @@ bool ts::IsPrivilegedUser()
     return ::geteuid() == 0;
 #else
     ::SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
-    ::PSID AdministratorsGroup; 
-    ::BOOL ok = ::AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup); 
+    ::PSID AdministratorsGroup;
+    ::BOOL ok = ::AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup);
     if (ok) {
         if (!::CheckTokenMembership(NULL, AdministratorsGroup, &ok)) {
             ok = FALSE;
-        } 
+        }
         ::FreeSid(AdministratorsGroup);
     }
     return ok;

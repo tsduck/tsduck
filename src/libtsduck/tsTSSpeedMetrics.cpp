@@ -139,7 +139,7 @@ bool ts::TSSpeedMetrics::processedPacket(PacketCounter count)
             // Initialize next interval (_remain_interval is already zero).
             _start_interval = in_session;
             _count_interval = 0;
-        }    
+        }
     }
 
     return get_clock;

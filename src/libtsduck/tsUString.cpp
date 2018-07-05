@@ -1140,7 +1140,7 @@ bool ts::UString::toTristate(Tristate& value) const
         // Valid string or integer.
         switch (iValue) {
             case TSE_FALSE:
-            case TSE_NO: 
+            case TSE_NO:
             case TSE_OFF:
                 value = FALSE;
                 break;

@@ -196,7 +196,7 @@ namespace ite {
 #elif defined(__gnu_linux__) || defined(__linux__) || defined(linux)
 
 namespace ite {
-    
+
     // The driver interface defines its own integer type and there are
     // INCONSISTENCIES between the int types and the associated comment.
     // Typically, the size of a 'long' depends on the platform (32 vs. 64 bits).

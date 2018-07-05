@@ -84,7 +84,7 @@ void ts::TargetBackgroundGridDescriptor::deserialize(const Descriptor& desc, con
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    
+
     _is_valid = desc.isValid() && desc.tag() == _tag && size == 4;
 
     if (_is_valid) {

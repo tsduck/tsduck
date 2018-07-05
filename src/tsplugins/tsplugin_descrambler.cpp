@@ -49,7 +49,7 @@ namespace ts {
     public:
         // Constructor.
         DescramblerPlugin(TSP*);
-        
+
         // Implementation of ProcessorPlugin interface.
         virtual bool start() override;
 

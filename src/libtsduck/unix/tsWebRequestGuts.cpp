@@ -214,7 +214,7 @@ bool ts::WebRequest::SystemGuts::init()
             status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_LIMIT, long(1)); // bytes/second
         }
     }
-    
+
     // Set the response callbacks.
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, &SystemGuts::writeCallback);

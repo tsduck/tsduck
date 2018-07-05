@@ -176,7 +176,7 @@ bool ts::WinCreateElevatedProcess(const UString& exeName, bool synchronous, Repo
         report.error(u"error starting %s: %s", {exeName, WinErrorMessage(::GetLastError())});
         return false;
     }
-    
+
     // Wait for process termination.
     if (synchronous) {
         ::WaitForSingleObject(info.hProcess, INFINITE);

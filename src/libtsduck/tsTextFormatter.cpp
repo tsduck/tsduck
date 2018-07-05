@@ -91,7 +91,7 @@ bool ts::TextFormatter::setFile(const UString& fileName)
 
 
 //----------------------------------------------------------------------------
-// Set output to an internal string buffer. 
+// Set output to an internal string buffer.
 //----------------------------------------------------------------------------
 
 ts::TextFormatter& ts::TextFormatter::setString()
@@ -103,7 +103,7 @@ ts::TextFormatter& ts::TextFormatter::setString()
 
 
 //----------------------------------------------------------------------------
-// Retrieve the current contentn of the internal string buffer. 
+// Retrieve the current contentn of the internal string buffer.
 //----------------------------------------------------------------------------
 
 bool ts::TextFormatter::getString(UString& str)

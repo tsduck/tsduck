@@ -70,7 +70,7 @@ namespace ts {
             //!
             Address(const IPAddress& addr1 = IPAddress(), uint8_t mask1 = 0, const IPAddress& addr2 = IPAddress(), uint8_t mask2 = 0);
         };
-        
+
         // TargetIPSourceSlashDescriptor public members:
         std::vector<Address> addresses;  //!< IPv4 addresses
 

@@ -1048,7 +1048,7 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
     // Create branch A of graph: Create a sink filter, add it to the graph and connect it to the tee.
     ComPtr<SinkFilter> sink_filter(new SinkFilter(report));
     CheckNonNull(sink_filter.pointer());
-    ok = ok && 
+    ok = ok &&
         _graph.addFilter(sink_filter.pointer(), L"Sink/Capture", report) &&
         _graph.connectFilters(tee_filter.pointer(), sink_filter.pointer(), debug_report);
 

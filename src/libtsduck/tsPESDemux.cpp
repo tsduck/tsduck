@@ -213,7 +213,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // If at a unit start and the context exists, process previous PES packet in context
     if (pc_exists && pkt.getPUSI() && pci->second.sync) {
-        // Process packet, invoke all handlers  
+        // Process packet, invoke all handlers
         processPESPacket(pid, pci->second);
         // Recheck PID context in case it was reset by a handler
         pci = _pids.find(pid);

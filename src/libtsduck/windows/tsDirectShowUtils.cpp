@@ -174,7 +174,7 @@ ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report
     // Get network type as a string.
     ::BSTR name = NULL;
     const UString type(ToStringAndFree(tspace->get_NetworkType(&name), name, u"ITuningSpace::get_NetworkType", report));
-    
+
     // If the string looks like a GUID, try to find another way.
     if (type.empty() || type.front() == u'{') {
         // Get the network type as a GUID.

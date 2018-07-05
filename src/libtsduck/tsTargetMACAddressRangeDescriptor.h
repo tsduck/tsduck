@@ -65,7 +65,7 @@ namespace ts {
             //!
             Range(const MACAddress& addr1 = MACAddress(), const MACAddress& addr2 = MACAddress());
         };
-        
+
         // TargetMACAddressRangeDescriptor public members:
         std::vector<Range> ranges;  //!< MAC address ranges.
 

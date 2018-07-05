@@ -115,7 +115,7 @@ namespace ts {
         };
 
         typedef std::map<PID, TimeTracker> PIDContextMap;
-        
+
         PID           _pcrPID;    //!< First detected PID with PCR's.
         TimeTracker   _pcrTime;   //!< PCR time tracker on _pcrPID.
         PIDContextMap _pids;      //!< PTS time tracker per demuxed PID.
