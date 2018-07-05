@@ -62,37 +62,30 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
     _ecm_thread(this),
     _stop_thread(false)
 {
-    option(u"",             0,  STRING, 0, 1);
-    option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"synchronous",  0);
-
-    setHelp(u"Service parameter:\n"
-            u"\n"
-            u"  Specifies the optional service to descramble. If no fixed control word is\n"
-            u"  specified, ECM's from the service are used to extract control words.\n"
-            u"\n"
-            u"  If the argument is an integer value (either decimal or hexadecimal), it is\n"
-            u"  interpreted as a service id. Otherwise, it is interpreted as a service name,\n"
-            u"  as specified in the SDT. The name is not case sensitive and blanks are\n"
-            u"  ignored. If the input TS does not contain an SDT, use service ids only.\n"
-            u"\n"
-            u"  If the argument is omitted, --pid options shall be specified to list explicit\n"
-            u"  PID's to descramble and fixed control words shall be specified as well.\n"
-            u"\n"
-            u"Generic descrambler options:\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Descramble packets with this PID value. Several -p or --pid options may be\n"
-            u"      specified. By default, descramble the specified service.\n"
-            u"\n"
-            u"  --synchronous\n"
-            u"      Specify to synchronously decipher the ECM's. By default, in real-time\n"
-            u"      mode, the packet processing continues while processing ECM's. This option\n"
-            u"      is always on in offline mode.\n");
-
+    // Generic scrambling options.
     _scrambling.defineOptions(*this);
-    _scrambling.addHelp(*this);
+
+    option(u"", 0, STRING, 0, 1);
+    help(u"",
+         u"Specifies the optional service to descramble. If no fixed control word is "
+         u"specified, ECM's from the service are used to extract control words.\n\n"
+         u"If the argument is an integer value (either decimal or hexadecimal), it is "
+         u"interpreted as a service id. Otherwise, it is interpreted as a service name, "
+         u"as specified in the SDT. The name is not case sensitive and blanks are "
+         u"ignored. If the input TS does not contain an SDT, use service ids only.\n\n"
+         u"If the argument is omitted, --pid options shall be specified to list explicit "
+         u"PID's to descramble and fixed control words shall be specified as well.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"Descramble packets with this PID value. Several -p or --pid options may be "
+         u"specified. By default, descramble the specified service.");
+
+    option(u"synchronous");
+    help(u"synchronous", 
+         u"Specify to synchronously decipher the ECM's. By default, in real-time "
+         u"mode, the packet processing continues while processing ECM's. This option "
+         u"is always on in offline mode.");
 }
 
 

@@ -91,68 +91,46 @@ ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
     _pass_pids(),
     _demux(this)
 {
-    option(u"bat", 0);
-    option(u"cat", 0);
-    option(u"eit", 0);
-    option(u"nit", 0);
-    option(u"pat", 0);
+    option(u"bat");
+    help(u"bat", u"Extract PID 0x0011 (SDT/BAT).");
+
+    option(u"cat");
+    help(u"cat", u"Extract PID 0x0001 (CAT).");
+
+    option(u"eit");
+    help(u"eit", u"Extract PID 0x0012 (EIT).");
+
+    option(u"nit");
+    help(u"nit", u"Extract PID 0x0010 (NIT).");
+
+    option(u"pat");
+    help(u"pat", u"Extract PID 0x0000 (PAT).");
+
     option(u"pmt", 'p');
-    option(u"rst", 0);
-    option(u"sdt", 0);
+    help(u"pmt", u"Extract all PMT PID's.");
+
+    option(u"rst");
+    help(u"rst", u"Extract PID 0x0013 (RST).");
+
+    option(u"sdt");
+    help(u"sdt", u"Extract PID 0x0011 (SDT/BAT).");
+
     option(u"stuffing", 's');
-    option(u"tdt", 0);
-    option(u"tot", 0);
-    option(u"tsdt", 0);
+    help(u"stuffing",
+         u"Replace excluded packets with stuffing (null packets) instead\n"
+         u"of removing them. Useful to preserve bitrate.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --bat\n"
-            u"      Extract PID 0x0011 (SDT/BAT).\n"
-            u"\n"
-            u"  --cat\n"
-            u"      Extract PID 0x0001 (CAT).\n"
-            u"\n"
-            u"  --eit\n"
-            u"      Extract PID 0x0012 (EIT).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --nit\n"
-            u"      Extract PID 0x0010 (NIT).\n"
-            u"\n"
-            u"  --pat\n"
-            u"      Extract PID 0x0000 (PAT).\n"
-            u"\n"
-            u"  -p\n"
-            u"  --pmt\n"
-            u"      Extract all PMT PID's.\n"
-            u"\n"
-            u"  --rst\n"
-            u"      Extract PID 0x0013 (RST).\n"
-            u"\n"
-            u"  --sdt\n"
-            u"      Extract PID 0x0011 (SDT/BAT).\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Replace excluded packets with stuffing (null packets) instead\n"
-            u"      of removing them. Useful to preserve bitrate.\n"
-            u"\n"
-            u"  --tdt\n"
-            u"      Extract PID 0x0014 (TDT/TOT).\n"
-            u"\n"
-            u"  --tot\n"
-            u"      Extract PID 0x0014 (TDT/TOT).\n"
-            u"\n"
-            u"  --tsdt\n"
-            u"      Extract PID 0x0002 (TSDT).\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"tdt");
+    help(u"tdt", u"Extract PID 0x0014 (TDT/TOT).");
 
+    option(u"tot");
+    help(u"tot", u"Extract PID 0x0014 (TDT/TOT).");
+
+    option(u"tsdt");
+    help(u"tsdt", u"Extract PID 0x0002 (TSDT).");
+
+    // CAS filtering options.
     _cas_args.defineOptions(*this);
-    _cas_args.addHelp(*this);
 }
 
 

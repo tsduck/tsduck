@@ -112,56 +112,42 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     _packet_index(0),
     _next_cc(0)
 {
-    option(u"mac-address",     0,  STRING);
-    option(u"max-queue",       0,  POSITIVE);
-    option(u"new-destination", 0,  STRING);
-    option(u"new-source",      0,  STRING);
-    option(u"pid",            'p', PIDVAL, 1, 1);
-    option(u"replace",         0);
-
-    setHelp(u"\n"
-            u"MPE encapsulation options:\n"
-            u"\n"
-            u"  --mac-address nn:nn:nn:nn:nn:nn\n"
-            u"      Specify the default destination MAC address to set in MPE sections for\n"
-            u"      unicast IP packets. The default is 00:00:00:00:00:00. For multicast IP\n"
-            u"      packets, the MAC address is automatically computed.\n"
-            u"\n"
-            u"  --new-destination address[:port]\n"
-            u"      Change the destination IP address and UDP port in MPE sections. If the\n"
-            u"      port is not specified, the original destination port from the UDP datagram\n"
-            u"      is used. By default, the destination address is not modified.\n"
-            u"\n"
-            u"  --new-source address[:port]\n"
-            u"      Change the source IP address and UDP port in MPE sections. If the port is\n"
-            u"      not specified, the original source port from the UDP datagram is used. By\n"
-            u"      default, the source address is not modified.\n"
-            u"\n"
-            u"Other options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --max-queue value\n"
-            u"      Specify the maximum number of queued UDP datagrams before their insertion\n"
-            u"      into the MPE stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_SECTION) u".\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specify the PID into which the MPE datagrams shall be inserted. This is a\n"
-            u"      mandatory parameter.\n"
-            u"\n"
-            u"  --replace\n"
-            u"      Replace the target PID if it exists. By default, the plugin only replaces\n"
-            "       null packets and tsp stops with an error if incoming packets are found\n"
-            "       with the target PID.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
-
-    // Add UDP receiver common options and help.
+    // UDP receiver common options.
     _sock.defineOptions(*this);
-    _sock.addHelp(*this);
+
+    option(u"mac-address", 0, STRING);
+    help(u"mac-address", u"nn:nn:nn:nn:nn:nn",
+         u"Specify the default destination MAC address to set in MPE sections for "
+         u"unicast IP packets. The default is 00:00:00:00:00:00. For multicast IP "
+         u"packets, the MAC address is automatically computed.");
+
+    option(u"max-queue", 0, POSITIVE);
+    help(u"max-queue",
+         u"Specify the maximum number of queued UDP datagrams before their insertion "
+         u"into the MPE stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_SECTION) u".");
+
+    option(u"new-destination", 0, STRING);
+    help(u"new-destination", u"address[:port]",
+         u"Change the destination IP address and UDP port in MPE sections. If the "
+         u"port is not specified, the original destination port from the UDP datagram "
+         u"is used. By default, the destination address is not modified.");
+
+    option(u"new-source", 0, STRING);
+    help(u"new-source", u"address[:port]",
+         u"Change the source IP address and UDP port in MPE sections. If the port is "
+         u"not specified, the original source port from the UDP datagram is used. By "
+         u"default, the source address is not modified.");
+
+    option(u"pid", 'p', PIDVAL, 1, 1);
+    help(u"pid",
+         u"Specify the PID into which the MPE datagrams shall be inserted. This is a "
+         u"mandatory parameter.");
+
+    option(u"replace");
+    help(u"replace",
+         u"Replace the target PID if it exists. By default, the plugin only replaces "
+         u"null packets and tsp stops with an error if incoming packets are found "
+         u"with the target PID.");
 }
 
 

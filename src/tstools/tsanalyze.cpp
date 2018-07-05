@@ -42,48 +42,38 @@ TSDUCK_SOURCE;
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::TSAnalyzerOptions
+struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    ts::BitRate bitrate;  // Expected bitrate (188-byte packets)
-    ts::UString infile;   // Input file name
+    ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
+    ts::UString           infile;    // Input file name
+    ts::TSAnalyzerOptions analysis;  // Analysis options.
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::TSAnalyzerOptions(u"Analyze the structure of a transport stream", u"[options] [filename]"),
+    ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),
     bitrate(0),
-    infile()
+    infile(),
+    analysis()
 {
-    option(u"",         0,  Args::STRING, 0, 1);
-    option(u"bitrate", 'b', Args::UNSIGNED);
+    // Define all standard analysis options.
+    analysis.defineOptions(*this);
 
-    setHelp(u"Input file:\n"
-            u"\n"
-            u"  MPEG capture file (standard input if omitted).\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Specifies the bitrate of the transport stream in bits/second\n"
-            u"      (based on 188-byte packets). By default, the bitrate is\n"
-            u"      evaluated using the PCR in the transport stream.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"Input MPEG capture file (standard input if omitted).");
+
+    option(u"bitrate", 'b', UNSIGNED);
+    help(u"bitrate",
+         u"Specifies the bitrate of the transport stream in bits/second "
+         u"(based on 188-byte packets). By default, the bitrate is "
+         u"evaluated using the PCR in the transport stream.");
 
     analyze(argc, argv);
 
     infile = value(u"");
     bitrate = intValue<ts::BitRate>(u"bitrate");
+    analysis.load(*this);
 
     exitOnError();
 }
@@ -101,13 +91,13 @@ int main(int argc, char *argv[])
     ts::InputRedirector input(opt.infile, opt);
     ts::TSPacket pkt;
 
-    analyzer.setAnalysisOptions(opt);
+    analyzer.setAnalysisOptions(opt.analysis);
 
     while (pkt.read(std::cin, true, opt)) {
         analyzer.feedPacket(pkt);
     }
 
-    analyzer.report(std::cout, opt);
+    analyzer.report(std::cout, opt.analysis);
 
     return EXIT_SUCCESS;
 }

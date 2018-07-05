@@ -96,39 +96,26 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _analyzer(),
     _analyzer_options()
 {
-    option(u"interval",       'i', POSITIVE);
+    // Define all standard analysis options.
+    _analyzer_options.defineOptions(*this);
+
+    option(u"interval", 'i', POSITIVE);
+    help(u"interval",
+         u"Produce a new output file at regular intervals. After outputing a file, "
+         u"the analysis context is reset, ie. each output file contains a fully "
+         u"independent analysis.");
+
     option(u"multiple-files", 'm');
-    option(u"output-file",    'o', STRING);
-    copyOptions(_analyzer_options);
+    help(u"multiple-files",
+         u"When used with --interval and --output-file, create a new file for each "
+         u"analysis instead of rewriting the previous file. Assuming that the "
+         u"specified output file name has the form 'base.ext', each file is created "
+         u"with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.");
 
-    _analyzer_options.setHelp(
-        u"Options:\n"
-        u"\n"
-        u"  --help\n"
-        u"      Display this help text.\n"
-        u"\n"
-        u"  -i seconds\n"
-        u"  --interval seconds\n"
-        u"      Produce a new output file at regular intervals. After outputing a file,\n"
-        u"      the analysis context is reset, ie. each output file contains a fully\n"
-        u"      independent analysis.\n"
-        u"\n"
-        u"  -m\n"
-        u"  --multiple-files\n"
-        u"      When used with --interval and --output-file, create a new file for each\n"
-        u"      analysis instead of rewriting the previous file. Assuming that the\n"
-        u"      specified output file name has the form 'base.ext', each file is created\n"
-        u"      with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.\n"
-        u"\n"
-        u"  -o filename\n"
-        u"  --output-file filename\n"
-        u"      Specify the output text file for the analysis result.\n"
-        u"      By default, use the standard output.\n"
-        u"\n"
-        u"  --version\n"
-        u"      Display the version number.\n");
-
-    setHelp(_analyzer_options.getHelp());
+    option(u"output-file", 'o', STRING);
+    help(u"output-file",
+         u"Specify the output text file for the analysis result. "
+         u"By default, use the standard output.");
 }
 
 
@@ -142,7 +129,7 @@ bool ts::AnalyzePlugin::start()
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
-    _analyzer_options.getOptions(*this);
+    _analyzer_options.load(*this);
     _analyzer.setAnalysisOptions(_analyzer_options);
 
     // For production of multiple reports at regular intervals.

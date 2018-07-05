@@ -80,12 +80,6 @@ namespace ts {
         void defineOptions(Args& args) const;
 
         //!
-        //! Add help about command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void addHelp(Args& args) const;
-
-        //!
         //! Load arguments from command line.
         //! @param [in,out] args Command line arguments.
         //! @return True on success, false on error.

@@ -82,9 +82,6 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 {
     _logger_options.defineOptions(*this);
     _display_options.defineOptions(*this);
-
-    _logger_options.addHelp(*this);
-    _display_options.addHelp(*this);
 }
 
 

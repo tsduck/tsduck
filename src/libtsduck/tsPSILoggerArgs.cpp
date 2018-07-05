@@ -51,63 +51,31 @@ ts::PSILoggerArgs::PSILoggerArgs() :
 
 
 //----------------------------------------------------------------------------
-// Add help about command line options in an Args
-//----------------------------------------------------------------------------
-
-void ts::PSILoggerArgs::addHelp(Args& args) const
-{
-    const UString help =
-        u"\n"
-        u"PSI logging options:\n"
-        u"\n"
-        u"  -a\n"
-        u"  --all-versions\n"
-        u"      Display all versions of PSI tables (need to read the complete\n"
-        u"      transport stream). By default, display only the first version\n"
-        u"      of each PSI table and stop when all expected PSI are extracted.\n"
-        u"\n"
-        u"  --cat-only\n"
-        u"      Display only the CAT, ignore other PSI tables.\n"
-        u"\n"
-        u"  -c\n"
-        u"  --clear\n"
-        u"      Indicate that this is a clear transport stream, without\n"
-        u"      conditional access information. Useful to avoid reading the\n"
-        u"      complete transport stream, waiting for a non-existent CAT.\n"
-        u"\n"
-        u"  -d\n"
-        u"  --dump\n"
-        u"      Dump all PSI sections.\n"
-        u"\n"
-        u"  --help\n"
-        u"      Display this help text.\n"
-        u"\n"
-        u"  -o filename\n"
-        u"  --output-file filename\n"
-        u"      File name for text output.\n"
-        u"\n"
-        u"  -v\n"
-        u"  --verbose\n"
-        u"      Produce verbose output.\n"
-        u"\n"
-        u"  --version\n"
-        u"      Display the version number.\n";
-
-    args.setHelp(args.getHelp() + help);
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
 void ts::PSILoggerArgs::defineOptions(Args& args) const
 {
     args.option(u"all-versions", 'a');
-    args.option(u"cat-only",      0);
-    args.option(u"clear",        'c');
-    args.option(u"dump",         'd');
-    args.option(u"output-file",  'o', Args::STRING);
+    args.help(u"all-versions",
+              u"Display all versions of PSI tables (need to read the complete "
+              u"transport stream). By default, display only the first version "
+              u"of each PSI table and stop when all expected PSI are extracted.");
+
+    args.option(u"cat-only");
+    args.help(u"cat-only", u"Display only the CAT, ignore other PSI tables.");
+
+    args.option(u"clear", 'c');
+    args.help(u"clear",
+              u"Indicate that this is a clear transport stream, without "
+              u"conditional access information. Useful to avoid reading the "
+              u"complete transport stream, waiting for a non-existent CAT.");
+
+    args.option(u"dump", 'd');
+    args.help(u"dump", u"Dump all PSI sections.");
+
+    args.option(u"output-file", 'o', Args::STRING);
+    args.help(u"output-file", u"File name for text output.");
 }
 
 
