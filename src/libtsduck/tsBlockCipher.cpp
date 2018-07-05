@@ -41,7 +41,7 @@ bool ts::BlockCipher::encryptInPlace(void* data, size_t data_length, size_t* max
     const ByteBlock plain(data, data_length);
     const size_t cipher_max_size = max_actual_length != 0 ? *max_actual_length : data_length;
     return encrypt(plain.data(), plain.size(), data, cipher_max_size, max_actual_length);
-}    
+}
 
 
 //----------------------------------------------------------------------------

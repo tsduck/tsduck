@@ -332,7 +332,7 @@ ts::UString ts::Args::getHelp() const
                 text += HelpLines(2, opt.help);
             }
             if (!opt.enumeration.empty() && (!opt.predefined || !opt.optional)) {
-                text += HelpLines(2, u"Must be one of " + opt.enumeration.nameList() + u".");
+                text += HelpLines(2, u"Must be one of " + optionNames(opt.name.c_str()) + u".");
             }
         }
     }
@@ -423,7 +423,7 @@ ts::Args& ts::Args::help(const UChar* name, const UString& syntax, const UString
 ts::UString ts::Args::optionNames(const ts::UChar* name, const ts::UString& separator) const
 {
     const IOption& opt(getIOption(name));
-    return opt.enumeration.nameList(separator);
+    return opt.enumeration.nameList(separator, u"\"", u"\"");
 }
 
 
@@ -854,7 +854,7 @@ bool ts::Args::analyze(bool processRedirections)
                     // Enumeration value expected, get corresponding integer value (not case sensitive)
                     int i = opt->enumeration.value(val.value(), false);
                     if (i == Enumeration::UNKNOWN) {
-                        error(u"invalid value %s for %s, use one of %s", {val.value(), opt->display(), opt->enumeration.nameList()});
+                        error(u"invalid value %s for %s, use one of %s", {val.value(), opt->display(), optionNames(opt->name.c_str())});
                         continue;
                     }
                     // Replace with actual integer value.

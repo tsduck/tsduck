@@ -87,7 +87,7 @@ void ts::AudioStreamDescriptor::deserialize(const Descriptor& desc, const DVBCha
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    
+
     _is_valid = desc.isValid() && desc.tag() == _tag && size == 1;
 
     if (_is_valid) {

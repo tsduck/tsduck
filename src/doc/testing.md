@@ -61,7 +61,7 @@ source release-x86_64/setenv.sh && release-x86_64/utest_static
 OK (307 tests)
 
 
-$ 
+$
 ~~~~
 
 Note that the statically linked version contains slightly less tests.
@@ -134,7 +134,7 @@ $ utest -t XMLTest::testValidation
 ~~~~
 
 The option `-d` is used to produce debug message (see examples in the test
-source files). 
+source files).
 
 Thus, `utest` alone can be used as an automated fairly complete non-regression
 test suite for the TSDuck library or as a debug environment for a given feature

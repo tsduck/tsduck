@@ -111,7 +111,7 @@ namespace ts {
         //! @param [out] sections List of sections in the message.
         //! @param [out] timestamp Time of the collection of the table. Available only in TLV message.
         //! Contains Time::Epoch if not available.
-        //! @return True on success, false on invalid message.         
+        //! @return True on success, false on invalid message.
         //!
         static bool AnalyzeUDPMessage(const uint8_t* data, size_t size, bool no_encapsulation, SectionPtrVector& sections, Time& timestamp);
 

@@ -242,7 +242,7 @@ namespace ts {
         //! @return True if the plugin usually requires real-time responsiveness.
         //!
         virtual bool isRealTime() {return false;}
-        
+
         //!
         //! Constructor.
         //!

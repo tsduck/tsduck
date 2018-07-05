@@ -247,7 +247,7 @@ void ts::MPEDemux::processPMT(const PMT& pmt)
 
 void ts::MPEDemux::processINT(const INT& imnt)
 {
-    // Process all descriptor lists in the table. Normally, the IP/MAC stream 
+    // Process all descriptor lists in the table. Normally, the IP/MAC stream
     // location descriptors should be only in the operational descriptor loop
     // of a device. But we should be prepared to incorrect signalization.
 

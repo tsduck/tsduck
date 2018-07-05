@@ -61,7 +61,7 @@ namespace ts {
         //! Destructor.
         //!
         ~DirectShowFilterCategory();
-        
+
         //!
         //! Build an instance of all filters of the specified category.
         //! @param [in] category GUID of the device category.

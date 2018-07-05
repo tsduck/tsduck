@@ -307,7 +307,7 @@ bool ts::EMMGClient::disconnect()
         req.stream_id = _stream_status.stream_id;
         req.client_id = _stream_status.client_id;
         ok = _connection.send(req, _logger) && waitResponse() == emmgmux::Tags::stream_close_response;
-        
+
         // If we get a polite reply, send a channel_close
         if (ok) {
             emmgmux::ChannelClose cc;

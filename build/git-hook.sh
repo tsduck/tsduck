@@ -81,7 +81,7 @@ case "$HOOK" in
             # With pre-commit, we must have at least this max + 1.
             [[ "$HOOK" == "pre-commit" ]] && COMMIT=$(($COMMIT + 1))
         fi
-        
+
         # Update the commit count in source file if not up to date.
         if [[ "$SRCCOMMIT" -lt "$COMMIT" ]]; then
             sed -i -e "/^$PREFIX/s/.*/$PREFIX $COMMIT/" "$SRCFILE"

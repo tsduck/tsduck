@@ -543,7 +543,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
     // Flags new_cw_even/odd are "write-protected, read-volatile", no mutex needed.
     if ((scv == SC_EVEN_KEY && pecm->new_cw_even) || (scv == SC_ODD_KEY && pecm->new_cw_odd)) {
 
-        // A new CW was deciphered. 
+        // A new CW was deciphered.
         // In asynchronous mode, the CW are accessed under mutex protection.
         if (!_synchronous) {
             _mutex.acquire();

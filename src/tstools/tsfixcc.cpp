@@ -63,35 +63,17 @@ Options::Options(int argc, char *argv[]) :
     filename(),
     file()
 {
-    option(u"",          0,  Args::STRING, 1, 1);
-    option(u"circular", 'c');
-    option(u"noaction", 'n');
+    option(u"", 0, STRING, 1, 1);
+    help(u"", u"MPEG capture file to be modified.");
 
-    setHelp(u"File:\n"
-            u"\n"
-            u"  MPEG capture file to be modified.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -c\n"
-            u"  --circular\n"
-            u"      Enforce continuity when the file is played repeatedly.\n"
-            u"      Add empty packets, if necessary, on each PID so that the\n"
-            u"      continuity is preserved between end and beginning of file.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --noaction\n"
-            u"      Display what should be performed but do not modify the file.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose messages.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"circular", 'c');
+    help(u"circular",
+         u"Enforce continuity when the file is played repeatedly. "
+         u"Add empty packets, if necessary, on each PID so that the "
+         u"continuity is preserved between end and beginning of file.");
+
+    option(u"noaction", 'n');
+    help(u"noaction", u"Display what should be performed but do not modify the file.");
 
     analyze(argc, argv);
 

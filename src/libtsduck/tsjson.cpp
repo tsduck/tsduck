@@ -273,7 +273,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             value = new Number(intVal);
         }
         else {
-            // Invalid integer, 
+            // Invalid integer,
             report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", {parser.lineNumber()});
             value = new Null;
         }

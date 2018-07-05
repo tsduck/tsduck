@@ -89,7 +89,7 @@ namespace ts {
         //! See the description of the class.
         //!
         static const size_t INTERVAL_COUNT = 20;
-                                                     
+
         //!
         //! Constructor.
         //! @param [in] packets Minimum packets to accumulate per interval.
@@ -104,7 +104,7 @@ namespace ts {
         //! Start a new processing time session.
         //!
         void start();
-        
+
         //!
         //! Report the processing of some TS packets by the application.
         //! @param [in] count Number of processed packets, one by default.

@@ -64,7 +64,7 @@ namespace ts {
     //! - R3 = R2 xor state
     //! - R4 = AES[K] R3
     //! - R4 ==> output of BetterSystemRandomGenerator
-    //! - R5 = read SystemRandomGenerator 
+    //! - R5 = read SystemRandomGenerator
     //! - state = SHA-256 (R5 xor R4 xor state)
     //!
     //! Known limitations:

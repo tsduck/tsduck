@@ -67,55 +67,34 @@ Options::Options(int argc, char *argv[]) :
     value_only(false),
     infile()
 {
-    option(u"",            0, Args::STRING, 0, 1);
-    option(u"all",        'a');
-    option(u"dts",        'd');
-    option(u"full",       'f');
-    option(u"min-pcr",     0, Args::POSITIVE);
-    option(u"min-pid",     0, Args::INTEGER, 0, 1, 1, ts::PID_MAX);
-    option(u"value-only", 'v');
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"MPEG capture file (standard input if omitted).");
 
-    setHelp(u"Input file:\n"
-            u"\n"
-            u"  MPEG capture file (standard input if omitted).\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --all\n"
-            u"      Analyze all packets in the input file. By default, stop analysis when\n"
-            u"      enough PCR information has been collected.\n"
-            u"\n"
-            u"  -d\n"
-            u"  --dts\n"
-            u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
-            u"      (Program Clock Reference) from the transport layer.\n"
-            u"\n"
-            u"  -f\n"
-            u"  --full\n"
-            u"      Full analysis. The file is entirely analyzed (as with --all) and the\n"
-            u"      final report includes a complete per PID bitrate analysis.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --min-pcr value\n"
-            u"      Stop analysis when that number of PCR are read from the required\n"
-            u"      minimum number of PID (default: 64).\n"
-            u"\n"
-            u"  --min-pid value\n"
-            u"      Minimum number of PID to get PCR from (default: 1).\n"
-            u"\n"
-            u"  -v\n"
-            u"  --value-only\n"
-            u"      Display only the bitrate value, in bits/seconds, based on\n"
-            u"      188-byte packets. Useful to reuse the value in command lines.\n"
-            u"\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"all", 'a');
+    help(u"all",
+         u"Analyze all packets in the input file. By default, stop analysis when "
+         u"enough PCR information has been collected.");
+
+    option(u"dts", 'd');
+    help(u"dts",
+         u"Use DTS (Decoding Time Stamps) from video PID's instead of PCR "
+         u"(Program Clock Reference) from the transport layer");
+
+    option(u"full", 'f');
+    help(u"full",
+         u"Full analysis. The file is entirely analyzed (as with --all) and the "
+         u"final report includes a complete per PID bitrate analysis.");
+
+    option(u"min-pcr", 0, POSITIVE);
+    help(u"min-pcr", u"p analysis when that number of PCR are read from the required minimum number of PID (default: 64).");
+
+    option(u"min-pid", 0, INTEGER, 0, 1, 1, ts::PID_MAX);
+    help(u"min-pid", u"Minimum number of PID's to get PCR from (default: 1).");
+
+    option(u"value-only", 'v');
+    help(u"value-only",
+         u"Display only the bitrate value, in bits/seconds, based on "
+         u"188-byte packets. Useful to reuse the value in scripts.");
 
     analyze(argc, argv);
 

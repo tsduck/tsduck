@@ -195,7 +195,7 @@ if [[ -n "$VMX_FILE" ]]; then
         fi
 
         # Wait that the machine is accessible using ssh.
-        # Don't wait once for boot timeout, sometimes it hangs. 
+        # Don't wait once for boot timeout, sometimes it hangs.
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do

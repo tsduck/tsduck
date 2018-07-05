@@ -69,7 +69,7 @@ namespace ts {
             //!
             //! Attach the node to a new parent.
             //! The node is first detached from its previous parent.
-            //! @param [in,out] newParent New parent. If zero, the node becomes orphan. In that 
+            //! @param [in,out] newParent New parent. If zero, the node becomes orphan. In that
             //! case, the node will no longer be freed by its parent and must be explicitly deleted.
             //! @param [in] last If true, the child is added at the end of the list of children.
             //! If false, it is added at the beginning.

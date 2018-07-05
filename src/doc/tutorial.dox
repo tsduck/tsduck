@@ -64,7 +64,7 @@ Some interesting features in class ts::UString are:
   @ref ts::UString::Decimal() "Decimal()",
   @ref ts::UString::Hexa() "Hexa()" or
   @ref ts::UString::Dump() "Dump()".
-- Data scanning using 
+- Data scanning using
   @ref ts::UString::scan() "scan()".
 
 Unicode strings can be converted to and from DVB strings. Most DVB-defined

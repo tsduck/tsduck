@@ -623,7 +623,7 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
 {
     // Normally, this function should be as simple as;
     // return UString::FromUTF8(flags.ToString());
-    
+
     // However, there are several issues.
     //
     // With GCC, starting with GCC 5.1, the ABI of std::string has changed

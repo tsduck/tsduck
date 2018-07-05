@@ -83,7 +83,7 @@ namespace ts {
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
-        // Process specific tables and descriptors  
+        // Process specific tables and descriptors
         void processPAT(PAT&);
         void processSDT(SDT&);
         void processNITBAT(AbstractTransportListTable&, bool);
@@ -223,7 +223,7 @@ void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
                {names::TID(table.tableId()), table.version(),
                 table.sourcePID(), table.sourcePID(),
                 table.tableIdExtension(), table.tableIdExtension()});
- 
+
     switch (table.tableId()) {
 
         case TID_PAT: {
@@ -381,7 +381,7 @@ void ts::TSRenamePlugin::processNITBAT(AbstractTransportListTable& table, bool a
                                              _set_onet_id ? _new_onet_id : it->first.original_network_id);
 
             if (new_tsid != it->first) {
-                // Add a new TS entry   
+                // Add a new TS entry
                 table.transports[new_tsid] = it->second;
                 if (!add_entry) {
                     table.transports.erase(it->first);

@@ -124,14 +124,14 @@ ts::UString ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) co
 // Return a comma-separated list of all possible names.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Enumeration::nameList(const UString& separator) const
+ts::UString ts::Enumeration::nameList(const UString& separator, const UString& inQuote, const UString& outQuote) const
 {
     UString list;
     for (EnumMap::const_iterator it = _map.begin(); it != _map.end(); ++it) {
         if (!list.empty()) {
             list += separator;
         }
-        list += it->second;
+        list += inQuote + it->second + outQuote;
     }
     return list;
 }

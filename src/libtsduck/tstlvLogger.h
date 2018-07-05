@@ -134,7 +134,7 @@ namespace ts {
             Logger(const Logger&) = default;
             Logger& operator=(const Logger&) = default;
             //! @endcond
-            
+
         private:
             Report* volatile  _report;         // Default report.
             int               _default_level;  // Default severity level.

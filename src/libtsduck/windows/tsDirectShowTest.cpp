@@ -144,11 +144,11 @@ void ts::DirectShowTest::testBDATuners(const UString& margin)
                 for (size_t i = 0; i < spaces.size(); ++i) {
                     const UString name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report));
                     ::HRESULT hr = iTuner->put_TuningSpace(spaces[i].pointer());
-                    _output << margin << "  Tuning space \"" << name << "\": " 
+                    _output << margin << "  Tuning space \"" << name << "\": "
                             << (SUCCEEDED(hr) ? u"accepted" : ComMessage(hr)) << std::endl;
                 }
             }
-            
+
             // Remove the network provider from the graph.
             // Will be automatically disconnected if the connection succeeded.
             graph.removeFilter(provider.pointer(), _report);

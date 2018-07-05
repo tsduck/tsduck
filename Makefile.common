@@ -581,7 +581,8 @@ export F_SEARCH F_COMMAND
 SED   ?= $(call F_COMMAND,gsed,sed)
 GREP  ?= $(call F_COMMAND,ggrep,grep)
 FGREP ?= $(call F_COMMAND,gfgrep,fgrep)
-export SED GREP FGREP
+CHMOD ?= $(call F_COMMAND,gchmod,chmod)
+export SED GREP FGREP CHMOD
 
 # Representation of a space and a comma character
 EMPTY =
@@ -1054,12 +1055,12 @@ cxxmacros:
 unixify:
 	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
 	  expand -t 4 $$f >$$f.tmp; \
-	  chmod --reference=$$f $$f.tmp; \
+	  $(CHMOD) --reference=$$f $$f.tmp; \
 	  mv -f $$f.tmp $$f; \
 	done
 	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
 	  dos2unix -q $$f; \
-	  sed -i -e 's/  *$$//' $$f; \
+	  $(SED) -i -e 's/  *$$//' $$f; \
 	done
 
 # Display make variables for debug purposes.
