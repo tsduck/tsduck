@@ -122,33 +122,19 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
     _pid_contexts()
 {
     option(u"output-file", 'o', STRING);
-    option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"output-file",
+         u"Specify the output text file for the analysis result. "
+         u"By default, use the standard output.\n\n"
+         u"Analyze the level of \"stuffing\" in sections in a list of selected PID's. "
+         u"The PID's to analyze can be selected manually or using CAS criteria. "
+         u"A section is considered as \"stuffing\" when its payload is filled with "
+         u"the same byte value (all 0x00 or all 0xFF for instance).");
 
-    setHelp(u"Analyze the level of \"stuffing\" in sections in a list of selected PID's.\n"
-            u"The PID's to analyze can be selected manually or using CAS criteria.\n"
-            u"A section is considered as \"stuffing\" when its payload is filled with\n"
-            u"the same byte value (all 0x00 or all 0xFF for instance).\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify the output text file for the analysis result.\n"
-            u"      By default, use the standard output.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Analyze all tables from this PID. Several -p or --pid options may be\n"
-            u"      specified.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid", u"Analyze all tables from this PID. Several -p or --pid options may be specified.");
 
+    // CAS filtering options.
     _cas_args.defineOptions(*this);
-    _cas_args.addHelp(*this);
 }
 
 

@@ -60,106 +60,65 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
 
 void ts::UDPReceiver::defineOptions(ts::Args& args) const
 {
-    if (_dest_as_param) {
-        // [[source@]address:]port is a mandatory parameter.
-        args.option(u"", 0, Args::STRING, 1, 1);
-    }
-    else {
-        // [[source@]address:]port is an option.
-        args.option(u"ip-udp", _with_short_options ? 'i' : 0, Args::STRING);
-    }
+    // [[source@]address:]port can be either a parameter or an option.
+    const UChar* const dest_name = _dest_as_param ? u"" : u"ip-udp";
+    const UChar dest_short = _dest_as_param || !_with_short_options ? 0 : 'i';
+    const size_t dest_min = _dest_as_param ? 1 : 0;
+    
+    args.option(dest_name, dest_short, Args::STRING, dest_min, 1);
+    args.help(dest_name, u"[address:]port",
+              u"The [address:]port describes the destination of UDP packets to receive. "
+              u"The 'port' part is mandatory and specifies the UDP port to listen on. "
+              u"The 'address' part is optional. It specifies an IP multicast address to listen on. "
+              u"It can be also a host name that translates to a multicast address. "
+              u"An optional source address can be specified as 'source@address:port' in the case of SSM.");
 
-    args.option(u"buffer-size",       _with_short_options ? 'b' : 0, Args::UNSIGNED);
-    args.option(u"default-interface", 0);
-    args.option(u"first-source",      _with_short_options ? 'f' : 0);
-    args.option(u"local-address",     _with_short_options ? 'l' : 0, Args::STRING);
-    args.option(u"no-reuse-port",     0);
-    args.option(u"reuse-port",        _with_short_options ? 'r' : 0);
-    args.option(u"source",            _with_short_options ? 's' : 0, Args::STRING);
-    args.option(u"ssm",               0);
-}
+    args.option(u"buffer-size", _with_short_options ? 'b' : 0, Args::UNSIGNED);
+    args.help(u"buffer-size", u"Specify the UDP socket receive buffer size (socket option).");
 
+    args.option(u"default-interface");
+    args.help(u"default-interface",
+              u"Let the system find the appropriate local interface on which to listen. "
+              u"By default, listen on all local interfaces.");
 
-//----------------------------------------------------------------------------
-// Add help about command line options in an Args.
-//----------------------------------------------------------------------------
+    args.option(u"first-source", _with_short_options ? 'f' : 0);
+    args.help(u"first-source",
+              u"Filter UDP packets based on the source address. Use the sender address of "
+              u"the first received packet as only allowed source. This option is useful "
+              u"when several sources send packets to the same destination address and port. "
+              u"Accepting all packets could result in a corrupted stream and only one "
+              u"sender shall be accepted. To allow a more precise selection of the sender, "
+              u"use option --source. Options --first-source and --source are mutually "
+              u"exclusive.");
 
-void ts::UDPReceiver::addHelp(ts::Args& args) const
-{
-    // Format the help text for the [[source@]address:]port parameter / option.
-    const UString destText(Args::HelpLines(_dest_as_param ? 1 : 2,
-        u"The parameter [address:]port describes the destination of UDP packets to receive. "
-        u"The 'port' part is mandatory and specifies the UDP port to listen on. "
-        u"The 'address' part is optional. It specifies an IP multicast address to listen on. "
-        u"It can be also a host name that translates to a multicast address. "
-        u"An optional source address can be specified as 'source@address:port' in the case of SSM."));
-    UString destParameter;
-    UString destOption;
+    args.option(u"local-address", _with_short_options ? 'l' : 0, Args::STRING);
+    args.help(u"local-address", u"address",
+              u"Specify the IP address of the local interface on which to listen. "
+              u"It can be also a host name that translates to a local address. "
+              u"By default, listen on all local interfaces.");
 
-    if (_dest_as_param) {
-        destParameter = u"Parameter:\n\n" + destText + u"\n";
-    }
-    else {
-        destOption = UString(_with_short_options ? u"  --i [address:]port\n" : u"") +
-            u"  --ip-udp [address:]port\n" + destText + u"\n";
-    }
+    args.option(u"no-reuse-port");
+    args.help(u"no-reuse-port",
+              u"Disable the reuse port socket option. Do not use unless completely necessary.");
 
-    UString help =
-        destParameter +
-        u"UDP reception options:\n"
-        u"\n" +
-        UString(_with_short_options ? u"  -b value\n" : u"") +
-        u"  --buffer-size value\n"
-        u"      Specify the UDP socket receive buffer size (socket option).\n"
-        u"\n"
-        u"  --default-interface\n"
-        u"      Let the system find the appropriate local interface on which to listen.\n"
-        u"      By default, listen on all local interfaces.\n"
-        u"\n" +
-        UString(_with_short_options ? u"  -f\n" : u"") +
-        u"  --first-source\n"
-        u"      Filter UDP packets based on the source address. Use the sender address of\n"
-        u"      the first received packet as only allowed source. This option is useful\n"
-        u"      when several sources send packets to the same destination address and port.\n"
-        u"      Accepting all packets could result in a corrupted stream and only one\n"
-        u"      sender shall be accepted. To allow a more precise selection of the sender,\n"
-        u"      use option --source. Options --first-source and --source are mutually\n"
-        u"      exclusive.\n"
-        u"\n" +
-        destOption +
-        UString(_with_short_options ? u"  -l address\n" : u"") +
-        u"  --local-address address\n"
-        u"      Specify the IP address of the local interface on which to listen.\n"
-        u"      It can be also a host name that translates to a local address.\n"
-        u"      By default, listen on all local interfaces.\n"
-        u"\n"
-        u"  --no-reuse-port\n"
-        u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
-        u"\n" +
-        UString(_with_short_options ? u"  -r\n" : u"") +
-        u"  --reuse-port\n"
-        u"      Set the reuse port socket option. This is now enabled by default, the option\n"
-        u"      is present for legacy only.\n"
-        u"\n" +
-        UString(_with_short_options ? u"  -s address[:port]\n" : u"") +
-        u"  --source address[:port]\n"
-        u"      Filter UDP packets based on the specified source address. This option is\n"
-        u"      useful when several sources send packets to the same destination address\n"
-        u"      and port. Accepting all packets could result in a corrupted stream and\n"
-        u"      only one sender shall be accepted. Options --first-source and --source\n"
-        u"      are mutually exclusive.\n"
-        u"\n"
-        u"  --ssm\n"
-        u"      Force the usage of Source-Specific Multicast (SSM) using the source which\n"
-        u"      is specified by the option --source. The --ssm option is implicit when the\n"
-        u"      syntax 'source@address:port' is used.\n";
+    args.option(u"reuse-port", _with_short_options ? 'r' : 0);
+    args.help(u"reuse-port",
+              u"Set the reuse port socket option. This is now enabled by default, the option "
+              u"is present for legacy only.");
 
-    if (_dest_as_param) {
-        args.setHelp(help + args.getHelp());
-    }
-    else {
-        args.setHelp(args.getHelp() + u"\n" + help);
-    }
+    args.option(u"source", _with_short_options ? 's' : 0, Args::STRING);
+    args.help(u"source", u"address[:port]",
+              u"Filter UDP packets based on the specified source address. This option is "
+              u"useful when several sources send packets to the same destination address "
+              u"and port. Accepting all packets could result in a corrupted stream and "
+              u"only one sender shall be accepted. Options --first-source and --source "
+              u"are mutually exclusive.");
+
+    args.option(u"ssm");
+    args.help(u"ssm",
+              u"Force the usage of Source-Specific Multicast (SSM) using the source which "
+              u"is specified by the option --source. The --ssm option is implicit when the "
+              u"syntax 'source@address:port' is used.");
 }
 
 

@@ -43,7 +43,6 @@
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
-
 TSDUCK_SOURCE;
 
 
@@ -67,44 +66,26 @@ Options::Options(int argc, char *argv[]) :
     command(APPEND),
     dryRun(false)
 {
-    option(u"",         0,  Args::STRING, 1, 1);
-    option(u"append",  'a');
-    option(u"dry-run", 'n');
-    option(u"prepend", 'p');
-    option(u"remove",  'r');
+    option(u"", 0, Args::STRING, 1, 1);
+    help(u"", u"A directory to add or remove to the system Path.");
 
-    setHelp(u"Directory:\n"
-            u"\n"
-            u"  A directory to add or remove to the system Path.\n"
-            u"\n"
-            u"Options\n"
-            u"\n"
-            u"  -a\n"
-            u"  --append\n"
-            u"      Append the directory to the system path (the default).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --dry-run\n"
-            u"      Display what would be done, but does not do anything.\n"
-            u"\n"
-            u"  -p\n"
-            u"  --prepend\n"
-            u"      Prepend the directory to the system path.\n"
-            u"\n"
-            u"  -r\n"
-            u"  --remove\n"
-            u"      Remove the directory from the system path.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"append", 'a');
+    help(u"append", u"Append the directory to the system path (this is the default).");
+
+    option(u"dry-run", 'n');
+    help(u"dry-run", u"Display what would be done, but does not do anything.");
+
+    option(u"prepend", 'p');
+    help(u"prepend", u"Prepend the directory to the system path.");
+
+    option(u"remove", 'r');
+    help(u"remove", u"Remove the directory from the system path.");
 
     analyze(argc, argv);
 
     directory = value(u"");
     dryRun = present(u"dry-run");
+
     if (present(u"append")) {
         command = APPEND;
     }

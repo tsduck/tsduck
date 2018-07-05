@@ -44,37 +44,13 @@ namespace ts {
     //! The default options are
     //! -\-ts-analysis -\-service-analysis -\-pid-analysis -\-table-analysis
     //!
-    class TSDUCKDLL TSAnalyzerOptions: public Args
+    class TSDUCKDLL TSAnalyzerOptions
     {
     public:
         //!
         //! Constructor.
-        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
-        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
-        //! @param [in] flags An or'ed mask of ts::Args::Flags values.
         //!
-        TSAnalyzerOptions(const UString& description = UString(),
-                          const UString& syntax = UString(),
-                          const UString& help = UString(),
-                          int flags = 0);
-
-        //!
-        //! Copy constructor.
-        //! Use default implementation, just tell the compiler we understand
-        //! the consequences of copying a pointer member.
-        //! @param [in] other The other instance to copy.
-        //!
-        TSAnalyzerOptions(const TSAnalyzerOptions& other) = default;
-
-        //!
-        //! Assignment operator.
-        //! Use default implementation, just tell the compiler we understand
-        //! the consequences of copying a pointer member.
-        //! @param [in] other The other instance to copy.
-        //! @return A reference to this object.
-        //!
-        TSAnalyzerOptions& operator=(const TSAnalyzerOptions& other) = default;
+        TSAnalyzerOptions();
 
         // Full analysis options:
         bool ts_analysis;            //!< Option -\-ts-analysis
@@ -106,15 +82,24 @@ namespace ts {
         // Table analysis options
         const DVBCharset* default_charset;  //!< Option -\-default-charset
 
-        // Overriden methods.
-        virtual void setHelp(const UString& help) override;
-        virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
-        virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true) override;
+        //!
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        virtual void defineOptions(Args& args) const;
 
         //!
-        //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
-        //! @param [in] args Another ts::Args object defining the same TSAnalyzer options.
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
         //!
-        void getOptions(Args& args);
+        virtual void load(Args& args);
+
+        //! @cond doxygen
+        // Copy constructor and assignment operator.
+        // Use default implementation, just tell the compiler we understand the consequences of copying a pointer member.
+        TSAnalyzerOptions(const TSAnalyzerOptions& other) = default;
+        TSAnalyzerOptions& operator=(const TSAnalyzerOptions& other) = default;
+        //! @endcond
     };
 }

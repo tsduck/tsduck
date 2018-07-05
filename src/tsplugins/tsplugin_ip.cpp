@@ -136,34 +136,21 @@ ts::IPInput::IPInput(TSP* tsp_) :
     _inbuf_next(0),
     _inbuf()
 {
-    option(u"display-interval",    'd', POSITIVE);
-    option(u"evaluation-interval", 'e', POSITIVE);
-
-    setHelp(u"\n"
-            u"Other options:\n"
-            u"\n"
-            u"  -d value\n"
-            u"  --display-interval value\n"
-            u"      Specify the interval in seconds between two displays of the evaluated\n"
-            u"      real-time input bitrate. The default is to never display the bitrate.\n"
-            u"      This option is ignored if --evaluation-interval is not specified.\n"
-            u"\n"
-            u"  -e value\n"
-            u"  --evaluation-interval value\n"
-            u"      Specify that the real-time input bitrate shall be evaluated on a regular\n"
-            u"      basis. The value specifies the number of seconds between two evaluations.\n"
-            u"      By default, the real-time input bitrate is never evaluated and the input\n"
-            u"      bitrate is evaluated from the PCR in the input packets.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
-
-    // Add UDP receiver common options and help.
+    // Add UDP receiver common options.
     _sock.defineOptions(*this);
-    _sock.addHelp(*this);
+
+    option(u"display-interval", 'd', POSITIVE);
+    help(u"display-interval",
+         u"Specify the interval in seconds between two displays of the evaluated "
+         u"real-time input bitrate. The default is to never display the bitrate. "
+         u"This option is ignored if --evaluation-interval is not specified.");
+
+    option(u"evaluation-interval", 'e', POSITIVE);
+    help(u"evaluation-interval",
+         u"Specify that the real-time input bitrate shall be evaluated on a regular "
+         u"basis. The value specifies the number of seconds between two evaluations. "
+         u"By default, the real-time input bitrate is never evaluated and the input "
+         u"bitrate is evaluated from the PCR in the input packets.");
 }
 
 
@@ -176,49 +163,36 @@ ts::IPOutput::IPOutput(TSP* tsp_) :
     _sock(false, *tsp_),
     _pkt_burst(DEF_PACKET_BURST)
 {
-    option(u"",               0,  STRING, 1, 1);
-    option(u"local-address", 'l', STRING);
-    option(u"packet-burst",  'p', INTEGER, 0, 1, 1, MAX_PACKET_BURST);
-    option(u"tos",           's', INTEGER, 0, 1, 1, 255);
-    option(u"ttl",           't', INTEGER, 0, 1, 1, 255);
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"The parameter address:port describes the destination for UDP packets. "
+         u"The 'address' specifies an IP address which can be either unicast or "
+         u"multicast. It can be also a host name that translates to an IP address. "
+         u"The 'port' specifies the destination UDP port.");
 
-    setHelp(u"Parameter:\n"
-            u"  The parameter address:port describes the destination for UDP packets.\n"
-            u"  The 'address' specifies an IP address which can be either unicast or\n"
-            u"  multicast. It can be also a host name that translates to an IP address.\n"
-            u"  The 'port' specifies the destination UDP port.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -l address\n"
-            u"  --local-address address\n"
-            u"      When the destination is a multicast address, specify the IP address\n"
-            u"      of the outgoing local interface. It can be also a host name that\n"
-            u"      translates to a local address.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --packet-burst value\n"
-            u"      Specifies how many TS packets should be grouped into a UDP packet.\n"
-            u"      The default is " TS_STRINGIFY(DEF_PACKET_BURST) u", the maximum is "
-            TS_STRINGIFY(MAX_PACKET_BURST) u".\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --tos value\n"
-            u"      Specifies the TOS (Type-Of-Service) socket option. Setting this value\n"
-            u"      may depend on the user's privilege or operating system configuration.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --ttl value\n"
-            u"      Specifies the TTL (Time-To-Live) socket option. The actual option\n"
-            u"      is either \"Unicast TTL\" or \"Multicast TTL\", depending on the\n"
-            u"      destination address. Remember that the default Multicast TTL is 1\n"
-            u"      on most systems.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"local-address", 'l', STRING);
+    help(u"local-address",
+         u"When the destination is a multicast address, specify the IP address "
+         u"of the outgoing local interface. It can be also a host name that "
+         u"translates to a local address.");
+
+    option(u"packet-burst", 'p', INTEGER, 0, 1, 1, MAX_PACKET_BURST);
+    help(u"packet-burst",
+         u"Specifies how many TS packets should be grouped into a UDP packet. "
+         u"The default is " TS_STRINGIFY(DEF_PACKET_BURST) u", the maximum is "
+         TS_STRINGIFY(MAX_PACKET_BURST) u".");
+
+    option(u"tos", 's', INTEGER, 0, 1, 1, 255);
+    help(u"tos",
+         u"Specifies the TOS (Type-Of-Service) socket option. Setting this value "
+         u"may depend on the user's privilege or operating system configuration.");
+
+    option(u"ttl", 't', INTEGER, 0, 1, 1, 255);
+    help(u"ttl",
+         u"Specifies the TTL (Time-To-Live) socket option. The actual option "
+         u"is either \"Unicast TTL\" or \"Multicast TTL\", depending on the "
+         u"destination address. Remember that the default Multicast TTL is 1 "
+         u"on most systems.");
 }
 
 

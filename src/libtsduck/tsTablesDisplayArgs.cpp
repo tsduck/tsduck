@@ -52,90 +52,68 @@ ts::TablesDisplayArgs::TablesDisplayArgs() :
 
 
 //----------------------------------------------------------------------------
-// Add help about command line options in an Args
-//----------------------------------------------------------------------------
-
-void ts::TablesDisplayArgs::addHelp(Args& args) const
-{
-    UString help =
-        u"\n"
-        u"Tables and sections formatting options:\n"
-        u"\n"
-        u"  -c\n"
-        u"  --c-style\n"
-        u"      Same as --raw-dump (no interpretation of section) but dump the\n"
-        u"      bytes in C-language style.\n"
-        u"\n"
-        u"  --default-charset name\n"
-        u"      Default character set to use when interpreting DVB strings without\n"
-        u"      explicit character table code. According to DVB standard ETSI EN 300 468,\n"
-        u"      the default DVB character set is ISO-6937. However, some bogus\n"
-        u"      signalization may assume that the default character set is different,\n"
-        u"      typically the usual local character table for the region. This option\n"
-        u"      forces a non-standard character table. The available table names are:\n"
-        u"      " + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".\n"
-        u"\n"
-        u"  --default-pds value\n"
-        u"      Default private data specifier. This option is meaningful only when the\n"
-        u"      signalization is incorrect, when private descriptors appear in tables\n"
-        u"      without a preceding private_data_specifier_descriptor. The specified\n"
-        u"      value is used as private data specifier to interpret private descriptors.\n"
-        u"      The PDS value can be an integer or one of (not case-sensitive):\n"
-        u"      " + PrivateDataSpecifierEnum.nameList() + u".\n"
-        u"\n"
-        u"  --europe\n"
-        u"      A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut\n"
-        u"      for commonly incorrect signalization on some European satellites. In that\n"
-        u"      signalization, the character encoding is ISO-8859-15, the most common\n"
-        u"      encoding for Latin & Western Europe languages. However, this is not the\n"
-        u"      default DVB character set and it should be properly specified in all\n"
-        u"      strings, which is not the case with some operators. Using this option,\n"
-        u"      all DVB strings without explicit table code are assumed to use ISO-8859-15\n"
-        u"      instead of the standard ISO-6937 encoding.\n"
-        u"\n"
-        u"  --nested-tlv[=min-size]\n"
-        u"      With option --tlv, try to interpret the value field of each TLV record as\n"
-        u"      another TLV area. If the min-size value is specified, the nested TLV\n"
-        u"      interpretation is performed only on value fields larger than this size.\n"
-        u"      The syntax of the nested TLV is the same as the enclosing TLV.\n"
-        u"\n"
-        u"  -r\n"
-        u"  --raw-dump\n"
-        u"      Raw dump of section, no interpretation.\n"
-        u"\n"
-        u"  --tlv syntax\n"
-        u"      For sections of unknown types, this option specifies how to interpret\n"
-        u"      some parts of the section payload as TLV records. Several --tlv options\n"
-        u"      are allowed, each one describes a part of the section payload.\n"
-        u"\n"
-        u"      Each syntax string has the form \"start,size,tagSize,lengthSize,order\".\n"
-        u"      The start and size fields define the offset and size of the TLV area\n"
-        u"      in the section payload. If the size field is \"auto\", the TLV extends up\n"
-        u"      to the end of the section. If the start field is \"auto\", the longest\n"
-        u"      TLV area in the section payload will be used. The fields tagSize and\n"
-        u"      lengthSize indicate the size in bytes of the Tag and Length fields in\n"
-        u"      the TLV structure. The field order must be either \"msb\" or \"lsb\" and\n"
-        u"      indicates the byte order of the Tag and Length fields.\n"
-        u"\n"
-        u"      All fields are optional. The default values are \"auto,auto,1,1,msb\".\n";
-
-    args.setHelp(args.getHelp() + help);
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
 void ts::TablesDisplayArgs::defineOptions(Args& args) const
 {
-    args.option(u"c-style",        'c');
+    args.option(u"c-style", 'c');
+    args.help(u"c-style",
+              u"Same as --raw-dump (no interpretation of section) but dump the "
+              u"bytes in C-language style.");
+
     args.option(u"default-charset", 0, Args::STRING);
-    args.option(u"default-pds",     0, PrivateDataSpecifierEnum);
-    args.option(u"europe",          0);
-    args.option(u"nested-tlv",      0, Args::POSITIVE, 0, 1, 0, 0, true);
-    args.option(u"raw-dump",       'r');
-    args.option(u"tlv",             0, Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.help(u"default-charset", u"name",
+              u"Default character set to use when interpreting DVB strings without "
+              u"explicit character table code. According to DVB standard ETSI EN 300 468, "
+              u"the default DVB character set is ISO-6937. However, some bogus "
+              u"signalization may assume that the default character set is different, "
+              u"typically the usual local character table for the region. This option "
+              u"forces a non-standard character table. The available table names are: " +
+              UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".");
+
+    args.option(u"default-pds", 0, PrivateDataSpecifierEnum);
+    args.help(u"default-pds",
+              u"Default private data specifier. This option is meaningful only when the "
+              u"signalization is incorrect, when private descriptors appear in tables "
+              u"without a preceding private_data_specifier_descriptor. The specified "
+              u"value is used as private data specifier to interpret private descriptors. "
+              u"The PDS value can be an integer or one of (not case-sensitive) names.");
+
+    args.option(u"europe", 0);
+    args.help(u"europe",
+              u"A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut "
+              u"for commonly incorrect signalization on some European satellites. In that "
+              u"signalization, the character encoding is ISO-8859-15, the most common "
+              u"encoding for Latin & Western Europe languages. However, this is not the "
+              u"default DVB character set and it should be properly specified in all "
+              u"strings, which is not the case with some operators. Using this option, "
+              u"all DVB strings without explicit table code are assumed to use ISO-8859-15 "
+              u"instead of the standard ISO-6937 encoding.");
+    
+    args.option(u"nested-tlv", 0, Args::POSITIVE, 0, 1, 0, 0, true);
+    args.help(u"nested-tlv", u"min-size",
+              u"With option --tlv, try to interpret the value field of each TLV record as "
+              u"another TLV area. If the min-size value is specified, the nested TLV "
+              u"interpretation is performed only on value fields larger than this size. "
+              u"The syntax of the nested TLV is the same as the enclosing TLV.");
+
+    args.option(u"raw-dump", 'r');
+    args.help(u"raw-dump", u"Raw dump of section, no interpretation.");
+
+    args.option(u"tlv", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.help(u"tlv", u"For sections of unknown types, this option specifies how to interpret "
+              u"some parts of the section payload as TLV records. Several --tlv options "
+              u"are allowed, each one describes a part of the section payload.\n\n"
+              u"Each syntax string has the form \"start,size,tagSize,lengthSize,order\". "
+              u"The start and size fields define the offset and size of the TLV area "
+              u"in the section payload. If the size field is \"auto\", the TLV extends up "
+              u"to the end of the section. If the start field is \"auto\", the longest "
+              u"TLV area in the section payload will be used. The fields tagSize and "
+              u"lengthSize indicate the size in bytes of the Tag and Length fields in "
+              u"the TLV structure. The field order must be either \"msb\" or \"lsb\" and "
+              u"indicates the byte order of the Tag and Length fields.\n\n"
+              u"All fields are optional. The default values are \"auto,auto,1,1,msb\".");
 }
 
 

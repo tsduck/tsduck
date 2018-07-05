@@ -106,55 +106,36 @@ void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
 
 
 //----------------------------------------------------------------------------
-// Add help about command line options in an Args
-//----------------------------------------------------------------------------
-
-void ts::TSScrambling::addHelp(Args& args) const
-{
-    UString help =
-        u"\n"
-        u"Transport stream scrambling options:\n"
-        u"\n"
-        u"  --atis-idsa\n"
-        u"      Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the\n"
-        u"      default). The control words are 16-byte long instead of 8-byte.\n"
-        u"\n"
-        u"  -c value\n"
-        u"  --cw value\n"
-        u"      Specifies a fixed and constant control word for all TS packets. The value\n"
-        u"      must be a string of 16 hexadecimal digits (32 digits with --atis-idsa).\n"
-        u"\n"
-        u"  --dvb-csa2\n"
-        u"      Use DVB-CSA2 scrambling. This is the default.\n"
-        u"\n"
-        u"  -f name\n"
-        u"  --cw-file name\n"
-        u"      Specifies a text file containing the list of control words to apply.\n"
-        u"      Each line of the file must contain exactly 16 hexadecimal digits (32\n"
-        u"      digits with --atis-idsa). The next control word is used each time the\n"
-        u"      \"scrambling_control\" changes in the TS packets header. When all control\n"
-        u"      words are used, the first one is used again, and so on.\n"
-        u"\n"
-        u"  -n\n"
-        u"  --no-entropy-reduction\n"
-        u"      With DVB-CSA2, do not perform control word entropy reduction to 48 bits.\n"
-        u"      Keep full 64-bit control words. Ignored with --atis-idsa.\n";
-
-    args.setHelp(args.getHelp() + help);
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
 void ts::TSScrambling::defineOptions(Args& args) const
 {
-    args.option(u"atis-idsa",             0);
-    args.option(u"cw",                   'c', Args::STRING);
-    args.option(u"cw-file",              'f', Args::STRING);
-    args.option(u"dvb-csa2",              0);
+    args.option(u"atis-idsa");
+    args.help(u"atis-idsa",
+              u"Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the "
+              u"default). The control words are 16-byte long instead of 8-byte.");
+
+    args.option(u"cw", 'c', Args::STRING);
+    args.help(u"cw",
+              u"Specifies a fixed and constant control word for all TS packets. The value "
+              u"must be a string of 16 hexadecimal digits (32 digits with --atis-idsa).");
+
+    args.option(u"cw-file", 'f', Args::STRING);
+    args.help(u"cw-file", u"name",
+              u"Specifies a text file containing the list of control words to apply. "
+              u"Each line of the file must contain exactly 16 hexadecimal digits (32 "
+              u"digits with --atis-idsa). The next control word is used each time the "
+              u"\"scrambling_control\" changes in the TS packets header. When all control "
+              u"words are used, the first one is used again, and so on.");
+
+    args.option(u"dvb-csa2");
+    args.help(u"dvb-csa2", u"Use DVB-CSA2 scrambling. This is the default.");
+
     args.option(u"no-entropy-reduction", 'n');
+    args.help(u"no-entropy-reduction",
+              u"With DVB-CSA2, do not perform control word entropy reduction to 48 bits. "
+              u"Keep full 64-bit control words. Ignored with --atis-idsa.");
 }
 
 

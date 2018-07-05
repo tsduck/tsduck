@@ -76,44 +76,26 @@ Options::Options(int argc, char *argv[]) :
     max_invalid_udp(16),
     no_encapsulation(false)
 {
-    // Warning, the following short options are already defined in TablesDisplayArgs: 'c', 'r'.
-    option(u"",                 0,  STRING);
-    option(u"max-tables",      'x', UNSIGNED);
-    option(u"no-encapsulation", 0);
+    option(u"", 0, STRING);
+    help(u"",
+         u"Input binary section file. Several files can be specified. By default, without "
+         u"file and without --ip-udp, the binary tables are read from the standard input.\n\n"
+         u"With --ip-udp, no file shall be specified. Binary sections and tables are "
+         u"received over UDP/IP as sent by the utility 'tstables' or the plugin 'tables'.");
 
+    option(u"max-tables", 'x', UNSIGNED);
+    help(u"max-tables",
+         u"Maximum number of tables to dump. Stop logging tables when this limit is "
+         u"reached. Useful with --ip-udp which never ends otherwise.");
+
+    option(u"no-encapsulation", 0);
+    help(u"no-encapsulation",
+         u"With --ip-udp, receive the tables as raw binary messages in UDP packets. "
+         u"By default, the tables are formatted into TLV messages.");
+
+    // Additional options for display tables and to receive from UDP.
     display.defineOptions(*this);
     udp.defineOptions(*this);
-
-    setHelp(u"Input file:\n"
-            u"\n"
-            u"  Binary section file. Several files can be specified. By default, without\n"
-            u"  file and without --ip-udp, the binary tables are read from the standard input.\n"
-            u"\n"
-            u"  With --ip-udp, no file shall be specified. Binary sections and tables are\n"
-            u"  received over UDP/IP as sent by the utility 'tstables' or the plugin 'tables'.\n"
-            u"\n"
-            u"General options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -x value\n"
-            u"  --max-tables value\n"
-            u"      Maximum number of tables to dump. Stop logging tables when this limit is\n"
-            u"      reached. Useful with --ip-udp which never ends otherwise.\n"
-            u"\n"
-            u"  --no-encapsulation\n"
-            u"      With --ip-udp, receive the tables as raw binary messages in UDP packets.\n"
-            u"      By default, the tables are formatted into TLV messages.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
-    display.addHelp(*this);
-    udp.addHelp(*this);
 
     analyze(argc, argv);
 

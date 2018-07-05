@@ -37,121 +37,10 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Set help: application specific help + generic help
-//----------------------------------------------------------------------------
-
-void ts::TSAnalyzerOptions::setHelp(const UString& help)
-{
-    Args::setHelp (help +
-        u"\n"
-        u"Controlling analysis:\n"
-        u"\n"
-        u"  --default-charset name\n"
-        u"      Default character set to use when interpreting DVB strings without\n"
-        u"      explicit character table code. According to DVB standard ETSI EN 300 468,\n"
-        u"      the default DVB character set is ISO-6937. However, some bogus\n"
-        u"      signalization may assume that the default character set is different,\n"
-        u"      typically the usual local character table for the region. This option\n"
-        u"      forces a non-standard character table. The available table names are:\n"
-        u"      " + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".\n"
-        u"\n"
-        u"  --suspect-max-consecutive value\n"
-        u"      Specifies the maximum number of consecutive \"suspect\" packets.\n"
-        u"      The default value is 1. If set to zero, the suspect packet detection\n"
-        u"      is disabled.\n"
-        u"\n"
-        u"      Suspect packets are TS packets which are technically correct but which\n"
-        u"      may be suspected of being incorrect, resulting in analysis errors.\n"
-        u"      Typically, in the middle of a suite of packets with uncorrectable\n"
-        u"      binary errors, one packet may appear to have no such error while\n"
-        u"      it has some errors in fact. To avoid adding this type of packets in the\n"
-        u"      analysis, a packet is declared as \"suspect\" (and consequently ignored in\n"
-        u"      the analysis) when:\n"
-        u"      - its PID is unknown (no other packet was found in this PID)\n"
-        u"      - it immediately follows a certain amount of packet containing errors\n"
-        u"        (see option --suspect-min-error-count)\n"
-        u"      - it immediately follows no more than the specified number consecutive\n"
-        u"        suspect packets.\n"
-        u"\n"
-        u"  --suspect-min-error-count value\n"
-        u"      Specifies the minimum number of consecutive packets with errors before\n"
-        u"      starting \"suspect\" packet detection. See also option\n"
-        u"      --suspect-max-consecutive. The default value is 1. If set to zero,\n"
-        u"      the suspect packet detection is disabled.\n"
-        u"\n"
-        u"Controlling output:\n"
-        u"\n"
-        u"  The output can include full synthetic analysis (options *-analysis),\n"
-        u"  fully normalized output (option --normalized) or a simple list of\n"
-        u"  values on one line (options --*-list). The second and third type of\n"
-        u"  options are useful to write automated scripts.\n"
-        u"\n"
-        u"  If output-control options are specified, only the selected outputs\n"
-        u"  are produced. If no option is given, the default is:\n"
-        u"  --ts-analysis --service-analysis --pid-analysis --table-analysis\n"
-        u"\n"
-        u"  --ts-analysis\n"
-        u"      Report global transport stream analysis.\n"
-        u"\n"
-        u"  --service-analysis\n"
-        u"      Report analysis for each service.\n"
-        u"\n"
-        u"  --pid-analysis\n"
-        u"      Report analysis for each PID.\n"
-        u"\n"
-        u"  --table-analysis\n"
-        u"      Report analysis for each table.\n"
-        u"\n"
-        u"  --error-analysis\n"
-        u"      Report analysis about detected errors.\n"
-        u"\n"
-        u"  --normalized\n"
-        u"      Complete report about the transport stream, the services and\n"
-        u"      the PID's in a normalized output format (useful for automatic\n"
-        u"      analysis).\n"
-        u"\n"
-        u"  --service-list\n"
-        u"      Report the list of all service ids.\n"
-        u"\n"
-        u"  --pid-list\n"
-        u"      Report the list of all PID's.\n"
-        u"\n"
-        u"  --global-pid-list\n"
-        u"      Report the list of all global PID's, that is to say PID's\n"
-        u"      which are not referenced by a specific service but are or\n"
-        u"      are referenced by the standard DVB PSI/SI. This include, for\n"
-        u"      instance, PID's of the PAT, EMM's, EIT's, stuffing, etc.\n"
-        u"\n"
-        u"  --unreferenced-pid-list\n"
-        u"      Report the list of all unreferenced PID's, that is to say\n"
-        u"      PID's which are neither referenced by a service nor known\n"
-        u"      as or referenced by the standard DVB PSI/SI.\n"
-        u"\n"
-        u"  --service-pid-list value\n"
-        u"      Report the list of all PID's which are referenced by the\n"
-        u"      specified service id.\n"
-        u"\n"
-        u"  --pes-pid-list\n"
-        u"      Report the list of all PID's which are declared as carrying\n"
-        u"      PES packets (audio, video, subtitles, etc).\n"
-        u"\n"
-        u"  --title string\n"
-        u"      Display the specified string as title header.\n"
-        u"\n"
-        u"  --prefix string\n"
-        u"      For one-line displays (options --*-list), prepend the\n"
-        u"      specified string to all values. For instance, options\n"
-        u"      --global --prefix -p outputs something like '-p 0 -p 1 -p 16',\n"
-        u"      which is an acceptable option list for the tsp filter plugin.\n");
-}
-
-
-//----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UString& syntax, const UString& help, int flags) :
-    Args(description, syntax, UString(), flags),
+ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     ts_analysis(false),
     service_analysis(false),
     pid_analysis(false),
@@ -171,34 +60,124 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UStri
     suspect_max_consecutive(1),
     default_charset(0)
 {
-    setHelp(help);
-
-    option(u"ts-analysis");
-    option(u"service-analysis");
-    option(u"pid-analysis");
-    option(u"table-analysis");
-    option(u"error-analysis");
-    option(u"normalized");
-    option(u"service-list");
-    option(u"pid-list");
-    option(u"global-pid-list");
-    option(u"unreferenced-pid-list");
-    option(u"pes-pid-list");
-    option(u"service-pid-list", 0, UINT16);
-    option(u"prefix", 0, STRING);
-    option(u"title", 0, STRING);
-    option(u"suspect-min-error-count", 0, UNSIGNED);
-    option(u"suspect-max-consecutive", 0, UNSIGNED);
-    option(u"default-charset", 0, STRING);
 }
 
 
 //----------------------------------------------------------------------------
-// Get option values (the public fields) after analysis of another
-// ts::Args object defining the same options.
+// Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::getOptions(Args& args)
+void ts::TSAnalyzerOptions::defineOptions(Args& args) const
+{
+    args.option(u"ts-analysis");
+    args.help(u"ts-analysis",
+              u"Report global transport stream analysis.\n\n"
+              u"The output can include full synthetic analysis (options *-analysis), "
+              u"fully normalized output (option --normalized) or a simple list of "
+              u"values on one line (options --*-list). The second and third type of "
+              u"options are useful to write automated scripts.\n\n"
+              u"If output-control options are specified, only the selected outputs "
+              u"are produced. If no option is given, the default is: "
+              u"--ts-analysis --service-analysis --pid-analysis --table-analysis");
+
+    args.option(u"service-analysis");
+    args.help(u"service-analysis", u"Report analysis for each service.");
+
+    args.option(u"pid-analysis");
+    args.help(u"pid-analysis", u"Report analysis for each PID.");
+
+    args.option(u"table-analysis");
+    args.help(u"table-analysis", u"Report analysis for each table.");
+
+    args.option(u"error-analysis");
+    args.help(u"error-analysis", u"Report analysis about detected errors.");
+
+    args.option(u"normalized");
+    args.help(u"normalized",
+              u"Complete report about the transport stream, the services and the "
+              u"PID's in a normalized output format (useful for automatic analysis).");
+
+    args.option(u"service-list");
+    args.help(u"service-list", u"Report the list of all service ids.");
+
+    args.option(u"pid-list");
+    args.help(u"pid-list", u"Report the list of all PID's.");
+
+    args.option(u"global-pid-list");
+    args.help(u"global-pid-list",
+              u"Report the list of all global PID's, that is to say PID's "
+              u"which are not referenced by a specific service but are or "
+              u"are referenced by the standard DVB PSI/SI. This include, for "
+              u"instance, PID's of the PAT, EMM's, EIT's, stuffing, etc.");
+
+    args.option(u"unreferenced-pid-list");
+    args.help(u"unreferenced-pid-list",
+              u"Report the list of all unreferenced PID's, that is to say "
+              u"PID's which are neither referenced by a service nor known "
+              u"as or referenced by the standard DVB PSI/SI.");
+
+    args.option(u"pes-pid-list");
+    args.help(u"pes-pid-list",
+              u"Report the list of all PID's which are declared as carrying "
+              u"PES packets (audio, video, subtitles, etc).");
+
+    args.option(u"service-pid-list", 0, Args::UINT16);
+    args.help(u"service-pid-list",
+              u"Report the list of all PID's which are referenced by the "
+              u"specified service id.");
+
+    args.option(u"prefix", 0, Args::STRING);
+    args.help(u"prefix",
+              u"For one-line displays (options --*-list), prepend the "
+              u"specified string to all values. For instance, options "
+              u"--global --prefix -p outputs something like '-p 0 -p 1 -p 16', "
+              u"which is an acceptable option list for the tsp filter plugin.");
+
+    args.option(u"title", 0, Args::STRING);
+    args.help(u"title", u"Display the specified string as title header.");
+
+    args.option(u"suspect-min-error-count", 0, Args::UNSIGNED);
+    args.help(u"suspect-min-error-count",
+              u"Specifies the minimum number of consecutive packets with errors before "
+              u"starting \"suspect\" packet detection. See also option "
+              u"--suspect-max-consecutive. The default value is 1. If set to zero, "
+              u"the suspect packet detection is disabled.");
+
+    args.option(u"suspect-max-consecutive", 0, Args::UNSIGNED);
+    args.help(u"suspect-max-consecutive",
+              u"Specifies the maximum number of consecutive \"suspect\" packets. "
+              u"The default value is 1. If set to zero, the suspect packet detection "
+              u"is disabled.\n\n"
+              u"Suspect packets are TS packets which are technically correct but which "
+              u"may be suspected of being incorrect, resulting in analysis errors. "
+              u"Typically, in the middle of a suite of packets with uncorrectable "
+              u"binary errors, one packet may appear to have no such error while "
+              u"it has some errors in fact. To avoid adding this type of packets in the "
+              u"analysis, a packet is declared as \"suspect\" (and consequently ignored in "
+              u"the analysis) when:\n"
+              u"- its PID is unknown (no other packet was found in this PID)\n"
+              u"- it immediately follows a certain amount of packet containing errors "
+              u"(see option --suspect-min-error-count)\n"
+              u"- it immediately follows no more than the specified number consecutive "
+              u"suspect packets.");
+
+    args.option(u"default-charset", 0, Args::STRING);
+    args.help(u"default-charset",
+              u"Default character set to use when interpreting DVB strings without "
+              u"explicit character table code. According to DVB standard ETSI EN 300 468, "
+              u"the default DVB character set is ISO-6937. However, some bogus "
+              u"signalization may assume that the default character set is different, "
+              u"typically the usual local character table for the region. This option "
+              u"forces a non-standard character table. The available table names are: "
+              u"" + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".");
+}
+
+
+//----------------------------------------------------------------------------
+// Load arguments from command line.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzerOptions::load(Args& args)
 {
     ts_analysis = args.present(u"ts-analysis");
     service_analysis = args.present(u"service-analysis");
@@ -240,27 +219,4 @@ void ts::TSAnalyzerOptions::getOptions(Args& args)
     {
         ts_analysis = service_analysis = pid_analysis = table_analysis = true;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Overriden analysis methods.
-//----------------------------------------------------------------------------
-
-bool ts::TSAnalyzerOptions::analyze(int argc, char* argv[], bool processRedirections)
-{
-    const bool ok = Args::analyze(argc, argv, processRedirections);
-    if (ok) {
-        getOptions(*this);
-    }
-    return ok;
-}
-
-bool ts::TSAnalyzerOptions::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
-{
-    const bool ok = Args::analyze(app_name, arguments, processRedirections);
-    if (ok) {
-        getOptions(*this);
-    }
-    return ok;
 }

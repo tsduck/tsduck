@@ -64,14 +64,10 @@ Options::Options(int argc, char *argv[]) :
     display()
 {
     option(u"", 0, STRING, 0, 1);
+    help(u"", u"Input MPEG capture file (standard input if omitted).");
+
     logger.defineOptions(*this);
     display.defineOptions(*this);
-
-    setHelp(u"Input file:\n"
-            u"\n"
-            u"  MPEG capture file (standard input if omitted).\n");
-    logger.addHelp(*this);
-    display.addHelp(*this);
 
     analyze(argc, argv);
 

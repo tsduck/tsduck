@@ -279,152 +279,125 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _scrambling(*tsp),
     _pzer_pmt()
 {
-    option(u"",                      0,  STRING, 0, 1);
-    option(u"access-criteria",      'a', STRING);
-    option(u"bitrate-ecm",          'b', POSITIVE);
-    option(u"channel-id",            0,  UINT16);
-    option(u"component-level",       0);
-    option(u"cp-duration",          'd', POSITIVE);
-    option(u"ecm-id",               'i', UINT16);
-    option(u"ecmg",                 'e', STRING);
-    option(u"ecmg-scs-version",     'v', INTEGER, 0, 1, 2, 3);
-    option(u"ignore-scrambled",      0);
-    option(u"log-data",              0,  ts::Severity::Enums, 0, 1, true);
-    option(u"log-protocol",          0,  ts::Severity::Enums, 0, 1, true);
-    option(u"no-audio",              0);
-    option(u"no-video",              0);
-    option(u"partial-scrambling",    0,  POSITIVE);
-    option(u"pid",                  'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"pid-ecm",               0,  PIDVAL);
-    option(u"private-data",          0,  STRING);
-    option(u"stream-id",             0,  UINT16);
-    option(u"subtitles",             0);
-    option(u"super-cas-id",         's', UINT32);
-    option(u"synchronous",           0);
+    option(u"", 0, STRING, 0, 1);
+    help(u"",
+         u"Specifies the optional service to scramble. If no service is specified, a "
+         u"list of PID's to scramble must be provided using --pid options. When PID's "
+         u"are provided, fixed control words must be specified as well.\n\n"
+         u"If no fixed CW is specified, a random CW is generated for each crypto-period "
+         u"and ECM's containing the current and next CW's are created and inserted in "
+         u"the stream. ECM's can be created only when a service is specified.\n\n"
+         u"If the argument is an integer value (either decimal or hexadecimal), it is "
+         u"interpreted as a service id. Otherwise, it is interpreted as a service name, "
+         u"as specified in the SDT. The name is not case sensitive and blanks are "
+         u"ignored. If the input TS does not contain an SDT, use service ids only.");
 
-    setHelp(u"Service parameter:\n"
-            u"\n"
-            u"  Specifies the optional service to scramble. If no service is specified, a\n"
-            u"  list of PID's to scramble must be provided using --pid options. When PID's\n"
-            u"  are provided, fixed control words must be specified as well.\n"
-            u"\n"
-            u"  If no fixed CW is specified, a random CW is generated for each crypto-period\n"
-            u"  and ECM's containing the current and next CW's are created and inserted in\n"
-            u"  the stream. ECM's can be created only when a service is specified.\n"
-            u"\n"
-            u"  If the argument is an integer value (either decimal or hexadecimal), it is\n"
-            u"  interpreted as a service id. Otherwise, it is interpreted as a service name,\n"
-            u"  as specified in the SDT. The name is not case sensitive and blanks are\n"
-            u"  ignored. If the input TS does not contain an SDT, use service ids only.\n"
-            u"\n"
-            u"General options:\n"
-            u"\n"
-            u"  -a value\n"
-            u"  --access-criteria value\n"
-            u"      Specifies the access criteria for the service as sent to the ECMG.\n"
-            u"      The value must be a suite of hexadecimal digits.\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate-ecm value\n"
-            u"      Specifies the bitrate for ECM PID's in bits / second. The default is\n"
-            u"      " + UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.\n"
-            u"\n"
-            u"  --channel-id value\n"
-            u"      Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).\n"
-            u"\n"
-            u"  -d seconds\n"
-            u"  --cp-duration seconds\n"
-            u"      Specifies the crypto-period duration in seconds (default: 10).\n"
-            u"\n"
-            u"  --component-level\n"
-            u"      Add CA_descriptors at component level in the PMT. By default, the\n"
-            u"      CA_descriptor is added at program level.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --ecm-id value\n"
-            u"      Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).\n"
-            u"\n"
-            u"  -e host:port\n"
-            u"  --ecmg host:port\n"
-            u"      Specify an ECM Generator. Without ECMG, a fixed control word must be\n"
-            u"      specified using --control-word.\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --ecmg-scs-version value\n"
-            u"      Specifies the version of the ECMG <=> SCS DVB SimulCrypt protocol.\n"
-            u"      Valid values are 2 and 3. The default is 2.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --ignore-scrambled\n"
-            u"      Ignore packets which are already scrambled. Since these packets\n"
-            u"      are likely scrambled with a different control word, descrambling\n"
-            u"      will not be possible the usual way.\n"
-            u"\n"
-            u"  --log-data[=level]\n"
-            u"      Same as --log-protocol but applies to CW_provision and ECM_response\n"
-            u"      messages only. To debug the session management without being flooded by\n"
-            u"      data messages, use --log-protocol=info --log-data=debug.\n"
-            u"\n"
-            u"  --log-protocol[=level]\n"
-            u"      Log all ECMG <=> SCS protocol messages using the specified level. If the\n"
-            u"      option is not present, the messages are logged at debug level only. If the\n"
-            u"      option is present without value, the messages are logged at info level.\n"
-            u"      A level can be a numerical debug level or any of the following:\n"
-            u"      " + ts::Severity::Enums.nameList() + u".\n"
-            u"\n"
-            u"  --no-audio\n"
-            u"      Do not scramble audio components in the selected service. By default,\n"
-            u"      all audio components are scrambled.\n"
-            u"\n"
-            u"  --no-video\n"
-            u"      Do not scramble video components in the selected service. By default,\n"
-            u"      all video components are scrambled.\n"
-            u"\n"
-            u"  --partial-scrambling count\n"
-            u"      Do not scramble all packets, only one packet every \"count\" packets.\n"
-            u"      The default value is 1, meaning that all packets are scrambled.\n"
-            u"      Specifying higher values is a way to reduce the scrambling CPU load\n"
-            u"      while keeping the service mostly scrambled.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Scramble packets with this PID value. Several -p or --pid options may be\n"
-            u"      specified. By default, scramble the specified service.\n"
-            u"\n"
-            u"  --pid-ecm value\n"
-            u"      Specifies the new ECM PID for the service. By defaut, use the first\n"
-            u"      unused PID immediately following the PMT PID. Using the default, there\n"
-            u"      is a risk to later discover that this PID is already used. In that case,\n"
-            u"      specify --pid-ecm with a notoriously unused PID value.\n"
-            u"\n"
-            u"  --private-data value\n"
-            u"      Specifies the private data to insert in the CA_descriptor in the PMT.\n"
-            u"      The value must be a suite of hexadecimal digits.\n"
-            u"\n"
-            u"  --stream-id value\n"
-            u"      Specifies the DVB SimulCrypt ECM_stream_id for the ECMG (default: 1).\n"
-            u"\n"
-            u"  --subtitles\n"
-            u"      Scramble subtitles components in the selected service. By default, the\n"
-            u"      subtitles components are not scrambled.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --super-cas-id value\n"
-            u"      Specify the DVB SimulCrypt Super_CAS_Id. This is required when --ecmg\n"
-            u"      is specified.\n"
-            u"\n"
-            u"  --synchronous\n"
-            u"      Specify to synchronously generate the ECM's. By default, in real-time\n"
-            u"      mode, the packet processing continues while generating ECM's. This option\n"
-            u"      is always on in offline mode.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"access-criteria", 'a', STRING);
+    help(u"access-criteria",
+         u"Specifies the access criteria for the service as sent to the ECMG. "
+         u"The value must be a suite of hexadecimal digits.");
 
+    option(u"bitrate-ecm", 'b', POSITIVE);
+    help(u"bitrate-ecm",
+         u"Specifies the bitrate for ECM PID's in bits / second. The default is " +
+         UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.");
+
+    option(u"channel-id", 0, UINT16);
+    help(u"channel-id", u"Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).");
+
+    option(u"component-level");
+    help(u"component-level",
+         u"Add CA_descriptors at component level in the PMT. By default, the "
+         u"CA_descriptor is added at program level.");
+
+    option(u"cp-duration", 'd', POSITIVE);
+    help(u"cp-duration", u"seconds", u"Specifies the crypto-period duration in seconds (default: 10).");
+
+    option(u"ecm-id", 'i', UINT16);
+    help(u"ecm-id", u"Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).");
+
+    option(u"ecmg", 'e', STRING);
+    help(u"ecmg", u"host:port",
+         u"Specify an ECM Generator. Without ECMG, a fixed control word must be "
+         u"specified using --control-word.");
+
+    option(u"ecmg-scs-version", 'v', INTEGER, 0, 1, 2, 3);
+    help(u"ecmg-scs-version",
+         u"Specifies the version of the ECMG <=> SCS DVB SimulCrypt protocol. "
+         u"Valid values are 2 and 3. The default is 2.");
+
+    option(u"ignore-scrambled");
+    help(u"ignore-scrambled",
+         u"Ignore packets which are already scrambled. Since these packets "
+         u"are likely scrambled with a different control word, descrambling "
+         u"will not be possible the usual way.");
+
+    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    help(u"log-data", u"level",
+         u"Same as --log-protocol but applies to CW_provision and ECM_response "
+         u"messages only. To debug the session management without being flooded by "
+         u"data messages, use --log-protocol=info --log-data=debug.");
+
+    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    help(u"log-protocol", u"level",
+         u"Log all ECMG <=> SCS protocol messages using the specified level. If the "
+         u"option is not present, the messages are logged at debug level only. If the "
+         u"option is present without value, the messages are logged at info level. "
+         u"A level can be a numerical debug level or a name.");
+
+    option(u"no-audio");
+    help(u"no-audio",
+         u"Do not scramble audio components in the selected service. By default, "
+         u"all audio components are scrambled.");
+
+    option(u"no-video");
+    help(u"no-video",
+         u"Do not scramble video components in the selected service. By default, "
+         u"all video components are scrambled.");
+
+    option(u"partial-scrambling", 0, POSITIVE);
+    help(u"partial-scrambling", u"count",
+         u"Do not scramble all packets, only one packet every \"count\" packets. "
+         u"The default value is 1, meaning that all packets are scrambled. "
+         u"Specifying higher values is a way to reduce the scrambling CPU load "
+         u"while keeping the service mostly scrambled.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"Scramble packets with this PID value. Several -p or --pid options may be "
+         u"specified. By default, scramble the specified service.");
+
+    option(u"pid-ecm", 0, PIDVAL);
+    help(u"pid-ecm",
+         u"Specifies the new ECM PID for the service. By defaut, use the first "
+         u"unused PID immediately following the PMT PID. Using the default, there "
+         u"is a risk to later discover that this PID is already used. In that case, "
+         u"specify --pid-ecm with a notoriously unused PID value.");
+
+    option(u"private-data", 0, STRING);
+    help(u"private-data",
+         u"Specifies the private data to insert in the CA_descriptor in the PMT. "
+         u"The value must be a suite of hexadecimal digits.");
+
+    option(u"stream-id", 0, UINT16);
+    help(u"stream-id", u"Specifies the DVB SimulCrypt ECM_stream_id for the ECMG (default: 1).");
+
+    option(u"subtitles");
+    help(u"subtitles",
+         u"Scramble subtitles components in the selected service. By default, the "
+         u"subtitles components are not scrambled.");
+
+    option(u"super-cas-id", 's', UINT32);
+    help(u"super-cas-id", u"Specify the DVB SimulCrypt Super_CAS_Id. This is required when --ecmg is specified.");
+
+    option(u"synchronous");
+    help(u"synchronous",
+         u"Specify to synchronously generate the ECM's. By default, in real-time "
+         u"mode, the packet processing continues while generating ECM's. This option "
+         u"is always on in offline mode.");
+
+    // Common scrambling options.
     _scrambling.defineOptions(*this);
-    _scrambling.addHelp(*this);
 }
 
 
