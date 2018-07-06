@@ -52,6 +52,11 @@ namespace ts {
         //!
         TSAnalyzerOptions();
 
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TSAnalyzerOptions() {}
+
         // Full analysis options:
         bool ts_analysis;            //!< Option -\-ts-analysis
         bool service_analysis;       //!< Option -\-service-analysis

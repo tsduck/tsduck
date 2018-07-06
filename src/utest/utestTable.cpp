@@ -56,6 +56,7 @@ public:
     void testSDT();
     void testTOT();
     void testTSDT();
+    void testCleanupPrivateDescriptors();
 
     CPPUNIT_TEST_SUITE(TableTest);
     CPPUNIT_TEST(testAssignPMT);
@@ -68,6 +69,7 @@ public:
     CPPUNIT_TEST(testSDT);
     CPPUNIT_TEST(testTOT);
     CPPUNIT_TEST(testTSDT);
+    CPPUNIT_TEST(testCleanupPrivateDescriptors);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -325,4 +327,19 @@ void TableTest::testTSDT()
     ts::TSDT tsdt3;
     tsdt3 = tsdt1;
     CPPUNIT_ASSERT(tsdt3.descs.table() == &tsdt3);
+}
+
+void TableTest::testCleanupPrivateDescriptors()
+{
+    // Issue #87 non-regression.
+    ts::DescriptorList dlist(0);
+    dlist.add(ts::EacemPreferredNameIdentifierDescriptor());
+    dlist.add(ts::LogicalChannelNumberDescriptor());
+    dlist.add(ts::ServiceDescriptor());
+    dlist.add(ts::EutelsatChannelNumberDescriptor());
+
+    CPPUNIT_ASSERT_EQUAL(size_t(4), dlist.count());
+    dlist.removeInvalidPrivateDescriptors();
+    CPPUNIT_ASSERT_EQUAL(size_t(1), dlist.count());
+    CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_SERVICE), dlist[0]->tag());
 }
