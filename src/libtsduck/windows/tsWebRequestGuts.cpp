@@ -217,13 +217,14 @@ bool ts::WebRequest::SystemGuts::init()
         }
     }
 
-    // URL connection flags. Always disable redirections (see comment on top of file).
+    // URL connection flags.
     const ::DWORD urlFlags =
-        INTERNET_FLAG_KEEP_CONNECTION |
-        INTERNET_FLAG_NO_UI |
-        INTERNET_FLAG_NO_COOKIES |
-        INTERNET_FLAG_PASSIVE |
-        INTERNET_FLAG_NO_AUTO_REDIRECT;
+        INTERNET_FLAG_KEEP_CONNECTION |   // Use keep-alive.
+        INTERNET_FLAG_NO_UI |             // Disable popup windows.
+        INTERNET_FLAG_NO_COOKIES |        // Don't store cookies, don't send stored cookies.
+        INTERNET_FLAG_PASSIVE |           // Use passive mode with FTP (less NAT issues).
+        INTERNET_FLAG_NO_AUTO_REDIRECT |  // Disable redirections (see comment on top of file).
+        INTERNET_FLAG_NO_CACHE_WRITE;     // Don't save downloaded data to local disk cache.
 
     // Build the list of request headers.
     ::WCHAR* headerAddress = 0;
