@@ -136,11 +136,10 @@ void ArgsTest::tearDown()
 // Test case: basic accessors
 void ArgsTest::testAccessors()
 {
-    ts::Args args(u"description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"description", args.getDescription());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"syntax", args.getSyntax());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"help", args.getHelp());
     CPPUNIT_ASSERT(args.getFlags() == (ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS));
 
     args.setDescription(u"description-1");
@@ -148,9 +147,6 @@ void ArgsTest::testAccessors()
 
     args.setSyntax(u"syntax-1");
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"syntax-1", args.getSyntax());
-
-    args.setHelp(u"help-1");
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"help-1", args.getHelp());
 
     args.setShell(u"shell-1");
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"shell-1", args.getShell());
@@ -163,8 +159,7 @@ void ArgsTest::testAccessors()
 void ArgsTest::testHelp()
 {
     ts::ReportBuffer<> log;
-    ts::Args args(u"{description}", u"{syntax}", u"{help}",
-                  ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&log);
 
     CPPUNIT_ASSERT(!args.analyze(u"test", {u"--help"}));
@@ -173,7 +168,21 @@ void ArgsTest::testHelp()
                                   u"\n"
                                   u"Usage: test {syntax}\n"
                                   u"\n"
-                                  u"{help}",
+                                  u"Options:\n"
+                                  u"\n"
+                                  u"  -d\n"
+                                  u"  --debug\n"
+                                  u"      Produce debug traces.\n"
+                                  u"\n"
+                                  u"  --help\n"
+                                  u"      Display this help text.\n"
+                                  u"\n"
+                                  u"  -v\n"
+                                  u"  --verbose\n"
+                                  u"      Produce verbose output.\n"
+                                  u"\n"
+                                  u"  --version\n"
+                                  u"      Display the TSDuck version number.\n",
                                   log.getMessages());
 
     args.setShell(u"{shell}");
@@ -184,7 +193,21 @@ void ArgsTest::testHelp()
                                   u"\n"
                                   u"Usage: {shell} test {syntax}\n"
                                   u"\n"
-                                  u"{help}",
+                                  u"Options:\n"
+                                  u"\n"
+                                  u"  -d\n"
+                                  u"  --debug\n"
+                                  u"      Produce debug traces.\n"
+                                  u"\n"
+                                  u"  --help\n"
+                                  u"      Display this help text.\n"
+                                  u"\n"
+                                  u"  -v\n"
+                                  u"  --verbose\n"
+                                  u"      Produce verbose output.\n"
+                                  u"\n"
+                                  u"  --version\n"
+                                  u"      Display the TSDuck version number.\n",
                                   log.getMessages());
 
     log.resetMessages();
@@ -199,8 +222,8 @@ void ArgsTest::testHelp()
 void ArgsTest::testCopyOptions()
 {
     ts::ReportBuffer<> log;
-    ts::Args args1(u"{description1}", u"{syntax1}", u"{help1}", ts::Args::NO_EXIT_ON_ERROR);
-    ts::Args args2(u"{description2}", u"{syntax2}", u"{help2}", ts::Args::NO_EXIT_ON_ERROR);
+    ts::Args args1(u"{description1}", u"{syntax1}", ts::Args::NO_EXIT_ON_ERROR);
+    ts::Args args2(u"{description2}", u"{syntax2}", ts::Args::NO_EXIT_ON_ERROR);
 
     args1.redirectReport(&log);
     args2.redirectReport(&log);
@@ -221,7 +244,7 @@ namespace {
     {
     public:
         explicit TestArgs(ts::Report* log) :
-            ts::Args(u"{description}", u"{syntax}", u"{help}", ts::Args::NO_EXIT_ON_ERROR)
+            ts::Args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR)
         {
             redirectReport(log);
             option(u"",      0,  ts::Args::STRING, 1, 2);
@@ -597,7 +620,7 @@ void ArgsTest::testBitMask()
 void ArgsTest::testGatherParameters()
 {
     ts::ReportBuffer<> log;
-    ts::Args args(u"description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.redirectReport(&log);
 
     args.option(u"");
@@ -648,7 +671,7 @@ void ArgsTest::testRedirection()
 // Test case: tristate parameters.
 void ArgsTest::testTristate()
 {
-    ts::Args args(u"description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.option(u"opt1", 0, ts::Args::TRISTATE);
     args.option(u"opt2", 0, ts::Args::TRISTATE);
     args.option(u"opt3", 0, ts::Args::TRISTATE);

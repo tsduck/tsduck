@@ -91,17 +91,8 @@ ts::DVBInput::DVBInput(TSP* tsp_) :
     _tuner_params(),
     _previous_bitrate(0)
 {
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
-
     // Define common tuning options
     _tuner_args.defineOptions(*this);
-    _tuner_args.addHelp(*this);
 }
 
 

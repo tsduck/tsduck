@@ -302,6 +302,10 @@ namespace ts {
                                           //!< the command line are considered as parameters, even if they
                                           //!< start with '-' or '-\-'.
             HELP_ON_THIS       = 0x0020,  //!< Display help using info() on this object, not standard error.
+            NO_DEBUG           = 0x0040,  //!< No predefined option "--debug".
+            NO_HELP            = 0x0080,  //!< No predefined option "--help".
+            NO_VERBOSE         = 0x0100,  //!< No predefined option "--verbose".
+            NO_VERSION         = 0x0200,  //!< No predefined option "--version".
         };
 
         //!
@@ -328,13 +332,9 @@ namespace ts {
         //!
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
         //! @param [in] flags An or'ed mask of Flags values.
         //!
-        Args(const UString& description = UString(),
-             const UString& syntax = UString(),
-             const UString& help = UString(),
-             int flags = 0);
+        Args(const UString& description = UString(), const UString& syntax = UString(), int flags = 0);
 
         //!
         //! Add the definition of an option.
@@ -456,24 +456,11 @@ namespace ts {
         virtual void setSyntax(const UString& syntax) {_syntax = syntax;}
 
         //!
-        //! Set the help description of the command.
+        //! Set the help description of the command (DEPRECATED).
         //!
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
         virtual void setHelp(const UString& help) {_help = help;}
-
-        //!
-        //! Format help lines from a long text.
-        //! @param [in] level Indentation level:
-        //! - 0 : Titles, typically no indentation.
-        //! - 1 : Description of parameters, option names.
-        //! - 2 : Description of options.
-        //! @param [in] text A long text to format.
-        //! @param [in] line_width Target line width.
-        //! @return A string with embedded margins and new-lines.
-        //! Always terminated with a new line.
-        //!
-        static UString HelpLines(int level, const UString& text, size_t line_width = 79);
 
         //!
         //! Set the option flags of the command.
@@ -495,13 +482,6 @@ namespace ts {
         //! @return A short one-line syntax summary of the command.
         //!
         const UString& getSyntax() const {return _syntax;}
-
-        //!
-        //! Get the help description of the command.
-        //!
-        //! @return A multi-line string describing the usage of options and parameters.
-        //!
-        UString getHelp() const;
 
         //!
         //! Get the option flags of the command.
@@ -982,6 +962,17 @@ namespace ts {
         // Process --help and --version predefined options.
         void processHelp();
         void processVersion();
+
+        // Format help lines from a long text.
+        // Always terminated with a new line.
+        // Indentation level:
+        // - 0 : Titles, typically no indentation.
+        // - 1 : Description of parameters, option names.
+        // - 2 : Description of options.
+        static UString HelpLines(int level, const UString& text, size_t line_width = 79);
+
+        // Format the help options of the command.
+        UString formatHelpOptions() const;
 
         // Locate an option description. Used during command line parsing.
         // Return 0 if not found.

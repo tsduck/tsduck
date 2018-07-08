@@ -35,11 +35,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PushInputPlugin::PushInputPlugin(TSP* tsp_,
-                                     const UString& description,
-                                     const UString& syntax,
-                                     const UString& help) :
-    InputPlugin(tsp_, description, syntax, help),
+ts::PushInputPlugin::PushInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
+    InputPlugin(tsp_, description, syntax),
     _receiver(tsp_, this),
     _started(false),
     _queue()

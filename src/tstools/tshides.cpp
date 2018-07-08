@@ -81,13 +81,19 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     help(u"count", u"Only display the number of devices.");
 
     option(u"device", 'd', STRING);
-    help(u"device", u"name", u"Specify the HiDes device name to list. By default, list all HiDes devices.");
+    help(u"device", u"name",
+         u"Specify the HiDes device name to list. "
+         u"By default, list all HiDes devices.");
 
     option(u"frequency", 'f', POSITIVE);
-    help(u"frequency", u"Frequency, in Hz, of the output carrier with --gain-range. The default is the first UHF channel.");
+    help(u"frequency",
+         u"Frequency, in Hz, of the output carrier with --gain-range. "
+         u"The default is the first UHF channel.");
 
     option(u"gain-range", 'g');
-    help(u"gain-range", u"Display the allowed range of output gain for the specified device, using the specified frequency and bandwidth.");
+    help(u"gain-range",
+         u"Display the allowed range of output gain for the specified device, "
+         u"using the specified frequency and bandwidth.");
 
     analyze(argc, argv);
 

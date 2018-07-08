@@ -74,27 +74,17 @@ ts::NullInput::NullInput(TSP* tsp_) :
     _max_count(0),
     _count(0)
 {
-    option(u"",                   0,  UNSIGNED, 0, 1);
-    option(u"joint-termination", 'j');
+    option(u"", 0, UNSIGNED, 0, 1);
+    help(u"",
+         u"Specify the number of null packets to generate. After the last packet, "
+         u"an end-of-file condition is generated. By default, if count is not "
+         u"specified, null packets are generated endlessly.");
 
-    setHelp(u"Count:\n"
-            u"  Specify the number of null packets to generate. After the last packet,\n"
-            u"  an end-of-file condition is generated. By default, if count is not\n"
-            u"  specified, null packets are generated endlessly.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -j\n"
-            u"  --joint-termination\n"
-            u"      When the number of null packets is specified, perform a \"joint\n"
-            u"      termination\" when completed instead of unconditional termination.\n"
-            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"joint-termination", 'j');
+    help(u"joint-termination",
+         u"When the number of null packets is specified, perform a \"joint "
+         u"termination\" when completed instead of unconditional termination. "
+         u"See \"tsp --help\" for more details on \"joint termination\".");
 }
 
 

@@ -81,81 +81,60 @@ Options::Options(int argc, char *argv[]) :
     input_file(),
     output_file()
 {
-    option(u"",                      0,  STRING, 0, 1);
-    option(u"bitrate",              'b', POSITIVE, 1, 1);
-    option(u"buffer-size",           0,  INTEGER, 0, 1, MIN_TS_BUFFER_SIZE, MAX_TS_BUFFER_SIZE);
-    option(u"dts-based",            'd');
-    option(u"final-inter-packet",   'f', UNSIGNED);
-    option(u"initial-inter-packet", 'i', UNSIGNED);
-    option(u"leading-packets",      'l', UNSIGNED);
-    option(u"output-file",          'o', STRING);
-    option(u"reference-pid",        'r', PIDVAL);
-    option(u"trailing-packets",     't', UNSIGNED);
+    option(u"", 0, STRING, 0, 1);
+    help(u"",
+         u"The input file is a TS file, typically with variable bitrate content. "
+         u"By default, the standard input is used.");
 
-    setHelp(u"Input file:\n"
-            u"  The input file is a TS file, typically with variable bitrate content.\n"
-            u"  By default, the standard input is used.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Target constant bitrate of the output file. This is mandatory parameter,\n"
-            u"      there is no default.\n"
-            u"\n"
-            u"  --buffer-size value\n"
-            u"      Input buffer size, in bytes. Must be large enough to always contain two\n"
-            u"      time stamps in the reference PID. Default: " + ts::UString::Decimal(DEFAULT_TS_BUFFER_SIZE) + u" bytes.\n"
-            u"\n"
-            u"  -d\n"
-            u"  --dts-based\n"
-            u"      Use Decoding Time Stamps (DTS) in the reference PID to evaluate the\n"
-            u"      amount of stuffing to insert. The default is to use Program Clock\n"
-            u"      References (PCR) instead of DTS.\n"
-            u"\n"
-            u"  -f value\n"
-            u"  --final-inter-packet value\n"
-            u"      Number of stuffing packets to add between input packets after the last\n"
-            u"      time stamp (PCR or DTS). By default, use the same number as in the\n"
-            u"      previous segment, between the last two time stamps.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --initial-inter-packet value\n"
-            u"      Number of stuffing packets to add between input packets before the first\n"
-            u"      time stamp (PCR or DTS). By default, use the same number as in the\n"
-            u"      first segment, between the first two time stamps.\n"
-            u"\n"
-            u"  -l value\n"
-            u"  --leading-packets value\n"
-            u"      Number of consecutive stuffing packets to add at the beginning of the\n"
-            u"      output file, before the first input packet. The default is zero.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output filename\n"
-            u"      Output file name (standard output by default). The output file is a TS\n"
-            u"      file with the same packets as the input file with interspersed stuffing\n"
-            u"      packets and a constant bitrate.\n"
-            u"\n"
-            u"  -r value\n"
-            u"  --reference-pid value\n"
-            u"      PID in which to collect time stamps (PCR or DTS) to use as reference\n"
-            u"      for the insertion of stuffing packets. By default, use the first PID\n"
-            u"      containing the specified type of time stamps (PCR or DTS).\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --trailing-packets value\n"
-            u"      Number of consecutive stuffing packets to add at the end of the\n"
-            u"      output file, after the last input packet. The default is zero.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"bitrate", 'b', POSITIVE, 1, 1);
+    help(u"bitrate",
+         u"Target constant bitrate of the output file. This is mandatory parameter, "
+         u"there is no default.");
+
+    option(u"buffer-size", 0, INTEGER, 0, 1, MIN_TS_BUFFER_SIZE, MAX_TS_BUFFER_SIZE);
+    help(u"buffer-size",
+         u"Input buffer size, in bytes. Must be large enough to always contain two "
+         u"time stamps in the reference PID. Default: " + ts::UString::Decimal(DEFAULT_TS_BUFFER_SIZE) + u" bytes.");
+
+    option(u"dts-based", 'd');
+    help(u"dts-based",
+         u"Use Decoding Time Stamps (DTS) in the reference PID to evaluate the "
+         u"amount of stuffing to insert. The default is to use Program Clock "
+         u"References (PCR) instead of DTS.");
+
+    option(u"final-inter-packet", 'f', UNSIGNED);
+    help(u"final-inter-packet",
+         u"Number of stuffing packets to add between input packets after the last "
+         u"time stamp (PCR or DTS). By default, use the same number as in the "
+         u"previous segment, between the last two time stamps.");
+
+    option(u"initial-inter-packet", 'i', UNSIGNED);
+    help(u"initial-inter-packet",
+         u"Number of stuffing packets to add between input packets before the first "
+         u"time stamp (PCR or DTS). By default, use the same number as in the "
+         u"first segment, between the first two time stamps.");
+
+    option(u"leading-packets", 'l', UNSIGNED);
+    help(u"leading-packets",
+         u"Number of consecutive stuffing packets to add at the beginning of the "
+         u"output file, before the first input packet. The default is zero.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Output file name (standard output by default). The output file is a TS "
+         u"file with the same packets as the input file with interspersed stuffing "
+         u"packets and a constant bitrate.");
+
+    option(u"reference-pid", 'r', PIDVAL);
+    help(u"reference-pid",
+         u"PID in which to collect time stamps (PCR or DTS) to use as reference "
+         u"for the insertion of stuffing packets. By default, use the first PID "
+         u"containing the specified type of time stamps (PCR or DTS).");
+
+    option(u"trailing-packets", 't', UNSIGNED);
+    help(u"trailing-packets",
+         u"Number of consecutive stuffing packets to add at the end of the "
+         u"output file, after the last input packet. The default is zero.");
 
     analyze(argc, argv);
 

@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.13-825
+Version 3.13-833
 
 - Added support for HiDes UT-100C modulator device using utility "tshides" and
   output plugin "hides". Be sure to install the right device drivers from
@@ -24,6 +24,9 @@ Version 3.13-825
   PSI/SI tables.
 
 - Added option --tos to output plugin "ip".
+
+- Bug fix: Option --cleanup-private-descriptors in plugins "bat", "cat",
+  "nit", "pmt" and "sdt" failed to cleanup consecutive private descriptors.
 
 Version 3.12-778
 

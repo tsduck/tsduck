@@ -104,102 +104,81 @@ Options::Options(int argc, char *argv[]) :
 {
     // Warning, the following short options are already defined in TunerArgs:
     // 'a', 'c', 'd', 'f', 'm', 's', 'z'
-    option(u"best-quality",         0);
-    option(u"best-strength",        0);
-    option(u"first-uhf-channel",    0,  INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    option(u"first-offset",         0,  INTEGER, 0, 1, -40, +40);
-    option(u"global-service-list", 'g');
-    option(u"last-uhf-channel",     0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    option(u"last-offset",          0,  INTEGER, 0, 1, -40, +40);
-    option(u"min-quality",          0,  INTEGER, 0, 1, 0, 100);
-    option(u"min-strength",         0,  INTEGER, 0, 1, 0, 100);
-    option(u"no-offset",           'n');
-    option(u"psi-timeout",          0,  UNSIGNED);
-    option(u"service-list",        'l');
-    option(u"show-modulation",      0);
-    option(u"uhf-band",            'u');
     tuner.defineOptions(*this);
 
-    setHelp(u"If tuning parameters are present (frequency or channel reference), the NIT is\n"
-            u"read on the specified frequency and a full scan of the corresponding network is\n"
-            u"performed.\n"
-            u"\n"
-            u"By default, without specific frequency, an UHF-band scanning is performed.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --best-quality\n"
-            u"      With UHF-band scanning, for each channel, use the offset with the\n"
-            u"      best signal quality. By default, use the average of lowest and highest\n"
-            u"      offsets with required minimum quality and strength.\n"
-            u"\n"
-            u"  --best-strength\n"
-            u"      With UHF-band scanning, for each channel, use the offset with the\n"
-            u"      best signal strength. By default, use the average of lowest and highest\n"
-            u"      offsets with required minimum quality and strength.\n"
-            u"\n"
-            u"  --first-uhf-channel value\n"
-            u"      For UHF-band scanning, specify the first channel to scan (default: " +
-            ts::UString::Decimal(ts::UHF::FIRST_CHANNEL) + u").\n"
-            u"\n"
-            u"  --first-offset value\n"
-            u"      For UHF-band scanning, specify the first offset to scan (default: " +
-            ts::UString::Decimal(DEFAULT_FIRST_OFFSET, 0, true, u",", true) + u")\n"
-            u"      on each channel.\n"
-            u"\n"
-            u"  -g\n"
-            u"  --global-service-list\n"
-            u"      Same as --service-list but display a global list of services at the end\n"
-            u"      of scanning instead of per transport stream.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --last-uhf-channel value\n"
-            u"      For UHF-band scanning, specify the last channel to scan (default: " +
-            ts::UString::Decimal(ts::UHF::LAST_CHANNEL) + u").\n"
-            u"\n"
-            u"  --last-offset value\n"
-            u"      For UHF-band scanning, specify the last offset to scan (default: " +
-            ts::UString::Decimal(DEFAULT_LAST_OFFSET, 0, true, u",", true) + u")\n"
-            u"      on each channel.\n"
-            u"\n"
-            u"  --min-quality value\n"
-            u"      Minimum signal quality percentage. Frequencies with lower signal\n"
-            u"      quality are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_QUALITY) + u"%).\n"
-            u"\n"
-            u"  --min-strength value\n"
-            u"      Minimum signal strength percentage. Frequencies with lower signal\n"
-            u"      strength are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u"%).\n"
-            u"\n"
-            u"  -n\n"
-            u"  --no-offset\n"
-            u"      For UHF-band scanning, scan only the central frequency of each channel.\n"
-            u"      Do not scan frequencies with offsets.\n"
-            u"\n"
-            u"  --psi-timeout milliseconds\n"
-            u"      Specifies the timeout, in milli-seconds, for PSI/SI table collection.\n"
-            u"      Useful only with --service-list. The default is " +
-            ts::UString::Decimal(DEFAULT_PSI_TIMEOUT) + u" milli-seconds.\n"
-            u"\n"
-            u"  -l\n"
-            u"  --service-list\n"
-            u"      Read SDT of each channel and display the list of services.\n"
-            u"\n"
-            u"  --show-modulation\n"
-            u"      Display modulation parameters when possible.\n"
-            u"\n"
-            u"  -u\n"
-            u"  --uhf-band\n"
-            u"      Perform a complete DVB-T UHF-band scanning. Do not use the NIT.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
-    tuner.addHelp(*this);
+    option(u"best-quality");
+    help(u"best-quality",
+         u"With UHF-band scanning, for each channel, use the offset with the "
+         u"best signal quality. By default, use the average of lowest and highest "
+         u"offsets with required minimum quality and strength. Note that some tuners "
+         u"cannot report a correct signal quality, making this option useless.");
+
+    option(u"best-strength");
+    help(u"best-strength",
+         u"With UHF-band scanning, for each channel, use the offset with the "
+         u"best signal strength. By default, use the average of lowest and highest "
+         u"offsets with required minimum quality and strength. Note that some tuners "
+         u"cannot report a correct signal strength, making this option useless.");
+
+    option(u"first-uhf-channel", 0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    help(u"first-uhf-channel",
+         u"For UHF-band scanning, specify the first channel to scan (default: " +
+         ts::UString::Decimal(ts::UHF::FIRST_CHANNEL) + u").");
+
+    option(u"first-offset", 0, INTEGER, 0, 1, -40, +40);
+    help(u"first-offset",
+         u"For UHF-band scanning, specify the first offset to scan (default: " +
+         ts::UString::Decimal(DEFAULT_FIRST_OFFSET, 0, true, u",", true) + u") "
+         u"on each channel.");
+
+    option(u"global-service-list", 'g');
+    help(u"global-service-list", u"");
+
+    option(u"last-uhf-channel", 0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    help(u"last-uhf-channel",
+         u"Same as --service-list but display a global list of services at the end "
+         u"of scanning instead of per transport stream.");
+
+    option(u"last-offset", 0, INTEGER, 0, 1, -40, +40);
+    help(u"last-offset",
+         u"For UHF-band scanning, specify the last channel to scan (default: " +
+         ts::UString::Decimal(ts::UHF::LAST_CHANNEL) + u").");
+
+    option(u"min-quality", 0, INTEGER, 0, 1, 0, 100);
+    help(u"min-quality",
+         u"Minimum signal quality percentage. Frequencies with lower signal "
+         u"quality are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_QUALITY) + u"%).");
+
+    option(u"min-strength", 0, INTEGER, 0, 1, 0, 100);
+    help(u"min-strength",
+         u"Minimum signal strength percentage. Frequencies with lower signal "
+         u"strength are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u"%).");
+
+    option(u"no-offset", 'n');
+    help(u"no-offset",
+         u"For UHF-band scanning, scan only the central frequency of each channel. "
+         u"Do not scan frequencies with offsets.");
+
+    option(u"psi-timeout", 0, UNSIGNED);
+    help(u"psi-timeout", u"milliseconds",
+         u"Specifies the timeout, in milli-seconds, for PSI/SI table collection. "
+         u"Useful only with --service-list. The default is " +
+         ts::UString::Decimal(DEFAULT_PSI_TIMEOUT) + u" milli-seconds.");
+
+    option(u"service-list", 'l');
+    help(u"service-list", u"Read SDT of each channel and display the list of services.");
+
+    option(u"show-modulation", 0);
+    help(u"show-modulation",
+         u"Display modulation parameters when possible. Note that some tuners "
+         u"cannot report correct modulation parameters, making this option useless.");
+
+    option(u"uhf-band", 'u');
+    help(u"uhf-band",
+         u"Perform a complete DVB-T UHF-band scanning. Do not use the NIT.\n\n"
+         u"If tuning parameters are present (frequency or channel reference), the NIT is "
+         u"read on the specified frequency and a full scan of the corresponding network is "
+         u"performed. By default, without specific frequency, an UHF-band scanning is performed.");
 
     analyze(argc, argv);
     tuner.load(*this);

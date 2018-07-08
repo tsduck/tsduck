@@ -113,12 +113,6 @@ namespace ts {
         void defineOptions(Args& args) const;
 
         //!
-        //! Add help about command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void addHelp(Args& args) const;
-
-        //!
         //! Load arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.

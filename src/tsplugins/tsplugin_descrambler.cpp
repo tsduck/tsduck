@@ -83,26 +83,14 @@ ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
     _cas_id(0)
 {
     option(u"cas-id", 0, UINT16);
-
-    setHelp(u"This plugin descrambles fixed PID's with fixed control words. As a demo, it can\n"
-            u"also descramble services for which clear ECM's were generated using the utility\n"
-            u"named tsecmg, a DVB SimulCrypt-compliant ECMG for test and demo.\n"
-            u"\n" +
-            getHelp() +
-            u"\n"
-            u"General options:\n"
-            u"\n"
-            u"  --cas-id value\n"
-            u"      Specify the CA_system_id to filter when searching for ECM streams. Since\n"
-            u"      this descrambler is a demo tool using clear ECM's, it is unlikely that\n"
-            u"      other real ECM streams exist. So, by default, any ECM stream is used to\n"
-            u"      get the clear ECM's.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    help(u"cas-id",
+         u"Specify the CA_system_id to filter when searching for ECM streams. Since "
+         u"this descrambler is a demo tool using clear ECM's, it is unlikely that "
+         u"other real ECM streams exist. So, by default, any ECM stream is used to "
+         u"get the clear ECM's.\n\n"
+         u"This plugin descrambles fixed PID's with fixed control words. As a demo, it can "
+         u"also descramble services for which clear ECM's were generated using the utility "
+         u"named tsecmg, a DVB SimulCrypt-compliant ECMG for test and demo.");
 }
 
 

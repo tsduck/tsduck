@@ -107,12 +107,8 @@ namespace ts {
         //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        PushInputPlugin(TSP* tsp_,
-                        const UString& description = UString(),
-                        const UString& syntax = UString(),
-                        const UString& help = UString());
+        PushInputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
     private:
         // Internal thread which receives TS packets.

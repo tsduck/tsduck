@@ -94,10 +94,10 @@ void DVBTest::tearDown()
 
 void DVBTest::testTunerArgs()
 {
-    ts::Args args(u"Test tuner", u"[options]", u"<help intro>\n");
+    ts::Args args(u"Test tuner", u"[options]");
     ts::TunerArgs tuner_args;
-    tuner_args.addHelp(args);
-    utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelp() << std::endl;
+    tuner_args.defineOptions(args);
+    utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
 void DVBTest::testZapFiles()
