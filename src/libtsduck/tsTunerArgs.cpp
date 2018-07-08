@@ -505,14 +505,15 @@ void ts::TunerArgs::defineOptions(Args& args) const
                   u"The format of these text files is specified by the Linux DVB szap, czap "
                   u"and tzap utilities. Zap config files can be created using the scandvb "
                   u"tool (szap, czap, tzap and scandvb are part of the dvb-apps package). "
-                  u"The location of the default zap configuration file depends on the system. "
+                  u"The location of the default zap configuration file depends on the system."
 #if defined(TS_LINUX)
-                  u"On Linux, the default file is $HOME/.Xzap/channels.conf, where X is either 's' "
-                  u"(satellite), 'c' (cable) or 't' (terrestrial), depending on the frontend type. "
+                  u" On Linux, the default file is $HOME/.Xzap/channels.conf, where X is either 's' "
+                  u"(satellite), 'c' (cable) or 't' (terrestrial), depending on the frontend type."
 #elif defined(TS_WINDOWS)
-                  u"On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf, "
-                  u"where X is either 's', 'c' or 't'. ");
+                  u" On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf, "
+                  u"where X is either 's', 'c' or 't'."
 #endif
+                  );
     }
 }
 
