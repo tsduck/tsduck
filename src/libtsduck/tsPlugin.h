@@ -249,12 +249,8 @@ namespace ts {
         //! @param [in] to_tsp Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        Plugin(TSP* to_tsp,
-               const UString& description = UString(),
-               const UString& syntax = UString(),
-               const UString& help = UString());
+        Plugin(TSP* to_tsp, const UString& description = UString(), const UString& syntax = UString());
 
         //!
         //! Virtual destructor.
@@ -307,12 +303,8 @@ namespace ts {
         //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        InputPlugin(TSP* tsp_,
-                    const UString& description = UString(),
-                    const UString& syntax = UString(),
-                    const UString& help = UString());
+        InputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
         //!
         //! Virtual destructor.
@@ -368,12 +360,8 @@ namespace ts {
         //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        OutputPlugin(TSP* tsp_,
-                     const UString& description = UString(),
-                     const UString& syntax = UString(),
-                     const UString& help = UString());
+        OutputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
         //!
         //! Virtual destructor.
@@ -452,12 +440,8 @@ namespace ts {
         //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        ProcessorPlugin(TSP* tsp_,
-                        const UString& description = UString(),
-                        const UString& syntax = UString(),
-                        const UString& help = UString());
+        ProcessorPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
         //!
         //! Virtual destructor.

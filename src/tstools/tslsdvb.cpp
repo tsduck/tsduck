@@ -52,49 +52,34 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    ts::TunerArgs                tuner;      // Name of device to list (unspecified means all).
 #if defined(TS_WINDOWS)
     ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
 #endif
+
+    ts::TunerArgs tuner;  // Name of device to list (unspecified means all).
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"List DVB tuner devices", u"[options]"),
-    tuner(true, true)
 #if defined(TS_WINDOWS)
-    , test_type(ts::DirectShowTest::NONE)
+    test_type(ts::DirectShowTest::NONE),
 #endif
+    tuner(true, true)
 {
 #if defined(TS_WINDOWS)
-    option(u"enumerate-devices", 'e');  // Legacy, not documented anymore
-    option(u"test", 't', ts::DirectShowTest::TestNames);
-#endif
 
-    setHelp(u"By default, without device name or adapter, all DVB devices are listed.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-#if defined(TS_WINDOWS)
-            u"  -t name\n"
-            u"  --test name\n"
-            u"      Run a specific DirectShow test. Very verbose output, for debug only.\n"
-            u"      The default is none. The names of the available tests are:\n"
-            u"      " + ts::DirectShowTest::TestNames.nameList() + u".\n"
-            u"\n"
+    option(u"enumerate-devices", 'e');
+    help(u"test", u"Legacy option, equivalent to --test enumerate-devices.");
+
+    option(u"test", 't', ts::DirectShowTest::TestNames);
+    help(u"test", u"name",
+         u"Run a specific DirectShow test. Very verbose output, for debug only. "
+         u"The default is none.");
+
 #endif
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
 
     // Add common tuner options.
     tuner.defineOptions(*this);
-    tuner.addHelp(*this);
 
     // Analyze command line options.
     analyze(argc, argv);

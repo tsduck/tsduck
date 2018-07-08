@@ -126,12 +126,11 @@ ts::UString ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) co
 
 ts::UString ts::Enumeration::nameList(const UString& separator, const UString& inQuote, const UString& outQuote) const
 {
-    UString list;
-    for (EnumMap::const_iterator it = _map.begin(); it != _map.end(); ++it) {
-        if (!list.empty()) {
-            list += separator;
-        }
-        list += inQuote + it->second + outQuote;
+    UStringVector sl;
+    sl.reserve(_map.size());
+    for (auto it = _map.begin(); it != _map.end(); ++it) {
+        sl.push_back(inQuote + it->second + outQuote);
     }
-    return list;
+    std::sort(sl.begin(), sl.end());
+    return UString::Join(sl, separator);
 }

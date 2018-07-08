@@ -282,293 +282,238 @@ void ts::TunerArgs::defineOptions(Args& args) const
 {
     // Tuner identification.
     args.option(u"adapter", _allow_short_options ? u'a' : 0, Args::UNSIGNED);
-    args.option(u"device-name", _allow_short_options ? u'd' : 0, Args::STRING);
+    args.help(u"adapter", u"N",
+#if defined(TS_LINUX)
+              u"Specifies the Linux DVB adapter N (/dev/dvb/adapterN). "
+#elif defined(TS_WINDOWS)
+              u"Specifies the Nth DVB adapter in the system. "
+#endif
+              u"This option can be used instead of device name.");
 
+    args.option(u"device-name", _allow_short_options ? u'd' : 0, Args::STRING);
+    args.help(u"device-name", u"name",
+#if defined (TS_LINUX)
+              u"Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]] "
+              u"where A = adapter number, F = frontend number (default: 0), M = demux "
+              u"number (default: 0), V = dvr number (default: 0). "
+#elif defined (TS_WINDOWS)
+              u"Specify the DVB receiver device name. This is a DirectShow/BDA tuner "
+              u"filter name (not case sensitive, blanks are ignored). "
+#endif
+              u"By default, the first DVB receiver device is used. "
+              u"Use the tslsdvb utility to list all DVB devices. ");
+
+    // All other parameters are used to control the tuner.
     if (!_info_only) {
 
         // Reception parameters.
         args.option(u"receive-timeout", 0, Args::UNSIGNED);
+        args.help(u"receive-timeout", u"milliseconds",
+                  u"Specifies the timeout, in milliseconds, for each receive operation. "
+                  u"To disable the timeout and wait indefinitely for packets, specify zero. "
+                  u"This is the default.");
+
         args.option(u"signal-timeout", 0, Args::UNSIGNED);
+        args.help(u"signal-timeout", u"seconds",
+                  u"Specifies the timeout, in seconds, for DVB signal locking. If no signal "
+                  u"is detected after this timeout, the command aborts. To disable the "
+                  u"timeout and wait indefinitely for the signal, specify zero. The default "
+                  u"is " + UString::Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + u" seconds.");
+
 #if defined(TS_LINUX)
+
         args.option(u"demux-buffer-size", 0, Args::UNSIGNED);
+        args.help(u"demux-buffer-size",
+                  u"Default buffer size, in bytes, of the demux device. "
+                  u"The default is 1 MB.");
+
 #elif defined(TS_WINDOWS)
+
         args.option(u"demux-queue-size", 0, Args::UNSIGNED);
+        args.help(u"demux-queue-size",
+                  u"Specify the maximum number of media samples in the queue between the "
+                  u"DirectShow capture thread and the input plugin thread. The default is " +
+                  UString::Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + u" media samples.");
+        
 #endif
 
         // Tuning options.
         args.option(u"bandwidth", 0, BandWidthEnum);
+        args.help(u"bandwidth",
+                  u"Used for DVB-T/T2 tuners only. The default is \"8-MHz\".");
+
         args.option(u"channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
+        args.help(u"channel-transponder", u"name",
+                  u"Tune to the transponder containing the specified channel. The channel "
+                  u"name is not case-sensitive and blanks are ignored. The channel is searched "
+                  u"in a \"zap configuration file\" and the corresponding tuning information "
+                  u"in this file is used.");
+
         args.option(u"delivery-system", 0, DeliverySystemEnum);
+        args.help(u"delivery-system",
+                  u"Used for DVB-S and DVB-S2 tuners only. Which delivery system to use. "
+                  u"The default is \"DVB-S\".");
+
         args.option(u"fec-inner", 0, InnerFECEnum);
+        args.help(u"fec-inner",
+                  u"Used for DVB-S/S2 and DVB-C tuners only. Inner Forward Error Correction. "
+                  u"The default is \"auto\".");
+
         args.option(u"frequency", _allow_short_options ? 'f' : 0, Args::UNSIGNED);
+        args.help(u"frequency", u"Carrier frequency in Hz (all tuners). There is no default.");
+
         args.option(u"guard-interval", 0, GuardIntervalEnum);
+        args.help(u"guard-interval", u"Used for DVB-T/T2 tuners only. The default is \"1/32\".");
+
         args.option(u"hierarchy", 0, HierarchyEnum);
+        args.help(u"hierarchy", u"Used for DVB-T/T2 tuners only. The default is \"none\".");
+
         args.option(u"high-priority-fec", 0, InnerFECEnum);
+        args.help(u"high-priority-fec",
+                  u"Used for DVB-T/T2 tuners only. "
+                  u"Error correction for high priority streams. "
+                  u"The default is \"auto\".");
+
         args.option(u"lnb", 0, Args::STRING);
+        args.help(u"lnb", u"low_freq[,high_freq,switch_freq]",
+                  u"Used for DVB-S and DVB-S2 tuners only. "
+                  u"Description of the LNB.  All frequencies are in MHz. "
+                  u"low_freq and high_freq are the frequencies of the local oscillators. "
+                  u"switch_freq is the limit between the low and high band. "
+                  u"high_freq and switch_freq are used for dual-band LNB's only. "
+                  u"The default is a universal LNB: low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+
         args.option(u"low-priority-fec", 0, InnerFECEnum);
+        args.help(u"low-priority-fec",
+                  u"Used for DVB-T/T2 tuners only. "
+                  u"Error correction for low priority streams. "
+                  u"The default is \"auto\".");
+
         args.option(u"modulation", _allow_short_options ? 'm' : 0, ModulationEnum);
+        args.help(u"modulation",
+                  u"Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners. "
+                  u"Modulation type. "
+                  u"The default is \"64-QAM\" for DVB-T/T2 and DVB-C, \"QPSK\" for DVB-S2, \"8-VSB\" for ATSC.");
+
         args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -3, 3);
+        args.help(u"offset-count",
+                  u"Used for DVB-T tuners only. "
+                  u"Specify the number of offsets from the UHF or VHF channel. The default "
+                  u"is zero. See options --uhf-channel or --vhf-channel.");
+
         args.option(u"pilots", 0, PilotEnum);
-        args.option(u"polarity", 0, PolarizationEnum);
-        args.option(u"roll-off", 0, RollOffEnum);
+        args.help(u"pilots",
+                  u"Used for DVB-S2 tuners only. Presence of pilots frames. "
+                  u"The default is \"off\". ");
+
         args.option(u"plp", 0, Args::UINT8);
+        args.help(u"plp",
+                  u"Used for DVB-T2 tuners only. "
+                  u"Physical Layer Pipe (PLP) number to select, from 0 to 255. "
+                  u"The default is to keep the entire stream, without PLP selection. "
+                  u"Warning: this option is supported on Linux only.");
+
+        args.option(u"polarity", 0, PolarizationEnum);
+        args.help(u"polarity",
+                  u"Used for DVB-S and DVB-S2 tuners only. "
+                  u"Polarity. The default is \"vertical\".");
+
+        args.option(u"roll-off", 0, RollOffEnum);
+        args.help(u"roll-off",
+                  u"Used for DVB-S2 tuners only. Roll-off factor. "
+                  u"The default is \"0.35\" (implied for DVB-S, default for DVB-S2).");
+
         args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
+        args.help(u"satellite-number",
+                  u"Used for DVB-S and DVB-S2 tuners only. "
+                  u"Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for "
+                  u"non-DiSEqC switches. The default is 0. ");
+
         args.option(u"spectral-inversion", 0, SpectralInversionEnum);
+        args.help(u"spectral-inversion",
+                  u"Spectral inversion. The default is \"auto\".");
+
         args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
+        args.help(u"symbol-rate",
+                  u"Used for DVB-S, DVB-S2 and DVB-C tuners only. "
+                  u"Symbol rate in symbols/second. The default is " +
+                  UString::Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) +
+                  u" sym/s for satellite and " +
+                  UString::Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) +
+                  u" sym/s for cable. ");
+
         args.option(u"transmission-mode", 0, TransmissionModeEnum);
+        args.help(u"transmission-mode",
+                  u"Used for DVB-T tuners only. Transmission mode. The default is \"8K\".");
+
         args.option(u"tune", 0, Args::STRING);
+        args.help(u"tune", u"string",
+                  u"Tuning options using Linux DVB \"zap\" format.\n\n"
+                  u"By default, no tuning is performed on the DVB frontend. The transponder "
+                  u"on which the frontend is currently tuned is used. There are three ways to "
+                  u"specify a new transponder: specifying individual tuning options, a global "
+                  u"tuning information string using the Linux DVB \"zap\" format, the name of "
+                  u"a channel contained in the transponder (with appropriate channel "
+                  u"configuration files).\n\n"
+                  u"The --tune string specifies all tuning information for the transponder in one string. "
+                  u"As such, this option is incompatible with the individual tuning options, "
+                  u"except \"local\" (non-transponder) options --lnb and --satellite-number. "
+                  u"The format of the parameter string depends on the DVB frontend type. "
+                  u"It is the same format as used in the Linux DVB szap/czap/tzap "
+                  u"configuration files:\n\n"
+                  u"Satellite (QPSK): \"freq:pol:satnum:symrate\". "
+                  u"With freq = frequency in MHz, pol = polarity (either v or h), satnum = "
+                  u"satellite number, symrate = symbol rate in ksym/s.\n\n"
+                  u"Cable (QAM): \"freq:inv:symrate:conv:mod\". "
+                  u"With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF, "
+                  u"INVERSION_ON, INVERSION_AUTO), symrate = symbol rate in sym/s, conv = "
+                  u"convolutional rate (one of FEC_NONE, FEC_1_2, FEC_2_3, FEC_3_4, "
+                  u"FEC_4_5, FEC_5_6, FEC_6_7, FEC_7_8, FEC_8_9, FEC_AUTO), "
+                  u"mod = modulation (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128, "
+                  u"QAM_256, QAM_AUTO).\n\n"
+                  u"Terrestrial (OFDM): \"freq:inv:bw:convhp:convlp:modu:mode:guard:hier\". "
+                  u"With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF, "
+                  u"INVERSION_ON, INVERSION_AUTO), bw = bandwidth (one of BANDWIDTH_8_MHZ, "
+                  u"BANDWIDTH_7_MHZ, BANDWIDTH_6_MHZ, BANDWIDTH_AUTO), convhp and convlp = "
+                  u"convolutional rate for high and low priority (see values in cable), "
+                  u"modu = modulation (see values in cable), mode = transmission mode "
+                  u"(one of TRANSMISSION_MODE_2K, TRANSMISSION_MODE_8K,  "
+                  u"TRANSMISSION_MODE_AUTO), guard = guard interval (one of "
+                  u"GUARD_INTERVAL_1_32, GUARD_INTERVAL_1_16, GUARD_INTERVAL_1_8, "
+                  u"GUARD_INTERVAL_1_4, GUARD_INTERVAL_AUTO), hier = hierarchy (one of "
+                  u"HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).");
+
         args.option(u"uhf-channel", 0, Args::INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
+        args.help(u"uhf-channel",
+                  u"Used for DVB-T tuners only. "
+                  u"Specify the UHF channel number of the carrier. Can be used in "
+                  u"replacement to --frequency. Can be combined with an --offset-count "
+                  u"option. The resulting frequency is "
+                  u"306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).");
+
         args.option(u"vhf-channel", 0, Args::INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
+        args.help(u"vhf-channel",
+                  u"Used for DVB-T tuners only. "
+                  u"Specify the VHF channel number of the carrier. Can be used in "
+                  u"replacement to --frequency. Can be combined with an --offset-count "
+                  u"option. The resulting frequency is "
+                  u"142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).");
+
         args.option(u"zap-config-file", _allow_short_options ? 'z' : 0, Args::STRING);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Add help about command line options in an Args
-//----------------------------------------------------------------------------
-
-void ts::TunerArgs::addHelp(Args& args) const
-{
-    UString help =
-        u"\n"
-        u"Tuner identification:\n"
-        u"\n" +
-        UString(_allow_short_options ? u"  -a N\n" : u"") +
-        u"  --adapter N\n"
+        args.help(u"zap-config-file",
+                  u"Zap configuration file to use for option -c or --channel-transponder. "
+                  u"The format of these text files is specified by the Linux DVB szap, czap "
+                  u"and tzap utilities. Zap config files can be created using the scandvb "
+                  u"tool (szap, czap, tzap and scandvb are part of the dvb-apps package). "
+                  u"The location of the default zap configuration file depends on the system. "
 #if defined(TS_LINUX)
-        u"      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
+                  u"On Linux, the default file is $HOME/.Xzap/channels.conf, where X is either 's' "
+                  u"(satellite), 'c' (cable) or 't' (terrestrial), depending on the frontend type. "
 #elif defined(TS_WINDOWS)
-        u"      Specifies the Nth DVB adapter in the system.\n"
+                  u"On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf, "
+                  u"where X is either 's', 'c' or 't'. ");
 #endif
-        u"      This option can be used instead of device name.\n"
-        u"\n" +
-        UString(_allow_short_options ? u"  -d \"name\"\n" : u"") +
-        u"  --device-name \"name\"\n"
-#if defined (TS_LINUX)
-        u"      Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]]\n"
-        u"      where A = adapter number, F = frontend number (default: 0), M = demux\n"
-        u"      number (default: 0), V = dvr number (default: 0).\n"
-#elif defined (TS_WINDOWS)
-        u"      Specify the DVB receiver device name. This is a DirectShow/BDA tuner\n"
-        u"      filter name (not case sensitive, blanks are ignored).\n"
-#endif
-        u"      By default, the first DVB receiver device is used.\n"
-        u"      Use the tslsdvb utility to list all DVB devices.\n";
-
-    if (!_info_only) {
-        help +=
-            u"\n"
-            u"Tuner reception parameters:\n"
-#if defined (TS_LINUX)
-            u"\n"
-            u"  --demux-buffer-size value\n"
-            u"      Default buffer size, in bytes, of the demux device.\n"
-            u"      The default is 1 MB.\n"
-#elif defined (TS_WINDOWS)
-            u"\n"
-            u"  --demux-queue-size value\n"
-            u"      Specify the maximum number of media samples in the queue between the\n"
-            u"      DirectShow capture thread and the input plugin thread. The default is\n"
-            u"      " + UString::Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + u" media samples.\n"
-#endif
-            u"\n"
-            u"  --receive-timeout milliseconds\n"
-            u"      Specifies the timeout, in milliseconds, for each receive operation.\n"
-            u"      To disable the timeout and wait indefinitely for packets, specify zero.\n"
-            u"      This is the default.\n"
-            u"\n"
-            u"  --signal-timeout seconds\n"
-            u"      Specifies the timeout, in seconds, for DVB signal locking. If no signal\n"
-            u"      is detected after this timeout, the command aborts. To disable the\n"
-            u"      timeout and wait indefinitely for the signal, specify zero. The default\n"
-            u"      is " + UString::Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + u" seconds.\n"
-            u"\n"
-            u"Tuning:\n"
-            u"\n"
-            u"  By default, no tuning is performed on the DVB frontend. The transponder\n"
-            u"  on which the frontend is currently tuned is used. There are three ways to\n"
-            u"  specify a new transponder: specifying individual tuning options, a global\n"
-            u"  tuning information string using the Linux DVB \"zap\" format, the name of\n"
-            u"  a channel contained in the transponder (with appropriate channel\n"
-            u"  configuration files).\n"
-            u"\n"
-            u"Individual tuning options:\n"
-            u"\n"
-            u"  --bandwidth value\n"
-            u"      Used for DVB-T/T2 tuners only.\n"
-            u"      Must be one of \"auto\", \"8-MHz\", \"7-MHz\", \"6-MHz\" and for DVB-T2\n"
-            u"      \"5-MHz\", \"10-MHz\", \"1.712-MHz\". The default is \"8-MHz\".\n"
-            u"\n"
-            u"  --delivery-system value\n"
-            u"      Used for DVB-S and DVB-S2 tuners only.\n"
-            u"      Which delivery system to use. Must be one of \"DVB-S\", \"DVB-S2\".\n"
-            u"      The default is \"DVB-S\".\n"
-            u"\n"
-            u"  --fec-inner value\n"
-            u"      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
-            u"      Inner Forward Error Correction. Must be one of \"none\", \"auto\", \"1/2\",\n"
-            u"      \"1/3\", \"1/4\", \"2/3\", \"2/5\", \"3/4\", \"3/5\", \"4/5\", \"5/6\", \"5/11\",\n"
-            u"      \"6/7\", \"7/8\", \"8/9\", \"9/10\". The default is \"auto\".\n"
-            u"\n" +
-            UString(_allow_short_options ? u"  -f value\n" : u"") +
-            u"  --frequency value\n"
-            u"      Carrier frequency in Hz (all tuners).\n"
-            u"\n"
-            u"  --guard-interval value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Must be one of \"auto\", \"1/32\", \"1/16\", \"1/8\", \"1/4\".\n"
-            u"      The default is \"1/32\".\n"
-            u"\n"
-            u"  --hierarchy value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Must be one of \"auto\", \"none\", \"1\", \"2\", \"4\".\n"
-            u"      The default is \"none\".\n"
-            u"\n"
-            u"  --high-priority-fec value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Error correction for high priority streams.  See option --fec-inner\n"
-            u"      for the list of possible values. The default is \"auto\".\n"
-            u"\n"
-            u"  --lnb string\n"
-            u"      Used for DVB-S and DVB-S2 tuners only.\n"
-            u"      Description of the LNB, if not a universal LNB. The format of the\n"
-            u"      string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies\n"
-            u"      are in MHz. The characteristics of the default universal LNB are\n"
-            u"      low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.\n"
-            u"\n"
-            u"  --low-priority-fec value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Error correction for low priority streams. See option --fec-inner\n"
-            u"      for the list of possible values. The default is \"auto\".\n"
-            u"\n" +
-            UString(_allow_short_options ? u"  -m value\n" : u"") +
-            u"  --modulation value\n"
-            u"      Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.\n"
-            u"      Modulation type. Must be one of \"QPSK\", \"8-PSK\", \"QAM\" (auto QAM),\n"
-            u"      \"16-QAM\", \"32-QAM\", \"64-QAM\", \"128-QAM\", \"256-QAM\", \"8-VSB\", \"16-VSB\".\n"
-            u"      The default is \"64-QAM\" for DVB-T and DVB-C, \"QPSK\" for DVB-S2,\n"
-            u"      \"8-VSB\" for ATSC.\n"
-            u"\n"
-            u"  --offset-count value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Specify the number of offsets from the UHF or VHF channel. The default\n"
-            u"      is zero. See options --uhf-channel or --vhf-channel.\n"
-            u"\n"
-            u"  --pilots value\n"
-            u"      Used for DVB-S2 tuners only.\n"
-            u"      Presence of pilots frames. Must be one of \"auto\", \"on\" or \"off\".\n"
-            u"      The default is \"off\".\n"
-            u"\n"
-            u"  --plp value\n"
-            u"      Used for DVB-T2 tuners only.\n"
-            u"      Physical Layer Pipe (PLP) number to select, from 0 to 255.\n"
-            u"      The default is to keep the entire stream, without PLP selection.\n"
-            u"      Warning: this option is supported on Linux only.\n"
-            u"\n"
-            u"  --polarity value\n"
-            u"      Used for DVB-S and DVB-S2 tuners only.\n"
-            u"      Polarity. Must be one of \"horizontal\", \"vertical\", \"left\" or \"right\".\n"
-            u"      For satellite reception use only \"horizontal\" or \"vertical\" (the default\n"
-            u"      is \"vertical\").\n"
-            u"\n"
-            u"  --roll-off value\n"
-            u"      Used for DVB-S2 tuners only.\n"
-            u"      Roll-off factor. Must be one of \"auto\", \"0.35\", \"0.25\", \"0.20\".\n"
-            u"      The default is \"0.35\" (implied for DVB-S, default for DVB-S2).\n"
-            u"\n"
-            u"  --satellite-number value\n"
-            u"      Used for DVB-S and DVB-S2 tuners only.\n"
-            u"      Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for\n"
-            u"      non-DiSEqC switches. The default is 0.\n"
-            u"\n"
-            u"  --spectral-inversion value\n"
-            u"      Spectral inversion. Must be one of \"on\", \"off\" or \"auto\". The default\n"
-            u"      is \"auto\".\n"
-            u"\n" +
-            UString(_allow_short_options ? u"  -s value\n" : u"") +
-            u"  --symbol-rate value\n"
-            u"      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
-            u"      Symbol rate in symbols/second. The default is\n"
-            u"      " + UString::Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + u" sym/s for satellite and " +
-            UString::Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) + u" sym/s for cable.\n"
-            u"\n"
-            u"  --transmission-mode value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Must be one of \"auto\", \"2K\", \"4K\", \"8K\". The default is \"8K\".\n"
-            u"\n"
-            u"  --uhf-channel value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Specify the UHF channel number of the carrier. Can be used in\n"
-            u"      replacement to --frequency. Can be combined with an --offset-count\n"
-            u"      option. The resulting frequency is\n"
-            u"      306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).\n"
-            u"\n"
-            u"  --vhf-channel value\n"
-            u"      Used for DVB-T tuners only.\n"
-            u"      Specify the VHF channel number of the carrier. Can be used in\n"
-            u"      replacement to --frequency. Can be combined with an --offset-count\n"
-            u"      option. The resulting frequency is\n"
-            u"      142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).\n"
-            u"\n"
-            u"Tuning options using Linux DVB \"zap\" format:\n"
-            u"\n"
-            u"  --tune string\n"
-            u"      Specifies all tuning information for the transponder in one string.\n"
-            u"      As such, this option is incompatible with the individual tuning options,\n"
-            u"      except \"local\" (non-transponder) options --lnb and --satellite-number.\n"
-            u"      The format of the parameter string depends on the DVB frontend type.\n"
-            u"      It is the same format as used in the Linux DVB szap/czap/tzap\n"
-            u"      configuration files:\n"
-            u"\n"
-            u"      Satellite (QPSK): \"freq:pol:satnum:symrate\"\n"
-            u"        With freq = frequency in MHz, pol = polarity (either v or h), satnum =\n"
-            u"        satellite number, symrate = symbol rate in ksym/s.\n"
-            u"\n"
-            u"      Cable (QAM): \"freq:inv:symrate:conv:mod\"\n"
-            u"        With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,\n"
-            u"        INVERSION_ON, INVERSION_AUTO), symrate = symbol rate in sym/s, conv =\n"
-            u"        convolutional rate (one of FEC_NONE, FEC_1_2, FEC_2_3, FEC_3_4,\n"
-            u"        FEC_4_5, FEC_5_6, FEC_6_7, FEC_7_8, FEC_8_9, FEC_AUTO),\n"
-            u"        mod = modulation (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128,\n"
-            u"        QAM_256, QAM_AUTO).\n"
-            u"\n"
-            u"      Terrestrial (OFDM): \"freq:inv:bw:convhp:convlp:modu:mode:guard:hier\"\n"
-            u"        With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,\n"
-            u"        INVERSION_ON, INVERSION_AUTO), bw = bandwidth (one of BANDWIDTH_8_MHZ,\n"
-            u"        BANDWIDTH_7_MHZ, BANDWIDTH_6_MHZ, BANDWIDTH_AUTO), convhp and convlp =\n"
-            u"        convolutional rate for high and low priority (see values in cable),\n"
-            u"        modu = modulation (see values in cable), mode = transmission mode\n"
-            u"        (one of TRANSMISSION_MODE_2K, TRANSMISSION_MODE_8K, \n"
-            u"        TRANSMISSION_MODE_AUTO), guard = guard interval (one of\n"
-            u"        GUARD_INTERVAL_1_32, GUARD_INTERVAL_1_16, GUARD_INTERVAL_1_8,\n"
-            u"        GUARD_INTERVAL_1_4, GUARD_INTERVAL_AUTO), hier = hierarchy (one of\n"
-            u"        HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).\n"
-            u"\n"
-            u"Locating the transponder by channel name:\n"
-            u"\n" +
-            UString(_allow_short_options ? u"  -c name\n" : u"") +
-            u"  --channel-transponder name\n"
-            u"      Tune to the transponder containing the specified channel. The channel\n"
-            u"      name is not case-sensitive and blanks are ignored. The channel is searched\n"
-            u"      in a \"zap configuration file\" and the corresponding tuning information\n"
-            u"      in this file is used.\n"
-            u"\n" +
-            UString(_allow_short_options ? u"  -z path\n" : u"") +
-            u"  --zap-config-file path\n"
-            u"      Zap configuration file to use for option -c or --channel-transponder.\n"
-            u"      The format of these text files is specified by the Linux DVB szap, czap\n"
-            u"      and tzap utilities. Zap config files can be created using the scandvb\n"
-            u"      tool (szap, czap, tzap and scandvb are part of the dvb-apps package).\n"
-            u"      The location of the default zap configuration file depends on the system.\n"
-            u"      - On Linux, the default file is $HOME/.Xzap/channels.conf, where X is\n"
-            u"        either 's' (satellite), 'c' (cable) or 't' (terrestrial), depending\n"
-            u"        on the frontend type.\n"
-            u"      - On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf,\n"
-            u"        where X is either 's', 'c' or 't'.\n";
     }
-
-    args.setHelp(args.getHelp() + help);
 }
 
 

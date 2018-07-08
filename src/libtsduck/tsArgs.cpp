@@ -242,28 +242,35 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 // Constructor for Args
 //----------------------------------------------------------------------------
 
-ts::Args::Args(const UString& description, const UString& syntax, const UString& full_help, int flags) :
+ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     _subreport(0),
     _iopts(),
     _description(description),
     _shell(),
     _syntax(syntax),
-    _help(full_help),
+    _help(),
     _app_name(),
     _args(),
     _is_valid(false),
     _flags(flags)
 {
     // Add predefined options. The short one-letter names may be overwritten later.
-    addOption(IOption(u"help",     0,  HelpFormatEnum, 0, 1, true, true));
-    addOption(IOption(u"version",  0,  VersionFormatEnum, 0, 1, true, true));
-    addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, false, true));
-    addOption(IOption(u"debug",   'd', POSITIVE, 0, 1, 0, 0, true, true));
-
-    help(u"help", u"Display this help text.");
-    help(u"version", u"Display the TSDuck version number.");
-    help(u"verbose", u"Produce verbose output.");
-    help(u"debug", u"level", u"Produce debug traces.");
+    if ((flags & NO_HELP) == 0) {
+        addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, true, true));
+        help(u"help", u"Display this help text.");
+    }
+    if ((flags & NO_VERSION) == 0) {
+        addOption(IOption(u"version", 0,  VersionFormatEnum, 0, 1, true, true));
+        help(u"version", u"Display the TSDuck version number.");
+    }
+    if ((flags & NO_VERBOSE) == 0) {
+        addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, false, true));
+        help(u"verbose", u"Produce verbose output.");
+    }
+    if ((flags & NO_DEBUG) == 0) {
+        addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, true, true));
+        help(u"debug", u"level", u"Produce debug traces.");
+    }
 }
 
 
@@ -289,10 +296,10 @@ ts::UString ts::Args::HelpLines(int level, const UString& text, size_t line_widt
 
 
 //----------------------------------------------------------------------------
-// Get the help description of the command.
+// Format the help options of the command.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Args::getHelp() const
+ts::UString ts::Args::formatHelpOptions() const
 {
     // Legacy: return application-defined help.
     if (!_help.empty()) {
@@ -887,23 +894,23 @@ bool ts::Args::analyze(bool processRedirections)
     }
 
     // Process --verbose predefined option
-    if (present(u"verbose") && search(u"verbose")->predefined) {
+    if ((_flags & NO_VERBOSE) == 0 && present(u"verbose") && search(u"verbose")->predefined) {
         raiseMaxSeverity(Severity::Verbose);
     }
 
     // Process --debug predefined option
-    if (present(u"debug") && search(u"debug")->predefined) {
+    if ((_flags & NO_DEBUG) == 0 && present(u"debug") && search(u"debug")->predefined) {
         raiseMaxSeverity(intValue(u"debug", Severity::Debug));
     }
 
     // Process --help predefined option
-    if (present(u"help") && search(u"help")->predefined) {
+    if ((_flags & NO_HELP) == 0 && present(u"help") && search(u"help")->predefined) {
         processHelp();
         return _is_valid = false;
     }
 
     // Process --version predefined option
-    if (present(u"version") && search(u"version")->predefined) {
+    if ((_flags & NO_VERSION) == 0 && present(u"version") && search(u"version")->predefined) {
         processVersion();
         return _is_valid = false;
     }
@@ -976,7 +983,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format) const
         }
         case HELP_FULL: {
             // Default full complete help text.
-            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE) + u"\n\n" + getHelp();
+            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE) + u"\n\n" + formatHelpOptions();
         }
         default: {
             return UString();

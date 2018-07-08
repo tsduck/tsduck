@@ -68,11 +68,4 @@ TSPLUGIN_DECLARE_OUTPUT(drop, ts::DropOutput)
 ts::DropOutput::DropOutput(TSP* tsp_) :
     OutputPlugin(tsp_, u"Drop output packets", u"[options]")
 {
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
 }

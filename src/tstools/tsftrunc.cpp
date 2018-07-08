@@ -57,41 +57,22 @@ Options::Options(int argc, char *argv[]) :
     trunc_pkt(0),
     files()
 {
-    option(u"",          0,  Args::STRING, 1, Args::UNLIMITED_COUNT);
-    option(u"byte",     'b', Args::UNSIGNED);
-    option(u"packet",   'p', Args::UNSIGNED);
-    option(u"noaction", 'n');
+    option(u"", 0, STRING, 1, UNLIMITED_COUNT);
+    help(u"", u"MPEG capture files to be truncated.");
 
-    setHelp(u"Files:\n"
-            u"\n"
-            u"  MPEG capture files to be truncated.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --byte value\n"
-            u"      Truncate the file at the next packet boundary after the specified size\n"
-            u"      in bytes. Mutually exclusive with --packet.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --noaction\n"
-            u"      Do not perform truncation, check mode only.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --packet value\n"
-            u"      Index of first packet to truncate. If unspecified, all complete\n"
-            u"      packets are kept in the file. Extraneous bytes at end of file\n"
-            u"      (after last multiple of 188 bytes) are truncated.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose messages.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"byte", 'b', UNSIGNED);
+    help(u"byte",
+         u"Truncate the file at the next packet boundary after the specified size "
+         u"in bytes. Mutually exclusive with --packet.");
+
+    option(u"noaction", 'n');
+    help(u"noaction", u"Do not perform truncation, check mode only.");
+
+    option(u"packet", 'p', UNSIGNED);
+    help(u"packet",
+         u"Index of first packet to truncate. If unspecified, all complete "
+         u"packets are kept in the file. Extraneous bytes at end of file "
+         u"(after last multiple of 188 bytes) are truncated.");
 
     analyze(argc, argv);
 

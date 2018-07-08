@@ -43,36 +43,24 @@ ts::TSP::TSP(int max_severity) :
 {
 }
 
-ts::Plugin::Plugin(TSP* to_tsp,
-                   const UString& description,
-                   const UString& syntax,
-                   const UString& help) :
-    Args(description, syntax, help),
+ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
+    Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION),
     tsp(to_tsp)
 {
 }
 
-ts::InputPlugin::InputPlugin(TSP* tsp_,
-                             const UString& description,
-                             const UString& syntax,
-                             const UString& help) :
-    Plugin(tsp_, description, syntax, help)
+ts::InputPlugin::InputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
+    Plugin(tsp_, description, syntax)
 {
 }
 
-ts::OutputPlugin::OutputPlugin(TSP* tsp_,
-                               const UString& description,
-                               const UString& syntax,
-                               const UString& help) :
-    Plugin(tsp_, description, syntax, help)
+ts::OutputPlugin::OutputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
+    Plugin(tsp_, description, syntax)
 {
 }
 
-ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_,
-                                     const UString& description,
-                                     const UString& syntax,
-                                     const UString& help) :
-    Plugin(tsp_, description, syntax, help)
+ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
+    Plugin(tsp_, description, syntax)
 {
 }
 

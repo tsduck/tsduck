@@ -126,152 +126,126 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     bytesPerSend(0),
     sendInterval(0)
 {
-    option(u"",                    0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"bandwidth",          'b', INTEGER, 0, 1, 1, 0xFFFF);
-    option(u"bytes-per-send",      0,  INTEGER, 0, 1, 0x20, 0xEFFF);
-    option(u"channel-id",          0,  INT16);
-    option(u"client-id",          'c', INT32);
-    option(u"cycles",              0,  UNSIGNED);
-    option(u"data-id",            'd', INT16);
-    option(u"emm-size",            0,  INTEGER, 0, 1, ts::MIN_SHORT_SECTION_SIZE, ts::MAX_PRIVATE_SECTION_SIZE);
-    option(u"emm-min-table-id",    0,  UINT8);
-    option(u"emm-max-table-id",    0,  UINT8);
-    option(u"emmg-mux-version",    0,  INTEGER, 0, 1, 1, 5);
-    option(u"ignore-allocated",   'i');
-    option(u"log-data",            0,  ts::Severity::Enums, 0, 1, true);
-    option(u"log-protocol",        0,  ts::Severity::Enums, 0, 1, true);
-    option(u"max-bytes",           0,  UNSIGNED);
-    option(u"mux",                'm', STRING);
-    option(u"requested-bandwidth", 0,  INT16);
-    option(u"section-mode",       's');
-    option(u"stream-id",           0,  INT16);
-    option(u"type",               't', DataTypeEnum);
-    option(u"udp",                'u', STRING);
+    option(u"", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"",
+         u"The parameters are files containing sections in binary or XML format. Several "
+         u"files can be specified. All sections are loaded and injected in the MUX using "
+         u"the EMMG/PDG <=> MUX protocol. The list of all sections from all files is "
+         u"cycled as long as tsemmg is running. The sections can be of any type, not "
+         u"only EMM's.\n\n"
+         u"If no input file is specified, tsemmg generates fixed-size fake EMM's. See "
+         u"options --emm-size, --emm-min-table-id and --emm-max-table-id.");
 
-    setHelp(u"Parameters:\n"
-            u"\n"
-            u"  The parameters are files containing sections in binary or XML format. Several\n"
-            u"  files can be specified. All sections are loaded and injected in the MUX using\n"
-            u"  the EMMG/PDG <=> MUX protocol. The list of all sections from all files is\n"
-            u"  cycled as long as tsemmg is running. The sections can be of any type, not\n"
-            u"  only EMM's.\n"
-            u"\n"
-            u"  If no input file is specified, tsemmg generates fixed-size fake EMM's. See\n"
-            u"  options --emm-size, --emm-min-table-id and --emm-max-table-id.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bandwidth value\n"
-            u"      Specify the bandwidth of the data which are sent to the MUX in kilobits\n"
-            u"      per second. Default: " + ts::UString::Decimal(DEFAULT_BANDWIDTH) + u" kb/s.\n"
-            u"\n"
-            u"  --bytes-per-send value\n"
-            u"      Specify the average size in bytes of each data provision. The exact value\n"
-            u"      depends on sections and packets sizes. Default: " + ts::UString::Decimal(DEFAULT_BYTES_PER_SEND) + u" bytes.\n"
-            u"\n"
-            u"  --channel-id value\n"
-            u"      This option sets the DVB SimulCrypt parameter 'data_channel_id'.\n"
-            u"      Default: 1.\n"
-            u"\n"
-            u"  -c value\n"
-            u"  --client-id value\n"
-            u"      This option sets the DVB SimulCrypt parameter 'client_id'. Default: 0.\n"
-            u"      For EMM injection, the most signification 16 bits shall be the\n"
-            u"      'CA_system_id' of the corresponding CAS.\n"
-            u"\n"
-            u"  --cycles value\n"
-            u"      Inject the sections from the input files the specified number of times.\n"
-            u"      By default, inject sections indefinitely.\n"
-            u"\n"
-            u"  -d value\n"
-            u"  --data-id value\n"
-            u"      This option sets the DVB SimulCrypt parameter 'data_id'. Default: 0.\n"
-            u"\n"
-            u"  --emm-max-table-id value\n"
-            u"      Specify the maximum table id of the automatically generated fake EMM's.\n"
-            u"      When generating fake EMM's, the table ids are cycled from the minimum to\n"
-            u"      the maximum value. The default is " + ts::UString::Hexa(DEFAULT_EMM_MAX_TID) + u".\n"
-            u"\n"
-            u"  --emm-min-table-id value\n"
-            u"      Specify the minimum table id of the automatically generated fake EMM's.\n"
-            u"      The default is " + ts::UString::Hexa(DEFAULT_EMM_MIN_TID) + u".\n"
-            u"\n"
-            u"  --emm-size value\n"
-            u"      Specify the size in bytes of the automatically generated fake EMM's.\n"
-            u"      The default is " + ts::UString::Decimal(DEFAULT_EMM_SIZE) + u" bytes.\n"
-            u"\n"
-            u"  --emmg-mux-version value\n"
-            u"      Specify the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol.\n"
-            u"      Valid values are 1 to 5. The default is 2.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --ignore-allocated\n"
-            u"      Ignore the allocated bandwidth as returned by the MUX, continue to send\n"
-            u"      data at the planned bandwidth, even if it is higher than the allocated\n"
-            u"      bandwidth.\n"
-            u"\n"
-            u"  --log-data[=level]\n"
-            u"      Same as --log-protocol but applies to data_provision messages only. To\n"
-            u"      debug the session management without being flooded by data messages, use\n"
-            u"      --log-protocol=info --log-data=debug.\n"
-            u"\n"
-            u"  --log-protocol[=level]\n"
-            u"      Log all EMMG/PDG <=> MUX protocol messages using the specified level. If\n"
-            u"      the option is not present, the messages are logged at debug level only.\n"
-            u"      If the option is present without value, the messages are logged at info\n"
-            u"      level. A level can be a numerical debug level or any of the following:\n"
-            u"      " + ts::Severity::Enums.nameList() + u".\n"
-            u"\n"
-            u"  --max-bytes value\n"
-            u"      Stop after sending the specified number of bytes. By default, send data\n"
-            u"      indefinitely.\n"
-            u"\n"
-            u"  -m address:port\n"
-            u"  --mux address:port\n"
-            u"      Specify the IP address (or host name) and TCP port of the MUX. This is a\n"
-            u"      required parameter, there is no default.\n"
-            u"\n"
-            u"  --requested-bandwidth value\n"
-            u"      This option sets the DVB SimulCrypt parameter 'bandwidth' in the\n"
-            u"      'stream_BW_request' message. The value is in kilobits per second. The\n"
-            u"      default is the value of the --bandwidth option. Specifying distinct values\n"
-            u"      for --bandwidth and --requested-bandwidth can be used for testing the\n"
-            u"      behavior of a MUX.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --section-mode\n"
-            u"      Send EMM's or data in section format. This option sets the DVB SimulCrypt\n"
-            u"      parameter 'section_TSpkt_flag' to zero. By default, EMM's and data are\n"
-            u"      sent in TS packet format.\n"
-            u"\n"
-            u"  --stream-id value\n"
-            u"      This option sets the DVB SimulCrypt parameter 'data_stream_id'.\n"
-            u"      Default: 1.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --type value\n"
-            u"      This option sets the DVB SimulCrypt parameter 'data_type'. Default: 0\n"
-            u"      (EMM). In addition to integer values, the following names can be used:\n"
-            u"      'emm' (0), 'private-data' (1), 'ecm' (2).\n"
-            u"\n"
-            u"  -u [address:]port\n"
-            u"  --udp [address:]port\n"
-            u"      Specify that the 'data_provision' messages shall be sent using UDP. By\n"
-            u"      default, the 'data_provision' messages are sent over TCP using the same\n"
-            u"      TCP connection as the management commands. If the IP address (or host\n"
-            u"      name) is not specified, use the same IP address as the --mux option. The\n"
-            u"      port number is required, even if it is the same as the TCP port.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"bandwidth", 'b', INTEGER, 0, 1, 1, 0xFFFF);
+    help(u"bandwidth",
+         u"Specify the bandwidth of the data which are sent to the MUX in kilobits "
+         u"per second. Default: " + ts::UString::Decimal(DEFAULT_BANDWIDTH) + u" kb/s.");
+
+    option(u"bytes-per-send", 0, INTEGER, 0, 1, 0x20, 0xEFFF);
+    help(u"bytes-per-send",
+         u"Specify the average size in bytes of each data provision. The exact value "
+         u"depends on sections and packets sizes. Default: " + ts::UString::Decimal(DEFAULT_BYTES_PER_SEND) + u" bytes.");
+
+    option(u"channel-id", 0, INT16);
+    help(u"channel-id",
+         u"This option sets the DVB SimulCrypt parameter 'data_channel_id'. "
+         u"Default: 1.");
+
+    option(u"client-id", 'c', INT32);
+    help(u"client-id",
+         u"This option sets the DVB SimulCrypt parameter 'client_id'. Default: 0. "
+         u"For EMM injection, the most signification 16 bits shall be the "
+         u"'CA_system_id' of the corresponding CAS.");
+
+    option(u"cycles", 0, UNSIGNED);
+    help(u"cycles",
+         u"Inject the sections from the input files the specified number of times. "
+         u"By default, inject sections indefinitely.");
+
+    option(u"data-id", 'd', INT16);
+    help(u"data-id", u"This option sets the DVB SimulCrypt parameter 'data_id'. Default: 0.");
+
+    option(u"emm-size", 0, INTEGER, 0, 1, ts::MIN_SHORT_SECTION_SIZE, ts::MAX_PRIVATE_SECTION_SIZE);
+    help(u"emm-size",
+         u"Specify the maximum table id of the automatically generated fake EMM's. "
+         u"When generating fake EMM's, the table ids are cycled from the minimum to "
+         u"the maximum value. The default is " + ts::UString::Hexa(DEFAULT_EMM_MAX_TID) + u".");
+
+    option(u"emm-min-table-id", 0, UINT8);
+    help(u"emm-min-table-id",
+         u"Specify the minimum table id of the automatically generated fake EMM's. "
+         u"The default is " + ts::UString::Hexa(DEFAULT_EMM_MIN_TID) + u".");
+
+    option(u"emm-max-table-id", 0, UINT8);
+    help(u"emm-max-table-id",
+         u"Specify the maximum table id of the automatically generated fake EMM's. "
+         u"When generating fake EMM's, the table ids are cycled from the minimum to "
+         u"the maximum value. The default is " + ts::UString::Hexa(DEFAULT_EMM_MAX_TID) + u".");
+
+    option(u"emmg-mux-version", 0, INTEGER, 0, 1, 1, 5);
+    help(u"emmg-mux-version",
+         u"Specify the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol. "
+         u"Valid values are 1 to 5. The default is 2.");
+
+    option(u"ignore-allocated", 'i');
+    help(u"ignore-allocated",
+         u"Ignore the allocated bandwidth as returned by the MUX, continue to send "
+         u"data at the planned bandwidth, even if it is higher than the allocated bandwidth.");
+
+    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    help(u"log-data",
+         u"Same as --log-protocol but applies to data_provision messages only. To "
+         u"debug the session management without being flooded by data messages, use "
+         u"--log-protocol=info --log-data=debug.");
+
+    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    help(u"log-protocol",
+         u"Log all EMMG/PDG <=> MUX protocol messages using the specified level. If "
+         u"the option is not present, the messages are logged at debug level only. "
+         u"If the option is present without value, the messages are logged at info "
+         u"level. A level can be a numerical debug level or a name.");
+
+    option(u"max-bytes", 0, UNSIGNED);
+    help(u"max-bytes",
+         u"Stop after sending the specified number of bytes. By default, send data "
+         u"indefinitely.");
+
+    option(u"mux", 'm', STRING);
+    help(u"mux", u"address:port",
+         u"Specify the IP address (or host name) and TCP port of the MUX. This is a "
+         u"required parameter, there is no default.");
+
+    option(u"requested-bandwidth", 0, INT16);
+    help(u"requested-bandwidth",
+         u"This option sets the DVB SimulCrypt parameter 'bandwidth' in the "
+         u"'stream_BW_request' message. The value is in kilobits per second. The "
+         u"default is the value of the --bandwidth option. Specifying distinct values "
+         u"for --bandwidth and --requested-bandwidth can be used for testing the "
+         u"behavior of a MUX.");
+
+    option(u"section-mode", 's');
+    help(u"section-mode",
+         u"Send EMM's or data in section format. This option sets the DVB SimulCrypt "
+         u"parameter 'section_TSpkt_flag' to zero. By default, EMM's and data are "
+         u"sent in TS packet format.");
+
+    option(u"stream-id", 0, INT16);
+    help(u"stream-id",
+         u"This option sets the DVB SimulCrypt parameter 'data_stream_id'. "
+         u"Default: 1.");
+
+    option(u"type", 't', DataTypeEnum);
+    help(u"type",
+         u"This option sets the DVB SimulCrypt parameter 'data_type'. Default: 0 (EMM). "
+         u"In addition to integer values, names can be used.");
+
+    option(u"udp", 'u', STRING);
+    help(u"udp", u"[address:]port",
+         u"Specify that the 'data_provision' messages shall be sent using UDP. By "
+         u"default, the 'data_provision' messages are sent over TCP using the same "
+         u"TCP connection as the management commands. If the IP address (or host "
+         u"name) is not specified, use the same IP address as the --mux option. The "
+         u"port number is required, even if it is the same as the TCP port.");
 
     analyze(argc, argv);
 

@@ -56,44 +56,23 @@ Options::Options(int argc, char *argv[]) :
     timeout_ms(0),
     reset_action(0)
 {
-    option(u"",            0,  STRING, 0, 1);
-    option(u"cold-reset", 'c');
-    option(u"eject",      'e');
-    option(u"timeout",    't', UNSIGNED);
-    option(u"warm-reset", 'w');
+    option(u"", 0, STRING, 0, 1);
+    help(u"",
+         u"The optional reader-name parameter indicates the smartcard reader device "
+         u"name to list or reset. Without any option or parameter, the command lists "
+         u"all smartcard reader devices in the system.");
 
-    setHelp(u"Parameters:\n"
-            u"  The optional reader-name parameter indicates the smartcard reader device\n"
-            u"  name to list or reset. Without any option or parameter, the command lists\n"
-            u"  all smartcard reader devices in the system.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -c\n"
-            u"  --cold-reset\n"
-            u"      Perfom a cold reset on the smartcard.\n"
-            u"\n"
-            u"  -e\n"
-            u"  --eject\n"
-            u"      Eject the smartcard.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --timeout value\n"
-            u"      Timeout in milliseconds. The default is 1000 ms.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --verbose\n"
-            u"      Produce verbose output.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-            u"\n"
-            u"  -w\n"
-            u"  --warm-reset\n"
-            u"      Perfom a warm reset on the smartcard.\n");
+    option(u"cold-reset", 'c');
+    help(u"cold-reset", u"Perfom a cold reset on the smartcard.");
+
+    option(u"eject", 'e');
+    help(u"eject", u"Eject the smartcard.");
+
+    option(u"timeout", 't', UNSIGNED);
+    help(u"timeout", u"Timeout in milliseconds. The default is 1000 ms.");
+
+    option(u"warm-reset", 'w');
+    help(u"warm-reset", u"Perfom a warm reset on the smartcard.");
 
     analyze(argc, argv);
 

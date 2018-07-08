@@ -168,8 +168,8 @@ void ts::TSAnalyzerOptions::defineOptions(Args& args) const
               u"the default DVB character set is ISO-6937. However, some bogus "
               u"signalization may assume that the default character set is different, "
               u"typically the usual local character table for the region. This option "
-              u"forces a non-standard character table. The available table names are: "
-              u"" + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".");
+              u"forces a non-standard character table. The available table names are " +
+              UString::Join(DVBCharset::GetAllNames()) + u".");
 }
 
 

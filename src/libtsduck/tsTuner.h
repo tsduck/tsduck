@@ -364,7 +364,7 @@ namespace ts {
         //! Default max number of queued media samples (Windows-specific).
         //! @see setSinkQueueSize().
         //!
-        static const size_t DEFAULT_SINK_QUEUE_SIZE = 100;  // media samples
+        static const size_t DEFAULT_SINK_QUEUE_SIZE = 1000;  // media samples
 
         //!
         //! Set the max number of queued media samples (Windows-specific).
