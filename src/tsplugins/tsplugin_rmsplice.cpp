@@ -194,10 +194,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
             u"  -s\n"
             u"  --stuffing\n"
             u"      Replace excluded packets with stuffing (null packets) instead\n"
-            u"      of removing them. Useful to preserve bitrate.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      of removing them. Useful to preserve bitrate.\n");
 }
 
 

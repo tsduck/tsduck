@@ -89,19 +89,9 @@ ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
     _demux(this)
 {
     option(u"stuffing", 's');
-
-    setHelp(u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -s\n"
-             u"  --stuffing\n"
-             u"      Replace excluded packets with stuffing (null packets) instead\n"
-             u"      of removing them. Useful to preserve bitrate.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+    help(u"stuffing", 
+         u"Replace excluded packets with stuffing (null packets) instead "
+         u"of removing them. Useful to preserve bitrate.");
 }
 
 

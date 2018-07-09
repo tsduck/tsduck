@@ -228,9 +228,6 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
             u"      no longer modified (if --replace is specified, the PID is then replaced\n"
             u"      by stuffing).\n"
             u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-            u"\n"
             u"  --xml\n"
             u"      Specify that all input files are XML, regardless of their file name.\n");
 }

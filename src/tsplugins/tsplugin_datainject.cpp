@@ -293,10 +293,7 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"\n"
             u"  --unregulated\n"
             u"      Insert data packets immediately. Do not regulate insertion, do not limit\n"
-            u"      the data bitrate.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      the data bitrate.\n");
 }
 
 

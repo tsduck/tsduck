@@ -155,10 +155,7 @@ ts::BATPlugin::BATPlugin (TSP* tsp_) :
              u"\n"
              u"  --remove-ts value\n"
              u"      Remove the specified ts_id from the BAT. Several --remove-ts options\n"
-             u"      may be specified to remove several TS.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+             u"      may be specified to remove several TS.\n");
 }
 
 

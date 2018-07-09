@@ -46,7 +46,6 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI device", u"[options]"),
     _guts(0)
 {
-    setHelp(TS_NO_DTAPI_MESSAGE u"\n");
 }
 
 ts::DektecInputPlugin::~DektecInputPlugin()
@@ -120,27 +119,16 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     CheckNonNull(_guts);
 
     option(u"channel", 'c', UNSIGNED);
-    option(u"device", 'd', UNSIGNED);
+    help(u"channel",
+         u"Channel index on the input Dektec device. By default, use the "
+         u"first input channel on the device.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -c value\n"
-            u"  --channel value\n"
-            u"      Channel index on the input Dektec device. By default, use the\n"
-            u"      first input channel on the device.\n"
-            u"\n"
-            u"  -d value\n"
-            u"  --device value\n"
-            u"      Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
-            u"      in the system). Use the command \"tsdektec -a [-v]\" to have a\n"
-            u"      complete list of devices in the system. By default, use the first\n"
-            u"      input Dektec device.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"device", 'd', UNSIGNED);
+    help(u"device",
+         u"Device index, from 0 to N-1 (with N being the number of Dektec devices "
+         u"in the system). Use the command \"tsdektec -a [-v]\" to have a "
+         u"complete list of devices in the system. By default, use the first "
+         u"input Dektec device.");
 }
 
 

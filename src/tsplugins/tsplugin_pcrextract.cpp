@@ -206,10 +206,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
             u"\n"
             u"  -s string\n"
             u"  --separator string\n"
-            u"      Field separator string in CSV output (default: '" DEFAULT_SEPARATOR u"').\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Field separator string in CSV output (default: '" DEFAULT_SEPARATOR u"').\n");
 }
 
 

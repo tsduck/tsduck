@@ -212,10 +212,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
             u"  --terminate\n"
             u"      Terminate packet processing when file insersion is complete. By default,\n"
             u"      when packet insertion is complete, the transmission continues and the\n"
-            u"      stuffing is no longer modified.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      stuffing is no longer modified.\n");
 }
 
 

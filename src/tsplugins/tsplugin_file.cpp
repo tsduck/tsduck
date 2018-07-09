@@ -156,10 +156,7 @@ ts::FileInput::FileInput(TSP* tsp_) :
             u"  --repeat count\n"
             u"      Repeat the playout of each file the specified number of times\n"
             u"      (default: only once). This option is allowed only if the\n"
-            u"      input file is a regular file.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      input file is a regular file.\n");
 }
 
 
@@ -191,10 +188,7 @@ ts::FileOutput::FileOutput(TSP* tsp_) :
             u"  -k\n"
             u"  --keep\n"
             u"      Keep existing file (abort if the specified file already exists).\n"
-            u"      By default, existing files are overwritten.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      By default, existing files are overwritten.\n");
 }
 
 
@@ -226,10 +220,7 @@ ts::FileProcessor::FileProcessor(TSP* tsp_) :
             u"  -k\n"
             u"  --keep\n"
             u"      Keep existing file (abort if the specified file already exists).\n"
-            u"      By default, existing files are overwritten.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      By default, existing files are overwritten.\n");
 }
 
 

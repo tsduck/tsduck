@@ -183,10 +183,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
             u"  -v\n"
             u"  --valid\n"
             u"      Select valid packets. A valid packet starts with 0x47 and has\n"
-            u"      its transport_error_indicator cleared.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      its transport_error_indicator cleared.\n");
 }
 
 

@@ -127,18 +127,7 @@ ts::EITPlugin::EITPlugin(TSP* tsp_) :
     _ts_id()
 {
     option(u"output-file", 'o', STRING);
-
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify the output file for the report (default: standard output).\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    help(u"output-file", u"Specify the output file for the report (default: standard output).");
 }
 
 

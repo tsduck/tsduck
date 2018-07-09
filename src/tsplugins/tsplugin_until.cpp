@@ -97,59 +97,36 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
     _terminated(false),
     _transparent(false)
 {
-    option(u"bytes",               'b', UNSIGNED);
-    option(u"exclude-last",        'e');
-    option(u"joint-termination",   'j');
-    option(u"milli-seconds",       'm', UNSIGNED);
-    option(u"null-sequence-count", 'n', UNSIGNED);
-    option(u"packets",             'p', UNSIGNED);
-    option(u"seconds",             's', UNSIGNED);
-    option(u"unit-start-count",    'u', UNSIGNED);
+    option(u"bytes", 'b', UNSIGNED);
+    help(u"bytes", u"Stop after processing the specified number of bytes.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bytes value\n"
-            u"      Stop after processing the specified number of bytes.\n"
-            u"\n"
-            u"  -e\n"
-            u"  --exclude-last\n"
-            u"      Exclude the last packet (the one which triggers the final condition).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -j\n"
-            u"  --joint-termination\n"
-            u"      When the final condition is triggered, perform a \"joint termination\"\n"
-            u"      instead of unconditional termination.\n"
-            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
-            u"\n"
-            u"  -m value\n"
-            u"  --milli-seconds value\n"
-            u"      Stop the specified number of milli-seconds after receiving the\n"
-            u"      first packet.\n"
-            u"\n"
-            u"  -n value\n"
-            u"  --null-sequence-count value\n"
-            u"      Stop when the specified number of sequences of consecutive null\n"
-            u"      packets is encountered.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --packets value\n"
-            u"      Stop after the specified number of packets.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --seconds value\n"
-            u"      Stop the specified number of seconds after receiving the first packet.\n"
-            u"\n"
-            u"  -u value\n"
-            u"  --unit-start-count value\n"
-            u"      Stop when the specified number of packets containing a payload\n"
-            u"      unit start indicator is encountered.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"exclude-last", 'e');
+    help(u"exclude-last", u"Exclude the last packet (the one which triggers the final condition).");
+
+    option(u"joint-termination", 'j');
+    help(u"joint-termination",
+         u"When the final condition is triggered, perform a \"joint termination\" "
+         u"instead of unconditional termination. "
+         u"See \"tsp --help\" for more details on \"joint termination\".");
+
+    option(u"milli-seconds", 'm', UNSIGNED);
+    help(u"milli-seconds",
+         u"Stop the specified number of milli-seconds after receiving the first packet.");
+
+    option(u"null-sequence-count", 'n', UNSIGNED);
+    help(u"null-sequence-count",
+         u"Stop when the specified number of sequences of consecutive null packets is encountered.");
+
+    option(u"packets", 'p', UNSIGNED);
+    help(u"packets", u"Stop after the specified number of packets.");
+
+    option(u"seconds", 's', UNSIGNED);
+    help(u"seconds", u"Stop the specified number of seconds after receiving the first packet.");
+
+    option(u"unit-start-count", 'u', UNSIGNED);
+    help(u"unit-start-count",
+         u"Stop when the specified number of packets containing a payload "
+         u"unit start indicator is encountered.");
 }
 
 

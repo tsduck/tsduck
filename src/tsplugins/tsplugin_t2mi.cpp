@@ -179,10 +179,7 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
             u"  --plp value\n"
             u"      Specify the PLP (Physical Layer Pipe) to extract from the T2-MI\n"
             u"      encapsulation. By default, use the first PLP which is found.\n"
-            u"      Ignored if --extract is not used.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Ignored if --extract is not used.\n");
 }
 
 

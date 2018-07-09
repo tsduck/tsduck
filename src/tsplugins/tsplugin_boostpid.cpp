@@ -83,21 +83,11 @@ ts::BoostPIDPlugin::BoostPIDPlugin (TSP* tsp_) :
     _add_count(0)
 {
     option(u"", 0, UNSIGNED, 3, 3);
-
-    setHelp (u"Parameters:\n"
-             u"\n"
-             u"  The first parameter specifies the PID to boost.\n"
-             u"  The second and third parameters specify that <addpkt> TS packets\n"
-             u"  must be automatically added after every <inpkt> input TS packets\n"
-             u"  in the PID. Both <addpkt> and <inpkt> must be non-zero integer values.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+    help(u"",
+         u"The first parameter specifies the PID to boost.\n\n"
+         u"The second and third parameters specify that <addpkt> TS packets "
+         u"must be automatically added after every <inpkt> input TS packets "
+         u"in the PID. Both <addpkt> and <inpkt> must be non-zero integer values.");
 }
 
 

@@ -178,10 +178,7 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
             u"\n"
             u"  --remove-pid value\n"
             u"      Remove all CA_descriptors with the specified EMM PID value.\n"
-            u"      Several --remove-pid options may be specified.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Several --remove-pid options may be specified.\n");
 }
 
 

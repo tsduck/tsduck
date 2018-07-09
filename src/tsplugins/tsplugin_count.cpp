@@ -161,10 +161,7 @@ ts::CountPlugin::CountPlugin(TSP* tsp_) :
             u"\n"
             u"  -t\n"
             u"  --total\n"
-            u"      Display the total packet counts in all PID's.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Display the total packet counts in all PID's.\n");
 }
 
 

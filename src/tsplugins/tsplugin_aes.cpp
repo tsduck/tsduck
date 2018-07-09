@@ -194,10 +194,7 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
             u"  -p value\n"
             u"  --pid value\n"
             u"      Specifies a PID to scramble. Can be used instead of specifying a service.\n"
-            u"      Several -p or --pid options may be specified.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Several -p or --pid options may be specified.\n");
 }
 
 

@@ -161,10 +161,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
             u"      Each tuning information line is output as a shell environment variable\n"
             u"      definition. The name of each variable is built from a prefix and the TS\n"
             u"      id. The default prefix is \"TS\" and can be changed through the optional\n"
-            u"      value of the option --variable.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      value of the option --variable.\n");
 }
 
 

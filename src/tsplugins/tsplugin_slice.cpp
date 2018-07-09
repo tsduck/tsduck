@@ -106,62 +106,47 @@ ts::SlicePlugin::SlicePlugin(TSP* tsp_) :
     _time_factor(0),
     _status_names({{u"pass", TSP_OK}, {u"stop", TSP_END}, {u"drop", TSP_DROP}, {u"null", TSP_NULL}}),
     _pcr_analyzer(),
-    _events(),
-    _next_index(0)
+   _events(),
+   _next_index(0)
 {
-    option(u"drop",          'd', UNSIGNED, 0, UNLIMITED_COUNT);
-    option(u"ignore-pcr",    'i');
-    option(u"milli-seconds", 'm');
-    option(u"null",          'n', UNSIGNED, 0, UNLIMITED_COUNT);
-    option(u"pass",          'p', UNSIGNED, 0, UNLIMITED_COUNT);
-    option(u"seconds",        0);
-    option(u"stop",          's', UNSIGNED);
+    option(u"drop",'d', UNSIGNED, 0, UNLIMITED_COUNT);
+    help(u"drop",
+         u"All packets are dropped after the specified packet number. "
+         u"Several --drop options may be specified.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -d value\n"
-            u"  --drop value\n"
-            u"      All packets are dropped after the specified packet number.\n"
-            u"      Several --drop options may be specified.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --ignore-pcr\n"
-            u"      When --seconds or --milli-seconds is used, do not use PCR's to\n"
-            u"      compute time values. Only rely on bitrate as determined by previous\n"
-            u"      plugins in the chain.\n"
-            u"\n"
-            u"  -m\n"
-            u"  --milli-seconds\n"
-            u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
-            u"      values as milli-seconds from the beginning, not as packet numbers.\n"
-            u"      Time is measured based on bitrate and packet count, not on real time.\n"
-            u"\n"
-            u"  -n value\n"
-            u"  --null value\n"
-            u"      All packets are replaced by null packets after the specified packet\n"
-            u"      number. Several --null options may be specified.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pass value\n"
-            u"      All packets are passed unmodified after the specified packet number.\n"
-            u"      Several --pass options may be specified. This is the default for the\n"
-            u"      initial packets.\n"
-            u"\n"
-            u"  --seconds\n"
-            u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
-            u"      values as seconds from the beginning, not as packet numbers.\n"
-            u"      Time is measured based on bitrate and packet count, not on real time.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --stop value\n"
-            u"      Packet transmission stops after the specified packet number and tsp\n"
-            u"      terminates.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"ignore-pcr",'i');
+    help(u"ignore-pcr",
+         u"When --seconds or --milli-seconds is used, do not use PCR's to "
+         u"compute time values. Only rely on bitrate as determined by previous "
+         u"plugins in the chain.");
+
+    option(u"milli-seconds", 'm');
+    help(u"milli-seconds",
+         u"With options --drop, --null, --pass and --stop, interpret the integer "
+         u"values as milli-seconds from the beginning, not as packet numbers. "
+         u"Time is measured based on bitrate and packet count, not on real time.");
+
+    option(u"null",'n', UNSIGNED, 0, UNLIMITED_COUNT);
+    help(u"null",
+         u"All packets are replaced by null packets after the specified packet "
+         u"number. Several --null options may be specified.");
+
+    option(u"pass",'p', UNSIGNED, 0, UNLIMITED_COUNT);
+    help(u"pass",
+         u"All packets are passed unmodified after the specified packet number. "
+         u"Several --pass options may be specified. This is the default for the "
+         u"initial packets.");
+
+    option(u"seconds",0);
+    help(u"seconds",
+         u"With options --drop, --null, --pass and --stop, interpret the integer "
+         u"values as seconds from the beginning, not as packet numbers. "
+         u"Time is measured based on bitrate and packet count, not on real time.");
+
+    option(u"stop",'s', UNSIGNED);
+    help(u"stop",
+         u"Packet transmission stops after the specified packet number and tsp "
+         u"terminates.");
 }
 
 
