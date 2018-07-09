@@ -107,10 +107,7 @@ ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
             u"\n"
             u"  -n\n"
             u"  --nowait\n"
-            u"      Do not wait for child process termination at end of input.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Do not wait for child process termination at end of input.\n");
 }
 
 

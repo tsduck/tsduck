@@ -200,10 +200,7 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
             u"\n"
             u"  --time-slicing value\n"
             u"      Set the \"time slicing indicator\" in the terrestrial delivery system\n"
-            u"      descriptors to the specified value (0 or 1).\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      descriptors to the specified value (0 or 1).\n");
 }
 
 

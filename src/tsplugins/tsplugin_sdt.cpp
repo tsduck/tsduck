@@ -168,10 +168,7 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
             u"  -t value\n"
             u"  --type value\n"
             u"      Specify a new service type for the added or modified service. For new\n"
-            u"      services, the default is 0x01 (\"digital television service\").\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      services, the default is 0x01 (\"digital television service\").\n");
 }
 
 

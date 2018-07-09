@@ -138,10 +138,7 @@ ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
             u"      - Remapping two PID's to the same PID or to a PID which is\n"
             u"        already present in the input is accepted.\n"
             u"      Note that this option should be used with care since the\n"
-            u"      resulting stream can be illegal or inconsistent.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      resulting stream can be illegal or inconsistent.\n");
 }
 
 

@@ -87,36 +87,23 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     _update_tdt(false),
     _update_tot(false)
 {
-    option(u"add",   'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    option(u"notdt",  0);
-    option(u"notot",  0);
-    option(u"start", 's', STRING);
+    option(u"add", 'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    help(u"add",
+         u"Add the specified number of seconds to all UTC time. Specify a negative "
+         u"value to make the time reference go backward.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a seconds\n"
-            u"  --add seconds\n"
-            u"      Add the specified number of seconds to all UTC time. Specify a negative\n"
-            u"      value to make the time reference go backward.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --notdt\n"
-            u"      Do not update TDT.\n"
-            u"\n"
-            u"  --notot\n"
-            u"      Do not update TOT.\n"
-            u"\n"
-            u"  -s time\n"
-            u"  --start time\n"
-            u"      Specify a new UTC date & time reference for the first packet in the\n"
-            u"      stream. Then, the time reference is updated according to the number\n"
-            u"      of packets and the bitrate. A time value must be in the format\n"
-            u"      \"year/month/day:hour:minute:second\".\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"notdt");
+    help(u"notdt", u"Do not update TDT.");
+
+    option(u"notot");
+    help(u"notot", u"Do not update TOT.");
+
+    option(u"start", 's', STRING);
+    help(u"start",
+         u"Specify a new UTC date & time reference for the first packet in the "
+         u"stream. Then, the time reference is updated according to the number "
+         u"of packets and the bitrate. A time value must be in the format "
+         u"\"year/month/day:hour:minute:second\".");
 }
 
 

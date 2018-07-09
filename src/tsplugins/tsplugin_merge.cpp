@@ -237,10 +237,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
             u"      Pass the specified PID or range of PID's from the merged stream. By\n"
             u"      default, the PID's 0x00 to 0x1F are dropped and all other PID's are\n"
             u"      passed. This can be modified using options --drop and --pass. Several\n"
-            u"      options --pass can be specified.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      options --pass can be specified.\n");
 }
 
 

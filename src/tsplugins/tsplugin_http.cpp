@@ -153,10 +153,7 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
             u"\n"
             u"  --reconnect-delay value\n"
             u"      With --repeat or --infinite, wait the specified number of milliseconds.\n"
-            u"      By default, repeat immediately.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      By default, repeat immediately.\n");
 }
 
 

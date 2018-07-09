@@ -74,24 +74,11 @@ ts::SkipPlugin::SkipPlugin(TSP* tsp_) :
     skip_count(0),
     use_stuffing(false)
 {
-    option(u"",          0, UNSIGNED, 1, 1);
-    option(u"stuffing", 's');
+    option(u"", 0, UNSIGNED, 1, 1);
+    help(u"", u"Number of leading packets to skip.");
 
-    setHelp(u"Count:\n"
-            u"  Number of leading packets to skip.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Replace excluded leading packets with stuffing (null packets) instead\n"
-            u"      of removing them.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"stuffing", 's');
+    help(u"stuffing", u"Replace excluded leading packets with stuffing (null packets) instead of removing them.\n");
 }
 
 

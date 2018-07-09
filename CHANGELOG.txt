@@ -2,6 +2,10 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.14-836
+
+- Added option --remove-stream-type to plugin "pmt".
+
 Version 3.13-833
 
 - Added support for HiDes UT-100C modulator device using utility "tshides" and

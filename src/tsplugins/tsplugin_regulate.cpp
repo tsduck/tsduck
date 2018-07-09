@@ -116,9 +116,6 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
             u"      With --pcr-synchronous, specify the reference PID for PCR's. By default,\n"
             u"      use the first PID containing PCR's.\n"
             u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-            u"\n"
             u"  --wait-min value\n"
             u"      With --pcr-synchronous, specify the minimum wait time in milli-seconds.\n"
             u"      The default is " + UString::Decimal(PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec) + u" ms.\n");

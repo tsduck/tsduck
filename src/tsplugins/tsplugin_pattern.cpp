@@ -116,10 +116,7 @@ ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
             u"  --pid value\n"
             u"      Select packets with this PID value. Several -p or --pid options\n"
             u"      may be specified to select multiple PID's. If no such option is\n"
-            u"      specified, packets from all PID's are modified.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      specified, packets from all PID's are modified.\n");
 }
 
 

@@ -142,10 +142,7 @@ ts::PATPlugin::PATPlugin(TSP* tsp_) :
             u"\n"
             u"  -v value\n"
             u"  --new-version value\n"
-            u"      Specify a new value for the version of the PAT.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Specify a new value for the version of the PAT.\n");
 }
 
 

@@ -240,9 +240,6 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
             u"      It must be either an ASCII string of exactly 16 characters or a hexa-\n"
             u"      decimal value representing 16 bytes.\n"
             u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-            u"\n"
             u"  -v\n"
             u"  --video-attributes\n"
             u"      Display video attributes.\n");

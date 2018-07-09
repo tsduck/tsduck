@@ -226,10 +226,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
             u"      Forward all received MPE encapsulated UDP datagrams on the local network.\n"
             u"      By default, the destination address and port of each datagram is left\n"
             u"      unchanged. The source address of the forwarded datagrams will be the\n"
-            u"      address of the local machine.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      address of the local machine.\n");
 }
 
 

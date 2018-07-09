@@ -79,21 +79,11 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
     _rem_count(0)
 {
     option(u"", 0, POSITIVE, 2, 2);
-
-    setHelp(u"Parameters:\n"
-            u"\n"
-            u"  The parameters specify that <rempkt> TS packets must be automatically\n"
-            u"  removed after every <inpkt> input TS packets in the transport stream.\n"
-            u"  Only stuffing packets can be removed.\n"
-            u"  Both <rempkt> and <inpkt> must be non-zero integer values.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    help(u"",
+         u"The parameters specify that <rempkt> TS packets must be automatically "
+         u"removed after every <inpkt> input TS packets in the transport stream. "
+         u"Only stuffing packets can be removed. "
+         u"Both <rempkt> and <inpkt> must be non-zero integer values.");
 }
 
 

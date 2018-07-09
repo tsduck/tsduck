@@ -87,31 +87,19 @@ ts::PlayPlugin::PlayPlugin(TSP* tsp_) :
     _use_xine(false),
     _pipe()
 {
-    option(u"mplayer", 'm');
-    option(u"xine",    'x');
+#if !defined(TS_WINDOWS)
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-#if !defined(TS_WINDOWS)
-            u"\n"
-            u"  -m\n"
-            u"  --mplayer\n"
-            u"      Use mplayer for rendering. The default is to look for vlc, mplayer and\n"
-            u"      xine, in this order, and use the first available one.\n"
+    option(u"mplayer", 'm');
+    help(u"mplayer",
+         u"Use mplayer for rendering. The default is to look for vlc, mplayer and "
+         u"xine, in this order, and use the first available one.");
+
+    option(u"xine", 'x');
+    help(u"xine",
+         u"Use xine for rendering. The default is to look for vlc, mplayer and "
+         u"xine, in this order, and use the first available one.");
+
 #endif
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n"
-#if !defined(TS_WINDOWS)
-            u"\n"
-            u"  -x\n"
-            u"  --xine\n"
-            u"      Use xine for rendering. The default is to look for vlc, mplayer and\n"
-            u"      xine, in this order, and use the first available one.\n"
-#endif
-    );
 }
 
 

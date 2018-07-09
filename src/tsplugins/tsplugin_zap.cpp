@@ -131,63 +131,47 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS)
 {
-    option(u"",              0,  STRING, 1, 1);
-    option(u"audio",        'a', STRING);
-    option(u"cas",          'c');
-    option(u"no-ecm",       'e');
-    option(u"no-subtitles", 'n');
-    option(u"pes-only",     'p');
-    option(u"stuffing",     's');
-    option(u"subtitles",    't', STRING);
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"Specifies the service to keep. If the argument is an integer value (either "
+         u"decimal or hexadecimal), it is interpreted as a service id. Otherwise, it "
+         u"is interpreted as a service name, as specified in the SDT. The name is not "
+         u"case sensitive and blanks are ignored. If the input TS does not contain an "
+         u"SDT, use a service id.");
 
-    setHelp(u"Service:\n"
-            u"  Specifies the service to keep. If the argument is an integer value (either\n"
-            u"  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
-            u"  is interpreted as a service name, as specified in the SDT. The name is not\n"
-            u"  case sensitive and blanks are ignored. If the input TS does not contain an\n"
-            u"  SDT, use a service id.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a name\n"
-            u"  --audio name\n"
-            u"      Remove all audio components except the specified one. The name is a\n"
-            u"      three-letters language code. By default, keep all audio components.\n"
-            u"\n"
-            u"  -c\n"
-            u"  --cas\n"
-            u"      Keep Conditional Access System sections (CAT and EMM's).\n"
-            u"      Remove them by default. Note that the ECM's for the specified\n"
-            u"      service are always kept.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -e\n"
-            u"  --no-ecm\n"
-            u"      Remove all ECM PID's. By default, keep all ECM PID's.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --no-subtitles\n"
-            u"      Remove all subtitles. By default, keep all subtitles.\n"
-            u"\n"
-            u"  -p\n"
-            u"  --pes-only\n"
-            u"      Keep only the PES elementary streams (audio, video, subtitles).\n"
-            u"      Remove all PSI/SI and CAS information.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Replace excluded packets with stuffing (null packets) instead\n"
-            u"      of removing them. Useful to preserve bitrate.\n"
-            u"\n"
-            u"  -t name\n"
-            u"  --subtitles name\n"
-            u"      Remove all subtitles except the specified one. The name is a\n"
-            u"      three-letters language code. By default, keep all subtitles.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"audio", 'a', STRING);
+    help(u"audio",
+         u"Remove all audio components except the specified one. The name is a "
+         u"three-letters language code. By default, keep all audio components.");
+
+    option(u"cas", 'c');
+    help(u"cas",
+         u"Keep Conditional Access System sections (CAT and EMM's). "
+         u"Remove them by default. Note that the ECM's for the specified "
+         u"service are always kept.");
+
+    option(u"no-ecm", 'e');
+    help(u"no-ecm",
+         u"Remove all ECM PID's. By default, keep all ECM PID's.");
+
+    option(u"no-subtitles", 'n');
+    help(u"no-subtitles",
+         u"Remove all subtitles. By default, keep all subtitles.");
+
+    option(u"pes-only", 'p');
+    help(u"pes-only",
+         u"Keep only the PES elementary streams (audio, video, subtitles). "
+         u"Remove all PSI/SI and CAS information.");
+
+    option(u"stuffing", 's');
+    help(u"stuffing",
+         u"Replace excluded packets with stuffing (null packets) instead "
+         u"of removing them. Useful to preserve bitrate.");
+
+    option(u"subtitles", 't', STRING);
+    help(u"subtitles",
+         u"Remove all subtitles except the specified one. The name is a "
+         u"three-letters language code. By default, keep all subtitles.");
 }
 
 

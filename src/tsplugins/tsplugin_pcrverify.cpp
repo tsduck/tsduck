@@ -154,10 +154,7 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
             u"\n"
             u"  -t\n"
             u"  --time-stamp\n"
-            u"      Display time of each event.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Display time of each event.\n");
 }
 
 

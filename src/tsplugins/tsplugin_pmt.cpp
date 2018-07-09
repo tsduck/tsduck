@@ -73,30 +73,31 @@ namespace ts {
         typedef std::map<PID, SafePtr<DescriptorList>> DescriptorListByPID;
 
         // PMTPlugin instance fields
-        bool                _abort;                // Error (service not found, etc)
-        bool                _ready;                // Ready to perform transformation
-        Service             _service;              // Service of PMT to modify
-        std::vector<PID>    _removed_pid;          // Set of PIDs to remove from PMT
-        std::vector<DID>    _removed_desc;         // Set of descriptor tags to remove
-        std::list<NewPID>   _added_pid;            // List of PID to add
-        std::map<PID,PID>   _moved_pid;            // List of renamed PID's in PMT (key=old, value=new)
-        bool                _set_servid;           // Set a new service id
-        uint16_t            _new_servid;           // New service id
-        bool                _set_pcrpid;           // Set a new PCR PID
-        PID                 _new_pcrpid;           // New PCR PID
-        bool                _incr_version;         // Increment table version
-        bool                _set_version;          // Set a new table version
-        uint8_t             _new_version;          // New table version
-        PDS                 _pds;                  // Private data specifier for removed descriptors
-        bool                _add_stream_id;        // Add stream_identifier_descriptor on all components
-        bool                _ac3_atsc2dvb;         // Modify AC-3 signaling from ATSC to DVB method
-        bool                _eac3_atsc2dvb;        // Modify Enhanced-AC-3 signaling from ATSC to DVB method
-        bool                _cleanup_priv_desc;    // Remove private desc without preceding PDS desc
-        DescriptorList      _add_descs;            // List of descriptors to add at program level
+        bool                 _abort;               // Error (service not found, etc)
+        bool                 _ready;               // Ready to perform transformation
+        Service              _service;             // Service of PMT to modify
+        std::vector<PID>     _removed_pid;         // Set of PIDs to remove from PMT
+        std::vector<DID>     _removed_desc;        // Set of descriptor tags to remove
+        std::vector<uint8_t> _removed_stream;      // Set of stream types to remove
+        std::list<NewPID>    _added_pid;           // List of PID to add
+        std::map<PID,PID>    _moved_pid;           // List of renamed PID's in PMT (key=old, value=new)
+        bool                 _set_servid;          // Set a new service id
+        uint16_t             _new_servid;          // New service id
+        bool                 _set_pcrpid;          // Set a new PCR PID
+        PID                  _new_pcrpid;          // New PCR PID
+        bool                 _incr_version;        // Increment table version
+        bool                 _set_version;         // Set a new table version
+        uint8_t              _new_version;         // New table version
+        PDS                  _pds;                 // Private data specifier for removed descriptors
+        bool                 _add_stream_id;       // Add stream_identifier_descriptor on all components
+        bool                 _ac3_atsc2dvb;        // Modify AC-3 signaling from ATSC to DVB method
+        bool                 _eac3_atsc2dvb;       // Modify Enhanced-AC-3 signaling from ATSC to DVB method
+        bool                 _cleanup_priv_desc;   // Remove private desc without preceding PDS desc
+        DescriptorList       _add_descs;           // List of descriptors to add at program level
         DescriptorListByPID _add_pid_descs;        // Lists of descriptors to add by PID
         AudioLanguageOptionsVector _languages;     // Audio languages to set
-        SectionDemux        _demux;                // Section demux
-        CyclingPacketizer   _pzer;                 // Packetizer for modified PMT
+        SectionDemux         _demux;               // Section demux
+        CyclingPacketizer    _pzer;                // Packetizer for modified PMT
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
@@ -137,6 +138,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _service(),
     _removed_pid(),
     _removed_desc(),
+    _removed_stream(),
     _added_pid(),
     _moved_pid(),
     _set_servid(false),
@@ -157,142 +159,130 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option(u"ac3-atsc2dvb",                0);
-    option(u"add-ca-descriptor",           0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
-    option(u"add-programinfo-id",          0,  UINT32);
-    option(u"add-stream-identifier",       0);
-    option(u"audio-language",              0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"cleanup-private-descriptors", 0);
-    option(u"eac3-atsc2dvb",               0);
-    option(u"increment-version",           0);
-    option(u"new-service-id",             'i', UINT16);
-    option(u"move-pid",                   'm', STRING, 0, UNLIMITED_COUNT);
-    option(u"pds",                         0,  UINT32);
-    option(u"pmt-pid",                    'p', PIDVAL);
-    option(u"pcr-pid",                     0,  PIDVAL);
-    option(u"remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
-    option(u"remove-pid",                 'r', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"service",                    's', STRING);
-    option(u"set-cue-type",                0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"set-data-broadcast-id",       0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"set-stream-identifier",       0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
+    option(u"ac3-atsc2dvb");
+    help(u"ac3-atsc2dvb",
+         u"Change the description of AC-3 audio streams from ATSC to DVB method. "
+         u"In details, this means that all components with stream_type 0x81 are "
+         u"modified with stream_type 0x06 (PES private data) and an AC-3_descriptor "
+         u"is added on this component (if none was already there).");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --ac3-atsc2dvb\n"
-            u"      Change the description of AC-3 audio streams from ATSC to DVB method.\n"
-            u"      In details, this means that all components with stream_type 0x81 are\n"
-            u"      modified with stream_type 0x06 (PES private data) and an AC-3_descriptor\n"
-            u"      is added on this component (if none was already there).\n"
-            u"\n"
-            u"  --add-ca-descriptor casid/pid[/private-data]\n"
-            u"      Add a CA_descriptor at program level in the PMT with the specified CA\n"
-            u"      System Id and ECM PID. The optional private data must be a suite of\n"
-            u"      hexadecimal digits. Several --add-ca-descriptor options may be specified\n"
-            u"      to add several descriptors.\n"
-            u"\n"
-            u"  -a pid/stream_type\n"
-            u"  --add-pid pid/stream_type\n"
-            u"      Add the specified PID / stream-type component in the PMT. Several\n"
-            u"      --add-pid options may be specified to add several components.\n"
-            u"\n"
-            u"  --add-programinfo-id value\n"
-            u"      Add a registration_descriptor in the program-level descriptor list in the\n"
-            u"      PMT. The value is the format_identifier in registration_descriptor, e.g.\n"
-            u"      0x43554549 for CUEI.\n"
-            u"\n"
-            u"  --add-stream-identifier\n"
-            u"      Add a stream_identifier_descriptor on all components. The component_tag\n"
-            u"      are uniquely allocated inside the service. Existing stream_identifier\n"
-            u"      descriptors are left unmodified.\n"
-            u"\n"
-            u"  --audio-language " + AudioLanguageOptions::GetSyntaxString() + u"\n"
-            u"      Specifies the language for an audio stream in the PMT. Several options\n"
-            u"      can be specified to set the languages of several audio streams.\n" +
-            AudioLanguageOptions::GetHelpString() +
-            u"\n"
-            u"  --cleanup-private-descriptors\n"
-            u"      Remove all private descriptors without preceding private_data_specifier\n"
-            u"      descriptor.\n"
-            u"\n"
-            u"  --eac3-atsc2dvb\n"
-            u"      Change the description of Enhanced-AC-3 (aka AC-3+ or DD+) audio streams\n"
-            u"      from ATSC to DVB method. In details, this means that all components with\n"
-            u"      stream_type 0x87 are modified with stream_type 0x06 (PES private data)\n"
-            u"      and an enhanced_AC-3_descriptor is added on this component (if none was\n"
-            u"      already there).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --increment-version\n"
-            u"      Increment the version number of the PMT.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --new-service-id value\n"
-            u"      Change the service id in the PMT.\n"
-            u"\n"
-            u"  -m old-pid/new-pid\n"
-            u"  --move-pid old-pid/new-pid\n"
-            u"      Change the PID value of a component in the PMT. Several --move-pid\n"
-            u"      options may be specified to move several components.\n"
-            u"\n"
-            u"  --pds value\n"
-            u"      With option --remove-descriptor, specify the private data specifier\n"
-            u"      which applies to the descriptor tag values above 0x80.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pmt-pid value\n"
-            u"      Specify the PID carrying the PMT to modify. All PMT's in this PID will be\n"
-            u"      modified. Options --pmt-pid and --service are mutually exclusive. If\n"
-            u"      neither are specified, the first service in the PAT is used.\n"
-            u"\n"
-            u"  --pcr-pid value\n"
-            u"      Change the PCR PID value in the PMT.\n"
-            u"\n"
-            u"  --remove-descriptor value\n"
-            u"      Remove from the PMT all descriptors with the specified tag. Several\n"
-            u"      --remove-descriptor options may be specified to remove several types of\n"
-            u"      descriptors. See also option --pds.\n"
-            u"\n"
-            u"  -r value\n"
-            u"  --remove-pid value\n"
-            u"      Remove the component with the specified PID from the PMT. Several\n"
-            u"      --remove-pid options may be specified to remove several components.\n"
-            u"\n"
-            u"  -s name-or-id\n"
-            u"  --service name-or-id\n"
-            u"      Specify the service the PMT of which must be modified. If the argument is\n"
-            u"      an integer value (either decimal or hexadecimal), it is interpreted as a\n"
-            u"      service id. Otherwise, it is interpreted as a service name, as specified\n"
-            u"      in the SDT. The name is not case sensitive and blanks are ignored.\n"
-            u"      Options --pmt-pid and --service are mutually exclusive. If neither are\n"
-            u"      specified, the first service in the PAT is used.\n"
-            u"\n"
-            u"  --set-cue-type pid/type\n"
-            u"      In the component with the specified PID, add an SCTE 35 cue_identifier\n"
-            u"      descriptor with the specified cue stream type. Several --set-cue-type\n"
-            u"      options may be specified.\n"
-            u"\n"
-            u"  --set-data-broadcast-id pid/id[/selector]\n"
-            u"      In the component with the specified PID, add a data_broadcast_id_descriptor\n"
-            u"      with the specified data_broadcast_id. The optional selector is a suite of\n"
-            u"      hexadecimal characters representing the content of the selector bytes.\n"
-            u"      Several --set-data-broadcast-id options may be specified.\n"
-            u"\n"
-            u"  --set-stream-identifier pid/id\n"
-            u"      In the component with the specified PID, add a stream_identifier_descriptor\n"
-            u"      with the specified id. Several --set-stream-identifier options may be\n"
-            u"      specified.\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --new-version value\n"
-            u"      Specify a new value for the version of the PMT.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"add-ca-descriptor", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"add-ca-descriptor", u"casid/pid[/private-data]",
+         u"Add a CA_descriptor at program level in the PMT with the specified CA "
+         u"System Id and ECM PID. The optional private data must be a suite of "
+         u"hexadecimal digits. Several --add-ca-descriptor options may be specified "
+         u"to add several descriptors.");
+
+    option(u"add-pid", 'a', STRING, 0, UNLIMITED_COUNT);
+    help(u"add-pid", u"pid/stream_type",
+         u"Add the specified PID / stream-type component in the PMT. Several "
+         u"--add-pid options may be specified to add several components.");
+
+    option(u"add-programinfo-id", 0, UINT32);
+    help(u"add-programinfo-id",
+         u"Add a registration_descriptor in the program-level descriptor list in the "
+         u"PMT. The value is the format_identifier in registration_descriptor, e.g. "
+         u"0x43554549 for CUEI.");
+
+    option(u"add-stream-identifier");
+    help(u"add-stream-identifier",
+         u"Add a stream_identifier_descriptor on all components. The component_tag "
+         u"are uniquely allocated inside the service. Existing stream_identifier "
+         u"descriptors are left unmodified.");
+
+    option(u"audio-language", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"audio-language", AudioLanguageOptions::GetSyntaxString(),
+         u"Specifies the language for an audio stream in the PMT. Several options "
+         u"can be specified to set the languages of several audio streams.\n\n" +
+         AudioLanguageOptions::GetHelpString());
+
+    option(u"cleanup-private-descriptors", 0);
+    help(u"cleanup-private-descriptors",
+         u"Remove all private descriptors without preceding private_data_specifier descriptor.");
+
+    option(u"eac3-atsc2dvb");
+    help(u"eac3-atsc2dvb",
+         u"Change the description of Enhanced-AC-3 (aka AC-3+ or DD+) audio streams "
+         u"from ATSC to DVB method. In details, this means that all components with "
+         u"stream_type 0x87 are modified with stream_type 0x06 (PES private data) "
+         u"and an enhanced_AC-3_descriptor is added on this component (if none was "
+         u"already there).");
+
+    option(u"increment-version");
+    help(u"increment-version",
+         u"Increment the version number of the PMT.");
+
+    option(u"new-service-id", 'i', UINT16);
+    help(u"new-service-id",
+         u"Change the service id in the PMT.");
+
+    option(u"move-pid", 'm', STRING, 0, UNLIMITED_COUNT);
+    help(u"move-pid", u"old-pid/new-pid",
+         u"Change the PID value of a component in the PMT. Several --move-pid "
+         u"options may be specified to move several components.");
+
+    option(u"pds", 0, UINT32);
+    help(u"pds",
+         u"With option --remove-descriptor, specify the private data specifier "
+         u"which applies to the descriptor tag values above 0x80.");
+
+    option(u"pmt-pid", 'p', PIDVAL);
+    help(u"pmt-pid",
+         u"Specify the PID carrying the PMT to modify. All PMT's in this PID will be "
+         u"modified. Options --pmt-pid and --service are mutually exclusive. If "
+         u"neither are specified, the first service in the PAT is used.");
+
+    option(u"pcr-pid", 0, PIDVAL);
+    help(u"pcr-pid",
+         u"Change the PCR PID value in the PMT.");
+
+    option(u"remove-descriptor", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"remove-descriptor",
+         u"Remove from the PMT all descriptors with the specified tag. Several "
+         u"--remove-descriptor options may be specified to remove several types of "
+         u"descriptors. See also option --pds.");
+
+    option(u"remove-pid", 'r', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"remove-pid",
+         u"Remove the component with the specified PID from the PMT. Several "
+         u"--remove-pid options may be specified to remove several components.");
+
+    option(u"remove-stream-type", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"remove-stream-type", u"value[-value]",
+         u"Remove all components with a stream type matching the specified value (or in the specified range of values). "
+         u"Several --remove-stream-type options may be specified.");
+
+    option(u"service", 's', STRING);
+    help(u"service", u"name-or-id",
+         u"Specify the service the PMT of which must be modified. If the argument is "
+         u"an integer value (either decimal or hexadecimal), it is interpreted as a "
+         u"service id. Otherwise, it is interpreted as a service name, as specified "
+         u"in the SDT. The name is not case sensitive and blanks are ignored. "
+         u"Options --pmt-pid and --service are mutually exclusive. If neither are "
+         u"specified, the first service in the PAT is used.");
+
+    option(u"set-cue-type", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"set-cue-type", u"pid/type",
+         u"In the component with the specified PID, add an SCTE 35 cue_identifier "
+         u"descriptor with the specified cue stream type. Several --set-cue-type "
+         u"options may be specified.");
+
+    option(u"set-data-broadcast-id", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"set-data-broadcast-id", u"pid/id[/selector]",
+         u"In the component with the specified PID, add a data_broadcast_id_descriptor "
+         u"with the specified data_broadcast_id. The optional selector is a suite of "
+         u"hexadecimal characters representing the content of the selector bytes. "
+         u"Several --set-data-broadcast-id options may be specified.");
+
+    option(u"set-stream-identifier", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"set-stream-identifier", u"pid/id",
+         u"In the component with the specified PID, add a stream_identifier_descriptor "
+         u"with the specified id. Several --set-stream-identifier options may be "
+         u"specified.");
+
+    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
+    help(u"new-version",
+         u"Specify a new value for the version of the PMT.");
 }
 
 
@@ -430,6 +420,28 @@ bool ts::PMTPlugin::start()
         }
     }
 
+    // Get list of stream types to remove.
+    opt_count = count(u"remove-stream-type");
+    for (size_t n = 0; n < opt_count; n++) {
+        const UString opt(value(u"remove-stream-type", u"", n));
+        uint8_t s1 = 0, s2 = 0;
+        if (opt.scan(u"%d", {&s1})) {
+            _removed_stream.push_back(s1);
+        }
+        else if (opt.scan(u"%d-%d", {&s1, &s2}) && s1 <= s2) {
+            for (uint8_t s = s1; s <= s2; ++s) {
+                _removed_stream.push_back(s);
+                if (s == 0xFF) {
+                    break; // avoid overflow and infinite loop when s2 == 0xFF
+                }
+            }
+        }
+        else {
+            tsp->error(u"invalid integer or integer range \"%s\" for --remove-stream-type", {opt});
+            return false;
+        }
+    }
+
     // Get suboptions for component to add, type of identifier and tag
     if (!decodeComponentDescOption<StreamIdentifierDescriptor, uint8_t>(u"set-stream-identifier") ||
         !decodeComponentDescOption<CueIdentifierDescriptor, uint8_t>(u"set-cue-type"))
@@ -538,13 +550,25 @@ void ts::PMTPlugin::processPMT(PMT& pmt)
 
     // ---- Do removal first (otherwise it could remove things we add...)
 
-    // Remove components
-    for (std::vector<PID>::const_iterator it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
+    // Remove components by PID.
+    for (auto it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
         pmt.streams.erase(*it);
     }
 
+    // Remove components by stream type.
+    for (auto it = _removed_stream.begin(); it != _removed_stream.end(); ++it) {
+        for (auto str = pmt.streams.begin(); str != pmt.streams.end(); ) {
+            if (str->second.stream_type == *it) {
+                str = pmt.streams.erase(str);
+            }
+            else {
+                ++str;
+            }
+        }
+    }
+
     // Remove descriptors
-    for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
+    for (auto it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
         pmt.descs.removeByTag(*it, _pds);
         for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
             smi->second.descs.removeByTag(*it, _pds);

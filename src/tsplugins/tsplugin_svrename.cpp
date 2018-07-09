@@ -171,10 +171,7 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
             u"\n"
             u"  -t value\n"
             u"  --type value\n"
-            u"      Specify a new service type.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Specify a new service type.\n");
 }
 
 

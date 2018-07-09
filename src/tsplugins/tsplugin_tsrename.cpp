@@ -124,51 +124,33 @@ ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(PID_EIT, tsp_)
 {
-    option(u"add",                 'a');
-    option(u"add-bat",              0);
-    option(u"add-nit",              0);
-    option(u"ignore-bat",           0);
-    option(u"ignore-eit",           0);
-    option(u"ignore-nit",           0);
-    option(u"original-network-id", 'o',  UINT16);
-    option(u"ts-id",               't',  UINT16);
+    option(u"add", 'a');
+    help(u"add", u"Equivalent to --add-bat --add-nit.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --add\n"
-            u"      Equivalent to --add-bat --add-nit.\n"
-            u"\n"
-            u"  --add-bat\n"
-            u"      Add a new entry for the renamed TS in the BAT and keep the previous\n"
-            u"      entry. By default, the TS entry is renamed.\n"
-            u"\n"
-            u"  --add-nit\n"
-            u"      Add a new entry for the renamed TS in the NIT and keep the previous\n"
-            u"      entry. By default, the TS entry is renamed.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --ignore-bat\n"
-            u"      Do not modify the BAT.\n"
-            u"\n"
-            u"  --ignore-eit\n"
-            u"      Do not modify the EIT's.\n"
-            u"\n"
-            u"  --ignore-nit\n"
-            u"      Do not modify the NIT.\n"
-            u"\n"
-            u"  -o value\n"
-            u"  --original-network-id value\n"
-            u"      Modify the original network id. By default, it is unchanged.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --ts-id value\n"
-            u"      Modify the transport stream id. By default, it is unchanged.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"add-bat");
+    help(u"add-bat",
+         u"Add a new entry for the renamed TS in the BAT and keep the previous "
+         u"entry. By default, the TS entry is renamed.");
+
+    option(u"add-nit");
+    help(u"add-nit",
+         u"Add a new entry for the renamed TS in the NIT and keep the previous "
+         u"entry. By default, the TS entry is renamed.");
+
+    option(u"ignore-bat");
+    help(u"ignore-bat", u"Do not modify the BAT.");
+
+    option(u"ignore-eit");
+    help(u"ignore-eit", u"Do not modify the EIT's.");
+
+    option(u"ignore-nit");
+    help(u"ignore-nit", u"Do not modify the NIT.");
+
+    option(u"original-network-id", 'o', UINT16);
+    help(u"original-network-id", u"Modify the original network id. By default, it is unchanged.");
+
+    option(u"ts-id", 't', UINT16);
+    help(u"ts-id", u"Modify the transport stream id. By default, it is unchanged.");
 }
 
 

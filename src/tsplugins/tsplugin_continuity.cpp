@@ -83,32 +83,19 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
     _pids()
 {
     option(u"fix", 'f');
-    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"tag", 't', STRING);
+    help(u"fix",
+         u"Fix incorrect continuity counters. By default, only display discontinuities.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -f\n"
-            u"  --fix\n"
-            u"      Fix incorrect continuity counters. By default, only display\n"
-            u"      discontinuities.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Check or fix continuity counters only in packets with this PID value.\n"
-            u"      Several -p or --pid options may be specified. By default, all PID's\n"
-            u"      are checked or fixed.\n"
-            u"\n"
-            u"  -t 'string'\n"
-            u"  --tag 'string'\n"
-            u"      Message tag to be displayed when packets are missing. Useful when\n"
-            u"      the plugin is used several times in the same process.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"Check or fix continuity counters only in packets with this PID value. "
+         u"Several -p or --pid options may be specified. By default, all PID's "
+         u"are checked or fixed.");
+
+    option(u"tag", 't', STRING);
+    help(u"tag", u"'string'",
+         u"Message tag to be displayed when packets are missing. Useful when "
+         u"the plugin is used several times in the same process.");
 }
 
 

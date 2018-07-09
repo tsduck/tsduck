@@ -42,12 +42,12 @@ TSDUCK_SOURCE;
 ts::UString ts::AudioLanguageOptions::GetHelpString()
 {
     return
-        u"      The \"language-code\" is a 3-character string. The audio-type is optional,\n"
-        u"      its default value is zero. The \"location\" indicates how to locate the\n"
-        u"      audio stream. Its format is either \"Pn\" or \"An\". In the first case,\n"
-        u"      \"n\" designates a PID value and in the second case the audio stream number\n"
-        u"      inside the PMT, starting with 1. The default location is \"A1\", ie. the\n"
-        u"      first audio stream inside the PMT.\n";
+        u"The \"language-code\" is a 3-character string. The audio-type is optional, "
+        u"its default value is zero. The \"location\" indicates how to locate the "
+        u"audio stream. Its format is either \"Pn\" or \"An\". In the first case, "
+        u"\"n\" designates a PID value and in the second case the audio stream number "
+        u"inside the PMT, starting with 1. The default location is \"A1\", ie. the "
+        u"first audio stream inside the PMT.\n";
 }
 
 

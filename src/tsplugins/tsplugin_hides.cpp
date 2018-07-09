@@ -178,10 +178,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
             u"  -t value\n"
             u"  --transmission-mode value\n"
             u"      Transmission mode. Must be one of " + optionNames(u"transmission-mode") + ".\n"
-            u"      The default is 8K.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      The default is 8K.\n");
 }
 
 

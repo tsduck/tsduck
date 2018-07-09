@@ -155,10 +155,7 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
             u"      in the SDT. The name is not case sensitive and blanks are ignored.\n"
             u"      The first teletext_descriptor in the PMT of the service is used to\n"
             u"      identify the PID carrying Teletext subtitles. If neither --service nor\n"
-            u"      --pid is specified, the first service in the PAT is used.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      --pid is specified, the first service in the PAT is used.\n");
 }
 
 

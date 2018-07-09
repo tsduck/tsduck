@@ -91,29 +91,19 @@ ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
     _bitrate(0),
     _pcr_name()
 {
-    option(u"dts",     'd');
-    option(u"min-pcr",  0, POSITIVE);
-    option(u"min-pid",  0, POSITIVE);
+    option(u"dts", 'd');
+    help(u"dts",
+         u"Use DTS (Decoding Time Stamps) from video PID's instead of PCR "
+         u"(Program Clock Reference) from the transport layer.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -d\n"
-            u"  --dts\n"
-            u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
-            u"      (Program Clock Reference) from the transport layer.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --min-pcr value\n"
-            u"      Stop analysis when that number of PCR are read from the required\n"
-            u"      minimum number of PID (default: " TS_STRINGIFY(DEF_MIN_PCR_CNT) u").\n"
-            u"\n"
-            u"  --min-pid value\n"
-            u"      Minimum number of PID to get PCR from (default: " TS_STRINGIFY(DEF_MIN_PID) u").\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+    option(u"min-pcr", 0, POSITIVE);
+    help(u"min-pcr",
+         u"Stop analysis when that number of PCR are read from the required "
+         u"minimum number of PID (default: " TS_STRINGIFY(DEF_MIN_PCR_CNT) u").");
+
+    option(u"min-pid", 0, POSITIVE);
+    help(u"min-pid",
+         u"Minimum number of PID to get PCR from (default: " TS_STRINGIFY(DEF_MIN_PID) u").");
 }
 
 

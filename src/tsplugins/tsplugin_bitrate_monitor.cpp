@@ -152,10 +152,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
             u"      Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.\n"
             u"\n"
             u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Display this help text.\n");
 }
 
 
