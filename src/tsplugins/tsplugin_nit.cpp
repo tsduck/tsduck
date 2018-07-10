@@ -36,6 +36,7 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
+#include "tsNetworkNameDescriptor.h"
 #include "tsPAT.h"
 #include "tsNIT.h"
 TSDUCK_SOURCE;
@@ -60,6 +61,11 @@ namespace ts {
         bool               _incr_version;      // Increment table version
         bool               _set_version;       // Set a new table version
         uint8_t            _new_version;       // New table version
+        UString            _new_netw_name;     // New network name
+        bool               _set_netw_id;       // Change network id
+        uint16_t           _new_netw_id;       // New network id
+        bool               _use_nit_other;     // Use a NIT Other, not the NIT Actual
+        uint16_t           _nit_other_id;      // Network id of the NIT Other to hack
         int                _lcn_oper;          // Operation on LCN descriptors
         int                _sld_oper;          // Operation on service_list_descriptors
         std::set<uint16_t> _remove_serv;       // Set of services to remove
@@ -109,6 +115,11 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
     _incr_version(false),
     _set_version(false),
     _new_version(0),
+    _new_netw_name(),
+    _set_netw_id(false),
+    _new_netw_id(0),
+    _use_nit_other(false),
+    _nit_other_id(0),
     _lcn_oper(0),
     _sld_oper(0),
     _remove_serv(),
@@ -144,9 +155,22 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
          u"Set the \"MPE-FEC indicator\" in the terrestrial delivery system "
          u"descriptors to the specified value (0 or 1).");
 
+    option(u"network-id", 0, UINT16);
+    help(u"network-id", u"id",
+         u"Set the specified new value as network id in the NIT.");
+
+    option(u"network-name", 0, STRING);
+    help(u"network-name", u"name",
+         u"Set the specified value as network name in the NIT. Any existing network_name_descriptor "
+         u"is removed. A new network_name_descriptor is created with the new name.");
+
     option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
     help(u"new-version",
          u"Specify a new value for the version of the NIT.");
+
+    option(u"nit-other", 0, UINT16);
+    help(u"nit-other", u"id",
+         u"Do not modify the NIT Actual. Modify the NIT Other with the specified network id.");
 
     option(u"pds", 0, UINT32);
     help(u"pds",
@@ -213,6 +237,11 @@ bool ts::NITPlugin::start()
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
     _new_version = intValue<uint8_t>(u"new-version", 0);
+    _new_netw_name = value(u"network-name");
+    _set_netw_id = present(u"network-id");
+    _new_netw_id = intValue<uint16_t>(u"network-id");
+    _use_nit_other = present(u"nit-other");
+    _nit_other_id = intValue<uint16_t>(u"nit-other");
 
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
         tsp->error(u"--lcn and --remove-service are mutually exclusive");
@@ -270,24 +299,25 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             break;
         }
 
+        case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == _nit_pid) {
-                // NIT Other are passed unmodified
-                _pzer.removeSections(TID_NIT_OTH, table.tableIdExtension());
-                _pzer.addTable(table);
-            }
-            break;
-        }
-
-        case TID_NIT_ACT: {
-            if (table.sourcePID() == _nit_pid) {
-                // Modify NIT Actual
-                NIT nit(table);
-                if (nit.isValid()) {
-                    // Transform NIT Actual
-                    _pzer.removeSections(TID_NIT_ACT, nit.network_id);
-                    processNIT(nit);
-                    _pzer.addTable(nit);
+                // Remove previous instances of this table from the packetizer.
+                _pzer.removeSections(table.tableId(), table.tableIdExtension());
+                // Update the NIT Actual by default, unless a specific NIT Other is targeted.
+                if ((!_use_nit_other && table.tableId() == TID_NIT_ACT) ||
+                    (_use_nit_other && table.tableId() == TID_NIT_OTH && table.tableIdExtension() == _nit_other_id))
+                {
+                    // We need to hack this table.
+                    NIT nit(table);
+                    if (nit.isValid()) {
+                        processNIT(nit);
+                        _pzer.addTable(nit);
+                    }
+                }
+                else {
+                    // We pass this NIT unchanged.
+                    _pzer.addTable(table);
                 }
             }
             break;
@@ -329,6 +359,19 @@ void ts::NITPlugin::processNIT(NIT& nit)
         }
     } while (found);
 
+    // Update the network id.
+    if (_set_netw_id) {
+        nit.network_id = _new_netw_id;
+    }
+
+    // Update the network name.
+    if (!_new_netw_name.empty()) {
+        // Remove previous network_name_descriptor, if any.
+        nit.descs.removeByTag(DID_NETWORK_NAME);
+        // Add a new network_name_descriptor
+        nit.descs.add(NetworkNameDescriptor(_new_netw_name));
+    }
+
     // Process the global descriptor list
     processDescriptorList(nit.descs);
 
@@ -347,7 +390,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
 {
     // Process descriptor removal
     for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
-        dlist.removeByTag (*it, _pds);
+        dlist.removeByTag(*it, _pds);
     }
 
     // Remove private descriptors without preceding PDS descriptor
@@ -356,7 +399,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     }
 
     // Process all terrestrial_delivery_system_descriptors
-    for (size_t i = dlist.search (DID_TERREST_DELIVERY); i < dlist.count(); i = dlist.search (DID_TERREST_DELIVERY, i + 1)) {
+    for (size_t i = dlist.search(DID_TERREST_DELIVERY); i < dlist.count(); i = dlist.search(DID_TERREST_DELIVERY, i + 1)) {
 
         uint8_t* base = dlist[i]->payload();
         size_t size = dlist[i]->payloadSize();
@@ -372,14 +415,14 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     }
 
     // Process all linkage descriptors
-    for (size_t i = dlist.search (DID_LINKAGE); i < dlist.count(); i = dlist.search (DID_LINKAGE, i + 1)) {
+    for (size_t i = dlist.search(DID_LINKAGE); i < dlist.count(); i = dlist.search(DID_LINKAGE, i + 1)) {
 
         uint8_t* base = dlist[i]->payload();
         size_t size = dlist[i]->payloadSize();
 
         // If the linkage descriptor points to a removed TS, remove the descriptor
-        if (size >= 2 && _remove_ts.count (GetUInt16 (base)) != 0) {
-            dlist.removeByIndex (i);
+        if (size >= 2 && _remove_ts.count(GetUInt16 (base)) != 0) {
+            dlist.removeByIndex(i);
             --i;
         }
     }
@@ -387,11 +430,11 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     // Process all service_list_descriptors
     if (_sld_oper == LCN_REMOVE) {
         // Completely remove all service_list_descriptors
-        dlist.removeByTag (DID_SERVICE_LIST);
+        dlist.removeByTag(DID_SERVICE_LIST);
     }
     else {
         // Modify all service_list_descriptors
-        for (size_t i = dlist.search (DID_SERVICE_LIST); i < dlist.count(); i = dlist.search (DID_SERVICE_LIST, i + 1)) {
+        for (size_t i = dlist.search(DID_SERVICE_LIST); i < dlist.count(); i = dlist.search(DID_SERVICE_LIST, i + 1)) {
 
             uint8_t* base = dlist[i]->payload();
             size_t size = dlist[i]->payloadSize();
@@ -400,13 +443,13 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
             bool keep = true;
 
             while (size >= 3) {
-                uint16_t id = GetUInt16 (data);
+                uint16_t id = GetUInt16(data);
                 uint8_t type = data[2];
                 switch (_sld_oper) {
                     case LCN_NONE: {
                         // No global modification, check other option
                         if (_remove_serv.count (id) == 0) {
-                            PutUInt16 (new_data, id);
+                            PutUInt16(new_data, id);
                             new_data[2] = type;
                             new_data += 3;
                         }
@@ -415,7 +458,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                     case LCN_REMOVE_ODD: {
                         // Remove one value every two values
                         if (keep) {
-                            PutUInt16 (new_data, id);
+                            PutUInt16(new_data, id);
                             new_data[2] = type;
                             new_data += 3;
                         }
@@ -430,20 +473,20 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                 data += 3;
                 size -= 3;
             }
-            dlist[i]->resizePayload (new_data - base);
+            dlist[i]->resizePayload(new_data - base);
         }
     }
 
     // Process all logical_channel_number_descriptors
     if (_lcn_oper == LCN_REMOVE) {
         // Completely remove all LCN descriptors
-        dlist.removeByTag (DID_LOGICAL_CHANNEL_NUM, PDS_EICTA);
+        dlist.removeByTag(DID_LOGICAL_CHANNEL_NUM, PDS_EICTA);
     }
     else {
         // Modify all LCN descriptors
-        for (size_t i = dlist.search (DID_LOGICAL_CHANNEL_NUM, 0, PDS_EICTA);
+        for (size_t i = dlist.search(DID_LOGICAL_CHANNEL_NUM, 0, PDS_EICTA);
              i < dlist.count();
-             i = dlist.search (DID_LOGICAL_CHANNEL_NUM, i + 1, PDS_EICTA)) {
+             i = dlist.search(DID_LOGICAL_CHANNEL_NUM, i + 1, PDS_EICTA)) {
 
             uint8_t* base = dlist[i]->payload();
             size_t size = dlist[i]->payloadSize();
@@ -453,14 +496,14 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
             uint16_t previous_lcn = 0;
 
             while (size >= 4) {
-                uint16_t id = GetUInt16 (data);
-                uint16_t lcn = GetUInt16 (data + 2);
+                uint16_t id = GetUInt16(data);
+                uint16_t lcn = GetUInt16(data + 2);
                 switch (_lcn_oper) {
                     case LCN_NONE: {
                         // No global modification, check other option
                         if (_remove_serv.count (id) == 0) {
-                            PutUInt16 (new_data, id);
-                            PutUInt16 (new_data + 2, lcn);
+                            PutUInt16(new_data, id);
+                            PutUInt16(new_data + 2, lcn);
                             new_data += 4;
                         }
                         break;
@@ -468,8 +511,8 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                     case LCN_REMOVE_ODD: {
                         // Remove one value every two values
                         if (keep) {
-                            PutUInt16 (new_data, id);
-                            PutUInt16 (new_data + 2, lcn);
+                            PutUInt16(new_data, id);
+                            PutUInt16(new_data + 2, lcn);
                             new_data += 4;
                         }
                         keep = !keep;
@@ -477,13 +520,13 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                     }
                     case LCN_DUPLICATE_ODD: {
                         // Duplicate LCN values
-                        PutUInt16 (new_data, id);
+                        PutUInt16(new_data, id);
                         if (keep) {
-                            PutUInt16 (new_data + 2, lcn);
+                            PutUInt16(new_data + 2, lcn);
                             previous_lcn = lcn;
                         }
                         else {
-                            PutUInt16 (new_data + 2, previous_lcn);
+                            PutUInt16(new_data + 2, previous_lcn);
                         }
                         new_data += 4;
                         keep = !keep;
@@ -498,7 +541,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
                 size -= 4;
             }
 
-            dlist[i]->resizePayload (new_data - base);
+            dlist[i]->resizePayload(new_data - base);
         }
     }
 }
@@ -508,10 +551,10 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::NITPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::NITPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -525,7 +568,7 @@ ts::ProcessorPlugin::Status ts::NITPlugin::processPacket (TSPacket& pkt, bool& f
 
     // Replace packets using packetizer
     if (pkt.getPID() == _nit_pid) {
-        _pzer.getNextPacket (pkt);
+        _pzer.getNextPacket(pkt);
     }
 
     return TSP_OK;
