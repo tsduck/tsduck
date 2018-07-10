@@ -106,56 +106,44 @@ ts::BATPlugin::BATPlugin (TSP* tsp_) :
    _demux(this),
    _pzer()
 {
-    option(u"bouquet-id",                 'b', UINT16);
-    option(u"cleanup-private-descriptors", 0);
-    option(u"increment-version",          'i');
-    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
-    option(u"pds",                         0,  UINT32);
-    option(u"remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
-    option(u"remove-service",             'r', UINT16, 0, UNLIMITED_COUNT);
-    option(u"remove-ts",                   0,  UINT16, 0, UNLIMITED_COUNT);
+    option(u"bouquet-id", 'b', UINT16);
+    help(u"bouquet-id",
+         u"Specify the bouquet id of the BAT to modify and leave other BAT's "
+         u"unmodified. By default, all BAT's are modified.");
 
-    setHelp (u"Options:\n"
-             u"\n"
-             u"  -b value\n"
-             u"  --bouquet-id value\n"
-             u"      Specify the bouquet id of the BAT to modify and leave other BAT's\n"
-             u"      unmodified. By default, all BAT's are modified.\n"
-             u"\n"
-             u"  --cleanup-private-descriptors\n"
-             u"      Remove all private descriptors without preceding private_data_specifier\n"
-             u"      descriptor.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -i\n"
-             u"  --increment-version\n"
-             u"      Increment the version number of the BAT.\n"
-             u"\n"
-             u"  -v value\n"
-             u"  --new-version value\n"
-             u"      Specify a new value for the version of the BAT.\n"
-             u"\n"
-             u"  --pds value\n"
-             u"      With option --remove-descriptor, specify the private data specifier\n"
-             u"      which applies to the descriptor tag values above 0x80.\n"
-             u"\n"
-             u"  --remove-descriptor value\n"
-             u"      Remove from the BAT all descriptors with the specified tag. Several\n"
-             u"      --remove-descriptor options may be specified to remove several types of\n"
-             u"      descriptors. See also option --pds.\n"
-             u"\n"
-             u"  -r value\n"
-             u"  --remove-service value\n"
-             u"      Remove the specified service_id from the following descriptors:\n"
-             u"      service_list_descriptor, logical_channel_number_descriptor.\n"
-             u"      Several --remove-service options may be specified to remove several\n"
-             u"      services.\n"
-             u"\n"
-             u"  --remove-ts value\n"
-             u"      Remove the specified ts_id from the BAT. Several --remove-ts options\n"
-             u"      may be specified to remove several TS.\n");
+    option(u"cleanup-private-descriptors");
+    help(u"cleanup-private-descriptors",
+         u"Remove all private descriptors without preceding private_data_specifier descriptor.");
+
+    option(u"increment-version", 'i');
+    help(u"increment-version",
+         u"Increment the version number of the BAT.");
+
+    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
+    help(u"new-version",
+         u"Specify a new value for the version of the BAT.");
+
+    option(u"pds", 0, UINT32);
+    help(u"pds",
+         u"With option --remove-descriptor, specify the private data specifier "
+         u"which applies to the descriptor tag values above 0x80.");
+
+    option(u"remove-descriptor", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"remove-descriptor",
+         u"Remove from the BAT all descriptors with the specified tag. Several "
+         u"--remove-descriptor options may be specified to remove several types of "
+         u"descriptors. See also option --pds.");
+
+    option(u"remove-service", 'r', UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-service",
+         u"Remove the specified service_id from the following descriptors: "
+         u"service_list_descriptor, logical_channel_number_descriptor. "
+         u"Several --remove-service options may be specified to remove several services.");
+
+    option(u"remove-ts", 0, UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-ts",
+         u"Remove the specified ts_id from the BAT. Several --remove-ts options "
+         u"may be specified to remove several TS.");
 }
 
 

@@ -109,59 +109,44 @@ ts::CountPlugin::CountPlugin(TSP* tsp_) :
     _last_report(),
     _counters()
 {
-    option(u"all",         'a');
-    option(u"brief",       'b');
-    option(u"interval",    'i', UINT32);
-    option(u"negate",      'n');
-    option(u"output-file", 'o', STRING);
-    option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"summary",     's');
-    option(u"total",       't');
+    option(u"all", 'a');
+    help(u"all",
+         u"Report packet index and PID for all packets from the selected PID's. "
+         u"By default, only a final summary is reported.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --all\n"
-            u"      Report packet index and PID for all packets from the selected PID's.\n"
-            u"      By default, only a final summary is reported.\n"
-            u"\n"
-            u"  -b\n"
-            u"  --brief\n"
-            u"      Brief display. Report only the numerical values, not comment on their\n"
-            u"      usage.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --interval value\n"
-            u"      Report a time-stamp and global packet count at regular intervals. The\n"
-            u"      specified value is a number of packets.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --negate\n"
-            u"      Negate the filter: specified PID's are excluded.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify the output file for reporting packet counters. By default, report\n"
-            u"      on standard error using the tsp logging mechanism.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      PID filter: select packets with this PID value. Several -p or --pid\n"
-            u"      options may be specified. By default, if --pid is not specified, all\n"
-            u"      PID's are selected.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --summary\n"
-            u"      Display a final summary of packet counts per PID. This is the default,\n"
-            u"      unless --all or --total is specified, in which case the final summary is\n"
-            u"      reported only if --summary is specified.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --total\n"
-            u"      Display the total packet counts in all PID's.\n");
+    option(u"brief", 'b');
+    help(u"brief",
+         u"Brief display. Report only the numerical values, not comment on their usage.");
+
+    option(u"interval", 'i', UINT32);
+    help(u"interval",
+         u"Report a time-stamp and global packet count at regular intervals. The "
+         u"specified value is a number of packets.");
+
+    option(u"negate", 'n');
+    help(u"negate",
+         u"Negate the filter: specified PID's are excluded.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Specify the output file for reporting packet counters. By default, report "
+         u"on standard error using the tsp logging mechanism.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"PID filter: select packets with this PID value. Several -p or --pid "
+         u"options may be specified. By default, if --pid is not specified, all "
+         u"PID's are selected.");
+
+    option(u"summary", 's');
+    help(u"summary",
+         u"Display a final summary of packet counts per PID. This is the default, "
+         u"unless --all or --total is specified, in which case the final summary is "
+         u"reported only if --summary is specified.");
+
+    option(u"total", 't');
+    help(u"total",
+         u"Display the total packet counts in all PID's.");
 }
 
 

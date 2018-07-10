@@ -112,73 +112,60 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option(u"add-ca-descriptor",          'a', STRING, 0, UNLIMITED_COUNT);
-    option(u"bitrate",                    'b', POSITIVE);
-    option(u"cleanup-private-descriptors", 0);
-    option(u"create",                     'c');
-    option(u"create-after",                0,  POSITIVE);
-    option(u"increment-version",          'i');
-    option(u"inter-packet",                0,  POSITIVE);
-    option(u"remove-casid",               'r', UINT16, 0, UNLIMITED_COUNT);
-    option(u"remove-pid",                  0,  UINT16, 0, UNLIMITED_COUNT);
-    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
+    option(u"add-ca-descriptor", 'a', STRING, 0, UNLIMITED_COUNT);
+    help(u"add-ca-descriptor", u"casid/pid[/private-data]",
+         u"Add a CA_descriptor in the CAT with the specified CA System Id and "
+         u"EMM PID. The optional private data must be a suite of hexadecimal digits. "
+         u"Several --add-ca-descriptor options may be specified to add several "
+         u"descriptors.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a casid/pid[/private-data]\n"
-            u"  --add-ca-descriptor casid/pid[/private-data]\n"
-            u"      Add a CA_descriptor in the CAT with the specified CA System Id and\n"
-            u"      EMM PID. The optional private data must be a suite of hexadecimal digits.\n"
-            u"      Several --add-ca-descriptor options may be specified to add several\n"
-            u"      descriptors.\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Specifies the bitrate in bits / second of the CAT if a new one is\n"
-            u"      created. The default is " + UString::Decimal(DEFAULT_CAT_BITRATE) + u" b/s.\n"
-            u"\n"
-            u"  --cleanup-private-descriptors\n"
-            u"      Remove all private descriptors without preceding private_data_specifier\n"
-            u"      descriptor.\n"
-            u"\n"
-            u"  -c\n"
-            u"  --create\n"
-            u"      Create a new empty CAT if none was received after one second. This is\n"
-            u"      equivalent to --create-after 1000.\n"
-            u"\n"
-            u"  --create-after milliseconds\n"
-            u"      Create a new empty CAT if none was received after the specified number\n"
-            u"      of milliseconds. This can be useful to force the creation of a CAT in\n"
-            u"      a TS that has none (the CAT is an optional table). If an actual CAT is\n"
-            u"      received later, it will be used as the base for transformations instead\n"
-            u"      of the empty one.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --increment-version\n"
-            u"      Increment the version number of the CAT.\n"
-            u"\n"
-            u"  --inter-packet value\n"
-            u"      When a new CAT is created and --bitrate is not present, this option\n"
-            u"      specifies the packet interval for the CAT PID, that is to say the\n"
-            u"      number of TS packets in the transport between two packets of the\n"
-            u"      CAT PID. Use instead of --bitrate if the global bitrate of the TS\n"
-            u"      cannot be determined.\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --new-version value\n"
-            u"      Specify a new value for the version of the CAT.\n"
-            u"\n"
-            u"  -r value\n"
-            u"  --remove-casid value\n"
-            u"      Remove all CA_descriptors with the specified CA System Id.\n"
-            u"      Several --remove-casid options may be specified.\n"
-            u"\n"
-            u"  --remove-pid value\n"
-            u"      Remove all CA_descriptors with the specified EMM PID value.\n"
-            u"      Several --remove-pid options may be specified.\n");
+    option(u"bitrate", 'b', POSITIVE);
+    help(u"bitrate",
+         u"Specifies the bitrate in bits / second of the CAT if a new one is "
+         u"created. The default is " + UString::Decimal(DEFAULT_CAT_BITRATE) + u" b/s.");
+
+    option(u"cleanup-private-descriptors");
+    help(u"cleanup-private-descriptors",
+         u"Remove all private descriptors without preceding private_data_specifier descriptor.");
+
+    option(u"create", 'c');
+    help(u"create",
+         u"Create a new empty CAT if none was received after one second. This is "
+         u"equivalent to --create-after 1000.");
+
+    option(u"create-after", 0, POSITIVE);
+    help(u"create-after",
+         u"e a new empty CAT if none was received after the specified number "
+         u"of milliseconds. This can be useful to force the creation of a CAT in "
+         u"a TS that has none (the CAT is an optional table). If an actual CAT is "
+         u"received later, it will be used as the base for transformations instead "
+         u"of the empty one.");
+
+    option(u"increment-version", 'i');
+    help(u"increment-version",
+         u"Increment the version number of the CAT.");
+
+    option(u"inter-packet", 0, POSITIVE);
+    help(u"inter-packet",
+         u"When a new CAT is created and --bitrate is not present, this option "
+         u"specifies the packet interval for the CAT PID, that is to say the "
+         u"number of TS packets in the transport between two packets of the "
+         u"CAT PID. Use instead of --bitrate if the global bitrate of the TS "
+         u"cannot be determined.");
+
+    option(u"remove-casid", 'r', UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-casid",
+         u"Remove all CA_descriptors with the specified CA System Id. "
+         u"Several --remove-casid options may be specified.");
+
+    option(u"remove-pid", 0, UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-pid",
+         u"Remove all CA_descriptors with the specified EMM PID value. "
+         u"Several --remove-pid options may be specified.");
+
+    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
+    help(u"new-version",
+         u"Specify a new value for the version of the CAT.");
 }
 
 

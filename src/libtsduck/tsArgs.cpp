@@ -63,8 +63,7 @@ ts::Args::IOption::IOption(const UChar* name_,
                            size_t       max_occur_,
                            int64_t      min_value_,
                            int64_t      max_value_,
-                           bool         optional_,
-                           bool         predefined_) :
+                           uint32_t     flags_) :
 
     name(name_ == 0 ? UString() : name_),
     short_name(short_name_),
@@ -73,8 +72,7 @@ ts::Args::IOption::IOption(const UChar* name_,
     max_occur(max_occur_),
     min_value(min_value_),
     max_value(max_value_),
-    optional(optional_),
-    predefined(predefined_),
+    flags(flags_),
     enumeration(),
     syntax(),
     help(),
@@ -165,8 +163,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
                            const Enumeration& enumeration_,
                            size_t             min_occur_,
                            size_t             max_occur_,
-                           bool               optional_,
-                           bool               predefined_) :
+                           uint32_t           flags_) :
 
     name(name_ == 0 ? UString() : name_),
     short_name(short_name_),
@@ -175,8 +172,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
     max_occur(max_occur_),
     min_value(std::numeric_limits<int>::min()),
     max_value(std::numeric_limits<int>::max()),
-    optional(optional_),
-    predefined(predefined_),
+    flags(flags_),
     enumeration(enumeration_),
     syntax(),
     help(),
@@ -223,10 +219,11 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 {
     const UString s(syntax.empty() ? u"value" : syntax);
 
-    if (type == NONE || (optional && predefined)) {
+    if (type == NONE || (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) == (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
+        // No value or value is optional and shall not be documented.
         return UString();
     }
-    else if (optional) {
+    else if ((flags & IOPT_OPTVALUE) != 0) {
         return (ctx == LONG ? u"[=" : u"[") + s + u"]";
     }
     else if (ctx == ALONE) {
@@ -256,20 +253,20 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
 {
     // Add predefined options. The short one-letter names may be overwritten later.
     if ((flags & NO_HELP) == 0) {
-        addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, true, true));
+        addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"help", u"Display this help text.");
     }
     if ((flags & NO_VERSION) == 0) {
-        addOption(IOption(u"version", 0,  VersionFormatEnum, 0, 1, true, true));
+        addOption(IOption(u"version", 0,  VersionFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"version", u"Display the TSDuck version number.");
     }
     if ((flags & NO_VERBOSE) == 0) {
-        addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, false, true));
+        addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, IOPT_PREDEFINED));
         help(u"verbose", u"Produce verbose output.");
     }
     if ((flags & NO_DEBUG) == 0) {
-        addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, true, true));
-        help(u"debug", u"level", u"Produce debug traces.");
+        addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, IOPT_PREDEFINED | IOPT_OPTVALUE));
+        help(u"debug", u"level", u"Produce debug traces. The default level is 1. Higher levels produce more messages.");
     }
 }
 
@@ -299,7 +296,7 @@ ts::UString ts::Args::HelpLines(int level, const UString& text, size_t line_widt
 // Format the help options of the command.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Args::formatHelpOptions() const
+ts::UString ts::Args::formatHelpOptions(size_t line_width) const
 {
     // Legacy: return application-defined help.
     if (!_help.empty()) {
@@ -317,9 +314,9 @@ ts::UString ts::Args::formatHelpOptions() const
             if (opt.max_occur > 1) {
                 title += u's';
             }
-            text += HelpLines(0, title + u':');
+            text += HelpLines(0, title + u':', line_width);
             text += LINE_FEED;
-            text += HelpLines(1, opt.help.empty() ? opt.syntax : opt.help);
+            text += HelpLines(1, opt.help.empty() ? opt.syntax : opt.help, line_width);
         }
         else {
             // This is an option. Add 'Options:' the first time.
@@ -328,18 +325,18 @@ ts::UString ts::Args::formatHelpOptions() const
                 if (!text.empty()) {
                     text += LINE_FEED;
                 }
-                text += HelpLines(0, u"Options:");
+                text += HelpLines(0, u"Options:", line_width);
             }
             text += LINE_FEED;
             if (opt.short_name != 0) {
-                text += HelpLines(1, UString::Format(u"-%c%s", {opt.short_name, opt.valueDescription(IOption::SHORT)}));
+                text += HelpLines(1, UString::Format(u"-%c%s", {opt.short_name, opt.valueDescription(IOption::SHORT)}), line_width);
             }
-            text += HelpLines(1, UString::Format(u"--%s%s", {opt.name, opt.valueDescription(IOption::LONG)}));
+            text += HelpLines(1, UString::Format(u"--%s%s", {opt.name, opt.valueDescription(IOption::LONG)}), line_width);
             if (!opt.help.empty()) {
-                text += HelpLines(2, opt.help);
+                text += HelpLines(2, opt.help, line_width);
             }
-            if (!opt.enumeration.empty() && (!opt.predefined || !opt.optional)) {
-                text += HelpLines(2, u"Must be one of " + optionNames(opt.name.c_str()) + u".");
+            if (!opt.enumeration.empty() && (opt.flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) != (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
+                text += HelpLines(2, u"Must be one of " + optionNames(opt.name.c_str()) + u".", line_width);
             }
         }
     }
@@ -384,7 +381,7 @@ ts::Args& ts::Args::option(const UChar* name,
                            int64_t      max_value,
                            bool         optional)
 {
-    addOption(IOption(name, short_name, type, min_occur, max_occur, min_value, max_value, optional, false));
+    addOption(IOption(name, short_name, type, min_occur, max_occur, min_value, max_value, optional ? uint32_t(IOPT_OPTVALUE) : 0));
     return *this;
 }
 
@@ -400,7 +397,7 @@ ts::Args& ts::Args::option(const UChar*       name,
                            size_t             max_occur,
                            bool               optional)
 {
-    addOption(IOption(name, short_name, enumeration, min_occur, max_occur, optional, false));
+    addOption(IOption(name, short_name, enumeration, min_occur, max_occur, optional ? uint32_t(IOPT_OPTVALUE) : 0));
     return *this;
 }
 
@@ -442,7 +439,7 @@ ts::UString ts::Args::optionNames(const ts::UChar* name, const ts::UString& sepa
 ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 {
     for (IOptionMap::const_iterator it = other._iopts.begin(); it != other._iopts.end(); ++it) {
-        if (!it->second.predefined && (replace || _iopts.find(it->second.name) == _iopts.end())) {
+        if ((it->second.flags & IOPT_PREDEFINED) == 0 && (replace || _iopts.find(it->second.name) == _iopts.end())) {
             addOption(it->second);
         }
     }
@@ -843,7 +840,7 @@ bool ts::Args::analyze(bool processRedirections)
         }
 
         // Check presence of mandatory values in next arg if not already found
-        if (!val.set() && !opt->optional) {
+        if (!val.set() && (opt->flags & IOPT_OPTVALUE) == 0) {
             if (next_arg >= _args.size()) {
                 error(u"missing value for " + opt->display());
                 continue;
@@ -894,23 +891,23 @@ bool ts::Args::analyze(bool processRedirections)
     }
 
     // Process --verbose predefined option
-    if ((_flags & NO_VERBOSE) == 0 && present(u"verbose") && search(u"verbose")->predefined) {
+    if ((_flags & NO_VERBOSE) == 0 && present(u"verbose") && (search(u"verbose")->flags & IOPT_PREDEFINED) != 0) {
         raiseMaxSeverity(Severity::Verbose);
     }
 
     // Process --debug predefined option
-    if ((_flags & NO_DEBUG) == 0 && present(u"debug") && search(u"debug")->predefined) {
+    if ((_flags & NO_DEBUG) == 0 && present(u"debug") && (search(u"debug")->flags & IOPT_PREDEFINED) != 0) {
         raiseMaxSeverity(intValue(u"debug", Severity::Debug));
     }
 
     // Process --help predefined option
-    if ((_flags & NO_HELP) == 0 && present(u"help") && search(u"help")->predefined) {
+    if ((_flags & NO_HELP) == 0 && present(u"help") && (search(u"help")->flags & IOPT_PREDEFINED) != 0) {
         processHelp();
         return _is_valid = false;
     }
 
     // Process --version predefined option
-    if ((_flags & NO_VERSION) == 0 && present(u"version") && search(u"version")->predefined) {
+    if ((_flags & NO_VERSION) == 0 && present(u"version") && (search(u"version")->flags & IOPT_PREDEFINED) != 0) {
         processVersion();
         return _is_valid = false;
     }
@@ -940,7 +937,7 @@ bool ts::Args::analyze(bool processRedirections)
 // Get a formatted help text.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Args::getHelpText(HelpFormat format) const
+ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
 {
     switch (format) {
         case HELP_NAME: {
@@ -962,7 +959,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format) const
         }
         case HELP_SYNTAX: {
             // Same as usage but on one line.
-            UString str(getHelpText(HELP_USAGE));
+            UString str(getHelpText(HELP_USAGE, line_width));
             // Replace all backslash-newline by newline.
             str.substitute(u"\\\n", u"\n");
             // Remove all newlines and compact spaces.
@@ -983,7 +980,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format) const
         }
         case HELP_FULL: {
             // Default full complete help text.
-            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE) + u"\n\n" + formatHelpOptions();
+            return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE, line_width) + u"\n\n" + formatHelpOptions(line_width);
         }
         default: {
             return UString();

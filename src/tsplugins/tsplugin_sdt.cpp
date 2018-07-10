@@ -98,77 +98,61 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option(u"cleanup-private-descriptors", 0);
-    option(u"eit-pf",                      0,  INTEGER, 0, 1, 0, 1);
-    option(u"eit-schedule",                0,  INTEGER, 0, 1, 0, 1);
-    option(u"free-ca-mode",               'f', INTEGER, 0, 1, 0, 1);
-    option(u"increment-version",          'i');
-    option(u"name",                       'n', STRING);
-    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
-    option(u"provider",                   'p', STRING);
-    option(u"remove-service",              0,  UINT16, 0, UNLIMITED_COUNT);
-    option(u"running-status",             'r', INTEGER, 0, 1, 0, 7);
-    option(u"service-id",                 's', UINT16);
-    option(u"type",                       't', UINT8);
+    option(u"cleanup-private-descriptors");
+    help(u"cleanup-private-descriptors",
+         u"Remove all private descriptors without preceding private_data_specifier descriptor.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --cleanup-private-descriptors\n"
-            u"      Remove all private descriptors without preceding private_data_specifier\n"
-            u"      descriptor.\n"
-            u"\n"
-            u"  --eit-pf value\n"
-            u"      Specify a new EIT_present_following_flag value for the added or modified\n"
-            u"      service. For new services, the default is 0.\n"
-            u"\n"
-            u"  --eit-schedule value\n"
-            u"      Specify a new EIT_schedule_flag value for the added or modified\n"
-            u"      service. For new services, the default is 0.\n"
-            u"\n"
-            u"  -f value\n"
-            u"  --free-ca-mode value\n"
-            u"      Specify a new free_CA_mode value for the added or modified service.\n"
-            u"      For new services, the default is 0.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --increment-version\n"
-            u"      Increment the version number of the SDT.\n"
-            u"\n"
-            u"  -n value\n"
-            u"  --name value\n"
-            u"      Specify a new service name for the added or modified service.\n"
-            u"      For new services, the default is an empty string.\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --new-version value\n"
-            u"      Specify a new value for the version of the SDT.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --provider value\n"
-            u"      Specify a new provider name for the added or modified service.\n"
-            u"      For new services, the default is an empty string.\n"
-            u"\n"
-            u"  --remove-service sid\n"
-            u"      Remove the specified service_id from the SDT. Several --remove-service\n"
-            u"      options may be specified to remove several services.\n"
-            u"\n"
-            u"  -r value\n"
-            u"  --running-status value\n"
-            u"      Specify a new running_status (0 to 7) for the added or modified service.\n"
-            u"      For new services, the default is 4 (\"running\").\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --service-id value\n"
-            u"      Add a new service or modify the existing service with the specified\n"
-            u"      service-id.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --type value\n"
-            u"      Specify a new service type for the added or modified service. For new\n"
-            u"      services, the default is 0x01 (\"digital television service\").\n");
+    option(u"eit-pf", 0, INTEGER, 0, 1, 0, 1);
+    help(u"eit-pf",
+         u"Specify a new EIT_present_following_flag value for the added or modified "
+         u"service. For new services, the default is 0.");
+
+    option(u"eit-schedule", 0, INTEGER, 0, 1, 0, 1);
+    help(u"eit-schedule",
+         u"Specify a new EIT_schedule_flag value for the added or modified "
+         u"service. For new services, the default is 0.");
+
+    option(u"free-ca-mode", 'f', INTEGER, 0, 1, 0, 1);
+    help(u"free-ca-mode",
+         u"Specify a new free_CA_mode value for the added or modified service. "
+         u"For new services, the default is 0.");
+
+    option(u"increment-version", 'i');
+    help(u"increment-version",
+         u"Increment the version number of the SDT. ");
+
+    option(u"name", 'n', STRING);
+    help(u"name",
+         u"Specify a new service name for the added or modified service. "
+         u"For new services, the default is an empty string.");
+
+    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
+    help(u"new-version",
+         u"Specify a new value for the version of the SDT.");
+
+    option(u"provider", 'p', STRING);
+    help(u"provider",
+         u"Specify a new provider name for the added or modified service. "
+         u"For new services, the default is an empty string.");
+
+    option(u"remove-service", 0, UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-service", u"id",
+         u"Remove the specified service_id from the SDT. Several --remove-service "
+         u"options may be specified to remove several services.");
+
+    option(u"running-status", 'r', INTEGER, 0, 1, 0, 7);
+    help(u"running-status",
+         u"Specify a new running_status (0 to 7) for the added or modified service. "
+         u"For new services, the default is 4 (\"running\").");
+
+    option(u"service-id", 's', UINT16);
+    help(u"service-id", u"id",
+         u"Add a new service or modify the existing service with the specified service-id.");
+
+    option(u"type", 't', UINT8);
+    help(u"type",
+         u"Specify a new service type for the added or modified service. For new "
+         u"services, the default is 0x01 (\"digital television service\").");
 }
 
 

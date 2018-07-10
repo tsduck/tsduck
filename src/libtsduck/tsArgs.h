@@ -48,7 +48,6 @@ namespace ts {
     //! The various properties of a command line (an instance of this class) are:
     //! - The "description" string: A short one-line description, e.g. "Wonderful File Copier".
     //! - The "syntax" string: A short one-line syntax summary, e.g. "[options] filename ...".
-    //! - The "help" string: A multi-line string describing the usage of options and parameters.
     //!
     //! <h3>Parameters and options</h3>
     //!
@@ -174,27 +173,16 @@ namespace ts {
     //! {
     //!     // Define the syntax of the command
     //!     option(u"", 0, STRING, 1, 2);
+    //!     help(u"", u"file-1 : Base file to merge.\nfile-2 : Optional secondary file to merge.");
+    //!
     //!     option(u"buffer-size", u'b', INTEGER, 0, 1, 256, 4096);
+    //!     help(u"buffer-size", u"Buffer size in bytes, from 256 to 4096 bytes (default: 1024).");
+    //!
     //!     option(u"output", u'o', STRING);
+    //!     help(u"output", u"Specify the output file (default: standard output).");
+    //!
     //!     option(u"force", u'f');
-    //!     setHelp(u"Parameters:\n"
-    //!             u"\n"
-    //!             u"  file-1 : Base file to merge.\n"
-    //!             u"  file-2 : Optional secondary file to merge.\n"
-    //!             u"\n"
-    //!             u"Options:\n"
-    //!             u"\n"
-    //!             u"  -b value\n"
-    //!             u"  --buffer-size value\n"
-    //!             u"      Buffer size in bytes, from 256 to 4096 bytes (default: 1024).\n"
-    //!             u"\n"
-    //!             u"  -f\n"
-    //!             u"  --force\n"
-    //!             u"      Force overwriting the output file if it already exists.\n"
-    //!             u"\n"
-    //!             u"  -o filename\n"
-    //!             u"  --output filename\n"
-    //!             u"      Specify the output file (default: standard output).\n");
+    //!     help(u"force", u"Force overwriting the output file if it already exists.");
     //!
     //!     // Analyze the command
     //!     analyze(argc, argv);
@@ -244,13 +232,28 @@ namespace ts {
     //!   --buffer-size value
     //!       Buffer size in bytes, from 256 to 4096 bytes (default: 1024).
     //!
+    //!   -d[level]
+    //!   --debug[=level]
+    //!       Produce debug traces. The default level is 1. Higher levels produce more
+    //!       messages.
+    //!
     //!   -f
     //!   --force
     //!       Force overwriting the output file if it already exists.
     //!
+    //!   --help
+    //!       Display this help text.
+    //!
     //!   -o filename
     //!   --output filename
     //!       Specify the output file (default: standard output).
+    //!
+    //!   -v
+    //!   --verbose
+    //!       Produce verbose output.
+    //!
+    //!   --version
+    //!       Display the TSDuck version number.
     //!
     //! $
     //! @endcode
@@ -510,9 +513,10 @@ namespace ts {
         //!
         //! Get a formatted help text.
         //! @param [in] format Requested format of the help text.
+        //! @param [in] line_width Maximum width of text lines.
         //! @return The formatted help text.
         //!
-        UString getHelpText(HelpFormat format) const;
+        UString getHelpText(HelpFormat format, size_t line_width = 79) const;
 
         //!
         //! Set the "shell" string.
@@ -883,12 +887,20 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
 
     private:
+        // Inaccessible operations.
         Args(const Args&) = delete;
         Args& operator=(const Args&) = delete;
 
         // List of values
         typedef Variable<UString> ArgValue;
         typedef std::vector<ArgValue> ArgValueVector;
+
+        // Flags for IOption.
+        enum : uint32_t {
+            IOPT_PREDEFINED    = 0x0001,  // This is a predefined option.
+            IOPT_OPTVALUE      = 0x0002,  // Value is optional.
+            IOPT_OPTVAL_NOHELP = 0x0004,  // Do not document value in help if it is optional.
+        };
 
         // Internal representation of Option
         struct IOption
@@ -900,11 +912,10 @@ namespace ts {
             size_t         max_occur;   // Maximum occurence
             int64_t        min_value;   // Minimum value (for integer args)
             int64_t        max_value;   // Maximum value (for integer args)
-            bool           optional;    // Optional value
-            bool           predefined;  // Internally defined in this class
+            uint32_t       flags;       // Option flags
             Enumeration    enumeration; // Enumeration values (if not empty)
             UString        syntax;      // Syntax of value (informational, "address:port" for instance)
-            UString        help;        // Help description.
+            UString        help;        // Help description
             ArgValueVector values;      // Set of values after analysis
 
             // Constructor:
@@ -915,8 +926,7 @@ namespace ts {
                     size_t       max_occur,
                     int64_t      min_value,
                     int64_t      max_value,
-                    bool         optional,
-                    bool         predefined);
+                    uint32_t     flags);
 
             // Constructor:
             IOption(const UChar*       name,
@@ -924,8 +934,7 @@ namespace ts {
                     const Enumeration& enumeration,
                     size_t             min_occur,
                     size_t             max_occur,
-                    bool               optional,
-                    bool               predefined);
+                    uint32_t           flags);
 
             // Displayable name
             UString display() const;
@@ -969,10 +978,10 @@ namespace ts {
         // - 0 : Titles, typically no indentation.
         // - 1 : Description of parameters, option names.
         // - 2 : Description of options.
-        static UString HelpLines(int level, const UString& text, size_t line_width = 79);
+        static UString HelpLines(int level, const UString& text, size_t line_width);
 
         // Format the help options of the command.
-        UString formatHelpOptions() const;
+        UString formatHelpOptions(size_t line_width) const;
 
         // Locate an option description. Used during command line parsing.
         // Return 0 if not found.

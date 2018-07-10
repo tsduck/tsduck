@@ -90,70 +90,63 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
     _partial(),
     _partial_size(0)
 {
-    option(u"",                    0,  STRING, 1, 1);
-    option(u"connection-timeout",  0,  POSITIVE);
-    option(u"ignore-errors",       0);
-    option(u"infinite",           'i');
-    option(u"max-queue",           0,  POSITIVE);
-    option(u"proxy-host",          0,  STRING);
-    option(u"proxy-password",      0,  STRING);
-    option(u"proxy-port",          0,  UINT16);
-    option(u"proxy-user",          0,  STRING);
-    option(u"receive-timeout",     0,  POSITIVE);
-    option(u"reconnect-delay",     0,  UNSIGNED);
-    option(u"repeat",             'r', POSITIVE);
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"Specify the URL from which to read the transport stream.");
 
-    setHelp(u"Parameter:\n"
-            u"  Specify the URL from which to read the transport stream.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --connection-timeout value\n"
-            u"      Specify the connection timeout in milliseconds. By default, let the\n"
-            u"      operating system decide.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --ignore-errors\n"
-            u"      With --repeat or --infinite, repeat also in case of error. By default,\n"
-            u"      repetition stops on error.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --infinite\n"
-            u"      Repeat the playout of the content infinitely (default: only once).\n"
-            u"      The URL is re-opened each time and the content may be different.\n"
-            u"\n"
-            u"  --max-queue value\n"
-            u"      Specify the maximum number of queued TS packets before their\n"
-            u"      insertion into the stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_PACKETS) u".\n"
-            u"\n"
-            u"  --proxy-host name\n"
-            u"      Optional proxy host name for Internet access.\n"
-            u"\n"
-            u"  --proxy-password string\n"
-            u"      Optional proxy password for Internet access (for use with --proxy-user).\n"
-            u"\n"
-            u"  --proxy-port value\n"
-            u"      Optional proxy port for Internet access (for use with --proxy-host).\n"
-            u"\n"
-            u"  --proxy-user name\n"
-            u"      Optional proxy user name for Internet access.\n"
-            u"\n"
-            u"  --receive-timeout value\n"
-            u"      Specify the data reception timeout in milliseconds. This timeout applies\n"
-            u"      to each receive operation, individually. By default, let the operating\n"
-            u"      system decide.\n"
-            u"\n"
-            u"  -r count\n"
-            u"  --repeat count\n"
-            u"      Repeat the playout of the content the specified number of times\n"
-            u"      (default: only once). The URL is re-opened each time and the content\n"
-            u"      may be different.\n"
-            u"\n"
-            u"  --reconnect-delay value\n"
-            u"      With --repeat or --infinite, wait the specified number of milliseconds.\n"
-            u"      By default, repeat immediately.\n");
+    option(u"connection-timeout", 0, POSITIVE);
+    help(u"connection-timeout",
+         u"Specify the connection timeout in milliseconds. By default, let the "
+         u"operating system decide.");
+
+    option(u"ignore-errors");
+    help(u"ignore-errors",
+         u"With --repeat or --infinite, repeat also in case of error. By default, "
+         u"repetition stops on error.");
+
+    option(u"infinite", 'i');
+    help(u"infinite",
+         u"Repeat the playout of the content infinitely (default: only once). "
+         u"The URL is re-opened each time and the content may be different.");
+
+    option(u"max-queue", 0, POSITIVE);
+    help(u"max-queue",
+         u"Specify the maximum number of queued TS packets before their "
+         u"insertion into the stream. The default is " +
+         UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
+
+    option(u"proxy-host", 0, STRING);
+    help(u"proxy-host", u"name",
+         u"Optional proxy host name for Internet access.");
+
+    option(u"proxy-password", 0, STRING);
+    help(u"proxy-password", u"string",
+         u"Optional proxy password for Internet access (for use with --proxy-user).");
+
+    option(u"proxy-port", 0, UINT16);
+    help(u"proxy-port",
+         u"Optional proxy port for Internet access (for use with --proxy-host).");
+
+    option(u"proxy-user", 0, STRING);
+    help(u"proxy-user", u"name",
+         u"Optional proxy user name for Internet access.");
+
+    option(u"receive-timeout", 0, POSITIVE);
+    help(u"receive-timeout",
+         u"Specify the data reception timeout in milliseconds. This timeout applies "
+         u"to each receive operation, individually. By default, let the operating "
+         u"system decide.");
+
+    option(u"reconnect-delay", 0, UNSIGNED);
+    help(u"reconnect-delay",
+         u"With --repeat or --infinite, wait the specified number of milliseconds "
+         u"before reconnecting. By default, repeat immediately.");
+
+    option(u"repeat", 'r', POSITIVE);
+    help(u"repeat", u"count",
+         u"Repeat the playout of the content the specified number of times "
+         u"(default: only once). The URL is re-opened each time and the content "
+         u"may be different.");
 }
 
 
