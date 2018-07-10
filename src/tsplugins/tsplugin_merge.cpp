@@ -180,64 +180,57 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _main_sdt(),
     _merge_sdt()
 {
-    option(u"",                 0,  STRING, 1, 1);
-    option(u"drop",            'd', STRING, 0, UNLIMITED_COUNT);
-    option(u"ignore-conflicts", 0);
-    option(u"max-queue",        0,  POSITIVE);
-    option(u"no-pcr-restamp",   0);
-    option(u"no-psi-merge",     0);
-    option(u"no-wait",          0);
-    option(u"pass",            'p', STRING, 0, UNLIMITED_COUNT);
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"Specifies the command line to execute in the created process.");
 
-    setHelp(u"Command:\n"
-            u"  Specifies the command line to execute in the created process.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -d pid[-pid]\n"
-            u"  --drop pid[-pid]\n"
-            u"      Drop the specified PID or range of PID's from the merged stream. By\n"
-            u"      default, the PID's 0x00 to 0x1F are dropped and all other PID's are\n"
-            u"      passed. This can be modified using options --drop and --pass. Several\n"
-            u"      options --drop can be specified.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --ignore-conflicts\n"
-            u"      Ignore PID conflicts. By default, when packets with the same PID are\n"
-            u"      present in the two streams, the PID is dropped from the merged stream.\n"
-            u"      Warning: this is a dangerous option which can result in an inconsistent\n"
-            u"      transport stream.\n"
-            u"\n"
-            u"  --max-queue value\n"
-            u"      Specify the maximum number of queued TS packets before their\n"
-            u"      insertion into the stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_PACKETS) u".\n"
-            u"\n"
-            u"  --no-pcr-restamp\n"
-            u"      Do not restamp PCR's from the merged TS into the main TS. By default,\n"
-            u"      PCR's in the merged stream are restamped to match their position in the\n"
-            u"      final stream. The DTS and PTS are never restamped because they are\n"
-            u"      independent from their position in the stream. When the PCR's in the\n"
-            u"      merged stream have discontinuities (such as when cycling a TS file),\n"
-            u"      restamping the PCR's can break the video playout since they become\n"
-            u"      decorrelated with the DTS and PTS.\n"
-            u"\n"
-            u"  --no-psi-merge\n"
-            u"      Do not merge PSI/SI from the merged TS into the main TS. By default, the\n"
-            u"      PAT, CAT and SDT are merged so that the services from the merged stream\n"
-            u"      are properly referenced and PID's 0x00 to 0x1F are dropped from the merged\n"
-            u"      stream.\n"
-            u"\n"
-            u"  --no-wait\n"
-            u"      Do not wait for child process termination at end of processing.\n"
-            u"\n"
-            u"  -p pid[-pid]\n"
-            u"  --pass pid[-pid]\n"
-            u"      Pass the specified PID or range of PID's from the merged stream. By\n"
-            u"      default, the PID's 0x00 to 0x1F are dropped and all other PID's are\n"
-            u"      passed. This can be modified using options --drop and --pass. Several\n"
-            u"      options --pass can be specified.\n");
+    option(u"drop", 'd', STRING, 0, UNLIMITED_COUNT);
+    help(u"drop", u"pid[-pid]",
+         u"Drop the specified PID or range of PID's from the merged stream. By "
+         u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
+         u"passed. This can be modified using options --drop and --pass. Several "
+         u"options --drop can be specified.");
+
+    option(u"ignore-conflicts");
+    help(u"ignore-conflicts",
+         u"Ignore PID conflicts. By default, when packets with the same PID are "
+         u"present in the two streams, the PID is dropped from the merged stream. "
+         u"Warning: this is a dangerous option which can result in an inconsistent "
+         u"transport stream.");
+
+    option(u"max-queue", 0, POSITIVE);
+    help(u"max-queue",
+         u"Specify the maximum number of queued TS packets before their "
+         u"insertion into the stream. The default is " +
+         UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
+
+    option(u"no-pcr-restamp");
+    help(u"no-pcr-restamp",
+         u"Do not restamp PCR's from the merged TS into the main TS. By default, "
+         u"PCR's in the merged stream are restamped to match their position in the "
+         u"final stream. The DTS and PTS are never restamped because they are "
+         u"independent from their position in the stream. When the PCR's in the "
+         u"merged stream have discontinuities (such as when cycling a TS file), "
+         u"restamping the PCR's can break the video playout since they become "
+         u"decorrelated with the DTS and PTS.");
+
+    option(u"no-psi-merge");
+    help(u"no-psi-merge",
+         u"Do not merge PSI/SI from the merged TS into the main TS. By default, the "
+         u"PAT, CAT and SDT are merged so that the services from the merged stream "
+         u"are properly referenced and PID's 0x00 to 0x1F are dropped from the merged "
+         u"stream.");
+
+    option(u"no-wait");
+    help(u"no-wait",
+         u"Do not wait for child process termination at end of processing.");
+
+    option(u"pass", 'p', STRING, 0, UNLIMITED_COUNT);
+    help(u"pass", u"pid[-pid]",
+         u"Pass the specified PID or range of PID's from the merged stream. By "
+         u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
+         u"passed. This can be modified using options --drop and --pass. Several "
+         u"options --pass can be specified.");
 }
 
 

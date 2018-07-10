@@ -101,48 +101,35 @@ ts::PATPlugin::PATPlugin(TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option(u"add-service",       'a', STRING, 0, UNLIMITED_COUNT);
-    option(u"increment-version", 'i');
-    option(u"nit",               'n', PIDVAL);
-    option(u"remove-service",    'r', UINT16, 0, UNLIMITED_COUNT);
-    option(u"remove-nit",        'u');
-    option(u"tsid",              't', UINT16);
-    option(u"new-version",       'v', INTEGER, 0, 1, 0, 31);
+    option(u"add-service", 'a', STRING, 0, UNLIMITED_COUNT);
+    help(u"add-service", u"service-id/pid",
+         u"Add the specified service_id / PMT-PID in the PAT. Several --add-service "
+         u"options may be specified to add several services.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a sid/pid\n"
-            u"  --add-service sid/pid\n"
-            u"      Add the specified service_id / PMT-PID in the PAT. Several --add-service\n"
-            u"      options may be specified to add several services.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --increment-version\n"
-            u"      Increment the version number of the PAT.\n"
-            u"\n"
-            u"  -n pid\n"
-            u"  --nit pid\n"
-            u"      Add or modify the NIT PID in the PAT.\n"
-            u"\n"
-            u"  -r sid\n"
-            u"  --remove-service sid\n"
-            u"      Remove the specified service_id from the PAT. Several --remove-service\n"
-            u"      options may be specified to remove several services.\n"
-            u"\n"
-            u"  -u\n"
-            u"  --remove-nit\n"
-            u"      Remove the NIT PID from the PAT.\n"
-            u"\n"
-            u"  -t id\n"
-            u"  --tsid id\n"
-            u"      Specify a new value for the transport stream id in the PAT.\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --new-version value\n"
-            u"      Specify a new value for the version of the PAT.\n");
+    option(u"increment-version", 'i');
+    help(u"increment-version",
+         u"Increment the version number of the PAT.");
+
+    option(u"nit", 'n', PIDVAL);
+    help(u"nit",
+         u"Add or modify the NIT PID in the PAT.");
+
+    option(u"remove-service", 'r', UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-service", u"id",
+         u"Remove the specified service_id from the PAT. Several --remove-service "
+         u"options may be specified to remove several services.");
+
+    option(u"remove-nit", 'u');
+    help(u"remove-nit",
+         u"Remove the NIT PID from the PAT.");
+
+    option(u"tsid", 't', UINT16);
+    help(u"tsid", u"id",
+         u"Specify a new value for the transport stream id in the PAT.");
+
+    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
+    help(u"new-version",
+         u"Specify a new value for the version of the PAT.");
 }
 
 

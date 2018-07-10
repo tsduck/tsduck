@@ -124,83 +124,70 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
     _time_slicing(0)
 {
     option(u"cleanup-private-descriptors", 0);
-    option(u"increment-version", 'i');
-    option(u"lcn",               'l', INTEGER, 0, 1, 1, 3);
-    option(u"mpe-fec",            0,  INTEGER, 0, 1, 0, 1);
-    option(u"new-version",       'v', INTEGER, 0, 1, 0, 31);
-    option(u"pds",                0,  UINT32);
-    option(u"pid",               'p', PIDVAL);
-    option(u"remove-descriptor",  0,  UINT8,   0, UNLIMITED_COUNT);
-    option(u"remove-service",    'r', UINT16,  0, UNLIMITED_COUNT);
-    option(u"remove-ts",          0,  UINT16,  0, UNLIMITED_COUNT);
-    option(u"sld",               's', INTEGER, 0, 1, 1, 2);
-    option(u"time-slicing",       0,  INTEGER, 0, 1, 0, 1);
+    help(u"cleanup-private-descriptors",
+         u"Remove all private descriptors without preceding private_data_specifier descriptor.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  --cleanup-private-descriptors\n"
-            u"      Remove all private descriptors without preceding private_data_specifier\n"
-            u"      descriptor.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --increment-version\n"
-            u"      Increment the version number of the NIT.\n"
-            u"\n"
-            u"  -l value\n"
-            u"  --lcn value\n"
-            u"      Specify which operation to perform on logical_channel_number (LCN)\n"
-            u"      descriptors. The value is a positive integer:\n"
-            u"        1: Remove all LCN descriptors.\n"
-            u"        2: Remove one entry every two entries in each LCN descriptor.\n"
-            u"        3: Duplicate one entry every two entries in each LCN descriptor.\n"
-            u"\n"
-            u"  --mpe-fec value\n"
-            u"      Set the \"MPE-FEC indicator\" in the terrestrial delivery system\n"
-            u"      descriptors to the specified value (0 or 1).\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --new-version value\n"
-            u"      Specify a new value for the version of the NIT.\n"
-            u"\n"
-            u"  --pds value\n"
-            u"      With option --remove-descriptor, specify the private data specifier\n"
-            u"      which applies to the descriptor tag values above 0x80.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specify the PID on which the NIT is expected. By default, the PAT\n"
-            u"      is analyzed to get the PID of the NIT. DVB-compliant networks should\n"
-            u"      use PID 16 (0x0010) for the NIT and signal it in the PAT.\n"
-            u"\n"
-            u"  --remove-descriptor value\n"
-            u"      Remove from the NIT all descriptors with the specified tag. Several\n"
-            u"      --remove-descriptor options may be specified to remove several types of\n"
-            u"      descriptors. See also option --pds.\n"
-            u"\n"
-            u"  -r value\n"
-            u"  --remove-service value\n"
-            u"      Remove the specified service_id from the following descriptors:\n"
-            u"      service_list_descriptor, logical_channel_number_descriptor.\n"
-            u"      Several --remove-service options may be specified to remove several\n"
-            u"      services.\n"
-            u"\n"
-            u"  --remove-ts value\n"
-            u"      Remove the specified ts_id from the NIT. Several --remove-ts options\n"
-            u"      may be specified to remove several TS.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --sld value\n"
-            u"      Specify which operation to perform on service_list_descriptors.\n"
-            u"      The value is a positive integer:\n"
-            u"        1: Remove all service_list_descriptors.\n"
-            u"        2: Remove one entry every two entries in each descriptor.\n"
-            u"\n"
-            u"  --time-slicing value\n"
-            u"      Set the \"time slicing indicator\" in the terrestrial delivery system\n"
-            u"      descriptors to the specified value (0 or 1).\n");
+    option(u"increment-version", 'i');
+    help(u"increment-version",
+         u"Increment the version number of the NIT.");
+
+    option(u"lcn", 'l', INTEGER, 0, 1, 1, 3);
+    help(u"lcn",
+         u"Specify which operation to perform on logical_channel_number (LCN) "
+         u"descriptors. The value is a positive integer:\n"
+         u"1: Remove all LCN descriptors.\n"
+         u"2: Remove one entry every two entries in each LCN descriptor.\n"
+         u"3: Duplicate one entry every two entries in each LCN descriptor.");
+
+    option(u"mpe-fec", 0, INTEGER, 0, 1, 0, 1);
+    help(u"mpe-fec",
+         u"Set the \"MPE-FEC indicator\" in the terrestrial delivery system "
+         u"descriptors to the specified value (0 or 1).");
+
+    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
+    help(u"new-version",
+         u"Specify a new value for the version of the NIT.");
+
+    option(u"pds", 0, UINT32);
+    help(u"pds",
+         u"With option --remove-descriptor, specify the private data specifier "
+         u"which applies to the descriptor tag values above 0x80.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid",
+         u"Specify the PID on which the NIT is expected. By default, the PAT "
+         u"is analyzed to get the PID of the NIT. DVB-compliant networks should "
+         u"use PID 16 (0x0010) for the NIT and signal it in the PAT.");
+
+    option(u"remove-descriptor", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"remove-descriptor",
+         u"Remove from the NIT all descriptors with the specified tag. Several "
+         u"--remove-descriptor options may be specified to remove several types of "
+         u"descriptors. See also option --pds.");
+
+    option(u"remove-service", 'r', UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-service",
+         u"Remove the specified service_id from the following descriptors: "
+         u"service_list_descriptor, logical_channel_number_descriptor. "
+         u"Several --remove-service options may be specified to remove several "
+         u"services.");
+
+    option(u"remove-ts", 0, UINT16, 0, UNLIMITED_COUNT);
+    help(u"remove-ts",
+         u"Remove the specified ts_id from the NIT. Several --remove-ts options "
+         u"may be specified to remove several TS.");
+
+    option(u"sld", 's', INTEGER, 0, 1, 1, 2);
+    help(u"sld",
+         u"Specify which operation to perform on service_list_descriptors. "
+         u"The value is a positive integer:\n"
+         u"1: Remove all service_list_descriptors.\n"
+         u"2: Remove one entry every two entries in each descriptor.");
+
+    option(u"time-slicing", 0, INTEGER, 0, 1, 0, 1);
+    help(u"time-slicing",
+         u"Set the \"time slicing indicator\" in the terrestrial delivery system "
+         u"descriptors to the specified value (0 or 1).");
 }
 
 
