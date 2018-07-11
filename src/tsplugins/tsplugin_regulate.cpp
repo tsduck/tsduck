@@ -81,44 +81,32 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     _bitrate_regulator(tsp, Severity::Verbose),
     _pcr_regulator(tsp, Severity::Verbose)
 {
-    option(u"bitrate",        'b', POSITIVE);
-    option(u"packet-burst",   'p', POSITIVE);
-    option(u"pcr-synchronous", 0);
-    option(u"pid-pcr",         0,  PIDVAL);
-    option(u"wait-min",       'w', POSITIVE);
+    option(u"bitrate", 'b', POSITIVE);
+    help(u"bitrate",
+         u"Specify a bitrate in b/s and regulate (slow down only) the TS packets "
+         u"flow according to this bitrate. By default, use the \"input\" bitrate, "
+         u"typically resulting from the PCR analysis of the input file.");
 
-    setHelp(u"Regulate (slow down only) the TS packets flow according to a specified\n"
-            u"bitrate or based on PCR values from a reference PID. Useful to play a\n"
-            u"non-regulated input (such as a TS file) to a non-regulated output device\n"
-            u"such as IP multicast.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Specify the bitrate in b/s. By default, use the \"input\" bitrate,\n"
-            u"      typically resulting from the PCR analysis of the input file.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --packet-burst value\n"
-            u"      Number of packets to burst at a time. Does not modify the average\n"
-            u"      output bitrate but influence smoothing and CPU load. The default\n"
-            u"      is " TS_STRINGIFY(DEF_PACKET_BURST) u" packets.\n"
-            u"\n"
-            u"  --pcr-synchronous\n"
-            u"      Regulate the flow based on the Program Clock Reference from the transport\n"
-            u"      stream. By default, use a bitrate, not PCR's.\n"
-            u"\n"
-            u"  --pid-pcr value\n"
-            u"      With --pcr-synchronous, specify the reference PID for PCR's. By default,\n"
-            u"      use the first PID containing PCR's.\n"
-            u"\n"
-            u"  --wait-min value\n"
-            u"      With --pcr-synchronous, specify the minimum wait time in milli-seconds.\n"
-            u"      The default is " + UString::Decimal(PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec) + u" ms.\n");
+    option(u"packet-burst", 'p', POSITIVE);
+    help(u"packet-burst",
+         u"Number of packets to burst at a time. Does not modify the average "
+         u"output bitrate but influence smoothing and CPU load. The default "
+         u"is " TS_STRINGIFY(DEF_PACKET_BURST) u" packets.");
+
+    option(u"pcr-synchronous");
+    help(u"pcr-synchronous",
+         u"Regulate the flow based on the Program Clock Reference from the transport "
+         u"stream. By default, use a bitrate, not PCR's.");
+
+    option(u"pid-pcr", 0, PIDVAL);
+    help(u"pid-pcr",
+         u"With --pcr-synchronous, specify the reference PID for PCR's. By default, "
+         u"use the first PID containing PCR's.");
+
+    option(u"wait-min", 'w', POSITIVE);
+    help(u"wait-min",
+         u"With --pcr-synchronous, specify the minimum wait time in milli-seconds. "
+         u"The default is " + UString::Decimal(PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec) + u" ms.");
 }
 
 

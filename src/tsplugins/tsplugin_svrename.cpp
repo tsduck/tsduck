@@ -118,60 +118,42 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(PID_EIT, tsp_)
 {
-    option(u"",                0,  STRING, 1, 1);
-    option(u"free-ca-mode",   'f', INTEGER, 0, 1, 0, 1);
-    option(u"id",             'i', UINT16);
-    option(u"ignore-bat",      0);
-    option(u"ignore-eit",      0);
-    option(u"ignore-nit",      0);
-    option(u"lcn",            'l', UINT16);
-    option(u"name",           'n', STRING);
-    option(u"running-status", 'r', INTEGER, 0, 1, 0, 7);
-    option(u"type",           't', UINT8);
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"Specifies the service to rename. If the argument is an integer value "
+         u"(either decimal or hexadecimal), it is interpreted as a service id. "
+         u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
+         u"The name is not case sensitive and blanks are ignored.");
 
-    setHelp(u"Service:\n"
-            u"  Specifies the service to rename. If the argument is an integer value\n"
-            u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
-            u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
-            u"  The name is not case sensitive and blanks are ignored.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -f value\n"
-            u"  --free-ca-mode value\n"
-            u"      Specify a new free_CA_mode to set in the SDT (0 or 1).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --id value\n"
-            u"      Specify a new service id value.\n"
-            u"\n"
-            u"  --ignore-bat\n"
-            u"      Do not modify the BAT.\n"
-            u"\n"
-            u"  --ignore-eit\n"
-            u"      Do not modify the EIT's.\n"
-            u"\n"
-            u"  --ignore-nit\n"
-            u"      Do not modify the NIT.\n"
-            u"\n"
-            u"  -l value\n"
-            u"  --lcn value\n"
-            u"      Specify a new logical channel number (LCN).\n"
-            u"\n"
-            u"  -n value\n"
-            u"  --name value\n"
-            u"      Specify a new service name.\n"
-            u"\n"
-            u"  -r value\n"
-            u"  --running-status value\n"
-            u"      Specify a new running_status to set in the SDT (0 to 7).\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --type value\n"
-            u"      Specify a new service type.\n");
+    option(u"free-ca-mode", 'f', INTEGER, 0, 1, 0, 1);
+    help(u"free-ca-mode", u"Specify a new free_CA_mode to set in the SDT (0 or 1).");
+
+    option(u"id", 'i', UINT16);
+    help(u"id", u"Specify a new service id value.");
+
+    option(u"ignore-bat");
+    help(u"ignore-bat", u"Do not modify the BAT.");
+
+    option(u"ignore-eit");
+    help(u"ignore-eit", u"Do not modify the EIT's.");
+
+    option(u"ignore-nit");
+    help(u"ignore-nit", u"Do not modify the NIT.");
+
+    option(u"lcn", 'l', UINT16);
+    help(u"lcn", u"Specify a new logical channel number (LCN).");
+
+    option(u"name", 'n', STRING);
+    help(u"name", u"string", u"Specify a new service name.");
+
+    option(u"provider", 'p', STRING);
+    help(u"provider", u"string", u"Specify a new provider name.");
+
+    option(u"running-status", 'r', INTEGER, 0, 1, 0, 7);
+    help(u"running-status", u"Specify a new running_status to set in the SDT (0 to 7).");
+
+    option(u"type", 't', UINT8);
+    help(u"type", u"Specify a new service type.");
 }
 
 
@@ -186,9 +168,13 @@ bool ts::SVRenamePlugin::start()
     _ignore_bat = present(u"ignore-bat");
     _ignore_eit = present(u"ignore-eit");
     _ignore_nit = present(u"ignore-nit");
+
     _new_service.clear();
     if (present(u"name")) {
         _new_service.setName(value(u"name"));
+    }
+    if (present(u"provider")) {
+        _new_service.setProvider(value(u"provider"));
     }
     if (present(u"id")) {
         _new_service.setId(intValue<uint16_t>(u"id"));
@@ -394,10 +380,13 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
     // Modify the SDT with new service identification
     if (found) {
         if (_new_service.hasName()) {
-            sdt.services[_old_service.getId()].setName (_new_service.getName());
+            sdt.services[_old_service.getId()].setName(_new_service.getName());
+        }
+        if (_new_service.hasProvider()) {
+            sdt.services[_old_service.getId()].setProvider(_new_service.getProvider());
         }
         if (_new_service.hasType()) {
-            sdt.services[_old_service.getId()].setType (_new_service.getType());
+            sdt.services[_old_service.getId()].setType(_new_service.getType());
         }
         if (_new_service.hasCAControlled()) {
             sdt.services[_old_service.getId()].CA_controlled = _new_service.getCAControlled();
@@ -405,15 +394,15 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
         if (_new_service.hasRunningStatus()) {
             sdt.services[_old_service.getId()].running_status = _new_service.getRunningStatus();
         }
-        if (_new_service.hasId () && !_new_service.hasId (_old_service.getId())) {
+        if (_new_service.hasId() && !_new_service.hasId(_old_service.getId())) {
             sdt.services[_new_service.getId()] = sdt.services[_old_service.getId()];
-            sdt.services.erase (_old_service.getId());
+            sdt.services.erase(_old_service.getId());
         }
     }
 
     // Replace the SDT.in the PID
-    _pzer_sdt_bat.removeSections (TID_SDT_ACT, sdt.ts_id);
-    _pzer_sdt_bat.addTable (sdt);
+    _pzer_sdt_bat.removeSections(TID_SDT_ACT, sdt.ts_id);
+    _pzer_sdt_bat.addTable(sdt);
 }
 
 

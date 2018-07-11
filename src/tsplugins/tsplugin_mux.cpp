@@ -66,15 +66,15 @@ namespace ts {
         PacketCounter _inter_pkt;          // # TS packets between 2 new PID packets
         PacketCounter _pid_next_pkt;       // Next time to insert a packet
         PacketCounter _packet_count;       // TS packet counter
-        uint64_t      _inter_time;              // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
-        uint64_t      _min_pts;                 // Start only inserting packets when this PTS has been passed
-        PID           _pts_pid;                 // defines the PID of min-pts setting
-        uint64_t      _max_pts;                 // After this PTS has been seen, stop inserting
-        bool          _pts_range_ok;            // signal indicates if we shall insert
-        uint64_t      _max_insert_count;        // from userinput, maximum packets to insert
-        uint64_t      _inserted_packet_count;   // counts inserted packets
-        uint64_t      _youngest_pts;            // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
-        uint64_t      _pts_last_inserted;       // stores nearest pts (actually pcr/300) of last packet insertion
+        uint64_t      _inter_time;            // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
+        uint64_t      _min_pts;               // Start only inserting packets when this PTS has been passed
+        PID           _pts_pid;               // defines the PID of min-pts setting
+        uint64_t      _max_pts;               // After this PTS has been seen, stop inserting
+        bool          _pts_range_ok;          // signal indicates if we shall insert
+        uint64_t      _max_insert_count;      // from userinput, maximum packets to insert
+        uint64_t      _inserted_packet_count; // counts inserted packets
+        uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
+        uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
 
         // Inaccessible operations
         MuxPlugin() = delete;
@@ -115,104 +115,89 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _youngest_pts(0),
     _pts_last_inserted(0)
 {
-    option(u"",                       0,  STRING, 1, 1);
-    option(u"bitrate",               'b', UINT32);
-    option(u"byte-offset",            0,  UNSIGNED);
-    option(u"inter-packet",          'i', UINT32);
-    option(u"inter-time",             0,  UINT32);
-    option(u"joint-termination",     'j');
-    option(u"max-insert-count",       0,  UNSIGNED);
-    option(u"max-pts",                0,  UNSIGNED);
-    option(u"min-pts",                0,  UNSIGNED);
-    option(u"no-continuity-update",   0);
-    option(u"no-pid-conflict-check",  0);
-    option(u"packet-offset",          0,  UNSIGNED);
-    option(u"pid",                   'p', PIDVAL);
-    option(u"pts-pid",                0,  PIDVAL);
-    option(u"repeat",                'r', POSITIVE);
-    option(u"terminate",             't');
+    option(u"", 0, STRING, 1, 1);
+    help(u"", u"Input binary file containing 188-byte transport packets.");
 
-    setHelp(u"Input file:\n"
-            u"\n"
-            u"  Binary file containing 188-byte transport packets.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Specifies the bitrate for the inserted packets, in bits/second.\n"
-            u"      By default, all stuffing packets are replaced which means that\n"
-            u"      the bitrate is neither constant nor guaranteed.\n"
-            u"\n"
-            u"  --byte-offset value\n"
-            u"      Start reading the file at the specified byte offset (default: 0).\n"
-            u"      This option is allowed only if the input file is a regular file.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --inter-packet value\n"
-            u"      Specifies the packet interval for the inserted packets, that is to say\n"
-            u"      the number of TS packets in the transport between two new packets.\n"
-            u"      Use instead of --bitrate if the global bitrate of the TS cannot be\n"
-            u"      determined.\n"
-            u"\n"
-            u"  --inter-time value\n"
-            u"      Specifies the time interval for the inserted packets, that is to say the\n"
-            u"      difference between the nearest PCR clock value at the point of insertion\n"
-            u"      in milliseconds. Example: 1000 will keep roughly 1 second space between\n"
-            u"      two inserted packets. The default is 0, it means inter-time is disabled.\n"
-            u"      Use --pts-pid to specify the PID carrying the PCR clock of interest.\n"
-            u"\n"
-            u"  -j\n"
-            u"  --joint-termination\n"
-            u"      Perform a \"joint termination\" when file insersion is complete.\n"
-            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
-            u"\n"
-            u"  --max-insert-count value\n"
-            u"      Stop inserting packets after this number of packets was inserted.\n"
-            u"\n"
-            u"  --max-pts value\n"
-            u"      Stop inserting packets when this PTS time has passed in the --pts-pid.\n"
-            u"\n"
-            u"  --min-pts value\n"
-            u"      Start inserting packets when this PTS time has passed in the --pts-pid.\n"
-            u"\n"
-            u"  --no-continuity-update\n"
-            u"      Do not update continuity counters in the inserted packets. By default,\n"
-            u"      the continuity counters are updated in each inserted PID to preserve the\n"
-            u"      continuity.\n"
-            u"\n"
-            u"  --no-pid-conflict-check\n"
-            u"      Do not check PID conflicts between the TS and the new inserted packets.\n"
-            u"      By default, the processing is aborted if packets from the same PID are\n"
-            u"      found both in the TS and the inserted packets.\n"
-            u"\n"
-            u"  --packet-offset value\n"
-            u"      Start reading the file at the specified TS packet (default: 0).\n"
-            u"      This option is allowed only if the input file is a regular file.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Force the PID value of all inserted packets.\n"
-            u"\n"
-            u"  --pts-pid value\n"
-            u"      Defines the PID carrying PCR or PTS values for --min-pts and --max-pts.\n"
-            u"      When no PTS values are found, PCR are used. PCR values are divided by 300,\n"
-            u"      the system clock sub-factor, to get the corresponding PTS values.\n"
-            u"\n"
-            u"  -r count\n"
-            u"  --repeat count\n"
-            u"      Repeat the playout of the file the specified number of times. By default,\n"
-            u"      the file is infinitely repeated. This option is allowed only if the\n"
-            u"      input file is a regular file.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --terminate\n"
-            u"      Terminate packet processing when file insersion is complete. By default,\n"
-            u"      when packet insertion is complete, the transmission continues and the\n"
-            u"      stuffing is no longer modified.\n");
+    option(u"bitrate", 'b', UINT32);
+    help(u"bitrate",
+         u"Specifies the bitrate for the inserted packets, in bits/second. "
+         u"By default, all stuffing packets are replaced which means that "
+         u"the bitrate is neither constant nor guaranteed.");
+
+    option(u"byte-offset", 0, UNSIGNED);
+    help(u"byte-offset",
+         u"Start reading the file at the specified byte offset (default: 0). "
+         u"This option is allowed only if the input file is a regular file.");
+
+    option(u"inter-packet", 'i', UINT32);
+    help(u"inter-packet",
+         u"Specifies the packet interval for the inserted packets, that is to say "
+         u"the number of TS packets in the transport between two new packets. "
+         u"Use instead of --bitrate if the global bitrate of the TS cannot be "
+         u"determined.");
+
+    option(u"inter-time", 0, UINT32);
+    help(u"inter-time",
+         u"Specifies the time interval for the inserted packets, that is to say the "
+         u"difference between the nearest PCR clock value at the point of insertion "
+         u"in milliseconds. Example: 1000 will keep roughly 1 second space between "
+         u"two inserted packets. The default is 0, it means inter-time is disabled. "
+         u"Use --pts-pid to specify the PID carrying the PCR clock of interest.");
+
+    option(u"joint-termination", 'j');
+    help(u"joint-termination",
+         u"Perform a \"joint termination\" when file insersion is complete. "
+         u"See \"tsp --help\" for more details on \"joint termination\".");
+
+    option(u"max-insert-count", 0, UNSIGNED);
+    help(u"max-insert-count",
+         u"Stop inserting packets after this number of packets was inserted.");
+
+    option(u"max-pts", 0, UNSIGNED);
+    help(u"max-pts",
+         u"Stop inserting packets when this PTS time has passed in the --pts-pid.");
+
+    option(u"min-pts", 0, UNSIGNED);
+    help(u"min-pts",
+         u"Start inserting packets when this PTS time has passed in the --pts-pid.");
+
+    option(u"no-continuity-update", 0);
+    help(u"no-continuity-update",
+         u"Do not update continuity counters in the inserted packets. By default, "
+         u"the continuity counters are updated in each inserted PID to preserve the "
+         u"continuity.");
+
+    option(u"no-pid-conflict-check", 0);
+    help(u"no-pid-conflict-check",
+         u"Do not check PID conflicts between the TS and the new inserted packets. "
+         u"By default, the processing is aborted if packets from the same PID are "
+         u"found both in the TS and the inserted packets.");
+
+    option(u"packet-offset", 0, UNSIGNED);
+    help(u"packet-offset",
+         u"Start reading the file at the specified TS packet (default: 0). "
+         u"This option is allowed only if the input file is a regular file.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid", u"Force the PID value of all inserted packets.");
+
+    option(u"pts-pid", 0, PIDVAL);
+    help(u"pts-pid",
+         u"Defines the PID carrying PCR or PTS values for --min-pts and --max-pts. "
+         u"When no PTS values are found, PCR are used. PCR values are divided by 300, "
+         u"the system clock sub-factor, to get the corresponding PTS values.");
+
+    option(u"repeat", 'r', POSITIVE);
+    help(u"repeat",
+         u"Repeat the playout of the file the specified number of times. By default, "
+         u"the file is infinitely repeated. This option is allowed only if the "
+         u"input file is a regular file.");
+
+    option(u"terminate", 't');
+    help(u"terminate",
+         u"Terminate packet processing when file insersion is complete. By default, "
+         u"when packet insertion is complete, the transmission continues and the "
+         u"stuffing is no longer modified.");
 }
 
 

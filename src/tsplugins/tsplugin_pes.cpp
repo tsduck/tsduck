@@ -129,120 +129,92 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _max_payload(0),
     _demux(this)
 {
-    option(u"audio-attributes",    'a');
-    option(u"avc-access-unit",      0);
-    option(u"binary",              'b');
-    option(u"header",              'h');
-    option(u"max-dump-count",      'x', UNSIGNED);
-    option(u"max-dump-size",       'm', UNSIGNED);
-    option(u"max-payload-size",     0,  UNSIGNED);
-    option(u"min-payload-size",     0,  UNSIGNED);
-    option(u"nal-unit-type",        0,  INTEGER, 0, UNLIMITED_COUNT, 0, 31);
-    option(u"negate-nal-unit-type", 0);
-    option(u"negate-pid",          'n');
-    option(u"nibble",               0);
-    option(u"output-file",         'o', STRING);
-    option(u"packet-index",         0);
-    option(u"payload",              0);
-    option(u"pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"sei-avc",              0);
-    option(u"start-code",          's');
-    option(u"trace-packets",       't');
-    option(u"uuid-sei",             0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"video-attributes",    'v');
+    option(u"audio-attributes", 'a');
+    help(u"audio-attributes", u"Display audio attributes.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --audio-attributes\n"
-            u"      Display audio attributes.\n"
-            u"\n"
-            u"  --avc-access-unit\n"
-            u"      Dump all AVC (ISO 14496-10, ITU H.264) access units (aka \"NALunits\").\n"
-            u"\n"
-            u"  -b\n"
-            u"  --binary\n"
-            u"      Include binary dump in addition to hexadecimal.\n"
-            u"\n"
-            u"  -h\n"
-            u"  --header\n"
-            u"      Dump PES packet header.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -x value\n"
-            u"  --max-dump-count value\n"
-            u"      Specify the maximum number of times data dump occurs with options\n"
-            u"      --trace-packets, --header, --payload, --start-code, --avc-access-unit.\n"
-            u"      Default: unlimited.\n"
-            u"\n"
-            u"  -m value\n"
-            u"  --max-dump-size value\n"
-            u"      Specify the maximum dump size for options --header, --payload,\n"
-            u"      --start-code, --avc-access-unit.\n"
-            u"\n"
-            u"  --max-payload-size value\n"
-            u"      Display PES packets with no payload or with a payload the size (in bytes)\n"
-            u"      of which is not greater than the specified value.\n"
-            u"\n"
-            u"  --min-payload-size value\n"
-            u"      Display PES packets with a payload the size (in bytes) of which is equal\n"
-            u"      to or greater than the specified value.\n"
-            u"\n"
-            u"  --nal-unit-type value\n"
-            u"      AVC NALunit filter: with --avc-access-unit, select access units with\n"
-            u"      this type (default: all access units). Several --nal-unit-type options\n"
-            u"      may be specified.\n"
-            u"\n"
-            u"  --negate-nal-unit-type\n"
-            u"      Negate the AVC NALunit filter: specified access units are excluded.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --negate-pid\n"
-            u"      Negate the PID filter: specified PID's are excluded.\n"
-            u"\n"
-            u"  --nibble\n"
-            u"      Same as --binary but add separator between 4-bit nibbles.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify the output file for the report (default: standard output).\n"
-            u"\n"
-            u"  --packet-index\n"
-            u"      Display the index of the first and last TS packet of each displayed\n"
-            u"      PES packet.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      PID filter: select packets with this PID value (default: all PID's\n"
-            u"      containing PES packets). Several -p or --pid options may be specified.\n"
-            u"\n"
-            u"  --payload\n"
-            u"      Dump PES packet payload.\n"
-            u"\n"
-            u"  --sei-avc\n"
-            u"      Dump all SEI (Supplemental Enhancement Information) in AVC/H.264\n"
-            u"      access units.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --start-code\n"
-            u"      Dump all start codes in PES packet payload.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --trace-packets\n"
-            u"      Trace all PES packets.\n"
-            u"\n"
-            u"  --uuid-sei value\n"
-            u"      AVC SEI filter: with --sei-avc, select \"user data unregistered\" SEI\n"
-            u"      access units with the specified UUID value (default: all SEI). Several\n"
-            u"      --uuid-sei options may be specified. The UUID value must be 16 bytes long.\n"
-            u"      It must be either an ASCII string of exactly 16 characters or a hexa-\n"
-            u"      decimal value representing 16 bytes.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --video-attributes\n"
-            u"      Display video attributes.\n");
+    option(u"avc-access-unit");
+    help(u"avc-access-unit", u"Dump all AVC (ISO 14496-10, ITU H.264) access units (aka \"NALunits\").");
+
+    option(u"binary", 'b');
+    help(u"binary", u"Include binary dump in addition to hexadecimal.");
+
+    option(u"header", 'h');
+    help(u"header", u"Dump PES packet header.");
+
+    option(u"max-dump-count", 'x', UNSIGNED);
+    help(u"max-dump-count",
+         u"Specify the maximum number of times data dump occurs with options "
+         u"--trace-packets, --header, --payload, --start-code, --avc-access-unit. "
+         u"Default: unlimited.");
+
+    option(u"max-dump-size", 'm', UNSIGNED);
+    help(u"max-dump-size",
+         u"Specify the maximum dump size for options --header, --payload, "
+         u"--start-code, --avc-access-unit.");
+
+    option(u"max-payload-size", 0, UNSIGNED);
+    help(u"max-payload-size",
+         u"Display PES packets with no payload or with a payload the size (in bytes) "
+         u"of which is not greater than the specified value.");
+
+    option(u"min-payload-size", 0, UNSIGNED);
+    help(u"min-payload-size",
+         u"Display PES packets with a payload the size (in bytes) of which is equal "
+         u"to or greater than the specified value.");
+
+    option(u"nal-unit-type", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    help(u"nal-unit-type",
+         u"AVC NALunit filter: with --avc-access-unit, select access units with "
+         u"this type (default: all access units). Several --nal-unit-type options "
+         u"may be specified.");
+
+    option(u"negate-nal-unit-type");
+    help(u"negate-nal-unit-type",
+         u"Negate the AVC NALunit filter: specified access units are excluded.");
+
+    option(u"negate-pid", 'n');
+    help(u"negate-pid",
+         u"Negate the PID filter: specified PID's are excluded.");
+
+    option(u"nibble");
+    help(u"nibble",
+         u"Same as --binary but add separator between 4-bit nibbles.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Specify the output file for the report (default: standard output).");
+
+    option(u"packet-index");
+    help(u"packet-index",
+         u"Display the index of the first and last TS packet of each displayed PES packet.");
+
+    option(u"payload", 0);
+    help(u"payload", u"Dump PES packet payload.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"PID filter: select packets with this PID value (default: all PID's "
+         u"containing PES packets). Several -p or --pid options may be specified.");
+
+    option(u"sei-avc");
+    help(u"sei-avc", u"Dump all SEI (Supplemental Enhancement Information) in AVC/H.264 access units.");
+
+    option(u"start-code", 's');
+    help(u"start-code", u"Dump all start codes in PES packet payload.");
+
+    option(u"trace-packets", 't');
+    help(u"trace-packets", u"race all PES packets.");
+
+    option(u"uuid-sei", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"uuid-sei",
+         u"AVC SEI filter: with --sei-avc, select \"user data unregistered\" SEI "
+         u"access units with the specified UUID value (default: all SEI). Several "
+         u"--uuid-sei options may be specified. The UUID value must be 16 bytes long. "
+         u"It must be either an ASCII string of exactly 16 characters or a hexa- "
+         u"decimal value representing 16 bytes.");
+
+    option(u"video-attributes", 'v');
+    help(u"video-attributes", u"Display video attributes.");
 }
 
 

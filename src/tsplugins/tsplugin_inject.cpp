@@ -127,109 +127,89 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _pzer(),
     _stuffing_policy(CyclingPacketizer::NEVER)
 {
-    option(u"",                   0,  STRING, 1, UNLIMITED_COUNT);
-    option(u"binary",             0);
-    option(u"bitrate",           'b', UINT32);
-    option(u"evaluate-interval", 'e', POSITIVE);
-    option(u"force-crc",         'f');
-    option(u"inter-packet",      'i', UINT32);
-    option(u"joint-termination", 'j');
-    option(u"pid",               'p', PIDVAL, 1, 1);
-    option(u"poll-files",         0);
-    option(u"repeat",             0,  POSITIVE);
-    option(u"replace",           'r');
-    option(u"stuffing",          's');
-    option(u"terminate",         't');
-    option(u"xml",                0);
+    option(u"", 0, STRING, 1, UNLIMITED_COUNT);
+    help(u"",
+         u"Binary or XML files containing one or more sections or tables. By default, "
+         u"files ending in .xml are XML and files ending in .bin are binary. For other "
+         u"file names, explicitly specify --binary or --xml.\n\n"
+         u"If different repetition rates are required for different files, "
+         u"a parameter can be \"filename=value\" where value is the "
+         u"repetition rate in milliseconds for all sections in that file.");
 
-    setHelp(u"Input files:\n"
-            u"\n"
-            u"  Binary or XML files containing one or more sections or tables. By default,\n"
-            u"  files ending in .xml are XML and files ending in .bin are binary. For other\n"
-            u"  file names, explicitly specify --binary or --xml.\n"
-            u"\n"
-            u"  If different repetition rates are required for different files,\n"
-            u"  a parameter can be \"filename=value\" where value is the\n"
-            u"  repetition rate in milliseconds for all sections in that file.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --binary\n"
-            u"      Specify that all input files are binary, regardless of their file name.\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate value\n"
-            u"      Specifies the bitrate for the new PID, in bits/second.\n"
-            u"\n"
-            u"  -e value\n"
-            u"  --evaluate-interval value\n"
-            u"      When used with --replace and when specific repetition rates are\n"
-            u"      specified for some input files, the bitrate of the target PID is\n"
-            u"      re-evaluated on a regular basis. The value of this option specifies\n"
-            u"      the number of packet in the target PID before re-evaluating its\n"
-            u"      bitrate. The default is " TS_STRINGIFY(DEF_EVALUATE_INTERVAL) u" packets.\n"
-            u"\n"
-            u"  -f\n"
-            u"  --force-crc\n"
-            u"      Force recomputation of CRC32 in long sections. Ignore CRC32 values\n"
-            u"      in input file.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i value\n"
-            u"  --inter-packet value\n"
-            u"      Specifies the packet interval for the new PID, that is to say the\n"
-            u"      number of TS packets in the transport between two packets of the\n"
-            u"      new PID. Use instead of --bitrate if the global bitrate of the TS\n"
-            u"      cannot be determined.\n"
-            u"\n"
-            u"  -j\n"
-            u"  --joint-termination\n"
-            u"      Perform a \"joint termination\" when section insersion is complete.\n"
-            u"      Meaningful only when --repeat is specified.\n"
-            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      PID of the output TS packets. This is a required parameter, there is\n"
-            u"      no default value. To replace the content of an existing PID, use option\n"
-            u"      --replace. To steal stuffing packets and create a new PID, use either\n"
-            u"      option --bitrate or --inter-packet. Exactly one option --replace,\n"
-            u"      --bitrate or --inter-packet must be specified.\n"
-            u"\n"
-            u"  --poll-files\n"
-            u"      Poll the presence and modification date of the input files. When a file\n"
-            u"      is created, modified or deleted, reload all files at the next section\n"
-            u"      boundary. When a file is deleted, its sections are no longer injected.\n"
-            u"      By default, all input files are loaded once at initialization time and\n"
-            u"      an error is generated if a file is missing.\n"
-            u"\n"
-            u"  --repeat count\n"
-            u"      Repeat the insertion of a complete cycle of sections the specified number\n"
-            u"      of times. By default, the sections are infinitely repeated.\n"
-            u"\n"
-            u"  -r\n"
-            u"  --replace\n"
-            u"      Replace the content of an existing PID. Do not steal stuffing.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Insert stuffing at end of each section, up to the next TS packet\n"
-            u"      boundary. By default, sections are packed and start in the middle\n"
-            u"      of a TS packet, after the previous section. Note, however, that\n"
-            u"      section headers are never scattered over a packet boundary.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --terminate\n"
-            u"      Terminate packet processing when section insersion is complete.\n"
-            u"      Meaningful only when --repeat is specified. By default, when section\n"
-            u"      insertion is complete, the transmission continues and the stuffing is\n"
-            u"      no longer modified (if --replace is specified, the PID is then replaced\n"
-            u"      by stuffing).\n"
-            u"\n"
-            u"  --xml\n"
-            u"      Specify that all input files are XML, regardless of their file name.\n");
+    option(u"binary");
+    help(u"binary", u"Specify that all input files are binary, regardless of their file name.");
+
+    option(u"bitrate", 'b', UINT32);
+    help(u"bitrate", u"Specifies the bitrate for the new PID, in bits/second.");
+
+    option(u"evaluate-interval", 'e', POSITIVE);
+    help(u"evaluate-interval",
+         u"When used with --replace and when specific repetition rates are "
+         u"specified for some input files, the bitrate of the target PID is "
+         u"re-evaluated on a regular basis. The value of this option specifies "
+         u"the number of packet in the target PID before re-evaluating its "
+         u"bitrate. The default is " + UString::Decimal(DEF_EVALUATE_INTERVAL) +
+         u" packets.");
+
+    option(u"force-crc", 'f');
+    help(u"force-crc",
+         u"Force recomputation of CRC32 in long sections. Ignore CRC32 values "
+         u"in input file.");
+
+    option(u"inter-packet", 'i', UINT32);
+    help(u"inter-packet",
+         u"Specifies the packet interval for the new PID, that is to say the "
+         u"number of TS packets in the transport between two packets of the "
+         u"new PID. Use instead of --bitrate if the global bitrate of the TS "
+         u"cannot be determined.");
+
+    option(u"joint-termination", 'j');
+    help(u"joint-termination",
+         u"Perform a \"joint termination\" when section insersion is complete. "
+         u"Meaningful only when --repeat is specified. "
+         u"See \"tsp --help\" for more details on \"joint termination\".");
+
+    option(u"pid", 'p', PIDVAL, 1, 1);
+    help(u"pid",
+         u"PID of the output TS packets. This is a required parameter, there is "
+         u"no default value. To replace the content of an existing PID, use option "
+         u"--replace. To steal stuffing packets and create a new PID, use either "
+         u"option --bitrate or --inter-packet. Exactly one option --replace, "
+         u"--bitrate or --inter-packet must be specified.");
+
+    option(u"poll-files");
+    help(u"poll-files",
+         u"Poll the presence and modification date of the input files. When a file "
+         u"is created, modified or deleted, reload all files at the next section "
+         u"boundary. When a file is deleted, its sections are no longer injected. "
+         u"By default, all input files are loaded once at initialization time and "
+         u"an error is generated if a file is missing.");
+
+    option(u"repeat", 0, POSITIVE);
+    help(u"repeat",
+         u"Repeat the insertion of a complete cycle of sections the specified number "
+         u"of times. By default, the sections are infinitely repeated.");
+
+    option(u"replace", 'r');
+    help(u"replace", u"Replace the content of an existing PID. Do not steal stuffing.");
+
+    option(u"stuffing", 's');
+    help(u"stuffing",
+         u"Insert stuffing at end of each section, up to the next TS packet "
+         u"boundary. By default, sections are packed and start in the middle "
+         u"of a TS packet, after the previous section. Note, however, that "
+         u"section headers are never scattered over a packet boundary.");
+
+    option(u"terminate", 't');
+    help(u"terminate",
+         u"Terminate packet processing when section insersion is complete. "
+         u"Meaningful only when --repeat is specified. By default, when section "
+         u"insertion is complete, the transmission continues and the stuffing is "
+         u"no longer modified (if --replace is specified, the PID is then replaced "
+         u"by stuffing).");
+
+    option(u"xml");
+    help(u"xml", u"Specify that all input files are XML, regardless of their file name.");
 }
 
 
@@ -339,7 +319,9 @@ bool ts::InjectPlugin::reloadFiles()
             _pzer.addSections(file.sections(), it->repetition);
             _specific_rates = _specific_rates || it->repetition != 0;
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
-                         {file.sections().size(), it->file_name, it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
+                         {file.sections().size(),
+                          it->file_name,
+                          it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
         }
     }
 

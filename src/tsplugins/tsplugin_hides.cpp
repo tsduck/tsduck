@@ -88,28 +88,54 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
     _device(),
     _dev_info()
 {
-    option(u"adapter",   'a', UNSIGNED);
+    option(u"adapter", 'a', UNSIGNED);
+    help(u"adapter",
+         u"Specify the HiDes adapter number to use. By default, the first HiDes "
+         u"device is selected. Use the command tshides to list all HiDes devices.");
+
     option(u"bandwidth", 'b', Enumeration({
         {u"5", BW_5_MHZ},
         {u"6", BW_5_MHZ},
         {u"7", BW_7_MHZ},
         {u"8", BW_8_MHZ},
     }));
+    help(u"bandwidth", u"Bandwidth in MHz. The default is 8 MHz.");
+
     option(u"constellation", 'c', Enumeration({
         {u"QPSK",   QPSK},
         {u"16-QAM", QAM_16},
         {u"64-QAM", QAM_64},
     }));
-    option(u"dc-compensation", 0,  STRING);
-    option(u"device",         'd', STRING);
-    option(u"frequency",      'f', POSITIVE);
-    option(u"gain",            0,  INT32);
+    help(u"constellation", u"Constellation type. The default is 64-QAM.");
+
+    option(u"dc-compensation", 0, STRING);
+    help(u"dc-compensation", u"i-value/q-value",
+         u"Specify the DC offset compensation values for I and Q. Each offset value "
+         u"shall be in the range " + UString::Decimal(HiDesDevice::IT95X_DC_CAL_MIN) +
+         u" to " + UString::Decimal(HiDesDevice::IT95X_DC_CAL_MAX) + u".");
+
+    option(u"device", 'd', STRING);
+    help(u"device", u"name",
+         u"Specify the HiDes device name to use. By default, the first HiDes device "
+         u"is selected. Use the command tshides to list all HiDes devices.");
+
+    option(u"frequency", 'f', POSITIVE);
+    help(u"frequency",
+         u"Frequency, in Hz, of the output carrier. This parameter is mandatory. There is no default.");
+
+    option(u"gain", 0, INT32);
+    help(u"gain",
+         u"Adjust the output gain to the specified value in dB. "
+         u"The allowed gain range depends on the device, the frequency and the bandwidth.");
+
     option(u"guard-interval", 'g', Enumeration({
         {u"1/32", GUARD_1_32},
         {u"1/16", GUARD_1_16},
         {u"1/8",  GUARD_1_8},
         {u"1/4",  GUARD_1_4},
     }));
+    help(u"guard-interval", u"Guard interval. The default is 1/32.");
+
     option(u"high-priority-fec", 'h', Enumeration({
         {u"1/2", FEC_1_2},
         {u"2/3", FEC_2_3},
@@ -117,68 +143,17 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
         {u"5/6", FEC_5_6},
         {u"7/8", FEC_7_8},
     }));
+    help(u"high-priority-fec", u"Error correction for high priority streams. The default is 2/3.");
+
     option(u"spectral-inversion", 's', SpectralInversionEnum);
-    option(u"transmission-mode",  't', Enumeration({
+    help(u"spectral-inversion", u"Spectral inversion. The default is auto.");
+
+    option(u"transmission-mode", 't', Enumeration({
         {u"2K", TM_2K},
         {u"4K", TM_4K},
         {u"8K", TM_8K},
     }));
-
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a value\n"
-            u"  --adapter value\n"
-            u"      Specify the HiDes adapter number to use. By default, the first HiDes\n"
-            u"      device is selected. Use the command tshides to list all HiDes devices.\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bandwidth value\n"
-            u"      Bandwidth in MHz. Must be one of " + optionNames(u"bandwidth") + ".\n"
-            u"      The default is 8 MHz.\n"
-            u"\n"
-            u"  -c value\n"
-            u"  --constellation value\n"
-            u"      Constellation type. Must be one of " + optionNames(u"constellation") + ".\n"
-            u"      The default is 64-QAM.\n"
-            u"\n"
-            u"  --dc-compensation i-value/q-value\n"
-            u"      Specify the DC offset compensation values for I and Q. Each offset value\n"
-            u"      shall be in the range " + UString::Decimal(HiDesDevice::IT95X_DC_CAL_MIN) + u" to " + UString::Decimal(HiDesDevice::IT95X_DC_CAL_MAX) + u".\n"
-            u"\n"
-            u"  -d name\n"
-            u"  --device name\n"
-            u"      Specify the HiDes device name to use. By default, the first HiDes device\n"
-            u"      is selected. Use the command tshides to list all HiDes devices.\n"
-            u"\n"
-            u"  -f value\n"
-            u"  --frequency value\n"
-            u"      Frequency, in Hz, of the output carrier. There is no default.\n"
-            u"\n"
-            u"  --gain value\n"
-            u"      Adjust the output gain to the specified value in dB.\n"
-            u"\n"
-            u"  -g value\n"
-            u"  --guard-interval value\n"
-            u"      Guard interval. Must be one of " + optionNames(u"guard-interval") + ".\n"
-            u"      The default is 1/32.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -h value\n"
-            u"  --high-priority-fec value\n"
-            u"      Error correction for high priority streams. Must be one of " + optionNames(u"high-priority-fec") + ".\n"
-            u"      The default is 2/3.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --spectral-inversion value\n"
-            u"      Spectral inversion. Must be one of " + optionNames(u"spectral-inversion") + ".\n"
-            u"      The default is auto.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --transmission-mode value\n"
-            u"      Transmission mode. Must be one of " + optionNames(u"transmission-mode") + ".\n"
-            u"      The default is 8K.\n");
+    help(u"transmission-mode", u"Transmission mode. The default is 8K.");
 }
 
 

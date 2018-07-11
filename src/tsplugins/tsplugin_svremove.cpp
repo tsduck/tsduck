@@ -121,45 +121,31 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
     _eit_process(PID_EIT, tsp_)
 {
-    option(u"",               0,  STRING, 1, 1);
-    option(u"ignore-absent", 'a');
-    option(u"ignore-bat",    'b');
-    option(u"ignore-eit",    'e');
-    option(u"ignore-nit",    'n');
-    option(u"stuffing",      's');
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"Specifies the service to remove. If the argument is an integer value "
+         u"(either decimal or hexadecimal), it is interpreted as a service id. "
+         u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
+         u"The name is not case sensitive and blanks are ignored.");
 
-    setHelp(u"Service:\n"
-            u"  Specifies the service to remove. If the argument is an integer value\n"
-            u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
-            u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
-            u"  The name is not case sensitive and blanks are ignored.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -a\n"
-            u"  --ignore-absent\n"
-            u"      Ignore service if not present in the transport stream. By default, tsp\n"
-            u"      fails if the service is not found.\n"
-            u"\n"
-            u"  -b\n"
-            u"  --ignore-bat\n"
-            u"      Do not modify the BAT.\n"
-            u"\n"
-            u"  -e\n"
-            u"  --ignore-eit\n"
-            u"      Do not modify the EIT's.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --ignore-nit\n"
-            u"      Do not modify the NIT.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Replace excluded packets with stuffing (null packets) instead\n"
-            u"      of removing them. Useful to preserve bitrate.\n");
+    option(u"ignore-absent", 'a');
+    help(u"ignore-absent",
+         u"Ignore service if not present in the transport stream. By default, tsp "
+         u"fails if the service is not found.");
+
+    option(u"ignore-bat", 'b');
+    help(u"ignore-bat", u"Do not modify the BAT.");
+
+    option(u"ignore-eit", 'e');
+    help(u"ignore-eit", u"Do not modify the EIT's.");
+
+    option(u"ignore-nit", 'n');
+    help(u"ignore-nit", u"Do not modify the NIT.");
+
+    option(u"stuffing", 's');
+    help(u"stuffing",
+         u"Replace excluded packets with stuffing (null packets) instead "
+         u"of removing them. Useful to preserve bitrate.");
 }
 
 

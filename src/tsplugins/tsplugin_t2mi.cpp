@@ -125,61 +125,47 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _identified(),
     _ts_queue()
 {
-    option(u"append",      'a');
-    option(u"extract",     'e');
-    option(u"identify",    'i');
-    option(u"keep",        'k');
-    option(u"log",         'l');
-    option(u"output-file", 'o', STRING);
-    option(u"pid",         'p', PIDVAL);
-    option(u"plp",          0,  UINT8);
+    option(u"append", 'a');
+    help(u"append",
+         u"With --output-file, if the file already exists, append to the end of the "
+         u"file. By default, existing files are overwritten.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --append\n"
-            u"      With --output-file, if the file already exists, append to the end of the\n"
-            u"      file. By default, existing files are overwritten.\n"
-            u"\n"
-            u"  -e\n"
-            u"  --extract\n"
-            u"      Extract encapsulated TS packets from one PLP of a T2-MI stream.\n"
-            u"      This is the default if neither --extract nor --log nor --identify is\n"
-            u"      specified. By default, the transport stream is completely replaced by\n"
-            u"      the extracted stream. See option --output-file.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --identify\n"
-            u"      Identify all T2-MI PID's and PLP's. If --pid is specified, only identify\n"
-            u"      PLP's in this PID. If --pid is not specified, identify all PID's carrying\n"
-            u"      T2-MI and their PLP's (require a fully compliant T2-MI signalization).\n"
-            u"\n"
-            u"  -k\n"
-            u"  --keep\n"
-            u"      With --output-file, keep existing file (abort if the specified file\n"
-            u"      already exists). By default, existing files are overwritten.\n"
-            u"\n"
-            u"  -l\n"
-            u"  --log\n"
-            u"      Log all T2-MI packets using one single summary line per packet.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify that the extracted stream is saved in this file. In that case,\n"
-            u"      the main transport stream is passed unchanged to the next plugin.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specify the PID carrying the T2-MI encapsulation. By default, use the\n"
-            u"      first component with a T2MI_descriptor in a service.\n"
-            u"\n"
-            u"  --plp value\n"
-            u"      Specify the PLP (Physical Layer Pipe) to extract from the T2-MI\n"
-            u"      encapsulation. By default, use the first PLP which is found.\n"
-            u"      Ignored if --extract is not used.\n");
+    option(u"extract", 'e');
+    help(u"extract",
+         u"Extract encapsulated TS packets from one PLP of a T2-MI stream. "
+         u"This is the default if neither --extract nor --log nor --identify is "
+         u"specified. By default, the transport stream is completely replaced by "
+         u"the extracted stream. See option --output-file.");
+
+    option(u"identify", 'i');
+    help(u"identify",
+         u"Identify all T2-MI PID's and PLP's. If --pid is specified, only identify "
+         u"PLP's in this PID. If --pid is not specified, identify all PID's carrying "
+         u"T2-MI and their PLP's (require a fully compliant T2-MI signalization).");
+
+    option(u"keep", 'k');
+    help(u"keep",
+         u"With --output-file, keep existing file (abort if the specified file "
+         u"already exists). By default, existing files are overwritten.");
+
+    option(u"log", 'l');
+    help(u"log", u"Log all T2-MI packets using one single summary line per packet.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Specify that the extracted stream is saved in this file. In that case, "
+         u"the main transport stream is passed unchanged to the next plugin.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid",
+         u"Specify the PID carrying the T2-MI encapsulation. By default, use the "
+         u"first component with a T2MI_descriptor in a service.");
+
+    option(u"plp", 0, UINT8);
+    help(u"plp",
+         u"Specify the PLP (Physical Layer Pipe) to extract from the T2-MI "
+         u"encapsulation. By default, use the first PLP which is found. "
+         u"Ignored if --extract is not used.");
 }
 
 

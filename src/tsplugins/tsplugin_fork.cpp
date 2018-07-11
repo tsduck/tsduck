@@ -80,34 +80,23 @@ ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
     _buffer_count(0),
     _buffer()
 {
-    option(u"",                  0,  STRING, 1, 1);
-    option(u"buffered-packets", 'b', POSITIVE);
-    option(u"ignore-abort",     'i');
-    option(u"nowait",           'n');
+    option(u"", 0, STRING, 1, 1);
+    help(u"", u"Specifies the command line to execute in the created process.");
 
-    setHelp(u"Command:\n"
-            u"  Specifies the command line to execute in the created process.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --buffered-packets value\n"
-            u"      Specifies the number of TS packets to buffer before sending them through\n"
-            u"      the pipe to the forked process. When set to zero, the packets are not\n"
-            u"      buffered and sent one by one. The default is 500 packets in real-time mode\n"
-            u"      and 1000 packets in offline mode.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --ignore-abort\n"
-            u"      Ignore early termination of child process. By default, if the child\n"
-            u"      process aborts and no longer reads the packets, tsp also aborts.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --nowait\n"
-            u"      Do not wait for child process termination at end of input.\n");
+    option(u"buffered-packets", 'b', POSITIVE);
+    help(u"buffered-packets",
+         u"Specifies the number of TS packets to buffer before sending them through "
+         u"the pipe to the forked process. When set to zero, the packets are not "
+         u"buffered and sent one by one. The default is 500 packets in real-time mode "
+         u"and 1000 packets in offline mode.");
+
+    option(u"ignore-abort", 'i');
+    help(u"ignore-abort",
+         u"Ignore early termination of child process. By default, if the child "
+         u"process aborts and no longer reads the packets, tsp also aborts.");
+
+    option(u"nowait", 'n');
+    help(u"nowait", u"Do not wait for child process termination at end of input.");
 }
 
 

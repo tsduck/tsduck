@@ -117,42 +117,32 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _pkt_count_index(0),
     _pkt_count()
 {
-    option(u"",                  0,  PIDVAL, 1, 1);   // PID nb is a required parameter
-    option(u"alarm-command",    'a', STRING);
-    option(u"time-interval",    't', UINT16);
-    option(u"min",               0,  UINT32);
-    option(u"max",               0,  UINT32);
-    option(u"periodic-bitrate", 'p', POSITIVE);
+    option(u"", 0, PIDVAL, 1, 1);
+    help(u"", u"Specifies the PID to monitor.");
 
-    setHelp(u"PID:\n"
-            u"      Specifies the PID to monitor.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a command\n"
-            u"  --alarm-command command\n"
-            u"      Command to be run when an alarm is detected (bitrate out of range).\n"
-            u"\n"
-            u"  --min value\n"
-            u"      Set minimum allowed value for bitrate (bits/s).\n"
-            u"      Default: " + UString::Decimal(DEFAULT_BITRATE_MIN) + u" b/s.\n"
-            u"\n"
-            u"  --max value\n"
-            u"      Set maximum allowed value for bitrate (bits/s).\n"
-            u"      Default: " + UString::Decimal(DEFAULT_BITRATE_MAX) + u" b/s.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --periodic-bitrate value\n"
-            u"      Always report bitrate at the specific interval in seconds, even if the\n"
-            u"      bitrate is in range.\n"
-            u"\n"
-            u"  -t value\n"
-            u"  --time-interval value\n"
-            u"      Time interval (in seconds) used to compute the bitrate.\n"
-            u"      Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n");
+    option(u"alarm-command", 'a', STRING);
+    help(u"alarm-command", u"'command'",
+         u"Command to be run when an alarm is detected (bitrate out of range).");
+
+    option(u"time-interval", 't', UINT16);
+    help(u"time-interval",
+         u"Time interval (in seconds) used to compute the bitrate. "
+         u"Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.");
+
+    option(u"min", 0, UINT32);
+    help(u"min",
+         u"Set minimum allowed value for bitrate (bits/s). "
+         u"Default: " + UString::Decimal(DEFAULT_BITRATE_MIN) + u" b/s.");
+
+    option(u"max", 0, UINT32);
+    help(u"max",
+         u"Set maximum allowed value for bitrate (bits/s). "
+         u"Default: " + UString::Decimal(DEFAULT_BITRATE_MAX) + u" b/s.");
+
+    option(u"periodic-bitrate", 'p', POSITIVE);
+    help(u"periodic-bitrate",
+         u"Always report bitrate at the specific interval in seconds, even if the "
+         u"bitrate is in range.");
 }
 
 

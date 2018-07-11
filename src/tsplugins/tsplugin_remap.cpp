@@ -109,36 +109,27 @@ ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
     _pzer()
 {
     option(u"");
-    option(u"no-psi", 'n');
-    option(u"unchecked", 'u');
+    help(u"",
+         u"Each remapping is specified as \"pid=newpid\" or \"pid1-pid2=newpid\" "
+         u"(all PID's can be specified as decimal or hexadecimal values). "
+         u"In the first form, the PID \"pid\" is remapped to \"newpid\". "
+         u"In the latter form, all PID's within the range \"pid1\" to \"pid2\" "
+         u"(inclusive) are respectively remapped to \"newpid\", \"newpid\"+1, etc.");
 
-    setHelp(u"Specifying PID remapping:\n"
-            u"\n"
-            u"  Each remapping is specified as \"pid=newpid\" or \"pid1-pid2=newpid\"\n"
-            u"  (all PID's can be specified as decimal or hexadecimal values).\n"
-            u"  In the first form, the PID \"pid\" is remapped to \"newpid\".\n"
-            u"  In the later form, all PID's within the range \"pid1\" to \"pid2\"\n"
-            u"  (inclusive) are respectively remapped to \"newpid\", \"newpid\"+1, etc.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --no-psi\n"
-            u"      Do not modify the PSI. By default, the PAT, CAT and PMT's are\n"
-            u"      modified so that previous references to the remapped PID's will\n"
-            u"      point to the new PID values.\n"
-            u"\n"
-            u"  -u\n"
-            u"  --unchecked\n"
-            u"      Do not perform any consistency checking while remapping PID's.\n"
-            u"      - Remapping to or from a predefined PID is accepted.\n"
-            u"      - Remapping two PID's to the same PID or to a PID which is\n"
-            u"        already present in the input is accepted.\n"
-            u"      Note that this option should be used with care since the\n"
-            u"      resulting stream can be illegal or inconsistent.\n");
+    option(u"no-psi", 'n');
+    help(u"no-psi",
+         u"Do not modify the PSI. By default, the PAT, CAT and PMT's are "
+         u"modified so that previous references to the remapped PID's will "
+         u"point to the new PID values.");
+
+    option(u"unchecked", 'u');
+    help(u"unchecked",
+         u"Do not perform any consistency checking while remapping PID's. "
+         u"Remapping to or from a predefined PID is accepted. "
+         u"Remapping two PID's to the same PID or to a PID which is "
+         u"already present in the input is accepted. "
+         u"Note that this option should be used with care since the "
+         u"resulting stream can be illegal or inconsistent.");
 }
 
 

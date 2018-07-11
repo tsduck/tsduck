@@ -213,87 +213,74 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _req_bitrate(0),
     _lost_packets(0)
 {
-    option(u"bitrate-max",      'b', POSITIVE);
-    option(u"buffer-size",       0,  UNSIGNED);
-    option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 1, 5);
-    option(u"log-data",          0,  ts::Severity::Enums, 0, 1, true);
-    option(u"log-protocol",      0,  ts::Severity::Enums, 0, 1, true);
-    option(u"no-reuse-port",     0);
-    option(u"pid",              'p', PIDVAL, 1, 1);
-    option(u"queue-size",       'q', UINT32);
-    option(u"reuse-port",       'r');
-    option(u"server",           's', STRING, 1, 1);
-    option(u"udp",              'u', STRING);
-    option(u"unregulated",       0);
+    option(u"bitrate-max", 'b', POSITIVE);
+    help(u"bitrate-max",
+         u"Specifies the maximum bitrate for the data PID in bits / second. "
+         u"By default, the data PID bitrate is limited by the stuffing bitrate "
+         u"(data insertion is performed by replacing stuffing packets).");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --bitrate-max value\n"
-            u"      Specifies the maximum bitrate for the data PID in bits / second.\n"
-            u"      By default, the data PID bitrate is limited by the stuffing bitrate\n"
-            u"      (data insertion is performed by replacing stuffing packets).\n"
-            u"\n"
-            u"  --buffer-size value\n"
-            u"      Specify the TCP and UDP socket receive buffer size (socket option).\n"
-            u"\n"
-            u"  -v value\n"
-            u"  --emmg-mux-version value\n"
-            u"      Specifies the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol.\n"
-            u"      Valid values are 1 to 5. The default is " TS_USTRINGIFY(DEFAULT_PROTOCOL_VERSION) u".\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --log-data[=level]\n"
-            u"      Same as --log-protocol but applies to data_provision messages only. To\n"
-            u"      debug the session management without being flooded by data messages, use\n"
-            u"      --log-protocol=info --log-data=debug.\n"
-            u"\n"
-            u"  --log-protocol[=level]\n"
-            u"      Log all EMMG/PDG <=> MUX protocol messages using the specified level. If\n"
-            u"      the option is not present, the messages are logged at debug level only.\n"
-            u"      If the option is present without value, the messages are logged at info\n"
-            u"      level. A level can be a numerical debug level or any of the following:\n"
-            u"      " + ts::Severity::Enums.nameList() + u".\n"
-            u"\n"
-            u"  --no-reuse-port\n"
-            u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specifies the PID for the data insertion. This option is mandatory.\n"
-            u"\n"
-            u"  -q value\n"
-            u"  --queue-size value\n"
-            u"      Specifies the maximum number of sections or TS packets in the internal\n"
-            u"      queue, ie. sections or packets which are received from the EMMG/PDG\n"
-            u"      client but not yet inserted into the TS. The default is " TS_USTRINGIFY(DEFAULT_QUEUE_SIZE) u".\n"
-            u"\n"
-            u"  -r\n"
-            u"  --reuse-port\n"
-            u"      Set the reuse port socket option. This is now enabled by default, the option\n"
-            u"      is present for legacy only.\n"
-            u"\n"
-            u"  -s [address:]port\n"
-            u"  --server [address:]port\n"
-            u"      Specifies the local TCP port on which the plugin listens for an incoming\n"
-            u"      EMMG/PDG connection. This option is mandatory.\n"
-            u"      When present, the optional address shall specify a local IP address or\n"
-            u"      host name (by default, the plugin accepts connections on any local IP\n"
-            u"      interface). This plugin behaves as a MUX, ie. a TCP server, and accepts\n"
-            u"      only one EMMG/PDG connection at a time.\n"
-            u"\n"
-            u"  -u [address:]port\n"
-            u"  --udp [address:]port\n"
-            u"      Specifies the local UDP port on which the plugin listens for data\n"
-            u"      provision messages (these messages can be sent using TCP or UDP). By\n"
-            u"      default, use the same port and optional local address as specified for\n"
-            u"      TCP using option --server.\n"
-            u"\n"
-            u"  --unregulated\n"
-            u"      Insert data packets immediately. Do not regulate insertion, do not limit\n"
-            u"      the data bitrate.\n");
+    option(u"buffer-size", 0, UNSIGNED);
+    help(u"buffer-size",
+         u"Specify the TCP and UDP socket receive buffer size (socket option).");
+
+    option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 1, 5);
+    help(u"emmg-mux-version",
+         u"Specifies the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol. "
+         u"Valid values are 1 to 5. The default is " TS_USTRINGIFY(DEFAULT_PROTOCOL_VERSION) u".");
+
+    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
+    help(u"log-data", u"level",
+         u"Same as --log-protocol but applies to data_provision messages only. To "
+         u"debug the session management without being flooded by data messages, use "
+         u"--log-protocol=info --log-data=debug.");
+
+    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
+    help(u"log-protocol", u"level",
+         u"Log all EMMG/PDG <=> MUX protocol messages using the specified level. If "
+         u"the option is not present, the messages are logged at debug level only. "
+         u"If the option is present without value, the messages are logged at info "
+         u"level. A level can be a numerical debug level or a name.");
+
+    option(u"no-reuse-port");
+    help(u"no-reuse-port",
+         u"Disable the reuse port socket option. Do not use unless completely necessary.");
+
+    option(u"pid", 'p', PIDVAL, 1, 1);
+    help(u"pid",
+         u"Specifies the PID for the data insertion. This option is mandatory.");
+
+    option(u"queue-size", 'q', UINT32);
+    help(u"queue-size",
+         u"Specifies the maximum number of sections or TS packets in the internal "
+         u"queue, ie. sections or packets which are received from the EMMG/PDG "
+         u"client but not yet inserted into the TS. The default is " +
+         UString::Decimal(DEFAULT_QUEUE_SIZE) + u".");
+
+    option(u"reuse-port", 'r');
+    help(u"reuse-port",
+         u"Set the reuse port socket option. This is now enabled by default, the option "
+         u"is present for legacy only.");
+
+    option(u"server", 's', STRING, 1, 1);
+    help(u"server", u"[address:]port",
+         u"Specifies the local TCP port on which the plugin listens for an incoming "
+         u"EMMG/PDG connection. This option is mandatory. "
+         u"When present, the optional address shall specify a local IP address or "
+         u"host name (by default, the plugin accepts connections on any local IP "
+         u"interface). This plugin behaves as a MUX, ie. a TCP server, and accepts "
+         u"only one EMMG/PDG connection at a time.");
+
+    option(u"udp", 'u', STRING);
+    help(u"udp", u"[address:]port",
+         u"Specifies the local UDP port on which the plugin listens for data "
+         u"provision messages (these messages can be sent using TCP or UDP). By "
+         u"default, use the same port and optional local address as specified for "
+         u"TCP using option --server.");
+
+    option(u"unregulated");
+    help(u"unregulated",
+         u"Insert data packets immediately. Do not regulate insertion, do not limit "
+         u"the data bitrate.");
 }
 
 

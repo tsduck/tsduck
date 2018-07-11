@@ -459,11 +459,11 @@ namespace ts {
         virtual void setSyntax(const UString& syntax) {_syntax = syntax;}
 
         //!
-        //! Set the help description of the command (DEPRECATED).
+        //! Set the introduction or preamble text for help description.
         //!
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
+        //! @param [in] intro Introduction text.
         //!
-        virtual void setHelp(const UString& help) {_help = help;}
+        virtual void setIntro(const UString& intro) {_intro = intro;}
 
         //!
         //! Set the option flags of the command.
@@ -953,7 +953,7 @@ namespace ts {
         UString       _description;
         UString       _shell;
         UString       _syntax;
-        UString       _help;
+        UString       _intro;
         UString       _app_name;
         UStringVector _args;
         bool          _is_valid;

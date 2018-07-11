@@ -130,103 +130,88 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _outfile(),
     _demux(this)
 {
-    option(u"append",       'a');
-    option(u"destination",  'd', STRING);
-    option(u"dump-datagram", 0);
-    option(u"dump-udp",      0);
-    option(u"dump-max",      0,  UNSIGNED);
-    option(u"local-address", 0,  STRING);
-    option(u"log",          'l');
-    option(u"max-datagram", 'm', POSITIVE);
-    option(u"output-file",  'o', STRING);
-    option(u"pid",          'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"redirect",     'r', STRING);
-    option(u"skip",          0,  UNSIGNED);
-    option(u"source",       's', STRING);
-    option(u"sync-layout",   0);
-    option(u"ttl",           0,  INTEGER, 0, 1, 1, 255);
-    option(u"udp-forward",  'u');
+    option(u"append", 'a');
+    help(u"append",
+         u"With --output-file, if the file already exists, append to the end of the "
+         u"file. By default, existing files are overwritten.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --append\n"
-            u"      With --output-file, if the file already exists, append to the end of the\n"
-            u"      file. By default, existing files are overwritten.\n"
-            u"\n"
-            u"  -d address[:port]\n"
-            u"  --destination address[:port]\n"
-            u"      Filter MPE UDP datagrams based on the specified destination IP address.\n"
-            u"\n"
-            u"  --dump-datagram\n"
-            u"      With --log, dump each complete network datagram.\n"
-            u"\n"
-            u"  --dump-udp\n"
-            u"      With --log, dump the UDP payload of each network datagram.\n"
-            u"\n"
-            u"  --dump-max value\n"
-            u"      With --dump-datagram or --dump-udp, specify the maximum number of bytes\n"
-            u"      to dump. By default, dump everything.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --local-address address\n"
-            u"      With --udp-forward, specify the IP address of the outgoing local interface\n"
-            u"      for multicast traffic. It can be also a host name that translates to a\n"
-            u"      local address.\n"
-            u"\n"
-            u"  -l\n"
-            u"  --log\n"
-            u"      Log all MPE datagrams using a short summary for each of them.\n"
-            u"\n"
-            u"  -m value\n"
-            u"  --max-datagram value\n"
-            u"      Specify the maximum number of datagrams to extract, then stop. By default,\n"
-            u"      all datagrams are extracted.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify that the extracted UDP datagrams are saved in this file. The UDP\n"
-            u"      messages are written without any encapsulation.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Extract MPE datagrams from this PID. Several -p or --pid options may be\n"
-            u"      specified. When no PID is specified, use all PID's carrying MPE which are\n"
-            u"      properly declared in the signalization.\n"
-            u"\n"
-            u"  -r address[:port]\n"
-            u"  --redirect address[:port]\n"
-            u"      With --udp-forward, redirect all UDP datagrams to the specified socket\n"
-            u"      address. By default, all datagram are forwarded to their original\n"
-            u"      destination address. If you specify a redirected address, it is\n"
-            u"      recommended to use --destination to filter a specific stream. If the\n"
-            u"      port is not specified, the original port is used.\n"
-            u"\n"
-            u"  --skip value\n"
-            u"      With --output-file, --dump-datagram or --dump-udp, specify the initial\n"
-            u"      number of bytes to skip. By default, save or dump from the beginning.\n"
-            u"\n"
-            u"  -s address[:port]\n"
-            u"  --source address[:port]\n"
-            u"      Filter MPE UDP datagrams based on the specified source IP address.\n"
-            u"\n"
-            u"  --sync-layout\n"
-            u"      With --log, display the layout of 0x47 sync bytes in the UDP payload.\n"
-            u"\n"
-            u"  --ttl value\n"
-            u"      With --udp-forward, specify the TTL (Time-To-Live) socket option.\n"
-            u"      The actual option is either \"Unicast TTL\" or \"Multicast TTL\",\n"
-            u"      depending on the destination address. By default, use the same TTL\n"
-            u"      as specified in the received MPE encapsulated datagram.\n"
-            u"\n"
-            u"  -u\n"
-            u"  --udp-forward\n"
-            u"      Forward all received MPE encapsulated UDP datagrams on the local network.\n"
-            u"      By default, the destination address and port of each datagram is left\n"
-            u"      unchanged. The source address of the forwarded datagrams will be the\n"
-            u"      address of the local machine.\n");
+    option(u"destination", 'd', STRING);
+    help(u"destination", u"address[:port]"
+         u"Filter MPE UDP datagrams based on the specified destination IP address.");
+
+    option(u"dump-datagram");
+    help(u"dump-datagram",
+         u"With --log, dump each complete network datagram.");
+
+    option(u"dump-udp");
+    help(u"dump-udp",
+         u"With --log, dump the UDP payload of each network datagram.");
+
+    option(u"dump-max", 0, UNSIGNED);
+    help(u"dump-max",
+         u"With --dump-datagram or --dump-udp, specify the maximum number of bytes "
+         u"to dump. By default, dump everything.");
+
+    option(u"local-address", 0, STRING);
+    help(u"local-address", u"address",
+         u"With --udp-forward, specify the IP address of the outgoing local interface "
+         u"for multicast traffic. It can be also a host name that translates to a "
+         u"local address.");
+
+    option(u"log", 'l');
+    help(u"log",
+         u"Log all MPE datagrams using a short summary for each of them.");
+
+    option(u"max-datagram", 'm', POSITIVE);
+    help(u"max-datagram",
+         u"Specify the maximum number of datagrams to extract, then stop. By default, "
+         u"all datagrams are extracted.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Specify that the extracted UDP datagrams are saved in this file. The UDP "
+         u"messages are written without any encapsulation.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"Extract MPE datagrams from this PID. Several -p or --pid options may be "
+         u"specified. When no PID is specified, use all PID's carrying MPE which are "
+         u"properly declared in the signalization.");
+
+    option(u"redirect", 'r', STRING);
+    help(u"redirect", u"address[:port]",
+         u"With --udp-forward, redirect all UDP datagrams to the specified socket "
+         u"address. By default, all datagrams are forwarded to their original "
+         u"destination address. If you specify a redirected address, it is "
+         u"recommended to use --destination to filter a specific stream. If the "
+         u"port is not specified, the original port is used.");
+
+    option(u"skip", 0, UNSIGNED);
+    help(u"skip",
+         u"With --output-file, --dump-datagram or --dump-udp, specify the initial "
+         u"number of bytes to skip. By default, save or dump from the beginning.");
+
+    option(u"source", 's', STRING);
+    help(u"source", u"address[:port]",
+         u"Filter MPE UDP datagrams based on the specified source IP address.");
+
+    option(u"sync-layout");
+    help(u"sync-layout",
+         u"With --log, display the layout of 0x47 sync bytes in the UDP payload.");
+
+    option(u"ttl", 0, INTEGER, 0, 1, 1, 255);
+    help(u"ttl",
+         u"With --udp-forward, specify the TTL (Time-To-Live) socket option. "
+         u"The actual option is either \"Unicast TTL\" or \"Multicast TTL\", "
+         u"depending on the destination address. By default, use the same TTL "
+         u"as specified in the received MPE encapsulated datagram.");
+
+    option(u"udp-forward", 'u');
+    help(u"udp-forward",
+         u"Forward all received MPE encapsulated UDP datagrams on the local network. "
+         u"By default, the destination address and port of each datagram is left "
+         u"unchanged. The source address of the forwarded datagrams will be the "
+         u"address of the local machine.");
 }
 
 

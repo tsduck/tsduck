@@ -245,7 +245,7 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     _description(description),
     _shell(),
     _syntax(syntax),
-    _help(),
+    _intro(),
     _app_name(),
     _args(),
     _is_valid(false),
@@ -298,18 +298,22 @@ ts::UString ts::Args::HelpLines(int level, const UString& text, size_t line_widt
 
 ts::UString ts::Args::formatHelpOptions(size_t line_width) const
 {
-    // Legacy: return application-defined help.
-    if (!_help.empty()) {
-        return _help;
+    UString text;
+
+    // Set introduction text.
+    if (!_intro.empty()) {
+        text = HelpLines(0, _intro, line_width);
     }
 
     // Build a descriptive string from individual options.
-    UString text;
     bool titleDone = false;
     for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
         const IOption& opt(it->second);
         if (opt.name.empty()) {
             // This is the parameters (ie. not options).
+            if (!text.empty()) {
+                text += LINE_FEED;
+            }
             UString title(u"Parameter");
             if (opt.max_occur > 1) {
                 title += u's';

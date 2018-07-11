@@ -108,49 +108,38 @@ ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
     _clear_pids(),
     _demux(this)
 {
-    option(u"audio",              'a');
-    option(u"drop-after-packets", 'd', POSITIVE);
-    option(u"service",            's', STRING);
-    option(u"stuffing",            0);
-    option(u"video",              'v');
+    option(u"audio", 'a');
+    help(u"audio",
+         u"Check only audio PIDs for clear packets. By default, audio and video "
+         u"PIDs are checked.");
 
-    setHelp(u"The extraction of clear sequences is based on one \"reference\" service.\n"
-            u"(see option -s). When a clear packet is found on any audio or video stream of\n"
-            u"the reference service, all packets in the TS are transmitted. When no clear\n"
-            u"packet has been found in the last second, all packets in the TS are dropped.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --audio\n"
-            u"      Check only audio PIDs for clear packets. By default, audio and video\n"
-            u"      PIDs are checked.\n"
-            u"\n"
-            u"  -d value\n"
-            u"  --drop-after-packets value\n"
-            u"      Specifies the number of packets after the last clear packet to wait\n"
-            u"      before stopping the packet transmission. By default, stop 1 second\n"
-            u"      after the last clear packet (based on current bitrate).\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -s name-or-id\n"
-            u"  --service name-or-id\n"
-            u"      Specify the reference service. If the argument is an integer value\n"
-            u"      (either decimal or hexadecimal), it is interpreted as a service id.\n"
-            u"      Otherwise, it is interpreted as a service name, as specified in the\n"
-            u"      SDT. The name is not case sensitive and blanks are ignored. If this\n"
-            u"      option is not specified, the first service in the PAT is used.\n"
-            u"\n"
-            u"  --stuffing\n"
-            u"      Replace excluded packets with stuffing (null packets) instead\n"
-            u"      of removing them. Useful to preserve bitrate.\n"
-            u"\n"
-            u"  -v\n"
-            u"  --video\n"
-            u"      Check only video PIDs for clear packets. By default, audio and video\n"
-            u"      PIDs are checked.\n");
+    option(u"drop-after-packets", 'd', POSITIVE);
+    help(u"drop-after-packets",
+         u"Specifies the number of packets after the last clear packet to wait "
+         u"before stopping the packet transmission. By default, stop 1 second "
+         u"after the last clear packet (based on current bitrate).");
+
+    option(u"service", 's', STRING);
+    help(u"service",
+         u"The extraction of clear sequences is based on one \"reference\" service. "
+         u"(see option -s). When a clear packet is found on any audio or video stream of "
+         u"the reference service, all packets in the TS are transmitted. When no clear "
+         u"packet has been found in the last second, all packets in the TS are dropped.\n\n"
+         u"This option specifies the reference service. If the argument is an integer value "
+         u"(either decimal or hexadecimal), it is interpreted as a service id. "
+         u"Otherwise, it is interpreted as a service name, as specified in the "
+         u"SDT. The name is not case sensitive and blanks are ignored. If this "
+         u"option is not specified, the first service in the PAT is used.");
+
+    option(u"stuffing");
+    help(u"stuffing",
+         u"Replace excluded packets with stuffing (null packets) instead "
+         u"of removing them. Useful to preserve bitrate.");
+
+    option(u"video", 'v');
+    help(u"video",
+         u"Check only video PIDs for clear packets. By default, audio and video "
+         u"PIDs are checked.");
 }
 
 

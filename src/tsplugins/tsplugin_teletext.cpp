@@ -103,59 +103,47 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
     _srtOutput(),
     _pages()
 {
-    option(u"colors",      'c');
-    option(u"language",    'l', STRING);
-    option(u"max-frames",  'm', POSITIVE);
-    option(u"output-file", 'o', STRING);
-    option(u"page",         0,  POSITIVE);
-    option(u"pid",         'p', PIDVAL);
-    option(u"service",     's', STRING);
+    option(u"colors", 'c');
+    help(u"colors",
+         u"Add font color tags in the subtitles. By default, no color is specified.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -c\n"
-            u"  --colors\n"
-            u"      Add font color tags in the subtitles. By default, no color is specified.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -l name\n"
-            u"  --language name\n"
-            u"      Specifies the language of the subtitles to select. This option is useful\n"
-            u"      only with --service, when the PMT of the service declares Teletext\n"
-            u"      subtitles in different languages.\n"
-            u"\n"
-            u"  -m value\n"
-            u"  --max-frames value\n"
-            u"      Specifies the maximum number of Teletext frames to extract. The processing\n"
-            u"      is then stopped. By default, all frames are extracted.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specifies the SRT output file name. This is a text file. By default, the\n"
-            u"      SRT subtitles are displayed on the standard output.\n"
-            u"\n"
-            u"  --page value\n"
-            u"      Specifies the Teletext page to extract. This option is useful only when\n"
-            u"      the Teletext PID contains several pages. By default, the first Teletext\n"
-            u"      frame defines the page to use.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specifies the PID carrying Teletext subtitles. Alternatively, if the\n"
-            u"      Teletext PID is properly signalled in the PMT of its service, the option\n"
-            u"      --service can be used instead.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --service value\n"
-            u"      Specifies the service with Teletext subtitles. If the argument is an\n"
-            u"      integer value (either decimal or hexadecimal), it is interpreted as a\n"
-            u"      service id. Otherwise, it is interpreted as a service name, as specified\n"
-            u"      in the SDT. The name is not case sensitive and blanks are ignored.\n"
-            u"      The first teletext_descriptor in the PMT of the service is used to\n"
-            u"      identify the PID carrying Teletext subtitles. If neither --service nor\n"
-            u"      --pid is specified, the first service in the PAT is used.\n");
+    option(u"language", 'l', STRING);
+    help(u"language", u"name",
+         u"Specifies the language of the subtitles to select. This option is useful "
+         u"only with --service, when the PMT of the service declares Teletext "
+         u"subtitles in different languages.");
+
+    option(u"max-frames", 'm', POSITIVE);
+    help(u"max-frames",
+         u"Specifies the maximum number of Teletext frames to extract. The processing "
+         u"is then stopped. By default, all frames are extracted.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Specifies the SRT output file name. This is a text file. By default, the "
+         u"SRT subtitles are displayed on the standard output.");
+
+    option(u"page", 0, POSITIVE);
+    help(u"page",
+         u"Specifies the Teletext page to extract. This option is useful only when "
+         u"the Teletext PID contains several pages. By default, the first Teletext "
+         u"frame defines the page to use.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid",
+         u"Specifies the PID carrying Teletext subtitles. Alternatively, if the "
+         u"Teletext PID is properly signalled in the PMT of its service, the option "
+         u"--service can be used instead.");
+
+    option(u"service", 's', STRING);
+    help(u"service",
+         u"Specifies the service with Teletext subtitles. If the argument is an "
+         u"integer value (either decimal or hexadecimal), it is interpreted as a "
+         u"service id. Otherwise, it is interpreted as a service name, as specified "
+         u"in the SDT. The name is not case sensitive and blanks are ignored. "
+         u"The first teletext_descriptor in the PMT of the service is used to "
+         u"identify the PID carrying Teletext subtitles. If neither --service nor "
+         u"--pid is specified, the first service in the PAT is used.");
 }
 
 
