@@ -114,62 +114,46 @@ ts::TimePlugin::TimePlugin (TSP* tsp_) :
     _events(),
     _next_index(0)
 {
-    option(u"drop",     'd', STRING, 0, UNLIMITED_COUNT);
-    option(u"null",     'n', STRING, 0, UNLIMITED_COUNT);
-    option(u"pass",     'p', STRING, 0, UNLIMITED_COUNT);
-    option(u"relative", 'r');
-    option(u"stop",     's', STRING);
-    option(u"tdt",      't');
-    option(u"utc",      'u');
+    option(u"drop", 'd', STRING, 0, UNLIMITED_COUNT);
+    help(u"drop",
+         u"All packets are dropped after the specified time. "
+         u"Several --drop options may be specified.\n\n"
+         u"Specifying time values:\n\n"
+         u"A time value must be in the format \"year/month/day:hour:minute:second\" "
+         u"(unless --relative is specified, in which case it is a number of seconds). "
+         u"An empty value (\"\") means \"from the beginning\", that is to say when "
+         u"tsp starts. By default, packets are passed when tsp starts.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -d time\n"
-            u"  --drop time\n"
-            u"      All packets are dropped after the specified time.\n"
-            u"      Several --drop options may be specified\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -n time\n"
-            u"  --null time\n"
-            u"      All packets are replaced by null packets after the specified time.\n"
-            u"      Several --null options may be specified\n"
-            u"\n"
-            u"  -p time\n"
-            u"  --pass time\n"
-            u"      All packets are passed unmodified after the specified time.\n"
-            u"      Several --pass options may be specified\n"
-            u"\n"
-            u"  -s time\n"
-            u"  --stop time\n"
-            u"      Packet transmission stops after the specified time and tsp terminates.\n"
-            u"\n"
-            u"  -r\n"
-            u"  --relative\n"
-            u"      All time values are interpreted as a number of seconds relative to the\n"
-            u"      tsp start time. By default, all time values are interpreted as an\n"
-            u"      absolute time in the format \"year/month/day:hour:minute:second\".\n"
-            u"      Option --relative is incompatible with --tdt or --utc.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --tdt\n"
-            u"      Use the Time & Date Table (TDT) from the transport stream as time\n"
-            u"      reference instead of the system clock. Since the TDT contains UTC\n"
-            u"      time, all time values in the command line must be UTC also.\n"
-            u"\n"
-            u"  -u\n"
-            u"  --utc\n"
-            u"      Specifies that all time values in the command line are in UTC.\n"
-            u"      By default, the time values are interpreted as system local time.\n"
-            u"\n"
-            u"Specifying time values:\n"
-            u"\n"
-            u"  A time value must be in the format \"year/month/day:hour:minute:second\"\n"
-            u"  (unless --relative is specified, in which case it is a number of seconds).\n"
-            u"  An empty value (\"\") means \"from the beginning\", that is to say when\n"
-            u"  tsp starts. By default, packets are passed when tsp starts.\n");
+    option(u"null", 'n', STRING, 0, UNLIMITED_COUNT);
+    help(u"null",
+         u"All packets are replaced by null packets after the specified time. "
+         u"Several --null options may be specified.");
+
+    option(u"pass", 'p', STRING, 0, UNLIMITED_COUNT);
+    help(u"pass",
+         u"All packets are passed unmodified after the specified time. "
+         u"Several --pass options may be specified.");
+
+    option(u"relative", 'r');
+    help(u"relative",
+         u"All time values are interpreted as a number of seconds relative to the "
+         u"tsp start time. By default, all time values are interpreted as an "
+         u"absolute time in the format \"year/month/day:hour:minute:second\". "
+         u"Option --relative is incompatible with --tdt or --utc.");
+
+    option(u"stop", 's', STRING);
+    help(u"stop", u"Packet transmission stops after the specified time and tsp terminates.");
+
+    option(u"tdt", 't');
+    help(u"tdt",
+         u"Use the Time & Date Table (TDT) from the transport stream as time "
+         u"reference instead of the system clock. Since the TDT contains UTC "
+         u"time, all time values in the command line must be UTC also.");
+
+    option(u"utc", 'u');
+    help(u"utc",
+         u"Specifies that all time values in the command line are in UTC. "
+         u"By default, the time values are interpreted as system local time.");
 }
 
 

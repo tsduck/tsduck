@@ -126,65 +126,44 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
     _demux(this),
     _cpids()
 {
-    option(u"cas",                      'c');
-    option(u"eit",                      'e');
-    option(u"ignore-stream-id-change",  'i');
-    option(u"milli-seconds",            'm');
-    option(u"output-file",              'o', STRING);
-    option(u"suspend-packet-threshold", 's', POSITIVE);
-    option(u"time-all",                 't');
+    option(u"cas", 'c');
+    help(u"cas", u"Report all CAS events (ECM, crypto-periods).");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -c\n"
-            u"  --cas\n"
-            u"      Report all CAS events (ECM, crypto-periods).\n"
-            u"\n"
-            u"  -e\n"
-            u"  --eit\n"
-            u"      Report all EIT. By default, EIT are not reported.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --ignore-stream-id-change\n"
-            u"      Do not report stream_id modifications in a stream. Some subtitle streams\n"
-            u"      may constantly swap between \"private stream\" and \"padding stream\". This\n"
-            u"      option suppresses these annoying messages.\n"
-            u"\n"
-            u"  -m\n"
-            u"  --milli-seconds\n"
-            u"      For each message, report time in milli-seconds from the beginning of the\n"
-            u"      stream instead of the TS packet number. This time is a playback time based\n"
-            u"      on the current TS bitrate (use plugin pcrbitrate when necessary).\n"
-            u"\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Specify the output file for reporting history lines. By default, report\n"
-            u"      history lines on standard error using the tsp logging mechanism.\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --suspend-packet-threshold value\n"
-            u"      Number of packets in TS after which a PID is considered as suspended.\n"
-            u"      By default, if no packet is found in a PID during 60 seconds, the PID\n"
-            u"      is considered as suspended.\n"
-            u"\n"
-            u"  -t\n"
-            u"  --time-all\n"
-            u"      Report all TDT and TOT. By default, only report TDT preceeding\n"
-            u"      another event.\n"
-            u"\n"
-            u"Without option --output-file, output is formated as:\n"
-            u"  * history: PKT#: MESSAGE\n"
-            u"\n"
-            u"Some messages may be out of sync. To sort messages according to their packet\n"
-            u"numbers, use a command like:\n"
-            u"  tsp -P history ...  2>&1 | grep '* history:' | sort -t : -k 2 -n\n"
-            u"\n"
-            u"When an output file is specified using --output-file, the sort command becomes:\n"
-            u"  sort -n output-file-name\n");
+    option(u"eit", 'e');
+    help(u"eit", u"Report all EIT. By default, EIT are not reported.");
+
+    option(u"ignore-stream-id-change", 'i');
+    help(u"ignore-stream-id-change",
+         u"Do not report stream_id modifications in a stream. Some subtitle streams "
+         u"may constantly swap between \"private stream\" and \"padding stream\". This "
+         u"option suppresses these annoying messages.");
+
+    option(u"milli-seconds", 'm');
+    help(u"milli-seconds",
+         u"For each message, report time in milli-seconds from the beginning of the "
+         u"stream instead of the TS packet number. This time is a playback time based "
+         u"on the current TS bitrate (use plugin pcrbitrate when necessary).");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Specify the output file for reporting history lines. By default, report "
+         u"history lines on standard error using the tsp logging mechanism.\n\n"
+         u"Without option --output-file, output is formated as:\n"
+         u"  * history: PKT#: MESSAGE\n\n"
+         u"Some messages may be out of sync. To sort messages according to their packet "
+         u"numbers, use a command like:\n"
+         u"  tsp -P history ...  2>&1 | grep '* history:' | sort -t : -k 2 -n\n\n"
+         u"When an output file is specified using --output-file, the sort command becomes:\n"
+         u"  sort -n output-file-name");
+
+    option(u"suspend-packet-threshold", 's', POSITIVE);
+    help(u"suspend-packet-threshold",
+         u"Number of packets in TS after which a PID is considered as suspended. "
+         u"By default, if no packet is found in a PID during 60 seconds, the PID "
+         u"is considered as suspended.");
+
+    option(u"time-all", 't');
+    help(u"time-all", u"Report all TDT and TOT. By default, only report TDT preceeding another event.");
 }
 
 

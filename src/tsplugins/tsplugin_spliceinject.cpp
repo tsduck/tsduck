@@ -279,144 +279,131 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     _wfb_mutex(),
     _wfb_condition()
 {
-    option(u"buffer-size",      0,  UNSIGNED);
-    option(u"delete-files",    'd');
-    option(u"files",           'f', STRING);
-    option(u"inject-count",     0,  UNSIGNED);
-    option(u"inject-interval",  0,  UNSIGNED);
-    option(u"max-file-size",    0,  UNSIGNED);
-    option(u"min-stable-delay", 0,  UNSIGNED);
-    option(u"no-reuse-port",    0);
-    option(u"pcr-pid",          0,  PIDVAL);
-    option(u"pid",             'p', PIDVAL);
-    option(u"pts-pid",          0,  PIDVAL);
-    option(u"poll-interval",    0,  UNSIGNED);
-    option(u"queue-size",       0,  UINT32);
-    option(u"reuse-port",      'r');
-    option(u"service",         's', STRING);
-    option(u"start-delay",      0,  UNSIGNED);
-    option(u"udp",             'u', STRING);
-    option(u"wait-first-batch", 0);
+    setIntro(u"The splice commands are injected as splice information sections, as defined by "
+             u"the SCTE 35 standard. All forms of splice information sections can be injected. "
+             u"The sections shall be provided by some external equipment, in real time. The "
+             u"format of the section can be binary or XML. There are two possible mechanisms "
+             u"to provide the sections: files or UDP.\n"
+             u"\n"
+             u"Files shall be specified as one single specification with optional wildcards. "
+             u"Example: --files '/path/to/dir/*'. All files which are copied or updated into "
+             u"this directory are automatically loaded and injected. It is possible to automatically "
+             u"delete all files after being loaded.\n"
+             u"\n"
+             u"UDP datagrams shall contain exactly one XML document or binary sections. The "
+             u"sections are injected upon reception.");
 
-    setHelp(u"The splice commands are injected as splice information sections, as defined by\n"
-            u"the SCTE 35 standard. All forms of splice information sections can be injected.\n"
-            u"The sections shall be provided by some external equipment, in real time. The\n"
-            u"format of the section can be binary or XML. There are two possible mechanisms\n"
-            u"to provide the sections: files or UDP.\n"
-            u"\n"
-            u"Files shall be specified as one single specification with optional wildcards.\n"
-            u"Example: --files '/path/to/dir/*'. All files which are copied or updated into\n"
-            u"this directory are automatically loaded and injected. It is possible to auto-\n"
-            u"matically delete all files after being loaded.\n"
-            u"\n"
-            u"UDP datagrams shall contain exactly one XML document or binary sections. The\n"
-            u"sections are injected upon reception.\n"
-            u"\n"
-            u"General options:\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  --inject-count value\n"
-            u"      For non-immediate splice_insert() commands, specifies the number of times\n"
-            u"      the same splice information section is injected. The default is " + UString::Decimal(DEFAULT_INJECT_COUNT) + u".\n"
-            u"      Other splice commands are injected once only.\n"
-            u"\n"
-            u"  --inject-interval value\n"
-            u"      For non-immediate splice_insert() commands, specifies the interval in\n"
-            u"      milliseconds between two insertions of the same splice information\n"
-            u"      section. The default is " + UString::Decimal(DEFAULT_INJECT_INTERVAL) + u" ms.\n"
-            u"\n"
-            u"  --pcr-pid value\n"
-            u"      Specifies the PID carrying PCR reference clock. By default, use the PCR\n"
-            u"      PID as declared in the PMT of the service.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specifies the PID for the injection of the splice information tables. By\n"
-            u"      default, the injection of splice commands is done in the component of the\n"
-            u"      service with a stream type equal to 0x86 in the PMT, as specified by SCTE\n"
-            u"      35 standard.\n"
-            u"\n"
-            u"  --pts-pid value\n"
-            u"      Specifies the PID carrying PTS reference clock. By default, use the video\n"
-            u"      PID as declared in the PMT of the service.\n"
-            u"\n"
-            u"  --queue-size value\n"
-            u"      Specifies the maximum number of sections in the internal queue, sections\n"
-            u"      which are received from files or UDP but not yet inserted into the TS.\n"
-            u"      The default is " + UString::Decimal(DEFAULT_SECTION_QUEUE_SIZE) + u".\n"
-            u"\n"
-            u"  -s value\n"
-            u"  --service value\n"
-            u"      Specifies the service for the insertion of the splice information tables.\n"
-            u"      If the argument is an integer value (either decimal or hexadecimal), it is\n"
-            u"      interpreted as a service id. Otherwise, it is interpreted as a service\n"
-            u"      name, as specified in the SDT. The name is not case sensitive and blanks\n"
-            u"      are ignored. If no service is specified, the options --pid and --pts-pid\n"
-            u"      must be specified (--pcr-pid is optional).\n"
-            u"\n"
-            u"  --start-delay value\n"
-            u"      For non-immediate splice_insert() commands, start to insert the first\n"
-            u"      section this number of milliseconds before the specified splice PTS\n"
-            u"      value. The default is " + UString::Decimal(DEFAULT_START_DELAY) + u" ms.\n"
-            u"\n"
-            u"File input options:\n"
-            u"\n"
-            u"  -d\n"
-            u"  --delete-files\n"
-            u"      Specifies that the files should be deleted after being loaded. By default,\n"
-            u"      the files are left unmodified after being loaded. When a loaded file is\n"
-            u"      modified later, it is reloaded and re-injected.\n"
-            u"\n"
-            u"  -f 'file-wildcard'\n"
-            u"  --files 'file-wildcard'\n"
-            u"      A file specification with optional wildcards indicating which files should\n"
-            u"      be polled. When such a file is created or updated, it is loaded and its\n"
-            u"      content is interpreted as binary or XML tables. All tables shall be splice\n"
-            u"      information tables.\n"
-            u"\n"
-            u"  --max-file-size value\n"
-            u"      Files larger than the specified size are ignored. This avoids loading\n"
-            u"      large spurious files which could clutter memory. The default is " + UString::Decimal(DEFAULT_MAX_FILE_SIZE) + u"\n"
-            u"      bytes.\n"
-            u"\n"
-            u"  --min-stable-delay value\n"
-            u"      A file size needs to be stable during that duration, in milliseconds, for\n"
-            u"      the file to be reported as added or modified. This prevents too frequent\n"
-            u"      poll notifications when a file is being written and his size modified at\n"
-            u"      each poll. The default is " + UString::Decimal(DEFAULT_MIN_STABLE_DELAY) + u" ms.\n"
-            u"\n"
-            u"  --poll-interval value\n"
-            u"      Specifies the interval in milliseconds between two poll operations. The\n"
-            u"      default is " + UString::Decimal(DEFAULT_POLL_INTERVAL) + u" ms.\n"
-            u"\n"
-            u"UDP input options:\n"
-            u"\n"
-            u"  --buffer-size value\n"
-            u"      Specifies the UDP socket receive buffer size (socket option).\n"
-            u"\n"
-            u"  --no-reuse-port\n"
-            u"      Disable the reuse port socket option. Do not use unless completely necessary.\n"
-            u"\n"
-            u"  -r\n"
-            u"  --reuse-port\n"
-            u"      Set the reuse port socket option. This is now enabled by default, the option\n"
-            u"      is present for legacy only.\n"
-            u"\n"
-            u"  -u [address:]port\n"
-            u"  --udp [address:]port\n"
-            u"      Specifies the local UDP port on which the plugin listens for incoming\n"
-            u"      binary or XML splice information tables. When present, the optional\n"
-            u"      address shall specify a local IP address or host name (by default, the\n"
-            u"      plugin accepts connections on any local IP interface).\n");
+    option(u"buffer-size", 0, UNSIGNED);
+    help(u"buffer-size",
+         u"Specifies the UDP socket receive buffer size (socket option).");
 
-    // The undocumented option --wait-first-batch is typically designed to support
-    // automated non-regression testing. When specified, the start of the plugin
-    // is suspended until the first batch of splice commands is loaded and queued.
-    // This is the guarantee for a deterministic behaviour and determinism is
-    // required for automated non-regression testing. Without this option, the
-    // input files or messages are loaded and queued asynchronously.
+    option(u"delete-files", 'd');
+    help(u"delete-files",
+         u"Specifies that the input files should be deleted after being loaded. By default, "
+         u"the files are left unmodified after being loaded. When a loaded file is "
+         u"modified later, it is reloaded and re-injected.");
+
+    option(u"files", 'f', STRING);
+    help(u"files", u"'file-wildcard'",
+         u"A file specification with optional wildcards indicating which files should "
+         u"be polled. When such a file is created or updated, it is loaded and its "
+         u"content is interpreted as binary or XML tables. All tables shall be splice "
+         u"information tables.");
+
+    option(u"inject-count", 0, UNSIGNED);
+    help(u"inject-count",
+         u"For non-immediate splice_insert() commands, specifies the number of times "
+         u"the same splice information section is injected. The default is " +
+         UString::Decimal(DEFAULT_INJECT_COUNT) + u". "
+         u"Other splice commands are injected once only.");
+
+    option(u"inject-interval", 0, UNSIGNED);
+    help(u"inject-interval",
+         u"For non-immediate splice_insert() commands, specifies the interval in "
+         u"milliseconds between two insertions of the same splice information "
+         u"section. The default is " + UString::Decimal(DEFAULT_INJECT_INTERVAL) + u" ms.");
+
+    option(u"max-file-size", 0, UNSIGNED);
+    help(u"max-file-size",
+         u"Files larger than the specified size are ignored. This avoids loading "
+         u"large spurious files which could clutter memory. The default is " +
+         UString::Decimal(DEFAULT_MAX_FILE_SIZE) + u" bytes.");
+
+    option(u"min-stable-delay", 0, UNSIGNED);
+    help(u"min-stable-delay",
+         u"A file size needs to be stable during that duration, in milliseconds, for "
+         u"the file to be reported as added or modified. This prevents too frequent "
+         u"poll notifications when a file is being written and his size modified at "
+         u"each poll. The default is " + UString::Decimal(DEFAULT_MIN_STABLE_DELAY) + u" ms.");
+
+    option(u"no-reuse-port");
+    help(u"no-reuse-port",
+         u"Disable the reuse port socket option. Do not use unless completely necessary.");
+
+    option(u"pcr-pid", 0, PIDVAL);
+    help(u"pcr-pid",
+         u"Specifies the PID carrying PCR reference clock. By default, use the PCR "
+         u"PID as declared in the PMT of the service.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid",
+         u"Specifies the PID for the injection of the splice information tables. By "
+         u"default, the injection of splice commands is done in the component of the "
+         u"service with a stream type equal to 0x86 in the PMT, as specified by SCTE 35 "
+         u"standard.");
+
+    option(u"pts-pid", 0, PIDVAL);
+    help(u"pts-pid",
+         u"Specifies the PID carrying PTS reference clock. By default, use the video "
+         u"PID as declared in the PMT of the service.");
+
+    option(u"poll-interval", 0, UNSIGNED);
+    help(u"poll-interval",
+         u"Specifies the interval in milliseconds between two poll operations. The "
+         u"default is " + UString::Decimal(DEFAULT_POLL_INTERVAL) + u" ms.");
+
+    option(u"queue-size", 0, UINT32);
+    help(u"queue-size",
+         u"Specifies the maximum number of sections in the internal queue, sections "
+         u"which are received from files or UDP but not yet inserted into the TS. "
+         u"The default is " + UString::Decimal(DEFAULT_SECTION_QUEUE_SIZE) + u".");
+
+    option(u"reuse-port", 'r');
+    help(u"reuse-port",
+         u"Set the reuse port socket option. This is now enabled by default, the option "
+         u"is present for legacy only.");
+
+    option(u"service", 's', STRING);
+    help(u"service",
+         u"Specifies the service for the insertion of the splice information tables. "
+         u"If the argument is an integer value (either decimal or hexadecimal), it is "
+         u"interpreted as a service id. Otherwise, it is interpreted as a service "
+         u"name, as specified in the SDT. The name is not case sensitive and blanks "
+         u"are ignored. If no service is specified, the options --pid and --pts-pid "
+         u"must be specified (--pcr-pid is optional).");
+
+    option(u"start-delay", 0, UNSIGNED);
+    help(u"start-delay",
+         u"For non-immediate splice_insert() commands, start to insert the first "
+         u"section this number of milliseconds before the specified splice PTS "
+         u"value. The default is " + UString::Decimal(DEFAULT_START_DELAY) + u" ms.");
+
+    option(u"udp", 'u', STRING);
+    help(u"udp", u"[address:]port",
+         u"Specifies the local UDP port on which the plugin listens for incoming "
+         u"binary or XML splice information tables. When present, the optional "
+         u"address shall specify a local IP address or host name (by default, the "
+         u"plugin accepts connections on any local IP interface).");
+
+    option(u"wait-first-batch");
+    help(u"wait-first-batch",
+         u"This option is typically designed to support automated non-regression testing. "
+         u"It is not really useful in real situations. "
+         u"When specified, the start of the plugin is suspended until the first batch "
+         u"of splice commands is loaded and queued. This is the guarantee for a "
+         u"deterministic behaviour and determinism is required for automated non-regression "
+         u"testing. Without this option, the input files or messages are loaded and queued "
+         u"asynchronously.");
 }
 
 

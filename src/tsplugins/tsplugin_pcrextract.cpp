@@ -141,72 +141,58 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
     _packet_count(0),
     _stats()
 {
-    option(u"csv",           'c');
-    option(u"dts",           'd');
-    option(u"good-pts-only", 'g');
-    option(u"log",           'l');
-    option(u"noheader",      'n');
-    option(u"opcr",           0);
-    option(u"output-file",   'o', STRING);
-    option(u"pcr",            0);
-    option(u"pid",           'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option(u"pts",            0);
-    option(u"separator",     's', STRING);
+    option(u"csv", 'c');
+    help(u"csv",
+         u"Report data in CSV (comma-separated values) format. All values are reported "
+         u"in decimal. This is the default output format. It is suitable for later "
+         u"analysis using tools such as Microsoft Excel.");
 
-    setHelp(u"Options:\n"
-            u"\n"
-            u"  -c\n"
-            u"  --csv\n"
-            u"      Report data in CSV (comma-separated values) format. All values are reported\n"
-            u"      in decimal. This is the default output format. It is suitable for later\n"
-            u"      analysis using tools such as Microsoft Excel.\n"
-            u"\n"
-            u"  -d\n"
-            u"  --dts\n"
-            u"      Report Decoding Time Stamps (DTS). By default, if none of --pcr, --opcr,\n"
-            u"      --pts, --dts is specified, report them all.\n"
-            u"\n"
-            u"  -g\n"
-            u"  --good-pts-only\n"
-            u"      Keep only \"good\" PTS, ie. PTS which have a higher value than the\n"
-            u"      previous good PTS. This eliminates PTS from out-of-sequence B-frames.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -l\n"
-            u"  --log\n"
-            u"      Report data in \"log\" format through the standard tsp logging system.\n"
-            u"      All values are reported in hexadecimal.\n"
-            u"\n"
-            u"  -n\n"
-            u"  --noheader\n"
-            u"      Do not output initial header line in CSV format.\n"
-            u"\n"
-            u"  --opcr\n"
-            u"      Report Original Program Clock References (OPCR). By default, if none of\n"
-            u"      --pcr, --opcr, --pts, --dts is specified, report them all.\n"
-            u"\n"
-            u"  -o filename\n"
-            u"  --output-file filename\n"
-            u"      Output file name for CSV reporting (standard error by default).\n"
-            u"\n"
-            u"  --pcr\n"
-            u"      Report Program Clock References (PCR). By default, if none of --pcr,\n"
-            u"      --opcr, --pts, --dts is specified, report them all.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --pid value\n"
-            u"      Specifies a PID to analyze. By default, all PID's are analyzed.\n"
-            u"      Several --pid options may be specified.\n"
-            u"\n"
-            u"  --pts\n"
-            u"      Report Presentation Time Stamps (PTS). By default, if none of --pcr,\n"
-            u"      --opcr, --pts, --dts is specified, report them all.\n"
-            u"\n"
-            u"  -s string\n"
-            u"  --separator string\n"
-            u"      Field separator string in CSV output (default: '" DEFAULT_SEPARATOR u"').\n");
+    option(u"dts", 'd');
+    help(u"dts",
+         u"Report Decoding Time Stamps (DTS). By default, if none of --pcr, --opcr, "
+         u"--pts, --dts is specified, report them all.");
+
+    option(u"good-pts-only", 'g');
+    help(u"good-pts-only",
+         u"Keep only \"good\" PTS, ie. PTS which have a higher value than the "
+         u"previous good PTS. This eliminates PTS from out-of-sequence B-frames.");
+
+    option(u"log", 'l');
+    help(u"log",
+         u"Report data in \"log\" format through the standard tsp logging system. "
+         u"All values are reported in hexadecimal.");
+
+    option(u"noheader", 'n');
+    help(u"noheader",
+         u"Do not output initial header line in CSV format.");
+
+    option(u"opcr");
+    help(u"opcr",
+         u"Report Original Program Clock References (OPCR). By default, if none of "
+         u"--pcr, --opcr, --pts, --dts is specified, report them all.");
+
+    option(u"output-file", 'o', STRING);
+    help(u"output-file", u"filename",
+         u"Output file name for CSV reporting (standard error by default).");
+
+    option(u"pcr");
+    help(u"pcr",
+         u"Report Program Clock References (PCR). By default, if none of --pcr, "
+         u"--opcr, --pts, --dts is specified, report them all.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid",
+         u"Specifies a PID to analyze. By default, all PID's are analyzed. "
+         u"Several --pid options may be specified.");
+
+    option(u"pts");
+    help(u"pts",
+         u"Report Presentation Time Stamps (PTS). By default, if none of --pcr, "
+         u"--opcr, --pts, --dts is specified, report them all.");
+
+    option(u"separator", 's', STRING);
+    help(u"separator", "string"
+         u"Field separator string in CSV output (default: '" DEFAULT_SEPARATOR u"').");
 }
 
 

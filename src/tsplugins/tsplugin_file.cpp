@@ -122,41 +122,29 @@ ts::FileInput::FileInput(TSP* tsp_) :
     _start_offset(0),
     _file()
 {
-    option(u"",               0,  STRING, 0, UNLIMITED_COUNT);
-    option(u"byte-offset",   'b', UNSIGNED);
-    option(u"infinite",      'i');
-    option(u"packet-offset", 'p', UNSIGNED);
-    option(u"repeat",        'r', POSITIVE);
+    option(u"", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"", u"Name of the input files. The files are read in sequence. Use standard input by default.");
 
-    setHelp(u"File-name:\n"
-            u"  Name of the input files. The files are read in sequence. Use standard\n"
-            u"  input by default.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -b value\n"
-            u"  --byte-offset value\n"
-            u"      Start reading each file at the specified byte offset (default: 0).\n"
-            u"      This option is allowed only if the input file is a regular file.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -i\n"
-            u"  --infinite\n"
-            u"      Repeat the playout of the file infinitely (default: only once).\n"
-            u"      This option is allowed only if the input file is a regular file.\n"
-            u"\n"
-            u"  -p value\n"
-            u"  --packet-offset value\n"
-            u"      Start reading the file at the specified TS packet (default: 0).\n"
-            u"      This option is allowed only if the input file is a regular file.\n"
-            u"\n"
-            u"  -r count\n"
-            u"  --repeat count\n"
-            u"      Repeat the playout of each file the specified number of times\n"
-            u"      (default: only once). This option is allowed only if the\n"
-            u"      input file is a regular file.\n");
+    option(u"byte-offset", 'b', UNSIGNED);
+    help(u"byte-offset",
+         u"Start reading each file at the specified byte offset (default: 0). "
+         u"This option is allowed only if the input file is a regular file.");
+
+    option(u"infinite", 'i');
+    help(u"infinite",
+         u"Repeat the playout of the file infinitely (default: only once). "
+         u"This option is allowed only if the input file is a regular file.");
+
+    option(u"packet-offset", 'p', UNSIGNED);
+    help(u"packet-offset",
+         u"Start reading each file at the specified TS packet (default: 0). "
+         u"This option is allowed only if the input file is a regular file.");
+
+    option(u"repeat", 'r', POSITIVE);
+    help(u"repeat",
+         u"Repeat the playout of each file the specified number of times "
+         u"(default: only once). This option is allowed only if the "
+         u"input file is a regular file.");
 }
 
 
@@ -168,27 +156,14 @@ ts::FileOutput::FileOutput(TSP* tsp_) :
     OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
     _file()
 {
-    option(u"",        0,  STRING, 0, 1);
-    option(u"append", 'a');
-    option(u"keep",   'k');
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"Name of the created output file. Use standard output by default.");
 
-    setHelp(u"File-name:\n"
-            u"  Name of the created output file. Use standard output by default.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --append\n"
-            u"      If the file already exists, append to the end of the file.\n"
-            u"      By default, existing files are overwritten.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -k\n"
-            u"  --keep\n"
-            u"      Keep existing file (abort if the specified file already exists).\n"
-            u"      By default, existing files are overwritten.\n");
+    option(u"append", 'a');
+    help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
+
+    option(u"keep", 'k');
+    help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
 }
 
 
@@ -200,27 +175,14 @@ ts::FileProcessor::FileProcessor(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
     _file()
 {
-    option(u"",        0,  STRING, 1, 1);
-    option(u"append", 'a');
-    option(u"keep",   'k');
+    option(u"", 0, STRING, 1, 1);
+    help(u"", u"Name of the created output file.");
 
-    setHelp(u"File-name:\n"
-            u"  Name of the created output file.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --append\n"
-            u"      If the file already exists, append to the end of the file.\n"
-            u"      By default, existing files are overwritten.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -k\n"
-            u"  --keep\n"
-            u"      Keep existing file (abort if the specified file already exists).\n"
-            u"      By default, existing files are overwritten.\n");
+    option(u"append", 'a');
+    help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
+
+    option(u"keep", 'k');
+    help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
 }
 
 

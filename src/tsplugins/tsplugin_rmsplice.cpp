@@ -158,43 +158,33 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _states()
 {
     option(u"", 0, STRING, 0, 1);
-    option(u"adjust-time", 'a');
-    option(u"continue",    'c');
-    option(u"fix-cc",      'f');
-    option(u"stuffing",    's');
+    help(u"",
+         u"Specifies the service to modify. If the argument is an integer value (either "
+         u"decimal or hexadecimal), it is interpreted as a service id. Otherwise, it "
+         u"is interpreted as a service name, as specified in the SDT. The name is not "
+         u"case sensitive and blanks are ignored. If the input TS does not contain an "
+         u"SDT, use a service id. When omitted, the first service in the PAT is used.");
 
-    setHelp(u"Service:\n"
-            u"  Specifies the service to modify. If the argument is an integer value (either\n"
-            u"  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
-            u"  is interpreted as a service name, as specified in the SDT. The name is not\n"
-            u"  case sensitive and blanks are ignored. If the input TS does not contain an\n"
-            u"  SDT, use a service id. When omitted, the first service in the PAT is used.\n"
-            u"\n"
-            u"Options:\n"
-            u"\n"
-            u"  -a\n"
-            u"  --adjust-time\n"
-            u"      Adjust all time stamps (PCR, OPCR, PTS and DTS) after removing splice-\n"
-            u"      out/in sequences. This can be necessary to improve the video transition.\n"
-            u"\n"
-            u"  -c\n"
-            u"  --continue\n"
-            u"      Continue stream processing even if no \"splice information stream\" is\n"
-            u"      found for the service. Without this information stream, we cannot remove\n"
-            u"      ads. By default, abort when the splice information stream is not found in\n"
-            u"      the PMT.\n"
-            u"\n"
-            u"  -f\n"
-            u"  --fix-cc\n"
-            u"      Fix continuity counters after removing splice-out/in sequences.\n"
-            u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
-            u"\n"
-            u"  -s\n"
-            u"  --stuffing\n"
-            u"      Replace excluded packets with stuffing (null packets) instead\n"
-            u"      of removing them. Useful to preserve bitrate.\n");
+    option(u"adjust-time", 'a');
+    help(u"adjust-time",
+         u"Adjust all time stamps (PCR, OPCR, PTS and DTS) after removing splice-out/in sequences. "
+         u"This can be necessary to improve the video transition.");
+
+    option(u"continue", 'c');
+    help(u"continue",
+         u"Continue stream processing even if no \"splice information stream\" is "
+         u"found for the service. Without this information stream, we cannot remove "
+         u"ads. By default, abort when the splice information stream is not found in "
+         u"the PMT.");
+
+    option(u"fix-cc", 'f');
+    help(u"fix-cc",
+         u"Fix continuity counters after removing splice-out/in sequences.");
+
+    option(u"stuffing", 's');
+    help(u"stuffing",
+         u"Replace excluded packets with stuffing (null packets) instead "
+         u"of removing them. Useful to preserve bitrate.");
 }
 
 
