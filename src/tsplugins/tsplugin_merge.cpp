@@ -231,6 +231,11 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --pass can be specified.");
+
+    option(u"transparent", 't');
+    help(u"transparent",
+         u"Pass all PID's without logical transformation. "
+         u"Equivalent to --no-psi-merge --ignore-conflicts --pass 0x00-0x1F.");
 }
 
 
@@ -243,15 +248,18 @@ bool ts::MergePlugin::start()
     // Get command line arguments
     UString command(value());
     const bool nowait = present(u"no-wait");
+    const bool transparent = present(u"transparent");
     const size_t max_queue = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
-    _merge_psi = !present(u"no-psi-merge");
+    _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
-    _ignore_conflicts = present(u"ignore-conflicts");
+    _ignore_conflicts = transparent || present(u"ignore-conflicts");
 
     // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
     _allowed_pids.set();
-    for (PID pid = 0x00; pid < 0x1F; ++pid) {
-        _allowed_pids.reset(pid);
+    if (!transparent) {
+        for (PID pid = 0x00; pid <= 0x1F; ++pid) {
+            _allowed_pids.reset(pid);
+        }
     }
     if (!processDropPassOption(u"drop", false) || !processDropPassOption(u"pass", true)) {
         return false;
