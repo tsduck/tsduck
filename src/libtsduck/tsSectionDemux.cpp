@@ -45,7 +45,8 @@ ts::SectionDemux::Status::Status() :
     scrambled(0),
     inv_sect_length(0),
     inv_sect_index(0),
-    wrong_crc(0)
+    wrong_crc(0),
+    is_next(0)
 {
 }
 
@@ -63,6 +64,7 @@ void ts::SectionDemux::Status::reset()
     inv_sect_length = 0;
     inv_sect_index = 0;
     wrong_crc = 0;
+    is_next = 0;
 }
 
 // Check if any counter is non zero.
@@ -74,7 +76,8 @@ bool ts::SectionDemux::Status::hasErrors() const
         scrambled != 0 ||
         inv_sect_length != 0 ||
         inv_sect_index != 0 ||
-        wrong_crc != 0;
+        wrong_crc != 0 ||
+        is_next != 0;
 }
 
 
@@ -103,6 +106,9 @@ std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, 
     }
     if (!errors_only || wrong_crc != 0) {
         strm << margin << "Corrupted sections (bad CRC): " << UString::Decimal(wrong_crc) << std::endl;
+    }
+    if (!errors_only || is_next != 0) {
+        strm << margin << "Next sections (not yet applicable): " << UString::Decimal(is_next) << std::endl;
     }
 
     return strm;
@@ -194,7 +200,9 @@ ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
     _table_handler(table_handler),
     _section_handler(section_handler),
     _pids(),
-    _status()
+    _status(),
+    _get_current(true),
+    _get_next(false)
 {
 }
 
@@ -421,9 +429,13 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             }
         }
 
-        // Sections with the 'next' indicator are ignored
+        // Sections with the 'next' indicator are filtered by options.
 
-        if (is_next) {
+        if (is_next && !_get_next) {
+            _status.is_next++;
+            section_ok = false;
+        }
+        if (!is_next && !_get_current) {
             section_ok = false;
         }
 

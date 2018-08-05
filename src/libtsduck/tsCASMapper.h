@@ -63,6 +63,16 @@ namespace ts {
         }
 
         //!
+        //! Filter PSI tables based on current/next indicator.
+        //! @param [in] current Use "current" tables. This is true by default.
+        //! @param [in] next Use "next" tables. This is false by default.
+        //!
+        void setCurrentNext(bool current, bool next)
+        {
+            _demux.setCurrentNext(current, next);
+        }
+
+        //!
         //! Check if a PID is a known CA PID.
         //! @param [in] pid A PID to check.
         //! @return True if @ pid is a known ECM or EMM PID.

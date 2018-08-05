@@ -59,6 +59,8 @@ namespace ts {
         bool    cat_only;       //!< Only CAT, ignore other PSI.
         bool    dump;           //!< Dump all sections.
         UString output;         //!< Destination name file.
+        bool    use_current;    //!< Use PSI tables with "current" flag.
+        bool    use_next;       //!< Use PSI tables with "next" flag.
 
         //!
         //! Define command line options in an Args.

@@ -74,6 +74,10 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
         _demux.setTableHandler(this);
     }
 
+    // Type of sections to get.
+    _demux.setCurrentNext(opt.use_current, opt.use_next);
+    _cas_mapper.setCurrentNext(opt.use_current, opt.use_next);
+
     // Open/create the text output.
     if (_opt.use_text && !_display.redirect(_opt.text_destination)) {
         _abort = true;

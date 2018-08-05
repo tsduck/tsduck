@@ -85,6 +85,8 @@ namespace ts {
         bool     pack_and_flush;    //!< Pack and flush incomplete tables before exiting.
         std::set<uint8_t>  tid;     //!< TID values to filter.
         std::set<uint16_t> tidext;  //!< TID-ext values to filter.
+        bool     use_current;       //!< Use tables with "current" flag.
+        bool     use_next;          //!< Use tables with "next" flag.
 
         //!
         //! Default table log size.

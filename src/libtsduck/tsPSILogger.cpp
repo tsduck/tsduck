@@ -76,6 +76,9 @@ ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& rep
         _demux.addPID(PID_CAT);
     }
 
+    // Type of sections to get.
+    _demux.setCurrentNext(opt.use_current, opt.use_next);
+
     // Initial blank line
     _display.out() << std::endl;
 }

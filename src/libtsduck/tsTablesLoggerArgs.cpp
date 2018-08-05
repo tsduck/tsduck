@@ -74,7 +74,9 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     pack_all_sections(false),
     pack_and_flush(false),
     tid(),
-    tidext()
+    tidext(),
+    use_current(true),
+    use_next(false)
 {
 }
 
@@ -111,6 +113,15 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
 
     args.option(u"flush", 'f');
     args.help(u"flush", u"Flush output after each display.");
+
+    args.option(u"exclude-current");
+    args.help(u"exclude-current",
+              u"Exclude short sections and long sections with \"current\" indicator. "
+              u"This is rarely necessary. See also --include-next.");
+
+    args.option(u"include-next");
+    args.help(u"include-next",
+              u"Include long sections with \"next\" indicator. By default, they are excluded.");
 
     args.option(u"ip-udp", 'i', Args::STRING);
     args.help(u"ip-udp", u"address:port",
@@ -305,6 +316,8 @@ void ts::TablesLoggerArgs::load(Args& args)
     no_duplicate = args.present(u"no-duplicate");
     udp_raw = args.present(u"no-encapsulation");
     add_pmt_pids = args.present(u"psi-si");
+    use_current = !args.present(u"exclude-current");
+    use_next = args.present(u"include-next");
 
     if (add_pmt_pids || args.present(u"pid")) {
         args.getPIDSet(pid, u"pid"); // specific pids
