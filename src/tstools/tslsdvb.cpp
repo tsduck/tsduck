@@ -69,7 +69,7 @@ Options::Options(int argc, char *argv[]) :
 #if defined(TS_WINDOWS)
 
     option(u"enumerate-devices", 'e');
-    help(u"test", u"Legacy option, equivalent to --test enumerate-devices.");
+    help(u"enumerate-devices", u"Legacy option, equivalent to --test enumerate-devices.");
 
     option(u"test", 't', ts::DirectShowTest::TestNames);
     help(u"test", u"name",
