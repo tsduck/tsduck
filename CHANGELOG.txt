@@ -15,6 +15,8 @@ Version 3.14-842
 
 - Added keywork "system" to option --start in plugin "timeref".
 
+- Added option --transparent to plugin "merge".
+
 Version 3.13-833
 
 - Added support for HiDes UT-100C modulator device using utility "tshides" and
