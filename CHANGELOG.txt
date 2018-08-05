@@ -13,6 +13,8 @@ Version 3.14-842
 - Added options --include-next and --exclude-current to commands "tstables"
   and "tspsi" and to plugins "tables" and "psi".
 
+- Added keywork "system" to option --start in plugin "timeref".
+
 Version 3.13-833
 
 - Added support for HiDes UT-100C modulator device using utility "tshides" and
