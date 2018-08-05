@@ -2,13 +2,16 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.14-841
+Version 3.14-842
 
 - Added option --remove-stream-type to plugin "pmt".
 
 - Added options --network-name, --network-id and --nit-other to plugin "nit".
 
 - Added option --provider to plugin "svrename".
+
+- Added options --include-next and --exclude-current to commands "tstables"
+  and "tspsi" and to plugins "tables" and "psi".
 
 Version 3.13-833
 
