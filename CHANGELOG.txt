@@ -4,6 +4,8 @@ TSDuck Change Log and Release Notes
 
 Version 3.14-842
 
+- Added plugin "sections".
+
 - Added option --remove-stream-type to plugin "pmt".
 
 - Added options --network-name, --network-id and --nit-other to plugin "nit".

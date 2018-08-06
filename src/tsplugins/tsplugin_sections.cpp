@@ -122,7 +122,7 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     option(u"output-pid", 'o', PIDVAL);
     help(u"output-pid",
          u"Specifies the output PID. By default, the first input PID on the "
-         u"command line is used. In the output PID is different from all input "
+         u"command line is used. If the output PID is different from all input "
          u"PID's and this output PID already exists in the transport stream, "
          u"an error is generated.");
 
