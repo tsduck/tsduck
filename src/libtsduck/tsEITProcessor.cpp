@@ -40,7 +40,8 @@ TSDUCK_SOURCE;
 
 ts::EITProcessor::EITProcessor(PID pid, Report* report) :
     _report(report != 0 ? report : NullReport::Instance()),
-    _pid(pid),
+    _input_pids(),
+    _output_pid(pid),
     _demux(0, this),
     _packetizer(pid, this),
     _sections(),
@@ -48,7 +49,8 @@ ts::EITProcessor::EITProcessor(PID pid, Report* report) :
     _removed(),
     _renamed()
 {
-    _demux.addPID(_pid);
+    _input_pids.set(pid);
+    _demux.addPID(pid);
 }
 
 void ts::EITProcessor::reset()
@@ -63,18 +65,48 @@ void ts::EITProcessor::reset()
 
 
 //----------------------------------------------------------------------------
-// Change the PID containing EIT's to process.
+// Change input or output PID's
 //----------------------------------------------------------------------------
 
+// Change the single PID containing EIT's to process.
 void ts::EITProcessor::setPID(PID pid)
 {
-    if (pid != _pid) {
-        _demux.reset();
-        _packetizer.reset();
-        _demux.addPID(pid);
-        _packetizer.setPID(pid);
-        _pid = pid;
+    setInputPID(pid);
+    setOutputPID(pid);
+}
+
+// Set one single input PID without altering the output PID.
+void ts::EITProcessor::setInputPID(ts::PID pid)
+{
+    // Don't break the state if there is exactly the same uniqeu input PID.
+    if (_input_pids.count() != 1 || !_input_pids.test(pid)) {
+        clearInputPIDs();
+        addInputPID(pid);
     }
+}
+
+// Change the output PID without altering the input PID's.
+void ts::EITProcessor::setOutputPID(ts::PID pid)
+{
+    if (pid != _output_pid) {
+        _packetizer.reset();
+        _packetizer.setPID(pid);
+        _output_pid = pid;
+    }
+}
+
+// Clear the set of input PID's.
+void ts::EITProcessor::clearInputPIDs()
+{
+    _demux.reset();
+    _input_pids.reset();
+}
+
+// Add an input PID without altering the output PID.
+void ts::EITProcessor::addInputPID(ts::PID pid)
+{
+    _demux.addPID(pid);
+    _input_pids.set(pid);
 }
 
 
@@ -84,7 +116,7 @@ void ts::EITProcessor::setPID(PID pid)
 
 void ts::EITProcessor::processPacket(TSPacket& pkt)
 {
-    if (pkt.getPID() == _pid) {
+    if (_input_pids.test(pkt.getPID())) {
         _demux.feedPacket(pkt);
         _packetizer.getNextPacket(pkt);
     }
