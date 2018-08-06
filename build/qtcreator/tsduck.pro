@@ -81,6 +81,7 @@ SUBDIRS += \
     tsplugin_rmsplice \
     tsplugin_scrambler \
     tsplugin_sdt \
+    tsplugin_sections \
     tsplugin_sifilter \
     tsplugin_skip \
     tsplugin_slice \
