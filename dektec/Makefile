@@ -60,7 +60,7 @@ DTNAME_FILE = LinuxSDK.version
 # If DTAPI_ORIGIN is defined (on the make command line for instance), it is the
 # path of a local copy of LinuxSDK*.tar.gz which is used instead of download.
 # The name of the tarball is either from DTAPI_ORIGIN, LinuxSDK.version or empty.
-DTAPI_URL = $(file <$(DTNAME_FILE))
+DTAPI_URL = $(shell cat $(DTNAME_FILE))
 DTAPI_FILE = $(if $(wildcard $(DTAPI_ORIGIN)),$(notdir $(DTAPI_ORIGIN)),$(if $(wildcard $(DTNAME_FILE)),$(notdir $(DTAPI_URL)),))
 
 # The tarball file always expands as LinuxSDK.
