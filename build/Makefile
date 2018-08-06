@@ -104,7 +104,7 @@ $(RPMBUILDROOT):
 	rpmdev-setuptree
 
 # Reuse local Dektec Linux SDK if present.
-DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(shell cat '$(ROOTDIR)/dektec/LinuxSDK.version'),)
+DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(notdir $(file <$(ROOTDIR)/dektec/LinuxSDK.version)),)
 
 # Build the tsduck binary RPM.
 .PHONY: rpm rpm32
