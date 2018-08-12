@@ -19,6 +19,9 @@ Version 3.14-842
 
 - Added option --transparent to plugin "merge".
 
+- Bug fix: "tslsdvb" and "tshides" could crash on Windows when using a HiDes
+  UT-100A (combined received / modulator).
+
 Version 3.13-833
 
 - Added support for HiDes UT-100C modulator device using utility "tshides" and
