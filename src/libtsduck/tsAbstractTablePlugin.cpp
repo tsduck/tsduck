@@ -125,6 +125,11 @@ bool ts::AbstractTablePlugin::start()
     _set_version = present(u"new-version");
     _new_version = intValue<uint8_t>(u"new-version", 0);
 
+    if (present(u"create") && present(u"create-after")) {
+        tsp->error(u"options --create and --create-after are mutually exclusive");
+        return false;
+    }
+
     // Initialize the demux and packetizer
     _demux.reset();
     _demux.addPID(_pid);
@@ -149,6 +154,7 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux&, const BinaryTable& inta
 {
     // A modifiable version of the table.
     BinaryTable table(intable, SHARE);
+    const int old_version = table.version();
 
     // Call subclass to process the table.
     bool is_target = true;
@@ -173,7 +179,7 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux&, const BinaryTable& inta
     // Place modified table in the packetizer.
     if (reinsert) {
         if (is_target) {
-            tsp->verbose(u"%s version %d modified", {_table_name, table.version()});
+            tsp->verbose(u"%s version %d modified", {_table_name, old_version});
         }
         if (table.isShortSection()) {
             _pzer.removeSections(table.tableId());
@@ -202,7 +208,9 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
 
     // Determine when a new table shall be created. Executed only once, when the bitrate is known
     if (!_found && _create_after_ms > 0 && _pkt_create == 0) {
-        _pkt_create = PacketDistance(tsp->bitrate(), _create_after_ms);
+        const BitRate ts_bitrate = tsp->bitrate();
+        _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
+        tsp->debug(u"will create %s after %'d packets, %'d ms (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms, ts_bitrate});
     }
 
     // Create a new table when necessary.

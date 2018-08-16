@@ -32,10 +32,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
 #include "tsService.h"
 #include "tsPAT.h"
 TSDUCK_SOURCE;
@@ -46,30 +44,24 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class PATPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class PATPlugin: public AbstractTablePlugin
     {
     public:
         // Implementation of plugin API
         PATPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        bool                  _abort;        // Error (service not found, etc)
         std::vector<uint16_t> _remove_serv;  // Set of services to remove
         ServiceVector         _add_serv;     // Set of services to add
         PID                   _new_nit_pid;  // New PID for NIT
         bool                  _remove_nit;   // Remove NIT from PAT
         bool                  _set_tsid;     // Set a new TS id
         uint16_t              _new_tsid;     // New TS id
-        bool                  _incr_version; // Increment table version
-        bool                  _set_version;  // Set a new table version
-        uint8_t               _new_version;  // New table version
-        SectionDemux          _demux;        // Section demux
-        CyclingPacketizer     _pzer;         // Packetizer for modified PAT
 
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
 
         // Inaccessible operations
         PATPlugin() = delete;
@@ -87,28 +79,18 @@ TSPLUGIN_DECLARE_PROCESSOR(pat, ts::PATPlugin)
 //----------------------------------------------------------------------------
 
 ts::PATPlugin::PATPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the PAT", u"[options]"),
-    _abort(false),
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the PAT", u"[options]", u"PAT", PID_PAT),
     _remove_serv(),
     _add_serv(),
     _new_nit_pid(PID_NIT),
     _remove_nit(false),
     _set_tsid(false),
-    _new_tsid(0),
-    _incr_version(false),
-    _set_version(false),
-    _new_version(0),
-    _demux(this),
-    _pzer()
+    _new_tsid(0)
 {
     option(u"add-service", 'a', STRING, 0, UNLIMITED_COUNT);
     help(u"add-service", u"service-id/pid",
          u"Add the specified service_id / PMT-PID in the PAT. Several --add-service "
          u"options may be specified to add several services.");
-
-    option(u"increment-version", 'i');
-    help(u"increment-version",
-         u"Increment the version number of the PAT.");
 
     option(u"nit", 'n', PIDVAL);
     help(u"nit",
@@ -123,13 +105,13 @@ ts::PATPlugin::PATPlugin(TSP* tsp_) :
     help(u"remove-nit",
          u"Remove the NIT PID from the PAT.");
 
-    option(u"tsid", 't', UINT16);
-    help(u"tsid", u"id",
+    option(u"ts-id", 't', UINT16);
+    help(u"ts-id", u"id",
          u"Specify a new value for the transport stream id in the PAT.");
 
-    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
-    help(u"new-version",
-         u"Specify a new value for the version of the PAT.");
+    option(u"tsid", 0, UINT16);
+    help(u"tsid", u"id",
+         u"Same as --ts-id (for compatibility).");
 }
 
 
@@ -142,11 +124,8 @@ bool ts::PATPlugin::start()
     // Get option values
     _new_nit_pid = intValue<PID>(u"nit", PID_NULL);
     _remove_nit = present(u"remove-nit");
-    _set_tsid = present(u"tsid");
-    _new_tsid = intValue<uint16_t>(u"tsid", 0);
-    _incr_version = present(u"increment-version");
-    _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version", 0);
+    _set_tsid = present(u"ts-id") || present(u"tsid");
+    _new_tsid = intValue<uint16_t>(u"ts-id", intValue<uint16_t>(u"tsid", 0));
     getIntValues(_remove_serv, u"remove-service");
 
     // Get list of services to add
@@ -167,41 +146,46 @@ bool ts::PATPlugin::start()
         _add_serv.push_back (serv);
     }
 
-    // Initialize the demux and packetizer
-    _demux.reset();
-    _demux.addPID(PID_PAT);
-    _pzer.reset();
-    _pzer.setPID(PID_PAT);
-
-    _abort = false;
-    return true;
+    // Start superclass.
+    return AbstractTablePlugin::start();
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+// Invoked by the superclass to create an empty table.
 //----------------------------------------------------------------------------
 
-void ts::PATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::PATPlugin::createNewTable(BinaryTable& table)
 {
-    if (table.tableId() != TID_PAT || table.sourcePID() != PID_PAT) {
+    PAT pat;
+    pat.serialize(table);
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked by the superclass when a table is found in the target PID.
+//----------------------------------------------------------------------------
+
+void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+{
+    // Warn about non-PAT tables in the PAT PID but keep them.
+    if (table.tableId() != TID_PAT) {
+        tsp->warning(u"found table id 0x%X (%d) in the PAT PID", {table.tableId(), table.tableId()});
+        is_target = false;
         return;
     }
 
+    // Process the PAT.
     PAT pat(table);
     if (!pat.isValid()) {
+        tsp->warning(u"found invalid PAT");
+        reinsert = false;
         return;
     }
 
     // Modify the PAT
     if (_set_tsid) {
         pat.ts_id = _new_tsid;
-    }
-    if (_incr_version) {
-        pat.version = (pat.version + 1) & 0x1F;
-    }
-    else if (_set_version) {
-        pat.version = _new_version;
     }
     if (_remove_nit) {
         pat.nit_pid = PID_NULL;
@@ -218,31 +202,6 @@ void ts::PATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         pat.pmts[it->getId()] = it->getPMTPID();
     }
 
-    // Place modified PAT in the packetizer
-    tsp->verbose(u"PAT version %d modified", {pat.version});
-    _pzer.removeSections(TID_PAT);
-    _pzer.addTable(pat);
-}
-
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::PATPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
-{
-    // Filter interesting sections
-    _demux.feedPacket (pkt);
-
-    // If a fatal error occured during section analysis, give up.
-    if (_abort) {
-        return TSP_END;
-    }
-
-    // Replace packets using packetizer
-    if (pkt.getPID() == PID_PAT) {
-        _pzer.getNextPacket (pkt);
-    }
-
-    return TSP_OK;
+    // Reserialize modified PAT.
+    pat.serialize(table);
 }

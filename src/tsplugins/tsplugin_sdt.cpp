@@ -32,13 +32,10 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
 #include "tsServiceDescriptor.h"
 #include "tsService.h"
-#include "tsPAT.h"
 #include "tsSDT.h"
 TSDUCK_SOURCE;
 
@@ -48,28 +45,23 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class SDTPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class SDTPlugin: public AbstractTablePlugin
     {
     public:
         // Implementation of plugin API
         SDTPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        bool                  _abort;             // Error (service not found, etc)
+        bool                  _use_other;         // Modify an SDT Other, not the SDT Actual.
+        uint16_t              _other_ts_id;       // TS id of the SDT Other to modify.
         Service               _service;           // New or modified service
         std::vector<uint16_t> _remove_serv;       // Set of services to remove
-        bool                  _incr_version;      // Increment table version
-        bool                  _set_version;       // Set a new table version
-        uint8_t               _new_version;       // New table version
         bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        SectionDemux          _demux;             // Section demux
-        CyclingPacketizer     _pzer;              // Packetizer for modified SDT/BAT
 
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-        void processSDT(SDT&);
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
 
         // Inaccessible operations
         SDTPlugin() = delete;
@@ -87,16 +79,12 @@ TSPLUGIN_DECLARE_PROCESSOR(sdt, ts::SDTPlugin)
 //----------------------------------------------------------------------------
 
 ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the SDT Actual", u"[options]"),
-    _abort(false),
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the SDT Actual", u"[options]", u"SDT", PID_SDT),
+    _use_other(false),
+    _other_ts_id(false),
     _service(),
     _remove_serv(),
-    _incr_version(false),
-    _set_version(false),
-    _new_version(0),
-    _cleanup_priv_desc(false),
-    _demux(this),
-    _pzer()
+    _cleanup_priv_desc(false)
 {
     option(u"cleanup-private-descriptors");
     help(u"cleanup-private-descriptors",
@@ -117,18 +105,19 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
          u"Specify a new free_CA_mode value for the added or modified service. "
          u"For new services, the default is 0.");
 
-    option(u"increment-version", 'i');
-    help(u"increment-version",
-         u"Increment the version number of the SDT. ");
-
     option(u"name", 'n', STRING);
     help(u"name",
          u"Specify a new service name for the added or modified service. "
          u"For new services, the default is an empty string.");
 
-    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
-    help(u"new-version",
-         u"Specify a new value for the version of the SDT.");
+    option(u"original-network-id", 0, UINT16);
+    help(u"original-network-id", u"id",
+         u"Modify the original network id in the SDT with the specified value.");
+
+    option(u"other", 'o', UINT16);
+    help(u"other", u"id",
+         u"Modify the SDT Other with the specified TS id. "
+         u"By default, modify the SDT Actual.");
 
     option(u"provider", 'p', STRING);
     help(u"provider",
@@ -149,6 +138,10 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
     help(u"service-id", u"id",
          u"Add a new service or modify the existing service with the specified service-id.");
 
+    option(u"ts-id", 0, UINT16);
+    help(u"ts-id", u"id",
+         u"Modify the transport stream id in the SDT with the specified value.");
+
     option(u"type", 't', UINT8);
     help(u"type",
          u"Specify a new service type for the added or modified service. For new "
@@ -163,10 +156,9 @@ ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
 bool ts::SDTPlugin::start()
 {
     // Get option values
-    _incr_version = present(u"increment-version");
-    _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
+    _use_other = present(u"other");
+    _other_ts_id = intValue<uint16_t>(u"other");
     getIntValues(_remove_serv, u"remove-service");
     _service.clear();
     if (present(u"eit-pf")) {
@@ -181,6 +173,9 @@ bool ts::SDTPlugin::start()
     if (present(u"name")) {
         _service.setName(value(u"name"));
     }
+    if (present(u"original-network-id")) {
+        _service.setONId(intValue<uint16_t>(u"original-network-id"));
+    }
     if (present(u"provider")) {
         _service.setProvider(value(u"provider"));
     }
@@ -190,78 +185,64 @@ bool ts::SDTPlugin::start()
     if (present(u"service-id")) {
         _service.setId(intValue<uint16_t>(u"service-id"));
     }
+    if (present(u"ts-id")) {
+        _service.setTSId(intValue<uint16_t>(u"ts-id"));
+    }
     if (present(u"type")) {
         _service.setType(intValue<uint8_t>(u"type"));
     }
 
-    // Initialize the demux and packetizer
-    _demux.reset();
-    _demux.addPID(PID_SDT);
-    _pzer.reset();
-    _pzer.setPID(PID_SDT);
-
-    _abort = false;
-    return true;
+    // Start superclass.
+    return AbstractTablePlugin::start();
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+// Invoked by the superclass to create an empty table.
 //----------------------------------------------------------------------------
 
-void ts::SDTPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::SDTPlugin::createNewTable(BinaryTable& table)
 {
-    switch (table.tableId()) {
+    SDT sdt;
 
-        case TID_SDT_ACT: {
-            if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
-                if (sdt.isValid()) {
-                    // Modify SDT Actual
-                    _pzer.removeSections(TID_SDT_ACT, table.tableIdExtension());
-                    processSDT(sdt);
-                    _pzer.addTable(sdt);
-                }
-            }
-            break;
-        }
-
-        case TID_SDT_OTH: {
-            if (table.sourcePID() == PID_SDT) {
-                // SDT Other are passed unmodified
-                _pzer.removeSections(TID_SDT_OTH, table.tableIdExtension());
-                _pzer.addTable(table);
-            }
-            break;
-        }
-
-        case TID_BAT: {
-            if (table.sourcePID() == PID_BAT) {
-                // Do not modify BAT
-                _pzer.removeSections(TID_BAT, table.tableIdExtension());
-                _pzer.addTable(table);
-            }
-        }
-
-        default: {
-            break;
-        }
+    // If we must modify one specific SDT, this is the one we need to create.
+    if (_use_other) {
+        sdt.setActual(false);
+        sdt.ts_id = _other_ts_id;
     }
+
+    sdt.serialize(table);
 }
 
 
 //----------------------------------------------------------------------------
-//  This method processes a SDT
+// Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::SDTPlugin::processSDT(SDT& sdt)
+void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
 {
-    // Update SDT version
-    if (_incr_version) {
-        sdt.version = (sdt.version + 1) & 0x1F;
+    // If not an SDT (typically a BAT) or not the SDT we are looking for, reinsert without modification.
+    is_target =
+        (!_use_other && table.tableId() == TID_SDT_ACT) ||
+        (_use_other && table.tableId() == TID_SDT_OTH && table.tableIdExtension() == _other_ts_id);
+    if (!is_target) {
+        return;
     }
-    else if (_set_version) {
-        sdt.version = _new_version;
+
+    // Process the SDT.
+    SDT sdt(table);
+    if (!sdt.isValid()) {
+        tsp->warning(u"found invalid SDT");
+        reinsert = false;
+        return;
+    }
+
+    // Modify global values.
+    if (_service.hasTSId()) {
+        sdt.ts_id = _service.getTSId();
+    }
+    if (_service.hasONId()) {
+        sdt.onetw_id = _service.getONId();
     }
 
     // Add / modify a service
@@ -316,27 +297,7 @@ void ts::SDTPlugin::processSDT(SDT& sdt)
             smi->second.descs.removeInvalidPrivateDescriptors();
         }
     }
-}
 
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::SDTPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
-{
-    // Filter interesting sections
-    _demux.feedPacket(pkt);
-
-    // If a fatal error occured during section analysis, give up.
-    if (_abort) {
-        return TSP_END;
-    }
-
-    // Replace packets using packetizer
-    if (pkt.getPID() == PID_SDT) {
-        _pzer.getNextPacket(pkt);
-    }
-
-    return TSP_OK;
+    // Reserialize modified SDT.
+    sdt.serialize(table);
 }

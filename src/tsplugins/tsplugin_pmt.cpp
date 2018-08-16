@@ -32,11 +32,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
-#include "tsService.h"
+#include "tsServiceDiscovery.h"
 #include "tsTables.h"
 #include "tsAudioLanguageOptions.h"
 TSDUCK_SOURCE;
@@ -47,7 +45,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class PMTPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class PMTPlugin: public AbstractTablePlugin
     {
     public:
         // Implementation of plugin API
@@ -73,9 +71,7 @@ namespace ts {
         typedef std::map<PID, SafePtr<DescriptorList>> DescriptorListByPID;
 
         // PMTPlugin instance fields
-        bool                 _abort;               // Error (service not found, etc)
-        bool                 _ready;               // Ready to perform transformation
-        Service              _service;             // Service of PMT to modify
+        ServiceDiscovery     _service;             // Service of PMT to modify
         std::vector<PID>     _removed_pid;         // Set of PIDs to remove from PMT
         std::vector<DID>     _removed_desc;        // Set of descriptor tags to remove
         std::vector<uint8_t> _removed_stream;      // Set of stream types to remove
@@ -85,25 +81,18 @@ namespace ts {
         uint16_t             _new_servid;          // New service id
         bool                 _set_pcrpid;          // Set a new PCR PID
         PID                  _new_pcrpid;          // New PCR PID
-        bool                 _incr_version;        // Increment table version
-        bool                 _set_version;         // Set a new table version
-        uint8_t              _new_version;         // New table version
         PDS                  _pds;                 // Private data specifier for removed descriptors
         bool                 _add_stream_id;       // Add stream_identifier_descriptor on all components
         bool                 _ac3_atsc2dvb;        // Modify AC-3 signaling from ATSC to DVB method
         bool                 _eac3_atsc2dvb;       // Modify Enhanced-AC-3 signaling from ATSC to DVB method
         bool                 _cleanup_priv_desc;   // Remove private desc without preceding PDS desc
         DescriptorList       _add_descs;           // List of descriptors to add at program level
-        DescriptorListByPID _add_pid_descs;        // Lists of descriptors to add by PID
+        DescriptorListByPID  _add_pid_descs;       // Lists of descriptors to add by PID
         AudioLanguageOptionsVector _languages;     // Audio languages to set
-        SectionDemux         _demux;               // Section demux
-        CyclingPacketizer    _pzer;                // Packetizer for modified PMT
 
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
-
-        // Process all PMT modifications.
-        void processPMT(PMT& pmt);
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
 
         // Add a descriptor for a given PID in _add_pid_descs.
         void addComponentDescriptor(PID pid, const AbstractDescriptor& desc);
@@ -132,10 +121,8 @@ TSPLUGIN_DECLARE_PROCESSOR(pmt, ts::PMTPlugin)
 //----------------------------------------------------------------------------
 
 ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the PMT", u"[options]"),
-    _abort(false),
-    _ready(false),
-    _service(),
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the PMT", u"[options]", u"PMT"),
+    _service(0, *tsp_),
     _removed_pid(),
     _removed_desc(),
     _removed_stream(),
@@ -145,9 +132,6 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _new_servid(0),
     _set_pcrpid(false),
     _new_pcrpid(PID_NULL),
-    _incr_version(false),
-    _set_version(false),
-    _new_version(0),
     _pds(0),
     _add_stream_id(false),
     _ac3_atsc2dvb(false),
@@ -155,9 +139,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _cleanup_priv_desc(false),
     _add_descs(0),
     _add_pid_descs(),
-    _languages(),
-    _demux(this),
-    _pzer()
+    _languages()
 {
     option(u"ac3-atsc2dvb");
     help(u"ac3-atsc2dvb",
@@ -207,10 +189,6 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
          u"stream_type 0x87 are modified with stream_type 0x06 (PES private data) "
          u"and an enhanced_AC-3_descriptor is added on this component (if none was "
          u"already there).");
-
-    option(u"increment-version");
-    help(u"increment-version",
-         u"Increment the version number of the PMT.");
 
     option(u"new-service-id", 'i', UINT16);
     help(u"new-service-id",
@@ -279,10 +257,6 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
          u"In the component with the specified PID, add a stream_identifier_descriptor "
          u"with the specified id. Several --set-stream-identifier options may be "
          u"specified.");
-
-    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
-    help(u"new-version",
-         u"Specify a new value for the version of the PMT.");
 }
 
 
@@ -381,24 +355,17 @@ bool ts::PMTPlugin::decodeComponentDescOption(const UChar* parameter_name)
 
 bool ts::PMTPlugin::start()
 {
-    _abort = false;
-    _ready = false;
     _service.clear();
     _added_pid.clear();
     _moved_pid.clear();
     _add_descs.clear();
     _add_pid_descs.clear();
-    _demux.reset();
-    _pzer.reset();
 
     // Get option values
     _set_servid = present(u"new-service-id");
     _new_servid = intValue<uint16_t>(u"new-service-id");
     _set_pcrpid = present(u"pcr-pid");
     _new_pcrpid = intValue<PID>(u"pcr-pid");
-    _incr_version = present(u"increment-version");
-    _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version");
     _pds = intValue<PDS>(u"pds");
     _ac3_atsc2dvb = present(u"ac3-atsc2dvb");
     _eac3_atsc2dvb = present(u"eac3-atsc2dvb");
@@ -502,45 +469,53 @@ bool ts::PMTPlugin::start()
         _service.set(value(u"service"));
     }
 
-    // Determine which PID we need to process
-    if (_service.hasPMTPID()) {
-        // PMT PID directly known
-        _demux.addPID(_service.getPMTPID());
-        _pzer.setPID(_service.getPMTPID());
-        _ready = true;
-    }
-    else if (_service.hasName()) {
-        // Need to filter the SDT to get the service id
-        _demux.addPID(PID_SDT);
-    }
-    else {
-        // Need to filter the PAT to get the PMT PID
-        _demux.addPID(PID_PAT);
-    }
-
-    return true;
+    // Start superclass.
+    return AbstractTablePlugin::start();
 }
 
 
 //----------------------------------------------------------------------------
-// Process all PMT modifications.
+// Invoked by the superclass to create an empty table.
 //----------------------------------------------------------------------------
 
-void ts::PMTPlugin::processPMT(PMT& pmt)
+void ts::PMTPlugin::createNewTable(BinaryTable& table)
 {
+    PMT pmt;
+
+    // If we know the expected service id, this is the one we need to create.
+    if (_service.hasId()) {
+        pmt.service_id = _service.getId();
+    }
+
+    pmt.serialize(table);
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked by the superclass when a table is found in the target PID.
+//----------------------------------------------------------------------------
+
+void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
+{
+    // If not the PMT we are looking for, reinsert without modification.
+    is_target = table.tableId() == TID_PMT && (!_service.hasId() || table.tableIdExtension() == _service.getId());
+    if (!is_target) {
+        return;
+    }
+
+    // Process the PMT.
+    PMT pmt(table);
+    if (!pmt.isValid()) {
+        tsp->warning(u"found invalid PMT");
+        reinsert = false;
+        return;
+    }
+
     // ---- Global non-descriptor data
 
     // Modify service id
     if (_set_servid) {
         pmt.service_id = _new_servid;
-    }
-
-    // Modify table version
-    if (_incr_version) {
-        pmt.version = (pmt.version + 1) & SVERSION_MASK;
-    }
-    else if (_set_version) {
-        pmt.version = _new_version;
     }
 
     // Modify PCR PID
@@ -683,107 +658,9 @@ void ts::PMTPlugin::processPMT(PMT& pmt)
             pmt.streams.erase(it->first);
         }
     }
-}
 
-
-//----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
-//----------------------------------------------------------------------------
-
-void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
-{
-    switch (table.tableId()) {
-
-        case TID_SDT_ACT: {
-            if (table.sourcePID() == PID_SDT) {
-                // Process an SDT: We are looking for service id
-                SDT sdt (table);
-                if (!sdt.isValid()) {
-                    return;
-                }
-                // Look for the service by name
-                if (!sdt.findService (_service)) {
-                    tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
-                    _abort = true;
-                    return;
-                }
-                tsp->verbose(u"found service \"%s\", service id is 0x%04X", {_service.getName(), _service.getId()});
-                // No longer need to filter the SDT
-                _demux.removePID (PID_SDT);
-                // Now filter the PAT to get the PMT PID
-                _demux.addPID (PID_PAT);
-            }
-            break;
-        }
-
-        case TID_PAT: {
-            if (table.sourcePID() == PID_PAT) {
-                // Process a PAT: We are looking for the PMT PID
-                PAT pat (table);
-                if (!pat.isValid()) {
-                    return;
-                }
-                if (_service.hasId()) {
-                    // The service id is known, search it in the PAT
-                    PAT::ServiceMap::const_iterator it = pat.pmts.find (_service.getId());
-                    if (it == pat.pmts.end()) {
-                        // Service not found, error
-                        tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
-                        _abort = true;
-                        return;
-                    }
-                    _service.setPMTPID(it->second);
-                }
-                else if (!pat.pmts.empty()) {
-                    // No service specified, use first one in PAT
-                    PAT::ServiceMap::iterator it = pat.pmts.begin();
-                    _service.setId(it->first);
-                    _service.setPMTPID(it->second);
-                    tsp->verbose(u"using service %d (0x%X)", {_service.getId(), _service.getId()});
-                }
-                else {
-                    // No service specified, no service in PAT, error
-                    tsp->error(u"no service in PAT");
-                    _abort = true;
-                    return;
-                }
-                // Found PMT PID, now ready to process PMT
-                _demux.addPID(_service.getPMTPID());
-                _pzer.setPID(_service.getPMTPID());
-                _ready = true;
-                // No longer need to filter the PAT
-                _demux.removePID(PID_PAT);
-            }
-            break;
-        }
-
-        case TID_PMT: {
-            // If not yet ready, skip it
-            if (!_ready) {
-                return;
-            }
-            // If a service id is specified, filter it
-            if (_service.hasId() && !_service.hasId(table.tableIdExtension())) {
-                return;
-            }
-            // Decode the PMT
-            PMT pmt(table);
-            if (!pmt.isValid()) {
-                return;
-            }
-            // Perform all requested modifications on the PMT.
-            processPMT(pmt);
-            // Place modified PMT in the packetizer
-            tsp->verbose(u"PMT version %d modified", {pmt.version});
-            _pzer.removeSections(TID_PMT, pmt.service_id);
-            _pzer.addTable(pmt);
-            break;
-        }
-
-        default: {
-            break;
-        }
-    }
+    // Reserialize modified PMT.
+    pmt.serialize(table);
 }
 
 
@@ -793,23 +670,25 @@ void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
 ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    // Filter interesting sections
-    _demux.feedPacket(pkt);
+    // As long as the PMT PID is unknown, pass packets to the service discovery.
+    if (!_service.hasPMTPID()) {
+        _service.feedPacket(pkt);
+    }
 
-    // If a fatal error occured during section analysis, give up.
-    if (_abort) {
+    // Abort when a service was specified and we realize it does not exist.
+    if (_service.nonExistentService()) {
         return TSP_END;
     }
 
-    // While not ready (ie. don't know which PID to modify), drop all packets
-    // to avoid transmitting partial unmodified table.
-    if (!_ready) {
+    // While we don't know which PID to modify, drop all packets to avoid transmitting partial unmodified table.
+    if (!_service.hasPMTPID()) {
         return TSP_DROP;
     }
 
-    // Replace packets in PMT PID using packetizer
-    if (_service.hasPMTPID(pkt.getPID())) {
-        _pzer.getNextPacket(pkt);
-    }
-    return TSP_OK;
+    // The first time we get the PMT PID, set it in the superclass.
+    // In fact, set it all the time but this won't do anything when the PID is already known.
+    setPID(_service.getPMTPID());
+
+    // Finally, let the superclass do the job.
+    return AbstractTablePlugin::processPacket(pkt, flush, bitrate_changed);
 }
