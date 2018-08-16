@@ -44,6 +44,7 @@
 #include "tsAbstractMultilingualDescriptor.h"
 #include "tsAbstractSignalization.h"
 #include "tsAbstractTable.h"
+#include "tsAbstractTablePlugin.h"
 #include "tsAbstractTransportListTable.h"
 #include "tsAC3Attributes.h"
 #include "tsAC3Descriptor.h"
