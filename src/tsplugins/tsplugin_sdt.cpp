@@ -79,7 +79,7 @@ TSPLUGIN_DECLARE_PROCESSOR(sdt, ts::SDTPlugin)
 //----------------------------------------------------------------------------
 
 ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the SDT Actual", u"[options]", u"SDT", PID_SDT),
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the SDT", u"[options]", u"SDT", PID_SDT),
     _use_other(false),
     _other_ts_id(false),
     _service(),

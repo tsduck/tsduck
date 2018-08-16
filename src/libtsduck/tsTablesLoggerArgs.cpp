@@ -137,7 +137,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"name that translates to a local address.");
 
     args.option(u"log", 0);
-    args.help(u"log", u"");
+    args.help(u"log", u"Display a short one-line log of each table instead of full table display.");
 
     args.option(u"log-size", 0, Args::UNSIGNED);
     args.help(u"log-size",
@@ -146,9 +146,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"The default is 8 bytes.");
 
     args.option(u"max-tables", 'x', Args::POSITIVE);
-    args.help(u"max-tables",
-              u"Maximum number of tables to dump. Stop logging tables when this "
-              u"limit is reached.");
+    args.help(u"max-tables", u"Maximum number of tables to dump. Stop logging tables when this limit is reached.");
 
     args.option(u"multiple-files", 'm');
     args.help(u"multiple-files",
