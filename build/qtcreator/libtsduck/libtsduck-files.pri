@@ -15,6 +15,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.h \
     ../../../src/libtsduck/tsAbstractSignalization.h \
     ../../../src/libtsduck/tsAbstractTable.h \
+    ../../../src/libtsduck/tsAbstractTablePlugin.h \
     ../../../src/libtsduck/tsAbstractTableTemplate.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
@@ -446,6 +447,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractSignalization.cpp \
     ../../../src/libtsduck/tsAbstractTable.cpp \
+    ../../../src/libtsduck/tsAbstractTablePlugin.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
