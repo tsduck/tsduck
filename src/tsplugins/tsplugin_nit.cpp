@@ -32,12 +32,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
 #include "tsNetworkNameDescriptor.h"
-#include "tsPAT.h"
 #include "tsNIT.h"
 TSDUCK_SOURCE;
 
@@ -47,20 +44,15 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class NITPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class NITPlugin: public AbstractTablePlugin
     {
     public:
         // Implementation of plugin API
         NITPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        bool               _abort;             // Error (service not found, etc)
         PID                _nit_pid;           // PID for the NIT (default: read PAT)
-        bool               _incr_version;      // Increment table version
-        bool               _set_version;       // Set a new table version
-        uint8_t            _new_version;       // New table version
         UString            _new_netw_name;     // New network name
         bool               _set_netw_id;       // Change network id
         uint16_t           _new_netw_id;       // New network id
@@ -71,8 +63,6 @@ namespace ts {
         std::set<uint16_t> _remove_serv;       // Set of services to remove
         std::set<uint16_t> _remove_ts;         // Set of transport streams to remove
         std::vector<DID>   _removed_desc;      // Set of descriptor tags to remove
-        SectionDemux       _demux;             // Section demux
-        CyclingPacketizer  _pzer;              // Packetizer for modified NIT
         PDS                _pds;               // Private data specifier for removed descriptors
         bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
         bool               _update_mpe_fec;    // In terrestrial delivery
@@ -88,9 +78,11 @@ namespace ts {
             LCN_DUPLICATE_ODD = 3  // LCN only
         };
 
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-        void processNIT(NIT&);
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
+
+        // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
 
         // Inaccessible operations
@@ -109,12 +101,8 @@ TSPLUGIN_DECLARE_PROCESSOR(nit, ts::NITPlugin)
 //----------------------------------------------------------------------------
 
 ts::NITPlugin::NITPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the NIT Actual", u"[options]"),
-    _abort(false),
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the NIT", u"[options]", u"NIT", PID_NIT),
     _nit_pid(PID_NIT),
-    _incr_version(false),
-    _set_version(false),
-    _new_version(0),
     _new_netw_name(),
     _set_netw_id(false),
     _new_netw_id(0),
@@ -125,8 +113,6 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
     _remove_serv(),
     _remove_ts(),
     _removed_desc(),
-    _demux(this),
-    _pzer(),
     _pds(0),
     _cleanup_priv_desc(false),
     _update_mpe_fec(false),
@@ -137,10 +123,6 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
     option(u"cleanup-private-descriptors", 0);
     help(u"cleanup-private-descriptors",
          u"Remove all private descriptors without preceding private_data_specifier descriptor.");
-
-    option(u"increment-version", 'i');
-    help(u"increment-version",
-         u"Increment the version number of the NIT.");
 
     option(u"lcn", 'l', INTEGER, 0, 1, 1, 3);
     help(u"lcn",
@@ -164,12 +146,12 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
          u"Set the specified value as network name in the NIT. Any existing network_name_descriptor "
          u"is removed. A new network_name_descriptor is created with the new name.");
 
-    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
-    help(u"new-version",
-         u"Specify a new value for the version of the NIT.");
-
     option(u"nit-other", 0, UINT16);
     help(u"nit-other", u"id",
+         u"Same as --other (for compatibility).");
+
+    option(u"other", 'o', UINT16);
+    help(u"other", u"id",
          u"Do not modify the NIT Actual. Modify the NIT Other with the specified network id.");
 
     option(u"pds", 0, UINT32);
@@ -179,9 +161,7 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
 
     option(u"pid", 'p', PIDVAL);
     help(u"pid",
-         u"Specify the PID on which the NIT is expected. By default, the PAT "
-         u"is analyzed to get the PID of the NIT. DVB-compliant networks should "
-         u"use PID 16 (0x0010) for the NIT and signal it in the PAT.");
+         u"Specify the PID on which the NIT is expected. By default, use PID 16.");
 
     option(u"remove-descriptor", 0, UINT8, 0, UNLIMITED_COUNT);
     help(u"remove-descriptor",
@@ -234,14 +214,11 @@ bool ts::NITPlugin::start()
     _mpe_fec = intValue<uint8_t>(u"mpe-fec") & 0x01;
     _update_time_slicing = present(u"time-slicing");
     _time_slicing = intValue<uint8_t>(u"time-slicing") & 0x01;
-    _incr_version = present(u"increment-version");
-    _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version", 0);
     _new_netw_name = value(u"network-name");
     _set_netw_id = present(u"network-id");
     _new_netw_id = intValue<uint16_t>(u"network-id");
-    _use_nit_other = present(u"nit-other");
-    _nit_other_id = intValue<uint16_t>(u"nit-other");
+    _use_nit_other = present(u"other") || present(u"nit-other");
+    _nit_other_id = intValue<uint16_t>(u"other", intValue<uint16_t>(u"nit-other"));
 
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
         tsp->error(u"--lcn and --remove-service are mutually exclusive");
@@ -252,99 +229,52 @@ bool ts::NITPlugin::start()
         return false;
     }
 
-    // Initialize the demux and packetizer
-    _demux.reset();
-    _pzer.reset();
-    _pzer.setPID (_nit_pid);
-    if (_nit_pid != PID_NULL) {
-        // NIT PID is specified on the command line
-        _demux.addPID (_nit_pid);
-    }
-    else {
-        // Get the PAT to determine NIT PID
-        _demux.addPID (PID_PAT);
-    }
-
-    _abort = false;
-    return true;
+    // Start superclass.
+    return AbstractTablePlugin::start();
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+// Invoked by the superclass to create an empty table.
 //----------------------------------------------------------------------------
 
-void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::NITPlugin::createNewTable(BinaryTable& table)
 {
-    switch (table.tableId()) {
+    NIT nit;
 
-        case TID_PAT: {
-            if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
-                if (pat.isValid()) {
-                    if ((_nit_pid = pat.nit_pid) == PID_NULL) {
-                        _nit_pid = PID_NIT;
-                        tsp->warning(u"NIT PID unspecified in PAT, using DVB default: %d (0x%X)", {_nit_pid, _nit_pid});
-                    }
-                    else {
-                        tsp->verbose(u"NIT PID is %d (0x%X) in PAT", {_nit_pid, _nit_pid});
-                    }
-                    // No longer filter the PAT
-                    _demux.removePID(PID_PAT);
-                    // Now filter the NIT
-                    _demux.addPID(_nit_pid);
-                    _pzer.setPID(_nit_pid);
-                }
-            }
-            break;
-        }
-
-        case TID_NIT_ACT:
-        case TID_NIT_OTH: {
-            if (table.sourcePID() == _nit_pid) {
-                // Remove previous instances of this table from the packetizer.
-                _pzer.removeSections(table.tableId(), table.tableIdExtension());
-                // Update the NIT Actual by default, unless a specific NIT Other is targeted.
-                if ((!_use_nit_other && table.tableId() == TID_NIT_ACT) ||
-                    (_use_nit_other && table.tableId() == TID_NIT_OTH && table.tableIdExtension() == _nit_other_id))
-                {
-                    // We need to hack this table.
-                    NIT nit(table);
-                    if (nit.isValid()) {
-                        processNIT(nit);
-                        _pzer.addTable(nit);
-                    }
-                }
-                else {
-                    // We pass this NIT unchanged.
-                    _pzer.addTable(table);
-                }
-            }
-            break;
-        }
-
-        default: {
-            break;
-        }
+    // If we must modify one specific NIT Other, this is the one we need to create.
+    if (_use_nit_other) {
+        nit.setActual(false);
+        nit.network_id = _nit_other_id;
     }
+
+    nit.serialize(table);
 }
 
 
 //----------------------------------------------------------------------------
-//  This method processes a NIT
+// Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::NITPlugin::processNIT(NIT& nit)
+void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
 {
+    // If not the NIT we are looking for, reinsert without modification.
+    is_target =
+        (!_use_nit_other && table.tableId() == TID_NIT_ACT) ||
+        (_use_nit_other && table.tableId() == TID_NIT_OTH && table.tableIdExtension() == _nit_other_id);
+    if (!is_target) {
+        return;
+    }
+
+    // Process the NIT.
+    NIT nit(table);
+    if (!nit.isValid()) {
+        tsp->warning(u"found invalid NIT");
+        reinsert = false;
+        return;
+    }
+
     tsp->debug(u"got a NIT, version %d, network Id: %d (0x%X)", {nit.version, nit.network_id, nit.network_id});
-
-    // Update NIT version
-    if (_incr_version) {
-        nit.version = (nit.version + 1) & 0x1F;
-    }
-    else if (_set_version) {
-        nit.version = _new_version;
-    }
 
     // Remove the specified transport streams
     bool found;
@@ -379,6 +309,9 @@ void ts::NITPlugin::processNIT(NIT& nit)
     for (NIT::TransportMap::iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
         processDescriptorList(it->second.descs);
     }
+
+    // Reserialize modified NIT.
+    nit.serialize(table);
 }
 
 
@@ -544,32 +477,4 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
             dlist[i]->resizePayload(new_data - base);
         }
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::NITPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
-{
-    // Filter interesting sections
-    _demux.feedPacket(pkt);
-
-    // If a fatal error occured during section analysis, give up.
-    if (_abort) {
-        return TSP_END;
-    }
-
-    // As long as NIT PID is unknown, nullify packets to avoid transmission of the unmodified NIT
-    if (_nit_pid == PID_NULL) {
-        return TSP_NULL;
-    }
-
-    // Replace packets using packetizer
-    if (pkt.getPID() == _nit_pid) {
-        _pzer.getNextPacket(pkt);
-    }
-
-    return TSP_OK;
 }

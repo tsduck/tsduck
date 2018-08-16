@@ -19,7 +19,12 @@ Version 3.14-842
 
 - Added option --transparent to plugin "merge".
 
-- Bug fix: "tslsdvb" and "tshides" could crash on Windows when using a HiDes
+- Added options --other, --ts-id, --original-network-id to plugin "sdt".
+
+- Added options --create, --create-after, --bitrate, --inter-packet to plugins
+  "pat", "pmt", "bat", "sdt", "nit".
+
+- Bug fix on Windows: "tslsdvb" and "tshides" could crash when using a HiDes
   UT-100A (combined received / modulator).
 
 Version 3.13-833
