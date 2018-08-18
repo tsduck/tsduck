@@ -90,7 +90,7 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
               u"strings, which is not the case with some operators. Using this option, "
               u"all DVB strings without explicit table code are assumed to use ISO-8859-15 "
               u"instead of the standard ISO-6937 encoding.");
-    
+
     args.option(u"nested-tlv", 0, Args::POSITIVE, 0, 1, 0, 0, true);
     args.help(u"nested-tlv", u"min-size",
               u"With option --tlv, try to interpret the value field of each TLV record as "
@@ -122,7 +122,7 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplayArgs::load(Args& args)
+bool ts::TablesDisplayArgs::load(Args& args)
 {
     args.getIntValue(default_pds, u"default-pds");
     raw_dump = args.present(u"raw-dump");
@@ -155,6 +155,9 @@ void ts::TablesDisplayArgs::load(Args& args)
         const UString csName(args.value(u"default-charset"));
         if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
             args.error(u"invalid character set name '%s", {csName});
+            return false;
         }
     }
+
+    return true;
 }

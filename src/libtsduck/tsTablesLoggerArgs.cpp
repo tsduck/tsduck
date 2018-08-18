@@ -55,6 +55,8 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     udp_destination(),
     multi_files(false),
     flush(false),
+    rewrite_xml(false),
+    rewrite_binary(false),
     udp_local(),
     udp_ttl(0),
     udp_raw(false),
@@ -229,6 +231,16 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"and BAT. Note that EIT, TDT and TOT are not included. Use --pid 18 "
               u"to get EIT and --pid 20 to get TDT and TOT.");
 
+    args.option(u"rewrite-binary");
+    args.help(u"rewrite-binary",
+              u"With --binary-output, rewrite the same file with each table. "
+              u"The specified file always contains one single table, the latest one.");
+
+    args.option(u"rewrite-xml");
+    args.help(u"rewrite-xml",
+              u"With --xml-output, rewrite the same file with each table. "
+              u"The specified file always contains one single table, the latest one.");
+
     args.option(u"text-output", 0, Args::STRING);
     args.help(u"text-output", u"A synonym for --output-file.");
 
@@ -268,7 +280,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::TablesLoggerArgs::load(Args& args)
+bool ts::TablesLoggerArgs::load(Args& args)
 {
     // Type of output, text is the default.
     use_xml = args.present(u"xml-output");
@@ -296,6 +308,8 @@ void ts::TablesLoggerArgs::load(Args& args)
     }
 
     multi_files = args.present(u"multiple-files");
+    rewrite_binary = args.present(u"rewrite-binary");
+    rewrite_xml = args.present(u"rewrite-xml");
     flush = args.present(u"flush");
     udp_local = args.value(u"local-udp");
     udp_ttl = args.intValue(u"ttl", 0);
@@ -335,4 +349,12 @@ void ts::TablesLoggerArgs::load(Args& args)
 
     args.getIntValues(tid, u"tid");
     args.getIntValues(tidext, u"tid-ext");
+
+    // Check consistency of options.
+    if (rewrite_binary && multi_files) {
+        args.error(u"options --rewrite-binary and --multiple-files are incompatible");
+        return false;
+    }
+
+    return true;
 }

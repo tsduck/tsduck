@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.14-842
+Version 3.14-858
 
 - Added plugin "sections".
 
@@ -14,6 +14,9 @@ Version 3.14-842
 
 - Added options --include-next and --exclude-current to commands "tstables"
   and "tspsi" and to plugins "tables" and "psi".
+
+- Added options --rewrite-binary and --rewrite-xml to command "tstables" and
+  plugin "tables".
 
 - Added keywork "system" to option --start in plugin "timeref".
 
