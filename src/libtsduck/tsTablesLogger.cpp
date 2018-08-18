@@ -85,31 +85,13 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     }
 
     // Open/create the XML output.
-    if (_opt.use_xml) {
-        if (_opt.xml_destination.empty()) {
-            // Use standard output.
-            _xmlOut.setStream(std::cout);
-        }
-        else if (!_xmlOut.setFile(_opt.xml_destination)) {
-            _abort = true;
-            return;
-        }
-        // Initialize the XML document.
-        _xmlDoc.initialize(u"tsduck");
+    if (_opt.use_xml && !_opt.rewrite_xml && !createXML(_opt.xml_destination)) {
+        return;
     }
 
     // Open/create the binary output.
-    if (_opt.use_binary) {
-        if (!_opt.multi_files) {
-            // Create one single binary file as output
-            _report.verbose(u"Creating " + _opt.bin_destination);
-            _binfile.open(_opt.bin_destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
-            if (!_binfile) {
-                _report.error(u"cannot create %s", {_opt.bin_destination});
-                _abort = true;
-                return;
-            }
-        }
+    if (_opt.use_binary && !_opt.multi_files && !_opt.rewrite_binary && !createBinaryFile(_opt.bin_destination)) {
+        return;
     }
 
     // Initialize UDP output.
@@ -151,10 +133,7 @@ void ts::TablesLogger::close()
         }
 
         // Close files and documents.
-        if (_xmlOpen) {
-            _xmlDoc.printClose(_xmlOut);
-            _xmlOpen = false;
-        }
+        closeXML();
         if (_binfile.is_open()) {
             _binfile.close();
         }
@@ -241,68 +220,32 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     }
 
     if (_opt.use_xml) {
-        // Convert the table into an XML structure.
-        xml::Element* elem = table.toXML(_xmlDoc.rootElement(), false, _display.dvbCharset());
-        if (elem != 0) {
-            // Add an XML comment as first child of the table.
-            UString comment(UString::Format(u" PID 0x%X (%d)", {pid, pid}));
-            if (_opt.time_stamp) {
-                comment += u", at " + UString(Time::CurrentLocalTime());
-            }
-            if (_opt.packet_index) {
-                comment += UString::Format(u", first TS packet: %'d, last: %'d", {table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()});
-            }
-            new xml::Comment(elem, comment + u" ", false); // first position
-
-            // Print the new table.
-            if (_xmlOpen) {
-                _xmlOut << ts::margin;
-                elem->print(_xmlOut, false);
-                _xmlOut << std::endl;
-            }
-            else {
-                // If this is the first table, print the document header with it.
-                _xmlOpen = true;
-                _xmlDoc.print(_xmlOut, true);
-            }
-
-            // Now remove the table from the document. Keeping them would eat up memory for no use.
-            // Deallocating the element forces the removal from the document through the destructor.
-            delete elem;
+        // In case of rewrite for each table, create a new file.
+        if (_opt.rewrite_xml && !createXML(_opt.xml_destination)) {
+            return;
+        }
+        saveXML(table);
+        if (_opt.rewrite_xml) {
+            closeXML();
         }
     }
 
     if (_opt.use_binary) {
+        // In case of rewrite for each table, create a new file.
+        if (_opt.rewrite_binary && !createBinaryFile(_opt.bin_destination)) {
+            return;
+        }
         // Save each section in binary format
         for (size_t i = 0; i < table.sectionCount(); ++i) {
-            saveSection(*table.sectionAt(i));
+            saveBinarySection(*table.sectionAt(i));
+        }
+        if (_opt.rewrite_binary) {
+            _binfile.close();
         }
     }
 
     if (_opt.use_udp) {
-        ByteBlockPtr bin(new ByteBlock);
-        // Minimize allocation by reserving over size
-        bin->reserve(table.totalSize() + 32 + 4 * table.sectionCount());
-        if (_opt.udp_raw) {
-            // Add raw content of each section the message
-            for (size_t i = 0; i < table.sectionCount(); ++i) {
-                const Section& sect(*table.sectionAt(i));
-                bin->append(sect.content(), sect.size());
-            }
-        }
-        else {
-            // Build a TLV message.
-            duck::LogTable msg;
-            msg.pid = pid;
-            msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
-            for (size_t i = 0; i < table.sectionCount(); ++i) {
-                msg.sections.push_back(table.sectionAt(i));
-            }
-            tlv::Serializer serial(bin);
-            msg.serialize(serial);
-        }
-        // Send TLV message over UDP
-        _sock.send(bin->data(), bin->size(), _report);
+        sendUDP(table);
     }
 
     // Check max table count
@@ -377,34 +320,82 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     }
 
     if (_opt.use_binary) {
-        // Save section in binary format
-        saveSection(sect);
+        // In case of rewrite for each section, create a new file.
+        if (_opt.rewrite_binary && !createBinaryFile(_opt.bin_destination)) {
+            return;
+        }
+        saveBinarySection(sect);
+        if (_opt.rewrite_binary) {
+            _binfile.close();
+        }
     }
 
     if (_opt.use_udp) {
-        if (_opt.udp_raw) {
-            // Send raw content of section as one single UDP message
-            _sock.send(sect.content(), sect.size(), _report);
-        }
-        else {
-            // Build a TLV message.
-            duck::LogSection msg;
-            msg.pid = sect.sourcePID();
-            msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
-            msg.section = new Section(sect, SHARE);
-            // Serialize the message.
-            ByteBlockPtr bin(new ByteBlock);
-            tlv::Serializer serial(bin);
-            msg.serialize(serial);
-            // Send TLV message over UDP
-            _sock.send(bin->data(), bin->size(), _report);
-        }
+        sendUDP(sect);
     }
 
     // Check max table count (actually count sections with --all-sections)
     _table_count++;
     if (_opt.max_tables > 0 && _table_count >= _opt.max_tables) {
         _abort = true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Send UDP table and section.
+//----------------------------------------------------------------------------
+
+void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
+{
+    ByteBlockPtr bin(new ByteBlock);
+
+    // Minimize allocation by reserving over size
+    bin->reserve(table.totalSize() + 32 + 4 * table.sectionCount());
+
+    if (_opt.udp_raw) {
+        // Add raw content of each section the message
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            const Section& sect(*table.sectionAt(i));
+            bin->append(sect.content(), sect.size());
+        }
+    }
+    else {
+        // Build a TLV message.
+        duck::LogTable msg;
+        msg.pid = table.sourcePID();
+        msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            msg.sections.push_back(table.sectionAt(i));
+        }
+        tlv::Serializer serial(bin);
+        msg.serialize(serial);
+    }
+
+    // Send TLV message over UDP
+    _sock.send(bin->data(), bin->size(), _report);
+}
+
+void ts::TablesLogger::sendUDP(const ts::Section& section)
+{
+    if (_opt.udp_raw) {
+        // Send raw content of section as one single UDP message
+        _sock.send(section.content(), section.size(), _report);
+    }
+    else {
+        // Build a TLV message.
+        duck::LogSection msg;
+        msg.pid = section.sourcePID();
+        msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
+        msg.section = new Section(section, SHARE);
+
+        // Serialize the message.
+        ByteBlockPtr bin(new ByteBlock);
+        tlv::Serializer serial(bin);
+        msg.serialize(serial);
+
+        // Send TLV message over UDP
+        _sock.send(bin->data(), bin->size(), _report);
     }
 }
 
@@ -475,7 +466,6 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const uint8_t* data, size_t size, bool 
         }
     }
 
-
     // Set the PID in all sections.
     if (pid.set()) {
         for (SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
@@ -500,10 +490,30 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const uint8_t* data, size_t size, bool 
 
 
 //----------------------------------------------------------------------------
+// Create a binary file. On error, set _abort and return false.
+//----------------------------------------------------------------------------
+
+bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
+{
+    _report.verbose(u"creating %s", {name});
+    _binfile.open(name.toUTF8().c_str(), std::ios::out | std::ios::binary);
+
+    if (_binfile) {
+        return true;
+    }
+    else {
+        _report.error(u"error creating %s", {name});
+        _abort = true;
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 //  Save a section in a binary file
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::saveSection(const Section& sect)
+void ts::TablesLogger::saveBinarySection(const Section& sect)
 {
     // Create individual file for this section if required.
     if (_opt.multi_files) {
@@ -515,11 +525,7 @@ void ts::TablesLogger::saveSection(const Section& sect)
         }
         outname += PathSuffix(_opt.bin_destination);
         // Create the output file
-        _report.verbose(u"creating %s", {outname});
-        _binfile.open(outname.toUTF8().c_str(), std::ios::out | std::ios::binary);
-        if (!_binfile) {
-            _report.error(u"error creating %s", {outname});
-            _abort = true;
+        if (!createBinaryFile(outname)) {
             return;
         }
     }
@@ -532,6 +538,71 @@ void ts::TablesLogger::saveSection(const Section& sect)
     // Close individual files
     if (_opt.multi_files) {
         _binfile.close();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Open/write/close XML file.
+//----------------------------------------------------------------------------
+
+bool ts::TablesLogger::createXML(const ts::UString& name)
+{
+    if (name.empty()) {
+        // Use standard output.
+        _xmlOut.setStream(std::cout);
+    }
+    else if (!_xmlOut.setFile(name)) {
+        _abort = true;
+        return false;
+    }
+
+    // Initialize the XML document.
+    _xmlDoc.initialize(u"tsduck");
+    return true;
+}
+
+void ts::TablesLogger::saveXML(const ts::BinaryTable& table)
+{
+    // Convert the table into an XML structure.
+    xml::Element* elem = table.toXML(_xmlDoc.rootElement(), false, _display.dvbCharset());
+    if (elem == 0) {
+        // XML conversion error, message already displayed.
+        return;
+    }
+
+    // Add an XML comment as first child of the table.
+    UString comment(UString::Format(u" PID 0x%X (%d)", {table.sourcePID(), table.sourcePID()}));
+    if (_opt.time_stamp) {
+        comment += u", at " + UString(Time::CurrentLocalTime());
+    }
+    if (_opt.packet_index) {
+        comment += UString::Format(u", first TS packet: %'d, last: %'d", {table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()});
+    }
+    new xml::Comment(elem, comment + u" ", false); // first position
+
+    // Print the new table.
+    if (_xmlOpen) {
+        _xmlOut << ts::margin;
+        elem->print(_xmlOut, false);
+        _xmlOut << std::endl;
+    }
+    else {
+        // If this is the first table, print the document header with it.
+        _xmlOpen = true;
+        _xmlDoc.print(_xmlOut, true);
+    }
+
+    // Now remove the table from the document. Keeping them would eat up memory for no use.
+    // Deallocating the element forces the removal from the document through the destructor.
+    delete elem;
+}
+
+void ts::TablesLogger::closeXML()
+{
+    if (_xmlOpen) {
+        _xmlDoc.printClose(_xmlOut);
+        _xmlOpen = false;
     }
 }
 

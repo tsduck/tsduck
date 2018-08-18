@@ -95,7 +95,7 @@ void ts::PSILoggerArgs::defineOptions(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::PSILoggerArgs::load(Args& args)
+bool ts::PSILoggerArgs::load(Args& args)
 {
     all_versions = args.present(u"all-versions");
     cat_only = args.present(u"cat-only");
@@ -104,4 +104,5 @@ void ts::PSILoggerArgs::load(Args& args)
     output = args.value(u"output-file");
     use_current = !args.present(u"exclude-current");
     use_next = args.present(u"include-next");
+    return true;
 }

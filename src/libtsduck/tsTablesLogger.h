@@ -153,8 +153,20 @@ namespace ts {
         std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
         std::set<uint64_t>       _sectionsOnce;    // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
 
+        // Create a binary file. On error, set _abort and return false.
+        bool createBinaryFile(const UString& name);
+
         // Save a section in a binary file
-        void saveSection(const Section&);
+        void saveBinarySection(const Section&);
+
+        // Open/write/close XML tables.
+        bool createXML(const UString& name);
+        void saveXML(const BinaryTable& table);
+        void closeXML();
+
+        // Send UDP table and section.
+        void sendUDP(const BinaryTable& table);
+        void sendUDP(const Section& section);
 
         // Pre/post-display of a table or section
         void preDisplay(PacketCounter first, PacketCounter last);
