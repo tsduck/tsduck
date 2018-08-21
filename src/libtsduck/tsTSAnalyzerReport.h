@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.
         //!
-        void reportServices(Grid& grid, const UString& title = UString());
+        void reportServices(Grid& grid, const bool decimalPids, const UString& title = UString());
 
         //!
         //! Report formatted analysis about PID's.
@@ -115,10 +115,10 @@ namespace ts {
 
     private:
         // Display header of a service PID list.
-        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const;
+        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, const bool decimalPids) const;
 
         // Display one line of a service PID list.
-        void reportServicePID(Grid& grid, const PIDContext&) const;
+        void reportServicePID(Grid& grid, const PIDContext&, const bool decimalPids) const;
 
         // Display list of services a PID belongs to.
         void reportServicesForPID(Grid& grid, const PIDContext&) const;
