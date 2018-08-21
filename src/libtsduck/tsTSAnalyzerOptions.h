@@ -60,7 +60,7 @@ namespace ts {
         // Full analysis options:
         bool ts_analysis;            //!< Option -\-ts-analysis
         bool service_analysis;       //!< Option -\-service-analysis
-        bool service_analysis_decimal_pids;  //!< Option -\-service-analysis-decimal-pids
+        bool wide;                   //!< Option -\-wide-display
         bool pid_analysis;           //!< Option -\-pid-analysis
         bool table_analysis;         //!< Option -\-table-analysis
         bool error_analysis;         //!< Option -\-error-analysis
