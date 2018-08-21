@@ -27,6 +27,8 @@ Version 3.14-858
 - Added options --create, --create-after, --bitrate, --inter-packet to plugins
   "pat", "pmt", "bat", "sdt", "nit".
 
+- Added option --wide-display to command "tsanalyze" and plugin "analyze".
+
 - Bug fix on Windows: "tslsdvb" and "tshides" could crash when using a HiDes
   UT-100A (combined received / modulator).
 
