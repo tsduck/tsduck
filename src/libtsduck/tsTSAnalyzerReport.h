@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.
         //!
-        void reportServices(Grid& grid, const bool decimalPids, const UString& title = UString());
+        void reportServices(Grid& grid, const UString& title = UString());
 
         //!
         //! Report formatted analysis about PID's.
