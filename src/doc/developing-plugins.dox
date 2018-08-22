@@ -29,6 +29,11 @@ instance), implement the corresponding two classes.
 
 See the class diagram of ts::Plugin for a global view of the plugin classes.
 
+Specialized plugins which manipulate exiting tables derive from ts::AbstractTablePlugin.
+Examples of such plugins are @c pmt, @c pat, @c nit, etc. The actual plugin subclasses
+focus on the modification of the target table while the superclass automatically handles
+demuxing, remuxing and creation of non-existing tables.
+
 Specialized descrambling plugins derive from ts::AbstractDescrambler. This abstract class
 performs the generic functions of a descrambler: service location, ECM collection,
 descrambling of elementary streams. The concrete classes which derive from
@@ -43,10 +48,18 @@ of the pitfalls of careless copy / paste). The simplest code bases can be found 
 plugins `null` (input), `drop` (output) , `skip` (basic packet processing), `nitscan`
 (reading content of PSI/SI), `svrename` (modifying PSI/SI on the fly).
 
-A last advice: Always create plugins which perform simple and elementary processing.
+Always create plugins which perform simple and elementary processing.
 If your requirements can be divided into two independent processing, create two distinct
 plugins. The strength of TSDuck is the flexibility, that is to say the ability to combine
 elementary processing independently and in any order.
+
+If you create your own third-party plugins (ie. if you are not a TSDuck maintainer),
+it is recommended to develop your plugins outside the TSDuck project. Do not modify
+your own copy of the TSDuck project with your private plugins. This could create
+useless difficulties to upgrade with new versions of the project. Consider developing
+your plugins in their own projects, outside TSDuck. You do not even need to get the full source
+code of TSDuck. It is sufficient to install the "TSDuck development environment".
+An example of a third party plugin project is provided in the directory @c sample/sample-plugin.
 
 ## Invoking tsp from a plugin, the ts::TSP callbacks {#pdevtsp}
 
