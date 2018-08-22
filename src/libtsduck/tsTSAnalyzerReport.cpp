@@ -117,13 +117,23 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
 
     // Then continue with grid reports.
     Grid grid(stm);
-    grid.setLineWidth(79, 2);
+
+    // If user has requested decimal pids then make output wider as it's hard to get everything fitted otherwise
+    if (opt.service_analysis_decimal_pids)
+    {
+        grid.setLineWidth(94, 2);
+    }
+    else
+    {
+        grid.setLineWidth(79, 2);
+    }
+
 
     if (opt.ts_analysis) {
         reportTS(grid, opt.title);
     }
     if (opt.service_analysis) {
-        reportServices(grid, opt.title);
+        reportServices(grid, opt.service_analysis_decimal_pids, opt.title);
     }
     if (opt.pid_analysis) {
         reportPIDs(grid, opt.title);
@@ -215,13 +225,12 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 // Display header of a service PID list
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const
-{
+void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, const bool decimalPids) const{
     grid.subSection();
-    grid.setLayout({grid.right(6), grid.bothTruncateLeft(49), grid.right(14)});
-    grid.putLayout({{u"PID"}, {u"Usage", u"Access "}, {u"Bitrate"}});
-    grid.setLayout({grid.right(6), grid.bothTruncateLeft(49, u'.'), grid.right(14)});
-    grid.putLayout({{u"Total"}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
+    grid.setLayout({decimalPids?grid.both(14):grid.right(6), grid.bothTruncateLeft(decimalPids?56:49), grid.right(14)});
+    grid.putLayout({{u"PID", u""}, {u""}, {u"Usage", u"Access "}, {u"Bitrate"}});
+    grid.setLayout({decimalPids?grid.both(14):grid.right(6), grid.bothTruncateLeft(decimalPids?56:49, u'.'), grid.right(14)});
+    grid.putLayout({{u"Total", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
 }
 
 
@@ -229,7 +238,7 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
 // Display one line of a service PID list
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) const
+void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc, const bool decimalPids) const
 {
     const UString access{pc.scrambled ? u'S' : u'C', pc.services.size() > 1 ? u'+' : u' '};
     UString description(pc.fullDescription(true));
@@ -242,7 +251,15 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
         }
         description += u")";
     }
-    grid.putLayout({{UString::Format(u"0x%X", {pc.pid})}, {description, access}, {_ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {pc.bitrate})}});
+
+    if (decimalPids)
+    {
+        grid.putLayout({{UString::Format(u"0x%X", {pc.pid}), UString::Format(u"(%d)", {pc.pid})}, {description, access}, {_ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {pc.bitrate})}});
+    }
+    else
+    {
+        grid.putLayout({{UString::Format(u"0x%X", {pc.pid})}, {description, access}, {_ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {pc.bitrate})}});
+    }
 }
 
 
@@ -250,7 +267,7 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
 // Report services analysis
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
+void ts::TSAnalyzerReport::reportServices(Grid& grid, const bool decimalPids, const UString& title)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
@@ -263,12 +280,12 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     grid.section();
     grid.putLine(u"Global PID's");
     grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_global_pkt_cnt, _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids}));
-    reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate);
+    reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, decimalPids);
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
-            reportServicePID(grid, pc);
+            reportServicePID(grid, pc, decimalPids);
         }
     }
 
@@ -278,12 +295,12 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.section();
         grid.putLine(u"Unreferenced PID's");
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_unref_pkt_cnt, _unref_pid_cnt, _unref_pid_cnt - _unref_scr_pids, _unref_scr_pids}));
-        reportServiceHeader(grid, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate);
+        reportServiceHeader(grid, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate, decimalPids);
 
         for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
             const PIDContext& pc(*it->second);
             if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
-                reportServicePID(grid, pc);
+                reportServicePID(grid, pc, decimalPids);
             }
         }
     }
@@ -304,15 +321,16 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
                      (sv.pcr_pid == 0 || sv.pcr_pid == PID_NULL ? u"None" : UString::Format(u"0x%X (%d)", {sv.pcr_pid, sv.pcr_pid})));
 
         // Display all PID's of this service
-        reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate);
+        reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, decimalPids);
         for (PIDContextMap::const_iterator pid_it = _pids.begin(); pid_it != _pids.end(); ++pid_it) {
             const PIDContext& pc(*pid_it->second);
             if (pc.services.find(sv.service_id) != pc.services.end()) {
-                reportServicePID(grid, pc);
+                reportServicePID(grid, pc, decimalPids);
             }
         }
 
-        grid.setLayout({grid.right(6), grid.bothTruncateLeft(49), grid.right(14)});
+        grid.setLayout({grid.both(decimalPids?14:6), grid.bothTruncateLeft(decimalPids?56:49), grid.right(14)});
+
         grid.putLayout({{u""}, {u"(C=Clear, S=Scrambled, +=Shared)"}, {u""}});
     }
 
