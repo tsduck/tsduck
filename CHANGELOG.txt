@@ -29,6 +29,8 @@ Version 3.14-858
 
 - Added option --wide-display to command "tsanalyze" and plugin "analyze".
 
+- Added option --min-interval to command "tsstuff".
+
 - Bug fix in plugin "merge": Merging CAT's from two streams was incorrect
   (incorrect PID conflict detection and endless code loop).
 

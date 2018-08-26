@@ -177,7 +177,7 @@ namespace ts {
             uint64_t ts_pkt_cnt;       // Count of TS packets
             uint8_t  cur_continuity;   // Current continuity counter
             uint64_t last_pcr_value;   // Last PCR value in this PID
-            uint64_t last_pcr_packet;  // Packet index containing first PCR
+            uint64_t last_pcr_packet;  // Packet index containing last PCR
             uint64_t ts_bitrate_188;   // Sum of all computed TS bitrates (188-byte)
             uint64_t ts_bitrate_204;   // Sum of all computed TS bitrates (204-byte)
             uint64_t ts_bitrate_cnt;   // Count of computed TS bitrates

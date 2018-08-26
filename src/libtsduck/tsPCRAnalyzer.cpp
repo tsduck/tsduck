@@ -333,9 +333,11 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             }
         }
 
-        // Save PCR for next calculation
-        ps->last_pcr_value = pcr;
-        ps->last_pcr_packet = _ts_pkt_cnt;
+        // Save PCR for next calculation, ignore duplicated PCR values.
+        if (ps->last_pcr_value != pcr) {
+            ps->last_pcr_value = pcr;
+            ps->last_pcr_packet = _ts_pkt_cnt;
+        }
     }
 
     return _bitrate_valid;
