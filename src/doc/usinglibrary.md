@@ -3,11 +3,13 @@
 
 # Pre-requisites {#libreq}
 
-To be able to build applications with the TSDuck library, you must install the
-TSDuck development environment first. On Windows systems, you must select the
-optional "Development" component during the installation. On Ubuntu systems,
-you must install the package `tsduck-dev`. On Fedora, Red Hat and CentOS, you
-must install the package `tsduck-devel`.
+To be able to build applications or `tsp` plugins with the TSDuck library,
+you must install the TSDuck development environment first.
+
+- On Windows systems, you must select the optional "Development" component
+  during the installation.
+- On Fedora, Red Hat and CentOS, you must install the package `tsduck-devel`.
+- On Ubuntu systems, you must install the package `tsduck-dev`.
 
 # Building applications on Linux  {#liblinux}
 
