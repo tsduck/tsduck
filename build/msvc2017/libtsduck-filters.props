@@ -820,6 +820,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsSectionProviderInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSectionTemplate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSelectionInformationTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>

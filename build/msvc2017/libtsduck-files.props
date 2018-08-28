@@ -274,6 +274,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSectionFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSectionProviderInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSectionTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSelectionInformationTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsService.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.h" />

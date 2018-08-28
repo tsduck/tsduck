@@ -277,60 +277,7 @@ size_t ts::BinaryTable::totalSize() const
 
 ts::PacketCounter ts::BinaryTable::packetCount(bool pack) const
 {
-    PacketCounter pkt_count = 0;
-
-    if (pack) {
-        // Simulate packetization of each section.
-        size_t remain_in_pkt = 184; // remaining bytes in current TS packet payload.
-        bool has_pf = false;        // current TS packet has a pointer field.
-
-        for (size_t i = 0; i < _sections.size(); ++i) {
-            if (!_sections[i].isNull() && _sections[i]->isValid()) {
-                // Total section size.
-                size_t size = _sections[i]->size();
-                assert(size > 0);
-                // Need a pointer field in currrent packet if there is none yet.
-                size_t pf_size = has_pf ? 0 : 1;
-                // Need this minimum size in current packet (we don't split a section header).
-                if (remain_in_pkt < pf_size + _sections[i]->headerSize())  {
-                    // Not enough space in current packet, stuff it and move to next one.
-                    remain_in_pkt = 184;
-                    has_pf = false;
-                    pf_size = 1;
-                }
-                // If current packet not started (not counted), need to start one.
-                if (remain_in_pkt == 184) {
-                    pkt_count++;
-                }
-                // Total size to add, starting in the middle of current packet.
-                size += pf_size;
-                // Does the packet have a pointer field now?
-                has_pf = has_pf || pf_size > 0;
-                // Now simulate the packetization of the section.
-                if (size <= remain_in_pkt) {
-                    // The section fits in current packet.
-                    remain_in_pkt -= size;
-                }
-                else {
-                    // Fill current packet and overflow in subsequent packets.
-                    size -= remain_in_pkt;
-                    pkt_count += (size + 183) / 184;
-                    has_pf = 0;
-                    remain_in_pkt = 184 - size % 184;
-                }
-            }
-        }
-    }
-    else {
-        // Stuff end of sections. Each section use its own TS packets.
-        for (size_t i = 0; i < _sections.size(); ++i) {
-            if (!_sections[i].isNull() && _sections[i]->isValid()) {
-                pkt_count += _sections[i]->packetCount();
-            }
-        }
-    }
-
-    return pkt_count;
+    return Section::PacketCount(_sections, pack);
 }
 
 

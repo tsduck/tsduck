@@ -62,6 +62,8 @@ namespace ts {
         FileNameRateList      _infiles;           // Input file names and repetition rates
         SectionFile::FileType _inType;            // Input files type
         bool                  _specific_rates;    // Some input files have specific repetition rates
+        bool                  _undefined_rates;   // At least one file has no specific repetition rate.
+        bool                  _use_files_bitrate; // Use the bitrate from the repetition rates in files
         PID                   _inject_pid;        // Target PID
         CRC32::Validation     _crc_op;            // Validate/recompute CRC32
         bool                  _replace;           // Replace existing PID content
@@ -72,6 +74,7 @@ namespace ts {
         bool                  _completed;         // Last cycle terminated
         size_t                _repeat_count;      // Repeat cycle, zero means infinite
         BitRate               _pid_bitrate;       // Target bitrate for new PID
+        BitRate               _files_bitrate;     // Bitrate from the repetition rates in files
         PacketCounter         _pid_inter_pkt;     // # TS packets between 2 new PID packets
         PacketCounter         _pid_next_pkt;      // Next time to insert a packet
         PacketCounter         _packet_count;      // TS packet counter
@@ -81,9 +84,11 @@ namespace ts {
         CyclingPacketizer     _pzer;              // Packetizer for table
         CyclingPacketizer::StuffingPolicy _stuffing_policy;
 
-        // Reload files, reset packetizer.
-        // Return true on success, false on error.
+        // Reload files, reset packetizer. Return true on success, false on error.
         bool reloadFiles();
+
+        // Process bitrates and compute inter-packet distance.
+        bool processBitRates();
 
         // Replace current packet with one from the packetizer.
         void replacePacket(TSPacket& pkt);
@@ -108,6 +113,8 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _infiles(),
     _inType(SectionFile::UNSPECIFIED),
     _specific_rates(false),
+    _undefined_rates(false),
+    _use_files_bitrate(false),
     _inject_pid(PID_NULL),
     _crc_op(CRC32::CHECK),
     _replace(false),
@@ -118,6 +125,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _completed(false),
     _repeat_count(0),
     _pid_bitrate(0),
+    _files_bitrate(0),
     _pid_inter_pkt(0),
     _pid_next_pkt(0),
     _packet_count(0),
@@ -237,9 +245,12 @@ bool ts::InjectPlugin::start()
     else if (present(u"binary")) {
         _inType = SectionFile::BINARY;
     }
+    else {
+        _inType = SectionFile::UNSPECIFIED;
+    }
 
     if (present(u"stuffing")) {
-            _stuffing_policy = CyclingPacketizer::ALWAYS;
+        _stuffing_policy = CyclingPacketizer::ALWAYS;
     }
     else if (_repeat_count == 0 && !_poll_files) {
         _stuffing_policy = CyclingPacketizer::NEVER;
@@ -252,21 +263,41 @@ bool ts::InjectPlugin::start()
         _stuffing_policy = CyclingPacketizer::AT_END;
     }
 
-    if (!_infiles.getArgs(*this)) {
-        return false;
-    }
-
     if (_terminate && tsp->useJointTermination()) {
         tsp->error(u"--terminate and --joint-termination are mutually exclusive");
         return false;
     }
 
-    // Exactly one option --replace, --bitrate, --inter-packet must be specified.
-    if (_replace + (_pid_bitrate != 0) + (_pid_inter_pkt != 0) != 1) {
-        tsp->error(u"specify exactly one of --replace, --bitrate, --inter-packet");
+    // Get list of input section files.
+    if (!_infiles.getArgs(*this)) {
+        return false;
     }
 
-    // Load sections from input files.
+    // Check if no or all files have a specific repetition rate.
+    _files_bitrate = 0;
+    _specific_rates = false;
+    _undefined_rates = false;
+    for (FileNameRateList::const_iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
+        if (it->repetition == 0) {
+            _undefined_rates = true;
+        }
+        else {
+            _specific_rates = true;
+        }
+    }
+
+    // At most one option --replace, --bitrate, --inter-packet must be specified.
+    // If none of them are specified, we need a repetition rate for all files.
+    const int opt_count = _replace + (_pid_bitrate != 0) + (_pid_inter_pkt != 0);
+    _use_files_bitrate = opt_count == 0 && !_undefined_rates;
+    if (opt_count > 1) {
+        tsp->error(u"specify at most one of --replace, --bitrate, --inter-packet");
+    }
+    if (opt_count == 0 && _undefined_rates) {
+        tsp->error(u"all files must have a repetition rate when none of --replace, --bitrate, --inter-packet is used");
+    }
+
+    // Load sections from input files. Compute _files_bitrate when necessary.
     if (!reloadFiles()) {
         return false;
     }
@@ -295,12 +326,11 @@ bool ts::InjectPlugin::reloadFiles()
     _pzer.reset();
     _pzer.setPID(_inject_pid);
     _pzer.setStuffingPolicy(_stuffing_policy);
-    _pzer.setBitRate(_pid_bitrate);  // non-zero only if --bitrate is specified
 
     // Load sections from input files
     bool success = true;
-    _specific_rates = false;
     SectionFile file;
+    uint64_t bits_per_1000s = 0;  // Total bits in 1000 seconds.
 
     for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
         if (_poll_files && !FileExists(it->file_name)) {
@@ -317,15 +347,75 @@ bool ts::InjectPlugin::reloadFiles()
             // File successfully loaded.
             it->retry_count = 0;  // no longer needed to retry
             _pzer.addSections(file.sections(), it->repetition);
-            _specific_rates = _specific_rates || it->repetition != 0;
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
                          {file.sections().size(),
                           it->file_name,
                           it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
+
+            if (_use_files_bitrate) {
+                assert(it->repetition != 0);
+                // Number of TS packets of all sections after packetization.
+                const uint64_t packets = Section::PacketCount(file.sections(), _stuffing_policy != CyclingPacketizer::ALWAYS);
+                // Contribution of this file in bits every 1000 seconds.
+                // The repetition rate is in milliseconds.
+                bits_per_1000s += (packets * PKT_SIZE * 8 * MilliSecPerSec * 1000) / it->repetition;
+            }
         }
     }
 
+    // Compute target bitrate based on repetition rates (if we need it).
+    if (_use_files_bitrate) {
+        _files_bitrate = BitRate(bits_per_1000s / 1000);
+        _pzer.setBitRate(_files_bitrate);
+        tsp->verbose(u"target bitrate from repetition rates: %'d b/s", {_files_bitrate});
+    }
+    else {
+        _pzer.setBitRate(_pid_bitrate);  // non-zero only if --bitrate is specified
+    }
+
     return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Process bitrates and compute inter-packet distance.
+//----------------------------------------------------------------------------
+
+bool ts::InjectPlugin::processBitRates()
+{
+    if (_use_files_bitrate) {
+        // The PID bitrate is not specified by the user, it is derived from the repetition rates.
+        _pid_bitrate = _files_bitrate;
+    }
+
+    if (_pid_bitrate != 0) {
+        // Non-replace mode, we need to know the inter-packet interval.
+        // Compute it based on the TS bitrate.
+        const BitRate ts_bitrate = tsp->bitrate();
+        if (ts_bitrate < _pid_bitrate) {
+            tsp->error(u"input bitrate unknown or too low, specify --inter-packet");
+            return false;
+        }
+        _pid_inter_pkt = ts_bitrate / _pid_bitrate;
+        tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _pid_inter_pkt});
+    }
+    else if (!_use_files_bitrate && _specific_rates && _pid_inter_pkt != 0) {
+        // The PID bitrate must be set in the packetizer in order to apply
+        // the potential section-specific repetition rates. If --bitrate
+        // was specified, this is already done. If --inter-packet was
+        // specified, we compute the PID bitrate based on the TS bitrate.
+        const BitRate ts_bitrate = tsp->bitrate();
+        _pid_bitrate = BitRate(PacketCounter(ts_bitrate) / _pid_inter_pkt);
+        if (_pid_bitrate == 0) {
+            tsp->warning(u"input bitrate unknown or too low, section-specific repetition rates will be ignored");
+        }
+        else {
+            _pzer.setBitRate(_pid_bitrate);
+            tsp->verbose(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", {ts_bitrate, _pid_bitrate});
+        }
+    }
+
+    return true;
 }
 
 
@@ -350,39 +440,10 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
 {
     const PID pid = pkt.getPID();
 
-    // Initialization sequences (executed only once): The following must be
-    // done as soon as possible since it was not possible to do in start():
-    //  (1) In non-replace mode, we need to know the inter-packet interval.
-    //      If --bitrate was specified instead of --inter-packet, compute
-    //      the interval based on the TS bitrate.
-    //  (2) The PID bitrate must be set in the packetizer in order to apply
-    //      the potential section-specific repetition rates. If --bitrate
-    //      was specified, this is already done. If --inter-packet was
-    //      specified, we compute the PID bitrate based on the TS bitrate.
-
-    if (_packet_count == 0) {
-        if (_pid_bitrate != 0) {
-            // Case (1): compute the inter-packet interval based on the TS bitrate
-            BitRate ts_bitrate = tsp->bitrate();
-            if (ts_bitrate < _pid_bitrate) {
-                tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
-                return TSP_END;
-            }
-            _pid_inter_pkt = ts_bitrate / _pid_bitrate;
-            tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _pid_inter_pkt});
-        }
-        else if (_specific_rates && _pid_inter_pkt != 0) {
-            // Case (2): Evaluate PID bitrate
-            BitRate ts_bitrate = tsp->bitrate();
-            _pid_bitrate = BitRate(PacketCounter(ts_bitrate) / _pid_inter_pkt);
-            if (_pid_bitrate == 0) {
-                tsp->warning(u"input bitrate unknown or too low, section-specific repetition rates will be ignored");
-            }
-            else {
-                _pzer.setBitRate(_pid_bitrate);
-                tsp->verbose(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", {ts_bitrate, _pid_bitrate});
-            }
-        }
+    // Initialization sequences (executed only once):
+    // Must be done as soon as possible since it was not possible to do in start().
+    if (_packet_count == 0 && !processBitRates()) {
+        return TSP_END;
     }
 
     // The PID bitrate must also be set in --replace mode but we cannot have a significant idea of
@@ -410,6 +471,8 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
         if (_infiles.scanFiles(FILE_RETRY, *tsp) > 0) {
             // Some files have changed. Reset packetizer and reload files.
             reloadFiles();
+            // Recompute bitrates and packet interval when based on files repetition rates.
+            processBitRates();
         }
         // Plan next file polling.
         _poll_file_next = Time::CurrentUTC() + _poll_files_ms;

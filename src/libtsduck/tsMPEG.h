@@ -154,7 +154,7 @@ namespace ts {
     {
         // The required size for a section is section_size + 1 (1 for pointer_field
         // in first packet). In each packet, the useable size is 184 bytes.
-        return PacketCounter ((section_size + 184) / 184);
+        return PacketCounter((section_size + 184) / 184);
     }
 
     //!
