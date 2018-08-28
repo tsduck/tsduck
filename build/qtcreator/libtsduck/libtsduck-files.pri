@@ -272,6 +272,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSectionFile.h \
     ../../../src/libtsduck/tsSectionHandlerInterface.h \
     ../../../src/libtsduck/tsSectionProviderInterface.h \
+    ../../../src/libtsduck/tsSectionTemplate.h \
     ../../../src/libtsduck/tsSelectionInformationTable.h \
     ../../../src/libtsduck/tsService.h \
     ../../../src/libtsduck/tsServiceAvailabilityDescriptor.h \

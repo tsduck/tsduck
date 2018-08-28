@@ -618,6 +618,18 @@ namespace ts {
         //!
         static size_t SectionSize(const ByteBlock& content) { return SectionSize(content.data(), content.size()); }
 
+        //!
+        //! Static method to compute the minimum number of TS packets required to transport a set of sections.
+        //! @tparam CONTAINER A container class of SectionPtr as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container class of SectionPtr.
+        //! @param [in] pack If true, assume that sections are packed in TS packets.
+        //! When false, assume that each section starts at the beginning of a TS packet
+        //! and stuffing in applied at the end of each section.
+        //! @return The minimum number of TS packets required to transport the sections in @a container.
+        //!
+        template <class CONTAINER>
+        static PacketCounter PacketCount(const CONTAINER& container, bool pack = true);
+
     private:
         // Private fields
         bool          _is_valid;    // Content of *_data is a valid section
@@ -634,3 +646,5 @@ namespace ts {
         Section(const Section&) = delete;
     };
 }
+
+#include "tsSectionTemplate.h"
