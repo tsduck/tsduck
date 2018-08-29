@@ -333,7 +333,10 @@ bool ts::UDPReceiver::receive(void* data,
         }
 
         // Debug (level 2) message for each message.
-        report.log(2, u"received UDP packet, source: %s, destination: %s", {sender.toString(), destination.toString()});
+        if (report.maxSeverity() >= 2) {
+            // Prior report level checking to avoid evaluating parameters when not necessary.
+            report.log(2, u"received UDP packet, source: %s, destination: %s", {sender.toString(), destination.toString()});
+        }
 
         // Check the destination address to exclude packets from other streams.
         // When several multicast streams use the same destination port and several
@@ -352,7 +355,10 @@ bool ts::UDPReceiver::receive(void* data,
 
         if (destination.hasAddress() && ((_dest_addr.hasAddress() && destination != _dest_addr) || (!_dest_addr.hasAddress() && destination.isMulticast()))) {
             // This is a spurious packet.
-            report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination.toString(), _dest_addr.toString()});
+            if (report.maxSeverity() >= Severity::Debug) {
+                // Prior report level checking to avoid evaluating parameters when not necessary.
+                report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination.toString(), _dest_addr.toString()});
+            }
             continue;
         }
 
@@ -387,7 +393,10 @@ bool ts::UDPReceiver::receive(void* data,
         // Filter packets based on source address if requested.
         if (!sender.match(_use_source)) {
             // Not the expected source, this is a spurious packet.
-            report.debug(u"rejecting packet, source: %s, expecting: %s", {sender.toString(), _use_source.toString()});
+            if (report.maxSeverity() >= Severity::Debug) {
+                // Prior report level checking to avoid evaluating parameters when not necessary.
+                report.debug(u"rejecting packet, source: %s, expecting: %s", {sender.toString(), _use_source.toString()});
+            }
             continue;
         }
 
