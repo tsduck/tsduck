@@ -257,7 +257,7 @@ bool ts::MergePlugin::start()
     // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
     _allowed_pids.set();
     if (!transparent) {
-        for (PID pid = 0x00; pid <= 0x1F; ++pid) {
+        for (PID pid = 0x00; pid <= PID_DVB_LAST; ++pid) {
             _allowed_pids.reset(pid);
         }
     }

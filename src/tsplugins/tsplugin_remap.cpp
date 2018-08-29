@@ -182,7 +182,7 @@ bool ts::RemapPlugin::start()
         }
 
         // Do not accept predefined PID's
-        if (_check_integrity && (pid1 < 0x20 || newpid < 0x20)) {
+        if (_check_integrity && (pid1 <= PID_DVB_LAST || newpid <= PID_DVB_LAST)) {
             tsp->error(u"cannot remap predefined PID's (use --unchecked if really necessary)");
             return false;
         }
