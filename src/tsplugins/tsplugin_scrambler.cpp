@@ -806,15 +806,17 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
         return TSP_END;
     }
 
-    // Abort if allocated PID for ECM is already present in TS
+    // Abort if allocated PID for ECM is already present in TS.
     if (_ecm_pid != PID_NULL && pid == _ecm_pid) {
         tsp->error(u"ECM PID allocation conflict, used 0x%X, now found as input PID, try another --pid-ecm", {pid});
         return TSP_END;
     }
 
-    // As long as we do not know which PID's to scramble, nullify all packets
+    // As long as we do not know which PID's to scramble, nullify all packets.
+    // Let predefined PID pass however since we do not need to modify the PAT, SDT, etc.
+    // The only modified PSI/SI is the PMT of the service, not in this PID range.
     if (_scrambled_pids.none()) {
-        return TSP_NULL;
+        return pid <= PID_DVB_LAST ? TSP_OK : TSP_NULL;
     }
 
     // Packetize modified PMT when needed.
