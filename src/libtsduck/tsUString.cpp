@@ -1648,7 +1648,7 @@ ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn> args)
+ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn>& args)
 {
     // Output string. Pre-reserve some space. We don't really know how much. Just address the most comman cases.
     UString result;
@@ -1666,7 +1666,7 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 // Scan this string for integer or character values.
 //----------------------------------------------------------------------------
 
-bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, const std::initializer_list<ArgMixOut>& args) const
 {
     // Process this string instance.
     const UChar* input = data();

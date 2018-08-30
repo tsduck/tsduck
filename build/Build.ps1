@@ -40,6 +40,10 @@
 
   Generate everything which is needed for installer.
 
+ .PARAMETER NoLowPriority
+
+  Do not lower the process priority.
+
  .PARAMETER Debug
 
   Generate the debug version of the binaries. If neither -Release nor -Debug
@@ -68,6 +72,7 @@
 param(
     [switch]$GitPull = $false,
     [switch]$Installer = $false,
+    [switch]$NoLowPriority = $false,
     [switch]$Debug = $false,
     [switch]$Release = $false,
     [switch]$Win32 = $false,
@@ -96,6 +101,11 @@ $RootDir = (Split-Path -Parent $PSScriptRoot)
 
 # Make sure that Git hooks are installed.
 & (Join-Path $PSScriptRoot git-hook-update.ps1) -NoPause
+
+# Lower process priority so that the build does not eat up all CPU.
+if (-not $NoLowPriority) {
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
+}
 
 # Update git repository if requested.
 if ($GitPull) {
