@@ -41,8 +41,12 @@ namespace ts {
     //!
     //! Base class for elements of an argument list with mixed types.
     //!
-    //! This class is typically used as element in an std::initializer_list.
-    //! It is used only through the two derived classes ArgMixIn and ArgMixOut.
+    //! This class is typically used as element in an std::initializer_list
+    //! to build type-safe variable argument lists. Instances of ArgMix are
+    //! directly built in the initializer list and cannot be copied or assigned.
+    //!
+    //! This is a base class. It can be used only through the two derived
+    //! classes ArgMixIn and ArgMixOut.
     //!
     //! @ingroup cpp
     //!
@@ -352,6 +356,10 @@ namespace ts {
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
         static const ts::UString uempty;
+
+        // Instances are directly built in initializer lists and cannot be copied or assigned.
+        ArgMix(const ArgMix&) = delete;
+        ArgMix& operator=(const ArgMix&) = delete;
     };
 
     //!
@@ -405,6 +413,11 @@ namespace ts {
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
         ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
+
+    private:
+        // Instances are directly built in initializer lists and cannot be copied or assigned.
+        ArgMixIn(const ArgMixIn&) = delete;
+        ArgMixIn& operator=(const ArgMixIn&) = delete;
     };
 
     //!
@@ -433,6 +446,11 @@ namespace ts {
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
         ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), (ptr)) {}
+
+    private:
+        // Instances are directly built in initializer lists and cannot be copied or assigned.
+        ArgMixOut(const ArgMixOut&) = delete;
+        ArgMixOut& operator=(const ArgMixOut&) = delete;
     };
 }
 
