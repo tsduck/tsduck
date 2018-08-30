@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsStringifyInterface.h"
 #include "tsCerrReport.h"
 #include "tsIPAddress.h"
 
@@ -41,7 +42,7 @@ namespace ts {
     //! A basic representation of a MAC address.
     //! @ingroup net
     //!
-    class TSDUCKDLL MACAddress
+    class TSDUCKDLL MACAddress: public StringifyInterface
     {
     public:
         //!
@@ -175,11 +176,8 @@ namespace ts {
         //!
         bool resolve(const UString& name, Report& report = CERR);
 
-        //!
-        //! Convert to a string object in numeric format "a:b:c:d:e:f".
-        //! @return This object, converted as a string.
-        //!
-        UString toString() const;
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
 
         //!
         //! Comparison "less than" operator.

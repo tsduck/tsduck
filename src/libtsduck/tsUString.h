@@ -2050,6 +2050,17 @@ TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar* str);
 //!
 TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar c);
 
+//!
+//! Output operator for stringifiable objects on standard text streams.
+//! @param [in,out] strm An standard stream in output mode.
+//! @param [in] obj A stringifiable object.
+//! @return A reference to the @a strm object.
+//!
+inline std::ostream& operator<<(std::ostream& strm, const ts::StringifyInterface& obj)
+{
+    return strm << obj.toString();
+}
+
 //
 // Override reversed binary operators.
 // Not documented in Doxygen.

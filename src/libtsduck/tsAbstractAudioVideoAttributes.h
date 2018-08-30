@@ -35,6 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsUString.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
 
@@ -42,7 +43,7 @@ namespace ts {
     //! Abstract base class for MPEG audio and video attributes
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL AbstractAudioVideoAttributes
+    class TSDUCKDLL AbstractAudioVideoAttributes: public StringifyInterface
     {
     public:
         //!
@@ -77,12 +78,6 @@ namespace ts {
         //!
         virtual bool moreBinaryData(const void* addr, size_t size) = 0;
 
-        //!
-        //! Conversion to a string.
-        //! @return A string representing the content of this object.
-        //!
-        virtual UString toString() const = 0;
-
     protected:
         //!
         //! A flag which indicates if the content of this object is valid.
@@ -90,15 +85,4 @@ namespace ts {
         //!
         bool _is_valid;
     };
-}
-
-//!
-//! Output operator for ts::AbstractAudioVideoAttributes.
-//! @param [in,out] strm The stream where to print the content.
-//! @param [in] attr The instance of a subclass of ts::AbstractAudioVideoAttributes to display.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::AbstractAudioVideoAttributes& attr)
-{
-    return strm << attr.toString();
 }

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsStringifyInterface.h"
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
 #include "tsMemoryUtils.h"
@@ -50,7 +51,7 @@ namespace ts {
     //! This class is incomplete. Currently, it does not allow IPv6 networking.
     //! It is only designed to manipulate IPv6 addresses in DVB signalization.
     //!
-    class TSDUCKDLL IPv6Address
+    class TSDUCKDLL IPv6Address: public StringifyInterface
     {
     private:
         uint8_t _bytes[16]; // Raw content of the IPv6 address.
@@ -239,12 +240,14 @@ namespace ts {
         //!
         bool match(const IPv6Address& other) const;
 
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
+
         //!
-        //! Convert to a string object in numeric format.
-        //! @param [in] compact If true (the default), pack the representation.
+        //! Convert to a string object in numeric format without the default compaction.
         //! @return This object, converted as a string.
         //!
-        UString toString(bool compact = true) const;
+        UString toFullString() const;
 
         //!
         //! Get the IP address as a byte block.

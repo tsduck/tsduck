@@ -35,11 +35,9 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsUChar.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
-
-    class UString;
-
     //!
     //! Base class for elements of an argument list with mixed types.
     //!
@@ -169,6 +167,11 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool storeInteger(INT i) const;
 
+        //!
+        //! Destructor.
+        //!
+        ~ArgMix();
+
     protected:
         //!
         //! Type of an argument, used as bitmask.
@@ -179,15 +182,16 @@ namespace ts {
         //! Anonymous enum, used as bitmask.
         //!
         enum : TypeFlags {
-            INTEGER = 0x0001,  //!< Integer type.
-            SIGNED  = 0x0002,  //!< With INTEGER, 1 means signed, 0 means unsigned.
-            STRING  = 0x0004,  //!< String of characters.
-            CLASS   = 0x0008,  //!< With STRING, 1 means std::string or ts::UString, O means const char* or const UChar*.
-            BIT8    = 0x0010,  //!< 8-bit integer or string of 8-bit characters (char).
-            BIT16   = 0x0020,  //!< 16-bit integer or string of 16-bit characters (UChar).
-            BIT32   = 0x0040,  //!< 32-bit integer.
-            BIT64   = 0x0080,  //!< 64-bit integer.
-            POINTER = 0x0100,  //!< A pointer to a writeable data (data type is given by other bits).
+            INTEGER   = 0x0001,  //!< Integer type.
+            SIGNED    = 0x0002,  //!< With INTEGER, 1 means signed, 0 means unsigned.
+            STRING    = 0x0004,  //!< String of characters.
+            CLASS     = 0x0008,  //!< With STRING, 1 means std::string or ts::UString, O means const char* or const UChar*.
+            BIT8      = 0x0010,  //!< 8-bit integer or string of 8-bit characters (char).
+            BIT16     = 0x0020,  //!< 16-bit integer or string of 16-bit characters (UChar).
+            BIT32     = 0x0040,  //!< 32-bit integer.
+            BIT64     = 0x0080,  //!< 64-bit integer.
+            POINTER   = 0x0100,  //!< A pointer to a writeable data (data type is given by other bits).
+            STRINGIFY = 0x0200,  //!< A pointer to a StringifyInterface object.
         };
 
 #if !defined(DOXYGEN)
@@ -195,15 +199,16 @@ namespace ts {
         //! Storage of an argument.
         //!
         union Value {
-            int32_t            int32;
-            uint32_t           uint32;
-            int64_t            int64;
-            uint64_t           uint64;
-            const char*        charptr;
-            const UChar*       ucharptr;
-            const std::string* string;
-            const UString*     ustring;
-            void*              intptr;  // output
+            int32_t                   int32;
+            uint32_t                  uint32;
+            int64_t                   int64;
+            uint64_t                  uint64;
+            const char*               charptr;
+            const UChar*              ucharptr;
+            const std::string*        string;
+            const UString*            ustring;
+            const StringifyInterface* stringify;
+            void*                     intptr;  // output
 
             Value(void* p)              : intptr(p) {}
             Value(int32_t i)            : int32(i) {}
@@ -214,6 +219,7 @@ namespace ts {
             Value(const UChar* s)       : ucharptr(s) {}
             Value(const std::string& s) : string(&s) {}
             Value(const UString& s)     : ustring(&s) {}
+            Value(const StringifyInterface& s) : stringify(&s) {}
         };
 #endif
 
@@ -221,7 +227,7 @@ namespace ts {
         //! Default constructor.
         //! The argument does not represent anything.
         //!
-        ArgMix() : _type(0), _size(0), _value(int32_t(0)) {}
+        ArgMix() : _type(0), _size(0), _value(int32_t(0)), _aux(0) {}
 
         //!
         //! Constructor for subclasses.
@@ -229,7 +235,7 @@ namespace ts {
         //! @param [in] size Original size for integer type.
         //! @param [in] value Actual value of the argument.
         //!
-        ArgMix(TypeFlags type, uint16_t size, const Value value) : _type(type), _size(size), _value(value) {}
+        ArgMix(TypeFlags type, uint16_t size, const Value value) : _type(type), _size(size), _value(value), _aux(0) {}
 
 #if !defined(DOXYGEN)
         // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
@@ -338,9 +344,10 @@ namespace ts {
 
     private:
         // Implementation of an ArgMix.
-        TypeFlags _type;  //!< Indicate which overlay to use in _value.
-        uint16_t  _size;  //!< Original size for integer type.
-        Value     _value; //!< Actual value of the argument.
+        TypeFlags        _type;  //!< Indicate which overlay to use in _value.
+        uint16_t         _size;  //!< Original size for integer type.
+        Value            _value; //!< Actual value of the argument.
+        mutable UString* _aux;   //!< Auxiliary string (for StringifyInterface).
 
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
@@ -387,6 +394,11 @@ namespace ts {
         //! @param [in] s Reference to a C++ string.
         //!
         ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s) {}
+        //!
+        //! Constructor from a stringifiable object.
+        //! @param [in] s Reference to a stringifiable object.
+        //!
+        ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s) {}
         //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.

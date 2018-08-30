@@ -34,6 +34,19 @@ TSDUCK_SOURCE;
 const std::string ts::ArgMix::empty;
 const ts::UString ts::ArgMix::uempty;
 
+//----------------------------------------------------------------------------
+// Destructor.
+//----------------------------------------------------------------------------
+
+ts::ArgMix::~ArgMix()
+{
+    // Deallocate auxiliary string, when there is one.
+    if (_aux != 0) {
+        delete _aux;
+        _aux = 0;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Return ArgMix value as a string.
@@ -42,18 +55,36 @@ const ts::UString ts::ArgMix::uempty;
 const char* ts::ArgMix::toCharPtr() const
 {
     switch (_type) {
-        case STRING | BIT8 | CLASS:  return _value.string == 0 ? "" : _value.string->c_str();
-        case STRING | BIT8: return _value.charptr == 0 ? "" : _value.charptr;
-        default: return "";
+        case STRING | BIT8 | CLASS:
+            return _value.string == 0 ? "" : _value.string->c_str();
+        case STRING | BIT8:
+            return _value.charptr == 0 ? "" : _value.charptr;
+        default:
+            return "";
     }
 }
 
 const ts::UChar* ts::ArgMix::toUCharPtr() const
 {
     switch (_type) {
-        case STRING | BIT16 | CLASS:  return _value.ustring == 0 ? u"" : _value.ustring->c_str();
-        case STRING | BIT16: return _value.ucharptr == 0 ? u"" : _value.ucharptr;
-        default: return u"";
+        case STRING | BIT16: {
+            // A pointer to UChar.
+            return _value.ucharptr == 0 ? u"" : _value.ucharptr;
+        }
+        case STRING | BIT16 | CLASS: {
+            // A pointer to UString.
+            return _value.ustring == 0 ? u"" : _value.ustring->c_str();
+        }
+        case STRING | BIT16 | CLASS | STRINGIFY: {
+            // A pointer to StringifyInterface. Need to allocate an auxiliary string.
+            if (_value.stringify != 0 && _aux == 0) {
+                _aux = new UString(_value.stringify->toString());
+            }
+            return _aux == 0 ? u"" : _aux->c_str();
+        }
+        default: {
+            return u"";
+        }
     }
 }
 
@@ -64,5 +95,20 @@ const std::string& ts::ArgMix::toString() const
 
 const ts::UString& ts::ArgMix::toUString() const
 {
-    return _type == (STRING | BIT16 | CLASS) && _value.ustring != 0 ? *_value.ustring : uempty;
+    switch (_type) {
+        case STRING | BIT16 | CLASS: {
+            // A pointer to UString.
+            return _value.ustring == 0 ? uempty : *_value.ustring;
+        }
+        case STRING | BIT16 | CLASS | STRINGIFY: {
+            // A pointer to StringifyInterface. Need to allocate an auxiliary string.
+            if (_value.stringify != 0 && _aux == 0) {
+                _aux = new UString(_value.stringify->toString());
+            }
+            return _aux == 0 ? uempty : *_aux;
+        }
+        default: {
+            return uempty;
+        }
+    }
 }

@@ -312,7 +312,7 @@ void XMLTest::testCreation()
         u"    <fooBar/>\n"
         u"  </child2>\n"
         u"</theRoot>\n",
-        doc.toString(2));
+        doc.toString());
 }
 
 void XMLTest::testKeepOpen()

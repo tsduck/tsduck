@@ -931,6 +931,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>

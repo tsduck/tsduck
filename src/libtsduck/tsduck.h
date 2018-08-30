@@ -315,6 +315,7 @@
 #include "tsStaticInstance.h"
 #include "tsSTDDescriptor.h"
 #include "tsStreamIdentifierDescriptor.h"
+#include "tsStringifyInterface.h"
 #include "tsStuffingDescriptor.h"
 #include "tsSubRipGenerator.h"
 #include "tsSubtitlingDescriptor.h"
