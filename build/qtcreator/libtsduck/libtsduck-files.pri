@@ -309,6 +309,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsSTDDescriptor.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsStringifyInterface.h \
     ../../../src/libtsduck/tsStuffingDescriptor.h \
     ../../../src/libtsduck/tsSubRipGenerator.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \

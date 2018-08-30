@@ -311,6 +311,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsStaticInstance.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSTDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />

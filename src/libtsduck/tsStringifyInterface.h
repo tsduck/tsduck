@@ -28,20 +28,33 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Abstract interface converting an object to UString.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 14
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 881
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class UString;
+
+    //!
+    //! An interface to be implemented by classes supporting a conversion to UString.
+    //! @ingroup cpp
+    //!
+    class TSDUCKDLL StringifyInterface
+    {
+    public:
+        //!
+        //! Convert to a string object.
+        //! @return This object, converted as a string.
+        //!
+        virtual UString toString() const = 0;
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~StringifyInterface() {}
+    };
+}

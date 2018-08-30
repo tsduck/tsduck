@@ -100,52 +100,51 @@ bool ts::IPv6Address::match(const IPv6Address& other) const
 // Convert to a string object in numeric format.
 //----------------------------------------------------------------------------
 
-ts::UString ts::IPv6Address::toString(bool compact) const
+ts::UString ts::IPv6Address::toFullString() const
 {
-    if (compact) {
-        // Find the longest suite of zero hexlets.
-        size_t zCountMax = 0; // in bytes
-        size_t zIndexMax = 0; // in bytes from beginning
-        size_t zCount = 0;
-        for (size_t first = 0; first < BYTES; first += zCount + 2) {
-            // Count number of contiguous zeroes, by pair.
-            size_t next = first;
-            while (next < BYTES && _bytes[next] == 0 && _bytes[next + 1] == 0) {
-                next += 2;
-            }
-            zCount = next - first;
-            if (zCount > zCountMax) {
-                // Found a longer suite.
-                zCountMax = zCount;
-                zIndexMax = first;
-            }
-        }
+    return UString::Format(u"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
+                           {hexlet(0), hexlet(1), hexlet(2), hexlet(3),
+                            hexlet(4), hexlet(5), hexlet(6), hexlet(7)});
+}
 
-        // Build the string. Loop on hexlets, skipping the suite of zeroes.
-        UString result;
-        for (size_t i = 0; i < BYTES; ) {
-            if (i == zIndexMax && zCountMax > 2) {
-                // At the longest suite of zeroes, longer than 2 zeroes (1 hexlet).
-                result.append(u"::");
-                i += zCountMax;
-            }
-            else {
-                // Normal hexlet.
-                if (!result.empty() && result.back() != u':') {
-                    result.append(u':');
-                }
-                result.append(UString::Format(u"%1x", {GetUInt16(_bytes + i)}));
-                i += 2;
-            }
+ts::UString ts::IPv6Address::toString() const
+{
+    // Find the longest suite of zero hexlets.
+    size_t zCountMax = 0; // in bytes
+    size_t zIndexMax = 0; // in bytes from beginning
+    size_t zCount = 0;
+    for (size_t first = 0; first < BYTES; first += zCount + 2) {
+        // Count number of contiguous zeroes, by pair.
+        size_t next = first;
+        while (next < BYTES && _bytes[next] == 0 && _bytes[next + 1] == 0) {
+            next += 2;
         }
-        return result;
+        zCount = next - first;
+        if (zCount > zCountMax) {
+            // Found a longer suite.
+            zCountMax = zCount;
+            zIndexMax = first;
+        }
     }
-    else {
-        // Do not attempt any compaction.
-        return UString::Format(u"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
-                               {hexlet(0), hexlet(1), hexlet(2), hexlet(3),
-                                hexlet(4), hexlet(5), hexlet(6), hexlet(7)});
+
+    // Build the string. Loop on hexlets, skipping the suite of zeroes.
+    UString result;
+    for (size_t i = 0; i < BYTES; ) {
+        if (i == zIndexMax && zCountMax > 2) {
+            // At the longest suite of zeroes, longer than 2 zeroes (1 hexlet).
+            result.append(u"::");
+            i += zCountMax;
+        }
+        else {
+            // Normal hexlet.
+            if (!result.empty() && result.back() != u':') {
+                result.append(u':');
+            }
+            result.append(UString::Format(u"%1x", {GetUInt16(_bytes + i)}));
+            i += 2;
+        }
     }
+    return result;
 }
 
 
