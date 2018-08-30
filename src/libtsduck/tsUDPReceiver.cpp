@@ -166,7 +166,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
 
     // If a destination address is specified, it must be a multicast address.
     if (_dest_addr.hasAddress() && !_dest_addr.isMulticast()) {
-        args.error(u"address %s is not multicast", {_dest_addr.toString()});
+        args.error(u"address %s is not multicast", {_dest_addr});
         return false;
     }
 
@@ -176,7 +176,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
         return false;
     }
     if (_use_ssm && !_dest_addr.isSSM()) {
-        args.warning(u"address %s is not an SSM address", {_dest_addr.toString()});
+        args.warning(u"address %s is not an SSM address", {_dest_addr});
     }
     if (_use_ssm && _use_first_source) {
         args.error(u"SSM and --first-source are mutually exclusive");
@@ -335,7 +335,7 @@ bool ts::UDPReceiver::receive(void* data,
         // Debug (level 2) message for each message.
         if (report.maxSeverity() >= 2) {
             // Prior report level checking to avoid evaluating parameters when not necessary.
-            report.log(2, u"received UDP packet, source: %s, destination: %s", {sender.toString(), destination.toString()});
+            report.log(2, u"received UDP packet, source: %s, destination: %s", {sender, destination});
         }
 
         // Check the destination address to exclude packets from other streams.
@@ -357,7 +357,7 @@ bool ts::UDPReceiver::receive(void* data,
             // This is a spurious packet.
             if (report.maxSeverity() >= Severity::Debug) {
                 // Prior report level checking to avoid evaluating parameters when not necessary.
-                report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination.toString(), _dest_addr.toString()});
+                report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination, _dest_addr});
             }
             continue;
         }
@@ -372,7 +372,7 @@ bool ts::UDPReceiver::receive(void* data,
             if (_use_first_source) {
                 assert(!_use_source.hasAddress());
                 _use_source = sender;
-                report.verbose(u"now filtering on source address %s", {sender.toString()});
+                report.verbose(u"now filtering on source address %s", {sender});
             }
         }
 
@@ -383,10 +383,10 @@ bool ts::UDPReceiver::receive(void* data,
             // With source filtering, this is just an informational verbose-level message.
             const int level = _use_source.hasAddress() ? Severity::Verbose : Severity::Warning;
             if (_sources.size() == 1) {
-                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination.toString()});
-                report.log(level, u"detected source: %s", {_first_source.toString()});
+                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination});
+                report.log(level, u"detected source: %s", {_first_source});
             }
-            report.log(level, u"detected source: %s", {sender.toString()});
+            report.log(level, u"detected source: %s", {sender});
             _sources.insert(sender);
         }
 
@@ -395,7 +395,7 @@ bool ts::UDPReceiver::receive(void* data,
             // Not the expected source, this is a spurious packet.
             if (report.maxSeverity() >= Severity::Debug) {
                 // Prior report level checking to avoid evaluating parameters when not necessary.
-                report.debug(u"rejecting packet, source: %s, expecting: %s", {sender.toString(), _use_source.toString()});
+                report.debug(u"rejecting packet, source: %s, expecting: %s", {sender, _use_source});
             }
             continue;
         }

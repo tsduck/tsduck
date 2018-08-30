@@ -1008,7 +1008,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 
     // Loop on incoming messages.
     while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _tsp, error)) {
-        _tsp->verbose(u"received message, %d bytes, from %s", {insize, sender.toString()});
+        _tsp->verbose(u"received message, %d bytes, from %s", {insize, sender});
         _plugin->processSectionMessage(inbuf, insize);
     }
 

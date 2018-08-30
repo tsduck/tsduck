@@ -163,7 +163,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
                 req = info[i];
                 if (::ioctl(sock, SIOCGIFNETMASK, &req) != 0) {
                     const SocketErrorCode err = LastSocketErrorCode();
-                    report.error(u"error getting network mask for %s: %s", {addr.toString(), SocketErrorCodeMessage(err)});
+                    report.error(u"error getting network mask for %s: %s", {addr, SocketErrorCodeMessage(err)});
                 }
                 else {
                     mask = IPAddress(req.ifr_netmask);

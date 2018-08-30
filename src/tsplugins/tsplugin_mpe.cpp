@@ -373,19 +373,11 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
             macComment = u", should be " + mcMAC.toString();
         }
 
-        // Dump content.
-        if (_dump_datagram || _dump_udp) {
-
-        }
-
         // Finally log the complete message.
         tsp->info(u"PID 0x%X (%d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
-                  {mpe.sourcePID(), mpe.sourcePID(),
-                   mpe.sourceIPAddress().toString(), mpe.sourceUDPPort(),
-                   destIP.toString(), mpe.destinationUDPPort(),
-                   destMAC.toString(), macComment, udpSize,
-                   GetUInt16(mpe.datagram() + 6),
-                   syncLayoutString(udp, udpSize), dumpString(mpe)});
+                  {mpe.sourcePID(), mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
+                   destIP, mpe.destinationUDPPort(), destMAC, macComment, udpSize,
+                   GetUInt16(mpe.datagram() + 6), syncLayoutString(udp, udpSize), dumpString(mpe)});
     }
 
     // Save UDP messages in binary file.

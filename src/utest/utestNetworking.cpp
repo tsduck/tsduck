@@ -631,7 +631,7 @@ namespace {
             char buffer [1024];
             size_t size;
             CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, 0, CERR));
-            CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", {size, sender.toString(), destination.toString()});
+            CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
             CPPUNIT_ASSERT(size == sizeof(message));
             CPPUNIT_ASSERT(::memcmp(message, buffer, size) == 0);
             CPPUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
@@ -670,7 +670,7 @@ void NetworkingTest::testUDPSocket()
     char buffer [1024];
     size_t size;
     CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, 0, CERR));
-    CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", {size, sender.toString(), destination.toString()});
+    CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
     CPPUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
 
     CPPUNIT_ASSERT(sock.send(buffer, size, sender, CERR));

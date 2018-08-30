@@ -113,7 +113,7 @@ void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& display, 
 
     const char* header = "Address mask: ";
     while (size >= 16) {
-        strm << margin << header << IPv6Address(data, 16).toString() << std::endl;
+        strm << margin << header << IPv6Address(data, 16) << std::endl;
         data += 16; size -= 16;
         header = "Address: ";
     }

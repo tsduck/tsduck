@@ -113,7 +113,7 @@ void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
     const char* header = "Address mask: ";
     while (size >= 4) {
-        strm << margin << header << IPAddress(GetUInt32(data)).toString() << std::endl;
+        strm << margin << header << IPAddress(GetUInt32(data)) << std::endl;
         data += 4; size -= 4;
         header = "Address: ";
     }

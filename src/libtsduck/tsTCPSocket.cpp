@@ -181,7 +181,7 @@ bool ts::TCPSocket::bind(const SocketAddress& addr, Report& report)
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
-    report.debug(u"binding socket to %s", {addr.toString()});
+    report.debug(u"binding socket to %s", {addr});
     if (::bind(getSocket(), &sock_addr, sizeof(sock_addr)) != 0) {
         report.error(u"error binding socket to local address: %s", {SocketErrorCodeMessage()});
         return false;

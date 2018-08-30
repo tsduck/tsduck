@@ -224,7 +224,7 @@ bool ts::TCPConnection::connect(const SocketAddress& addr, Report& report)
     for (;;) {
         ::sockaddr sock_addr;
         addr.copy(sock_addr);
-        report.debug(u"connecting to %s", {addr.toString()});
+        report.debug(u"connecting to %s", {addr});
         if (::connect(getSocket(), &sock_addr, sizeof(sock_addr)) == 0) {
             declareConnected(report);
             return true;

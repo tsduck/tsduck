@@ -65,14 +65,15 @@ void ts::tlv::Logger::resetSeverities(int default_level)
 
 void ts::tlv::Logger::log(const Message& msg, const UString& comment, Report* report)
 {
+    Report* rep = report != 0 ? report : _report;
     const int level = severity(msg.tag());
-    if (_report->maxSeverity() >= level) {
+    if (rep->maxSeverity() >= level) {
         const UString dump(msg.dump(4));
         if (comment.empty()) {
-            _report->log(level, dump);
+            rep->log(level, dump);
         }
         else {
-            _report->log(level, u"%s\n%s", {comment, dump});
+            rep->log(level, u"%s\n%s", {comment, dump});
         }
     }
 }

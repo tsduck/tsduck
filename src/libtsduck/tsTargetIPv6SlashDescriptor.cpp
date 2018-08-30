@@ -112,7 +112,7 @@ void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& display, DI
     const std::string margin(indent, ' ');
 
     while (size >= 17) {
-        strm << margin << "Address/mask: " << IPv6Address(data, 16).toString() << "/" << int(data[16]) << std::endl;
+        strm << margin << "Address/mask: " << IPv6Address(data, 16) << "/" << int(data[16]) << std::endl;
         data += 17; size -= 17;
     }
 

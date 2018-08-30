@@ -703,7 +703,7 @@ int main (int argc, char *argv[])
         return EXIT_FAILURE;
     }
     shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d",
-                            {opt.serverAddress.toString(), ts::ecmgscs::Protocol::Instance()->version()});
+                            {opt.serverAddress, ts::ecmgscs::Protocol::Instance()->version()});
 
     // Manage incoming client connections.
     for (;;) {
