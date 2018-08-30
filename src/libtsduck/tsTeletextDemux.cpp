@@ -27,20 +27,9 @@
 //
 //----------------------------------------------------------------------------
 //
-// Parts of this module are copied or inspired from Telxcc, a free open-source
-// Teletext extractor from Petr Kutalek.
-//
-// Home page: https://github.com/petrkutalek/telxcc/
-//
+// Parts of this module are inspired from Telxcc, a free open-source Teletext
+// extractor from Petr Kutalek (https://github.com/petrkutalek/telxcc).
 // Copyright: (c) 2011-2014 Forers, s. r. o.: telxcc
-//
-// telxcc conforms to ETSI 300 706 Presentation Level 1.5: Presentation
-// Level 1 defines the basic Teletext page, characterised by the use of
-// spacing attributes only and a limited alphanumeric and mosaics repertoire.
-// Presentation Level 1.5 decoder responds as Level 1 but the character
-// repertoire is extended via packets X/26. Selection of national option
-// sub-sets related features from Presentation Level 2.5 feature set have
-// been implemented, too. (X/28/0 Format 1, X/28/4, M/29/0 and M/29/4 packets)
 //
 //----------------------------------------------------------------------------
 //
@@ -63,7 +52,7 @@ TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// From telxcc code (and maybe other original sources).
+// From various original sources.
 //-----------------------------------------------------------------------------
 
 namespace {
@@ -117,7 +106,7 @@ namespace {
 
 
 //-----------------------------------------------------------------------------
-// Remove 8/4 and 24/18 Hamming code. Code from telxcc.
+// Remove 8/4 and 24/18 Hamming code.
 //-----------------------------------------------------------------------------
 
 uint8_t ts::TeletextDemux::unham_8_4(uint8_t a)
@@ -284,7 +273,6 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
 
 //-----------------------------------------------------------------------------
 // Process one Teletext packet.
-// The following code is mostly copied from telxcc, thank you Petr !
 //-----------------------------------------------------------------------------
 
 void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t dataUnitId, const uint8_t* pkt)
@@ -452,14 +440,13 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
     else if ((m == 8) && (y == 30)) {
         // ETS 300 706, chapter 9.8: Broadcast Service Data Packets.
         // We can find here "Programme Identification Data" and absolute data / time stamps.
-        // It is processed in telxcc but is not interesting for us.
+        // It is not interesting for us.
     }
 }
 
 
 //-----------------------------------------------------------------------------
 // Process one Teletext page.
-// The following code is mostly copied from telxcc, thank you Petr !
 //-----------------------------------------------------------------------------
 
 void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNumber)
@@ -560,8 +547,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
                             fontTagOpened = false;
                         }
 
-                        // black is considered as white for telxcc purpose
-                        // telxcc writes <font/> tags only when needed
+                        // <font/> tags only when needed
                         if (v > 0x00 && v < 0x07) {
                             line.append(u"<font color=\"");
                             line.append(TELETEXT_COLORS[v]);
