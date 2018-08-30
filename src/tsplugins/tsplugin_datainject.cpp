@@ -650,7 +650,7 @@ void ts::DataInjectPlugin::TCPListener::main()
     // Loop on client acceptance (accept only one client at a time).
     while (_plugin->_server.accept(_client, client_address, *_tsp)) {
 
-        _tsp->verbose(u"incoming connection from %s", {client_address.toString()});
+        _tsp->verbose(u"incoming connection from %s", {client_address});
 
         // Start from a fresh client session context.
         _plugin->clearSession();
@@ -834,7 +834,7 @@ void ts::DataInjectPlugin::UDPListener::main()
         const tlv::MessagePtr msg(mf.factory());
 
         if (mf.errorStatus() != tlv::OK || msg.isNull()) {
-            _tsp->error(u"received invalid message from %s, %d bytes", {sender.toString(), insize});
+            _tsp->error(u"received invalid message from %s, %d bytes", {sender, insize});
         }
         else {
             // Log the message.

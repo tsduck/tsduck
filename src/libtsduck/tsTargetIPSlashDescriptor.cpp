@@ -112,7 +112,7 @@ void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
     const std::string margin(indent, ' ');
 
     while (size >= 5) {
-        strm << margin << "Address/mask: " << IPAddress(GetUInt32(data)).toString() << "/" << int(data[4]) << std::endl;
+        strm << margin << "Address/mask: " << IPAddress(GetUInt32(data)) << "/" << int(data[4]) << std::endl;
         data += 5; size -= 5;
     }
 

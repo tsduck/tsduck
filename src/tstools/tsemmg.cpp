@@ -478,7 +478,7 @@ int main (int argc, char *argv[])
     }
 
     // Connect to the MUX.
-    opt.verbose(u"Connecting to MUX at %s", {opt.tcpMuxAddress.toString()});
+    opt.verbose(u"Connecting to MUX at %s", {opt.tcpMuxAddress});
     if (!client.connect(opt.tcpMuxAddress,
                         opt.udpMuxAddress,
                         opt.clientId,

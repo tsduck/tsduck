@@ -337,7 +337,7 @@ size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
         }
 
         // No TS packet found in UDP message, wait for another one.
-        tsp->debug(u"no TS packet in message from %s, %s bytes", {sender.toString(), insize});
+        tsp->debug(u"no TS packet in message from %s, %s bytes", {sender, insize});
     }
 
     // If new packets were received, we may need to re-evaluate the real-time input bitrate.

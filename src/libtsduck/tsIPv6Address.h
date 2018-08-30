@@ -269,14 +269,3 @@ namespace ts {
     //!
     typedef std::vector<IPv6Address> IPv6AddressVector;
 }
-
-//!
-//! Output operator for the class @link ts::IPv6Address @endlink on standard text streams.
-//! @param [in,out] strm An standard stream in output mode.
-//! @param [in] addr The IPv6 address object.
-//! @return A reference to the @a strm object.
-//!
-inline std::ostream& operator<< (std::ostream& strm, const ts::IPv6Address& addr)
-{
-    return strm << addr.toString();
-}

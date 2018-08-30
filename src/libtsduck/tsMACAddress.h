@@ -200,14 +200,3 @@ namespace ts {
     //!
     typedef std::vector<MACAddress> MACAddressVector;
 }
-
-//!
-//! Output operator for the class @link ts::MACAddress @endlink on standard text streams.
-//! @param [in,out] strm An standard stream in output mode.
-//! @param [in] addr The IP address object.
-//! @return A reference to the @a strm object.
-//!
-inline std::ostream& operator<< (std::ostream& strm, const ts::MACAddress& addr)
-{
-    return strm << addr.toString();
-}

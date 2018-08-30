@@ -80,7 +80,7 @@ bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address
     }
 
     client_address = SocketAddress(sock_addr);
-    report.debug(u"received connection from %s", {client_address.toString()});
+    report.debug(u"received connection from %s", {client_address});
 
     client.declareOpened(client_sock, report);
     client.declareConnected(report);
