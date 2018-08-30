@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.14-872
+VERSION 3.14-882
 
 [NEW] New commands and plugins:
 
@@ -27,6 +27,8 @@ VERSION 3.14-872
   * In plugin "inject", when all input files have specific repetition rates,
     it is no longer required to provide a bitrate for the PID. It is computed
     from the size and repetition rate of all sections.
+  * Some performance improvement by removing processing which are used in debug
+    or verbose mode only (options --debug and --verbose).
 
 [BUG] Bug fixes:
 

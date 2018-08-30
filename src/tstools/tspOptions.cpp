@@ -173,7 +173,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
          u"Specify the maximum number of packets to be received at a time from "
          u"the input plug-in. By default, in offline mode, tsp reads as many packets "
          u"as it can, depending on the free space in the buffer. In real-time mode, "
-         u"the default is " + UString::Decimal(DEF_MAX_INPUT_PKT_RT) + u"packets.");
+         u"the default is " + UString::Decimal(DEF_MAX_INPUT_PKT_RT) + u" packets.");
 
     option(u"monitor", 'm');
     help(u"monitor",

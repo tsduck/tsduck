@@ -145,7 +145,7 @@ if (-not $NoLowPriority) {
 # Build the project.
 if (-not $NoBuild) {
     Push-Location
-    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull
+    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {

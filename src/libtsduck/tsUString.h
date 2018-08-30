@@ -1,4 +1,3 @@
-
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
@@ -336,7 +335,7 @@ namespace ts {
         //! @param [in] init Initializer list of @c Char.
         //! @param [in] alloc Allocator.
         //!
-        UString(std::initializer_list<UChar> init, const allocator_type& alloc = allocator_type()) :
+        UString(const std::initializer_list<UChar>& init, const allocator_type& alloc = allocator_type()) :
             SuperClass(init, alloc) {}
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
@@ -1505,7 +1504,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //!
-        static UString Format(const UChar* fmt, std::initializer_list<ArgMixIn> args);
+        static UString Format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args);
 
         //!
         //! Format a string using a template and arguments.
@@ -1514,7 +1513,7 @@ namespace ts {
         //! @return The formatted string.
         //! @see Format()
         //!
-        static UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        static UString Format(const UString& fmt, const std::initializer_list<ArgMixIn>& args)
         {
             return Format(fmt.c_str(), args);
         }
@@ -1551,7 +1550,7 @@ namespace ts {
         //! @return True if the entire string is consumed and the entire format is parsed.
         //! False otherwise. In other words, the method returns true when this object string
         //! exactly matches the format in @a fmt.
-        //! @see Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        //! @see Format(const UChar*, const std::initializer_list<ArgMixIn>&)
         //!
         //! @param [out] extractedCount The number of successfully extracted values.
         //! @param [out] endIndex The index in this string after the last extracted value.
@@ -1562,7 +1561,7 @@ namespace ts {
         //! False otherwise. In other words, the method returns true when this object string
         //! exactly matches the format in @a fmt.
         //!
-        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
+        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, const std::initializer_list<ArgMixOut>& args) const;
 
         //!
         //! Scan this string for integer or character values using a template and arguments.
@@ -1576,7 +1575,7 @@ namespace ts {
         //! exactly matches the format in @a fmt.
         //! @see scan()
         //!
-        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, const std::initializer_list<ArgMixOut>& args) const
         {
             return scan(extractedCount, endIndex, fmt.c_str(), args);
         }
@@ -1589,9 +1588,9 @@ namespace ts {
         //! @return True if the entire string is consumed and the entire format is parsed.
         //! False otherwise. In other words, the method returns true when this object string
         //! exactly matches the format in @a fmt.
-        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
+        //! @see scan(size_t&, size_type&, const UChar*, const std::initializer_list<ArgMixOut>&)
         //!
-        bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        bool scan(const UChar* fmt, const std::initializer_list<ArgMixOut>& args) const
         {
             size_t extractedCount;
             size_type endIndex;
@@ -1608,7 +1607,7 @@ namespace ts {
         //! exactly matches the format in @a fmt.
         //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
         //!
-        bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        bool scan(const UString& fmt, const std::initializer_list<ArgMixOut>& args) const
         {
             size_t extractedCount;
             size_type endIndex;

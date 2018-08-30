@@ -147,9 +147,9 @@ private:
     ts::UString temporaryFileName(int) const;
     ts::UString newTemporaryFileName();
 
-    void testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn> list);
-    void testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> list);
-    void testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list);
+    void testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list);
+    void testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list);
+    void testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list);
 
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
@@ -1293,12 +1293,12 @@ void UStringTest::testArgMixIn()
     testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
 }
 
-void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn> list)
+void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(0), list.size());
 }
 
-void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> list)
+void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(14), list.size());
 
@@ -1741,7 +1741,7 @@ void UStringTest::testArgMixOut()
     CPPUNIT_ASSERT_EQUAL(E21, e2);
 }
 
-void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list)
+void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(11), list.size());
 

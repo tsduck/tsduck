@@ -37,6 +37,20 @@
 #include "tsUChar.h"
 #include "tsStringifyInterface.h"
 
+// There is a problem here with Microsoft C/C++.
+//
+// In some cases, typically in std::initializer_list of ArgMixIn, the lifetime
+// of temporary string objects is not conformant with the C++11 standard
+// (discovered the hard way as you may imagine...)
+//
+// So, with MSC only, instead of storing a reference to the external string
+// object, we will keep a copy of it. This has a significant performance penalty,
+// so this method is used only with MSC.
+
+#if defined(TS_MSC) && !defined(NON_CONFORMANT_CXX11_TEMPLIFE) && !defined(DOXYGEN)
+#define NON_CONFORMANT_CXX11_TEMPLIFE 1
+#endif
+
 namespace ts {
     //!
     //! Base class for elements of an argument list with mixed types.
@@ -209,10 +223,12 @@ namespace ts {
             uint64_t                  uint64;
             const char*               charptr;
             const UChar*              ucharptr;
+            void*                     intptr;  // output
+#if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
             const std::string*        string;
             const UString*            ustring;
             const StringifyInterface* stringify;
-            void*                     intptr;  // output
+#endif
 
             Value(void* p)              : intptr(p) {}
             Value(int32_t i)            : int32(i) {}
@@ -221,17 +237,19 @@ namespace ts {
             Value(uint64_t i)           : uint64(i) {}
             Value(const char* s)        : charptr(s) {}
             Value(const UChar* s)       : ucharptr(s) {}
+#if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
             Value(const std::string& s) : string(&s) {}
             Value(const UString& s)     : ustring(&s) {}
             Value(const StringifyInterface& s) : stringify(&s) {}
-        };
 #endif
+        };
+#endif // DOXYGEN
 
         //!
         //! Default constructor.
         //! The argument does not represent anything.
         //!
-        ArgMix() : _type(0), _size(0), _value(int32_t(0)), _aux(0) {}
+        ArgMix();
 
         //!
         //! Constructor for subclasses.
@@ -239,7 +257,14 @@ namespace ts {
         //! @param [in] size Original size for integer type.
         //! @param [in] value Actual value of the argument.
         //!
-        ArgMix(TypeFlags type, uint16_t size, const Value value) : _type(type), _size(size), _value(value), _aux(0) {}
+        ArgMix(TypeFlags type, uint16_t size, const Value value);
+
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+        // Specific constructors without conformant temporary object lifetime.
+        ArgMix(TypeFlags type, uint16_t size, const std::string& value);
+        ArgMix(TypeFlags type, uint16_t size, const UString& value);
+        ArgMix(TypeFlags type, uint16_t size, const StringifyInterface& value);
+#endif
 
 #if !defined(DOXYGEN)
         // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
@@ -348,10 +373,13 @@ namespace ts {
 
     private:
         // Implementation of an ArgMix.
-        TypeFlags        _type;  //!< Indicate which overlay to use in _value.
-        uint16_t         _size;  //!< Original size for integer type.
-        Value            _value; //!< Actual value of the argument.
-        mutable UString* _aux;   //!< Auxiliary string (for StringifyInterface).
+        const TypeFlags        _type;    //!< Indicate which overlay to use in _value.
+        const uint16_t         _size;    //!< Original size for integer type.
+        const Value            _value;   //!< Actual value of the argument.
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+        const std::string      _string;  //!< String copy because of non-conformant life time.
+#endif
+        mutable const UString* _aux;     //!< Auxiliary string (for StringifyInterface).
 
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
@@ -386,12 +414,12 @@ namespace ts {
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, s) {}
+        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, Value(s)) {}
         //!
         //! Constructor from a nul-terminated string of 16-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, s) {}
+        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, Value(s)) {}
         //!
         //! Constructor from a C++ string of 8-bit characters.
         //! @param [in] s Reference to a C++ string.
@@ -445,7 +473,7 @@ namespace ts {
         //! @param [in] ptr Address of an integer or enum data.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
-        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), (ptr)) {}
+        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be copied or assigned.
