@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.14-882
+VERSION 3.14-886
 
 [NEW] New commands and plugins:
 
   * Added plugin "sections".
+  * Optional rebuild without teletext support (without plugin "teletext").
 
 [IMP] Improvements on existing commands and plugins:
 

@@ -40,6 +40,7 @@
 #include "tsTeletextFrame.h"
 #include "tsTeletextDescriptor.h"
 TSDUCK_SOURCE;
+#if !defined(TS_NOTELETEXT)
 
 
 //----------------------------------------------------------------------------
@@ -306,3 +307,5 @@ ts::ProcessorPlugin::Status ts::TeletextPlugin::processPacket(TSPacket& pkt, boo
     // Do not change packet but abort on error.
     return _service.nonExistentService() || _abort ? TSP_END : TSP_OK;
 }
+
+#endif // TS_NOTELETEXT

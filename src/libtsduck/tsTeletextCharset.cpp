@@ -30,11 +30,13 @@
 // Parts of this module are inspired from Telxcc, a free open-source Teletext
 // extractor from Petr Kutalek (https://github.com/petrkutalek/telxcc).
 // Copyright: (c) 2011-2014 Forers, s. r. o.: telxcc
+// If you do not want this third-party code included, define TS_NOTELETEXT.
 //
 //----------------------------------------------------------------------------
 
 #include "tsTeletextCharset.h"
 TSDUCK_SOURCE;
+#if !defined(TS_NOTELETEXT)
 
 
 //-----------------------------------------------------------------------------
@@ -429,3 +431,5 @@ void ts::TeletextCharset::remapG0(uint8_t charset)
         }
     }
 }
+
+#endif // TS_NOTELETEXT
