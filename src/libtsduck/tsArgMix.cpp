@@ -50,6 +50,17 @@ ts::ArgMix::ArgMix() :
 {
 }
 
+ts::ArgMix::ArgMix(const ts::ArgMix& other) :
+    _type(other._type),
+    _size(other._size),
+    _value(other._value),
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+    _string(other._string),
+#endif
+    _aux(other._aux == 0 ? 0 : new UString(*other._aux))
+{
+}
+
 ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const Value value) :
     _type(type),
     _size(size),
