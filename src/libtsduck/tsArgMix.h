@@ -185,10 +185,14 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool storeInteger(INT i) const;
 
-        //!
-        //! Destructor.
-        //!
+#if !defined(DOXYGEN)
+        // Copy constructor.
+        ArgMix(const ArgMix& other);
+        // Instances are directly built in initializer lists and cannot be assigned.
+        ArgMix& operator=(const ArgMix&) = delete;
+        // Destructor.
         ~ArgMix();
+#endif
 
     protected:
         //!
@@ -384,10 +388,6 @@ namespace ts {
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
         static const ts::UString uempty;
-
-        // Instances are directly built in initializer lists and cannot be copied or assigned.
-        ArgMix(const ArgMix&) = delete;
-        ArgMix& operator=(const ArgMix&) = delete;
     };
 
     //!
@@ -443,8 +443,7 @@ namespace ts {
         ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
 
     private:
-        // Instances are directly built in initializer lists and cannot be copied or assigned.
-        ArgMixIn(const ArgMixIn&) = delete;
+        // Instances are directly built in initializer lists and cannot be assigned.
         ArgMixIn& operator=(const ArgMixIn&) = delete;
     };
 
@@ -476,8 +475,7 @@ namespace ts {
         ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
 
     private:
-        // Instances are directly built in initializer lists and cannot be copied or assigned.
-        ArgMixOut(const ArgMixOut&) = delete;
+        // Instances are directly built in initializer lists and cannot be assigned.
         ArgMixOut& operator=(const ArgMixOut&) = delete;
     };
 }
