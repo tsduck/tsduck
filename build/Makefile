@@ -81,6 +81,9 @@ install-devel:
 TARNAME = tsduck-$(TS_FULL_VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
+ifdef NOTELETEXT
+    NOSOURCE += tsTeletextCharset.h tsTeletextDemux.h tsTeletextCharset.cpp tsTeletextDemux.cpp tsplugin_teletext.cpp
+endif
 .PHONY: tarball
 tarball:
 	rm -rf $(TMPROOT)
