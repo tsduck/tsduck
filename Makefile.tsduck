@@ -52,6 +52,9 @@ ifndef TSPLUGINS
     export TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
     export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
                                             $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
+    ifdef NOTELETEXT
+        export TSPLUGINS := $(filter-out tsplugin_teletext, $(TSPLUGINS))
+    endif
 endif
 
 # Product version
@@ -116,6 +119,10 @@ ifdef CROSS_TARGET
 else
     CFLAGS_INCLUDES += -I/usr/include/PCSC $(CFLAGS_CURL)
     LDLIBS := $(LDLIBS_CURL) -lpcsclite $(LDLIBS)
+endif
+
+ifdef NOTELETEXT
+    CFLAGS_INCLUDES += -DTS_NOTELETEXT=1
 endif
 
 # The following script is used to build a few project files.

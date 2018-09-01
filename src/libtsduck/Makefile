@@ -135,4 +135,7 @@ install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/include/tsduck
-	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h unix/ts*.h) $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	install -m 644 tsduck.mk \
+	    $(filter-out $(if $(NOTELETEXT),tsTeletextCharset.h tsTeletextDemux.h,),$(wildcard ts*.h)) \
+	    $(wildcard $(OSDIR)/ts*.h unix/ts*.h) \
+	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
