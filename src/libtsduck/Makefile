@@ -139,3 +139,6 @@ install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	    $(filter-out $(if $(NOTELETEXT),tsTeletextCharset.h tsTeletextDemux.h,),$(wildcard ts*.h)) \
 	    $(wildcard $(OSDIR)/ts*.h unix/ts*.h) \
 	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
+ifdef NOTELETEXT
+	sed tsduck.h -e '/tsTeletextCharset.h/d' -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h
+endif
