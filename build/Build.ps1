@@ -61,7 +61,12 @@
 
  .PARAMETER Win64
 
+  Generate the 64-bit version of the binaries. If neither -Win32 nor -Win64
   is specified, both versions are built by default.
+
+ .PARAMETER NoTeletext
+
+  Build without Teletext support. The plugin "teletext" is not provided.
 
  .PARAMETER NoPause
 
@@ -77,6 +82,7 @@ param(
     [switch]$Release = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false,
+    [switch]$NoTeletext = $false,
     [switch]$NoPause = $false
 )
 
@@ -127,7 +133,13 @@ $SolutionFileName = (Join-Path $ProjDir "tsduck.sln")
 # A function to invoke MSBuild.
 function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $target
+    if ($NoTeletext) {
+        $OptTeletext = "/property:NoTeletext=true"
+    }
+    else {
+        $OptTeletext =""
+    }
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target 
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
     }
