@@ -44,6 +44,16 @@
 
   Do not lower the process priority.
 
+ .PARAMETER NoPause
+
+  Do not wait for the user to press <enter> at end of execution. By default,
+  execute a "pause" instruction at the end of execution, which is useful
+  when the script was run from Windows Explorer.
+
+ .PARAMETER NoTeletext
+
+  Build without Teletext support. The plugin "teletext" is not provided.
+
  .PARAMETER Debug
 
   Generate the debug version of the binaries. If neither -Release nor -Debug
@@ -63,16 +73,6 @@
 
   Generate the 64-bit version of the binaries. If neither -Win32 nor -Win64
   is specified, both versions are built by default.
-
- .PARAMETER NoTeletext
-
-  Build without Teletext support. The plugin "teletext" is not provided.
-
- .PARAMETER NoPause
-
-  Do not wait for the user to press <enter> at end of execution. By default,
-  execute a "pause" instruction at the end of execution, which is useful
-  when the script was run from Windows Explorer.
 #>
 param(
     [switch]$GitPull = $false,

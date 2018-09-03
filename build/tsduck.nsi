@@ -172,7 +172,12 @@ Section "Tools & Plugins" SectionTools
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
     File /x *_static.exe "${BinDir}\ts*.exe"
-    File "${BinDir}\ts*.dll"
+    !ifdef NoTeletext
+        Delete "$INSTDIR\bin\tsplugin_teletext.dll"
+        File /x tsplugin_teletext.dll "${BinDir}\ts*.dll"
+    !else
+        File "${BinDir}\ts*.dll"
+    !endif
     File "${RootDir}\src\libtsduck\tsduck.xml"
     File "${RootDir}\src\libtsduck\tsduck.*.names"
 
@@ -215,7 +220,11 @@ Section /o "Development" SectionDevelopment
     ; TSDuck header files.
     CreateDirectory "$INSTDIR\include"
     SetOutPath "$INSTDIR\include"
-    File "${RootDir}\src\libtsduck\*.h"
+    !ifdef NoTeletext
+        File /x tsTeletextDemux.h /x tsTeletextCharset.h "${RootDir}\src\libtsduck\*.h"
+    !else
+        File "${RootDir}\src\libtsduck\*.h"
+    !endif
     File "${RootDir}\src\libtsduck\windows\*.h"
 
     ; TSDuck libraries.

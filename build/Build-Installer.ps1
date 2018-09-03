@@ -71,6 +71,10 @@
 
   Do not build the source archive.
 
+ .PARAMETER NoTeletext
+
+  Build without Teletext support. The plugin "teletext" is not provided.
+
  .PARAMETER Win32
 
   Generate the 32-bit installer. If neither -Win32 nor -Win64 is specified,
@@ -89,6 +93,7 @@ param(
     [switch]$NoInstaller = $false,
     [switch]$NoLowPriority = $false,
     [switch]$NoPortable = $false,
+    [switch]$NoTeletext = $false,
     [switch]$NoSource = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false
@@ -142,10 +147,18 @@ if (-not $NoLowPriority) {
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 }
 
+# Specific options to build without Teletext support.
+if ($NoTeletext) {
+    $NsisOptTeletext = "/DNoTeletext"
+}
+else {
+    $NsisOptTeletext =""
+}
+
 # Build the project.
 if (-not $NoBuild) {
     Push-Location
-    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority
+    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
@@ -160,10 +173,10 @@ if (-not $NoInstaller) {
 
 # Build binary installers.
 if (-not $NoInstaller -and $Win32) {
-    & $NsisExe "/DProjectDir=$MsvcDir" $NsisScript
+    & $NsisExe "/DProjectDir=$MsvcDir" $NsisOptTeletext $NsisScript
 }
 if (-not $NoInstaller -and $Win64) {
-    & $NsisExe "/DProjectDir=$MsvcDir" "/DWin64" $NsisScript
+    & $NsisExe "/DProjectDir=$MsvcDir" $NsisOptTeletext /DWin64 $NsisScript
 }
 
 # A function to build a portable package.
@@ -197,6 +210,10 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         $TempSetup = (New-Directory @($TempRoot, "setup"))
         Copy-Item (Join-Path $BinDir "setpath.exe") -Destination $TempSetup
         Copy-Item (Join-Multipath @($MsvcDir, "redist", $VcRedist)) -Destination $TempSetup
+
+        if ($NoTeletext) {
+            Get-ChildItem $TempBin -Recurse -Include "tsplugin_teletext.*" | Remove-Item -Force -ErrorAction Ignore
+        }
 
         # Create the zip file.
         Get-ChildItem -Recurse (Split-Path $TempRoot) | New-ZipFile $ZipFile -Force -Root $TempDir
@@ -235,6 +252,10 @@ if (-not $NoSource) {
 
         # Cleanup the temporary tree.
         & (Join-MultiPath @($TempRoot, "build", "Cleanup.ps1")) -Deep -NoPause -Silent
+
+        if ($NoTeletext) {
+            Get-ChildItem $TempRoot -Recurse -Include @("tsTeletextDemux.*", "tsTeletextCharset.*", "tsplugin_teletext.*") | Remove-Item -Force -ErrorAction Ignore
+        }
 
         # Create the source zip file.
         Get-ChildItem -Recurse (Split-Path $TempRoot) | New-ZipFile $SrcArchive -Force -Root $TempDir
