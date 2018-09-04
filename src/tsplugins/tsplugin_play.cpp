@@ -149,12 +149,14 @@ bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, co
 bool ts::PlayPlugin::start()
 {
     // Get option values
+#if !defined(TS_WINDOWS)
     _use_mplayer = present(u"mplayer");
     _use_xine = present(u"xine");
     if (_use_mplayer && _use_xine) {
         tsp->error(u"--mplayer (-m) and --xine (-x) are mutually exclusive");
         return false;
     }
+#endif
 
     // Command to execute will be built here
     UString command;

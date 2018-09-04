@@ -31,10 +31,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsMPEG.h"
 #include "tsSysUtils.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -100,9 +99,8 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt (argc, argv);
     bool success = true;
     ts::ErrorCode err;
@@ -164,3 +162,5 @@ int main(int argc, char *argv[])
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TSDuckMain(MainCode)

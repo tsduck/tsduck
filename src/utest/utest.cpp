@@ -42,11 +42,6 @@
 
 #include "utestCppUnitMain.h"
 
-
-//----------------------------------------------------------------------------
-// Program entry point.
-//----------------------------------------------------------------------------
-
 int main(int argc, char* argv[])
 {
     utest::CppUnitMain ctx(argc, argv, "tsduck");

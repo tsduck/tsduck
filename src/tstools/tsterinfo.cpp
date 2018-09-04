@@ -31,9 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsTunerParametersBitrateDiffDVBT.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -198,9 +197,8 @@ namespace {
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
 
     // Convert UHF channel to frequency
@@ -333,3 +331,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TSDuckMain(MainCode)

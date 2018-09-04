@@ -31,9 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsTSPacket.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -136,9 +135,8 @@ public:
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
 
     // Open file in read/write mode (CC are overwritten)
@@ -279,3 +277,5 @@ int main(int argc, char *argv[])
 
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TSDuckMain(MainCode)

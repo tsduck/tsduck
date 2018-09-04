@@ -31,11 +31,10 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsTSFileOutput.h"
 #include "tsVariable.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -504,11 +503,12 @@ void Stuffer::stuff()
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     Stuffer stuffer(opt);
     stuffer.stuff();
     return EXIT_SUCCESS;
 }
+
+TSDuckMain(MainCode)

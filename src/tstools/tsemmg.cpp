@@ -31,15 +31,13 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsIntegerUtils.h"
-#include "tsIPUtils.h"
 #include "tsEMMGClient.h"
 #include "tsUDPSocket.h"
 #include "tsPacketizer.h"
 #include "tsMonotonic.h"
 #include "tsSectionFile.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 namespace {
@@ -454,15 +452,8 @@ void EMMGSectionProvider::provideSection(ts::SectionCounter counter, ts::Section
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
-
-    // IP initialization.
-    if (!ts::IPInitialize()) {
-        return EXIT_FAILURE;
-    }
-
     // Command line options.
     EMMGOptions opt(argc, argv);
 
@@ -593,3 +584,5 @@ int main (int argc, char *argv[])
     client.disconnect();
     return EXIT_SUCCESS;
 }
+
+TSDuckMain(MainCode)

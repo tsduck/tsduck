@@ -31,6 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsMain.h"
 #include "tspOptions.h"
 #include "tspInputExecutor.h"
 #include "tspOutputExecutor.h"
@@ -41,8 +42,6 @@
 #include "tsMonotonic.h"
 #include "tsResidentBuffer.h"
 #include "tsOutputPager.h"
-#include "tsIPUtils.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -95,12 +94,12 @@ void ts::tsp::TSPInterruptHandler::handleInterrupt()
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+//  Program main code.
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
+    // Internal sanity check about TS packets.
     ts::TSPacket::SanityCheck();
 
     // Get command line options.
@@ -135,11 +134,6 @@ int main(int argc, char *argv[])
             std::cerr << text << std::endl;
         }
         return EXIT_SUCCESS;
-    }
-
-    // IP initialization required on foolish OS
-    if (!ts::IPInitialize(opt)) {
-        return EXIT_FAILURE;
     }
 
     // Prevent from being killed when writing on broken pipes.
@@ -257,3 +251,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TSDuckMain(MainCode)

@@ -85,26 +85,3 @@ extern "C" {
     //! Commit version of the TSDuck library.
     TSDUCKDLL extern const int tsduckLibraryVersionCommit;
 }
-
-//!
-//! Check that the version of the TSDuck library matches the application version.
-//! This is a macro to ensure that the code is extended inside the application.
-//! If the TSDuck library does not match the version for which the application
-//! was compiled, an error message is displayed and the application is terminated.
-//! @hideinitializer
-//!
-#define TSDuckLibCheckVersion()                                               \
-    do {                                                                      \
-        if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||                  \
-            tsduckLibraryVersionMinor != TS_VERSION_MINOR ||                  \
-            tsduckLibraryVersionCommit != TS_COMMIT)                          \
-        {                                                                     \
-            std::cerr << "**** TSDuck library version mismatch, library is "  \
-                      << tsduckLibraryVersionMajor << "."                     \
-                      << tsduckLibraryVersionMinor << "-"                     \
-                      << tsduckLibraryVersionCommit                           \
-                      << ", this command needs " TS_VERSION_USTRING " ****"   \
-                      << std::flush << std::endl;                             \
-            ::exit(EXIT_FAILURE);                                             \
-        }                                                                     \
-    } while (false)

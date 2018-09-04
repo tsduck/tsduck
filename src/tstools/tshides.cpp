@@ -31,10 +31,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
-#include "tsVersionInfo.h"
-#include "tsHiDesDevice.h"
+#include "tsMain.h"
 #include "tsCOM.h"
+#include "tsHiDesDevice.h"
 TSDUCK_SOURCE;
 
 
@@ -184,9 +183,8 @@ namespace {
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     HiDesOptions opt(argc, argv);
     ts::COM com(opt);
 
@@ -197,3 +195,5 @@ int main(int argc, char *argv[])
     opt.exitOnError();
     return EXIT_SUCCESS;
 }
+
+TSDuckMain(MainCode)
