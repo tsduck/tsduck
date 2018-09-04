@@ -550,6 +550,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsMACAddress.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsMain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>

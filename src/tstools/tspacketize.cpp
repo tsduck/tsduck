@@ -31,13 +31,12 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsSectionFile.h"
 #include "tsFileNameRate.h"
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
 #include "tsSysUtils.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -156,9 +155,8 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
     ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
@@ -224,3 +222,5 @@ int main(int argc, char *argv[])
 
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TSDuckMain(MainCode)

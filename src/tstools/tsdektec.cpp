@@ -27,13 +27,14 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsMain.h"
 #include "tsDektecControl.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     ts::DektecControl opt(argc, argv);
     return opt.execute();
 }
+
+TSDuckMain(MainCode)

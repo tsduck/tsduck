@@ -31,9 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsPCSC.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -101,9 +100,8 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_PCSC)
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     opt.error(u"This version of TSDuck was compiled without smartcard support");
     return EXIT_FAILURE;
@@ -207,9 +205,8 @@ bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     int status = EXIT_SUCCESS;
     Options opt(argc, argv);
 
@@ -270,3 +267,5 @@ int main(int argc, char *argv[])
 }
 
 #endif // TS_NO_PCSC
+
+TSDuckMain(MainCode)

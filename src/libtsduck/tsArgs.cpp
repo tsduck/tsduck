@@ -592,7 +592,7 @@ ts::Args::IOption& ts::Args::getIOption(const UChar* name)
         return it->second;
     }
     else {
-        throw ArgsError(_app_name + u": application internal error, option " + name1 + u" undefined");
+        throw ArgsError(_app_name + u": application internal error, option --" + name1 + u" undefined");
     }
 
 }

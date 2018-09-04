@@ -182,6 +182,7 @@ HEADERS += \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
     ../../../src/libtsduck/tsLogicalChannelNumberDescriptor.h \
     ../../../src/libtsduck/tsMACAddress.h \
+    ../../../src/libtsduck/tsMain.h \
     ../../../src/libtsduck/tsMaximumBitrateDescriptor.h \
     ../../../src/libtsduck/tsMD5.h \
     ../../../src/libtsduck/tsMediaGuardDate.h \

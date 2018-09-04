@@ -184,6 +184,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMACAddress.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMain.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />

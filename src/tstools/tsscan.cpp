@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsCOM.h"
 #include "tsTuner.h"
 #include "tsTunerUtils.h"
@@ -46,7 +46,6 @@
 #include "tsDescriptorList.h"
 #include "tsTime.h"
 #include "tsNullReport.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
@@ -577,9 +576,8 @@ namespace {
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::COM com(opt);
 
@@ -590,3 +588,5 @@ int main(int argc, char *argv[])
     opt.exitOnError();
     return EXIT_SUCCESS;
 }
+
+TSDuckMain(MainCode)

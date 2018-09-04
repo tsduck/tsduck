@@ -196,6 +196,7 @@
 #include "tsLocalTimeOffsetDescriptor.h"
 #include "tsLogicalChannelNumberDescriptor.h"
 #include "tsMACAddress.h"
+#include "tsMain.h"
 #include "tsMaximumBitrateDescriptor.h"
 #include "tsMD5.h"
 #include "tsMediaGuardDate.h"
