@@ -465,7 +465,7 @@ bool ts::PMTPlugin::start()
         // A PMT PID is specified, we are now ready to modify all PMT's in this PID
         _service.setPMTPID(intValue<PID>(u"pmt-pid"));
     }
-    else if (present(u"service")) {
+    else {
         _service.set(value(u"service"));
     }
 
