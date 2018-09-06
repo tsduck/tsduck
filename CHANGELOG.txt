@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.14-886
+VERSION 3.14-894
 
 [NEW] New commands and plugins:
 
@@ -25,6 +25,7 @@ VERSION 3.14-886
     plugins "pat", "pmt", "bat", "sdt", "nit".
   * Added option --wide-display to command "tsanalyze" and plugin "analyze".
   * Added option --min-interval to command "tsstuff".
+  * Added option --scte35 to plugin "pcrextract".
   * In plugin "inject", when all input files have specific repetition rates,
     it is no longer required to provide a bitrate for the PID. It is computed
     from the size and repetition rate of all sections.
