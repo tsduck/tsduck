@@ -210,6 +210,9 @@ namespace ts {
         // Internal version of isCurrentThread(), bypass checks
         bool isCurrentThreadUnchecked() const;
 
+        // Wrapper around main() plus system-specific base code.
+        void mainWrapper();
+
 #if defined(TS_WINDOWS)
         ::HANDLE _handle;
         ::DWORD _thread_id;
