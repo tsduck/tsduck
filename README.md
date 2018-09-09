@@ -36,15 +36,13 @@ enhanced and new plugins can be developed using a library of C++ classes.
 
 ### Usage
 
-TSDuck comes with a comprehensive [User's Guide](https://github.com/tsduck/tsduck/raw/master/doc/tsduck.pdf).
+TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs/tsduck.pdf).
 
-All utilities and plugins accept the options `--help` and `--version`.
-Using `--help`, each utility displays its syntax and exits.
+All utilities and plugins accept the option `--help` to display their syntax.
 
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB
-signalization and many other features. See the
-[programming guide](https://tsduck.io/doxy/)
+signalization and many other features. See the [programming guide](https://tsduck.io/doxy/)
 and its [tutorial](https://tsduck.io/doxy/libtutorial.html).
 
 ### Building
@@ -57,6 +55,10 @@ TSDuck can be built on Windows, Linux and macOS systems. See the
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases)
 are available for Windows, Fedora and Ubuntu. On macOS,
 [use the Homebrew packager](https://github.com/tsduck/homebrew-tsduck/blob/master/README.md).
+
+The command `tsversion --check` can be used to check if a new version of TSDuck is available
+online. The command `tsversion --upgrade` downloads the latest binaries for the current
+operating system and upgrades TSDuck.
 
 ### License
 
