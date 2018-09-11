@@ -58,9 +58,10 @@ SUBDIRS += \
     tsplugin_http \
     tsplugin_inject \
     tsplugin_ip \
-    tsplugin_merge  \
+    tsplugin_limit \
+    tsplugin_merge \
     tsplugin_mpe  \
-    tsplugin_mpeinject  \
+    tsplugin_mpeinject \
     tsplugin_mux \
     tsplugin_nit \
     tsplugin_nitscan \
