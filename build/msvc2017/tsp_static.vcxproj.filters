@@ -208,6 +208,12 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_http.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_limit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_sections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\tstools\tspProcessorExecutor.h">

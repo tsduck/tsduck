@@ -61,7 +61,7 @@ namespace ts {
 
     private:
         // Context per PID in the TS.
-        class PIDContext;
+        struct PIDContext;
         typedef SafePtr<PIDContext, NullMutex> PIDContextPtr;
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 

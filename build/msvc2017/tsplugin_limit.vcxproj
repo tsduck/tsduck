@@ -7,7 +7,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_limit.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B9E69220-CFDC-4194-8952-79B54EA413EC}</ProjectGuid>
+    <ProjectGuid>{808889C6-6878-439C-A2AC-F840E8E7D683}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsplugin_limit</RootNamespace>
   </PropertyGroup>
