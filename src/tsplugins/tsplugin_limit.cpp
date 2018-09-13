@@ -107,7 +107,7 @@ namespace ts {
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
 
         // Add bits in excess in counters.
-        void addExcessBits(size_t bits);
+        void addExcessBits(uint64_t bits);
 
         // Inaccessible operations
         LimitPlugin() = delete;
@@ -307,7 +307,7 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 // Add bits in excess in counters.
 //----------------------------------------------------------------------------
 
-void ts::LimitPlugin::addExcessBits(size_t bits)
+void ts::LimitPlugin::addExcessBits(uint64_t bits)
 {
     _excessBits += bits;
     _excessPackets += _excessBits / (8 * PKT_SIZE);
