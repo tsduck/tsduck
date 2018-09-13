@@ -37,50 +37,30 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::Monotonic::Monotonic() :
+ts::Monotonic::Monotonic(bool systemTime) :
     _value(0)
 #if defined(TS_WINDOWS)
     , _handle(INVALID_HANDLE_VALUE)
 #endif
-{
-    init();
-}
-
-
-//----------------------------------------------------------------------------
-// Copy constructor.
-//----------------------------------------------------------------------------
-
-ts::Monotonic::Monotonic(const Monotonic& t) :
-    _value(t._value)
-#if defined(TS_WINDOWS)
-    , _handle(INVALID_HANDLE_VALUE)
-#endif
-{
-    init();
-}
-
-
-//----------------------------------------------------------------------------
-// System-specific initialization
-//----------------------------------------------------------------------------
-
-void ts::Monotonic::init()
 {
 #if defined(TS_WINDOWS)
     if ((_handle = ::CreateWaitableTimer(NULL, FALSE, NULL)) == NULL) {
         throw MonotonicError(::GetLastError());
     }
 #endif
+
+    if (systemTime) {
+        getSystemTime();
+    }
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
+ts::Monotonic::Monotonic(const Monotonic& t) : Monotonic(false)
+{
+    _value = t._value;
+}
 
 ts::Monotonic::~Monotonic()
 {

@@ -130,8 +130,7 @@ void ts::BitRateRegulator::regulatePacket(bool& flush, bool smoothen)
         // In the middle of a sequence with same bitrate, we try to smoothen the regulation.
         // Because of rounding, we tend to pass slightly less packets than requested.
         // See if we need to add some packets from time to time.
-        Monotonic now;
-        now.getSystemTime();
+        const Monotonic now(true);
         // Number of packets we should have passed since beginning of sequence of this bitrate:
         const PacketCounter expected = PacketDistance(_cur_bitrate, (now - _bitrate_start) / NanoSecPerMilliSec);
         if (expected > _bitrate_pkt_cnt) {

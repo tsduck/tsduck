@@ -88,6 +88,19 @@ namespace ts {
         void resetAndUseDTS(size_t min_pid, size_t min_dts);
 
         //!
+        //! Ignore transport stream errors such as discontinuities.
+        //! By default, TS errors are not ignored. Discontinuities and other errors
+        //! suspend the analysis until the stream is resynchronized. This can be
+        //! summarized as follow:
+        //! - When errors are not ignored (the default), the bitrate of the original
+        //!   stream (before corruptions) is evaluated.
+        //! - When errors are ignored, the bitrate of the received stream is evaluated,
+        //!   "missing" packets being considered as non-existent.
+        //! @param [in] ignore When true, ignore errors.
+        //!
+        void setIgnoreErrors(bool ignore);
+
+        //!
         //! The following method feeds the analyzer with a TS packet.
         //! @param [in] pkt A new transport stream packet.
         //! @return True if we have collected enough packet to evaluate TS bitrate.
@@ -185,6 +198,7 @@ namespace ts {
 
         // Private members:
         bool     _use_dts;            // Use DTS instead of PCR
+        bool     _ignore_errors;      // Ignore TS errors such as discontinuities.
         size_t   _min_pid;            // Min # of PID
         size_t   _min_pcr;            // Min # of PCR per PID
         bool     _bitrate_valid;      // Bitrate evaluation is valid
