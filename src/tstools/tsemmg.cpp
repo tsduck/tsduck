@@ -501,8 +501,7 @@ int MainCode(int argc, char *argv[])
     ts::Packetizer packetizer(ts::PID_NULL, &sectionProvider);
 
     // Start time.
-    ts::Monotonic startTime;
-    startTime.getSystemTime();
+    const ts::Monotonic startTime(true);
 
     // This clock will be our reference.
     ts::Monotonic currentTime(startTime);

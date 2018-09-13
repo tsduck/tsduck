@@ -45,14 +45,15 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    uint32_t    min_pcr;     // Min # of PCR per PID
-    uint16_t    min_pid;     // Min # of PID
-    ts::UString pcr_name;    // Time stamp type name
-    bool        use_dts;     // Use DTS instead of PCR
-    bool        all;         // All packets analysis
-    bool        full;        // Full analysis
-    bool        value_only;  // Output value only
-    ts::UString infile;      // Input file name
+    uint32_t    min_pcr;       // Min # of PCR per PID
+    uint16_t    min_pid;       // Min # of PID
+    ts::UString pcr_name;      // Time stamp type name
+    bool        use_dts;       // Use DTS instead of PCR
+    bool        all;           // All packets analysis
+    bool        full;          // Full analysis
+    bool        value_only;    // Output value only
+    bool        ignore_errors; // Ignore TS errors
+    ts::UString infile;        // Input file name
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -64,6 +65,7 @@ Options::Options(int argc, char *argv[]) :
     all(false),
     full(false),
     value_only(false),
+    ignore_errors(false),
     infile()
 {
     option(u"", 0, STRING, 0, 1);
@@ -83,6 +85,13 @@ Options::Options(int argc, char *argv[]) :
     help(u"full",
          u"Full analysis. The file is entirely analyzed (as with --all) and the "
          u"final report includes a complete per PID bitrate analysis.");
+
+    option(u"ignore-errors", 'i');
+    help(u"ignore-errors",
+         u"Ignore transport stream errors such as discontinuities. When errors are "
+         u"not ignored (the default), the bitrate of the original stream (before corruptions) "
+         u"is evaluated. When errors are ignored, the bitrate of the received stream is "
+         u"evaluated, missing packets being considered as non-existent.");
 
     option(u"min-pcr", 0, POSITIVE);
     help(u"min-pcr", u"p analysis when that number of PCR are read from the required minimum number of PID (default: 64).");
@@ -105,6 +114,7 @@ Options::Options(int argc, char *argv[]) :
     min_pid = intValue<uint16_t>(u"min-pid", 1);
     use_dts = present(u"dts");
     pcr_name = use_dts ? u"DTS" : u"PCR";
+    ignore_errors = present(u"ignore-errors");
 
     exitOnError();
 }
@@ -121,9 +131,10 @@ int MainCode(int argc, char *argv[])
     ts::InputRedirector input(opt.infile, opt);
     ts::TSPacket pkt;
 
-    // Reset analyzer for DTS with --dts
+    // Configure the PCR analyzer.
+    zer.setIgnoreErrors(opt.ignore_errors);
     if (opt.use_dts) {
-        zer.resetAndUseDTS (opt.min_pid, opt.min_pcr);
+        zer.resetAndUseDTS(opt.min_pid, opt.min_pcr);
     }
 
     // Read all packets in the file and pass them to the PCR analyzer.

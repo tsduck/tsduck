@@ -53,6 +53,11 @@ namespace ts {
     const size_t PKT_SIZE = 188;
 
     //!
+    //! MPEG TS packet size in bits.
+    //!
+    const size_t PKT_SIZE_BITS = 8 * PKT_SIZE;
+
+    //!
     //! Size in bytes of a Reed-Solomon outer FEC.
     //!
     const size_t RS_SIZE = 16;
