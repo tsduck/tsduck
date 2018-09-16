@@ -163,6 +163,14 @@
     <_any in="_descriptors"/>
   </TOT>
 
+  <!-- DSM-CC Stream Descriptors Table -->
+  <DSMCC_stream_descriptors_table
+      version="uint5, default=0"
+      current="bool, default=true"
+      table_id_extension="uint16, default=0xFFFF">
+    <_any in="_descriptors"/>
+  </DSMCC_stream_descriptors_table>
+
   <!-- IP/MAC Notification Table -->
   <INT version="uint5, default=0"
        current="bool, default=true"
@@ -948,6 +956,17 @@
         UTC_offset="uint16, required"/>
 
     <STD_descriptor leak_valid="bool, required"/>
+
+    <stream_event_descriptor
+        event_id="uint16, required"
+        event_NPT="uint33, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+      <private_text>
+        ASCII string to be used instead of private_data
+      </private_text>
+    </stream_event_descriptor>
 
     <stream_identifier_descriptor component_tag="uint8, required"/>
 

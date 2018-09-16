@@ -139,7 +139,7 @@ namespace ts {
     //! Define a DisplaySection static function.
     //!
 #define DeclareDisplaySection()                            \
-        /** A static method to display a BAT section.   */ \
+        /** A static method to display a section.       */ \
         /** @param [in,out] display Display engine.     */ \
         /** @param [in] section The section to display. */ \
         /** @param [in] indent Indentation width.       */ \
