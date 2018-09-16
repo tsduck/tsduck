@@ -109,6 +109,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDIILocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h" />
@@ -311,6 +312,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsStandaloneTableDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStaticInstance.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSTDDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsStreamEventDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
@@ -534,6 +536,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDIILocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
@@ -695,6 +698,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSSULinkageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStandaloneTableDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSTDDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsStreamEventDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />

@@ -107,6 +107,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDIILocationDescriptor.h \
     ../../../src/libtsduck/tsDiscontinuityInformationTable.h \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
+    ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
@@ -309,6 +310,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsSTDDescriptor.h \
+    ../../../src/libtsduck/tsStreamEventDescriptor.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
     ../../../src/libtsduck/tsStringifyInterface.h \
     ../../../src/libtsduck/tsStuffingDescriptor.h \
@@ -522,6 +524,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDescriptorList.cpp \
     ../../../src/libtsduck/tsDIILocationDescriptor.cpp \
     ../../../src/libtsduck/tsDiscontinuityInformationTable.cpp \
+    ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
@@ -683,6 +686,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSSULinkageDescriptor.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
     ../../../src/libtsduck/tsSTDDescriptor.cpp \
+    ../../../src/libtsduck/tsStreamEventDescriptor.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsStuffingDescriptor.cpp \
     ../../../src/libtsduck/tsSubRipGenerator.cpp \

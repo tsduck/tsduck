@@ -28,20 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a DSM-CC Stream Descriptors table.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 904
+#include "tsAbstractDescriptorsTable.h"
+
+namespace ts {
+    //!
+    //! Representation of a DSM-CC Stream Descriptors table.
+    //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7.
+    //! @ingroup table
+    //!
+    class TSDUCKDLL DSMCCStreamDescriptorsTable : public AbstractDescriptorsTable
+    {
+    public:
+        uint16_t& table_id_extension; //! User-defined in the case of DSM-CC Stream Descriptors table.
+
+        //!
+        //! Default constructor.
+        //! @param [in] vers Table version number.
+        //! @param [in] cur True if table is current, false if table is next.
+        //! @param [in] tid_ext User-defined table id extension.
+        //!
+        DSMCCStreamDescriptorsTable(uint8_t vers = 0, bool cur = true, uint16_t tid_ext = 0);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        DSMCCStreamDescriptorsTable(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        DSMCCStreamDescriptorsTable(const DSMCCStreamDescriptorsTable& other);
+
+        // Inherited methods
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplaySection();
+    };
+}

@@ -2,6 +2,7 @@
     REF_TYPE(BAT);
     REF_TYPE(CAT);
     REF_TYPE(DiscontinuityInformationTable);
+    REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
     REF_TYPE(INT);
     REF_TYPE(NIT);
@@ -115,6 +116,7 @@
     REF_TYPE(SSUDataBroadcastIdDescriptor);
     REF_TYPE(SSULinkageDescriptor);
     REF_TYPE(STDDescriptor);
+    REF_TYPE(StreamEventDescriptor);
     REF_TYPE(StreamIdentifierDescriptor);
     REF_TYPE(StuffingDescriptor);
     REF_TYPE(SubtitlingDescriptor);

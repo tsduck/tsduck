@@ -28,20 +28,53 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a DSM-CC stream_event_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 904
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+
+    //!
+    //! Representation of a DSM-CC stream_event_descriptor.
+    //! @see ISO/IEC 13818-6, ITU-T Rec. 8.3.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL StreamEventDescriptor : public AbstractDescriptor
+    {
+    public:
+        // StreamEventDescriptor public members:
+        uint16_t  event_id;      //!< Event id.
+        uint64_t  event_NPT;     //!< 33 bits, event Normal Play Time (NPT).
+        ByteBlock private_data;  //!< Specific private data.
+
+        //!
+        //! Default constructor.
+        //! @param [in] id Event id.
+        //! @param [in] npt Event NPT.
+        //!
+        StreamEventDescriptor(uint16_t id = 0, uint64_t npt = 0);
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        StreamEventDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+        //!
+        //! Check if all bytes in private part are ASCII characters.
+        //! @return True if all bytes in private part are ASCII characters.
+        //!
+        bool asciiPrivate() const;
+    };
+}
