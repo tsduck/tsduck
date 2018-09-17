@@ -83,7 +83,7 @@ void ts::DSMCCStreamDescriptorsTable::DisplaySection(TablesDisplay& display, con
 void ts::DSMCCStreamDescriptorsTable::buildXML(xml::Element* root) const
 {
     AbstractDescriptorsTable::buildXML(root);
-    root->setIntAttribute(u"table_id_extension", _tid_ext);
+    root->setIntAttribute(u"table_id_extension", _tid_ext, true);
 }
 
 

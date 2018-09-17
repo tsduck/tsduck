@@ -214,6 +214,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsNames.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNetworkNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNIT.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsNPTEndpointDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsNPTReferenceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNullMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNullReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNVODReferenceDescriptor.h" />
@@ -314,6 +316,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSTDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamEventDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsStreamModeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
@@ -621,6 +624,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNPTEndpointDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNPTReferenceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNullReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNVODReferenceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsObject.cpp" />
@@ -700,6 +705,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSTDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamEventDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsStreamModeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />

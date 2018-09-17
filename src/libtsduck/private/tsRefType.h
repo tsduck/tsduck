@@ -88,6 +88,8 @@
     REF_TYPE(MultilingualServiceNameDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
     REF_TYPE(NetworkNameDescriptor);
+    REF_TYPE(NPTEndpointDescriptor);
+    REF_TYPE(NPTReferenceDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
     REF_TYPE(PartialTransportStreamDescriptor);
@@ -118,6 +120,7 @@
     REF_TYPE(STDDescriptor);
     REF_TYPE(StreamEventDescriptor);
     REF_TYPE(StreamIdentifierDescriptor);
+    REF_TYPE(StreamModeDescriptor);
     REF_TYPE(StuffingDescriptor);
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);

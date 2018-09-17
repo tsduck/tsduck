@@ -60,10 +60,7 @@ ts::StreamEventDescriptor::StreamEventDescriptor(uint16_t id, uint64_t npt) :
 //----------------------------------------------------------------------------
 
 ts::StreamEventDescriptor::StreamEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    event_id(0),
-    event_NPT(0),
-    private_data()
+    StreamEventDescriptor()
 {
     deserialize(desc, charset);
 }

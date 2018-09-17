@@ -818,6 +818,18 @@
 
     <network_name_descriptor network_name="string, required"/>
 
+    <NPT_endpoint_descriptor
+        start_NPT="uint33, required"
+        stop_NPT="uint33, required"/>
+
+    <NPT_reference_descriptor
+        post_discontinuity="bool, default=false"
+        content_id="uint7, default=0x7F"
+        STC_reference="uint33, required"
+        NPT_reference="uint33, required"
+        scale_numerator="uint16, required"
+        scale_denominator="uint16, required"/>
+
     <NVOD_reference_descriptor>
       <!-- One per service -->
       <service transport_stream_id="uint16, required"
@@ -956,6 +968,8 @@
         UTC_offset="uint16, required"/>
 
     <STD_descriptor leak_valid="bool, required"/>
+
+    <stream_mode_descriptor stream_mode="uint8, required"/>
 
     <stream_event_descriptor
         event_id="uint16, required"

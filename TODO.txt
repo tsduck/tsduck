@@ -19,12 +19,6 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.62  metadata_STD_descriptor
   - 2.12.6  metadata_section
 
-  ISO/IEC 13818-6 (DSM-CC)
-  - 8.1.1   NPT_reference_descriptor
-  - 8.1.5   NPT_endpoint_descriptor
-  - 8.2     stream_mode_descriptor
-  - 8.3     stream_event_descriptor
-
   ETSI EN 300 468 (DVB SI)
   - 5.2.8    Stuffing Table (ST)
   - 6.2.3    announcement_support_descriptor
