@@ -2806,3 +2806,18 @@ Bits = 32
 0x2F000000 = USB too much write data
 0x30000000 = USB no burst read
 0x31000000 = USB null penum
+
+[DSMCCStreamMode]
+# DSM-CC U-U state machine mode in stream_mode_descriptor.
+# See ISO 13-818-6, sections 8.2 and 5.5.1.3.4.
+Bits = 8
+0 = Open
+1 = Pause
+2 = Transport
+3 = Transport pause
+4 = Search transport
+5 = Search transport pause
+6 = Pause search transport
+7 = End of stream
+8 = Pre search transport
+9 = Pre search transport pause

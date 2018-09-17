@@ -28,20 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a DSM-CC NPT_endpoint_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 906
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+
+    //!
+    //! Representation of a DSM-CC NPT_endpoint_descriptor.
+    //! @see ISO/IEC 13818-6, 8.1.5.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL NPTEndpointDescriptor : public AbstractDescriptor
+    {
+    public:
+        // NPTEndpointDescriptor public members:
+        uint64_t start_NPT;   //!< 33 bits, start Normal Play Time (NPT).
+        uint64_t stop_NPT;    //!< 33 bits, stop Normal Play Time (NPT).
+
+        //!
+        //! Default constructor.
+        //! @param [in] start Start NPT.
+        //! @param [in] stop Stop NPT.
+        //!
+        NPTEndpointDescriptor(uint64_t start = 0, uint64_t stop = 0);
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        NPTEndpointDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

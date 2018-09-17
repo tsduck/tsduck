@@ -44,7 +44,7 @@ namespace ts {
     class TSDUCKDLL DSMCCStreamDescriptorsTable : public AbstractDescriptorsTable
     {
     public:
-        uint16_t& table_id_extension; //! User-defined in the case of DSM-CC Stream Descriptors table.
+        uint16_t& table_id_extension; //!< User-defined in the case of DSM-CC Stream Descriptors table.
 
         //!
         //! Default constructor.

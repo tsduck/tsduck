@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a DSM-CC stream_mode_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 906
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+
+    //!
+    //! Representation of a DSM-CC stream_mode_descriptor.
+    //! @see ISO/IEC 13818-6, 8.2.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL StreamModeDescriptor : public AbstractDescriptor
+    {
+    public:
+        // StreamModeDescriptor public members:
+        uint8_t stream_mode;    //!< Stream mode, state machine.
+
+        //!
+        //! Default constructor.
+        //! @param [in] mode Stream mode.
+        //!
+        StreamModeDescriptor(uint8_t mode = 0);
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        StreamModeDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

@@ -212,6 +212,8 @@ HEADERS += \
     ../../../src/libtsduck/tsNames.h \
     ../../../src/libtsduck/tsNetworkNameDescriptor.h \
     ../../../src/libtsduck/tsNIT.h \
+    ../../../src/libtsduck/tsNPTEndpointDescriptor.h \
+    ../../../src/libtsduck/tsNPTReferenceDescriptor.h \
     ../../../src/libtsduck/tsNullMutex.h \
     ../../../src/libtsduck/tsNullReport.h \
     ../../../src/libtsduck/tsNVODReferenceDescriptor.h \
@@ -312,6 +314,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSTDDescriptor.h \
     ../../../src/libtsduck/tsStreamEventDescriptor.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsStreamModeDescriptor.h \
     ../../../src/libtsduck/tsStringifyInterface.h \
     ../../../src/libtsduck/tsStuffingDescriptor.h \
     ../../../src/libtsduck/tsSubRipGenerator.h \
@@ -609,6 +612,8 @@ SOURCES += \
     ../../../src/libtsduck/tsNames.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
     ../../../src/libtsduck/tsNIT.cpp \
+    ../../../src/libtsduck/tsNPTEndpointDescriptor.cpp \
+    ../../../src/libtsduck/tsNPTReferenceDescriptor.cpp \
     ../../../src/libtsduck/tsNullReport.cpp \
     ../../../src/libtsduck/tsNVODReferenceDescriptor.cpp \
     ../../../src/libtsduck/tsObject.cpp \
@@ -688,6 +693,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSTDDescriptor.cpp \
     ../../../src/libtsduck/tsStreamEventDescriptor.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsStreamModeDescriptor.cpp \
     ../../../src/libtsduck/tsStuffingDescriptor.cpp \
     ../../../src/libtsduck/tsSubRipGenerator.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
