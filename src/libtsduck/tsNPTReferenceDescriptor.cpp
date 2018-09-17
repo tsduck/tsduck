@@ -78,12 +78,12 @@ void ts::NPTReferenceDescriptor::computeScale(const ts::NPTReferenceDescriptor& 
     // See ISO/IEC 13818-6, 8.1.2.
     if (force || scale_numerator == 0 || scale_denominator == 0) {
         if (NPT_reference > other_reference.NPT_reference) {
-            scale_numerator = NPT_reference - other_reference.NPT_reference;
-            scale_denominator = STC_reference - other_reference.STC_reference;
+            scale_numerator = uint16_t(NPT_reference - other_reference.NPT_reference);
+            scale_denominator = uint16_t(STC_reference - other_reference.STC_reference);
         }
         else {
-            scale_numerator = other_reference.NPT_reference - NPT_reference;
-            scale_denominator = other_reference.STC_reference - STC_reference;
+            scale_numerator = uint16_t(other_reference.NPT_reference - NPT_reference);
+            scale_denominator = uint16_t(other_reference.STC_reference - STC_reference);
         }
     }
 }
