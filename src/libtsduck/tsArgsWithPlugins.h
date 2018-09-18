@@ -48,12 +48,12 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] min_input Minimum number of input plugins.
-        //! @param [in] max_input Maximum number of input plugins.
+        //! @param [in] min_inputs Minimum number of input plugins.
+        //! @param [in] max_inputs Maximum number of input plugins.
         //! @param [in] min_plugins Minimum number of packet processor plugins.
         //! @param [in] max_plugins Maximum number of packet processor plugins.
-        //! @param [in] min_output Minimum number of output plugins.
-        //! @param [in] max_output Maximum number of output plugins.
+        //! @param [in] min_outputs Minimum number of output plugins.
+        //! @param [in] max_outputs Maximum number of output plugins.
         //! @param [in] description A short one-line description.
         //! @param [in] syntax A short one-line syntax summary.
         //! @param [in] flags An or'ed mask of Flags values.
