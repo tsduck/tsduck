@@ -268,4 +268,4 @@ int MainCode(int argc, char *argv[])
 
 #endif // TS_NO_PCSC
 
-TSDuckMain(MainCode)
+TS_MAIN(MainCode)

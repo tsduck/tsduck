@@ -2055,7 +2055,7 @@ TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar c);
 //! @param [in] obj A stringifiable object.
 //! @return A reference to the @a strm object.
 //!
-inline std::ostream& operator<<(std::ostream& strm, const ts::StringifyInterface& obj)
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::StringifyInterface& obj)
 {
     return strm << obj.toString();
 }

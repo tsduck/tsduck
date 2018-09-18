@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::PluginExecutor::PluginExecutor(Options* options,
-                                        const Options::PluginOptions* pl_options,
+                                        const PluginOptions* pl_options,
                                         const ThreadAttributes& attributes,
                                         Mutex& global_mutex) :
     RingNode(),
@@ -63,7 +63,7 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
 
     // Create the plugin instance object
     switch (pl_options->type) {
-        case Options::INPUT: {
+        case INPUT_PLUGIN: {
             NewInputProfile allocator = PluginRepository::Instance()->getInput(_name, *options);
             if (allocator != 0) {
                 _shlib = allocator(this);
@@ -71,7 +71,7 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
             }
             break;
         }
-        case Options::OUTPUT: {
+        case OUTPUT_PLUGIN: {
             NewOutputProfile allocator = PluginRepository::Instance()->getOutput(_name, *options);
             if (allocator != 0) {
                 _shlib = allocator(this);
@@ -79,7 +79,7 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
             }
             break;
         }
-        case Options::PROCESSOR: {
+        case PROCESSOR_PLUGIN: {
             NewProcessorProfile allocator = PluginRepository::Instance()->getProcessor(_name, *options);
             if (allocator != 0) {
                 _shlib = allocator(this);

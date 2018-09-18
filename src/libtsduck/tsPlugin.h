@@ -37,6 +37,7 @@
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsTSPacket.h"
+#include "tsEnumeration.h"
 
 namespace ts {
 
@@ -465,6 +466,26 @@ namespace ts {
     //! @return A new allocated object implementing ts::ProcessorPlugin.
     //!
     typedef ProcessorPlugin* (*NewProcessorProfile)(TSP* tsp);
+
+
+    //-------------------------------------------------------------------------
+    // Plugin types.
+    //-------------------------------------------------------------------------
+
+    //!
+    //! Each plugin has one of the following types
+    //! @ingroup plugin
+    //!
+    enum PluginType {
+        INPUT_PLUGIN,     //!< Input plugin.
+        OUTPUT_PLUGIN,    //!< Output plugin.
+        PROCESSOR_PLUGIN  //!< Packet processor plugin.
+    };
+
+    //!
+    //! Displayable names of plugin types.
+    //!
+    TSDUCKDLL extern const Enumeration PluginTypeNames;
 }
 
 

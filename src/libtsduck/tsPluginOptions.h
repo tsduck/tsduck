@@ -26,15 +26,41 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Command-line options for one plugin.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsMain.h"
-#include "tsDektecControl.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsPlugin.h"
+#include "tsDisplayInterface.h"
 
-int MainCode(int argc, char *argv[])
-{
-    ts::DektecControl opt(argc, argv);
-    return opt.execute();
+namespace ts {
+    //!
+    //! Command-line options for one plugin.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL PluginOptions: public DisplayInterface
+    {
+    public:
+        //!
+        //! Default constructor.
+        //! @param [in] type Plugin type.
+        //! @param [in] name Plugin name.
+        //!
+        PluginOptions(PluginType type = PROCESSOR_PLUGIN, const UString& name = UString());
+
+        // Implementation of DisplayInterface
+        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const override;
+
+        PluginType    type;  //!< Plugin type.
+        UString       name;  //!< Plugin name.
+        UStringVector args;  //!< Plugin options.
+    };
+
+    //!
+    //! A vector of plugin options, representing a processing chain.
+    //!
+    typedef std::vector<PluginOptions> PluginOptionsVector;
 }
-
-TS_MAIN(MainCode)

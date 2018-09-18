@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::OutputExecutor::OutputExecutor(Options* options,
-                                        const Options::PluginOptions* pl_options,
+                                        const PluginOptions* pl_options,
                                         const ThreadAttributes& attributes,
                                         Mutex& global_mutex) :
 

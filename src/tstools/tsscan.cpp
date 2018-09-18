@@ -589,4 +589,4 @@ int MainCode(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-TSDuckMain(MainCode)
+TS_MAIN(MainCode)

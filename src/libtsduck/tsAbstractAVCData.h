@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
+#include "tsDisplayInterface.h"
 
 namespace ts {
 
@@ -49,7 +49,7 @@ namespace ts {
     //!
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL AbstractAVCData
+    class TSDUCKDLL AbstractAVCData: public DisplayInterface
     {
     public:
         //!
@@ -78,16 +78,6 @@ namespace ts {
         //! @return The @link valid @endlink flag.
         //!
         virtual bool parse(const void* addr, size_t size) = 0;
-
-        //!
-        //! Display the content in human-readable format.
-        //! Must be reimplemented by subclasses.
-        //! @param [in,out] stream The stream where to print the content.
-        //! Standard output by default.
-        //! @param [in] margin The prefix string on each line, empty by default.
-        //! @return A reference to @a stream.
-        //!
-        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const = 0;
 
         //!
         //! Valid flag.
@@ -151,16 +141,4 @@ namespace ts {
             #pragma warning (pop)
         #endif
     };
-}
-
-//!
-//! Output operator for ts::AbstractAVCData.
-//! Use ts::AbstractAVCData::display() to format the content.
-//! @param [in,out] strm The stream where to print the content.
-//! @param [in] data The instance of a subclass of ts::AbstractAVCData to display.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::AbstractAVCData& data)
-{
-    return data.display(strm);
 }

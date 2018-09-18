@@ -26,79 +26,34 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport Stream analysis utility
-//
-//----------------------------------------------------------------------------
 
-#include "tsMain.h"
-#include "tsTSAnalyzerReport.h"
-#include "tsTSAnalyzerOptions.h"
-#include "tsInputRedirector.h"
+#include "tsPluginOptions.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Default constructor for plugin options.
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+ts::PluginOptions::PluginOptions(ts::PluginType type_, const ts::UString& name_) :
+    type(type_),
+    name(name_),
+    args()
 {
-    Options(int argc, char *argv[]);
 
-    ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
-    ts::UString           infile;    // Input file name
-    ts::TSAnalyzerOptions analysis;  // Analysis options.
-};
-
-Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),
-    bitrate(0),
-    infile(),
-    analysis()
-{
-    // Define all standard analysis options.
-    analysis.defineOptions(*this);
-
-    option(u"", 0, STRING, 0, 1);
-    help(u"", u"Input MPEG capture file (standard input if omitted).");
-
-    option(u"bitrate", 'b', UNSIGNED);
-    help(u"bitrate",
-         u"Specifies the bitrate of the transport stream in bits/second "
-         u"(based on 188-byte packets). By default, the bitrate is "
-         u"evaluated using the PCR in the transport stream.");
-
-    analyze(argc, argv);
-
-    infile = value(u"");
-    bitrate = intValue<ts::BitRate>(u"bitrate");
-    analysis.load(*this);
-
-    exitOnError();
 }
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Display the content of the object to a stream
 //----------------------------------------------------------------------------
 
-int MainCode(int argc, char *argv[])
+std::ostream& ts::PluginOptions::display(std::ostream& strm, const UString& margin) const
 {
-    Options opt(argc, argv);
-    ts::TSAnalyzerReport analyzer(opt.bitrate);
-    ts::InputRedirector input(opt.infile, opt);
-    ts::TSPacket pkt;
-
-    analyzer.setAnalysisOptions(opt.analysis);
-
-    while (pkt.read(std::cin, true, opt)) {
-        analyzer.feedPacket(pkt);
+    strm << margin << "Name: " << name << std::endl
+         << margin << "Type: " << PluginTypeNames.name(type) << std::endl;
+    for (size_t i = 0; i < args.size(); ++i) {
+        strm << margin << "Arg[" << i << "]: \"" << args[i] << "\"" << std::endl;
     }
-
-    analyzer.report(std::cout, opt.analysis);
-
-    return EXIT_SUCCESS;
+    return strm;
 }
-
-TS_MAIN(MainCode)

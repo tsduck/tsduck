@@ -105,6 +105,8 @@ int MainCode(int argc, char *argv[])
     // Get command line options.
     ts::tsp::Options opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
+    assert(opt.inputs.size() == 1);
+    assert(opt.outputs.size() == 1);
 
     // Get the repository of plugins.
     ts::PluginRepository* plugins = ts::PluginRepository::Instance();
@@ -151,14 +153,14 @@ int MainCode(int argc, char *argv[])
     // plugin has a hight priority to make room in the buffer, but not as
     // high as the input which must remain the top-most priority?
 
-    ts::tsp::InputExecutor* input = new ts::tsp::InputExecutor(&opt, &opt.input, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), global_mutex);
-    ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.output, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
+    ts::tsp::InputExecutor* input = new ts::tsp::InputExecutor(&opt, &opt.inputs.front(), ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), global_mutex);
+    ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.outputs.front(), ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
     output->ringInsertAfter(input);
 
     // Check if at least one plugin prefers real-time defaults.
     bool realtime = opt.realtime == ts::TRUE || input->isRealTime() || output->isRealTime();
 
-    for (ts::tsp::Options::PluginOptionsVector::const_iterator it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
+    for (auto it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
         ts::tsp::PluginExecutor* p = new ts::tsp::ProcessorExecutor(&opt, &*it, ts::ThreadAttributes(), global_mutex);
         p->ringInsertBefore(output);
         realtime = realtime || p->isRealTime();
@@ -252,4 +254,4 @@ int MainCode(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-TSDuckMain(MainCode)
+TS_MAIN(MainCode)
