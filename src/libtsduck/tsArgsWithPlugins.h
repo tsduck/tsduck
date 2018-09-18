@@ -43,7 +43,7 @@ namespace ts {
     //! plugin descriptions apart.
     //! @ingroup plugin
     //!
-    class ArgsWithPlugins: public Args
+    class TSDUCKDLL ArgsWithPlugins: public Args
     {
     public:
         //!

@@ -41,6 +41,22 @@
 
 namespace ts {
 
+    //!
+    //! Each plugin has one of the following types
+    //! @ingroup plugin
+    //!
+    enum PluginType {
+        INPUT_PLUGIN,     //!< Input plugin.
+        OUTPUT_PLUGIN,    //!< Output plugin.
+        PROCESSOR_PLUGIN  //!< Packet processor plugin.
+    };
+
+    //!
+    //! Displayable names of plugin types.
+    //!
+    TSDUCKDLL extern const Enumeration PluginTypeNames;
+
+
     //-------------------------------------------------------------------------
     //! TSP callback for plugins.
     //-------------------------------------------------------------------------
@@ -87,7 +103,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 5;
+        static const int API_VERSION = 6;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -245,6 +261,12 @@ namespace ts {
         virtual bool isRealTime() {return false;}
 
         //!
+        //! Get the plugin type.
+        //! @return The plugin type.
+        //!
+        virtual PluginType type() const = 0;
+
+        //!
         //! Constructor.
         //!
         //! @param [in] to_tsp Associated callback to @c tsp executable.
@@ -312,6 +334,9 @@ namespace ts {
         //!
         virtual ~InputPlugin() {}
 
+        // Implementation of inherited interface.
+        virtual PluginType type() const override { return INPUT_PLUGIN; }
+
     private:
         // Inaccessible operations
         InputPlugin() = delete;
@@ -368,6 +393,9 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~OutputPlugin() {}
+
+        // Implementation of inherited interface.
+        virtual PluginType type() const override { return OUTPUT_PLUGIN; }
 
     private:
         // Inaccessible operations
@@ -449,6 +477,9 @@ namespace ts {
         //!
         virtual ~ProcessorPlugin() {}
 
+        // Implementation of inherited interface.
+        virtual PluginType type() const override { return PROCESSOR_PLUGIN; }
+
     private:
         // Inaccessible operations
         ProcessorPlugin() = delete;
@@ -466,26 +497,6 @@ namespace ts {
     //! @return A new allocated object implementing ts::ProcessorPlugin.
     //!
     typedef ProcessorPlugin* (*NewProcessorProfile)(TSP* tsp);
-
-
-    //-------------------------------------------------------------------------
-    // Plugin types.
-    //-------------------------------------------------------------------------
-
-    //!
-    //! Each plugin has one of the following types
-    //! @ingroup plugin
-    //!
-    enum PluginType {
-        INPUT_PLUGIN,     //!< Input plugin.
-        OUTPUT_PLUGIN,    //!< Output plugin.
-        PROCESSOR_PLUGIN  //!< Packet processor plugin.
-    };
-
-    //!
-    //! Displayable names of plugin types.
-    //!
-    TSDUCKDLL extern const Enumeration PluginTypeNames;
 }
 
 
