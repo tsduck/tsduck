@@ -45,7 +45,7 @@
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!
-#define TSDuckMain(func)                                                      \
+#define TS_MAIN(func)                                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
         if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||                  \

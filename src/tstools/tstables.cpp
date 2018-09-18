@@ -104,4 +104,4 @@ int MainCode(int argc, char *argv[])
     return logger.hasErrors() ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
-TSDuckMain(MainCode)
+TS_MAIN(MainCode)

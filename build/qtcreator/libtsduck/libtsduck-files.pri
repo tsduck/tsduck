@@ -39,6 +39,7 @@ HEADERS += \
     ../../../src/libtsduck/tsArgMixTemplate.h \
     ../../../src/libtsduck/tsArgs.h \
     ../../../src/libtsduck/tsArgsTemplate.h \
+    ../../../src/libtsduck/tsArgsWithPlugins.h \
     ../../../src/libtsduck/tsAssociationTagDescriptor.h \
     ../../../src/libtsduck/tsAsyncReport.h \
     ../../../src/libtsduck/tsAudioAttributes.h \
@@ -106,6 +107,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDescriptorListTemplate.h \
     ../../../src/libtsduck/tsDIILocationDescriptor.h \
     ../../../src/libtsduck/tsDiscontinuityInformationTable.h \
+    ../../../src/libtsduck/tsDisplayInterface.h \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
@@ -235,6 +237,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPIDOperator.h \
     ../../../src/libtsduck/tsPlatform.h \
     ../../../src/libtsduck/tsPlugin.h \
+    ../../../src/libtsduck/tsPluginOptions.h \
     ../../../src/libtsduck/tsPluginRepository.h \
     ../../../src/libtsduck/tsPluginSharedLibrary.h \
     ../../../src/libtsduck/tsPMT.h \
@@ -473,6 +476,7 @@ SOURCES += \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
     ../../../src/libtsduck/tsArgs.cpp \
+    ../../../src/libtsduck/tsArgsWithPlugins.cpp \
     ../../../src/libtsduck/tsAssociationTagDescriptor.cpp \
     ../../../src/libtsduck/tsAsyncReport.cpp \
     ../../../src/libtsduck/tsAudioAttributes.cpp \
@@ -632,6 +636,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPESPacket.cpp \
     ../../../src/libtsduck/tsPIDOperator.cpp \
     ../../../src/libtsduck/tsPlugin.cpp \
+    ../../../src/libtsduck/tsPluginOptions.cpp \
     ../../../src/libtsduck/tsPluginRepository.cpp \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPMT.cpp \

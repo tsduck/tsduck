@@ -41,6 +41,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgsTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsArgsWithPlugins.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAssociationTagDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h" />
@@ -108,6 +109,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorListTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDIILocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDisplayInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
@@ -237,6 +239,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPIDOperator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPlatform.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPlugin.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPluginOptions.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPluginRepository.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPluginSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h" />
@@ -485,6 +488,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsArgsWithPlugins.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAssociationTagDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp" />
@@ -644,6 +648,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPESPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPIDOperator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPluginOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginRepository.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPMT.cpp" />

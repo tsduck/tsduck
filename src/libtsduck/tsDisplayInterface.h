@@ -26,15 +26,45 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Abstract interface displaying an object.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsMain.h"
-#include "tsDektecControl.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsUString.h"
 
-int MainCode(int argc, char *argv[])
-{
-    ts::DektecControl opt(argc, argv);
-    return opt.execute();
+namespace ts {
+    //!
+    //! An interface to be implemented by classes supporting display to a standard text stream.
+    //! @ingroup cpp
+    //!
+    class TSDUCKDLL DisplayInterface
+    {
+    public:
+        //!
+        //! Display the content of this object to a stream.
+        //! @param [in,out] stream The stream where to print the content. Standard output by default.
+        //! @param [in] margin The prefix string on each line, empty by default.
+        //! @return A reference to @a stream.
+        //!
+        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const = 0;
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~DisplayInterface() {}
+    };
 }
 
-TS_MAIN(MainCode)
+//!
+//! Display operator for displayable objects.
+//! @param [in,out] strm Where to output the content.
+//! @param [in] obj The object to display.
+//! @return A reference to @a strm.
+//!
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::DisplayInterface& obj)
+{
+    return obj.display(strm);
+}

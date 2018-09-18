@@ -481,4 +481,4 @@ int MainCode(int argc, char *argv[])
     return diff_count == 0 && opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-TSDuckMain(MainCode)
+TS_MAIN(MainCode)

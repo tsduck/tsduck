@@ -163,4 +163,4 @@ int MainCode(int argc, char *argv[])
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-TSDuckMain(MainCode)
+TS_MAIN(MainCode)
