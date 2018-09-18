@@ -91,6 +91,15 @@ namespace ts {
         bool setReceiveBufferSize(size_t size, Report& report = CERR);
 
         //!
+        //! Set the receive timeout.
+        //! @param [in] timeout Receive timeout in milliseconds.
+        //! If negative, receive timeout is not used.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool setReceiveTimeout(MilliSecond timeout, Report& report = CERR);
+
+        //!
         //! Set the "reuse port" option.
         //! @param [in] reuse_port If true, the socket is allowed to reuse a local
         //! UDP port which is already bound.

@@ -114,7 +114,6 @@ bool ts::Socket::close(Report& report)
 
 //----------------------------------------------------------------------------
 // Set the send buffer size.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::Socket::setSendBufferSize(size_t bytes, Report& report)
@@ -131,7 +130,6 @@ bool ts::Socket::setSendBufferSize(size_t bytes, Report& report)
 
 //----------------------------------------------------------------------------
 // Set the receive buffer size.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
@@ -147,8 +145,32 @@ bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Set the receive timeout.
+//----------------------------------------------------------------------------
+
+bool ts::Socket::setReceiveTimeout(ts::MilliSecond timeout, ts::Report& report)
+{
+    report.debug(u"setting socket receive timeout to %'d ms", {timeout});
+
+#if defined(TS_WINDOWS)
+    ::DWORD param = ::DWORD(timeout);
+#else
+    struct timeval param;
+    param.tv_sec = time_t(timeout / MilliSecPerSec);
+    param.tv_usec = long(timeout % MilliSecPerSec);
+#endif
+
+    if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, TS_SOCKOPT_T(&param), sizeof(param)) != 0) {
+        report.error(u"error setting socket receive timeout: %s", {SocketErrorCodeMessage()});
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Set the "reuse port" option.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::Socket::reusePort(bool active, Report& report)

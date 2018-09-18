@@ -47,6 +47,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
     _default_interface(false),
     _use_first_source(false),
     _recv_bufsize(0),
+    _recv_timeout(-1),
     _use_source(),
     _first_source(),
     _sources()
@@ -106,6 +107,12 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
               u"Set the reuse port socket option. This is now enabled by default, the option "
               u"is present for legacy only.");
 
+    args.option(u"receive-timeout", 0, Args::UNSIGNED);
+    args.help(u"receive-timeout",
+              u"Specify the UDP reception timeout in milliseconds. "
+              u"This timeout applies to each receive operation, individually. "
+              u"By default, receive operations wait for data, possibly forever.");
+
     args.option(u"source", _with_short_options ? 's' : 0, Args::STRING);
     args.help(u"source", u"address[:port]",
               u"Filter UDP packets based on the specified source address. This option is "
@@ -144,6 +151,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
     _use_ssm = args.present(u"ssm");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
+    _recv_timeout = args.intValue<MilliSecond>(u"receive-timeout", -1);
 
     // Check the presence of the '@' indicating a source address.
     const size_t sep = destination.find(u'@');
@@ -283,6 +291,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         UDPSocket::open(report) &&
         reusePort(_reuse_port, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
+        (_recv_timeout < 0 || setReceiveTimeout(_recv_timeout, report)) &&
         bind(local_addr, report);
 
     // Optional SSM source address.
