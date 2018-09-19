@@ -51,6 +51,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         FileInput(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;
@@ -190,11 +191,9 @@ ts::FileProcessor::FileProcessor(TSP* tsp_) :
 // Input plugin methods
 //----------------------------------------------------------------------------
 
-bool ts::FileInput::start()
+bool ts::FileInput::getOptions()
 {
-    // Get command line options.
     getValues(_filenames);
-    _current_file = 0;
     _repeat_count = present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1);
     _start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
 
@@ -203,6 +202,12 @@ bool ts::FileInput::start()
         return false;
     }
 
+    return true;
+}
+
+
+bool ts::FileInput::start()
+{
     // Name of first input file (or standard input if there is not input file).
     const UString first(_filenames.empty() ? UString() : _filenames.front());
     if (_filenames.size() > 1) {
@@ -210,6 +215,7 @@ bool ts::FileInput::start()
     }
 
     // Open first input file.
+    _current_file = 0;
     return _file.open(first, _repeat_count, _start_offset, *tsp);
 }
 

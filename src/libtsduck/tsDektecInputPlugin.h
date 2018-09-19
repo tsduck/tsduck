@@ -55,6 +55,7 @@ namespace ts {
         virtual ~DektecInputPlugin();
 
         // Implementation of plugin API
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;

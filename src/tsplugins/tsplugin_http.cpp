@@ -51,6 +51,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         HttpInput(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual void processInput() override;
 
@@ -151,16 +152,11 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Command line options method
 //----------------------------------------------------------------------------
 
-bool ts::HttpInput::start()
+bool ts::HttpInput::getOptions()
 {
-    // Invoke superclass.
-    if (!PushInputPlugin::start()) {
-        return false;
-    }
-
     // Decode options.
     _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
     _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
@@ -176,6 +172,21 @@ bool ts::HttpInput::start()
     _request.setProxyUser(value(u"proxy-user"), value(u"proxy-password"));
     if (present(u"connection-timeout")) {
         _request.setConnectionTimeout(intValue<MilliSecond>(u"connection-timeout"));
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::HttpInput::start()
+{
+    // Invoke superclass.
+    if (!PushInputPlugin::start()) {
+        return false;
     }
 
     _partial_size = 0;

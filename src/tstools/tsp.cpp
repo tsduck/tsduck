@@ -181,13 +181,18 @@ int MainCode(int argc, char *argv[])
     // Create an asynchronous error logger. Can be used in multi-threaded context.
     ts::AsyncReport report(opt.maxSeverity(), opt.timed_log, opt.log_msg_count, opt.sync_log);
 
-    // Set this logger as report method for all executors.
-    // Also set realtime defaults.
+    // Initialize all executors.
     ts::tsp::PluginExecutor* proc = input;
     do {
+        // Set the asynchronous logger as report method for all executors.
         proc->setReport(&report);
         proc->setMaxSeverity(report.maxSeverity());
+        // Also set realtime defaults.
         proc->setRealTimeForAll(realtime);
+        // And decode command line parameters for the plugin.
+        if (!proc->plugin()->getOptions()) {
+            return EXIT_FAILURE;
+        }
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets
