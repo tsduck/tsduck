@@ -61,6 +61,7 @@ namespace ts {
         // Implementation of plugin API
         IPInput(TSP*);
         virtual ~IPInput();
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
@@ -197,18 +198,24 @@ ts::IPOutput::IPOutput(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Input command line options method
+//----------------------------------------------------------------------------
+
+bool ts::IPInput::getOptions()
+{
+    // Get command line arguments
+    _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
+    _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
+    return _sock.load(*this);
+}
+
+
+//----------------------------------------------------------------------------
 // Input start method
 //----------------------------------------------------------------------------
 
 bool ts::IPInput::start()
 {
-    // Get command line arguments
-    _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
-    _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
-    if (!_sock.load(*this)) {
-        return false;
-    }
-
     // Create UDP socket
     if (!_sock.open(*tsp)) {
         return false;

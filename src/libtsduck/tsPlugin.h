@@ -103,7 +103,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 6;
+        static const int API_VERSION = 7;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -203,6 +203,16 @@ namespace ts {
         //! @return The maximum stack usage in bytes for the thread executing the plugin.
         //!
         virtual size_t stackUsage() const {return DEFAULT_STACK_USAGE;}
+
+        //!
+        //! The main application invokes getOptions() only once, at application startup.
+        //! Optionally implemented by subclasses to analyze the command line options.
+        //! A plugin may ignore getOptions() and analyzes the command line options as
+        //! part of the start() method. However, if a plugin is started later, command
+        //! line errors may be reported too late.
+        //! @return True on success, false on error (ie. not started).
+        //!
+        virtual bool getOptions() {return true;}
 
         //!
         //! The main application invokes start() to start the plugin.

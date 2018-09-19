@@ -47,12 +47,14 @@ namespace ts {
     public:
         // Implementation of plugin API
         NullInput(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t receive(TSPacket*, size_t) override;
 
     private:
         PacketCounter _max_count;   // Number of packets to generate
         PacketCounter _count;       // Number of generated packets
+        PacketCounter _limit;       // Current max number of packets
 
         // Inaccessible operations
         NullInput() = delete;
@@ -72,7 +74,8 @@ TSPLUGIN_DECLARE_INPUT(null, ts::NullInput)
 ts::NullInput::NullInput(TSP* tsp_) :
     InputPlugin(tsp_, u"Generate null packets", u"[options] [count]"),
     _max_count(0),
-    _count(0)
+    _count(0),
+    _limit(0)
 {
     option(u"", 0, UNSIGNED, 0, 1);
     help(u"",
@@ -89,14 +92,25 @@ ts::NullInput::NullInput(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Command line options method
+//----------------------------------------------------------------------------
+
+bool ts::NullInput::getOptions()
+{
+    tsp->useJointTermination(present(u"joint-termination"));
+    _max_count = intValue<PacketCounter>(u"", std::numeric_limits<PacketCounter>::max());
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::NullInput::start()
 {
-    tsp->useJointTermination(present(u"joint-termination"));
-    _max_count = intValue<PacketCounter>(u"", std::numeric_limits<PacketCounter>::max());
     _count = 0;
+    _limit = _max_count;
     return true;
 }
 
@@ -108,15 +122,15 @@ bool ts::NullInput::start()
 size_t ts::NullInput::receive (TSPacket* buffer, size_t max_packets)
 {
     // If "joint termination" reached for this plugin
-    if (_count >= _max_count && tsp->useJointTermination()) {
+    if (_count >= _limit && tsp->useJointTermination()) {
         // Declare terminated
         tsp->jointTerminate();
         // Continue generating null packets until completion of tsp (suppress max packet count)
-        _max_count = std::numeric_limits<PacketCounter>::max();
+        _limit = std::numeric_limits<PacketCounter>::max();
     }
 
     // Fill buffer
     size_t n;
-    for (n = 0; n < max_packets && _count++ < _max_count; buffer[n++] = NullPacket) {}
+    for (n = 0; n < max_packets && _count++ < _limit; buffer[n++] = NullPacket) {}
     return n;
 }

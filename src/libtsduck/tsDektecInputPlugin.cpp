@@ -52,6 +52,11 @@ ts::DektecInputPlugin::~DektecInputPlugin()
 {
 }
 
+bool ts::DektecInputPlugin::getOptions()
+{
+    return true;
+}
+
 bool ts::DektecInputPlugin::start()
 {
     tsp->error(TS_NO_DTAPI_MESSAGE);
@@ -141,6 +146,19 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Command line options method
+//----------------------------------------------------------------------------
+
+bool ts::DektecInputPlugin::getOptions()
+{
+    _guts->dev_index = intValue<int>(u"device", -1);
+    _guts->chan_index = intValue<int>(u"channel", -1);
+    _guts->timeout_ms = intValue<int>(u"timeout", -1);
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Input start method
 //----------------------------------------------------------------------------
 
@@ -151,11 +169,6 @@ bool ts::DektecInputPlugin::start()
         return false;
     }
 
-    // Get command line argumentsu
-    _guts->dev_index = intValue<int>(u"device", -1);
-    _guts->chan_index = intValue<int>(u"channel", -1);
-    _guts->timeout_ms = intValue<int>(u"timeout", -1);
-    
     // Locate the device
     if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, true, *tsp)) {
         return false;
