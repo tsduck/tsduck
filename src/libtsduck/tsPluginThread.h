@@ -43,7 +43,7 @@ namespace ts {
     //! The subclasses shall implement the TSP interface.
     //! @ingroup plugin
     //!
-    class PluginThread: public Thread, public TSP
+    class TSDUCKDLL PluginThread: public Thread, public TSP
     {
     public:
         //!
