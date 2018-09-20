@@ -242,6 +242,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPluginOptions.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPluginRepository.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPluginSharedLibrary.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPluginThread.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMTHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPolledFile.h" />
@@ -651,6 +652,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPluginOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginRepository.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginSharedLibrary.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPluginThread.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPMT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPolledFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPollFiles.cpp" />

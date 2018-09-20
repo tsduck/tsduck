@@ -45,7 +45,7 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(Options* options,
                                               Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
-    _processor(dynamic_cast<ProcessorPlugin*>(_shlib))
+    _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin()))
 {
 }
 

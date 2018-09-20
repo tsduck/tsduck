@@ -240,6 +240,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPluginOptions.h \
     ../../../src/libtsduck/tsPluginRepository.h \
     ../../../src/libtsduck/tsPluginSharedLibrary.h \
+    ../../../src/libtsduck/tsPluginThread.h \
     ../../../src/libtsduck/tsPMT.h \
     ../../../src/libtsduck/tsPMTHandlerInterface.h \
     ../../../src/libtsduck/tsPolledFile.h \
@@ -639,6 +640,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPluginOptions.cpp \
     ../../../src/libtsduck/tsPluginRepository.cpp \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
+    ../../../src/libtsduck/tsPluginThread.cpp \
     ../../../src/libtsduck/tsPMT.cpp \
     ../../../src/libtsduck/tsPolledFile.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \

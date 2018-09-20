@@ -45,7 +45,7 @@ ts::tsp::OutputExecutor::OutputExecutor(Options* options,
                                         Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
-    _output(dynamic_cast<OutputPlugin*>(_shlib))
+    _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
 }
 
@@ -65,7 +65,7 @@ void ts::tsp::OutputExecutor::main()
         // Wait for packets to output
         size_t pkt_first, pkt_cnt;
         bool input_end;
-        waitWork (pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
+        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
 
         // We ignore the returned "aborted" which comes from the "next"
         // processor in the chaine, here the input thread. For the
