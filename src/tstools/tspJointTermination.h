@@ -34,26 +34,30 @@
 
 #pragma once
 #include "tspOptions.h"
-#include "tsPlugin.h"
+#include "tsPluginThread.h"
 #include "tsMutex.h"
 
 namespace ts {
     namespace tsp {
         //!
         //! Implementation of "Joint Termination" in the Transport stream processor.
-        //!
         //! This is a subclass of ts::TSP and a superclass of all plugin executors.
         //! @ingroup plugin
         //!
-        class JointTermination: public TSP
+        class JointTermination: public PluginThread
         {
         public:
             //!
             //! Constructor.
-            //! @param [in] options Transport stream processor command options.
-            //! @param [in,out] global_mutex References to the global mutex to synchronize access to the packet buffer.
+            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] pl_options Command line options for this plugin.
+            //! @param [in] attributes Creation attributes for the thread executing this plugin.
+            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
             //!
-            JointTermination(const Options* options, Mutex& global_mutex);
+            JointTermination(Options* options,
+                             const PluginOptions* pl_options,
+                             const ThreadAttributes& attributes,
+                             Mutex& global_mutex);
 
             //!
             //! Destructor

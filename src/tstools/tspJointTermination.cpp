@@ -49,8 +49,8 @@ ts::PacketCounter ts::tsp::JointTermination::_jt_hightest_pkt = 0;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::tsp::JointTermination::JointTermination(const Options* options, Mutex& global_mutex) :
-    TSP(options->maxSeverity()),
+ts::tsp::JointTermination::JointTermination(Options* options, const PluginOptions* pl_options, const ThreadAttributes& attributes, Mutex& global_mutex) :
+    PluginThread(options, options->appName(), *pl_options, attributes),
     _global_mutex(global_mutex),
     _options(options),
     _total_packets(0),

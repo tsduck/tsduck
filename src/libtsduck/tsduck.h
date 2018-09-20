@@ -252,6 +252,7 @@
 #include "tsPluginOptions.h"
 #include "tsPluginRepository.h"
 #include "tsPluginSharedLibrary.h"
+#include "tsPluginThread.h"
 #include "tsPMT.h"
 #include "tsPMTHandlerInterface.h"
 #include "tsPolledFile.h"

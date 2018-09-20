@@ -46,84 +46,15 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
                                         const PluginOptions* pl_options,
                                         const ThreadAttributes& attributes,
                                         Mutex& global_mutex) :
+    JointTermination(options, pl_options, attributes, global_mutex),
     RingNode(),
-    JointTermination(options, global_mutex),
-    Thread(attributes),
-    _name(pl_options->name),
-    _shlib(0),
     _buffer(0),
-    _report(options),
     _to_do(),
     _pkt_first(0),
     _pkt_cnt(0),
     _input_end(false),
     _bitrate(0)
 {
-    const UChar* shell = 0;
-
-    // Create the plugin instance object
-    switch (pl_options->type) {
-        case INPUT_PLUGIN: {
-            NewInputProfile allocator = PluginRepository::Instance()->getInput(_name, *options);
-            if (allocator != 0) {
-                _shlib = allocator(this);
-                shell = u"tsp -I";
-            }
-            break;
-        }
-        case OUTPUT_PLUGIN: {
-            NewOutputProfile allocator = PluginRepository::Instance()->getOutput(_name, *options);
-            if (allocator != 0) {
-                _shlib = allocator(this);
-                shell = u"tsp -O";
-            }
-            break;
-        }
-        case PROCESSOR_PLUGIN: {
-            NewProcessorProfile allocator = PluginRepository::Instance()->getProcessor(_name, *options);
-            if (allocator != 0) {
-                _shlib = allocator(this);
-               shell = u"tsp -P";
-            }
-            break;
-        }
-        default:
-            assert(false);
-    }
-
-    if (_shlib == 0) {
-        // Error message already displayed.
-        return;
-    }
-    else {
-        _shlib->setShell(shell);
-    }
-
-    // Submit the plugin arguments for analysis.
-    // The process should terminate on argument error.
-    // Do not process argument redirection, already done at tsp command level.
-    _shlib->analyze(pl_options->name, pl_options->args, false);
-    assert(_shlib->valid());
-
-    // Define thread stack size
-    ThreadAttributes attr;
-    Thread::getAttributes(attr);
-    attr.setStackSize(STACK_SIZE_OVERHEAD + _shlib->stackUsage());
-    Thread::setAttributes(attr);
-}
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
-ts::tsp::PluginExecutor::~PluginExecutor()
-{
-    // Deallocate plugin instance, if allocated.
-    if (_shlib != 0) {
-        delete _shlib;
-        _shlib = 0;
-    }
 }
 
 
@@ -146,17 +77,6 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
     _tsp_aborting = aborted;
     _bitrate = bitrate;
     _tsp_bitrate = bitrate;
-}
-
-
-//----------------------------------------------------------------------------
-// Invoked by shared library to log messages
-// Inherited from Report (via TSP)
-//----------------------------------------------------------------------------
-
-void ts::tsp::PluginExecutor::writeLog(int severity, const UString& msg)
-{
-    _report->log(severity, u"%s: %s", {_name, msg});
 }
 
 
@@ -225,6 +145,16 @@ void ts::tsp::PluginExecutor::setAbort()
     Guard lock(_global_mutex);
     _tsp_aborting = true;
     ringPrevious<PluginExecutor>()->_to_do.signal();
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the plugin a real time one.
+//----------------------------------------------------------------------------
+
+bool ts::tsp::PluginExecutor::isRealTime() const
+{
+    return plugin() != 0 && plugin()->isRealTime();
 }
 
 

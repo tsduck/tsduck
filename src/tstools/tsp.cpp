@@ -219,6 +219,8 @@ int MainCode(int argc, char *argv[])
 
     // Start the output device (we now have an idea of the bitrate).
     // Exit application in case of error.
+    assert(output != 0);
+    assert(output->plugin() != 0);
     if (!output->plugin()->start()) {
         return EXIT_FAILURE;
     }
