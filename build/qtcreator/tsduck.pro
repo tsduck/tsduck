@@ -118,6 +118,7 @@ SUBDIRS += \
     tsscan \
     tssmartcard \
     tsstuff \
+    tsswitch \
     tstabcomp \
     tstabdump \
     tstables \

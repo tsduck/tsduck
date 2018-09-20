@@ -69,7 +69,7 @@ namespace ts {
     //!     GuardCondition guard(mutex, condition); // mutex acquired
     //!     ...
     //!     while (!expected_shared_data_state) {
-    //!         guard.wait();
+    //!         guard.waitCondition();
     //!     }
     //!     ...
     //!     // use shared data
