@@ -88,6 +88,11 @@ namespace ts {
         //!
         bool isUnsigned() const { return (_type & (SIGNED | INTEGER)) == INTEGER; }
         //!
+        //! Check if the argument value is a bool.
+        //! @return True if the argument value is a bool.
+        //!
+        bool isBool() const { return (_type & (BIT1 | INTEGER)) == (BIT1 | INTEGER); }
+        //!
         //! Check if the argument value is a string of any type.
         //! @return True if the argument value is a string.
         //!
@@ -156,6 +161,11 @@ namespace ts {
         //!
         uint64_t toUInt64() const { return toInteger<uint64_t>(); }
         //!
+        //! Get the argument data value as a bool.
+        //! @return The argument data as a bool value or false for a string.
+        //!
+        bool toBool() const { return toInteger<uint32_t>() != 0; }
+        //!
         //! Get the argument data value as a nul-terminated string of 8-bit characters.
         //! @return Address of the nul-terminated string for CHARPTR or STRING, an empty string for other data types.
         //!
@@ -208,12 +218,13 @@ namespace ts {
             SIGNED    = 0x0002,  //!< With INTEGER, 1 means signed, 0 means unsigned.
             STRING    = 0x0004,  //!< String of characters.
             CLASS     = 0x0008,  //!< With STRING, 1 means std::string or ts::UString, O means const char* or const UChar*.
-            BIT8      = 0x0010,  //!< 8-bit integer or string of 8-bit characters (char).
-            BIT16     = 0x0020,  //!< 16-bit integer or string of 16-bit characters (UChar).
-            BIT32     = 0x0040,  //!< 32-bit integer.
-            BIT64     = 0x0080,  //!< 64-bit integer.
-            POINTER   = 0x0100,  //!< A pointer to a writeable data (data type is given by other bits).
-            STRINGIFY = 0x0200,  //!< A pointer to a StringifyInterface object.
+            BIT1      = 0x0010,  //!< 1-bit integer, ie. bool.
+            BIT8      = 0x0020,  //!< 8-bit integer or string of 8-bit characters (char).
+            BIT16     = 0x0040,  //!< 16-bit integer or string of 16-bit characters (UChar).
+            BIT32     = 0x0080,  //!< 32-bit integer.
+            BIT64     = 0x0100,  //!< 64-bit integer.
+            POINTER   = 0x0200,  //!< A pointer to a writeable data (data type is given by other bits).
+            STRINGIFY = 0x0400,  //!< A pointer to a StringifyInterface object.
         };
 
 #if !defined(DOXYGEN)
@@ -235,6 +246,7 @@ namespace ts {
 #endif
 
             Value(void* p)              : intptr(p) {}
+            Value(bool b)               : uint32(b) {}
             Value(int32_t i)            : int32(i) {}
             Value(uint32_t i)           : uint32(i) {}
             Value(int64_t i)            : int64(i) {}
@@ -435,6 +447,11 @@ namespace ts {
         //! @param [in] s Reference to a stringifiable object.
         //!
         ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s) {}
+        //!
+        //! Constructor from a bool.
+        //! @param [in] b Boolean value.
+        //!
+        ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b)) {}
         //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.

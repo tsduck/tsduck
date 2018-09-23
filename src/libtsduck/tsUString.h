@@ -1437,7 +1437,7 @@ namespace ts {
         //! is known. For this reason, the syntax of the '\%' sequences is simplified.
         //!
         //! The available '\%' sequences are:
-        //! - @c \%s : String. Treated as @c \%d if the argument is an integer.
+        //! - @c \%s : String. Treated as @c \%d if the argument is an integer. Print @c true or @c false if the argument is a @c bool.
         //! - @c \%c : Character. Use integer argument as Unicode code point. Treated as @c \%s if the argument is a string.
         //! - @c \%d : Integer in decimal. Treated as @c \%s if the argument is a string.
         //! - @c \%x : Integer in lowercase hexadecimal. Treated as @c \%s if the argument is a string.

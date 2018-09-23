@@ -1707,6 +1707,15 @@ void UStringTest::testFormat()
     // Stringifiable.
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|1.2.3.4|", ts::UString::Format(u"|%s|", {ts::IPAddress(1, 2, 3, 4)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|11.22.33.44:678|", ts::UString::Format(u"|%s|", {ts::SocketAddress(ts::IPAddress(11, 22, 33, 44), 678)}));
+
+    // Boolean.
+    bool b = false;
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {b}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|true|", ts::UString::Format(u"|%s|", {b = true}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|true|", ts::UString::Format(u"|%s|", {true}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {false}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|    true|", ts::UString::Format(u"|%8s|", {true}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false   |", ts::UString::Format(u"|%-8s|", {false}));
 }
 
 void UStringTest::testArgMixOut()
