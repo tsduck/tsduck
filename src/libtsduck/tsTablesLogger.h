@@ -151,6 +151,7 @@ namespace ts {
         std::ofstream            _binfile;         // Binary output file.
         UDPSocket                _sock;            // Output socket.
         std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
+        std::map<PID,SectionPtr> _allSections;     // Tracking duplicate sections by PID (with --all-sections).
         std::set<uint64_t>       _sectionsOnce;    // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
 
         // Create a binary file. On error, set _abort and return false.
