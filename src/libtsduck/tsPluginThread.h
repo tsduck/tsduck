@@ -96,14 +96,27 @@ namespace ts {
             return _name;
         }
 
+
+        //!
+        //! Set the plugin name as displayed in log messages.
+        //! By default, used the real plugin name.
+        //! @param [in] name The name to use in log messages.
+        //! When empty, revert to the real plugin name.
+        //!
+        void setLogName(const UString& name)
+        {
+            _logname = name;
+        }
+
     protected:
         // Inherited from Report (via TSP)
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        Report* _report; // Common report interface for all plugins
-        UString _name;   // Plugin name.
-        Plugin* _shlib;  // Shared library API.
+        Report* _report;  // Common report interface for all plugins
+        UString _name;    // Plugin name.
+        UString _logname; // Plugin name as displayed in log messages.
+        Plugin* _shlib;   // Shared library API.
 
         // Inaccessible operations.
         PluginThread() = delete;
