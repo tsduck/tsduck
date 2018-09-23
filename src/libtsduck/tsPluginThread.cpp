@@ -41,6 +41,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
     TSP(report->maxSeverity()),
     _report(report),
     _name(options.name),
+    _logname(),
     _shlib(0)
 {
     const UChar* shellOpt = 0;
@@ -117,5 +118,5 @@ ts::PluginThread::~PluginThread()
 
 void ts::PluginThread::writeLog(int severity, const UString& msg)
 {
-    _report->log(severity, u"%s: %s", {_name, msg});
+    _report->log(severity, u"%s: %s", {_logname.empty() ? _name : _logname, msg});
 }
