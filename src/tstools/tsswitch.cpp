@@ -89,17 +89,19 @@ namespace ts {
     class Options: public ArgsWithPlugins
     {
     public:
-        bool          failover;          // Automatically switch to next input when input fails.
+        bool          fastSwitching;     // Fast switching between input plugins.
+        bool          terminate;         // Terminate when one input plugin completes.
         bool          monitor;           // Run a resource monitoring thread.
         bool          logTimeStamp;      // Add time stamps in log messages.
         bool          logSynchronous;    // Synchronous log.
+        bool          reusePort;         // Reuse-port socket option.
+        size_t        cycleCount;        // Number of input cycles to execute.
         size_t        logMaxBuffer;      // Maximum buffered log messages.
         size_t        bufferedPackets;   // Input buffer size in packets.
         size_t        maxInputPackets;   // Maximum input packets to read at a time.
         size_t        maxOutputPackets;  // Maximum input packets to read at a time.
-        SocketAddress remoteServer;      // UDP server addres for remote control.
-        bool          reusePort;         // Reuse-port socket option.
         size_t        sockBuffer;        // Socket buffer size.
+        SocketAddress remoteServer;      // UDP server addres for remote control.
 
         // Constructor.
         Options(int argc, char *argv[]);
@@ -121,12 +123,18 @@ namespace ts {
         InputExecutor(Switch& core, size_t index);
         virtual ~InputExecutor();
 
-        // Start, stop, terminate input.
-        void startInput();
+        // Start, stop input.
+        void startInput(bool isCurrent);
         void stopInput();
+
+        // Set/reset as current input plugin. Do not start or stop it.
+        void setCurrent(bool isCurrent);
+
+        // Terminate input thread.
         void terminateInput();
 
-        // Free output packets (after being sent).
+        // Get/free some packets to output.
+        void getOutputArea(TSPacket*& first, size_t count);
         void freeOutput(size_t count);
 
         // Implementation of TSP. We do not use "joint termination" in tsswitch.
@@ -142,6 +150,7 @@ namespace ts {
         TSPacketVector _buffer;       // Packet buffer.
         Mutex          _mutex;        // Mutex to protect all subsequent fields.
         Condition      _todo;         // Condition to signal something to do.
+        bool           _isCurrent;    // This plugin is the current input one.
         bool           _startRequest; // Start input requested.
         bool           _stopRequest;  // Stop input requested.
         bool           _terminated;   // Terminate thread.
@@ -168,7 +177,7 @@ namespace ts {
         virtual ~OutputExecutor();
 
         // Request the termination of the thread. Actual termination will occur
-        // after completion of the current
+        // after completion of the current output operation.
         void terminateOutput() { _terminate = true; }
 
         // Implementation of TSP. We do not use "joint termination" in tsswitch.
@@ -178,9 +187,9 @@ namespace ts {
         virtual bool thisJointTerminated() const override {return false;}
 
     private:
-        Switch&       _core;     // Application core.
-        OutputPlugin* _output;   // Plugin API.
-        volatile bool _terminate;
+        Switch&       _core;       // Application core.
+        OutputPlugin* _output;     // Plugin API.
+        volatile bool _terminate;  // Termination request.
 
         // Implementation of Thread.
         virtual void main() override;
@@ -241,22 +250,30 @@ namespace ts {
 
         // Switch input plugins.
         void setInput(size_t index);
-        void nextInput() { setInput((_curPlugin + 1) % _inputs.size()); }
-        void prevInput() { setInput((_curPlugin > 0 ? _curPlugin : _inputs.size()) - 1); }
+        void nextInput();
+        void prevInput();
 
         // Report input events (for input plugins).
-        void inputReceived(size_t pluginIndex);
-        void inputCompleted(size_t pluginIndex, bool success);
+        // Return false when tsswitch is terminating.
+        bool inputReceived(size_t pluginIndex);
+        bool inputCompleted(size_t pluginIndex, bool success);
 
         // Get/free some packets to output (for output plugin).
+        // Return false when tsswitch is terminating.
         bool getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t count);
-        void outputSent(size_t pluginIndex, size_t count);
+        bool outputSent(size_t pluginIndex, size_t count);
 
     private:
         InputExecutorVector _inputs;     // Input plugins threads.
         OutputExecutor      _output;     // Output plugin thread.
         Mutex               _mutex;      // Global mutex, protect access to all subsequent fields.
+        Condition           _gotInput;   // Signaled each time an input plugin reports new packets.
         size_t              _curPlugin;  // Index of current plugin.
+        size_t              _curCycle;   // Current input cycle number.
+        volatile bool       _terminate;  // Terminate complete processing.
+
+        // Change input plugin with mutex already held.
+        void setInputLocked(size_t index);
 
         // Inaccessible operations.
         Switch() = delete;
@@ -273,28 +290,48 @@ namespace ts {
 // Constructor
 ts::Options::Options(int argc, char *argv[]) :
     ArgsWithPlugins(1, UNLIMITED_COUNT, 0, 0, 0, 1),
-    failover(false),
+    fastSwitching(false),
+    terminate(false),
     monitor(false),
     logTimeStamp(false),
     logSynchronous(false),
+    reusePort(false),
+    cycleCount(1),
     logMaxBuffer(AsyncReport::MAX_LOG_MESSAGES),
     bufferedPackets(0),
     maxInputPackets(0),
     maxOutputPackets(0),
-    remoteServer(),
-    reusePort(false),
-    sockBuffer(0)
+    sockBuffer(0),
+    remoteServer()
 {
     setDescription(u"TS input source switch using remote control");
-    setSyntax(u"[options] -I input-name [input-options] ... [-O output-name [output-options]]");
+
+    setSyntax(u"[tsswitch-options] \\\n"
+              u"    [-I input-name [input-options]] ... \\\n"
+              u"    [-O output-name [output-options]]");
 
     option(u"buffer-packets", 'b', POSITIVE);
     help(u"buffer-packets",
          u"Specify the size in TS packets of each input plugin buffer. "
          u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" packets.");
 
-    option(u"failover", 'f');
-    help(u"failover", u"Automatically switch to next input plugin in case of input error.");
+    option(u"cycle", 'c', POSITIVE);
+    help(u"cycle",
+         u"Specify how many times to repeat the cycle through all input plugins in sequence. "
+         u"By default, all input plugins are executed in sequence only once (--cycle 1). "
+         u"The options --cycle, --infinite and --terminate are mutually exclusive.");
+
+    option(u"fast-switch", 'f');
+    help(u"fast-switch",
+         u"Perform fast input switching. All input plugins are started at once and they "
+         u"continuously receive packets in parallel. Packets are dropped, except for the "
+         u"current input plugin. This option is typically used when all inputs are live "
+         u"streams on distinct devices (not the same DVB tuner for instance).\n\n"
+         u"By default, only one input plugin is started at a time. When switching, "
+         u"the current input is first stopped and then the next one is started.");
+
+    option(u"infinite", 'i');
+    help(u"infinite", u"Infinitely repeat the cycle through all input plugins in sequence.");
 
     option(u"log-message-count", 0, POSITIVE);
     help(u"log-message-count",
@@ -310,7 +347,8 @@ ts::Options::Options(int argc, char *argv[]) :
     help(u"max-input-packets",
          u"Specify the maximum number of TS packets to read at a time. "
          u"This value may impact the switch response time. "
-         u"The default is " + UString::Decimal(DEFAULT_MAX_INPUT_PACKETS) + u" packets.");
+         u"The default is " + UString::Decimal(DEFAULT_MAX_INPUT_PACKETS) + u" packets. "
+         u"The actual value is never more than half the --buffer-packets value.");
 
     option(u"max-output-packets", 0, POSITIVE);
     help(u"max-output-packets",
@@ -344,8 +382,11 @@ ts::Options::Options(int argc, char *argv[]) :
          u"live streams, when the responsiveness of the application is more important "
          u"than the logged messages.");
 
-    option(u"timed-log", 't');
+    option(u"timed-log");
     help(u"timed-log", u"Each logged message contains a time stamp.");
+
+    option(u"terminate", 't');
+    help(u"terminate", u"Terminate execution when the current input plugin terminates.");
 
     option(u"udp-buffer-size", 0, UNSIGNED);
     help(u"udp-buffer-size",
@@ -354,17 +395,25 @@ ts::Options::Options(int argc, char *argv[]) :
     // Analyze the command.
     analyze(argc, argv);
 
-    failover = present(u"failover");
+    fastSwitching = present(u"fast-switch");
+    terminate = present(u"terminate");
+    cycleCount = intValue<size_t>(u"cycle", present(u"infinite") ? 0 : 1);
     monitor = present(u"monitor");
     logTimeStamp = present(u"timed-log");
     logSynchronous = present(u"synchronous-log");
     logMaxBuffer = intValue<size_t>(u"log-message-count", AsyncReport::MAX_LOG_MESSAGES);
     bufferedPackets = intValue<size_t>(u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
-    maxInputPackets = intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS);
+    maxInputPackets = std::min(intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS), bufferedPackets / 2);
     maxOutputPackets = intValue<size_t>(u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);
     const UString remoteName(value(u"remote"));
     reusePort = !present(u"no-reuse-port");
     sockBuffer = intValue<size_t>(u"udp-buffer-size");
+
+    debug(u"input buffer: %'d packets, max input: %'d packets, max output: %'d packets", {bufferedPackets, maxInputPackets, maxOutputPackets});
+
+    if (present(u"cycle") + present(u"infinite") + present(u"terminate") > 1) {
+        error(u"options --cycle, --infinite and --terminate are mutually exclusive");
+    }
 
     // Resolve remote control name.
     if (!remoteName.empty() && remoteServer.resolve(remoteName, *this) && !remoteServer.hasPort()) {
@@ -392,7 +441,10 @@ ts::Switch::Switch(int argc, char *argv[]) :
     _inputs(opt.inputs.size(), 0),
     _output(*this), // load plugin and analyze options
     _mutex(),
-    _curPlugin(0)
+    _gotInput(),
+    _curPlugin(0),
+    _curCycle(0),
+    _terminate(false)
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
@@ -408,7 +460,6 @@ ts::Switch::~Switch()
         delete _inputs[i];
     }
     _inputs.clear();
-
 }
 
 // Start the tsswitch processing.
@@ -437,10 +488,10 @@ bool ts::Switch::start()
 
     if (success) {
         // Start the first plugin.
-        _inputs[_curPlugin]->startInput();
+        _inputs[_curPlugin]->startInput(true);
     }
     else {
-        // In case of failure, abort all started threads.
+        // If one input thread could not start, abort all started threads.
         stop(false);
     }
 
@@ -450,6 +501,11 @@ bool ts::Switch::start()
 // Stop the tsswitch processing.
 void ts::Switch::stop(bool success)
 {
+    {
+        GuardCondition lock(_mutex, _gotInput);
+        _terminate = true;
+        lock.signal();
+    }
     _output.terminateOutput();
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
         _inputs[i]->terminateInput();
@@ -460,38 +516,89 @@ void ts::Switch::stop(bool success)
 void ts::Switch::setInput(size_t index)
 {
     Guard lock(_mutex);
+    setInputLocked(index);
+}
+
+// Switch to next input.
+void ts::Switch::nextInput()
+{
+    Guard lock(_mutex);
+    setInputLocked((_curPlugin + 1) % _inputs.size());
+}
+void ts::Switch::prevInput()
+{
+    Guard lock(_mutex);
+    setInputLocked((_curPlugin > 0 ? _curPlugin : _inputs.size()) - 1);
+}
+
+// Change input plugin with mutex already held.
+void ts::Switch::setInputLocked(size_t index)
+{
     if (index < _inputs.size() && index != _curPlugin) {
         // Stop current plugin.
         _inputs[_curPlugin]->stopInput();
         // Start the new one.
         _curPlugin = index;
-        _inputs[_curPlugin]->stopInput();
+        _inputs[_curPlugin]->startInput(true);
     }
 }
 
 // Get some packets to output.
 bool ts::Switch::getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t count)
 {
-    return false; //@@@@@@@
+    assert(pluginIndex < _inputs.size());
+    GuardCondition lock(_mutex, _gotInput);
+    for (;;) {
+        if (_terminate) {
+            first = 0;
+            count = 0;
+        }
+        else {
+            _inputs[pluginIndex]->getOutputArea(first, count);
+        }
+        if (count > 0 || _terminate) {
+            return !_terminate;
+        }
+        lock.waitCondition();
+    }
 }
 
 // Report output packets (for output plugin).
-void ts::Switch::outputSent(size_t pluginIndex, size_t count)
+bool ts::Switch::outputSent(size_t pluginIndex, size_t count)
 {
     assert(pluginIndex < _inputs.size());
     _inputs[pluginIndex]->freeOutput(count);
+    return !_terminate;
 }
 
 // Report input reception of packets (for input plugins).
-void ts::Switch::inputReceived(size_t pluginIndex)
+bool ts::Switch::inputReceived(size_t pluginIndex)
 {
-    //@@@@@@@
+    _gotInput.signal();
+    return !_terminate;
 }
 
 // Report completion of input session (for input plugins).
-void ts::Switch::inputCompleted(size_t pluginIndex, bool success)
+bool ts::Switch::inputCompleted(size_t pluginIndex, bool success)
 {
-    //@@@@@@@
+    Guard lock(_mutex);
+
+    // Count end of cycle.
+    if (_curPlugin == _inputs.size() - 1) {
+        _curCycle++;
+    }
+
+    // Check if the complete processing is terminated.
+    if (opt.terminate || _curCycle >= opt.cycleCount) {
+        stop(true);
+    }
+    else {
+        // Start next plugin
+        _curPlugin = (_curPlugin + 1) % _inputs.size();
+        _inputs[_curPlugin]->startInput(true);
+    }
+
+    return !_terminate;
 }
 
 // Wait for completion of all plugins.
@@ -521,6 +628,7 @@ ts::InputExecutor::InputExecutor(Switch& core, size_t index) :
     _buffer(core.opt.bufferedPackets),
     _mutex(),
     _todo(),
+    _isCurrent(false),
     _startRequest(false),
     _stopRequest(false),
     _terminated(false),
@@ -537,9 +645,10 @@ ts::InputExecutor::~InputExecutor()
 }
 
 // Start input.
-void ts::InputExecutor::startInput()
+void ts::InputExecutor::startInput(bool isCurrent)
 {
     GuardCondition lock(_mutex, _todo);
+    _isCurrent = isCurrent;
     _startRequest = true;
     _stopRequest = false;
     lock.signal();
@@ -554,12 +663,27 @@ void ts::InputExecutor::stopInput()
     lock.signal();
 }
 
+// Set/reset as current input plugin. Do not start or stop it.
+void ts::InputExecutor::setCurrent(bool isCurrent)
+{
+    Guard lock(_mutex);
+    _isCurrent = isCurrent;
+}
+
 // Terminate input.
 void ts::InputExecutor::terminateInput()
 {
     GuardCondition lock(_mutex, _todo);
     _terminated = true;
     lock.signal();
+}
+
+// Get some packets to output.
+void ts::InputExecutor::getOutputArea(ts::TSPacket*& first, size_t count)
+{
+    Guard lock(_mutex);
+    first = &_buffer[_outFirst];
+    count = std::min(_outCount, _buffer.size() - _outFirst);
 }
 
 // Free output packets (after being sent).
@@ -575,12 +699,13 @@ void ts::InputExecutor::freeOutput(size_t count)
 // Invoked in the context of the plugin thread.
 void ts::InputExecutor::main()
 {
-    _core.log.debug(u"input thread '%s' started", {pluginName()});
+    _core.log.debug(u"input thread started");
 
-    // Main loop, wait for processing sessions.
+    // Main loop. Each iteration is a complete input session.
     for (;;) {
 
         // Initial sequence under mutex protection.
+        _core.log.debug(u"waiting for input session");
         {
             // Wait for start or terminate.
             GuardCondition lock(_mutex, _todo);
@@ -597,8 +722,8 @@ void ts::InputExecutor::main()
         }
 
         // Here, we need to start an input session.
-        const bool startSuccess = _input->start();
-        bool success = startSuccess;
+        _core.log.debug(u"starting input session");
+        bool success = _input->start();
 
         while (success) {
             // Input area (first packet index and packet count).
@@ -610,7 +735,20 @@ void ts::InputExecutor::main()
                 // Wait for free buffer or stop.
                 GuardCondition lock(_mutex, _todo);
                 while (_outCount >= _buffer.size() && !_stopRequest && !_terminated) {
-                    lock.waitCondition();
+                    if (_isCurrent || !_core.opt.fastSwitching) {
+                        // This is the current input, we must not lose packet.
+                        // Wait for the output thread to free some packets.
+                        lock.waitCondition();
+                    }
+                    else {
+                        // Not the current input plugin in --fast-switch mode.
+                        // Drop older packets, free at most --max-input-packets.
+                        assert(_outFirst < _buffer.size());
+                        const size_t freeCount = std::min(_core.opt.maxInputPackets, _buffer.size() - _outFirst);
+                        assert(freeCount <= _outCount);
+                        _outFirst += freeCount;
+                        _outCount -= freeCount;
+                    }
                 }
                 // Exit input when termination is requested.
                 if (_stopRequest || _terminated) {
@@ -640,16 +778,16 @@ void ts::InputExecutor::main()
         }
 
         // End of input session.
-        if (startSuccess) {
+        if (success) {
             // Was started, need to stop.
-            success = _input->stop() && success;
+            success = _input->stop();
         }
 
         // Report end of input session to core object.
         _core.inputCompleted(_pluginIndex, success);
     }
 
-    _core.log.debug(u"input thread '%s' terminated", {pluginName()});
+    _core.log.debug(u"input thread terminated");
 }
 
 
@@ -678,10 +816,11 @@ void ts::OutputExecutor::main()
 {
     _core.log.debug(u"output thread started");
 
-    // Loop until there are packets to output.
     size_t pluginIndex = 0;
     TSPacket* first = 0;
     size_t count = 0;
+
+    // Loop until there are packets to output.
     while (!_terminate && _core.getOutputArea(pluginIndex, first, count)) {
         if (!_terminate && count > 0) {
             // Output the packets.
@@ -692,7 +831,7 @@ void ts::OutputExecutor::main()
             else {
                 // Output error, abort the whole process with an error.
                 _core.stop(false);
-                break;
+                _terminate = true;
             }
         }
     }
