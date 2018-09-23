@@ -64,6 +64,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _binfile(),
     _sock(false, report),
     _shortSections(),
+    _allSections(),
     _sectionsOnce()
 {
     // Set either a table or section handler, depending on --all-sections
@@ -263,11 +264,13 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
 void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 {
+    const PID pid = sect.sourcePID();
+
     // With option --all-once, track duplicate PID/TID/TDIext/secnum/version.
     if (_opt.all_once) {
         // Pack PID/TID/TDIext/secnum/version into one single 64-bit integer.
         const uint64_t id =
-            (uint64_t(sect.sourcePID()) << 40) |
+            (uint64_t(pid) << 40) |
             (uint64_t(sect.tableId()) << 32) |
             (uint64_t(sect.tableIdExtension()) << 16) |
             (uint64_t(sect.sectionNumber()) << 8) |
@@ -299,8 +302,20 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     }
 
     // Ignore section if not to be filtered
-    if (!isFiltered(sect, _cas_mapper.casFamily(sect.sourcePID()))) {
+    if (!isFiltered(sect, _cas_mapper.casFamily(pid))) {
         return;
+    }
+
+    // Ignore duplicate sections.
+    if (_opt.no_duplicate) {
+        if (_allSections[pid].isNull() || *_allSections[pid] != sect) {
+            // Not the same section, keep it for next time.
+            _allSections[pid] = new Section(sect, COPY);
+        }
+        else {
+            // Same section as previously, ignore it.
+            return;
+        }
     }
 
     // Filtering done, now save data.
@@ -314,7 +329,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
         }
         else {
             // Full section formatting.
-            _display.displaySection(sect, 0, _cas_mapper.casFamily(sect.sourcePID())) << std::endl;
+            _display.displaySection(sect, 0, _cas_mapper.casFamily(pid)) << std::endl;
         }
         postDisplay();
     }
