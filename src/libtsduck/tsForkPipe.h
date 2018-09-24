@@ -140,7 +140,7 @@ namespace ts {
 
         //!
         //! Set "ignore abort".
-        //! @param [in] on If true and the process aborts, do not report error
+        //! @param [in] on If true and the process aborts, do not report error when writing data.
         //! when writing data.
         //!
         void setIgnoreAbort(bool on)

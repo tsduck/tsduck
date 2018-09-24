@@ -10,6 +10,9 @@ VERSION 3.15-914
 
 [IMP] Improvements on existing commands and plugins:
 
+  * The plugin "fork" can now be used as input plugin as well. When used as an
+    input plugin (new), it reads packets from the command output. When used as
+    a packet processor plugin, it writes packets to the command input.
   * Added option --ignore-errors to "tsbitrate" and plugin "pcrbitrate".
   * Added option --receive-timeout to "tstabdump" and plugins "dektec" (input),
     "ip" (input), "mpeinject".
