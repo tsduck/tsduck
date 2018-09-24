@@ -825,7 +825,7 @@ void ts::InputExecutor::main()
                         assert(_outFirst < _buffer.size());
                         const size_t freeCount = std::min(_core.opt.maxInputPackets, _buffer.size() - _outFirst);
                         assert(freeCount <= _outCount);
-                        _outFirst += freeCount;
+                        _outFirst = (_outFirst + freeCount) % _buffer.size();
                         _outCount -= freeCount;
                     }
                 }

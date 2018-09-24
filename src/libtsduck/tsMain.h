@@ -40,11 +40,17 @@
 
 //!
 //! A macro which expands to a main() program.
-//! The library version is automatically checked and uncaught exceptions are displayed.
-//! Networking is initialized when required (ie. Windows).
+//! Uncaught exceptions are displayed.
+//!
+//! On Windows, the IP networking is initialized and the version of the
+//! tsduck DLL is checked. It has been noted that using a tsduck DLL with
+//! an incompatible version makes the application silently exit on Windows.
+//! This is why we check the version of the DLL.
+//!
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!
+#if defined(TS_WINDOWS)
 #define TS_MAIN(func)                                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
@@ -71,3 +77,16 @@
             return EXIT_FAILURE;                                              \
         }                                                                     \
     }
+#else
+#define TS_MAIN(func)                                                         \
+    int main(int argc, char *argv[])                                          \
+    {                                                                         \
+        try {                                                                 \
+            return func(argc, argv);                                          \
+        }                                                                     \
+        catch (const std::exception& e) {                                     \
+            std::cerr << "Program aborted: " << e.what() << std::endl;        \
+            return EXIT_FAILURE;                                              \
+        }                                                                     \
+    }
+#endif
