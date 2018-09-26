@@ -82,6 +82,7 @@ namespace ts {
     class OutputExecutor;
 
     typedef std::vector<InputExecutor*> InputExecutorVector;
+    typedef std::set<IPAddress> IPAddressSet;
 
     //
     // Command line options.
@@ -90,11 +91,13 @@ namespace ts {
     {
     public:
         bool          fastSwitch;        // Fast switch between input plugins.
+        bool          delayedSwitch;     // Delayed switch between input plugins.
         bool          terminate;         // Terminate when one input plugin completes.
         bool          monitor;           // Run a resource monitoring thread.
         bool          logTimeStamp;      // Add time stamps in log messages.
         bool          logSynchronous;    // Synchronous log.
         bool          reusePort;         // Reuse-port socket option.
+        size_t        firstInput;        // Index of first input plugin.
         size_t        cycleCount;        // Number of input cycles to execute.
         size_t        logMaxBuffer;      // Maximum buffered log messages.
         size_t        bufferedPackets;   // Input buffer size in packets.
@@ -102,6 +105,7 @@ namespace ts {
         size_t        maxOutputPackets;  // Maximum input packets to read at a time.
         size_t        sockBuffer;        // Socket buffer size.
         SocketAddress remoteServer;      // UDP server addres for remote control.
+        IPAddressSet  allowedRemote;     // Set of allowed remotes.
 
         // Constructor.
         Options(int argc, char *argv[]);
@@ -292,24 +296,32 @@ namespace ts {
 ts::Options::Options(int argc, char *argv[]) :
     ArgsWithPlugins(1, UNLIMITED_COUNT, 0, 0, 0, 1),
     fastSwitch(false),
+    delayedSwitch(false),
     terminate(false),
     monitor(false),
     logTimeStamp(false),
     logSynchronous(false),
     reusePort(false),
+    firstInput(0),
     cycleCount(1),
     logMaxBuffer(AsyncReport::MAX_LOG_MESSAGES),
     bufferedPackets(0),
     maxInputPackets(0),
     maxOutputPackets(0),
     sockBuffer(0),
-    remoteServer()
+    remoteServer(),
+    allowedRemote()
 {
     setDescription(u"TS input source switch using remote control");
 
     setSyntax(u"[tsswitch-options] \\\n"
-              u"    [-I input-name [input-options]] ... \\\n"
+              u"    -I input-name [input-options] ... \\\n"
               u"    [-O output-name [output-options]]");
+
+    option(u"allow", 'a', STRING);
+    help(u"allow",
+        u"Specify an IP address or host name which is allowed to send remote commands. "
+        u"Several --allow options are allowed . By default, all remote commands are accepted.");
 
     option(u"buffer-packets", 'b', POSITIVE);
     help(u"buffer-packets",
@@ -322,6 +334,14 @@ ts::Options::Options(int argc, char *argv[]) :
          u"By default, all input plugins are executed in sequence only once (--cycle 1). "
          u"The options --cycle, --infinite and --terminate are mutually exclusive.");
 
+    option(u"delayed-switch", 'd');
+    help(u"delayed-switch",
+         u"Perform delayed input switching. When switching from one input plugin to another one, "
+         u"the second plugin is started first. Packets from the first plugin continue to be "
+         u"output while the second plugin is starting. Then, after the second plugin starts to "
+         u"receive packets, the switch occurs: packets are now fetched from the second plugin. "
+         u"Finally, after the switch, the first plugin is stopped.");
+
     option(u"fast-switch", 'f');
     help(u"fast-switch",
          u"Perform fast input switching. All input plugins are started at once and they "
@@ -330,6 +350,11 @@ ts::Options::Options(int argc, char *argv[]) :
          u"streams on distinct devices (not the same DVB tuner for instance).\n\n"
          u"By default, only one input plugin is started at a time. When switching, "
          u"the current input is first stopped and then the next one is started.");
+
+    option(u"first-input", 0, UNSIGNED);
+    help(u"first-input", 
+         u"Specify the index of the first input plugin to start. "
+         u"By default, the first plugin (index 0) is used.");
 
     option(u"infinite", 'i');
     help(u"infinite", u"Infinitely repeat the cycle through all input plugins in sequence.");
@@ -369,9 +394,9 @@ ts::Options::Options(int argc, char *argv[]) :
 
     option(u"remote", 'r', STRING);
     help(u"remote", u"[address:]port",
-         u"Specifies the local UDP port which is used to receive remote commands. "
-         u"If an optional addres is specified, it must be a local IP address of the system. "
-         u"By default, there is not remote control.");
+         u"Specify the local UDP port which is used to receive remote commands. "
+         u"If an optional address is specified, it must be a local IP address of the system. "
+         u"By default, there is no remote control.");
 
     option(u"synchronous-log", 's');
     help(u"synchronous-log",
@@ -397,6 +422,7 @@ ts::Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     fastSwitch = present(u"fast-switch");
+    delayedSwitch = present(u"delayed-switch");
     terminate = present(u"terminate");
     cycleCount = intValue<size_t>(u"cycle", present(u"infinite") ? 0 : 1);
     monitor = present(u"monitor");
@@ -409,6 +435,7 @@ ts::Options::Options(int argc, char *argv[]) :
     const UString remoteName(value(u"remote"));
     reusePort = !present(u"no-reuse-port");
     sockBuffer = intValue<size_t>(u"udp-buffer-size");
+    firstInput = intValue<size_t>(u"first-input", 0);
 
     debug(u"input buffer: %'d packets, max input: %'d packets, max output: %'d packets", {bufferedPackets, maxInputPackets, maxOutputPackets});
 
@@ -416,9 +443,24 @@ ts::Options::Options(int argc, char *argv[]) :
         error(u"options --cycle, --infinite and --terminate are mutually exclusive");
     }
 
+    if (fastSwitch && delayedSwitch) {
+        error(u"options --delayed-switch and --fast-switch are mutually exclusive");
+    }
+
     // Resolve remote control name.
     if (!remoteName.empty() && remoteServer.resolve(remoteName, *this) && !remoteServer.hasPort()) {
         error(u"missing UDP port number in --remote");
+    }
+
+    // Resolve all allowed remote.
+    UStringVector remotes;
+    getValues(remotes, u"allow");
+    allowedRemote.clear();
+    for (auto it = remotes.begin(); it != remotes.end(); ++it) {
+        const IPAddress addr(*it, *this);
+        if (addr.hasAddress()) {
+            allowedRemote.insert(addr);
+        }
     }
 
     // The default output is the standard output file.
@@ -443,7 +485,7 @@ ts::Switch::Switch(int argc, char *argv[]) :
     _output(*this), // load plugin and analyze options
     _mutex(),
     _gotInput(),
-    _curPlugin(0),
+    _curPlugin(opt.firstInput),
     _nextPlugin(_inputs.size()),
     _curCycle(0),
     _terminate(false)
@@ -489,6 +531,9 @@ bool ts::Switch::start()
     {
         return false;
     }
+
+    // Start with the designated first input plugin.
+    _curPlugin = opt.firstInput;
 
     // Start all input threads (but do not open the input "devices").
     bool success = true;
@@ -977,6 +1022,12 @@ void ts::CommandListener::main()
 
     // Loop on incoming messages.
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, 0, error)) {
+
+        // Filter out unauthorized remote systems.
+        if (!_core.opt.allowedRemote.empty() && _core.opt.allowedRemote.find(sender) == _core.opt.allowedRemote.end()) {
+            _core.log.warning(u"rejected remote command from unauthorized host %s", {sender});
+            continue;
+        }
 
         // We expect ASCII commands. Locate first non-ASCII character in message.
         size_t len = 0;
