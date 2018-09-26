@@ -6,7 +6,7 @@ VERSION 3.15-924
 
 [NEW] New commands and plugins:
 
-  * Added command "tsswitch", in TS input switcher with remote control.
+  * Added command "tsswitch", a TS input switcher with remote control.
   * Added plugin "limit".
 
 [IMP] Improvements on existing commands and plugins:

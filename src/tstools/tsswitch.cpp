@@ -81,7 +81,6 @@ namespace ts {
     class InputExecutor;
     class OutputExecutor;
 
-    typedef std::vector<InputExecutor*> InputExecutorVector;
     typedef std::set<IPAddress> IPAddressSet;
 
     //
@@ -155,6 +154,7 @@ namespace ts {
         Mutex          _mutex;        // Mutex to protect all subsequent fields.
         Condition      _todo;         // Condition to signal something to do.
         bool           _isCurrent;    // This plugin is the current input one.
+        bool           _outputInUse;  // The output part of the buffer is currently in use by the output plugin.
         bool           _startRequest; // Start input requested.
         bool           _stopRequest;  // Stop input requested.
         bool           _terminated;   // Terminate thread.
@@ -259,6 +259,7 @@ namespace ts {
 
         // Report input events (for input plugins).
         // Return false when tsswitch is terminating.
+        bool inputStarted(size_t pluginIndex, bool success);
         bool inputReceived(size_t pluginIndex);
         bool inputCompleted(size_t pluginIndex, bool success);
 
@@ -268,17 +269,37 @@ namespace ts {
         bool outputSent(size_t pluginIndex, size_t count);
 
     private:
-        InputExecutorVector _inputs;     // Input plugins threads.
-        OutputExecutor      _output;     // Output plugin thread.
-        Mutex               _mutex;      // Global mutex, protect access to all subsequent fields.
-        Condition           _gotInput;   // Signaled each time an input plugin reports new packets.
-        size_t              _curPlugin;  // Index of current input plugin.
-        size_t              _nextPlugin; // Next input plugin to start, _inputs.size() if there is none.
-        size_t              _curCycle;   // Current input cycle number.
-        volatile bool       _terminate;  // Terminate complete processing.
+        // State of an input plugin, as seen from the Switch object.
+        enum InputState {STARTING, STARTED, STOPPING, STOPPED};
+
+        // Description of an input plugin.
+        class Input
+        {
+        public:
+            InputExecutor* exec;
+            InputState     state;
+
+            // Constructors and operators.
+            Input() : exec(0), state(STOPPED) {}
+            Input(const Input&) = default;
+            Input& operator=(const Input&) = default;
+        };
+
+        std::vector<Input> _inputs;     // Input plugins threads.
+        OutputExecutor     _output;     // Output plugin thread.
+        Mutex              _mutex;      // Global mutex, protect access to all subsequent fields.
+        Condition          _gotInput;   // Signaled each time an input plugin reports new packets.
+        size_t             _curPlugin;  // Index of current input plugin.
+        size_t             _nextPlugin; // Next input plugin to start, _inputs.size() if there is none.
+        size_t             _curCycle;   // Current input cycle number.
+        volatile bool      _terminate;  // Terminate complete processing.
 
         // Change input plugin with mutex already held.
         void setInputLocked(size_t index);
+
+        // Start/stop an input plugin. Must be called with mutex held.
+        void startInputPlugin(size_t index);
+        void stopInputPlugin(size_t index);
 
         // Inaccessible operations.
         Switch() = delete;
@@ -481,7 +502,7 @@ ts::Options::Options(int argc, char *argv[]) :
 ts::Switch::Switch(int argc, char *argv[]) :
     opt(argc, argv),
     log(opt.maxSeverity(), opt.logTimeStamp, opt.logMaxBuffer, opt.logSynchronous),
-    _inputs(opt.inputs.size(), 0),
+    _inputs(opt.inputs.size()),
     _output(*this), // load plugin and analyze options
     _mutex(),
     _gotInput(),
@@ -492,10 +513,11 @@ ts::Switch::Switch(int argc, char *argv[]) :
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i] = new InputExecutor(*this, i);
+        _inputs[i].exec = new InputExecutor(*this, i);
+        CheckNonNull(_inputs[i].exec);
         // Set the asynchronous logger as report method for all executors.
-        _inputs[i]->setReport(&log);
-        _inputs[i]->setMaxSeverity(log.maxSeverity());
+        _inputs[i].exec->setReport(&log);
+        _inputs[i].exec->setMaxSeverity(log.maxSeverity());
     }
 
     // Set the asynchronous logger as report method for output as well.
@@ -509,7 +531,7 @@ ts::Switch::~Switch()
     // Deallocate all input plugins.
     // The destructor of each plugin waits for its termination.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        delete _inputs[i];
+        delete _inputs[i].exec;
     }
     _inputs.clear();
 }
@@ -519,7 +541,7 @@ bool ts::Switch::start()
 {
     // Get all input plugin options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        if (!_inputs[i]->plugin()->getOptions()) {
+        if (!_inputs[i].exec->plugin()->getOptions()) {
             return false;
         }
     }
@@ -533,12 +555,14 @@ bool ts::Switch::start()
     }
 
     // Start with the designated first input plugin.
+    assert(opt.firstInput < _inputs.size());
     _curPlugin = opt.firstInput;
 
     // Start all input threads (but do not open the input "devices").
     bool success = true;
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
-        success = _inputs[i]->start();
+        // Here, start() means start the thread, not start input plugin.
+        success = _inputs[i].exec->start();
     }
 
     if (!success) {
@@ -548,12 +572,12 @@ bool ts::Switch::start()
     else if (opt.fastSwitch) {
         // Option --fast-switch, start all plugins, they continue to receive in parallel.
         for (size_t i = 0; i < _inputs.size(); ++i) {
-            _inputs[i]->startInput(i == _curPlugin);
+            startInputPlugin(i);
         }
     }
     else {
         // Start the first plugin only.
-        _inputs[_curPlugin]->startInput(true);
+        startInputPlugin(_curPlugin);
     }
 
     return success;
@@ -562,14 +586,39 @@ bool ts::Switch::start()
 // Stop the tsswitch processing.
 void ts::Switch::stop(bool success)
 {
+    // Wake up all threads waiting for something on the Switch object.
     {
         GuardCondition lock(_mutex, _gotInput);
         _terminate = true;
         lock.signal();
     }
+    // Tell the output plugin to terminate.
     _output.terminateOutput();
+    // Tell all input plugins to terminate.
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
-        _inputs[i]->terminateInput();
+        _inputs[i].exec->terminateInput();
+    }
+}
+
+// Start an input plugin. Must be called with mutex held.
+void ts::Switch::startInputPlugin(size_t index)
+{
+    assert(index < _inputs.size());
+    if (_inputs[index].state == STOPPED) {
+        // This is the only possible state for a start.
+        _inputs[index].state = STARTING;
+        _inputs[index].exec->startInput(index == _curPlugin);
+    }
+}
+
+// Stop an input plugin. Must be called with mutex held.
+void ts::Switch::stopInputPlugin(size_t index)
+{
+    assert(index < _inputs.size());
+    if (_inputs[index].state == STARTED) {
+        // This is the only possible state for a stop.
+        _inputs[index].state = STOPPING;
+        _inputs[index].exec->stopInput();
     }
 }
 
@@ -586,6 +635,8 @@ void ts::Switch::nextInput()
     Guard lock(_mutex);
     setInputLocked((_curPlugin + 1) % _inputs.size());
 }
+
+// Switch to previous input.
 void ts::Switch::prevInput()
 {
     Guard lock(_mutex);
@@ -595,23 +646,33 @@ void ts::Switch::prevInput()
 // Change input plugin with mutex already held.
 void ts::Switch::setInputLocked(size_t index)
 {
-    if (index < _inputs.size() && index != _curPlugin) {
+    if (index >= _inputs.size()) {
+        log.warning(u"invalid input index %d", {index});
+    }
+    else if (index != _curPlugin) {
         log.debug(u"switch input %d to %d", {_curPlugin, index});
+
+        // Remember the next plugin to activate.
+        _nextPlugin = index;
+
+        // The processing depends on the switching mode.
         if (opt.fastSwitch) {
             // Don't start/stop plugins. Just inform the plugin that it is current.
             // The only impact is that the non-current plugins will drop packets on buffer overflow.
-            _inputs[_curPlugin]->setCurrent(false);
+            _inputs[_curPlugin].exec->setCurrent(false);
             _curPlugin = index;
-            _inputs[_curPlugin]->setCurrent(true);
+            _inputs[_curPlugin].exec->setCurrent(true);
+        }
+        else if (opt.delayedSwitch) {
+            // With --delayed-switch, first start the next plugin.
+            // The current plugin will be stopped when the first packet is received in the next plugin.
+            startInputPlugin(_nextPlugin);
         }
         else {
             // Send a stop request to current plugin.
-            _inputs[_curPlugin]->stopInput();
+            stopInputPlugin(_curPlugin);
             // Do not start the next plugin now. Wait for the stop completion of the current plugin.
-            // We cannot start a new plugin if the previous one has not yet completed its stop if
-            // both plugins use the same device (same DVB tuner on distinct frequencies for instance).
-            // The delayed start will be done in inputCompleted().
-            _nextPlugin = index;
+            // The start will be done in inputCompleted().
         }
     }
 }
@@ -629,7 +690,7 @@ bool ts::Switch::getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t& co
             count = 0;
         }
         else {
-            _inputs[_curPlugin]->getOutputArea(first, count);
+            _inputs[_curPlugin].exec->getOutputArea(first, count);
         }
         // Return when there is something to output in current plugin or the application terminates.
         if (count > 0 || _terminate) {
@@ -651,7 +712,19 @@ bool ts::Switch::outputSent(size_t pluginIndex, size_t count)
     // Inform the input plugin that the packets can be reused for input.
     // We notify the original input plugin from which the packets came.
     // The "current" input plugin may have changed in the meantime.
-    _inputs[pluginIndex]->freeOutput(count);
+    _inputs[pluginIndex].exec->freeOutput(count);
+
+    // Return false when the application terminates.
+    return !_terminate;
+}
+
+// Report completion of input start (called by input plugins).
+bool ts::Switch::inputStarted(size_t pluginIndex, bool success)
+{
+    Guard lock(_mutex);
+
+    // Mark the input plugin as started on success.
+    _inputs[pluginIndex].state = success ? STARTED : STOPPED;
 
     // Return false when the application terminates.
     return !_terminate;
@@ -660,9 +733,21 @@ bool ts::Switch::outputSent(size_t pluginIndex, size_t count)
 // Report input reception of packets (called by input plugins).
 bool ts::Switch::inputReceived(size_t pluginIndex)
 {
-    // Wake up output plugin if it is sleeping, waiting for packets to output.
+    GuardCondition lock(_mutex, _gotInput);
+
+    if (opt.delayedSwitch && _nextPlugin != _curPlugin && pluginIndex == _nextPlugin) {
+        // We use --delayed-switch and the next plugin just received its first packets.
+        // It is now time to switch the output to the next plugin.
+        const size_t previousPlugin = _curPlugin;
+        _curPlugin = _nextPlugin;
+        _inputs[_curPlugin].exec->setCurrent(true);
+        // And we can now stop the previous plugin.
+        stopInputPlugin(previousPlugin);
+    }
+
     if (pluginIndex == _curPlugin) {
-        _gotInput.signal();
+        // Wake up output plugin if it is sleeping, waiting for packets to output.
+        lock.signal();
     }
 
     // Return false when the application terminates.
@@ -678,17 +763,21 @@ bool ts::Switch::inputCompleted(size_t pluginIndex, bool success)
     {
         Guard lock(_mutex);
 
-        // Count end of cycle.
-        if (_curPlugin == _inputs.size() - 1) {
+        // Mark the input plugin as stopped.
+        _inputs[pluginIndex].state = STOPPED;
+
+        // Count end of cycle when the last plugin terminates.
+        if (pluginIndex == _inputs.size() - 1) {
             _curCycle++;
         }
 
         // Check if the complete processing is terminated.
         stopRequest = opt.terminate || (opt.cycleCount > 0 && _curCycle >= opt.cycleCount);
 
+        // Do we have to start another plugin?
         if (!stopRequest) {
             // Select the next plugin to use.
-            if (_nextPlugin < _inputs.size()) {
+            if (_nextPlugin < _inputs.size() && _nextPlugin != _curPlugin) {
                 // A specific plugin was selected, typically by remote control.
                 _curPlugin = _nextPlugin;
                 _nextPlugin = _inputs.size();
@@ -701,10 +790,10 @@ bool ts::Switch::inputCompleted(size_t pluginIndex, bool success)
             // Notify the new current plugin.
             if (opt.fastSwitch) {
                 // Already started, never stop, simply notify.
-                _inputs[_curPlugin]->setCurrent(true);
+                _inputs[_curPlugin].exec->setCurrent(true);
             }
             else {
-                _inputs[_curPlugin]->startInput(true);
+                _inputs[_curPlugin].exec->startInput(true);
             }
         }
     }
@@ -727,7 +816,7 @@ void ts::Switch::waitForTermination()
 
     // Wait for all input termination.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i]->waitForTermination();
+        _inputs[i].exec->waitForTermination();
     }
 }
 
@@ -747,6 +836,7 @@ ts::InputExecutor::InputExecutor(Switch& core, size_t index) :
     _mutex(),
     _todo(),
     _isCurrent(false),
+    _outputInUse(false),
     _startRequest(false),
     _stopRequest(false),
     _terminated(false),
@@ -805,9 +895,11 @@ void ts::InputExecutor::terminateInput()
 // Get some packets to output.
 void ts::InputExecutor::getOutputArea(ts::TSPacket*& first, size_t& count)
 {
-    Guard lock(_mutex);
+    GuardCondition lock(_mutex, _todo);
     first = &_buffer[_outFirst];
     count = std::min(_outCount, _buffer.size() - _outFirst);
+    _outputInUse = count > 0;
+    lock.signal();
 }
 
 // Free output packets (after being sent).
@@ -817,6 +909,7 @@ void ts::InputExecutor::freeOutput(size_t count)
     assert(count <= _outCount);
     _outFirst = (_outFirst + count) % _buffer.size();
     _outCount -= count;
+    _outputInUse = false;
     lock.signal();
 }
 
@@ -831,8 +924,11 @@ void ts::InputExecutor::main()
         // Initial sequence under mutex protection.
         debug(u"waiting for input session");
         {
-            // Wait for start or terminate.
             GuardCondition lock(_mutex, _todo);
+            // Reset input buffer.
+            _outFirst = 0;
+            _outCount = 0;
+            // Wait for start or terminate.
             while (!_startRequest && !_terminated) {
                 lock.waitCondition();
             }
@@ -847,9 +943,20 @@ void ts::InputExecutor::main()
 
         // Here, we need to start an input session.
         debug(u"starting input plugin");
-        bool success = _input->start();
+        const bool started = _input->start();
+        debug(u"input plugin started, status: %s", {started});
+        _core.inputStarted(_pluginIndex, started);
 
-        while (success) {
+        if (!started) {
+            // Failed to start.
+            _core.inputCompleted(_pluginIndex, false);
+            // Loop back, waiting for a new session.
+            continue;
+        }
+
+        // Loop on incoming packets.
+        for (;;) {
+
             // Input area (first packet index and packet count).
             size_t inFirst = 0;
             size_t inCount = 0;
@@ -901,15 +1008,22 @@ void ts::InputExecutor::main()
             _core.inputReceived(_pluginIndex);
         }
 
-        // End of input session.
-        if (success) {
-            // Was started, need to stop.
-            debug(u"stopping input plugin");
-            success = _input->stop();
+        // At end of session, make sure that the output buffer is not in use by the output plugin.
+        {
+            // Wait for the output plugin to release the buffer.
+            GuardCondition lock(_mutex, _todo);
+            while (_outputInUse) {
+                debug(u"input terminated, waiting for output plugin to release the buffer");
+                lock.waitCondition();
+            }
+            // And reset the output part of the buffer.
+            _outFirst = 0;
+            _outCount = 0;
         }
 
-        // Report end of input session to core object.
-        _core.inputCompleted(_pluginIndex, success);
+        // End of input session.
+        debug(u"stopping input plugin");
+        _core.inputCompleted(_pluginIndex, _input->stop());
     }
 
     debug(u"input thread terminated");
@@ -950,11 +1064,10 @@ void ts::OutputExecutor::main()
         log(2, u"got %d packets from plugin %d, terminate: %s", {count, pluginIndex, _terminate});
         if (!_terminate && count > 0) {
             // Output the packets.
-            if (_output->send(first, count)) {
-                // Packets were sent, free the output buffer.
-                _core.outputSent(pluginIndex, count);
-            }
-            else {
+            const bool success = _output->send(first, count);
+            // Signal to the input plugin that the buffer can be reused..
+            _core.outputSent(pluginIndex, count);
+            if (!success) {
                 // Output error, abort the whole process with an error.
                 debug(u"stopping output plugin");
                 _core.stop(false);

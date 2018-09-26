@@ -5,11 +5,11 @@ TSDuck - List of features to be implemented or fixed
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
-  - 2.6.40  IOD_descriptor
-  - 2.6.44  FMC_descriptor
-  - 2.6.48  muxcode_descriptor
-  - 2.6.50  FmxBufferSize_descriptor
-  - 2.6.52  MultiplexBuffer_descriptor
+  - 2.6.40   IOD_descriptor
+  - 2.6.44   FMC_descriptor
+  - 2.6.48   muxcode_descriptor
+  - 2.6.50   FmxBufferSize_descriptor
+  - 2.6.52   MultiplexBuffer_descriptor
   - 2.11.3.8 ISO_IEC_14496_section
 
   ISO/IEC 13818-1 2000, Amendment 1, Transport of Metadata
