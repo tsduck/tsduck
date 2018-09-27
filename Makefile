@@ -29,6 +29,14 @@
 #
 #  Root makefile for the TSDuck project.
 #
+#  Additional options which can be defined:
+#
+#  - NOTEST  : No unitary test, remove dependency to CppUnit.
+#  - NODTAPI : No Dektec support, remove dependency to DTAPI.
+#  - NOCURL  : No HTTP support, remove dependency to libcurl.
+#  - NOPCSC  : No smartcard support, remove dependency to pcsc-lite.
+#  - NOTELETEXT : No Teletext support, remove teletext handling code.
+#
 #-----------------------------------------------------------------------------
 
 

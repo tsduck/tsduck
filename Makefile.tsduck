@@ -95,14 +95,46 @@ endif
 
 # External include directories and libraries.
 
-ifndef CFLAGS_CURL
-    export CFLAGS_CURL := $(shell curl-config --cflags)
-    export LDLIBS_CURL := $(shell curl-config --libs)
+ifdef CROSS_TARGET
+    # Some libraries are bypassed in cross-compilation.
+    NOCURL := true
+    NOPCSC := true
+    NODTAPI := true
+endif
+
+ifdef NOTELETEXT
+    CFLAGS_INCLUDES += -DTS_NOTELETEXT=1
+endif
+
+ifdef NOCURL
+    CFLAGS_INCLUDES += -DTS_NO_CURL=1
+else
+    ifndef CFLAGS_CURL
+        export CFLAGS_CURL := $(shell curl-config --cflags)
+        export LDLIBS_CURL := $(shell curl-config --libs)
+    endif
+    CFLAGS_INCLUDES += $(CFLAGS_CURL)
+    LDLIBS := $(LDLIBS_CURL) $(LDLIBS)
+endif
+
+ifdef NOPCSC
+    CFLAGS_INCLUDES += -DTS_NO_PCSC=1
+else
+    ifdef MACOS
+        CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC
+        LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ -lpcsclite $(LDLIBS)
+    else
+        CFLAGS_INCLUDES += -I/usr/include/PCSC
+        LDLIBS := -lpcsclite $(LDLIBS)
+    endif
+endif
+
+ifdef NODTAPI
+    CFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 endif
 
 ifdef MACOS
-    CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(LIBTSDUCKDIR)/mac
-    LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ $(LDLIBS)
+    CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
     LDFLAGS_EXTRA += -Wl,-rpath,@executable_path
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 else
@@ -112,18 +144,6 @@ else
 endif
 
 CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)
-
-ifdef CROSS_TARGET
-    # Some libraries are bypassed in cross-compilation.
-    CFLAGS_INCLUDES += -DTS_NO_PCSC=1 -DTS_NO_CURL=1 -DTS_NO_DTAPI=1
-else
-    CFLAGS_INCLUDES += -I/usr/include/PCSC $(CFLAGS_CURL)
-    LDLIBS := $(LDLIBS_CURL) -lpcsclite $(LDLIBS)
-endif
-
-ifdef NOTELETEXT
-    CFLAGS_INCLUDES += -DTS_NOTELETEXT=1
-endif
 
 # The following script is used to build a few project files.
 # It shall be used when source files are added or removed in the library.

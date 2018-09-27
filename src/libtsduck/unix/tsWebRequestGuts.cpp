@@ -45,8 +45,8 @@ TSDUCK_SOURCE;
 #define TS_NO_CURL_MESSAGE u"This version of TSDuck was compiled without Web support"
 
 class ts::WebRequest::SystemGuts {};
-void ts::WebRequest::allocateGuts() {}
-void ts::WebRequest::deleteGuts() {}
+void ts::WebRequest::allocateGuts() { _guts = new SystemGuts; }
+void ts::WebRequest::deleteGuts() { delete _guts; }
 bool ts::WebRequest::downloadInitialize() { _report.error(TS_NO_CURL_MESSAGE); return false; }
 void ts::WebRequest::downloadAbort() {}
 bool ts::WebRequest::download() { _report.error(TS_NO_CURL_MESSAGE); return false; }

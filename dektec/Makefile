@@ -37,7 +37,7 @@ include ../Makefile.tsduck
 # This SDK is available on Linux and Windows, Intel CPU's only.
 
 DTAPI_TARGET :=
-ifeq ($(LOCAL_OS),linux)
+ifeq ($(NODTAPI)$(LOCAL_OS),linux)
     ifeq ($(MAIN_ARCH),i386)
         DTAPI_TARGET := dtapi
     endif
