@@ -81,6 +81,7 @@ namespace ts {
     class InputExecutor;
     class OutputExecutor;
 
+    typedef std::vector<InputExecutor*> InputExecutorVector;
     typedef std::set<IPAddress> IPAddressSet;
 
     //
@@ -149,7 +150,7 @@ namespace ts {
     private:
         Switch&        _core;         // Application core.
         InputPlugin*   _input;        // Plugin API.
-        size_t         _pluginIndex;  // Index of this input plugin.
+        const size_t   _pluginIndex;  // Index of this input plugin.
         TSPacketVector _buffer;       // Packet buffer.
         Mutex          _mutex;        // Mutex to protect all subsequent fields.
         Condition      _todo;         // Condition to signal something to do.
@@ -261,7 +262,7 @@ namespace ts {
         // Return false when tsswitch is terminating.
         bool inputStarted(size_t pluginIndex, bool success);
         bool inputReceived(size_t pluginIndex);
-        bool inputCompleted(size_t pluginIndex, bool success);
+        bool inputStopped(size_t pluginIndex, bool success);
 
         // Get/free some packets to output (for output plugin).
         // Return false when tsswitch is terminating.
@@ -269,37 +270,63 @@ namespace ts {
         bool outputSent(size_t pluginIndex, size_t count);
 
     private:
-        // State of an input plugin, as seen from the Switch object.
-        enum InputState {STARTING, STARTED, STOPPING, STOPPED};
-
-        // Description of an input plugin.
-        class Input
-        {
-        public:
-            InputExecutor* exec;
-            InputState     state;
-
-            // Constructors and operators.
-            Input() : exec(0), state(STOPPED) {}
-            Input(const Input&) = default;
-            Input& operator=(const Input&) = default;
+        // Upon reception of an event (end of input, remote command, etc), there
+        // is a list of actions to execute which depends on the switch policy.
+        // Types of actions:
+        enum ActionType {
+            VOID,          // Nothing to do.
+            START,         // Start a plugin.
+            WAIT_STARTED,  // Wait for start completion of a plugin.
+            WAIT_INPUT,    // Wait for input packets on a plugin.
+            STOP,          // Stop a plugin.
+            WAIT_STOPPED,  // Wait for stop completion of a plugin.
+            NOTIF_CURRENT, // Notify a plugin it is the current one (or not).
+            SET_CURRENT,   // Set current plugin index.
         };
 
-        std::vector<Input> _inputs;     // Input plugins threads.
-        OutputExecutor     _output;     // Output plugin thread.
-        Mutex              _mutex;      // Global mutex, protect access to all subsequent fields.
-        Condition          _gotInput;   // Signaled each time an input plugin reports new packets.
-        size_t             _curPlugin;  // Index of current input plugin.
-        size_t             _nextPlugin; // Next input plugin to start, _inputs.size() if there is none.
-        size_t             _curCycle;   // Current input cycle number.
-        volatile bool      _terminate;  // Terminate complete processing.
+        // Description of an action with its parameters.
+        class Action: public StringifyInterface
+        {
+        public:
+            ActionType type;   // Action to execute.
+            size_t     index;  // Input plugin index.
+            bool       flag;   // Boolean parameter (depends on the action).
+
+            // Constructor.
+            Action(ActionType t = VOID, size_t i = 0, bool f = false) : type(t), index(i), flag(f) {}
+
+            // Implement StringifyInterface.
+            virtual UString toString() const override;
+
+            // Operator "less" for containers.
+            bool operator<(const Action& a) const;
+        };
+
+        typedef std::set<Action> ActionSet;
+        typedef std::deque<Action> ActionQueue;
+
+        InputExecutorVector _inputs;     // Input plugins threads.
+        OutputExecutor      _output;     // Output plugin thread.
+        Mutex               _mutex;      // Global mutex, protect access to all subsequent fields.
+        Condition           _gotInput;   // Signaled each time an input plugin reports new packets.
+        size_t              _curPlugin;  // Index of current input plugin.
+        size_t              _curCycle;   // Current input cycle number.
+        volatile bool       _terminate;  // Terminate complete processing.
+        ActionQueue         _actions;    // Sequential queue list of actions to execute.
+        ActionSet           _events;     // Pending events, waiting to be cleared.
+
+        // Names of actions for debug messages.
+        static const Enumeration _actionNames;
 
         // Change input plugin with mutex already held.
         void setInputLocked(size_t index);
 
-        // Start/stop an input plugin. Must be called with mutex held.
-        void startInputPlugin(size_t index);
-        void stopInputPlugin(size_t index);
+        // Enqueue an action (with mutex already held).
+        void enqueue(const Action& action);
+
+        // Execute all commands until one needs to wait (with mutex already held).
+        // The event can be used to unlock a wait action.
+        void execute(const Action& event = Action());
 
         // Inaccessible operations.
         Switch() = delete;
@@ -502,22 +529,23 @@ ts::Options::Options(int argc, char *argv[]) :
 ts::Switch::Switch(int argc, char *argv[]) :
     opt(argc, argv),
     log(opt.maxSeverity(), opt.logTimeStamp, opt.logMaxBuffer, opt.logSynchronous),
-    _inputs(opt.inputs.size()),
+    _inputs(opt.inputs.size(), 0),
     _output(*this), // load plugin and analyze options
     _mutex(),
     _gotInput(),
     _curPlugin(opt.firstInput),
-    _nextPlugin(_inputs.size()),
     _curCycle(0),
-    _terminate(false)
+    _terminate(false),
+    _actions(),
+    _events()
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i].exec = new InputExecutor(*this, i);
-        CheckNonNull(_inputs[i].exec);
+        _inputs[i] = new InputExecutor(*this, i);
+        CheckNonNull(_inputs[i]);
         // Set the asynchronous logger as report method for all executors.
-        _inputs[i].exec->setReport(&log);
-        _inputs[i].exec->setMaxSeverity(log.maxSeverity());
+        _inputs[i]->setReport(&log);
+        _inputs[i]->setMaxSeverity(log.maxSeverity());
     }
 
     // Set the asynchronous logger as report method for output as well.
@@ -531,7 +559,7 @@ ts::Switch::~Switch()
     // Deallocate all input plugins.
     // The destructor of each plugin waits for its termination.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        delete _inputs[i].exec;
+        delete _inputs[i];
     }
     _inputs.clear();
 }
@@ -541,7 +569,7 @@ bool ts::Switch::start()
 {
     // Get all input plugin options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        if (!_inputs[i].exec->plugin()->getOptions()) {
+        if (!_inputs[i]->plugin()->getOptions()) {
             return false;
         }
     }
@@ -562,7 +590,7 @@ bool ts::Switch::start()
     bool success = true;
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
         // Here, start() means start the thread, not start input plugin.
-        success = _inputs[i].exec->start();
+        success = _inputs[i]->start();
     }
 
     if (!success) {
@@ -572,12 +600,12 @@ bool ts::Switch::start()
     else if (opt.fastSwitch) {
         // Option --fast-switch, start all plugins, they continue to receive in parallel.
         for (size_t i = 0; i < _inputs.size(); ++i) {
-            startInputPlugin(i);
+            _inputs[i]->startInput(i == _curPlugin);
         }
     }
     else {
         // Start the first plugin only.
-        startInputPlugin(_curPlugin);
+        _inputs[_curPlugin]->startInput(true);
     }
 
     return success;
@@ -596,29 +624,7 @@ void ts::Switch::stop(bool success)
     _output.terminateOutput();
     // Tell all input plugins to terminate.
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
-        _inputs[i].exec->terminateInput();
-    }
-}
-
-// Start an input plugin. Must be called with mutex held.
-void ts::Switch::startInputPlugin(size_t index)
-{
-    assert(index < _inputs.size());
-    if (_inputs[index].state == STOPPED) {
-        // This is the only possible state for a start.
-        _inputs[index].state = STARTING;
-        _inputs[index].exec->startInput(index == _curPlugin);
-    }
-}
-
-// Stop an input plugin. Must be called with mutex held.
-void ts::Switch::stopInputPlugin(size_t index)
-{
-    assert(index < _inputs.size());
-    if (_inputs[index].state == STARTED) {
-        // This is the only possible state for a stop.
-        _inputs[index].state = STOPPING;
-        _inputs[index].exec->stopInput();
+        _inputs[i]->terminateInput();
     }
 }
 
@@ -652,28 +658,141 @@ void ts::Switch::setInputLocked(size_t index)
     else if (index != _curPlugin) {
         log.debug(u"switch input %d to %d", {_curPlugin, index});
 
-        // Remember the next plugin to activate.
-        _nextPlugin = index;
-
         // The processing depends on the switching mode.
         if (opt.fastSwitch) {
             // Don't start/stop plugins. Just inform the plugin that it is current.
             // The only impact is that the non-current plugins will drop packets on buffer overflow.
-            _inputs[_curPlugin].exec->setCurrent(false);
-            _curPlugin = index;
-            _inputs[_curPlugin].exec->setCurrent(true);
+            enqueue(Action(NOTIF_CURRENT, _curPlugin, false));
+            enqueue(Action(SET_CURRENT, index));
+            enqueue(Action(NOTIF_CURRENT, index, true));
         }
         else if (opt.delayedSwitch) {
             // With --delayed-switch, first start the next plugin.
             // The current plugin will be stopped when the first packet is received in the next plugin.
-            startInputPlugin(_nextPlugin);
+            enqueue(Action(START, index, false));
+            enqueue(Action(WAIT_INPUT, index));
+            enqueue(Action(SET_CURRENT, index));
+            enqueue(Action(STOP, _curPlugin));
+            enqueue(Action(WAIT_STOPPED, _curPlugin));
         }
         else {
-            // Send a stop request to current plugin.
-            stopInputPlugin(_curPlugin);
-            // Do not start the next plugin now. Wait for the stop completion of the current plugin.
-            // The start will be done in inputCompleted().
+            // Default switch mode.
+            enqueue(Action(STOP, _curPlugin));
+            enqueue(Action(WAIT_STOPPED, _curPlugin));
+            enqueue(Action(SET_CURRENT, index));
+            enqueue(Action(START, index, true));
+            enqueue(Action(WAIT_STARTED, index));
         }
+
+        // Execute actions.
+        execute();
+    }
+}
+
+// Names of actions for debug messages.
+const ts::Enumeration ts::Switch::_actionNames({
+    {u"VOID",          VOID},
+    {u"START",         START},
+    {u"WAIT_STARTED",  WAIT_STARTED},
+    {u"WAIT_INPUT",    WAIT_INPUT},
+    {u"STOP",          STOP},
+    {u"WAIT_STOPPED",  WAIT_STOPPED},
+    {u"NOTIF_CURRENT", NOTIF_CURRENT},
+    {u"SET_CURRENT",   SET_CURRENT},
+});
+
+// Stringify an Action object.
+ts::UString ts::Switch::Action::toString() const
+{
+    return UString::Format(u"%s, %d, %s", {_actionNames.name(type), index, flag});
+}
+
+// Operator "less" for containers.
+bool ts::Switch::Action::operator<(const Action& a) const
+{
+    if (type != a.type) {
+        return type < a.type;
+    }
+    else if (index != a.index) {
+        return index < a.index;
+    }
+    else {
+        return int(flag) < int(a.flag);
+    }
+}
+
+// Enqueue an action.
+void ts::Switch::enqueue(const Action& action)
+{
+    log.debug(u"enqueue action %s", {action});
+    _actions.push_back(action);
+}
+
+// Execute all commands until one needs to wait.
+void ts::Switch::execute(const Action& event)
+{
+    // Ignore flag in event.
+    Action eventNoFlag(event);
+    eventNoFlag.flag = false;
+
+    // Set current event.
+    if (_events.find(eventNoFlag) == _events.end()) {
+        // The event was not present.
+        _events.insert(eventNoFlag);
+        log.debug(u"setting event: %s", {event});
+    }
+
+    // Loop on all enqueued commands.
+    while (!_actions.empty()) {
+
+        // Inpect front command. Will be dequeued if executed.
+        const Action& action(_actions.front());
+        log.debug(u"executing action %s", {action});
+        assert(action.index < _inputs.size());
+
+        // Try to execute the front command. Return if wait is required.
+        switch (action.type) {
+            case VOID: {
+                break;
+            }
+            case START: {
+                _inputs[action.index]->startInput(action.flag);
+                break;
+            }
+            case STOP: {
+                _inputs[action.index]->stopInput();
+                break;
+            }
+            case NOTIF_CURRENT: {
+                _inputs[action.index]->setCurrent(action.flag);
+                break;
+            }
+            case SET_CURRENT: {
+                _curPlugin = action.index;
+                break;
+            }
+            case WAIT_STARTED:
+            case WAIT_INPUT:
+            case WAIT_STOPPED: {
+                // Wait commands, check if an event of this type is pending.
+                const ActionSet::const_iterator it(_events.find(eventNoFlag));
+                if (it == _events.end()) {
+                    // Event not found, cannot execute further, keep the action in queue and retry later.
+                    log.debug(u"not ready, waiting: %s", {action});
+                    return;
+                }
+                // Clear the event.
+                _events.erase(it);
+                break;
+            }
+            default: {
+                // Unknown action.
+                assert(false);
+            }
+        }
+
+        // Command executed, dequeue it.
+        _actions.pop_front();
     }
 }
 
@@ -690,7 +809,7 @@ bool ts::Switch::getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t& co
             count = 0;
         }
         else {
-            _inputs[_curPlugin].exec->getOutputArea(first, count);
+            _inputs[_curPlugin]->getOutputArea(first, count);
         }
         // Return when there is something to output in current plugin or the application terminates.
         if (count > 0 || _terminate) {
@@ -712,7 +831,7 @@ bool ts::Switch::outputSent(size_t pluginIndex, size_t count)
     // Inform the input plugin that the packets can be reused for input.
     // We notify the original input plugin from which the packets came.
     // The "current" input plugin may have changed in the meantime.
-    _inputs[pluginIndex].exec->freeOutput(count);
+    _inputs[pluginIndex]->freeOutput(count);
 
     // Return false when the application terminates.
     return !_terminate;
@@ -723,8 +842,8 @@ bool ts::Switch::inputStarted(size_t pluginIndex, bool success)
 {
     Guard lock(_mutex);
 
-    // Mark the input plugin as started on success.
-    _inputs[pluginIndex].state = success ? STARTED : STOPPED;
+    // Execute all commands if waiting on this event.
+    execute(Action(WAIT_STARTED, pluginIndex, success));
 
     // Return false when the application terminates.
     return !_terminate;
@@ -735,15 +854,8 @@ bool ts::Switch::inputReceived(size_t pluginIndex)
 {
     GuardCondition lock(_mutex, _gotInput);
 
-    if (opt.delayedSwitch && _nextPlugin != _curPlugin && pluginIndex == _nextPlugin) {
-        // We use --delayed-switch and the next plugin just received its first packets.
-        // It is now time to switch the output to the next plugin.
-        const size_t previousPlugin = _curPlugin;
-        _curPlugin = _nextPlugin;
-        _inputs[_curPlugin].exec->setCurrent(true);
-        // And we can now stop the previous plugin.
-        stopInputPlugin(previousPlugin);
-    }
+    // Execute all commands if waiting on this event.
+    execute(Action(WAIT_INPUT, pluginIndex));
 
     if (pluginIndex == _curPlugin) {
         // Wake up output plugin if it is sleeping, waiting for packets to output.
@@ -755,16 +867,14 @@ bool ts::Switch::inputReceived(size_t pluginIndex)
 }
 
 // Report completion of input session (called by input plugins).
-bool ts::Switch::inputCompleted(size_t pluginIndex, bool success)
+bool ts::Switch::inputStopped(size_t pluginIndex, bool success)
 {
     bool stopRequest = false;
 
     // Locked sequence.
     {
         Guard lock(_mutex);
-
-        // Mark the input plugin as stopped.
-        _inputs[pluginIndex].state = STOPPED;
+        log.debug(u"input %d completed, success: %s", {pluginIndex, success});
 
         // Count end of cycle when the last plugin terminates.
         if (pluginIndex == _inputs.size() - 1) {
@@ -774,28 +884,22 @@ bool ts::Switch::inputCompleted(size_t pluginIndex, bool success)
         // Check if the complete processing is terminated.
         stopRequest = opt.terminate || (opt.cycleCount > 0 && _curCycle >= opt.cycleCount);
 
-        // Do we have to start another plugin?
-        if (!stopRequest) {
-            // Select the next plugin to use.
-            if (_nextPlugin < _inputs.size() && _nextPlugin != _curPlugin) {
-                // A specific plugin was selected, typically by remote control.
-                _curPlugin = _nextPlugin;
-                _nextPlugin = _inputs.size();
-            }
-            else {
-                // Start next plugin in sequence.
-                _curPlugin = (_curPlugin + 1) % _inputs.size();
-            }
-
-            // Notify the new current plugin.
+        // If the current plugin terminates and there is nothing else to execute, move to next plugin.
+        if (pluginIndex == _curPlugin && _actions.empty()) {
+            const size_t next = (_curPlugin + 1) % _inputs.size();
+            enqueue(Action(SET_CURRENT, next));
             if (opt.fastSwitch) {
                 // Already started, never stop, simply notify.
-                _inputs[_curPlugin].exec->setCurrent(true);
+                enqueue(Action(NOTIF_CURRENT, next));
             }
             else {
-                _inputs[_curPlugin].exec->startInput(true);
+                enqueue(Action(START, next));
+                enqueue(Action(WAIT_STARTED, next));
             }
         }
+
+        // Execute all commands if waiting on this event.
+        execute(Action(WAIT_STOPPED, pluginIndex));
     }
 
     // Stop everything when we reach the end of the tsswitch processing.
@@ -816,7 +920,7 @@ void ts::Switch::waitForTermination()
 
     // Wait for all input termination.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i].exec->waitForTermination();
+        _inputs[i]->waitForTermination();
     }
 }
 
@@ -949,7 +1053,7 @@ void ts::InputExecutor::main()
 
         if (!started) {
             // Failed to start.
-            _core.inputCompleted(_pluginIndex, false);
+            _core.inputStopped(_pluginIndex, false);
             // Loop back, waiting for a new session.
             continue;
         }
@@ -1023,7 +1127,7 @@ void ts::InputExecutor::main()
 
         // End of input session.
         debug(u"stopping input plugin");
-        _core.inputCompleted(_pluginIndex, _input->stop());
+        _core.inputStopped(_pluginIndex, _input->stop());
     }
 
     debug(u"input thread terminated");
