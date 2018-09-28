@@ -110,6 +110,28 @@ and `release-x86_64` for 32-bit and 64-bit platforms respectively.
 
 To build a 32-bit version of TSDuck on a 64-bit system, execute the command `make m32`.
 
+### Building without specialized dependencies
+
+In specific configurations, you may want to disable some external libraries
+such as `libcurl` or `pcsc-lite`. Of course, the corresponding features in
+TSDuck will be disabled but the impact is limited. For instance, disabling
+`libcurl` will disable the plugin `http` (the plugin will still be there
+but it will report an error when used).
+
+The following `make` variables can be defined:
+
+- `NOTEST`  : No unitary test, remove dependency to `CppUnit`.
+- `NODTAPI` : No Dektec support, remove dependency to `DTAPI`.
+- `NOCURL`  : No HTTP support, remove dependency to `libcurl`.
+- `NOPCSC`  : No smartcard support, remove dependency to `pcsc-lite`.
+- `NOTELETEXT` : No Teletext support, remove teletext handling code.
+
+The following command, for instance, builds TSDuck without dependency
+to `CppUnit`, `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
+~~~
+make NOTEST=1 NOPCSC=1 NOCURL=1 NODTAPI=1
+~~~
+
 # Building the TSDuck installers {#buildinst}
 
 There is no need to build the TSDuck binaries before building the installers.
