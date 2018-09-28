@@ -274,7 +274,7 @@ namespace ts {
         // is a list of actions to execute which depends on the switch policy.
         // Types of actions:
         enum ActionType {
-            VOID,          // Nothing to do.
+            NONE,          // Nothing to do.
             START,         // Start a plugin.
             WAIT_STARTED,  // Wait for start completion of a plugin.
             WAIT_INPUT,    // Wait for input packets on a plugin.
@@ -293,7 +293,7 @@ namespace ts {
             bool       flag;   // Boolean parameter (depends on the action).
 
             // Constructor.
-            Action(ActionType t = VOID, size_t i = 0, bool f = false) : type(t), index(i), flag(f) {}
+            Action(ActionType t = NONE, size_t i = 0, bool f = false) : type(t), index(i), flag(f) {}
 
             // Implement StringifyInterface.
             virtual UString toString() const override;
@@ -691,7 +691,7 @@ void ts::Switch::setInputLocked(size_t index)
 
 // Names of actions for debug messages.
 const ts::Enumeration ts::Switch::_actionNames({
-    {u"VOID",          VOID},
+    {u"NONE",          NONE},
     {u"START",         START},
     {u"WAIT_STARTED",  WAIT_STARTED},
     {u"WAIT_INPUT",    WAIT_INPUT},
@@ -752,7 +752,7 @@ void ts::Switch::execute(const Action& event)
 
         // Try to execute the front command. Return if wait is required.
         switch (action.type) {
-            case VOID: {
+            case NONE: {
                 break;
             }
             case START: {
