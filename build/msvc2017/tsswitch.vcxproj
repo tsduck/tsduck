@@ -5,6 +5,18 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\tstools\tsswitch.cpp" />
+    <ClCompile Include="..\..\src\tstools\tsswitchCommandListener.cpp" />
+    <ClCompile Include="..\..\src\tstools\tsswitchCore.cpp" />
+    <ClCompile Include="..\..\src\tstools\tsswitchInputExecutor.cpp" />
+    <ClCompile Include="..\..\src\tstools\tsswitchOptions.cpp" />
+    <ClCompile Include="..\..\src\tstools\tsswitchOutputExecutor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\tstools\tsswitchCommandListener.h" />
+    <ClInclude Include="..\..\src\tstools\tsswitchCore.h" />
+    <ClInclude Include="..\..\src\tstools\tsswitchInputExecutor.h" />
+    <ClInclude Include="..\..\src\tstools\tsswitchOptions.h" />
+    <ClInclude Include="..\..\src\tstools\tsswitchOutputExecutor.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{50E95255-F4C4-48E2-8745-A193EEC8E265}</ProjectGuid>

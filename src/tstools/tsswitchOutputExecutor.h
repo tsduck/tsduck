@@ -28,20 +28,54 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Input switch (tsswitch) output plugin executor thread.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 929
+#include "tsPluginThread.h"
+
+namespace ts {
+    //!
+    //! Input switch (tsswitch) namespace.
+    //!
+    namespace tsswitch {
+
+        class Core;
+
+        //!
+        //! Execution context of a tsswitch output plugin.
+        //! @ingroup plugin
+        //!
+        class OutputExecutor : public PluginThread
+        {
+        public:
+            // Constructor & destructor.
+            OutputExecutor(Core& core);
+            virtual ~OutputExecutor();
+
+            // Request the termination of the thread. Actual termination will occur
+            // after completion of the current output operation.
+            void terminateOutput() { _terminate = true; }
+
+            // Implementation of TSP. We do not use "joint termination" in tsswitch.
+            virtual void useJointTermination(bool) override {}
+            virtual void jointTerminate() override {}
+            virtual bool useJointTermination() const override {return false;}
+            virtual bool thisJointTerminated() const override {return false;}
+
+        private:
+            Core&         _core;       // Application core.
+            OutputPlugin* _output;     // Plugin API.
+            volatile bool _terminate;  // Termination request.
+
+            // Implementation of Thread.
+            virtual void main() override;
+
+            // Inaccessible operations.
+            OutputExecutor() = delete;
+            OutputExecutor(const OutputExecutor&) = delete;
+            OutputExecutor& operator=(const OutputExecutor&) = delete;
+        };
+    }
+}
