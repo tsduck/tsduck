@@ -246,4 +246,9 @@ namespace ts {
     //! Vector of IP addresses.
     //!
     typedef std::vector<IPAddress> IPAddressVector;
+
+    //!
+    //! Set of IP addresses.
+    //!
+    typedef std::set<IPAddress> IPAddressSet;
 }

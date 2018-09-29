@@ -42,8 +42,9 @@ default: execs $(OBJDIR)/setenv.sh
 .PHONY: execs
 execs: $(EXECS)
 
-# tsp has additional modules
+# tsp and tswitch have additional modules
 $(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
+$(OBJDIR)/tsswitch: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsswitch%,$(MODULES_LIB))))
 
 ifndef STATIC
 # With dynamic link (the default), we use the shareable library.

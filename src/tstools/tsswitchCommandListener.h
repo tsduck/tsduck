@@ -28,20 +28,49 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Input switch (tsswitch) remote control command receiver.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 929
+#include "tsThread.h"
+#include "tsUDPReceiver.h"
+
+namespace ts {
+    //!
+    //! Input switch (tsswitch) namespace.
+    //!
+    namespace tsswitch {
+
+        class Core;
+
+        //!
+        //! Input switch (tsswitch) remote control command receiver.
+        //! @ingroup plugin
+        //!
+        class CommandListener : private Thread
+        {
+        public:
+            // Constructor & destructor.
+            CommandListener(Core& core);
+            virtual ~CommandListener();
+
+            // Open/close, start/stop the command listener.
+            bool open();
+            void close();
+
+        private:
+            Core&         _core;
+            UDPReceiver   _sock;
+            volatile bool _terminate;
+
+            // Implementation of Thread.
+            virtual void main() override;
+
+            // Inaccessible operations.
+            CommandListener() = delete;
+            CommandListener(const CommandListener&) = delete;
+            CommandListener& operator=(const CommandListener&) = delete;
+        };
+    }
+}

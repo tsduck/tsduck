@@ -37,14 +37,13 @@ TSDUCK_SOURCE;
 
 ts::PushInputPlugin::PushInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     InputPlugin(tsp_, description, syntax),
-    _receiver(tsp_, this),
+    _receiver(this),
     _started(false),
     _queue()
 {
 }
 
-ts::PushInputPlugin::Receiver::Receiver(TSP* tsp_, PushInputPlugin* plugin) :
-    _tsp(tsp_),
+ts::PushInputPlugin::Receiver::Receiver(PushInputPlugin* plugin) :
     _plugin(plugin)
 {
 }
@@ -71,7 +70,7 @@ void ts::PushInputPlugin::setQueueSize(size_t count)
 
 void ts::PushInputPlugin::Receiver::main()
 {
-    _tsp->debug(u"internal push-input thread started");
+    _plugin->tsp->debug(u"internal push-input thread started");
 
     // Simply let the subclass perform input until the end.
     _plugin->processInput();
@@ -79,7 +78,7 @@ void ts::PushInputPlugin::Receiver::main()
     // Push an end of file mark.
     _plugin->_queue.setEOF();
 
-    _tsp->debug(u"internal push-input thread completed");
+    _plugin->tsp->debug(u"internal push-input thread completed");
 }
 
 

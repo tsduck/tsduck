@@ -116,11 +116,10 @@ namespace ts {
         {
         public:
             // Constructor & destructor.
-            Receiver(TSP* tsp_, PushInputPlugin* plugin);
+            Receiver(PushInputPlugin* plugin);
             virtual ~Receiver();
 
         private:
-            TSP*             _tsp;
             PushInputPlugin* _plugin;
 
             // Thread main.
