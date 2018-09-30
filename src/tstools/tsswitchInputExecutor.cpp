@@ -38,13 +38,14 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::InputExecutor::InputExecutor(Core& core, size_t index) :
+ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, Options& opt, Report& log) :
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginThread(&core.opt, core.opt.appName(), core.opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
+    PluginThread(&opt, opt.appName(), opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _core(core),
+    _opt(opt),
     _input(dynamic_cast<InputPlugin*>(plugin())),
     _pluginIndex(index),
-    _buffer(core.opt.bufferedPackets),
+    _buffer(opt.bufferedPackets),
     _mutex(),
     _todo(),
     _isCurrent(false),
@@ -137,7 +138,7 @@ void ts::tsswitch::InputExecutor::getOutputArea(ts::TSPacket*& first, size_t& co
 
 //----------------------------------------------------------------------------
 // Free output packets (after being sent).
-// Indirectly called from the output plugin sending packets.
+// Indirectly called from the output plugin after sending packets.
 //----------------------------------------------------------------------------
 
 void ts::tsswitch::InputExecutor::freeOutput(size_t count)
@@ -207,7 +208,7 @@ void ts::tsswitch::InputExecutor::main()
                 // Wait for free buffer or stop.
                 GuardCondition lock(_mutex, _todo);
                 while (_outCount >= _buffer.size() && !_stopRequest && !_terminated) {
-                    if (_isCurrent || !_core.opt.fastSwitch) {
+                    if (_isCurrent || !_opt.fastSwitch) {
                         // This is the current input, we must not lose packet.
                         // Wait for the output thread to free some packets.
                         lock.waitCondition();
@@ -216,7 +217,7 @@ void ts::tsswitch::InputExecutor::main()
                         // Not the current input plugin in --fast-switch mode.
                         // Drop older packets, free at most --max-input-packets.
                         assert(_outFirst < _buffer.size());
-                        const size_t freeCount = std::min(_core.opt.maxInputPackets, _buffer.size() - _outFirst);
+                        const size_t freeCount = std::min(_opt.maxInputPackets, _buffer.size() - _outFirst);
                         assert(freeCount <= _outCount);
                         _outFirst = (_outFirst + freeCount) % _buffer.size();
                         _outCount -= freeCount;
@@ -229,7 +230,7 @@ void ts::tsswitch::InputExecutor::main()
                 // There is some free buffer, compute first index and size of receive area.
                 // The receive area is limited by end of buffer and max input size.
                 inFirst = (_outFirst + _outCount) % _buffer.size();
-                inCount = std::min(_core.opt.maxInputPackets, std::min(_buffer.size() - _outCount, _buffer.size() - inFirst));
+                inCount = std::min(_opt.maxInputPackets, std::min(_buffer.size() - _outCount, _buffer.size() - inFirst));
             }
 
             assert(inFirst < _buffer.size());
@@ -238,6 +239,7 @@ void ts::tsswitch::InputExecutor::main()
             // Receive packets.
             if ((inCount = _input->receive(&_buffer[inFirst], inCount)) == 0) {
                 // End of input.
+                debug(u"received end of input from plugin");
                 break;
             }
 

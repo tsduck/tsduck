@@ -30,6 +30,7 @@
 #include "tsswitchCore.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
+#include "tsFatal.h"
 TSDUCK_SOURCE;
 
 
@@ -37,14 +38,14 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::Core::Core(int argc, char *argv[]) :
-    opt(argc, argv),
-    log(opt.maxSeverity(), opt.logTimeStamp, opt.logMaxBuffer, opt.logSynchronous),
-    _inputs(opt.inputs.size(), 0),
-    _output(*this), // load plugin and analyze options
+ts::tsswitch::Core::Core(Options& opt, Report& log) :
+    _opt(opt),
+    _log(log),
+    _inputs(_opt.inputs.size(), 0),
+    _output(*this, opt, log), // load output plugin and analyze options
     _mutex(),
     _gotInput(),
-    _curPlugin(opt.firstInput),
+    _curPlugin(_opt.firstInput),
     _curCycle(0),
     _terminate(false),
     _actions(),
@@ -52,16 +53,16 @@ ts::tsswitch::Core::Core(int argc, char *argv[]) :
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i] = new InputExecutor(*this, i);
+        _inputs[i] = new InputExecutor(i, *this, opt, log);
         CheckNonNull(_inputs[i]);
         // Set the asynchronous logger as report method for all executors.
-        _inputs[i]->setReport(&log);
-        _inputs[i]->setMaxSeverity(log.maxSeverity());
+        _inputs[i]->setReport(&_log);
+        _inputs[i]->setMaxSeverity(_log.maxSeverity());
     }
 
     // Set the asynchronous logger as report method for output as well.
-    _output.setReport(&log);
-    _output.setMaxSeverity(log.maxSeverity());
+    _output.setReport(&_log);
+    _output.setMaxSeverity(_log.maxSeverity());
 }
 
 ts::tsswitch::Core::~Core()
@@ -97,8 +98,8 @@ bool ts::tsswitch::Core::start()
     }
 
     // Start with the designated first input plugin.
-    assert(opt.firstInput < _inputs.size());
-    _curPlugin = opt.firstInput;
+    assert(_opt.firstInput < _inputs.size());
+    _curPlugin = _opt.firstInput;
 
     // Start all input threads (but do not open the input "devices").
     bool success = true;
@@ -111,7 +112,7 @@ bool ts::tsswitch::Core::start()
         // If one input thread could not start, abort all started threads.
         stop(false);
     }
-    else if (opt.fastSwitch) {
+    else if (_opt.fastSwitch) {
         // Option --fast-switch, start all plugins, they continue to receive in parallel.
         for (size_t i = 0; i < _inputs.size(); ++i) {
             _inputs[i]->startInput(i == _curPlugin);
@@ -163,7 +164,7 @@ void ts::tsswitch::Core::nextInput()
     setInputLocked((_curPlugin + 1) % _inputs.size());
 }
 
-void ts::tsswitch::Core::prevInput()
+void ts::tsswitch::Core::previousInput()
 {
     Guard lock(_mutex);
     setInputLocked((_curPlugin > 0 ? _curPlugin : _inputs.size()) - 1);
@@ -177,20 +178,20 @@ void ts::tsswitch::Core::prevInput()
 void ts::tsswitch::Core::setInputLocked(size_t index)
 {
     if (index >= _inputs.size()) {
-        log.warning(u"invalid input index %d", {index});
+        _log.warning(u"invalid input index %d", {index});
     }
     else if (index != _curPlugin) {
-        log.debug(u"switch input %d to %d", {_curPlugin, index});
+        _log.debug(u"switch input %d to %d", {_curPlugin, index});
 
         // The processing depends on the switching mode.
-        if (opt.fastSwitch) {
+        if (_opt.fastSwitch) {
             // Don't start/stop plugins. Just inform the plugin that it is current.
             // The only impact is that the non-current plugins will drop packets on buffer overflow.
             enqueue(Action(NOTIF_CURRENT, _curPlugin, false));
             enqueue(Action(SET_CURRENT, index));
             enqueue(Action(NOTIF_CURRENT, index, true));
         }
-        else if (opt.delayedSwitch) {
+        else if (_opt.delayedSwitch) {
             // With --delayed-switch, first start the next plugin.
             // The current plugin will be stopped when the first packet is received in the next plugin.
             enqueue(Action(START, index, false));
@@ -264,7 +265,7 @@ bool ts::tsswitch::Core::Action::operator<(const Action& a) const
 
 void ts::tsswitch::Core::enqueue(const Action& action)
 {
-    log.debug(u"enqueue action %s", {action});
+    _log.debug(u"enqueue action %s", {action});
     _actions.push_back(action);
 }
 
@@ -283,7 +284,7 @@ void ts::tsswitch::Core::execute(const Action& event)
     if (_events.find(eventNoFlag) == _events.end()) {
         // The event was not present.
         _events.insert(eventNoFlag);
-        log.debug(u"setting event: %s", {event});
+        _log.debug(u"setting event: %s", {event});
     }
 
     // Loop on all enqueued commands.
@@ -291,7 +292,7 @@ void ts::tsswitch::Core::execute(const Action& event)
 
         // Inpect front command. Will be dequeued if executed.
         const Action& action(_actions.front());
-        log.debug(u"executing action %s", {action});
+        _log.debug(u"executing action %s", {action});
         assert(action.index < _inputs.size());
 
         // Try to execute the front command. Return if wait is required.
@@ -322,7 +323,7 @@ void ts::tsswitch::Core::execute(const Action& event)
                 const ActionSet::const_iterator it(_events.find(eventNoFlag));
                 if (it == _events.end()) {
                     // Event not found, cannot execute further, keep the action in queue and retry later.
-                    log.debug(u"not ready, waiting: %s", {action});
+                    _log.debug(u"not ready, waiting: %s", {action});
                     return;
                 }
                 // Clear the event.
@@ -438,7 +439,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
     // Locked sequence.
     {
         Guard lock(_mutex);
-        log.debug(u"input %d completed, success: %s", {pluginIndex, success});
+        _log.debug(u"input %d completed, success: %s", {pluginIndex, success});
 
         // Count end of cycle when the last plugin terminates.
         if (pluginIndex == _inputs.size() - 1) {
@@ -446,18 +447,18 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
         }
 
         // Check if the complete processing is terminated.
-        stopRequest = opt.terminate || (opt.cycleCount > 0 && _curCycle >= opt.cycleCount);
+        stopRequest = _opt.terminate || (_opt.cycleCount > 0 && _curCycle >= _opt.cycleCount);
 
         // If the current plugin terminates and there is nothing else to execute, move to next plugin.
         if (pluginIndex == _curPlugin && _actions.empty()) {
             const size_t next = (_curPlugin + 1) % _inputs.size();
             enqueue(Action(SET_CURRENT, next));
-            if (opt.fastSwitch) {
+            if (_opt.fastSwitch) {
                 // Already started, never stop, simply notify.
-                enqueue(Action(NOTIF_CURRENT, next));
+                enqueue(Action(NOTIF_CURRENT, next, true));
             }
             else {
-                enqueue(Action(START, next));
+                enqueue(Action(START, next, true));
                 enqueue(Action(WAIT_STARTED, next));
             }
         }

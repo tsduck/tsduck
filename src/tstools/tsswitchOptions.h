@@ -48,24 +48,28 @@ namespace ts {
         class Options: public ArgsWithPlugins
         {
         public:
-            bool          fastSwitch;        // Fast switch between input plugins.
-            bool          delayedSwitch;     // Delayed switch between input plugins.
-            bool          terminate;         // Terminate when one input plugin completes.
-            bool          monitor;           // Run a resource monitoring thread.
-            bool          logTimeStamp;      // Add time stamps in log messages.
-            bool          logSynchronous;    // Synchronous log.
-            bool          reusePort;         // Reuse-port socket option.
-            size_t        firstInput;        // Index of first input plugin.
-            size_t        cycleCount;        // Number of input cycles to execute.
-            size_t        logMaxBuffer;      // Maximum buffered log messages.
-            size_t        bufferedPackets;   // Input buffer size in packets.
-            size_t        maxInputPackets;   // Maximum input packets to read at a time.
-            size_t        maxOutputPackets;  // Maximum input packets to read at a time.
-            size_t        sockBuffer;        // Socket buffer size.
-            SocketAddress remoteServer;      // UDP server addres for remote control.
-            IPAddressSet  allowedRemote;     // Set of allowed remotes.
+            bool          fastSwitch;        //!< Fast switch between input plugins.
+            bool          delayedSwitch;     //!< Delayed switch between input plugins.
+            bool          terminate;         //!< Terminate when one input plugin completes.
+            bool          monitor;           //!< Run a resource monitoring thread.
+            bool          logTimeStamp;      //!< Add time stamps in log messages.
+            bool          logSynchronous;    //!< Synchronous log.
+            bool          reusePort;         //!< Reuse-port socket option.
+            size_t        firstInput;        //!< Index of first input plugin.
+            size_t        cycleCount;        //!< Number of input cycles to execute.
+            size_t        logMaxBuffer;      //!< Maximum buffered log messages.
+            size_t        bufferedPackets;   //!< Input buffer size in packets.
+            size_t        maxInputPackets;   //!< Maximum input packets to read at a time.
+            size_t        maxOutputPackets;  //!< Maximum input packets to read at a time.
+            size_t        sockBuffer;        //!< Socket buffer size.
+            SocketAddress remoteServer;      //!< UDP server addres for remote control.
+            IPAddressSet  allowedRemote;     //!< Set of allowed remotes.
 
-            // Constructor.
+            //!
+            //! Constructor.
+            //! @param [in] argc Number of arguments from command line.
+            //! @param [in] argv Arguments from command line.
+            //!
             Options(int argc, char *argv[]);
 
         private:

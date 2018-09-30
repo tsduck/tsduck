@@ -184,13 +184,10 @@ bool ts::HttpInput::getOptions()
 
 bool ts::HttpInput::start()
 {
-    // Invoke superclass.
-    if (!PushInputPlugin::start()) {
-        return false;
-    }
-
     _partial_size = 0;
-    return true;
+
+    // Invoke superclass.
+    return PushInputPlugin::start();
 }
 
 
@@ -263,6 +260,7 @@ bool ts::HttpInput::handleWebData(const WebRequest& request, const void* addr, s
         // If the partial packet is full, push it.
         if (_partial_size == PKT_SIZE) {
             if (!pushPackets(&_partial, 1)) {
+                tsp->debug(u"error pushing packets");
                 return false;
             }
             _partial_size = 0;
@@ -275,6 +273,7 @@ bool ts::HttpInput::handleWebData(const WebRequest& request, const void* addr, s
 
     // Push complete packets.
     if (count > 0 && !pushPackets(reinterpret_cast<const TSPacket*>(data), count)) {
+        tsp->debug(u"error pushing packets");
         return false;
     }
 

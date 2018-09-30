@@ -42,6 +42,7 @@ namespace ts {
     namespace tsswitch {
 
         class Core;
+        class Options;
 
         //!
         //! Execution context of a tsswitch output plugin.
@@ -50,12 +51,23 @@ namespace ts {
         class OutputExecutor : public PluginThread
         {
         public:
-            // Constructor & destructor.
-            OutputExecutor(Core& core);
+            //!
+            //! Constructor.
+            //! @param [in,out] core Command core instance.
+            //! @param [in,out] opt Command line options.
+            //! @param [in,out] log Log report.
+            //!
+            OutputExecutor(Core& core, Options& opt, Report& log);
+
+            //!
+            //! Destructor.
+            //!
             virtual ~OutputExecutor();
 
-            // Request the termination of the thread. Actual termination will occur
-            // after completion of the current output operation.
+            //!
+            //! Request the termination of the thread.
+            //! Actual termination will occur after completion of the current output operation.
+            //!
             void terminateOutput() { _terminate = true; }
 
             // Implementation of TSP. We do not use "joint termination" in tsswitch.
