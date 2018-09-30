@@ -276,11 +276,8 @@ void ts::tsswitch::Core::enqueue(const Action& action)
 
 void ts::tsswitch::Core::execute(const Action& event)
 {
-    // Ignore flag in event.
-    Action eventNoFlag(event);
-    eventNoFlag.flag = false;
-
-    // Set current event.
+    // Set current event. Ignore flag in event.
+    const Action eventNoFlag(event, false);
     if (_events.find(eventNoFlag) == _events.end()) {
         // The event was not present.
         _events.insert(eventNoFlag);
@@ -320,13 +317,14 @@ void ts::tsswitch::Core::execute(const Action& event)
             case WAIT_INPUT:
             case WAIT_STOPPED: {
                 // Wait commands, check if an event of this type is pending.
-                const ActionSet::const_iterator it(_events.find(eventNoFlag));
+                const ActionSet::const_iterator it(_events.find(Action(action, false)));
                 if (it == _events.end()) {
                     // Event not found, cannot execute further, keep the action in queue and retry later.
                     _log.debug(u"not ready, waiting: %s", {action});
                     return;
                 }
                 // Clear the event.
+                _log.debug(u"clearing event: %s", {*it});
                 _events.erase(it);
                 break;
             }
