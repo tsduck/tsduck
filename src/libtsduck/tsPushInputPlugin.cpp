@@ -88,7 +88,9 @@ void ts::PushInputPlugin::Receiver::main()
 
 bool ts::PushInputPlugin::start()
 {
-    // Nothing to do in this version.
+    // Reset the packet queue to restart a new session (in case of restart).
+    _queue.reset();
+
     return true;
 }
 
@@ -104,6 +106,7 @@ bool ts::PushInputPlugin::stop()
 
     // Wait for received thread termination.
     _receiver.waitForTermination();
+    _started = false;
     return true;
 }
 

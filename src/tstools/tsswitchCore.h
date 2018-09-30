@@ -36,7 +36,6 @@
 #include "tsswitchOptions.h"
 #include "tsswitchInputExecutor.h"
 #include "tsswitchOutputExecutor.h"
-#include "tsAsyncReport.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
 
@@ -52,34 +51,91 @@ namespace ts {
         class Core
         {
         public:
-            Options     opt;  // Command line options.
-            AsyncReport log;  // Asynchronous log report.
+            //!
+            //! Constructor.
+            //! @param [in,out] opt Command line options.
+            //! @param [in,out] log Log report.
+            //!
+            Core(Options& opt, Report& log);
 
-            // Constructor and destructor.
-            Core(int argc, char *argv[]);
+            //!
+            //! Destructor.
+            //!
             ~Core();
 
-            // Start/stop the tsswitch processing.
+            //!
+            //! Start the @c tsswitch processing.
+            //! @return True on success, false on error.
+            //!
             bool start();
+
+            //!
+            //! Stop the @c tsswitch processing.
+            //! @param [in] success False if the stop is triggered by an error.
+            //!
             void stop(bool success);
 
-            // Wait for completion of all plugins.
+            //!
+            //! Wait for completion of all plugin threads.
+            //!
             void waitForTermination();
 
-            // Switch input plugins.
-            void setInput(size_t index);
-            void nextInput();
-            void prevInput();
+            //!
+            //! Switch to another input plugin.
+            //! @param [in] pluginIndex Index of the new input plugin.
+            //!
+            void setInput(size_t pluginIndex);
 
-            // Report input events (for input plugins).
-            // Return false when tsswitch is terminating.
+            //!
+            //! Switch to the next input plugin.
+            //!
+            void nextInput();
+
+            //!
+            //! Switch to the previous input plugin.
+            //!
+            void previousInput();
+
+            //!
+            //! Called by an input plugin when it started an input session.
+            //! @param [in] pluginIndex Index of the input plugin.
+            //! @param [in] success True if the start operation succeeded.
+            //! @return False when @c tsswitch is terminating.
+            //!
             bool inputStarted(size_t pluginIndex, bool success);
+
+            //!
+            //! Called by an input plugin when it received input packets.
+            //! @param [in] pluginIndex Index of the input plugin.
+            //! @return False when @c tsswitch is terminating.
+            //!
             bool inputReceived(size_t pluginIndex);
+
+            //!
+            //! Called by an input plugin when it stopped an input session.
+            //! @param [in] pluginIndex Index of the input plugin.
+            //! @param [in] success True if the stop operation succeeded.
+            //! @return False when @c tsswitch is terminating.
+            //!
             bool inputStopped(size_t pluginIndex, bool success);
 
-            // Get/free some packets to output (for output plugin).
-            // Return false when tsswitch is terminating.
+            //!
+            //! Called by the output plugin when it needs some packets to output.
+            //! Wait until there is some packets to output.
+            //! @param [out] pluginIndex Returned index of the input plugin.
+            //! @param [out] first Returned address of first packet to output.
+            //! @param [out] count Returned number of packets to output.
+            //! Never zero, except when @c tsswitch is terminating.
+            //! @return False when @c tsswitch is terminating.
+            //!
             bool getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t& count);
+
+            //!
+            //! Called by the output plugin after sending packets.
+            //! @param [in] pluginIndex Index of the input plugin from which the packets were sent.
+            //! @param [in] count Number of output packets to release.
+            //! @return False when @c tsswitch is terminating.
+            //!
             bool outputSent(size_t pluginIndex, size_t count);
 
         private:
@@ -118,6 +174,8 @@ namespace ts {
             typedef std::set<Action> ActionSet;
             typedef std::deque<Action> ActionQueue;
 
+            Options&            _opt;        // Command line options.
+            Report&             _log;        // Asynchronous log report.
             InputExecutorVector _inputs;     // Input plugins threads.
             OutputExecutor      _output;     // Output plugin thread.
             Mutex               _mutex;      // Global mutex, protect access to all subsequent fields.

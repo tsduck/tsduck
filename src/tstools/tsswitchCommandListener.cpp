@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsswitchCommandListener.h"
+#include "tsswitchOptions.h"
 #include "tsswitchCore.h"
 #include "tsNullReport.h"
 #include "tsNullMutex.h"
@@ -39,9 +40,11 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::CommandListener::CommandListener(Core& core) :
+ts::tsswitch::CommandListener::CommandListener(Core& core, Options& opt, Report& log) :
     _core(core),
-    _sock(_core.log),
+    _opt(opt),
+    _log(log),
+    _sock(_log),
     _terminate(false)
 {
 }
@@ -61,10 +64,10 @@ ts::tsswitch::CommandListener::~CommandListener()
 bool ts::tsswitch::CommandListener::open()
 {
     // Set command line parameters.
-    _sock.setParameters(_core.opt.remoteServer, _core.opt.reusePort, _core.opt.sockBuffer);
+    _sock.setParameters(_opt.remoteServer, _opt.reusePort, _opt.sockBuffer);
 
     // Open the UDP receiver and start the thread.
-    return _sock.open(_core.log) && start();
+    return _sock.open(_log) && start();
 }
 
 void ts::tsswitch::CommandListener::close()
@@ -81,7 +84,7 @@ void ts::tsswitch::CommandListener::close()
 
 void ts::tsswitch::CommandListener::main()
 {
-    _core.log.debug(u"UDP server thread started");
+    _log.debug(u"UDP server thread started");
 
     char inbuf[1024];
     size_t insize = 0;
@@ -89,14 +92,14 @@ void ts::tsswitch::CommandListener::main()
     SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<NullMutex> error(_core.log.maxSeverity());
+    ReportBuffer<NullMutex> error(_log.maxSeverity());
 
     // Loop on incoming messages.
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, 0, error)) {
 
         // Filter out unauthorized remote systems.
-        if (!_core.opt.allowedRemote.empty() && _core.opt.allowedRemote.find(sender) == _core.opt.allowedRemote.end()) {
-            _core.log.warning(u"rejected remote command from unauthorized host %s", {sender});
+        if (!_opt.allowedRemote.empty() && _opt.allowedRemote.find(sender) == _opt.allowedRemote.end()) {
+            _log.warning(u"rejected remote command from unauthorized host %s", {sender});
             continue;
         }
 
@@ -110,7 +113,7 @@ void ts::tsswitch::CommandListener::main()
         UString cmd(UString::FromUTF8(inbuf, len));
         cmd.toLower();
         cmd.trim();
-        _core.log.verbose(u"received command \"%s\", from %s (%d bytes)", {cmd, sender, insize});
+        _log.verbose(u"received command \"%s\", from %s (%d bytes)", {cmd, sender, insize});
 
         // Process the command (case insensitive).
         size_t index = 0;
@@ -121,19 +124,19 @@ void ts::tsswitch::CommandListener::main()
             _core.nextInput();
         }
         else if (cmd.startWith(u"prev")) {
-            _core.prevInput();
+            _core.previousInput();
         }
         else if (cmd == u"quit" || cmd == u"exit") {
             _core.stop(true);
         }
         else {
-            _core.log.error(u"received invalid command \"%s\" from remote control at %s", {cmd, sender});
+            _log.error(u"received invalid command \"%s\" from remote control at %s", {cmd, sender});
         }
     }
 
     // If termination was requested, receive error is not an error.
     if (!_terminate && !error.emptyMessages()) {
-        _core.log.info(error.getMessages());
+        _log.info(error.getMessages());
     }
-    _core.log.debug(u"UDP server thread completed");
+    _log.debug(u"UDP server thread completed");
 }

@@ -44,6 +44,7 @@ namespace ts {
     namespace tsswitch {
 
         class Core;
+        class Options;
 
         //!
         //! Execution context of a tsswitch input plugin.
@@ -52,22 +53,60 @@ namespace ts {
         class InputExecutor : public PluginThread
         {
         public:
-            // Constructor & destructor.
-            InputExecutor(Core& core, size_t index);
+            //!
+            //! Constructor.
+            //! @param [in] index Input plugin index.
+            //! @param [in,out] core Command core instance.
+            //! @param [in,out] opt Command line options.
+            //! @param [in,out] log Log report.
+            //!
+            InputExecutor(size_t index, Core& core, Options& opt, Report& log);
+
+            //!
+            //! Destructor.
+            //!
             virtual ~InputExecutor();
 
-            // Start, stop input.
+            //!
+            //! Tell the input executor thread to start an input session.
+            //! @param [in] isCurrent True if the plugin immediately becomes the current one.
+            //!
             void startInput(bool isCurrent);
+
+            //!
+            //! Tell the input executor thread to stop its input session.
+            //! The thread is not terminated. It waits for another session.
+            //!
             void stopInput();
 
-            // Set/reset as current input plugin. Do not start or stop it.
+            //!
+            //! Notify the input executor thread that it becomes or is no longer the current input plugin.
+            //! @param [in] isCurrent True if the plugin becomes the current one.
+            //!
             void setCurrent(bool isCurrent);
 
-            // Terminate input thread.
+            //!
+            //! Terminate the input executor thread.
+            //!
             void terminateInput();
 
-            // Get/free some packets to output.
+            //!
+            //! Get the area of packet to output.
+            //! Indirectly called from the output plugin when it needs some packets.
+            //! The input thread shall reserve this area since the output plugin
+            //! will use it from another thread. When the output plugin completes
+            //! its output and no longer need this area, it should call freeOutput().
+            //!
+            //! @param [out] first Returned address of first packet to output.
+            //! @param [out] count Returned number of packets to output. Can be zero.
+            //!
             void getOutputArea(TSPacket*& first, size_t& count);
+
+            //!
+            //! Free an output area which was previously returned by getOutputArea().
+            //! Indirectly called from the output plugin after sending packets.
+            //! @param [in] count Number of output packets to release.
+            //!
             void freeOutput(size_t count);
 
             // Implementation of TSP. We do not use "joint termination" in tsswitch.
@@ -78,6 +117,7 @@ namespace ts {
 
         private:
             Core&          _core;         // Application core.
+            Options&       _opt;          // Command line options.
             InputPlugin*   _input;        // Plugin API.
             const size_t   _pluginIndex;  // Index of this input plugin.
             TSPacketVector _buffer;       // Packet buffer.

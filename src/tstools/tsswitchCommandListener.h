@@ -43,6 +43,7 @@ namespace ts {
     namespace tsswitch {
 
         class Core;
+        class Options;
 
         //!
         //! Input switch (tsswitch) remote control command receiver.
@@ -51,16 +52,34 @@ namespace ts {
         class CommandListener : private Thread
         {
         public:
-            // Constructor & destructor.
-            CommandListener(Core& core);
+            //!
+            //! Constructor.
+            //! @param [in,out] core Command core instance.
+            //! @param [in,out] opt Command line options.
+            //! @param [in,out] log Log report.
+            //!
+            CommandListener(Core& core, Options& opt, Report& log);
+
+            //!
+            //! Destructor.
+            //!
             virtual ~CommandListener();
 
-            // Open/close, start/stop the command listener.
+            //!
+            //! Open and start the command listener.
+            //! @return True on success, false on error.
+            //!
             bool open();
+
+            //!
+            //! Stop and close the command listener.
+            //!
             void close();
 
         private:
             Core&         _core;
+            Options&      _opt;
+            Report&       _log;
             UDPReceiver   _sock;
             volatile bool _terminate;
 

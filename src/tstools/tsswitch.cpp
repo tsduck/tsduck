@@ -57,6 +57,7 @@
 #include "tsswitchCommandListener.h"
 #include "tsPluginRepository.h"
 #include "tsSystemMonitor.h"
+#include "tsAsyncReport.h"
 #include "tsCerrReport.h"
 TSDUCK_SOURCE;
 
@@ -67,9 +68,18 @@ TSDUCK_SOURCE;
 
 int MainCode(int argc, char *argv[])
 {
-    // Get command line options.
-    ts::tsswitch::Core core(argc, argv);
-    CERR.setMaxSeverity(core.opt.maxSeverity());
+    // Get command line options. Exit in case of errors.
+    ts::tsswitch::Options opt(argc, argv);
+
+    // Make sure that standard error displays the same level of messages as set in options.
+    CERR.setMaxSeverity(opt.maxSeverity());
+
+    // Create and start an asynchronous log (separate thread).
+    ts::AsyncReport log(opt.maxSeverity(), opt.logTimeStamp, opt.logMaxBuffer, opt.logSynchronous);
+
+    // Create the tsswitch core instance.
+    ts::tsswitch::Core core(opt, log);
+    opt.exitOnError();
 
     // Get the repository of plugins.
     ts::PluginRepository* plugins = ts::PluginRepository::Instance();
@@ -81,14 +91,14 @@ int MainCode(int argc, char *argv[])
 #endif
 
     // Create a monitoring thread if required.
-    ts::SystemMonitor monitor(&core.log);
-    if (core.opt.monitor) {
+    ts::SystemMonitor monitor(&log);
+    if (opt.monitor) {
         monitor.start();
     }
 
     // If a remote control is specified, start a UDP listener thread.
-    ts::tsswitch::CommandListener remoteControl(core);
-    if (core.opt.remoteServer.hasPort() && !remoteControl.open()) {
+    ts::tsswitch::CommandListener remoteControl(core, opt, log);
+    if (opt.remoteServer.hasPort() && !remoteControl.open()) {
         return EXIT_FAILURE;
     }
 
