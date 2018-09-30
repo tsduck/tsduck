@@ -141,16 +141,16 @@ namespace ts {
         private:
             // Upon reception of an event (end of input, remote command, etc), there
             // is a list of actions to execute which depends on the switch policy.
-            // Types of actions:
+            // Types of actions (can also be used as bit mask):
             enum ActionType {
-                NONE,          // Nothing to do.
-                START,         // Start a plugin.
-                WAIT_STARTED,  // Wait for start completion of a plugin.
-                WAIT_INPUT,    // Wait for input packets on a plugin.
-                STOP,          // Stop a plugin.
-                WAIT_STOPPED,  // Wait for stop completion of a plugin.
-                NOTIF_CURRENT, // Notify a plugin it is the current one (or not).
-                SET_CURRENT,   // Set current plugin index.
+                NONE          = 0x0001,  // Nothing to do.
+                START         = 0x0002,  // Start a plugin.
+                WAIT_STARTED  = 0x0004,  // Wait for start completion of a plugin.
+                WAIT_INPUT    = 0x0008,  // Wait for input packets on a plugin.
+                STOP          = 0x0010,  // Stop a plugin.
+                WAIT_STOPPED  = 0x0020,  // Wait for stop completion of a plugin.
+                NOTIF_CURRENT = 0x0040,  // Notify a plugin it is the current one (or not).
+                SET_CURRENT   = 0x0080,  // Set current plugin index.
             };
 
             // Description of an action with its parameters.
@@ -197,6 +197,9 @@ namespace ts {
 
             // Enqueue an action (with mutex already held).
             void enqueue(const Action& action);
+
+            // Remove all instructions with type in bitmask (with mutex already held).
+            void cancelActions(uint32_t typeMask);
 
             // Execute all commands until one needs to wait (with mutex already held).
             // The event can be used to unlock a wait action.
