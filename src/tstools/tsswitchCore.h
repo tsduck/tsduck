@@ -164,6 +164,9 @@ namespace ts {
                 // Constructor.
                 Action(ActionType t = NONE, size_t i = 0, bool f = false) : type(t), index(i), flag(f) {}
 
+                // Copy constructor, changing the flag.
+                Action(const Action& other, bool f) : type(other.type), index(other.index), flag(f) {}
+
                 // Implement StringifyInterface.
                 virtual UString toString() const override;
 
