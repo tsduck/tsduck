@@ -271,6 +271,26 @@ void ts::tsswitch::Core::enqueue(const Action& action)
 
 
 //----------------------------------------------------------------------------
+// Remove all instructions with type in bitmask.
+//----------------------------------------------------------------------------
+
+void ts::tsswitch::Core::cancelActions(uint32_t typeMask)
+{
+    for (ActionQueue::iterator it = _actions.begin(); it != _actions.end(); ) {
+        // Check if the current action is one that must be removed.
+        if ((uint32_t(it->type) & typeMask) != 0) {
+            // Yes, remove instruction.
+            it = _actions.erase(it);
+        }
+        else {
+            // No, keep it and move to next action.
+            ++it;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Execute all commands until one needs to wait.
 //----------------------------------------------------------------------------
 
@@ -278,7 +298,7 @@ void ts::tsswitch::Core::execute(const Action& event)
 {
     // Set current event. Ignore flag in event.
     const Action eventNoFlag(event, false);
-    if (_events.find(eventNoFlag) == _events.end()) {
+    if (event.type != NONE && _events.find(eventNoFlag) == _events.end()) {
         // The event was not present.
         _events.insert(eventNoFlag);
         _log.debug(u"setting event: %s", {event});
@@ -447,8 +467,12 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
         // Check if the complete processing is terminated.
         stopRequest = _opt.terminate || (_opt.cycleCount > 0 && _curCycle >= _opt.cycleCount);
 
-        // If the current plugin terminates and there is nothing else to execute, move to next plugin.
-        if (pluginIndex == _curPlugin && _actions.empty()) {
+        if (stopRequest) {
+            // Need to stop now. Remove any further action, except waiting for termination.
+            cancelActions(~WAIT_STOPPED);
+        }
+        else if (pluginIndex == _curPlugin && _actions.empty()) {
+            // The current plugin terminates and there is nothing else to execute, move to next plugin.
             const size_t next = (_curPlugin + 1) % _inputs.size();
             enqueue(Action(SET_CURRENT, next));
             if (_opt.fastSwitch) {
