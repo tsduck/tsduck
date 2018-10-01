@@ -274,11 +274,11 @@ void ts::tsswitch::Core::enqueue(const Action& action)
 // Remove all instructions with type in bitmask.
 //----------------------------------------------------------------------------
 
-void ts::tsswitch::Core::cancelActions(uint32_t typeMask)
+void ts::tsswitch::Core::cancelActions(int typeMask)
 {
     for (ActionQueue::iterator it = _actions.begin(); it != _actions.end(); ) {
         // Check if the current action is one that must be removed.
-        if ((uint32_t(it->type) & typeMask) != 0) {
+        if ((int(it->type) & typeMask) != 0) {
             // Yes, remove instruction.
             it = _actions.erase(it);
         }

@@ -283,8 +283,8 @@ namespace ts {
         // Perform initialization before any download.
         bool downloadInitialize();
 
-        // Abort initialized download.
-        void downloadAbort();
+        // Close or abort initialized download.
+        void downloadClose();
 
         // Perform actual download.
         bool download();
