@@ -47,6 +47,7 @@ struct Options: public ts::Args
 
     uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
     bool              raw_file;    // Raw dump of file, not TS packets
+    ts::PacketCounter max_packets; // Maximum number of packets to dump per file
     ts::UStringVector infiles;     // Input file names
 };
 
@@ -54,6 +55,7 @@ Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]"),
     dump_flags(0),
     raw_file(false),
+    max_packets(0),
     infiles()
 {
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
@@ -71,6 +73,9 @@ Options::Options(int argc, char *argv[]) :
     option(u"headers-only", 'h');
     help(u"headers-only", u"Dump packet headers only, not payload.");
 
+    option(u"max-packets", 'm', UNSIGNED);
+    help(u"max-packets", u"Maximum number of packets to dump per file.");
+
     option(u"nibble", 'n');
     help(u"nibble", u"Same as --binary but add separator between 4-bit nibbles.");
 
@@ -87,6 +92,7 @@ Options::Options(int argc, char *argv[]) :
 
     getValues(infiles);
     raw_file = present(u"raw-file");
+    max_packets = intValue<ts::PacketCounter>(u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
 
     dump_flags =
         ts::TSPacket::DUMP_TS_HEADER |    // Format TS headers
@@ -148,7 +154,7 @@ void DumpFile(Options& opt, std::istream& stream)
     else {
         // Read all packets in the file
         ts::TSPacket pkt;
-        for (ts::PacketCounter packet_index = 0; pkt.read(stream, true, opt); packet_index++) {
+        for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && pkt.read(stream, true, opt); packet_index++) {
             std::cout << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
             pkt.display (std::cout, opt.dump_flags, 2);
         }

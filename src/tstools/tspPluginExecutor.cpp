@@ -94,7 +94,7 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
 // cease to accept packets".
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pass
+bool ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pass
                                           BitRate bitrate,  // pass to next processor
                                           bool input_end,   // pass to next processor
                                           bool aborted)     // set to current processor
@@ -106,33 +106,35 @@ void ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pas
     log(10, u"passPackets (count = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {count, bitrate, input_end, aborted});
 
     // We access data under the protection of the global mutex.
-
     Guard lock(_global_mutex);
 
     // Update our buffer
-
     _pkt_first = (_pkt_first + count) % _buffer->count();
     _pkt_cnt -= count;
 
     // Update next processor's buffer.
-
     PluginExecutor* next = ringNext<PluginExecutor>();
     next->_pkt_cnt += count;
     next->_input_end = next->_input_end || input_end;
     next->_bitrate = bitrate;
 
     // Wake the next processor when there is some data
-
     if (count > 0 || input_end) {
         next->_to_do.signal();
     }
 
-    // Wake the previous processor when we abort
+    // Force to abort our processor when the next one is aborting.
+    // Already done in waitWork() but force immediately.
+    aborted = aborted || next->_tsp_aborting;
 
+    // Wake the previous processor when we abort
     if (aborted) {
         _tsp_aborting = true; // volatile bool in TSP superclass
         ringPrevious<PluginExecutor>()->_to_do.signal();
     }
+
+    // Return false when the current processor shall stop.
+    return !input_end && !aborted;
 }
 
 
@@ -175,16 +177,15 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
     log(10, u"waitWork(...)");
 
     // We access data under the protection of the global mutex.
-
     GuardCondition lock(_global_mutex, _to_do);
 
-    while (_pkt_cnt == 0 && !_input_end && !ringNext<PluginExecutor>()->_tsp_aborting) {
+    PluginExecutor* next = ringNext<PluginExecutor>();
 
+    while (_pkt_cnt == 0 && !_input_end && !next->_tsp_aborting) {
         // If packet area for this processor is empty, wait for some packet.
         // The mutex is implicitely released, we wait for the condition
         // '_to_do' and, once we get it, implicitely relock the mutex.
         // We loop on this until packets are actually available.
-
         lock.waitCondition();
     }
 
@@ -192,7 +193,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
     pkt_cnt = std::min(_pkt_cnt, _buffer->count() - _pkt_first);
     bitrate = _bitrate;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
-    aborted = ringNext<PluginExecutor>()->_tsp_aborting;
+    aborted = next->_tsp_aborting;
 
     log(10, u"waitWork (pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {pkt_first, pkt_cnt, bitrate, input_end, aborted});
 }
