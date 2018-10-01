@@ -68,6 +68,29 @@ namespace ts {
         ForkInput& operator=(const ForkInput&) = delete;
     };
 
+    // Output plugin
+    class ForkOutput: public OutputPlugin
+    {
+    public:
+        // Implementation of plugin API
+        ForkOutput(TSP*);
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, size_t) override;
+
+    private:
+        UString  _command;      // The command to run.
+        bool     _nowait;       // Don't wait for children termination.
+        size_t   _buffer_size;  // Pipe buffer size in packets.
+        ForkPipe _pipe;         // The pipe device.
+
+        // Inaccessible operations
+        ForkOutput() = delete;
+        ForkOutput(const ForkOutput&) = delete;
+        ForkOutput& operator=(const ForkOutput&) = delete;
+    };
+
     // Packet processor plugin
     class ForkPlugin: public ProcessorPlugin
     {
@@ -96,6 +119,7 @@ namespace ts {
 
 TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_INPUT(fork, ts::ForkInput)
+TSPLUGIN_DECLARE_OUTPUT(fork, ts::ForkOutput)
 TSPLUGIN_DECLARE_PROCESSOR(fork, ts::ForkPlugin)
 
 
@@ -118,6 +142,28 @@ ts::ForkInput::ForkInput(TSP* tsp_) :
 
     option(u"nowait", 'n');
     help(u"nowait", u"Do not wait for child process termination at end of its output.");
+}
+
+
+//----------------------------------------------------------------------------
+// Output constructor
+//----------------------------------------------------------------------------
+
+ts::ForkOutput::ForkOutput(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
+    _command(),
+    _nowait(false),
+    _buffer_size(0),
+    _pipe()
+{
+    option(u"", 0, STRING, 1, 1);
+    help(u"", u"Specifies the command line to execute in the created process.");
+
+    option(u"buffered-packets", 'b', POSITIVE);
+    help(u"buffered-packets", u"Windows only: Specifies the pipe buffer size in number of TS packets.");
+
+    option(u"nowait", 'n');
+    help(u"nowait", u"Do not wait for child process termination at end of input.");
 }
 
 
@@ -191,6 +237,44 @@ size_t ts::ForkInput::receive(TSPacket* buffer, size_t max_packets)
     size_t ret_size = 0;
     bool success = _pipe.read(buffer, max_packets * PKT_SIZE, PKT_SIZE, ret_size, *tsp);
     return success ? ret_size / PKT_SIZE : 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Output methods
+//----------------------------------------------------------------------------
+
+bool ts::ForkOutput::getOptions()
+{
+    // Get command line arguments.
+    _command = value(u"");
+    _nowait = present(u"nowait");
+    _buffer_size = intValue<size_t>(u"buffered-packets", 0);
+    return true;
+}
+
+
+bool ts::ForkOutput::start()
+{
+    // Create pipe & process.
+    return _pipe.open(_command,
+                      _nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
+                      PKT_SIZE * _buffer_size,  // Pipe buffer size (Windows only), same as internal buffer size.
+                      *tsp,                     // Error reporting.
+                      ForkPipe::KEEP_BOTH,      // Output: same stdout and stderr as tsp process.
+                      ForkPipe::STDIN_PIPE);    // Input: use the pipe.
+}
+
+bool ts::ForkOutput::stop()
+{
+    // Close the pipe
+    return _pipe.close(*tsp);
+}
+
+bool ts::ForkOutput::send(const TSPacket* buffer, size_t packet_count)
+{
+    // Send packets in the pipe.
+    return _pipe.write(buffer, PKT_SIZE * packet_count, *tsp);
 }
 
 
