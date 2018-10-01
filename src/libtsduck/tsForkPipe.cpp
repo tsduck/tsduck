@@ -438,7 +438,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::close (Report& report)
+bool ts::ForkPipe::close(Report& report)
 {
     // Silent error is already closed
     if (!_is_open) {
@@ -451,6 +451,7 @@ bool ts::ForkPipe::close (Report& report)
 
     // Close the pipe handle
     if (_use_pipe) {
+        report.debug(u"closing pipe handle");
         ::CloseHandle(_handle);
     }
 
@@ -461,6 +462,7 @@ bool ts::ForkPipe::close (Report& report)
     }
 
     if (_process != INVALID_HANDLE_VALUE) {
+        report.debug(u"closing process handle");
         ::CloseHandle(_process);
     }
 
