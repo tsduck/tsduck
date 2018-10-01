@@ -189,8 +189,9 @@ namespace ts {
             //! from the previous processor. To be passed to next processor.
             //! @param [in] input_end If true, this processor will no longer produce packets.
             //! @param [in] aborted if true, this processor has encountered an error and will cease to accept packets.
+            //! @return True when the processor shall continue, false when it shall stop.
             //!
-            void passPackets(size_t count,
+            bool passPackets(size_t count,
                              BitRate bitrate,
                              bool input_end,
                              bool aborted);

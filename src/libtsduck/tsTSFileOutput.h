@@ -108,9 +108,19 @@ namespace ts {
         //! Get the file name.
         //! @return The file name.
         //!
-        UString getFileName() const
+        const UString& getFileName() const
         {
             return _filename;
+        }
+
+        //!
+        //! Get the file name as a display string.
+        //! @return The file name as a display string.
+        //! Not always a valid file name. Use in error messages only.
+        //!
+        const UString& getDisplayFileName() const
+        {
+            return _filename.empty() ? stdoutName : _filename;
         }
 
         //!
@@ -123,15 +133,17 @@ namespace ts {
         }
 
     private:
-        UString       _filename;      // Output file name
-        bool          _is_open;       // Check if file is actually open
-        int           _severity;      // Severity level for error reporting
-        PacketCounter _total_packets; // Total written packets
+        UString       _filename;          // Output file name
+        bool          _is_open;           // Check if file is actually open
+        int           _severity;          // Severity level for error reporting
+        PacketCounter _total_packets;     // Total written packets
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle;        // File handle
+        ::HANDLE      _handle;            // File handle
 #else
-        int           _fd;            // File descriptor
+        int           _fd;                // File descriptor
 #endif
+        static const UString stdoutName;  // File string for standard output.
+
         // Inaccessible operations
         TSFileOutput(const TSFileOutput&) = delete;
         TSFileOutput& operator=(const TSFileOutput&) = delete;

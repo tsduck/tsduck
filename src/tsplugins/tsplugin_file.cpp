@@ -265,7 +265,7 @@ bool ts::FileOutput::stop()
     return _file.close(*tsp);
 }
 
-bool ts::FileOutput::send (const TSPacket* buffer, size_t packet_count)
+bool ts::FileOutput::send(const TSPacket* buffer, size_t packet_count)
 {
     return _file.write(buffer, packet_count, *tsp);
 }
@@ -285,7 +285,7 @@ bool ts::FileProcessor::stop()
     return _file.close(*tsp);
 }
 
-ts::ProcessorPlugin::Status ts::FileProcessor::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::FileProcessor::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     return _file.write(&pkt, 1, *tsp) ? TSP_OK : TSP_END;
 }

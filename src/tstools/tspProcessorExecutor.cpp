@@ -70,7 +70,7 @@ void ts::tsp::ProcessorExecutor::main()
         // Wait for packets to process
 
         size_t pkt_first, pkt_cnt;
-        waitWork (pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
+        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
 
         // If bit rate was never modified by the plugin, always copy the
         // input bitrate as output bitrate. Otherwise, keep previous
@@ -84,7 +84,7 @@ void ts::tsp::ProcessorExecutor::main()
         // We call passPacket to inform our predecessor that we aborted.
 
         if (aborted) {
-            passPackets (0, output_bitrate, true, true);
+            passPackets(0, output_bitrate, true, true);
             break;
         }
 
@@ -92,7 +92,7 @@ void ts::tsp::ProcessorExecutor::main()
         // We call passPackets to inform our successor of end of input.
 
         if (pkt_cnt == 0 && input_end) {
-            passPackets (0, output_bitrate, true, false);
+            passPackets(0, output_bitrate, true, false);
             break;
         }
 
@@ -101,7 +101,7 @@ void ts::tsp::ProcessorExecutor::main()
         size_t pkt_done = 0;
         size_t pkt_flush = 0;
 
-        while (pkt_done < pkt_cnt) {
+        while (pkt_done < pkt_cnt && !aborted) {
 
             bool flush_request = false;
             TSPacket* pkt = _buffer->base() + pkt_first + pkt_done;
@@ -115,7 +115,7 @@ void ts::tsp::ProcessorExecutor::main()
             if (pkt->b[0] != 0) {
 
                 bool bitrate_changed = false;
-                ProcessorPlugin::Status status = _processor->processPacket (*pkt, flush_request, bitrate_changed);
+                ProcessorPlugin::Status status = _processor->processPacket(*pkt, flush_request, bitrate_changed);
 
                 // Use the returned status
                 switch (status) {
@@ -157,19 +157,19 @@ void ts::tsp::ProcessorExecutor::main()
                 }
             }
 
-            addTotalPackets (1);
+            addTotalPackets(1);
 
             // Do not wait to process pkt_cnt packets before notifying
             // the next processor. Perform periodic flush to avoid waiting
             // too long before two output operations.
 
             if (flush_request || pkt_done == pkt_cnt || (_options->max_flush_pkt > 0 && pkt_flush % _options->max_flush_pkt == 0)) {
-                passPackets (pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
+                aborted = !passPackets(pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }
         }
 
-    } while (!input_end);
+    } while (!input_end && !aborted);
 
     // Close the packet processor
     _processor->stop();
