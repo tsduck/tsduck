@@ -269,6 +269,7 @@ namespace ts {
         ByteBlock*    _dlData;                   // download data buffer
         std::ofstream _dlFile;                   // download file
         WebRequestHandlerInterface* _dlHandler;  // application-defined handler
+        volatile bool _interrupted;              // interrupted by application-defined handler
         SystemGuts*   _guts;                     // system-specific data
 
         static UString  _defaultProxyHost;

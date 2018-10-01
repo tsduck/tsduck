@@ -110,6 +110,13 @@ namespace ts {
         //!
         PushInputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
+    protected:
+        //!
+        //! Invoked by subclass, typically in processInput(), to check if the plugin was interrupted on purpose.
+        //! @return True if the plugin was interrupted on purpose.
+        //!
+        bool isInterrupted() const { return _interrupted; }
+
     private:
         // Internal thread which receives TS packets.
         class Receiver : public Thread
@@ -134,6 +141,7 @@ namespace ts {
         // Plugin private data.
         Receiver      _receiver;
         bool          _started;
+        volatile bool _interrupted;
         TSPacketQueue _queue;
 
         // Standard input routine, now hidden from subclasses.
