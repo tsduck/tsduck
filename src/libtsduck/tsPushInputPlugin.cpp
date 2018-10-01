@@ -39,6 +39,7 @@ ts::PushInputPlugin::PushInputPlugin(TSP* tsp_, const UString& description, cons
     InputPlugin(tsp_, description, syntax),
     _receiver(this),
     _started(false),
+    _interrupted(false),
     _queue()
 {
 }
@@ -88,10 +89,15 @@ void ts::PushInputPlugin::Receiver::main()
 
 bool ts::PushInputPlugin::start()
 {
-    // Reset the packet queue to restart a new session (in case of restart).
-    _queue.reset();
-
-    return true;
+    if (_started) {
+        return false; // already started
+    }
+    else {
+        // Reset the packet queue to restart a new session (in case of restart).
+        _queue.reset();
+        _interrupted = false;
+        return true;
+    }
 }
 
 
@@ -153,9 +159,14 @@ bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
         TSPacket* out_buffer = 0;
         size_t out_count = 0;
 
-        // Wait for space in the queue buffer.
         // Abort now if the application is terminating.
-        if (tsp->aborting() || _queue.stopped() || !_queue.lockWriteBuffer(out_buffer, out_count, count)) {
+        if (tsp->aborting() || _queue.stopped()) {
+            _interrupted = true;
+            return false;
+        }
+
+        // Wait for space in the queue buffer.
+        if (!_queue.lockWriteBuffer(out_buffer, out_count, count)) {
             return false;
         }
 

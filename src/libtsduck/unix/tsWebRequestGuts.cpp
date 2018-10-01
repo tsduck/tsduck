@@ -315,7 +315,7 @@ bool ts::WebRequest::SystemGuts::start()
     const ::CURLcode status = ::curl_easy_perform(_curl);
     const bool ok = status == ::CURLE_OK;
 
-    if (!ok) {
+    if (!ok && !_request._interrupted) {
         _request._report.error(message(u"download error", status));
     }
 
