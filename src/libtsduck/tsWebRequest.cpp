@@ -365,6 +365,7 @@ bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
             ok = false;
         }
         _dlData = 0;
+        downloadClose();
     }
 
     return ok;
@@ -386,13 +387,14 @@ bool ts::WebRequest::downloadFile(const UString& fileName)
     _dlFile.open(fileName.toUTF8().c_str(), std::ios::out | std::ios::binary);
     if (!_dlFile) {
         _report.error(u"error creating file %s", {fileName});
-        downloadAbort();
+        downloadClose();
         return false;
     }
 
     // Actual transfer.
     const bool ok = download();
     _dlFile.close();
+    downloadClose();
     return ok;
 }
 
@@ -416,13 +418,13 @@ bool ts::WebRequest::downloadToApplication(WebRequestHandlerInterface* handler)
             }
             else {
                 _report.debug(u"Web request is aborted by application before transfer");
-                downloadAbort();
             }
         }
         catch (...) {
             ok = false;
         }
         _dlHandler = 0;
+        downloadClose();
     }
 
     return ok;

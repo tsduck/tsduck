@@ -199,7 +199,7 @@ namespace ts {
             void enqueue(const Action& action);
 
             // Remove all instructions with type in bitmask (with mutex already held).
-            void cancelActions(uint32_t typeMask);
+            void cancelActions(int typeMask);
 
             // Execute all commands until one needs to wait (with mutex already held).
             // The event can be used to unlock a wait action.
