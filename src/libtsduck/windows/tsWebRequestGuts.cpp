@@ -287,8 +287,6 @@ bool ts::WebRequest::SystemGuts::init()
 
 void ts::WebRequest::SystemGuts::clear()
 {
-    _request._report.debug(u"clearing web connection, url: %s, inet: %s", {_url != 0, _inet != 0});
-
     // Close Internet handles.
     if (_url != 0 && !::InternetCloseHandle(_url)) {
         error(u"error closing URL handle");
