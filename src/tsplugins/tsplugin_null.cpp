@@ -50,6 +50,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t receive(TSPacket*, size_t) override;
+        virtual bool abortInput() override { return true; }
 
     private:
         PacketCounter _max_count;   // Number of packets to generate

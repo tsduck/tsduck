@@ -120,7 +120,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCha
 
         // Insert as much as possible of event name.
         uint8_t* addr = buffer;
-        const size_t name_size = event_name.toDVBWithByteLength(addr, remain, name_index, UString::NPOS, charset);
+        const size_t name_size = event_name.toDVBWithByteLength(addr, remain, name_index, NPOS, charset);
         sed.event_name = event_name.substr(name_index, name_size);
         name_index += name_size;
 
@@ -128,7 +128,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCha
         remain++;
 
         // Insert as much as possible of event text.
-        const size_t text_size = text.toDVBWithByteLength(addr, remain, text_index, UString::NPOS, charset);
+        const size_t text_size = text.toDVBWithByteLength(addr, remain, text_index, NPOS, charset);
         sed.text = text.substr(text_index, text_size);
         text_index += text_size;
 
@@ -152,8 +152,8 @@ void ts::ShortEventDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
         desc.invalidate();
         return;
     }
-    bbp->append(event_name.toDVBWithByteLength(0, UString::NPOS, charset));
-    bbp->append(text.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(event_name.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(text.toDVBWithByteLength(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

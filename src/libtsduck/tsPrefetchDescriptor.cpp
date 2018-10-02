@@ -76,7 +76,7 @@ void ts::PrefetchDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(transport_protocol_label);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(it->label.toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->append(it->label.toDVBWithByteLength(0, NPOS, charset));
         bbp->appendUInt8(it->prefetch_priority);
     }
     serializeEnd(desc, bbp);

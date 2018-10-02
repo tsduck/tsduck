@@ -112,7 +112,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     report.debug(u"creating process \"%s\"", {command});
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     _handle = INVALID_HANDLE_VALUE;
     _process = INVALID_HANDLE_VALUE;
@@ -447,7 +447,7 @@ bool ts::ForkPipe::close(Report& report)
 
     bool result = true;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // Close the pipe handle
     if (_use_pipe) {
@@ -488,10 +488,32 @@ bool ts::ForkPipe::close(Report& report)
 
 
 //----------------------------------------------------------------------------
+// Abort any currenly input/output operation in the pipe.
+//----------------------------------------------------------------------------
+
+void ts::ForkPipe::abortPipeReadWrite()
+{
+    if (_is_open) {
+        // Mark broken pipe, read or write.
+        _broken_pipe = _eof = true;
+
+        // Close pipe handle, ignore errors.
+#if defined(TS_WINDOWS)
+        ::CloseHandle(_handle);
+        _handle = INVALID_HANDLE_VALUE;
+#else // UNIX
+        ::close(_fd);
+        _fd = -1;
+#endif
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Write data to the pipe (received at process' standard input).
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
+bool ts::ForkPipe::write(const void* addr, size_t size, Report& report)
 {
     if (!_is_open) {
         report.error(u"pipe is not open");
@@ -510,7 +532,7 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
     bool error = false;
     ErrorCode error_code = SYS_SUCCESS;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     const char* data = reinterpret_cast<const char*>(addr);
     ::DWORD remain = ::DWORD(size);

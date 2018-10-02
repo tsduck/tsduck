@@ -147,17 +147,6 @@ namespace ts {
         typedef std::u16string SuperClass;
 
         //!
-        //! An alternative value for the standard @c npos value.
-        //! Required on Windows to avoid linking issue.
-        //!
-        static const size_type NPOS =
-#if defined(TS_WINDOWS)
-            size_type(-1);
-#else
-            npos;
-#endif
-
-        //!
         //! The 3-byte so-called "UTF-8 Byte Order Mark".
         //!
         static const char* const UTF8_BOM;

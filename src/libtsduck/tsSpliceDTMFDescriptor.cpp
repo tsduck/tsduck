@@ -69,7 +69,7 @@ ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(const Descriptor& desc, const DVB
 
 void ts::SpliceDTMFDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    const ByteBlock binDTMF(DTMF.toDVB(0, UString::NPOS, charset));
+    const ByteBlock binDTMF(DTMF.toDVB(0, NPOS, charset));
     if (_is_valid && binDTMF.size() <= DTMF_MAX_SIZE) {
         ByteBlockPtr bbp(serializeStart());
         bbp->appendUInt32(identifier);

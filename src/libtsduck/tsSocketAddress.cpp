@@ -71,7 +71,7 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
     // Locate last colon in string
     UString::size_type colon = name.rfind(u":");
 
-    if (colon == UString::NPOS) {
+    if (colon == NPOS) {
         // No colon in string, can be an address alone or a port alone.
         if (name.toInteger(_port)) {
             // This is an integer, this is a port alone.

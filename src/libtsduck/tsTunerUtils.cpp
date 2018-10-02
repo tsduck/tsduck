@@ -67,13 +67,13 @@ bool ts::GetTunerFromZapFile(const UString& channel_name,
 
         // Locate channel name: before first ':'
         const size_t first_colon = line.find(u':');
-        if (first_colon == UString::NPOS || !channel_name.similar(line.substr(0, first_colon))) {
+        if (first_colon == NPOS || !channel_name.similar(line.substr(0, first_colon))) {
             // No channel name or not the expected one, read more
             continue;
         }
         // Channel found, locate the complete zap specification of the TS
         size_t last_colon = first_colon;
-        for (size_t n = parameters.zapFieldCount(); n != 0 && last_colon != UString::NPOS; --n) {
+        for (size_t n = parameters.zapFieldCount(); n != 0 && last_colon != NPOS; --n) {
             last_colon = line.find(u':', last_colon + 1);
         }
         if (last_colon == UString::npos) {

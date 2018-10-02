@@ -73,8 +73,8 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(c
 void ts::DVBHTMLApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(physical_root.toDVBWithByteLength(0, UString::NPOS, charset));
-    bbp->append(initial_path.toDVB(0, UString::NPOS, charset));
+    bbp->append(physical_root.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(initial_path.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

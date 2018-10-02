@@ -461,7 +461,7 @@ bool ts::TextParser::parseText(UString& result, const UString endToken, bool ski
 
         // Search for the end token in current line.
         const size_t end = _pos._curLine->find(endToken, _pos._curIndex);
-        if (end == UString::NPOS) {
+        if (end == NPOS) {
             // End token not found, include the complete end of line.
             result.append(*_pos._curLine, _pos._curIndex);
             result.append(LINE_FEED);

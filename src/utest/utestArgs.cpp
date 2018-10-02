@@ -216,7 +216,7 @@ void ArgsTest::testHelp()
     CPPUNIT_ASSERT(!args.analyze(u"test", {u"--version=short"}));
     const ts::UString version(log.getMessages());
     const size_t dash = version.find(u'-');
-    CPPUNIT_ASSERT(dash != ts::UString::NPOS);
+    CPPUNIT_ASSERT(dash != ts::NPOS);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
 }
 

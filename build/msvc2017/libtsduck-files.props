@@ -430,6 +430,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoWindowDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsWatchDog.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsWatchDogHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsWebRequest.h" />
     <ClInclude Include="..\..\src\libtsduck\tsWebRequestHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxml.h" />
@@ -802,6 +804,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoWindowDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsWatchDog.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsWebRequest.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlAttribute.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlComment.cpp" />

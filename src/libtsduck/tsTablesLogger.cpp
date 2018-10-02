@@ -104,7 +104,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
             (!_opt.udp_local.empty() && !_sock.setOutgoingMulticast(_opt.udp_local, _report)) ||
             (_opt.udp_ttl > 0 && !_sock.setTTL(_opt.udp_ttl, _report));
         if (_abort) {
-            _sock.close();
+            _sock.close(_report);
         }
     }
 }

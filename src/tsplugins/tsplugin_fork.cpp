@@ -55,6 +55,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;
+        virtual bool abortInput() override;
 
     private:
         UString  _command;      // The command to run.
@@ -229,6 +230,13 @@ bool ts::ForkInput::stop()
 {
     // Close the pipe
     return _pipe.close(*tsp);
+}
+
+bool ts::ForkInput::abortInput()
+{
+    // Abort current operations on the pipe.
+    _pipe.abortPipeReadWrite();
+    return true;
 }
 
 size_t ts::ForkInput::receive(TSPacket* buffer, size_t max_packets)

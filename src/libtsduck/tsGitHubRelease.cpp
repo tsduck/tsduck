@@ -248,7 +248,7 @@ void ts::GitHubRelease::BuildAsset(Asset& asset, const json::Value& value)
             }
             // Remove everything before the last slash.
             const size_t slash = asset.name.rfind(u'/');
-            if (slash != UString::NPOS) {
+            if (slash != NPOS) {
                 asset.name.erase(0, slash + 1);
             }
         }

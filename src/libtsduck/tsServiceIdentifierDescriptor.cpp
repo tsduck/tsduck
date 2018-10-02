@@ -75,7 +75,7 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const Descriptor& d
 void ts::ServiceIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(identifier.toDVB(0, UString::NPOS, charset));
+    bbp->append(identifier.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

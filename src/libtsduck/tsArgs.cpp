@@ -760,24 +760,24 @@ bool ts::Args::analyze(bool processRedirections)
 
     // Process argument list
     size_t next_arg = 0;                     // Index of next arg to process
-    size_t short_opt_arg = UString::NPOS;    // Index of arg containing short options
-    size_t short_opt_index = UString::NPOS;  // Short option index in _args[short_opt_arg]
+    size_t short_opt_arg = NPOS;    // Index of arg containing short options
+    size_t short_opt_index = NPOS;  // Short option index in _args[short_opt_arg]
     bool force_parameters = false;           // Force all items to be parameters
 
-    while (_is_valid && (short_opt_arg != UString::NPOS || next_arg < _args.size())) {
+    while (_is_valid && (short_opt_arg != NPOS || next_arg < _args.size())) {
 
         IOption* opt = 0;
         ArgValue val;
 
         // Locate option name and value
 
-        if (short_opt_arg != UString::NPOS) {
+        if (short_opt_arg != NPOS) {
             // Analysing several short options in a string
             opt = search(_args[short_opt_arg][short_opt_index++]);
             if (short_opt_index >= _args[short_opt_arg].length()) {
                 // Reached end of short option string
-                short_opt_arg = UString::NPOS;
-                short_opt_index = UString::NPOS;
+                short_opt_arg = NPOS;
+                short_opt_index = NPOS;
             }
         }
         else if (force_parameters || _args[next_arg].empty() || _args[next_arg][0] != u'-') {
@@ -797,7 +797,7 @@ bool ts::Args::analyze(bool processRedirections)
         else if (_args[next_arg][1] == '-') {
             // Arg starts with '--', this is a long option
             size_t equal = _args[next_arg].find('=');
-            if (equal != UString::NPOS) {
+            if (equal != NPOS) {
                 // Value is in the same arg: --option=value
                 opt = search(_args[next_arg].substr(2, equal - 2));
                 val = _args[next_arg].substr(equal + 1);
@@ -835,12 +835,12 @@ bool ts::Args::analyze(bool processRedirections)
         }
 
         // Get the value string from short option, if present
-        if (short_opt_arg != UString::NPOS) {
+        if (short_opt_arg != NPOS) {
             assert(!val.set());
             // Get the value from the rest of the short option string
             val = _args[short_opt_arg].substr(short_opt_index);
-            short_opt_arg = UString::NPOS;
-            short_opt_index = UString::NPOS;
+            short_opt_arg = NPOS;
+            short_opt_index = NPOS;
         }
 
         // Check presence of mandatory values in next arg if not already found
@@ -968,7 +968,7 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
             str.substitute(u"\\\n", u"\n");
             // Remove all newlines and compact spaces.
             size_t pos = 0;
-            while ((pos = str.find('\n')) != UString::NPOS) {
+            while ((pos = str.find('\n')) != NPOS) {
                 // Locate the first space in the sequence.
                 while (pos > 0 && IsSpace(str[pos - 1])) {
                     pos--;

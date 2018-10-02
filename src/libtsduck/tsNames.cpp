@@ -390,7 +390,7 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
 {
     // Check the presence of the '=' and in a valid section.
     const size_t equal = line.find(UChar('='));
-    if (equal == 0 || equal == UString::NPOS || section == 0) {
+    if (equal == 0 || equal == NPOS || section == 0) {
         return false;
     }
 
@@ -412,7 +412,7 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
     const size_t dash = range.find(UChar('-'));
     bool valid = false;
 
-    if (dash == UString::NPOS) {
+    if (dash == NPOS) {
         valid = range.toInteger(first);
         last = first;
     }
