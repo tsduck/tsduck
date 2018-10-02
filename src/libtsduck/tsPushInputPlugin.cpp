@@ -118,6 +118,18 @@ bool ts::PushInputPlugin::stop()
 
 
 //----------------------------------------------------------------------------
+// Abort input operation in progress
+//----------------------------------------------------------------------------
+
+bool ts::PushInputPlugin::abortInput()
+{
+    // Send the stop condition to the internal packet queue.
+    _queue.stop();
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Standard input routine, now hidden from subclasses.
 //----------------------------------------------------------------------------
 

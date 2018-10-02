@@ -138,6 +138,12 @@ namespace ts {
         size_t read(TSPacket* buffer, size_t max_packets, Report& report);
 
         //!
+        //! Abort any currenly read operation in progress.
+        //! The file is left in a broken state and can be only closed.
+        //!
+        void abortRead();
+
+        //!
         //! Rewind the file.
         //! The file must have been opened in rewindable mode.
         //! If the file file was opened with a @a start_offset different from 0,
@@ -174,17 +180,17 @@ namespace ts {
         PacketCounter _total_packets; //!< Total read packets.
 
     private:
-        size_t   _repeat;        //!< Repeat count (0 means infinite)
-        size_t   _counter;       //!< Current repeat count
-        uint64_t _start_offset;  //!< Initial byte offset in file
-        bool     _is_open;       //!< Check if file is actually open
-        int      _severity;      //!< Severity level for error reporting
-        bool     _at_eof;        //!< End of file has been reached
-        bool     _rewindable;    //!< Opened in rewindable mode
+        size_t        _repeat;        //!< Repeat count (0 means infinite)
+        size_t        _counter;       //!< Current repeat count
+        uint64_t      _start_offset;  //!< Initial byte offset in file
+        volatile bool _is_open;       //!< Check if file is actually open
+        int           _severity;      //!< Severity level for error reporting
+        volatile bool _at_eof;        //!< End of file has been reached
+        bool          _rewindable;    //!< Opened in rewindable mode
 #if defined(TS_WINDOWS)
-        ::HANDLE _handle;        //!< File handle
+        ::HANDLE      _handle;        //!< File handle
 #else
-        int      _fd;            //!< File descriptor
+        int           _fd;            //!< File descriptor
 #endif
 
         // Inaccessible operations

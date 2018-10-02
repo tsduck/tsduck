@@ -156,7 +156,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
     // Check the presence of the '@' indicating a source address.
     const size_t sep = destination.find(u'@');
     _use_source.clear();
-    if (sep != UString::NPOS) {
+    if (sep != NPOS) {
         // Resolve source address.
         if (!_use_source.resolve(destination.substr(0, sep), args)) {
             return false;
@@ -315,7 +315,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
     }
 
     if (!ok) {
-        close();
+        close(report);
     }
     return ok;
 }

@@ -430,6 +430,8 @@
 #include "tsVideoAttributes.h"
 #include "tsVideoStreamDescriptor.h"
 #include "tsVideoWindowDescriptor.h"
+#include "tsWatchDog.h"
+#include "tsWatchDogHandlerInterface.h"
 #include "tsWebRequest.h"
 #include "tsWebRequestHandlerInterface.h"
 #include "tsxml.h"

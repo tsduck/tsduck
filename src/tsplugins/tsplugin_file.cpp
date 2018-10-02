@@ -55,12 +55,14 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;
+        virtual bool abortInput() override;
     private:
         UStringVector _filenames;
         size_t        _current_file;
         size_t        _repeat_count;
         uint64_t      _start_offset;
         TSFileInput   _file;
+        volatile bool _aborted;
 
         // Inaccessible operations
         FileInput() = delete;
@@ -121,7 +123,8 @@ ts::FileInput::FileInput(TSP* tsp_) :
     _current_file(0),
     _repeat_count(1),
     _start_offset(0),
-    _file()
+    _file(),
+    _aborted(true)
 {
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"", u"Name of the input files. The files are read in sequence. Use standard input by default.");
@@ -215,6 +218,7 @@ bool ts::FileInput::start()
     }
 
     // Open first input file.
+    _aborted = false;
     _current_file = 0;
     return _file.open(first, _repeat_count, _start_offset, *tsp);
 }
@@ -224,6 +228,14 @@ bool ts::FileInput::stop()
     return _file.close(*tsp);
 }
 
+bool ts::FileInput::abortInput()
+{
+    // Abort current operations on the file.
+    _aborted = true;
+    _file.abortRead();
+    return true;
+}
+
 size_t ts::FileInput::receive(TSPacket* buffer, size_t max_packets)
 {
     // Loop on input files.
@@ -231,7 +243,7 @@ size_t ts::FileInput::receive(TSPacket* buffer, size_t max_packets)
 
         // Read some packets from current file.
         size_t count = _file.read(buffer, max_packets, *tsp);
-        if (count > 0) {
+        if (count > 0 || _aborted) {
             // Got packets, return them.
             return count;
         }

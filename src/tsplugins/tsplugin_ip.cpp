@@ -39,6 +39,7 @@
 #include "tsUDPReceiver.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
+#include "tsNullReport.h"
 TSDUCK_SOURCE;
 
 // Grouping TS packets in UDP packets
@@ -67,6 +68,7 @@ namespace ts {
         virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
         virtual size_t receive(TSPacket*, size_t) override;
+        virtual bool abortInput() override;
 
     private:
         UDPReceiver   _sock;               // Incoming socket with associated command line options
@@ -237,7 +239,7 @@ bool ts::IPInput::start()
 
 bool ts::IPInput::stop()
 {
-    _sock.close();
+    _sock.close(*tsp);
     return true;
 }
 
@@ -248,9 +250,19 @@ bool ts::IPInput::stop()
 
 ts::IPInput::~IPInput()
 {
-    _sock.close();
+    _sock.close(NULLREP);
 }
 
+
+//----------------------------------------------------------------------------
+// Input abort method
+//----------------------------------------------------------------------------
+
+bool ts::IPInput::abortInput()
+{
+    _sock.close(*tsp);
+    return true;
+}
 
 //----------------------------------------------------------------------------
 // Input bitrate evaluation method
@@ -419,7 +431,7 @@ bool ts::IPOutput::start()
             (tos < 0 || _sock.setTOS(tos, *tsp)) &&
             (ttl <= 0 || _sock.setTTL(ttl, *tsp));
         if (!ok) {
-            _sock.close();
+            _sock.close(*tsp);
         }
     }
 
@@ -433,7 +445,7 @@ bool ts::IPOutput::start()
 
 bool ts::IPOutput::stop()
 {
-    _sock.close();
+    _sock.close(*tsp);
     return true;
 }
 
@@ -444,7 +456,7 @@ bool ts::IPOutput::stop()
 
 ts::IPOutput::~IPOutput()
 {
-    _sock.close();
+    _sock.close(NULLREP);
 }
 
 

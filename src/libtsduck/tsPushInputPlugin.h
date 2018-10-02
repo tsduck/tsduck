@@ -110,6 +110,9 @@ namespace ts {
         //!
         PushInputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
+        // Implementation of plugin API
+        virtual bool abortInput() override;
+
     protected:
         //!
         //! Invoked by subclass, typically in processInput(), to check if the plugin was interrupted on purpose.

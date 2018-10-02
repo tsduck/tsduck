@@ -73,7 +73,7 @@ void ts::DVBJApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-        bbp->append(it->toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->append(it->toDVBWithByteLength(0, NPOS, charset));
     }
     serializeEnd(desc, bbp);
 }

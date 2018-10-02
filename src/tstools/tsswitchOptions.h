@@ -56,6 +56,7 @@ namespace ts {
             bool          logSynchronous;    //!< Synchronous log.
             bool          reusePort;         //!< Reuse-port socket option.
             size_t        firstInput;        //!< Index of first input plugin.
+            size_t        primaryInput;      //!< Index of primary input plugin, NPOS if there is none.
             size_t        cycleCount;        //!< Number of input cycles to execute.
             size_t        logMaxBuffer;      //!< Maximum buffered log messages.
             size_t        bufferedPackets;   //!< Input buffer size in packets.
@@ -64,6 +65,7 @@ namespace ts {
             size_t        sockBuffer;        //!< Socket buffer size.
             SocketAddress remoteServer;      //!< UDP server addres for remote control.
             IPAddressSet  allowedRemote;     //!< Set of allowed remotes.
+            MilliSecond   receiveTimeout;    //!< Receive timeout before switch (0=none).
 
             //!
             //! Constructor.

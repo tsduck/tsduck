@@ -105,7 +105,7 @@ void ts::SharedLibrary::load(const UString& filename)
         if (_error.empty()) {
             _error = u"error loading " + filename;
         }
-        else if (_error.find(filename) == UString::NPOS) {
+        else if (_error.find(filename) == NPOS) {
             _error = filename + u": " + _error;
         }
         _report.debug(_error);

@@ -38,6 +38,7 @@
 #include "tsswitchOutputExecutor.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
+#include "tsWatchDog.h"
 
 namespace ts {
     //!
@@ -48,7 +49,7 @@ namespace ts {
         //! Input switch (tsswitch) core engine.
         //! @ingroup plugin
         //!
-        class Core
+        class Core: private WatchDogHandlerInterface
         {
         public:
             //!
@@ -143,14 +144,17 @@ namespace ts {
             // is a list of actions to execute which depends on the switch policy.
             // Types of actions (can also be used as bit mask):
             enum ActionType {
-                NONE          = 0x0001,  // Nothing to do.
-                START         = 0x0002,  // Start a plugin.
-                WAIT_STARTED  = 0x0004,  // Wait for start completion of a plugin.
-                WAIT_INPUT    = 0x0008,  // Wait for input packets on a plugin.
-                STOP          = 0x0010,  // Stop a plugin.
-                WAIT_STOPPED  = 0x0020,  // Wait for stop completion of a plugin.
-                NOTIF_CURRENT = 0x0040,  // Notify a plugin it is the current one (or not).
-                SET_CURRENT   = 0x0080,  // Set current plugin index.
+                NONE            = 0x0001,  // Nothing to do.
+                START           = 0x0002,  // Start a plugin.
+                WAIT_STARTED    = 0x0004,  // Wait for start completion of a plugin.
+                WAIT_INPUT      = 0x0008,  // Wait for input packets on a plugin.
+                STOP            = 0x0010,  // Stop a plugin.
+                WAIT_STOPPED    = 0x0020,  // Wait for stop completion of a plugin.
+                NOTIF_CURRENT   = 0x0040,  // Notify a plugin it is the current one (or not).
+                SET_CURRENT     = 0x0080,  // Set current plugin index.
+                RESTART_TIMEOUT = 0x0100,  // Restart the input timeout on current input.
+                SUSPEND_TIMEOUT = 0x0200,  // Suspend the input timeout on current input.
+                ABORT_INPUT     = 0x0400,  // Abort current input if flags is true.
             };
 
             // Description of an action with its parameters.
@@ -177,26 +181,27 @@ namespace ts {
             typedef std::set<Action> ActionSet;
             typedef std::deque<Action> ActionQueue;
 
-            Options&            _opt;        // Command line options.
-            Report&             _log;        // Asynchronous log report.
-            InputExecutorVector _inputs;     // Input plugins threads.
-            OutputExecutor      _output;     // Output plugin thread.
-            Mutex               _mutex;      // Global mutex, protect access to all subsequent fields.
-            Condition           _gotInput;   // Signaled each time an input plugin reports new packets.
-            size_t              _curPlugin;  // Index of current input plugin.
-            size_t              _curCycle;   // Current input cycle number.
-            volatile bool       _terminate;  // Terminate complete processing.
-            ActionQueue         _actions;    // Sequential queue list of actions to execute.
-            ActionSet           _events;     // Pending events, waiting to be cleared.
+            Options&            _opt;             // Command line options.
+            Report&             _log;             // Asynchronous log report.
+            InputExecutorVector _inputs;          // Input plugins threads.
+            OutputExecutor      _output;          // Output plugin thread.
+            WatchDog            _receiveWatchDog; // Handle reception timeout.
+            Mutex               _mutex;           // Global mutex, protect access to all subsequent fields.
+            Condition           _gotInput;        // Signaled each time an input plugin reports new packets.
+            size_t              _curPlugin;       // Index of current input plugin.
+            size_t              _curCycle;        // Current input cycle number.
+            volatile bool       _terminate;       // Terminate complete processing.
+            ActionQueue         _actions;         // Sequential queue list of actions to execute.
+            ActionSet           _events;          // Pending events, waiting to be cleared.
 
             // Names of actions for debug messages.
             static const Enumeration _actionNames;
 
             // Change input plugin with mutex already held.
-            void setInputLocked(size_t index);
+            void setInputLocked(size_t index, bool abortCurrent);
 
             // Enqueue an action (with mutex already held).
-            void enqueue(const Action& action);
+            void enqueue(const Action& action, bool highPriority = false);
 
             // Remove all instructions with type in bitmask (with mutex already held).
             void cancelActions(int typeMask);
@@ -204,6 +209,9 @@ namespace ts {
             // Execute all commands until one needs to wait (with mutex already held).
             // The event can be used to unlock a wait action.
             void execute(const Action& event = Action());
+
+            // Implementation of WatchDogHandlerInterface
+            virtual void handleWatchDogTimeout(WatchDog& watchdog) override;
 
             // Inaccessible operations.
             Core() = delete;

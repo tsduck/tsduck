@@ -34,6 +34,7 @@ TSDUCK_SOURCE;
 #define DEFAULT_MAX_INPUT_PACKETS   128
 #define DEFAULT_MAX_OUTPUT_PACKETS  128
 #define DEFAULT_BUFFERED_PACKETS    512
+#define DEFAULT_RECEIVE_TIMEOUT    2000
 
 
 //----------------------------------------------------------------------------
@@ -50,6 +51,7 @@ ts::tsswitch::Options::Options(int argc, char *argv[]) :
     logSynchronous(false),
     reusePort(false),
     firstInput(0),
+    primaryInput(NPOS),
     cycleCount(1),
     logMaxBuffer(AsyncReport::MAX_LOG_MESSAGES),
     bufferedPackets(0),
@@ -57,13 +59,12 @@ ts::tsswitch::Options::Options(int argc, char *argv[]) :
     maxOutputPackets(0),
     sockBuffer(0),
     remoteServer(),
-    allowedRemote()
+    allowedRemote(),
+    receiveTimeout(0)
 {
     setDescription(u"TS input source switch using remote control");
 
-    setSyntax(u"[tsswitch-options] \\\n"
-              u"    -I input-name [input-options] ... \\\n"
-              u"    [-O output-name [output-options]]");
+    setSyntax(u"[tsswitch-options] -I input-name [input-options] ... [-O output-name [output-options]]");
 
     option(u"allow", 'a', STRING);
     help(u"allow",
@@ -134,10 +135,28 @@ ts::tsswitch::Options::Options(int argc, char *argv[]) :
          u"This includes CPU load, virtual memory usage. Useful to verify the "
          u"stability of the application.");
 
+    option(u"primary-input", 'p', UNSIGNED);
+    help(u"primary-input",
+         u"Specify the index of the input plugin which is considered as primary "
+         u"or preferred. This input plugin is always started, never stopped, even "
+         u"without --fast-switch. When no packet is received on this plugin, the "
+         u"normal switching rules apply. However, as soon as packets are back on "
+         u"the primary input, the reception is immediately switched back to it. "
+         u"By default, there is no primary input, all input plugins are equal.");
+
     option(u"no-reuse-port");
     help(u"no-reuse-port",
          u"Disable the reuse port socket option for the remote control. "
          u"Do not use unless completely necessary.");
+
+    option(u"receive-timeout", 0, UNSIGNED);
+    help(u"receive-timeout",
+         u"Specify a receive timeout in milliseconds. "
+         u"When the current input plugin has received no packet within "
+         u"this timeout, automatically switch to the next plugin. "
+         u"By default, without --primary-input, there is no automatic switch "
+         u"when the current input plugin is waiting for packets. With "
+         u"--primary-input, the default is " + UString::Decimal(DEFAULT_RECEIVE_TIMEOUT) + u" ms.");
 
     option(u"remote", 'r', STRING);
     help(u"remote", u"[address:]port",
@@ -183,8 +202,16 @@ ts::tsswitch::Options::Options(int argc, char *argv[]) :
     reusePort = !present(u"no-reuse-port");
     sockBuffer = intValue<size_t>(u"udp-buffer-size");
     firstInput = intValue<size_t>(u"first-input", 0);
+    primaryInput = intValue<size_t>(u"primary-input", NPOS);
+    receiveTimeout = intValue<MilliSecond>(u"receive-timeout", primaryInput >= inputs.size() ? 0 : DEFAULT_RECEIVE_TIMEOUT);
 
-    debug(u"input buffer: %'d packets, max input: %'d packets, max output: %'d packets", {bufferedPackets, maxInputPackets, maxOutputPackets});
+    if (firstInput >= inputs.size()) {
+        error(u"invalid input index for --first-input %d", {firstInput});
+    }
+
+    if (primaryInput != NPOS && primaryInput >= inputs.size()) {
+        error(u"invalid input index for --primary-input %d", {primaryInput});
+    }
 
     if (present(u"cycle") + present(u"infinite") + present(u"terminate") > 1) {
         error(u"options --cycle, --infinite and --terminate are mutually exclusive");

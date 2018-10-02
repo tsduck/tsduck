@@ -180,22 +180,28 @@ namespace ts {
         bool read(void* addr, size_t max_size, size_t unit_size, size_t& ret_size, Report& report);
 
         //!
+        //! Abort any currenly input/output operation in the pipe.
+        //! The pipe is left in a broken state and can be only closed.
+        //!
+        void abortPipeReadWrite();
+
+        //!
         //! Check if the input pipe is at end of file.
         //! @return True if the input pipe is at end of file.
         //!
         bool eof() const { return _eof; }
 
     private:
-        InputMode  _in_mode;       // Input mode for the created process.
-        OutputMode _out_mode;      // Output mode for the created process.
-        bool       _is_open;       // Open and running.
-        WaitMode   _wait_mode;     // How to wait for child process termination in close().
-        bool       _in_pipe;       // The process uses an input pipe.
-        bool       _out_pipe;      // The process uses an output pipe.
-        bool       _use_pipe;      // The process uses a pipe, somehow.
-        bool       _ignore_abort;  // Ignore early termination of child process.
-        bool       _broken_pipe;   // Pipe is broken, do not attempt to write.
-        bool       _eof;           // Got end of file on input pipe.
+        InputMode     _in_mode;       // Input mode for the created process.
+        OutputMode    _out_mode;      // Output mode for the created process.
+        volatile bool _is_open;       // Open and running.
+        WaitMode      _wait_mode;     // How to wait for child process termination in close().
+        bool          _in_pipe;       // The process uses an input pipe.
+        bool          _out_pipe;      // The process uses an output pipe.
+        bool          _use_pipe;      // The process uses a pipe, somehow.
+        bool          _ignore_abort;  // Ignore early termination of child process.
+        volatile bool _broken_pipe;   // Pipe is broken, do not attempt to write.
+        volatile bool _eof;           // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
         ::HANDLE   _handle;        // Pipe output handle.
         ::HANDLE   _process;       // Handle to child process.

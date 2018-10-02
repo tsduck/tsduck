@@ -68,6 +68,15 @@ namespace ts {
             virtual ~InputExecutor();
 
             //!
+            //! Access the shared library API.
+            //! @return Address of the plugin interface.
+            //!
+            InputPlugin* plugin() const
+            {
+                return _input;
+            }
+
+            //!
             //! Tell the input executor thread to start an input session.
             //! @param [in] isCurrent True if the plugin immediately becomes the current one.
             //!

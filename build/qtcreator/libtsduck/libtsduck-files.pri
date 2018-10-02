@@ -428,6 +428,8 @@ HEADERS += \
     ../../../src/libtsduck/tsVideoAttributes.h \
     ../../../src/libtsduck/tsVideoStreamDescriptor.h \
     ../../../src/libtsduck/tsVideoWindowDescriptor.h \
+    ../../../src/libtsduck/tsWatchDog.h \
+    ../../../src/libtsduck/tsWatchDogHandlerInterface.h \
     ../../../src/libtsduck/tsWebRequest.h \
     ../../../src/libtsduck/tsWebRequestHandlerInterface.h \
     ../../../src/libtsduck/tsxml.h \
@@ -790,6 +792,7 @@ SOURCES += \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
     ../../../src/libtsduck/tsVideoStreamDescriptor.cpp \
     ../../../src/libtsduck/tsVideoWindowDescriptor.cpp \
+    ../../../src/libtsduck/tsWatchDog.cpp \
     ../../../src/libtsduck/tsWebRequest.cpp \
     ../../../src/libtsduck/tsxmlAttribute.cpp \
     ../../../src/libtsduck/tsxmlComment.cpp \

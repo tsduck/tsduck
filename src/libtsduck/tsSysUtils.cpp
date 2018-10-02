@@ -90,7 +90,7 @@ ts::UString ts::DirectoryName(const UString& path)
 {
     UString::size_type sep = path.rfind(PathSeparator);
 
-    if (sep == UString::NPOS) {
+    if (sep == NPOS) {
         return u".";               // No '/' in path => current directory
     }
     else if (sep == 0) {
@@ -109,7 +109,7 @@ ts::UString ts::DirectoryName(const UString& path)
 ts::UString ts::BaseName(const UString& path, const UString& suffix)
 {
     const UString::size_type sep = path.rfind(PathSeparator);
-    const UString base(path.substr(sep == UString::NPOS ? 0 : sep + 1));
+    const UString base(path.substr(sep == NPOS ? 0 : sep + 1));
     const bool suffixFound = !suffix.empty() && base.endWith(suffix, FileSystemCaseSensitivity);
     return suffixFound ? base.substr(0, base.size() - suffix.size()) : base;
 }
@@ -124,10 +124,10 @@ ts::UString ts::PathSuffix(const UString& path)
     UString::size_type sep = path.rfind(PathSeparator);
     UString::size_type dot = path.rfind(u'.');
 
-    if (dot == UString::NPOS) {
+    if (dot == NPOS) {
         return ts::UString();  // no dot in path
     }
-    else if (sep != UString::NPOS && dot < sep) {
+    else if (sep != NPOS && dot < sep) {
         return ts::UString();  // dot in directory part, not in base name
     }
     else {
@@ -146,7 +146,7 @@ ts::UString ts::AddPathSuffix(const UString& path, const UString& suffix)
     UString::size_type sep = path.rfind(PathSeparator);
     UString::size_type dot = path.rfind(u'.');
 
-    if (dot == UString::NPOS || (sep != UString::NPOS && dot < sep)) {
+    if (dot == NPOS || (sep != NPOS && dot < sep)) {
         return path + suffix;
     }
     else {
@@ -164,10 +164,10 @@ ts::UString ts::PathPrefix(const UString& path)
     UString::size_type sep = path.rfind(PathSeparator);
     UString::size_type dot = path.rfind(u'.');
 
-    if (dot == UString::NPOS) {
+    if (dot == NPOS) {
         return path;  // no dot in path
     }
-    else if (sep != UString::NPOS && dot < sep) {
+    else if (sep != NPOS && dot < sep) {
         return path;  // dot in directory part, not in base name
     }
     else {
@@ -513,7 +513,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
         // The file exists as is, no need to search.
         return fileName;
     }
-    if (fileName.find(PathSeparator) != UString::NPOS) {
+    if (fileName.find(PathSeparator) != NPOS) {
         // There is a path separator, there is a directory specified and the file does not exist, don't search.
         return UString();
     }
@@ -897,7 +897,7 @@ ts::UString ts::ExpandEnvironment(const UString& path)
                 if (path[index] == '{') {
                     // '${name}' format
                     const size_t last = path.find('}', index);
-                    if (last == UString::NPOS) {
+                    if (last == NPOS) {
                         varname = path.substr(index + 1);
                         index = len;
                     }
@@ -909,7 +909,7 @@ ts::UString ts::ExpandEnvironment(const UString& path)
                 else {
                     // '$name' format
                     const size_t last = path.find_first_not_of(u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", index);
-                    if (last == UString::NPOS) {
+                    if (last == NPOS) {
                         varname = path.substr(index);
                         index = len;
                     }
@@ -950,7 +950,7 @@ namespace {
         // Locate the "=" between name and value.
         const size_t pos = s.find(u"=");
 
-        if (pos == ts::UString::NPOS) {
+        if (pos == ts::NPOS) {
             // With exact line, no "=" means empty value.
             // With loose line, not a valid definition.
             if (exact) {
@@ -1051,7 +1051,7 @@ namespace {
                 // Then, if the device is the mintty console, the name contains -pty.
                 // For actual pipes, -pty is replaced by -pipe.
                 const ts::UString name = ts::WinDeviceName(handle).toLower();
-                return (name.find(u"\\cygwin") != ts::UString::NPOS || name.find(u"\\msys") != ts::UString::NPOS) && name.find(u"-pty") != ts::UString::NPOS;
+                return (name.find(u"\\cygwin") != ts::NPOS || name.find(u"\\msys") != ts::NPOS) && name.find(u"-pty") != ts::NPOS;
             }
             default: {
                 // Cannot be a terminal.

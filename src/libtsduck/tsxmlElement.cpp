@@ -610,9 +610,9 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
 
         // Check if attribute value contains simple or double quotes.
         // Use double quote if not present, simple quote otherwise.
-        const char quote = attr.value().find(u'"') == UString::NPOS ? '"' : '\'';
+        const char quote = attr.value().find(u'"') == NPOS ? '"' : '\'';
         output << quote;
-        if (attr.value().find(quote) == UString::NPOS) {
+        if (attr.value().find(quote) == NPOS) {
             // The selected quote is not present, add the raw value.
             output << attr.value();
         }

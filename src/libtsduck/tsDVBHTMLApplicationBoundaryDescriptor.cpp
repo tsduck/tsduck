@@ -73,8 +73,8 @@ ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor(c
 void ts::DVBHTMLApplicationBoundaryDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(label.toDVBWithByteLength(0, UString::NPOS, charset));
-    bbp->append(regular_expression.toDVB(0, UString::NPOS, charset));
+    bbp->append(label.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(regular_expression.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

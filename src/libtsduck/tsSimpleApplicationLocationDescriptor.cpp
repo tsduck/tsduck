@@ -72,7 +72,7 @@ ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(con
 void ts::SimpleApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(initial_path.toDVB(0, UString::NPOS, charset));
+    bbp->append(initial_path.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

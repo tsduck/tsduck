@@ -204,7 +204,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
                 _report.warning(u"no HTTP status found in header: %s", {*it});
             }
         }
-        else if (colon != UString::NPOS) {
+        else if (colon != NPOS) {
             // Found a real header.
             UString name(*it, 0, colon);
             UString value(*it, colon + 1, it->size() - colon - 1);

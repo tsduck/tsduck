@@ -118,7 +118,7 @@ bool ts::Registry::SplitKey(const UString& key, Handle& root_key, UString& subke
 
     // Root key name and subkey name.
     UString root;
-    if (sep == UString::NPOS) {
+    if (sep == NPOS) {
         root = key;
         subkey.clear();
     }
@@ -160,7 +160,7 @@ bool ts::Registry::SplitKey(const UString& key, Handle& root_key, UString& midke
     const bool ok = SplitKey(key, root_key, final_key, report);
     if (ok) {
         const size_t sep = final_key.rfind(u'\\');
-        if (sep != UString::NPOS) {
+        if (sep != NPOS) {
             midkey = final_key.substr(0, sep);
             final_key.erase(0, sep + 1);
         }

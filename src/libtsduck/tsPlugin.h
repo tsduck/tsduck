@@ -103,7 +103,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 7;
+        static const int API_VERSION = 8;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -329,6 +329,20 @@ namespace ts {
         //! 1 to @a max_packets). Returning zero means error or end of input.
         //!
         virtual size_t receive(TSPacket* buffer, size_t max_packets) = 0;
+
+        //!
+        //! Abort the input operation currently in progress.
+        //!
+        //! This method is typically invoked from another thread when the input
+        //! plugin is waiting for input. When this method is invoked, the plugin
+        //! shall abort the current input and place the input plugin in some
+        //! "error" or "end of input" state. The only acceptable operation
+        //! after an abortInput() is a stop().
+        //!
+        //! @return True when the operation was properly handled. False in case
+        //! of fatal error or if not supported by the plugin.
+        //!
+        virtual bool abortInput() { return false; }
 
         //!
         //! Constructor.

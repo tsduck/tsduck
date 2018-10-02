@@ -123,7 +123,7 @@ void ts::DataBroadcastDescriptor::serialize(Descriptor& desc, const DVBCharset* 
         desc.invalidate();
         return;
     }
-    bbp->append(text.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(text.toDVBWithByteLength(0, NPOS, charset));
 
     serializeEnd(desc, bbp);
 }

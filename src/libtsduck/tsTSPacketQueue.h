@@ -67,11 +67,6 @@ namespace ts {
         static const size_t DEFAULT_SIZE = 1000;
 
         //!
-        //! Constant meaning "no size" or "do not resize".
-        //!
-        static const size_t NO_SIZE = std::numeric_limits<size_t>::max();
-
-        //!
         //! Default constructor.
         //! @param [in] size Size of the buffer in packets.
         //!
@@ -81,10 +76,10 @@ namespace ts {
         //! Reset and resize the buffer.
         //! It is illegal to reset the buffer while the writer thread has locked the buffer.
         //! This is not enforced by this class. It is the responsibility of the application to check this.
-        //! @param [in] size New size of the buffer in packets. By default, reset the queue without
-        //! resizing the buffer.
+        //! @param [in] size New size of the buffer in packets. By default, when set to NPOS,
+        //! reset the queue without resizing the buffer.
         //!
-        void reset(size_t size = NO_SIZE);
+        void reset(size_t size = NPOS);
 
         //!
         //! Get the size of the buffer in packets.

@@ -869,7 +869,6 @@
 //!
 #define TS_SLINE TS_STRINGIFY(__LINE__)
 
-
 //!
 //! @hideinitializer
 //! On Windows, this attribute exports a symbol out of a DLL
@@ -3011,6 +3010,26 @@ namespace ts {
 #else
 #error "check socket compatibility macros on this platform"
 #endif
+
+
+//----------------------------------------------------------------------------
+// Some integer constants.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    //!
+    //! Constant meaning "no size", "not found" or "do not resize".
+    //! An alternative value for the standard @c std::string::npos value.
+    //! Required on Windows to avoid linking issue.
+    //!
+    const size_t NPOS =
+#if defined(TS_WINDOWS)
+        size_type(-1);
+#else
+        std::string::npos;
+#endif
+
+}
 
 
 //----------------------------------------------------------------------------

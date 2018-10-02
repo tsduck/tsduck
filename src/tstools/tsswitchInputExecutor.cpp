@@ -43,7 +43,7 @@ ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, Options& op
     PluginThread(&opt, opt.appName(), opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _core(core),
     _opt(opt),
-    _input(dynamic_cast<InputPlugin*>(plugin())),
+    _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _pluginIndex(index),
     _buffer(opt.bufferedPackets),
     _mutex(),

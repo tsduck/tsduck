@@ -82,8 +82,8 @@ void ts::ServiceDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(service_type);
-    bbp->append(provider_name.toDVBWithByteLength(0, UString::NPOS, charset));
-    bbp->append(service_name.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(provider_name.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(service_name.toDVBWithByteLength(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

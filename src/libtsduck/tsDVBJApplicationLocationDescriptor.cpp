@@ -74,9 +74,9 @@ ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor(const D
 void ts::DVBJApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(base_directory.toDVBWithByteLength(0, UString::NPOS, charset));
-    bbp->append(classpath_extension.toDVBWithByteLength(0, UString::NPOS, charset));
-    bbp->append(initial_class.toDVB(0, UString::NPOS, charset));
+    bbp->append(base_directory.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(classpath_extension.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(initial_class.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

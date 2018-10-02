@@ -89,8 +89,8 @@ void ts::MultilingualServiceNameDescriptor::serialize(Descriptor& desc, const DV
             desc.invalidate();
             return;
         }
-        bbp->append(it->service_provider_name.toDVBWithByteLength(0, UString::NPOS, charset));
-        bbp->append(it->service_name.toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->append(it->service_provider_name.toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(it->service_name.toDVBWithByteLength(0, NPOS, charset));
     }
 
     serializeEnd(desc, bbp);

@@ -28,20 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Expiration handler interface for general-purpose timeout watchdog.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 943
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class WatchDog;
+
+    //!
+    //! Expiration handler interface for general-purpose timeout watchdog.
+    //! @ingroup thread
+    //!
+    class WatchDogHandlerInterface
+    {
+    public:
+        //!
+        //! Handle the expiration of a timeout.
+        //! The handler is executed in the context of an internal thread of the watchdog.
+        //! @param [in,out] watchdog The watchdog which triggered the timeout.
+        //!
+        virtual void handleWatchDogTimeout(WatchDog& watchdog) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~WatchDogHandlerInterface() {}
+    };
+}
