@@ -40,11 +40,12 @@ TSDUCK_SOURCE;
 ts::WatchDog::WatchDog(ts::WatchDogHandlerInterface* handler, ts::MilliSecond timeout, int id, ts::Report& log) :
     _log(log),
     _watchDogId(id),
+    _terminate(false),
     _mutex(),
     _condition(),
     _handler(handler),
-    _command(NONE),
-    _timeout(timeout == 0 ? Infinite : timeout)
+    _timeout(timeout == 0 ? Infinite : timeout),
+    _active(false)
 {
     // Start the thread.
     start();
@@ -53,7 +54,8 @@ ts::WatchDog::WatchDog(ts::WatchDogHandlerInterface* handler, ts::MilliSecond ti
 ts::WatchDog::~WatchDog()
 {
     // Terminate the thread and wait for actual thread termination.
-    sendCommand(TERMINATE);
+    _terminate = true;
+    _condition.signal();
     waitForTermination();
 }
 
@@ -76,36 +78,33 @@ void ts::WatchDog::setWatchDogHandler(WatchDogHandlerInterface* h)
 void ts::WatchDog::setTimeout(MilliSecond timeout, bool autoStart)
 {
     GuardCondition lock(_mutex, _condition);
-
-    // No need to shake the threads if there is nothing to do.
-    if (_timeout != Infinite || (timeout != Infinite && timeout != 0)) {
-
-        // Update the timeout value.
-        _timeout = timeout == 0 ? Infinite : timeout;
-
-        // Signal the thread to either restart or suspend.
-        // Do not overwrite any TERMINATE command, this is the last one.
-        if (_command != TERMINATE) {
-            _command = autoStart ? RESTART : SUSPEND;
-            lock.signal();
-        }
-    }
+    _timeout = timeout == 0 ? Infinite : timeout;
+    _active = autoStart;
+    lock.signal();
 }
 
 
 //----------------------------------------------------------------------------
-// Send a command to the thread.
+// Restart the watchdog, the previous timeout is canceled.
 //----------------------------------------------------------------------------
 
-void ts::WatchDog::sendCommand(Command cmd)
+void ts::WatchDog::restart()
 {
     GuardCondition lock(_mutex, _condition);
+    _active = true;
+    lock.signal();
+}
 
-    // Do not overwrite any TERMINATE command, this is the last one.
-    if (_command != TERMINATE) {
-        _command = cmd;
-        lock.signal();
-    }
+
+//----------------------------------------------------------------------------
+// Suspend the watchdog, the previous timeout is canceled.
+//----------------------------------------------------------------------------
+
+void ts::WatchDog::suspend()
+{
+    GuardCondition lock(_mutex, _condition);
+    _active = false;
+    lock.signal();
 }
 
 
@@ -117,31 +116,22 @@ void ts::WatchDog::main()
 {
     _log.debug(u"Watchdog thread started, id %d", {_watchDogId});
 
-    MilliSecond currentTimeout = Infinite;
+    while (!_terminate) {
+        bool expired = false;
+        WatchDogHandlerInterface* h = 0;
 
-    // Loop on commands.
-    GuardCondition lock(_mutex, _condition);
-    for (;;) {
-        // Release the mutex and wait until a command is received.
-        // The mutex is automatically re-acquired.
-        const bool expired = !lock.waitCondition(currentTimeout);
-
-        // Exit thread on terminate command.
-        if (_command == TERMINATE) {
-            break;
+        // Wait for the condition to be signaled. Get protected data while under mutex protection.
+        {
+            GuardCondition lock(_mutex, _condition);
+            expired = !lock.waitCondition(_active ? _timeout : Infinite);
+            h = _handler;
         }
 
-        // Handle the expiration.
-        if (expired && _handler != 0) {
-            _log.debug(u"Watchdog expired, id %d", {_watchDogId});
-            _handler->handleWatchDogTimeout(*this);
+        // Handle the expiration. No longer under mutex protection to avoid deadlocks in handler.
+        if (!_terminate && expired && h != 0) {
+            _log.debug(u"Watchdog expired, id %d", { _watchDogId });
+            h->handleWatchDogTimeout(*this);
         }
-
-        // Compute new timeout.
-        currentTimeout = _command == RESTART ? _timeout : Infinite;
-
-        // Reset command.
-        _command = NONE;
     }
 
     _log.debug(u"Watchdog thread completed, id %d", {_watchDogId});

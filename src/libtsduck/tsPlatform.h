@@ -3024,7 +3024,7 @@ namespace ts {
     //!
     const size_t NPOS =
 #if defined(TS_WINDOWS)
-        size_type(-1);
+        size_t(-1);
 #else
         std::string::npos;
 #endif

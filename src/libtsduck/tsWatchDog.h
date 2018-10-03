@@ -53,7 +53,7 @@ namespace ts {
     //! A WatchDog instance contains an internal thread which is started in the constructor
     //! and terminated in the destructor.
     //!
-    class WatchDog : private Thread
+    class TSDUCKDLL WatchDog : private Thread
     {
     public:
         //!
@@ -85,12 +85,12 @@ namespace ts {
         //!
         //! Restart the watchdog, the previous timeout is canceled.
         //!
-        void restart() { sendCommand(RESTART); }
+        void restart();
 
         //!
         //! Suspend the watchdog, the previous timeout is canceled.
         //!
-        void suspend() { sendCommand(SUSPEND); }
+        void suspend();
 
         //!
         //! Replace the watchdog handler.
@@ -111,18 +111,14 @@ namespace ts {
         int watchDogId() const { return _watchDogId; }
 
     private:
-        enum Command {NONE, RESTART, SUSPEND, TERMINATE};
-
         Report&                   _log;         // For debug messages.
         volatile int              _watchDogId;  // Application-defined watchdog identifier.
+        volatile bool             _terminate;   // Terminate the thread.
         Mutex                     _mutex;       // Mutex to protect the following fields.
         Condition                 _condition;   // Condition to signal when something changed.
         WatchDogHandlerInterface* _handler;     // Handler for expiration.
-        Command                   _command;     // Next command to execute.
         MilliSecond               _timeout;     // Expiration timeout, 0 means no timeout.
-
-        // Send a command to the thread.
-        void sendCommand(Command cmd);
+        bool                      _active;      // The watchdog is active.
 
         // Implementation of Thread.
         virtual void main() override;
