@@ -223,6 +223,8 @@ HEADERS += \
     ../../../src/libtsduck/tsOneShotPacketizer.h \
     ../../../src/libtsduck/tsOutputPager.h \
     ../../../src/libtsduck/tsOutputRedirector.h \
+    ../../../src/libtsduck/tsPacketDecapsulation.h \
+    ../../../src/libtsduck/tsPacketEncapsulation.h \
     ../../../src/libtsduck/tsPacketizer.h \
     ../../../src/libtsduck/tsParentalRatingDescriptor.h \
     ../../../src/libtsduck/tsPartialTransportStreamDescriptor.h \
@@ -627,6 +629,8 @@ SOURCES += \
     ../../../src/libtsduck/tsOneShotPacketizer.cpp \
     ../../../src/libtsduck/tsOutputPager.cpp \
     ../../../src/libtsduck/tsOutputRedirector.cpp \
+    ../../../src/libtsduck/tsPacketDecapsulation.cpp \
+    ../../../src/libtsduck/tsPacketEncapsulation.cpp \
     ../../../src/libtsduck/tsPacketizer.cpp \
     ../../../src/libtsduck/tsParentalRatingDescriptor.cpp \
     ../../../src/libtsduck/tsPartialTransportStreamDescriptor.cpp \

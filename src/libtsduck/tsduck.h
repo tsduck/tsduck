@@ -235,6 +235,8 @@
 #include "tsOneShotPacketizer.h"
 #include "tsOutputPager.h"
 #include "tsOutputRedirector.h"
+#include "tsPacketDecapsulation.h"
+#include "tsPacketEncapsulation.h"
 #include "tsPacketizer.h"
 #include "tsParentalRatingDescriptor.h"
 #include "tsPartialTransportStreamDescriptor.h"
