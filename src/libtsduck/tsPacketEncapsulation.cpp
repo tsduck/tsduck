@@ -26,22 +26,53 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsPacketEncapsulation.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 945
+ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInput, PID pcrReference) :
+    _pidOutput(pidOutput),
+    _pidInput(pidInput),
+    _pcrReference(pcrReference),
+    _lastError()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the encapsulation.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID pcrReference)
+{
+    _pidOutput = pidOutput;
+    _pidInput = pidInput;
+    _pcrReference = pcrReference;
+    _lastError.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Change the reference PID for PCR's.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::setReferencePCR(PID pid)
+{
+    _pcrReference = pid;
+    //@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Process a TS packet from the input stream.
+//----------------------------------------------------------------------------
+
+bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
+{
+    return false; // @@@@
+}

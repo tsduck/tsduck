@@ -26,22 +26,38 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsPacketDecapsulation.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 945
+ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
+    _pidInput(pid),
+    _lastError()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the decapsulation.
+//----------------------------------------------------------------------------
+
+void ts::PacketDecapsulation::reset(PID pid)
+{
+    _pidInput = pid;
+    _lastError.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Process a TS packet from the input stream.
+//----------------------------------------------------------------------------
+
+bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
+{
+    return false; // @@@@
+}

@@ -225,6 +225,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsOneShotPacketizer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h" />
     <ClInclude Include="..\..\src\libtsduck\tsOutputRedirector.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPacketDecapsulation.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPacketEncapsulation.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPacketizer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsParentalRatingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.h" />
@@ -639,6 +641,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsOneShotPacketizer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOutputRedirector.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPacketDecapsulation.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPacketEncapsulation.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPacketizer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsParentalRatingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.cpp" />
