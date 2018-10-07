@@ -92,8 +92,16 @@ namespace ts {
         PID inputPID() const { return _pidInput; }
 
     private:
-        PID     _pidInput;   // Input PID.
-        UString _lastError;  // Last error message.
+        PID      _pidInput;      // Input PID.
+        bool     _synchronized;  // Input PID fully synchronized.
+        uint8_t  _ccInput;       // Continuity counter in input PID.
+        size_t   _nextIndex;     // Current size of _nextIndex (not full yet).
+        TSPacket _nextPacket;    // Next packet, partially decapsulated.
+        UString  _lastError;     // Last error message.
+
+        // Loose synchronization, return false.
+        bool lostSync(const UString& error);
+        bool lostSync(TSPacket& pkt, const UString& error);
 
         // Inaccessible operations.
         PacketDecapsulation(const PacketDecapsulation&) = delete;

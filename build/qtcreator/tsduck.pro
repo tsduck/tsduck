@@ -45,11 +45,13 @@ SUBDIRS += \
     tsplugin_continuity \
     tsplugin_count \
     tsplugin_datainject \
+    tsplugin_decap \
     tsplugin_dektec \
     tsplugin_descrambler \
     tsplugin_drop \
     tsplugin_dvb \
     tsplugin_eit \
+    tsplugin_encap \
     tsplugin_file \
     tsplugin_filter \
     tsplugin_fork \

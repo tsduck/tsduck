@@ -2,12 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.15-940
+VERSION 3.15-946
 
 [NEW] New commands and plugins:
 
   * Added command "tsswitch", a TS input switcher with remote control.
-  * Added plugin "limit".
+  * Added plugin "limit" to limit the global TS bitrate.
+  * Added plugins "encap" and "decap" to encapsulate and decapsulate PID's
+    into one single tunnel PID.
 
 [IMP] Improvements on existing commands and plugins:
 

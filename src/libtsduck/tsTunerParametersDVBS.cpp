@@ -178,7 +178,7 @@ ts::UString ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
 {
     UString local_options;
     if (!no_local) {
-        local_options = UString::Format(u" --lnb %s --satellite-number %d", {UString(lnb), satellite_number});
+        local_options.format(u" --lnb %s --satellite-number %d", {UString(lnb), satellite_number});
     }
 
     return UString::Format(u"--frequency %d --symbol-rate %d", {frequency, symbol_rate}) +

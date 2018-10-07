@@ -1648,16 +1648,19 @@ ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn>& args)
+void ts::UString::format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args)
 {
-    // Output string. Pre-reserve some space. We don't really know how much. Just address the most comman cases.
-    UString result;
-    result.reserve(256);
+    // Pre-reserve some space. We don't really know how much. Just address the most comman cases.
+    reserve(256);
 
     // Process the string.
-    ArgMixInContext ctx(result, fmt, args);
+    ArgMixInContext ctx(*this, fmt, args);
+}
 
-    // Final formatted string.
+ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn>& args)
+{
+    UString result;
+    result.format(fmt, args);
     return result;
 }
 

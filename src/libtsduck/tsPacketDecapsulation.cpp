@@ -37,8 +37,14 @@ TSDUCK_SOURCE;
 
 ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
     _pidInput(pid),
+    _synchronized(false),
+    _ccInput(0),
+    _nextIndex(1),
+    _nextPacket(),
     _lastError()
 {
+    // There is always implicitely one sync byte in decapsulated packets.
+    _nextPacket.b[0] = SYNC_BYTE;
 }
 
 
@@ -49,7 +55,28 @@ ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
 void ts::PacketDecapsulation::reset(PID pid)
 {
     _pidInput = pid;
+    _synchronized = false;
+    _nextIndex = 1; // after sync byte
     _lastError.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Lose synchronization, return false.
+//----------------------------------------------------------------------------
+
+bool ts::PacketDecapsulation::lostSync(const UString& error)
+{
+    _synchronized = false;
+    _nextIndex = 1;  // after sync byte
+    _lastError = error;
+    return false;
+}
+
+bool ts::PacketDecapsulation::lostSync(TSPacket& pkt, const UString& error)
+{
+    pkt = NullPacket;  // return a null packet since nothing was decapsulated
+    return lostSync(error);
 }
 
 
@@ -59,5 +86,67 @@ void ts::PacketDecapsulation::reset(PID pid)
 
 bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
 {
-    return false; // @@@@
+    // Work on the input PID only.
+    if (_pidInput == PID_NULL || pkt.getPID() != _pidInput) {
+        return true;
+    }
+
+    // Where to look at in input packet. Start at beginning of payload.
+    size_t pktIndex = pkt.getHeaderSize();
+
+    // Get pointer field in PUSI packets.
+    const bool pusi = pkt.getPUSI();
+    const size_t pointerField = pusi && pktIndex < PKT_SIZE ? pkt.b[pktIndex++] : 0;
+    if (pusi && pktIndex + pointerField > PKT_SIZE) {
+        return lostSync(pkt, u"invalid packet, adaptation field or pointer field out of range");
+    }
+
+    // Check continuity counter.
+    const uint8_t cc = pkt.getCC();
+    if (_synchronized && cc != ((_ccInput + 1) & CC_MASK)) {
+        // Got a discontinuity, lose synchronization but will maybe resync later, do not return an error.
+        lostSync(u"input PID discontinuity");
+    }
+    _ccInput = cc;
+
+    // If we previously lost synchronization, try to resync in current packet.
+    if (!_synchronized) {
+        if (pusi) {
+            // There is a packet start here, we have a chance to resync.
+            pktIndex += pointerField;
+            _synchronized = true;
+        }
+        else {
+            // We cannot resync now, simply return a null packet.
+            pkt = NullPacket;
+            return true;
+        }
+    }
+
+    // Copy data in next packet.
+    assert(pktIndex <= PKT_SIZE);
+    assert(_nextIndex <= PKT_SIZE);
+    size_t size = std::min(PKT_SIZE - pktIndex, PKT_SIZE - _nextIndex);
+    ::memcpy(_nextPacket.b + _nextIndex, pkt.b + pktIndex, size);
+    pktIndex += size;
+    _nextIndex += size;
+
+    if (_nextIndex == PKT_SIZE) {
+        // Next packet is full, return it.
+        const TSPacket tmp(pkt);
+        pkt = _nextPacket;
+        // Copy start of next packet.
+        size = PKT_SIZE - pktIndex;
+        ::memcpy(_nextPacket.b + 1, tmp.b + pktIndex, size);
+        _nextIndex = 1 + size;
+    }
+    else {
+        // Next packet not full, must have exhausted the input packet.
+        assert(pktIndex == PKT_SIZE);
+        assert(_nextIndex < PKT_SIZE);
+        // Replace input packet with a null packet since we cannot extract a packet now.
+        pkt = NullPacket;
+    }
+
+    return true;
 }
