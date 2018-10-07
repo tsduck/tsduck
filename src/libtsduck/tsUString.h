@@ -1491,7 +1491,26 @@ namespace ts {
         //!
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
+        //!
+        void format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args);
+
+        //!
+        //! Format a string using a template and arguments.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see format()
+        //!
+        void format(const UString& fmt, const std::initializer_list<ArgMixIn>& args)
+        {
+            format(fmt.c_str(), args);
+        }
+
+        //!
+        //! Format a string using a template and arguments.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
+        //! @see format()
         //!
         static UString Format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args);
 
@@ -1500,7 +1519,7 @@ namespace ts {
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
-        //! @see Format()
+        //! @see format()
         //!
         static UString Format(const UString& fmt, const std::initializer_list<ArgMixIn>& args)
         {

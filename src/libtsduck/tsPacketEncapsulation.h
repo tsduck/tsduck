@@ -35,6 +35,7 @@
 #pragma once
 #include "tsMPEG.h"
 #include "tsTSPacket.h"
+#include "tsSafePtr.h"
 
 namespace ts {
     //!
@@ -123,7 +124,7 @@ namespace ts {
         //! Change the output PID.
         //! @param [in] pid The new output PID.
         //!
-        void setOutputPID(PID pid) { _pidOutput = pid; }
+        void setOutputPID(PID pid);
 
         //!
         //! Get the current set of input PID's.
@@ -133,7 +134,7 @@ namespace ts {
 
         //!
         //! Get the current number of input PID's being encapsulated.
-        //! @return The current number of PID's being encapsulated.
+        //! @return The crrent number of PID's being encapsulated.
         //!
         size_t pidCount() const { return _pidInput.count(); }
 
@@ -141,19 +142,19 @@ namespace ts {
         //! Replace the set of input PID's.
         //! @param [in] pidInput The new set of PID's to encapsulate.
         //!
-        void setInputPIDs(const PIDSet& pidInput) { _pidInput = pidInput; }
+        void setInputPIDs(const PIDSet& pidInput);
 
         //!
         //! Add one PID to encapsulate.
         //! @param [in] pid The new PID to encapsulate.
         //!
-        void addInputPID(PID pid) { _pidInput.set(pid); }
+        void addInputPID(PID pid);
 
         //!
         //! Remove one PID to encapsulate.
         //! @param [in] pid The PID to no longer encapsulate.
         //!
-        void removeInputPID(PID pid) { _pidInput.reset(pid); }
+        void removeInputPID(PID pid);
 
         //!
         //! Get the reference PID for PCR's.
@@ -167,11 +168,44 @@ namespace ts {
         //!
         void setReferencePCR(PID pid);
 
+        //!
+        //! Default maximum number of buffered packets.
+        //!
+        static const size_t DEFAULT_MAX_BUFFERED_PACKETS = 1024;
+
+        //!
+        //! Set the maximum number of buffered packets.
+        //! The buffered packets are produced by the encapsulation overhead.
+        //! An overflow is usually caused by insufficient null packets in the input stream.
+        //! @param [in] count The maximum number of buffered packets.
+        //!
+        void setMaxBufferedPackets(size_t count);
+
     private:
-        PID     _pidOutput;     // Output PID.
-        PIDSet  _pidInput;      // Input PID's to encapsulate.
-        PID     _pcrReference;  // Insert PCR's based on this reference PID.
-        UString _lastError;     // Last error message.
+        typedef std::map<PID,uint8_t> PIDCCMap;  // map of continuity counters, indexed by PID
+        typedef SafePtr<TSPacket> TSPacketPtr;
+        typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
+
+        PID              _pidOutput;       // Output PID.
+        PIDSet           _pidInput;        // Input PID's to encapsulate.
+        PID              _pcrReference;    // Insert PCR's based on this reference PID.
+        UString          _lastError;       // Last error message.
+        PacketCounter    _currentPacket;   // Total TS packets since last reset.
+        PacketCounter    _pcrLastPacket;   // Packet index of last PCR in reference PID.
+        uint64_t         _pcrLastValue;    // Last PCR value in reference PID.
+        BitRate          _bitrate;         // Bitrate computed from last PCR.
+        bool             _insertPCR;       // Insert a PCR in next output packet.
+        uint8_t          _ccOutput;        // Continuity counter in output PID.
+        PIDCCMap         _lastCC;          // Continuity counter by PID.
+        size_t           _lateMaxPackets;  // Maximum number of packets in _latePackets.
+        size_t           _lateIndex;       // Index in first late packet.
+        TSPacketPtrQueue _latePackets;     // Packets to insert later.
+
+        // Reset PCR information, lost synchronization.
+        void resetPCR();
+
+        // Fill packet payload with data from the first queued packet.
+        void fillPacket(TSPacket& pkt, size_t& pktIndex);
 
         // Inaccessible operations.
         PacketEncapsulation(const PacketEncapsulation&) = delete;

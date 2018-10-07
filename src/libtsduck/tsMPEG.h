@@ -91,6 +91,11 @@ namespace ts {
     typedef uint64_t PacketCounter;
 
     //!
+    //! A impossible value for PacketCounter, meaning "undefined".
+    //!
+    const PacketCounter INVALID_PACKET_COUNTER = std::numeric_limits<PacketCounter>::max();
+
+    //!
     //! Number of sections.
     //!
     typedef uint64_t SectionCounter;

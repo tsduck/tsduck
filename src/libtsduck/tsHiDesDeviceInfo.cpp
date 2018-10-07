@@ -142,7 +142,7 @@ ts::UString ts::HiDesDeviceInfo::toString(bool full, size_t indent) const
     }
     else {
         // Short form.
-        s = UString::Format(u"%d: \"%s\"", {index, name});
+        s.format(u"%d: \"%s\"", {index, name});
         // Add the device path if different and "not too long" (avoid ugly endless Windows device names).
         if (!path.empty() && path != name && path.length() < 40) {
             s += UString::Format(u" (%s)", {path});

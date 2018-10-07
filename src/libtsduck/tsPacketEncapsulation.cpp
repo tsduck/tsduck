@@ -28,7 +28,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsPacketEncapsulation.h"
+#include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
+
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -39,7 +44,17 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
     _pidOutput(pidOutput),
     _pidInput(pidInput),
     _pcrReference(pcrReference),
-    _lastError()
+    _lastError(),
+    _currentPacket(0),
+    _pcrLastPacket(INVALID_PACKET_COUNTER),
+    _pcrLastValue(INVALID_PCR),
+    _bitrate(0),
+    _insertPCR(false),
+    _ccOutput(0),
+    _lastCC(),
+    _lateMaxPackets(DEFAULT_MAX_BUFFERED_PACKETS),
+    _lateIndex(0),
+    _latePackets()
 {
 }
 
@@ -54,6 +69,40 @@ void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID p
     _pidInput = pidInput;
     _pcrReference = pcrReference;
     _lastError.clear();
+    _currentPacket = 0;
+    _ccOutput = 0;
+    _lastCC.clear();
+    _lateIndex = 0;
+    _latePackets.clear();
+    resetPCR();
+}
+
+
+//----------------------------------------------------------------------------
+// Change the output PID.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::setOutputPID(PID pid)
+{
+    if (pid != _pidOutput) {
+        _pidOutput = pid;
+        // Reset encapsulation.
+        _ccOutput = 0;
+        _lastCC.clear();
+        _lateIndex = 0;
+        _latePackets.clear();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Set the maximum number of buffered packets.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::setMaxBufferedPackets(size_t count)
+{
+    // Always keep some margin.
+    _lateMaxPackets = std::max<size_t>(8, count);
 }
 
 
@@ -63,8 +112,49 @@ void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID p
 
 void ts::PacketEncapsulation::setReferencePCR(PID pid)
 {
-    _pcrReference = pid;
-    //@@@@
+    if (pid != _pcrReference) {
+        // Reference PID modified, reset synchro.
+        _pcrReference = pid;
+        resetPCR();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Reset PCR information, lost synchronization.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::resetPCR()
+{
+    _pcrLastPacket = INVALID_PACKET_COUNTER;
+    _pcrLastValue = INVALID_PCR;
+    _bitrate = 0;
+    _insertPCR = false;
+}
+
+
+//----------------------------------------------------------------------------
+// Replace the set of input PID's. The null PID can never be encapsulated.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::setInputPIDs(const PIDSet& pidInput)
+{
+    _pidInput = pidInput;
+    _pidInput.reset(PID_NULL);
+}
+
+void ts::PacketEncapsulation::addInputPID(PID pid)
+{
+    if (pid < PID_NULL) {
+        _pidInput.set(pid);
+    }
+}
+
+void ts::PacketEncapsulation::removeInputPID(PID pid)
+{
+    if (pid < PID_NULL) {
+        _pidInput.reset(pid);
+    }
 }
 
 
@@ -74,5 +164,164 @@ void ts::PacketEncapsulation::setReferencePCR(PID pid)
 
 bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
 {
-    return false; // @@@@
+    PID pid = pkt.getPID();
+    bool status = true;  // final return value.
+
+    // Keep track of continuity counter per PID, detect discontinuity.
+    // Do not check discontinuity on the stuffing PID, there is none.
+    if (pid != PID_NULL) {
+        const auto icc = _lastCC.find(pid);
+        const uint8_t cc = pkt.getCC();
+        if (icc == _lastCC.end()) {
+            // No CC found so far on this PID. Just keep this one.
+            _lastCC.insert(std::make_pair(pid, cc));
+        }
+        else {
+            if (cc != ((icc->second + 1) & CC_MASK)) {
+                // Discontinuity detected, forget information about PCR, they will be incorrect.
+                resetPCR();
+            }
+            icc->second = cc;
+        }
+    }
+
+    // Collect PCR from the reference PID to compute bitrate.
+    if (_pcrReference != PID_NULL && pid == _pcrReference && pkt.hasPCR()) {
+        const uint64_t pcr = pkt.getPCR();
+        // If previous PCR is known, compute bitrate. Ignore PCR value wrap-up.
+        if (_pcrLastValue != INVALID_PCR && _pcrLastValue < pcr) {
+            assert(_pcrLastPacket < _currentPacket);
+            // Duration in milliseconds since last PCR.
+            const MilliSecond ms = ((pcr - _pcrLastValue) * MilliSecPerSec) / SYSTEM_CLOCK_FREQ;
+            // Compute TS bitrate since last PCR.
+            _bitrate = PacketBitRate(_currentPacket - _pcrLastPacket, ms);
+            // Insert PCR in output PID asap after a PCR on reference PID when the bitrate is known.
+            _insertPCR = true;
+        }
+        // Save current PCR.
+        _pcrLastPacket = _currentPacket;
+        _pcrLastValue = pcr;
+    }
+
+    // Detect PID conflicts (when the output PID is present on input but not encapsulated).
+    if (pid == _pidOutput && !_pidInput.test(pid)) {
+        _lastError.format(u"PID conflict, output PID 0x%X (%d) is present but not encapsulated", {pid, pid});
+        status = false;
+    }
+
+    // If this packet is part of the input set, place it in the "late" queue.
+    // Note that a packet always need to go into the queue, even if the queue
+    // is empty because no input packet can fit into an output packet. At least
+    // a few bytes need to be queued.
+    if (_pidInput.test(pid) && _pidOutput != PID_NULL) {
+        if (_latePackets.size() > _lateMaxPackets) {
+            _lastError.assign(u"buffered packets overflow, insufficient null packets in input stream");
+            status = false;
+        }
+        else {
+            // Enqueue the packet.
+            _latePackets.push_back(new TSPacket(pkt));
+            // If this is the first packet in the queue, point to the first byte after 0x47.
+            if (_latePackets.size() == 1) {
+                _lateIndex = 1;
+            }
+        }
+        // Pretend that the input packet is a null one.
+        pid = PID_NULL;
+    }
+
+    // Replace input or null packets.
+    if (pid == PID_NULL && !_latePackets.empty()) {
+
+        // Build the new packet header.
+        TS_ZERO(pkt.b);
+        pkt.b[0] = SYNC_BYTE;
+        pkt.b[3] = 0x10; // no adaptation_field, payload only
+        pkt.setPID(_pidOutput);
+        pkt.setCC(_ccOutput);
+
+        // Index in pkt where we write data.
+        size_t pktIndex = 4;
+
+        // Continuity counter of next output packet.
+        _ccOutput = (_ccOutput + 1) & CC_MASK;
+
+        // Insert a PCR if requested.
+        if (_insertPCR && _bitrate != 0 && _pcrLastPacket != INVALID_PACKET_COUNTER && _pcrLastValue != INVALID_PCR) {
+
+            // Compute the PCR of this packet.
+            const uint64_t pcrDistance = (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
+            const uint64_t pcr = (_pcrLastValue + pcrDistance) & PCR_MASK;
+
+            // We need to add an adaptation field in the TS packet.
+            pkt.b[3] |= 0x20; // adaptation field present
+            pkt.b[4] = 7;     // adaptation field size (1 byte for flags, 6 bytes for PCR)
+            pkt.b[5] = 0x10;  // PCR_flag
+            pktIndex += 8;    // including 1-byte AF size and 7-byte AF
+
+            // Set the PCR in the adaptation field.
+            pkt.setPCR(pcr);
+            assert(pkt.getPCR() == pcr); // make sure the AF was properly built
+
+            // Don't insert another PCR in output PID until a PCR is found in reference PID.
+            _insertPCR = false;
+        }
+
+        // If there are less "late" bytes than the output payload size, enlarge the adaptation field
+        // with stuffing. Note that if there is so few bytes in the only "late" packet, this cannot
+        // be the beginning of a packet and there will be no pointer field.
+        if (_latePackets.size() == 1 && _lateIndex > pktIndex) {
+            // This code works identically whether there was an adaptation field or not.
+            pkt.b[3] |= 0x20;  // adaptation field present
+            pkt.b[4] = uint8_t(_lateIndex - 5);  // adaptation field size
+            pktIndex = _lateIndex;
+        }
+
+        // If the remaining bytes in the first packet are less than the output payload,
+        // we will start a new packet in this payload. Set PUSI and add pointer field.
+        if (_lateIndex > pktIndex) {
+            pkt.setPUSI();
+            pkt.b[pktIndex++] = uint8_t(PKT_SIZE - _lateIndex); // pointer field
+        }
+
+        // Copy first part of output payload from the first queued packet.
+        fillPacket(pkt, pktIndex);
+
+        // Then copy remaining from next packet.
+        if (pktIndex < PKT_SIZE) {
+            fillPacket(pkt, pktIndex);
+        }
+
+        // The output packet shall be exactly full.
+        assert(pktIndex == PKT_SIZE);
+    }
+
+    // Count packets before returning.
+    _currentPacket++;
+    return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Fill packet payload with data from the first queued packet.
+//----------------------------------------------------------------------------
+
+void ts::PacketEncapsulation::fillPacket(ts::TSPacket& pkt, size_t& pktIndex)
+{
+    assert(!_latePackets.empty());
+    assert(!_latePackets.front().isNull());
+    assert(_lateIndex < PKT_SIZE);
+    assert(pktIndex < PKT_SIZE);
+
+    // Copy part of output payload from the first queued packet.
+    const size_t size = std::min(PKT_SIZE - pktIndex, PKT_SIZE - _lateIndex);
+    ::memcpy(pkt.b + pktIndex, _latePackets.front()->b + _lateIndex, size);
+    pktIndex += size;
+    _lateIndex += size;
+
+    // If the first queued packet if fully encapsulated, remove it.
+    if (_lateIndex >= PKT_SIZE) {
+        _latePackets.pop_front();
+        _lateIndex = 1;  // skip 0x47 in next packet
+    }
 }

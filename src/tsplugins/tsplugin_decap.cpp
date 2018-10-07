@@ -27,93 +27,102 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Video attributes for Advanced Video Coding (AVC, ISO 14496-10, ITU H.264)
+//  Transport stream processor shared library:
+//  Decapsulate TS packets from one single PID. See also tsplugin_encap.cpp.
 //
 //----------------------------------------------------------------------------
 
-#include "tsAVCAttributes.h"
-#include "tsAVCSequenceParameterSet.h"
+#include "tsPlugin.h"
+#include "tsPluginRepository.h"
+#include "tsPacketDecapsulation.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Plugin definition
 //----------------------------------------------------------------------------
 
-ts::AVCAttributes::AVCAttributes() :
-    _hsize(0),
-    _vsize(0),
-    _profile(0),
-    _level(0),
-    _chroma(0)
+namespace ts {
+    class DecapPlugin: public ProcessorPlugin
+    {
+    public:
+        // Implementation of plugin API
+        DecapPlugin(TSP*);
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+
+    private:
+        bool                _ignoreErrors;  // Ignore encapsulation errors.
+        PID                 _pid;           // Input PID.
+        PacketDecapsulation _decap;         // Decapsulation engine.
+
+        // Inaccessible operations
+        DecapPlugin() = delete;
+        DecapPlugin(const DecapPlugin&) = delete;
+        DecapPlugin& operator=(const DecapPlugin&) = delete;
+    };
+}
+
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_PROCESSOR(decap, ts::DecapPlugin)
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::DecapPlugin::DecapPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Decapsulate TS packets from a PID produced by encap plugin", u"[options]"),
+    _ignoreErrors(false),
+    _pid(PID_NULL),
+    _decap()
 {
+    option(u"ignore-errors", 'i');
+    help(u"ignore-errors",
+         u"Ignore errors such malformed encapsulated stream.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid",
+         u"Specify the input PID containing all encapsulated PID's. "
+         u"This is a mandatory parameter, there is no default.");
 }
 
 
 //----------------------------------------------------------------------------
-// Convert to a string object
+// Get options method
 //----------------------------------------------------------------------------
 
-ts::UString ts::AVCAttributes::toString() const
+bool ts::DecapPlugin::getOptions()
 {
-    if (!_is_valid) {
-        return UString();
-    }
-
-    UString desc;
-    desc.format(u"%dx%d, ", {_hsize, _vsize});
-    desc += profileName();
-    desc += u", level ";
-    desc += levelName();
-    desc += u", ";
-    desc += chromaFormatName();
-
-    return desc;
+    _ignoreErrors = present(u"ignore-errors");
+    _pid = intValue<PID>(u"pid", PID_NULL);
+    return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Get AVC level name.
+// Start method
 //----------------------------------------------------------------------------
 
-ts::UString ts::AVCAttributes::levelName() const
+bool ts::DecapPlugin::start()
 {
-    return _is_valid ? UString::Format(u"%d.%d", {_level / 10, _level % 10}) : UString();
+    _decap.reset(_pid);
+    return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Provides an AVC access unit. Return true if the AVCAttributes object
-// becomes valid or has new values.
+// Packet processing method
 //----------------------------------------------------------------------------
 
-bool ts::AVCAttributes::moreBinaryData (const void* data, size_t size)
+ts::ProcessorPlugin::Status ts::DecapPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    // Parse AVC access unit. We are interested in "sequence parameter set" only.
-    AVCSequenceParameterSet params (data, size);
-
-    if (!params.valid) {
-        return false;
+    if (_decap.processPacket(pkt) || _ignoreErrors || _decap.lastError().empty()) {
+        return TSP_OK;
     }
-
-    // Compute final values.
-    size_t hsize = params.frameWidth();
-    size_t vsize = params.frameHeight();
-    uint8_t chroma = params.chroma();
-
-    // Check modification
-    bool changed = !_is_valid || _hsize != hsize || _vsize != vsize || _chroma != chroma ||
-        _profile != int (params.profile_idc) || _level != int (params.level_idc);
-
-    // Commit final values
-    if (changed) {
-        _hsize = hsize;
-        _vsize = vsize;
-        _chroma = chroma;
-        _profile = int (params.profile_idc);
-        _level = int (params.level_idc);
-        _is_valid = true;
+    else {
+        tsp->error(_decap.lastError());
+        return TSP_END;
     }
-
-    return changed;
 }
