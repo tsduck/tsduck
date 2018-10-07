@@ -20,6 +20,7 @@ VERSION 3.15-947
     "ip" (input), "mpeinject".
   * Added options --udp-size, --min-udp-size, --max-udp-size, --net-size,
     --min-net-size, --max-net-size to plugin "mpe".
+  * Added option --network-id to plugin "nitscan".
   * Added option --max-packets to "tsdump".
   * The command "tsdump" can now accept multiple input files.
 
