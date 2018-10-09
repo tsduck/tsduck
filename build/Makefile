@@ -50,7 +50,7 @@ GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/
 $(GITHOOKS_TARGETS): Makefile
 	@echo '  [GIT] updating $(notdir $@) hook'; \
 	 echo '#!/bin/bash' >$@; \
-	 echo 'exec $$GIT_DIR/../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
+	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
 	 chmod a+x "$@"
 
 # At least enforce the presence of the git hooks.
