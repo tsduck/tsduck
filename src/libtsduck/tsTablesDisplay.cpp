@@ -448,7 +448,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
         const size_t valueOffset = dataOffset + index + headerSize;
 
         // Description of the TLV record.
-        strm << UString::Format(u"%*s%04X:  %*sTag: %*u (0x%0*X), length: %*u bytes, value: ",
+        strm << UString::Format(u"%*s%04X:  %*sTag: %*d (0x%0*X), length: %*d bytes, value: ",
                                 {indent, u"",
                                  dataOffset + index,
                                  innerIndent, u"",
