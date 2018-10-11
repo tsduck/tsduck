@@ -58,6 +58,7 @@
 #include "tsApplicationIconsDescriptor.h"
 #include "tsApplicationIdentifier.h"
 #include "tsApplicationNameDescriptor.h"
+#include "tsApplicationRecordingDescriptor.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsApplicationSignallingDescriptor.h"
 #include "tsApplicationStorageDescriptor.h"

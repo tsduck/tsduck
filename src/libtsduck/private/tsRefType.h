@@ -24,6 +24,7 @@
     REF_TYPE(ApplicationDescriptor);
     REF_TYPE(ApplicationIconsDescriptor);
     REF_TYPE(ApplicationNameDescriptor);
+    REF_TYPE(ApplicationRecordingDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);

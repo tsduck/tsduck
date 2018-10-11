@@ -31,6 +31,7 @@ HEADERS += \
     ../../../src/libtsduck/tsApplicationIconsDescriptor.h \
     ../../../src/libtsduck/tsApplicationIdentifier.h \
     ../../../src/libtsduck/tsApplicationNameDescriptor.h \
+    ../../../src/libtsduck/tsApplicationRecordingDescriptor.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.h \
     ../../../src/libtsduck/tsApplicationStorageDescriptor.h \
@@ -476,6 +477,7 @@ SOURCES += \
     ../../../src/libtsduck/tsApplicationDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationIconsDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationNameDescriptor.cpp \
+    ../../../src/libtsduck/tsApplicationRecordingDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationStorageDescriptor.cpp \
