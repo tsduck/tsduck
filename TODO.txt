@@ -59,4 +59,3 @@ TSDuck - List of features to be implemented or fixed
 
   ETSI TS 102 809 (DVB HbbTV)
   - 5.3.5.4   application_recording_descriptor
-  - 5.3.5.8   graphics_constraints_descriptor

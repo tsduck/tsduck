@@ -97,6 +97,7 @@
 #include "tsExtendedEventDescriptor.h"
 #include "tsExternalApplicationAuthorizationDescriptor.h"
 #include "tsExternalESIdDescriptor.h"
+#include "tsGraphicsConstraintsDescriptor.h"
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsHEVCTimingAndHRDDescriptor.h"
 #include "tsHEVCVideoDescriptor.h"

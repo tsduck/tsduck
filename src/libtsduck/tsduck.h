@@ -166,6 +166,7 @@
 #include "tsFileNameRate.h"
 #include "tsForkPipe.h"
 #include "tsGitHubRelease.h"
+#include "tsGraphicsConstraintsDescriptor.h"
 #include "tsGrid.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
