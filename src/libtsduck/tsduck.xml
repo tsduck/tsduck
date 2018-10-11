@@ -639,6 +639,16 @@
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
 
+    <graphics_constraints_descriptor
+        can_run_without_visible_ui="bool, required"
+        handles_configuration_changed="bool, required"
+        handles_externally_controlled_video="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <graphics_configuration>
+        Hexadecimal content
+      </graphics_configuration>
+    </graphics_constraints_descriptor>
+
     <HD_simulcast_logical_channel_descriptor>
       <!-- One per service -->
       <service service_id="uint16, required"

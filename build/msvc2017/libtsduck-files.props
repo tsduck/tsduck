@@ -153,6 +153,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsFileNameRate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsForkPipe.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGuard.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGuardCondition.h" />
@@ -582,6 +583,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsFileNameRate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsForkPipe.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuard.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuardCondition.cpp" />

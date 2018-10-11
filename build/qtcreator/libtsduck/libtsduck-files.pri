@@ -151,6 +151,7 @@ HEADERS += \
     ../../../src/libtsduck/tsFileNameRate.h \
     ../../../src/libtsduck/tsForkPipe.h \
     ../../../src/libtsduck/tsGitHubRelease.h \
+    ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.h \
     ../../../src/libtsduck/tsGrid.h \
     ../../../src/libtsduck/tsGuard.h \
     ../../../src/libtsduck/tsGuardCondition.h \
@@ -570,6 +571,7 @@ SOURCES += \
     ../../../src/libtsduck/tsFileNameRate.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
     ../../../src/libtsduck/tsGitHubRelease.cpp \
+    ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.cpp \
     ../../../src/libtsduck/tsGrid.cpp \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \

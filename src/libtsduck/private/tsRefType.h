@@ -63,6 +63,7 @@
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
+    REF_TYPE(GraphicsConstraintsDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
