@@ -56,6 +56,3 @@ TSDuck - List of features to be implemented or fixed
   - 9.5.2.12  message_descriptor (not the same as ETSI EN 300 468, name it SSUMessageDescriptor)
   - 9.5.2.14  enhanced_message_descriptor (name it SSUEnhancedMessageDescriptor for consistency)
   - 9.5.2.15  ssu_uri_descriptor
-
-  ETSI TS 102 809 (DVB HbbTV)
-  - 5.3.5.4   application_recording_descriptor
