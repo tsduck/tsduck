@@ -132,7 +132,7 @@ void ts::ApplicationRecordingDescriptor::deserialize(const Descriptor& desc, con
     data += 2;
     size -= 2;
     while (_is_valid && labelCount > 0) {
-        _is_valid = size >= 1 && size >= data[0] + 2;
+        _is_valid = size >= 1 && size >= size_t(data[0] + 2);
         if (_is_valid) {
             const size_t len = data[0];
             labels.push_back(RecodingLabel(UString::FromDVB(data + 1, len), (data[len + 1] >> 6) & 0x03));
@@ -143,7 +143,7 @@ void ts::ApplicationRecordingDescriptor::deserialize(const Descriptor& desc, con
     }
 
     // Component tags.
-    _is_valid = _is_valid && size >= 1 && size >= 1 + data[0];
+    _is_valid = _is_valid && size >= 1 && size >= size_t(1 + data[0]);
     if (_is_valid) {
         const size_t len = data[0];
         component_tags.copy(data + 1, len);
@@ -152,7 +152,7 @@ void ts::ApplicationRecordingDescriptor::deserialize(const Descriptor& desc, con
     }
 
     // Private data.
-    _is_valid = _is_valid && size >= 1 && size >= 1 + data[0];
+    _is_valid = _is_valid && size >= 1 && size >= size_t(1 + data[0]);
     if (_is_valid) {
         const size_t len = data[0];
         private_data.copy(data + 1, len);
@@ -194,7 +194,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
         uint8_t labelCount = data[0];
         data++; size--;
         while (valid && labelCount > 0) {
-            valid = size >= 1 && size >= data[0] + 2;
+            valid = size >= 1 && size >= size_t(data[0] + 2);
             if (valid) {
                 const size_t len = data[0];
                 strm << margin << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {UString::FromDVB(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)}) << std::endl;
@@ -207,7 +207,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
     }
 
     // Component tags.
-    valid = valid && size >= 1 && size >= 1 + data[0];
+    valid = valid && size >= 1 && size >= size_t(1 + data[0]);
     if (valid) {
         uint8_t count = data[0];
         data++; size--;
@@ -219,7 +219,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
     }
 
     // Private data.
-    valid = valid && size >= 1 && size >= 1 + data[0];
+    valid = valid && size >= 1 && size >= size_t(1 + data[0]);
     if (valid) {
         uint8_t count = data[0];
         data++; size--;
