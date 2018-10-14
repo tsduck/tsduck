@@ -606,21 +606,9 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
     // Loop on all attributes.
     for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
         const Attribute& attr(attribute(*it));
-        output << " " << attr.name() << "=";
-
-        // Check if attribute value contains simple or double quotes.
-        // Use double quote if not present, simple quote otherwise.
-        const char quote = attr.value().find(u'"') == NPOS ? '"' : '\'';
-        output << quote;
-        if (attr.value().find(quote) == NPOS) {
-            // The selected quote is not present, add the raw value.
-            output << attr.value();
-        }
-        else {
-            // If both quotes are present, translate those in the value as HTML entities.
-            output << attr.value().toHTML(UString(1, quote));
-        }
-        output << quote;
+        // In attribute values, we escape all 5 XML characters: < > & ' "
+        // This may seem a bit excessive but needed by some XML analyzers.
+        output << " " << attr.name() << "=\"" << attr.value().toHTML(u"<>&'\"") << '"';
     }
 
     // Close the tag and return if nothing else to output.

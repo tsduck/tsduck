@@ -59,6 +59,7 @@ public:
     void testValidation();
     void testCreation();
     void testKeepOpen();
+    void testEscape();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
@@ -67,6 +68,7 @@ public:
     CPPUNIT_TEST(testValidation);
     CPPUNIT_TEST(testCreation);
     CPPUNIT_TEST(testKeepOpen);
+    CPPUNIT_TEST(testEscape);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -370,4 +372,55 @@ void XMLTest::testKeepOpen()
         u"  <node22/>\n"
         u"</node2>\n",
         out.toString());
+}
+
+void XMLTest::testEscape()
+{
+    ts::xml::Document doc(report());
+    ts::xml::Element* child1 = 0;
+    ts::xml::Element* child2 = 0;
+
+    ts::xml::Element* root = doc.initialize(u"theRoot");
+    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(0), doc.depth());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), root->depth());
+
+    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), child1->depth());
+    child1->setAttribute(u"str", u"ab&<>'\"cd");
+
+    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != 0);
+    CPPUNIT_ASSERT(child2->addText(u"text<&'\">text") != 0);
+
+    const ts::UString text(doc.toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<theRoot>\n"
+        u"  <child1 str=\"ab&amp;&lt;&gt;&apos;&quot;cd\"/>\n"
+        u"  <child2>text&lt;&amp;'\"&gt;text</child2>\n"
+        u"</theRoot>\n",
+        text);
+
+    ts::xml::Document doc2(report());
+    CPPUNIT_ASSERT(doc2.parse(text));
+    CPPUNIT_ASSERT(doc2.hasChildren());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), doc2.childrenCount());
+
+    ts::xml::Element* root2 = doc2.rootElement();
+    CPPUNIT_ASSERT(root2 != 0);
+    CPPUNIT_ASSERT(root2->hasChildren());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), root2->childrenCount());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"theRoot", root2->name());
+
+    ts::xml::Element* elem = root2->firstChildElement();
+    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child1", elem->name());
+    CPPUNIT_ASSERT(elem->hasAttribute(u"str"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab&<>'\"cd", elem->attribute(u"str").value());
+
+    elem = elem->nextSiblingElement();
+    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem->hasChildren());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child2", elem->name());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"text<&'\">text", elem->text());
 }
