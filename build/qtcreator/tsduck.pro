@@ -111,6 +111,7 @@ SUBDIRS += \
     tsemmg \
     tsfixcc \
     tsftrunc \
+    tsgenecm \
     tshides \
     tslsdvb \
     tsp \

@@ -40,6 +40,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsOneShotPacketizer.h"
 #include "tsECMGClient.h"
+#include "tsECMGClientArgs.h"
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsCADescriptor.h"
 #include "tsScramblingDescriptor.h"
@@ -99,6 +100,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         ScramblerPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
@@ -133,7 +135,7 @@ namespace ts {
             bool initScramblerKey() const;
 
         private:
-            ScramblerPlugin* _scrambler;      // Reference to scrambler plugin
+            ScramblerPlugin* _plugin;         // Reference to scrambler plugin
             uint16_t         _cp_number;      // Crypto-period number
             volatile bool    _ecm_ok;         // _ecm field is valid
             TSPacketVector   _ecm;            // Packetized ECM
@@ -166,15 +168,12 @@ namespace ts {
         bool              _update_pmt;          // Update PMT.
         bool              _need_cp;             // Need to manage crypto-periods (ie. not one single fixed CW).
         bool              _need_ecm;            // Need to manage ECM insertion (ie. not fixed CW's).
-        SocketAddress     _ecmg_addr;           // ECMG socket address
-        uint32_t          _super_cas_id;        // CA system & subsystem id
-        ByteBlock         _access_criteria;     // AC constant value
-        ByteBlock         _ca_desc_private;     // Private data to insert in CA_descriptor
-        MilliSecond       _cp_duration;         // Crypto-period duration
         MilliSecond       _delay_start;         // Delay between CP start and ECM start (can be negative)
+        ByteBlock         _ca_desc_private;     // Private data to insert in CA_descriptor
         BitRate           _ecm_bitrate;         // ECM PID's bitrate
         PID               _ecm_pid;             // PID for ECM
         PacketCounter     _partial_scrambling;  // Do not scramble all packets if > 1
+        ECMGClientArgs    _ecmg_args;           // Parameters for ECMG client
         tlv::Logger       _logger;              // Message logger for ECMG <=> SCS protocol
         ecmgscs::ChannelStatus _channel_status; // Initial response to ECMG channel_setup
         ecmgscs::StreamStatus  _stream_status;  // Initial response to ECMG stream_setup
@@ -247,16 +246,13 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _update_pmt(false),
     _need_cp(false),
     _need_ecm(false),
-    _ecmg_addr(),
-    _super_cas_id(0),
-    _access_criteria(),
-    _ca_desc_private(),
-    _cp_duration(0),
     _delay_start(0),
+    _ca_desc_private(),
     _ecm_bitrate(0),
     _ecm_pid(PID_NULL),
     _partial_scrambling(0),
-    _logger(ts::Severity::Debug, tsp_),
+    _ecmg_args(),
+    _logger(Severity::Debug, tsp_),
     _channel_status(),
     _stream_status(),
     _abort(false),
@@ -292,58 +288,21 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"as specified in the SDT. The name is not case sensitive and blanks are "
          u"ignored. If the input TS does not contain an SDT, use service ids only.");
 
-    option(u"access-criteria", 'a', STRING);
-    help(u"access-criteria",
-         u"Specifies the access criteria for the service as sent to the ECMG. "
-         u"The value must be a suite of hexadecimal digits.");
-
     option(u"bitrate-ecm", 'b', POSITIVE);
     help(u"bitrate-ecm",
          u"Specifies the bitrate for ECM PID's in bits / second. The default is " +
          UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.");
-
-    option(u"channel-id", 0, UINT16);
-    help(u"channel-id", u"Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).");
 
     option(u"component-level");
     help(u"component-level",
          u"Add CA_descriptors at component level in the PMT. By default, the "
          u"CA_descriptor is added at program level.");
 
-    option(u"cp-duration", 'd', POSITIVE);
-    help(u"cp-duration", u"seconds", u"Specifies the crypto-period duration in seconds (default: 10).");
-
-    option(u"ecm-id", 'i', UINT16);
-    help(u"ecm-id", u"Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).");
-
-    option(u"ecmg", 'e', STRING);
-    help(u"ecmg", u"host:port",
-         u"Specify an ECM Generator. Without ECMG, a fixed control word must be "
-         u"specified using --control-word.");
-
-    option(u"ecmg-scs-version", 'v', INTEGER, 0, 1, 2, 3);
-    help(u"ecmg-scs-version",
-         u"Specifies the version of the ECMG <=> SCS DVB SimulCrypt protocol. "
-         u"Valid values are 2 and 3. The default is 2.");
-
     option(u"ignore-scrambled");
     help(u"ignore-scrambled",
          u"Ignore packets which are already scrambled. Since these packets "
          u"are likely scrambled with a different control word, descrambling "
          u"will not be possible the usual way.");
-
-    option(u"log-data", 0, ts::Severity::Enums, 0, 1, true);
-    help(u"log-data", u"level",
-         u"Same as --log-protocol but applies to CW_provision and ECM_response "
-         u"messages only. To debug the session management without being flooded by "
-         u"data messages, use --log-protocol=info --log-data=debug.");
-
-    option(u"log-protocol", 0, ts::Severity::Enums, 0, 1, true);
-    help(u"log-protocol", u"level",
-         u"Log all ECMG <=> SCS protocol messages using the specified level. If the "
-         u"option is not present, the messages are logged at debug level only. If the "
-         u"option is present without value, the messages are logged at info level. "
-         u"A level can be a numerical debug level or a name.");
 
     option(u"no-audio");
     help(u"no-audio",
@@ -379,16 +338,10 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"Specifies the private data to insert in the CA_descriptor in the PMT. "
          u"The value must be a suite of hexadecimal digits.");
 
-    option(u"stream-id", 0, UINT16);
-    help(u"stream-id", u"Specifies the DVB SimulCrypt ECM_stream_id for the ECMG (default: 1).");
-
     option(u"subtitles");
     help(u"subtitles",
          u"Scramble subtitles components in the selected service. By default, the "
          u"subtitles components are not scrambled.");
-
-    option(u"super-cas-id", 's', UINT32);
-    help(u"super-cas-id", u"Specify the DVB SimulCrypt Super_CAS_Id. This is required when --ecmg is specified.");
 
     option(u"synchronous");
     help(u"synchronous",
@@ -396,8 +349,67 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"mode, the packet processing continues while generating ECM's. This option "
          u"is always on in offline mode.");
 
-    // Common scrambling options.
+    // ECMG and scrambling options.
+    _ecmg_args.defineOptions(*this);
     _scrambling.defineOptions(*this);
+}
+
+
+//----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::getOptions()
+{
+    // Plugin parameters.
+    _use_service = present(u"");
+    _service.set(value(u""));
+    getPIDSet(_scrambled_pids, u"pid");
+    _synchronous_ecmg = present(u"synchronous") || !tsp->realtime();
+    _component_level = present(u"component-level");
+    _scramble_audio = !present(u"no-audio");
+    _scramble_video = !present(u"no-video");
+    _scramble_subtitles = present(u"subtitles");
+    _partial_scrambling = intValue<PacketCounter>(u"partial-scrambling", 1);
+    _ignore_scrambled = present(u"ignore-scrambled");
+    _ecm_pid = intValue<PID>(u"pid-ecm", PID_NULL);
+    _ecm_bitrate = intValue<BitRate>(u"bitrate-ecm", DEFAULT_ECM_BITRATE);
+
+    // Decode hexa data.
+    if (!value(u"private-data").hexaDecode(_ca_desc_private)) {
+        tsp->error(u"invalid private data for CA_descriptor, specify an even number of hexa digits");
+        return false;
+    }
+
+    // Other common parameters.
+    if (!_ecmg_args.loadArgs(*this) || !_scrambling.loadArgs(*this)) {
+        return false;
+    }
+
+    // Set logging levels.
+    _logger.setDefaultSeverity(_ecmg_args.log_protocol);
+    _logger.setSeverity(ecmgscs::Tags::CW_provision, _ecmg_args.log_data);
+    _logger.setSeverity(ecmgscs::Tags::ECM_response, _ecmg_args.log_data);
+
+    // Scramble either a service or a list of PID's, not a mixture of them.
+    if ((_use_service + _scrambled_pids.any()) != 1) {
+        tsp->error(u"specify either a service or a list of PID's");
+        return false;
+    }
+
+    // To scramble a fixed list of PID's, we need fixed control words, otherwise the random CW's are lost.
+    if (_scrambled_pids.any() && !_scrambling.hasFixedCW()) {
+        tsp->error(u"specify control words to scramble an explicit list of PID's");
+        return false;
+    }
+
+    // Do we need to manage crypto-periods and ECM insertion?
+    _need_cp = _scrambling.fixedCWCount() != 1;
+    _need_ecm = _use_service && !_scrambling.hasFixedCW();
+
+    // Specify which ECMG <=> SCS version to use.
+    ecmgscs::Protocol::Instance()->setVersion(_ecmg_args.dvbsim_version);
+    return true;
 }
 
 
@@ -420,86 +432,20 @@ bool ts::ScramblerPlugin::start()
     _pkt_change_ecm = 0;
     _partial_clear = 0;
     _update_pmt = false;
-
-    // Parameters
-    _use_service = present(u"");
-    _service.set(value(u""));
-    getPIDSet(_scrambled_pids, u"pid");
-    _synchronous_ecmg = present(u"synchronous") || !tsp->realtime();
-    _component_level = present(u"component-level");
-    _scramble_audio = !present(u"no-audio");
-    _scramble_video = !present(u"no-video");
-    _scramble_subtitles = present(u"subtitles");
-    _partial_scrambling = intValue<PacketCounter>(u"partial-scrambling", 1);
-    _ignore_scrambled = present(u"ignore-scrambled");
-    _ecm_pid = intValue<PID>(u"pid-ecm", PID_NULL);
-    _ecm_bitrate = intValue<BitRate>(u"bitrate-ecm", DEFAULT_ECM_BITRATE);
-    _cp_duration = 1000 * intValue<MilliSecond>(u"cp-duration", 10);
     _delay_start = 0;
-    _super_cas_id = intValue<uint32_t>(u"super-cas-id");
-    const uint16_t ecm_channel_id = intValue<uint16_t>(u"channel-id", 1);
-    const uint16_t ecm_stream_id = intValue<uint16_t>(u"stream-id", 1);
-    const uint16_t ecm_id = intValue<uint16_t>(u"ecm-id", 1);
-
-    // Set logging levels.
-    const int log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
-    const int log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
-    _logger.setDefaultSeverity(log_protocol);
-    _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, log_data);
-    _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, log_data);
-
-    // Scrambling-specific parameters.
-    if (!_scrambling.loadArgs(*this)) {
-        return false;
-    }
-
-    // Decode hexa data.
-    if (!value(u"access-criteria").hexaDecode(_access_criteria)) {
-        tsp->error(u"invalid access criteria, specify an even number of hexa digits");
-        return false;
-    }
-    if (!value(u"private-data").hexaDecode(_ca_desc_private)) {
-        tsp->error(u"invalid private data for CA_descriptor, specify an even number of hexa digits");
-        return false;
-    }
-
-    // Scramble either a service or a list of PID's, not a mixture of them.
-    if ((_use_service + _scrambled_pids.any()) != 1) {
-        tsp->error(u"specify either a service or a list of PID's");
-        return false;
-    }
-
-    // To scramble a fixed list of PID's, we need fixed control words, otherwise the random CW's are lost.
-    if (_scrambled_pids.any() && !_scrambling.hasFixedCW()) {
-        tsp->error(u"specify control words to scramble an explicit list of PID's");
-        return false;
-    }
-
-    // Do we need to manage crypto-periods and ECM insertion?
-    _need_cp = _scrambling.fixedCWCount() != 1;
-    _need_ecm = _use_service && !_scrambling.hasFixedCW();
-
-    // Specify which ECMG <=> SCS version to use.
-    ecmgscs::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"ecmg-scs-version", 2));
 
     // Initialize ECMG.
     if (_need_ecm) {
-        if (!present(u"ecmg")) {
+        if (!_ecmg_args.ecmg_address.hasAddress()) {
             // Without fixed control word and ECMG, we cannot do anything.
             tsp->error(u"specify either --cw, --cw-file or --ecmg");
             return false;
         }
-        else if (!_ecmg_addr.resolve(value(u"ecmg"), *tsp)) {
-            // Invalid host:port, error message already reported
-            return false;
-        }
-        else if (!present(u"super-cas-id")) {
+        else if (_ecmg_args.super_cas_id == 0) {
             tsp->error(u"--super-cas-id is required with --ecmg");
             return false;
         }
-        else if (!_ecmg.connect(_ecmg_addr, _super_cas_id, ecm_channel_id, ecm_stream_id, ecm_id,
-                                uint16_t(_cp_duration / 100), _channel_status, _stream_status, tsp, _logger))
-        {
+        else if (!_ecmg.connect(_ecmg_args, _channel_status, _stream_status, tsp, _logger)) {
             // Error connecting to ECMG, error message already reported
             return false;
         }
@@ -507,11 +453,11 @@ bool ts::ScramblerPlugin::start()
             // Now correctly connected to ECMG.
             // Validate delay start (limit to half the crypto-period).
             _delay_start = MilliSecond(_channel_status.delay_start);
-            if (_delay_start > _cp_duration / 2 || _delay_start < -_cp_duration / 2) {
+            if (_delay_start > _ecmg_args.cp_duration / 2 || _delay_start < -_ecmg_args.cp_duration / 2) {
                 tsp->error(u"crypto-period too short for this CAS, must be at least %'d ms.", {2 * std::abs(_delay_start)});
                 return false;
             }
-            tsp->debug(u"crypto-period duration: %'d ms, delay start: %'d ms", {_cp_duration, _delay_start});
+            tsp->debug(u"crypto-period duration: %'d ms, delay start: %'d ms", {_ecmg_args.cp_duration, _delay_start});
 
             // Create first and second crypto-periods
             _current_cw = 0;
@@ -617,7 +563,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
         _update_pmt = true;
 
         // Create a CA_descriptor
-        CADescriptor ca_desc((_super_cas_id >> 16) & 0xFFFF, _ecm_pid);
+        CADescriptor ca_desc((_ecmg_args.super_cas_id >> 16) & 0xFFFF, _ecm_pid);
         ca_desc.private_data = _ca_desc_private;
 
         // Add the CA_descriptor at program level or component level
@@ -644,7 +590,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
 
     // Next crypto-period.
     if (_need_cp) {
-        _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _cp_duration);
+        _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
     }
 
     // Initialize ECM insertion.
@@ -747,7 +693,7 @@ bool ts::ScramblerPlugin::changeCW()
 
         // Determine new transition point.
         if (_need_cp) {
-            _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _cp_duration);
+            _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
         }
 
         // Generate (or start generating) next ECM when using ECM(N) in cp(N)
@@ -767,7 +713,7 @@ void ts::ScramblerPlugin::changeECM()
         _current_ecm = (_current_ecm + 1) & 0x01;
 
         // Determine new transition point
-        _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _cp_duration);
+        _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
 
         // Generate (or start generating) next ECM when using ECM(N) in cp(N)
         if (_current_ecm == _current_cw) {
@@ -899,7 +845,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::CryptoPeriod::CryptoPeriod() :
-    _scrambler(0),
+    _plugin(0),
     _cp_number(0),
     _ecm_ok(false),
     _ecm(),
@@ -916,12 +862,12 @@ ts::ScramblerPlugin::CryptoPeriod::CryptoPeriod() :
 
 void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, uint16_t cp_number)
 {
-    _scrambler = scrambler;
+    _plugin = scrambler;
     _cp_number = cp_number;
 
-    if (_scrambler->_need_ecm) {
-        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_current, _scrambler->_scrambling.cwSize());
-        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next,_scrambler->_scrambling.cwSize());
+    if (_plugin->_need_ecm) {
+        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_current, _plugin->_scrambling.cwSize());
+        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next,_plugin->_scrambling.cwSize());
         generateECM();
     }
 }
@@ -933,12 +879,12 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, ui
 
 void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 {
-    _scrambler = previous._scrambler;
+    _plugin = previous._plugin;
     _cp_number = previous._cp_number + 1;
 
-    if (_scrambler->_need_ecm) {
+    if (_plugin->_need_ecm) {
         _cw_current = previous._cw_next;
-        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next, _scrambler->_scrambling.cwSize());
+        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next, _plugin->_scrambling.cwSize());
         generateECM();
     }
 }
@@ -952,8 +898,8 @@ bool ts::ScramblerPlugin::CryptoPeriod::initScramblerKey() const
 {
     // Change the parity of the scrambled packets.
     // Set our random current control word if no fixed CW.
-    return _scrambler->_scrambling.setEncryptParity(_cp_number) &&
-        (!_scrambler->_need_ecm || _scrambler->_scrambling.setCW(_cw_current, _cp_number));
+    return _plugin->_scrambling.setEncryptParity(_cp_number) &&
+        (!_plugin->_need_ecm || _plugin->_scrambling.setCW(_cw_current, _cp_number));
 }
 
 
@@ -965,17 +911,17 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
 {
     _ecm_ok = false;
 
-    if (_scrambler->_synchronous_ecmg) {
+    if (_plugin->_synchronous_ecmg) {
         // Synchronous ECM generation
         ecmgscs::ECMResponse response;
-        if (!_scrambler->_ecmg.generateECM(_cp_number,
+        if (!_plugin->_ecmg.generateECM(_cp_number,
                                            _cw_current,
                                            _cw_next,
-                                           _scrambler->_access_criteria,
-                                           uint16_t(_scrambler->_cp_duration / 100),
+                                           _plugin->_ecmg_args.access_criteria,
+                                           uint16_t(_plugin->_ecmg_args.cp_duration / 100),
                                            response)) {
             // Error, message already reported
-            _scrambler->_abort = true;
+            _plugin->_abort = true;
         }
         else {
             handleECM(response);
@@ -983,14 +929,14 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
     }
     else {
         // Asynchronous ECM generation
-        if (!_scrambler->_ecmg.submitECM(_cp_number,
+        if (!_plugin->_ecmg.submitECM(_cp_number,
                                          _cw_current,
                                          _cw_next,
-                                         _scrambler->_access_criteria,
-                                         uint16_t(_scrambler->_cp_duration / 100),
+                                         _plugin->_ecmg_args.access_criteria,
+                                         uint16_t(_plugin->_ecmg_args.cp_duration / 100),
                                          this)) {
             // Error, message already reported
-            _scrambler->_abort = true;
+            _plugin->_abort = true;
         }
     }
 }
@@ -1002,24 +948,24 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
 
 void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& response)
 {
-    if (_scrambler->_channel_status.section_TSpkt_flag == 0) {
+    if (_plugin->_channel_status.section_TSpkt_flag == 0) {
         // ECMG returns ECM in section format
         SectionPtr sp(new Section(response.ECM_datagram));
         if (!sp->isValid()) {
-            _scrambler->tsp->error(u"ECMG returned an invalid ECM section (%d bytes)", {response.ECM_datagram.size()});
-            _scrambler->_abort = true;
+            _plugin->tsp->error(u"ECMG returned an invalid ECM section (%d bytes)", {response.ECM_datagram.size()});
+            _plugin->_abort = true;
             return;
         }
         // Packetize the section
-        OneShotPacketizer pzer(_scrambler->_ecm_pid, true);
+        OneShotPacketizer pzer(_plugin->_ecm_pid, true);
         pzer.addSection(sp);
         pzer.getPackets(_ecm);
 
     }
     else if (response.ECM_datagram.size() % PKT_SIZE != 0) {
         // ECMG returns ECM in packet format, but not an integral number of packets
-        _scrambler->tsp->error(u"invalid ECM size (%d bytes), not a multiple of %d", {response.ECM_datagram.size(), PKT_SIZE});
-        _scrambler->_abort = true;
+        _plugin->tsp->error(u"invalid ECM size (%d bytes), not a multiple of %d", {response.ECM_datagram.size(), PKT_SIZE});
+        _plugin->_abort = true;
         return;
     }
     else {
@@ -1028,7 +974,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
         ::memcpy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());  // Flawfinder: ignore: memcpy()
     }
 
-    _scrambler->tsp->debug(u"got ECM for crypto-period %d, %d packets", {_cp_number, _ecm.size()});
+    _plugin->tsp->debug(u"got ECM for crypto-period %d, %d packets", {_cp_number, _ecm.size()});
 
     _ecm_pkt_index = 0;
 
@@ -1056,8 +1002,8 @@ void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket (TSPacket& pkt)
             _ecm_pkt_index = 0;
         }
         // Adjust PID and continuity counter in TS packet
-        pkt.setPID(_scrambler->_ecm_pid);
-        pkt.setCC(_scrambler->_ecm_cc);
-        _scrambler->_ecm_cc = (_scrambler->_ecm_cc + 1) & 0x0F;
+        pkt.setPID(_plugin->_ecm_pid);
+        pkt.setCC(_plugin->_ecm_cc);
+        _plugin->_ecm_cc = (_plugin->_ecm_cc + 1) & 0x0F;
     }
 }

@@ -134,6 +134,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsECB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECBTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGClient.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsECMGClientArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGClientHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGSCS.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMRepetitionRateDescriptor.h" />
@@ -568,6 +569,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsECMGClientArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGSCS.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMRepetitionRateDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEIT.cpp" />
