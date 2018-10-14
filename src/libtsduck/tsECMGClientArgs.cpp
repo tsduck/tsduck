@@ -71,9 +71,7 @@ void ts::ECMGClientArgs::defineOptions(Args& args) const
     args.help(u"ecm-id", u"Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).");
 
     args.option(u"ecmg", 'e', Args::STRING);
-    args.help(u"ecmg", u"host:port",
-              u"Specify an ECM Generator. Without ECMG, a fixed control word must be "
-              u"specified using --control-word.");
+    args.help(u"ecmg", u"host:port", u"Specify an ECM Generator host name and port.");
 
     args.option(u"ecmg-scs-version", 'v', Args::INTEGER, 0, 1, 2, 3);
     args.help(u"ecmg-scs-version",
