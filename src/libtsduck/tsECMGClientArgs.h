@@ -28,20 +28,54 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Command line arguments for the class ECMGClient.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 956
+#include "tsArgs.h"
+#include "tsByteBlock.h"
+#include "tsMPEG.h"
+#include "tsSocketAddress.h"
+#include "tstlv.h"
+
+namespace ts {
+    //!
+    //! Command line arguments for the class ECMGClient.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL ECMGClientArgs
+    {
+    public:
+        //!
+        //! Constructor.
+        //!
+        ECMGClientArgs();
+
+        // Public fields, by options.
+        SocketAddress ecmg_address;     //!< -\-ecmg, ECMG socket address (required or optional)
+        uint32_t      super_cas_id;     //!< -\-super-cas-id, CA system & subsystem id
+        ByteBlock     access_criteria;  //!< -\-access-criteria
+        MilliSecond   cp_duration;      //!< -\-cp-duration, crypto-period duration
+        tlv::VERSION  dvbsim_version;   //!< -\-ecmg-scs-version
+        uint16_t      ecm_channel_id;   //!< -\-channel-id
+        uint16_t      ecm_stream_id;    //!< -\-stream-id
+        uint16_t      ecm_id;           //!< -\-ecm-id
+        int           log_protocol;     //!< -\-log-protocol
+        int           log_data;         //!< -\-log-data
+
+        //!
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineOptions(Args& args) const;
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(Args& args);
+    };
+}

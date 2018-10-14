@@ -132,6 +132,7 @@ HEADERS += \
     ../../../src/libtsduck/tsECB.h \
     ../../../src/libtsduck/tsECBTemplate.h \
     ../../../src/libtsduck/tsECMGClient.h \
+    ../../../src/libtsduck/tsECMGClientArgs.h \
     ../../../src/libtsduck/tsECMGClientHandlerInterface.h \
     ../../../src/libtsduck/tsECMGSCS.h \
     ../../../src/libtsduck/tsECMRepetitionRateDescriptor.h \
@@ -556,6 +557,7 @@ SOURCES += \
     ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.cpp \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsECMGClient.cpp \
+    ../../../src/libtsduck/tsECMGClientArgs.cpp \
     ../../../src/libtsduck/tsECMGSCS.cpp \
     ../../../src/libtsduck/tsECMRepetitionRateDescriptor.cpp \
     ../../../src/libtsduck/tsEIT.cpp \

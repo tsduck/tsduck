@@ -147,6 +147,7 @@
 #include "tsEacemStreamIdentifierDescriptor.h"
 #include "tsECB.h"
 #include "tsECMGClient.h"
+#include "tsECMGClientArgs.h"
 #include "tsECMGClientHandlerInterface.h"
 #include "tsECMGSCS.h"
 #include "tsECMRepetitionRateDescriptor.h"

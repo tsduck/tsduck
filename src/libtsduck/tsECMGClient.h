@@ -36,6 +36,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsECMGClientArgs.h"
 #include "tsECMGClientHandlerInterface.h"
 #include "tstlvConnection.h"
 #include "tsMessageQueue.h"
@@ -73,24 +74,14 @@ namespace ts {
         //! Connect to a remote ECMG.
         //! Perform all initial channel and stream negotiation.
         //!
-        //! @param [in] ecmg IP address and TCP port of the ECMG.
-        //! @param [in] super_cas_id Super_CAS_id, see ECMG <=> SCS protocol.
-        //! @param [in] ecm_channel_id ECM_channel_id, see ECMG <=> SCS protocol.
-        //! @param [in] ecm_stream_id ECM_stream_id, see ECMG <=> SCS protocol.
-        //! @param [in] ecm_id ECM_id, see ECMG <=> SCS protocol.
-        //! @param [in] nominal_cp_duration Nominal crypto-period in 100 ms units.
+        //! @param [in] args Set of ECMG parameters.
         //! @param [out] channel_status Initial response to channel_setup
         //! @param [out] stream_status Initial response to stream_setup
         //! @param [in] abort An interface to check if the application is interrupted.
         //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
-        bool connect(const SocketAddress& ecmg,
-                     uint32_t super_cas_id,
-                     uint16_t ecm_channel_id,
-                     uint16_t ecm_stream_id,
-                     uint16_t ecm_id,
-                     uint16_t nominal_cp_duration,
+        bool connect(const ECMGClientArgs& args,
                      ecmgscs::ChannelStatus& channel_status,
                      ecmgscs::StreamStatus& stream_status,
                      const AbortInterface* abort,
