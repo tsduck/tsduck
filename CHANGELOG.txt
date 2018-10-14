@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.15-955
+VERSION 3.15-957
 
 [NEW] New commands and plugins:
 
   * Added command "tsswitch", a TS input switcher with remote control.
+  * Added command "tsgenecm", generate one ECM using any DVB SimulCrypt ECMG.
   * Added plugin "limit" to limit the global TS bitrate.
   * Added plugins "encap" and "decap" to encapsulate and decapsulate PID's
     into one single tunnel PID.

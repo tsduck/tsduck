@@ -7,7 +7,7 @@
     <ClCompile Include="..\..\src\tstools\tsgenecm.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5238597F-8821-43A9-96F1-4F3DDC3C6CE9}</ProjectGuid>
+    <ProjectGuid>{B3475BA2-E0DC-436E-9A1B-855654992219}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsgenecm</RootNamespace>
   </PropertyGroup>
