@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTime.h"
+#include "tsCASDate.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -57,6 +58,7 @@ public:
     void testEpoch();
     void testUnixTime();
     void testDaylightSavingTime();
+    void testCAS();
 
     CPPUNIT_TEST_SUITE(TimeTest);
     CPPUNIT_TEST(testTime);
@@ -70,6 +72,7 @@ public:
     CPPUNIT_TEST(testEpoch);
     CPPUNIT_TEST(testUnixTime);
     CPPUNIT_TEST(testDaylightSavingTime);
+    CPPUNIT_TEST(testCAS);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -402,4 +405,31 @@ void TimeTest::testDaylightSavingTime()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 22:30:00.000", ts::Time(2017, 10, 29, 22, 30,  0).format());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 23:00:00.000", ts::Time(2017, 10, 29, 23,  0,  0).format());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 23:30:00.000", ts::Time(2017, 10, 29, 23, 30,  0).format());
+}
+
+void TimeTest::testCAS()
+{
+    CPPUNIT_ASSERT_EQUAL(1980, ts::ViaccessDate::MIN_YEAR);
+    CPPUNIT_ASSERT_EQUAL(1990, ts::MediaGuardDate::MIN_YEAR);
+    CPPUNIT_ASSERT_EQUAL(2000, ts::SafeAccessDate::MIN_YEAR);
+
+    CPPUNIT_ASSERT_EQUAL(2107, ts::ViaccessDate::MAX_YEAR);
+    CPPUNIT_ASSERT_EQUAL(2117, ts::MediaGuardDate::MAX_YEAR);
+    CPPUNIT_ASSERT_EQUAL(2127, ts::SafeAccessDate::MAX_YEAR);
+
+    ts::MediaGuardDate md(1999, 2, 28);
+    CPPUNIT_ASSERT(md.isValid());
+    CPPUNIT_ASSERT_EQUAL(1999, md.year());
+    CPPUNIT_ASSERT_EQUAL(2, md.month());
+    CPPUNIT_ASSERT_EQUAL(28, md.day());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1999-02-28", md.toString());
+
+    ts::Time t(md);
+    ts::Time::Fields f(t);
+    CPPUNIT_ASSERT_EQUAL(1999, f.year);
+    CPPUNIT_ASSERT_EQUAL(2, f.month);
+    CPPUNIT_ASSERT_EQUAL(28, f.day);
+    
+    md.invalidate();
+    CPPUNIT_ASSERT(!md.isValid());
 }

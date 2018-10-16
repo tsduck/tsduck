@@ -19,9 +19,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsAbstractCASDate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -203,6 +200,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCASDate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCASDateTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCASFamily.h">
@@ -577,9 +580,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -818,9 +818,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsSafeAccessDate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h">
@@ -1291,9 +1288,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1399,9 +1393,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsAbstractCASDate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp">

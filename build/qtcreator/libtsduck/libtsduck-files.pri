@@ -5,7 +5,6 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.h \
     ../../../src/libtsduck/tsAbstractAVCData.h \
     ../../../src/libtsduck/tsAbstractAVCStructure.h \
-    ../../../src/libtsduck/tsAbstractCASDate.h \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsAbstractDemux.h \
     ../../../src/libtsduck/tsAbstractDescrambler.h \
@@ -67,6 +66,8 @@ HEADERS += \
     ../../../src/libtsduck/tsCADescriptor.h \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCarouselIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsCASDate.h \
+    ../../../src/libtsduck/tsCASDateTemplate.h \
     ../../../src/libtsduck/tsCASFamily.h \
     ../../../src/libtsduck/tsCASMapper.h \
     ../../../src/libtsduck/tsCASSelectionArgs.h \
@@ -191,7 +192,6 @@ HEADERS += \
     ../../../src/libtsduck/tsMain.h \
     ../../../src/libtsduck/tsMaximumBitrateDescriptor.h \
     ../../../src/libtsduck/tsMD5.h \
-    ../../../src/libtsduck/tsMediaGuardDate.h \
     ../../../src/libtsduck/tsMemoryUtils.h \
     ../../../src/libtsduck/tsMessageDescriptor.h \
     ../../../src/libtsduck/tsMessagePriorityQueue.h \
@@ -272,7 +272,6 @@ HEADERS += \
     ../../../src/libtsduck/tsRingNode.h \
     ../../../src/libtsduck/tsRST.h \
     ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.h \
-    ../../../src/libtsduck/tsSafeAccessDate.h \
     ../../../src/libtsduck/tsSafePtr.h \
     ../../../src/libtsduck/tsSafePtrTemplate.h \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
@@ -429,7 +428,6 @@ HEADERS += \
     ../../../src/libtsduck/tsVBITeletextDescriptor.h \
     ../../../src/libtsduck/tsVersion.h \
     ../../../src/libtsduck/tsVersionInfo.h \
-    ../../../src/libtsduck/tsViaccessDate.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
     ../../../src/libtsduck/tsVideoStreamDescriptor.h \
     ../../../src/libtsduck/tsVideoWindowDescriptor.h \
@@ -457,7 +455,6 @@ SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
     ../../../src/libtsduck/tsAbstractAVCStructure.cpp \
-    ../../../src/libtsduck/tsAbstractCASDate.cpp \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDemux.cpp \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
