@@ -26,28 +26,26 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for representation of a CAS date.
-//  This general format is used by several CAS vendors.
-//
-//----------------------------------------------------------------------------
 
-#include "tsAbstractCASDate.h"
-TSDUCK_SOURCE;
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+template <int YEARBASE> constexpr uint16_t ts::CASDate<YEARBASE>::INVALID_DATE;
+template <int YEARBASE> constexpr int ts::CASDate<YEARBASE>::MIN_YEAR;
+template <int YEARBASE> constexpr int ts::CASDate<YEARBASE>::MAX_YEAR;
+#endif
 
 //-----------------------------------------------------------------------------
 // Compute the 16-bit value.
-// Subclass specific, cannot be compared between subclasses
 //-----------------------------------------------------------------------------
 
-uint16_t ts::AbstractCASDate::toUInt16(int year, int month, int day) const
+template <int YEARBASE>
+uint16_t ts::CASDate<YEARBASE>::toUInt16(int year, int month, int day) const
 {
-    if (year >= _year_base && year <= _year_base + 127 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        return (uint16_t(year - _year_base) << 9) | ((uint16_t(month) & 0x000F) << 5) | (uint16_t(day) & 0x001F);
+    if (year >= MIN_YEAR && year <= MAX_YEAR && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return (uint16_t(year - YEARBASE) << 9) | (uint16_t(month) << 5) | uint16_t(day);
     }
     else {
-        return InvalidDate;
+        return INVALID_DATE;
     }
 }
 
@@ -56,46 +54,29 @@ uint16_t ts::AbstractCASDate::toUInt16(int year, int month, int day) const
 // Constructor from Time
 //-----------------------------------------------------------------------------
 
-ts::AbstractCASDate::AbstractCASDate(int year_base, const Time& t) :
-    _year_base(year_base),
-    _value(0)
+template <int YEARBASE>
+ts::CASDate<YEARBASE>::CASDate(const Time& t) : _value(0)
 {
     const Time::Fields f(t);
     _value = toUInt16(f.year, f.month, f.day);
 }
 
-
-//-----------------------------------------------------------------------------
-// Assigment
-//-----------------------------------------------------------------------------
-
-ts::AbstractCASDate& ts::AbstractCASDate::operator=(const AbstractCASDate& date)
-{
-    if (_year_base == date._year_base) {
-        _value = date._value;
-    }
-    else {
-        _value = toUInt16(date.year(), date.month(), date.day());
-    }
-    return *this;
-}
-
-
 //-----------------------------------------------------------------------------
 // Convert to a string object.
 //-----------------------------------------------------------------------------
 
-ts::AbstractCASDate::operator ts::UString() const
+template <int YEARBASE>
+ts::UString ts::CASDate<YEARBASE>::toString() const
 {
     return isValid() ? UString::Format(u"%04d-%02d-%02d", {year(), month(), day()}) : u"?";
 }
-
 
 //-----------------------------------------------------------------------------
 // Convert to a Time object.
 //-----------------------------------------------------------------------------
 
-ts::AbstractCASDate::operator ts::Time() const
+template <int YEARBASE>
+ts::CASDate<YEARBASE>::operator ts::Time() const
 {
     return isValid() ? Time(year(), month(), day(), 0, 0) : Time::Epoch;
 }

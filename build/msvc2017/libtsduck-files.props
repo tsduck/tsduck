@@ -7,7 +7,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCData.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsAbstractCASDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
@@ -69,6 +68,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsCADescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCASDate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCASDateTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASFamily.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASMapper.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASSelectionArgs.h" />
@@ -193,7 +194,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsMain.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueue.h" />
@@ -274,7 +274,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsRingNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRST.h" />
     <ClInclude Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsSafeAccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
@@ -431,7 +430,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsVBITeletextDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoWindowDescriptor.h" />
@@ -469,7 +467,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsAbstractCASDate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
