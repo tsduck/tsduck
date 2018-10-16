@@ -184,8 +184,9 @@ Section /o "Development" SectionDevelopment
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
-    ; Delete obsolete files from previous versions.
-    Delete "$INSTDIR\include\tinyxml*"
+    ; Delete obsolete files from previous versions (the list of files may change).
+    RMDir /r "$INSTDIR\include"
+    RMDir /r "$INSTDIR\lib"
 
     ; TSDuck header files.
     CreateDirectory "$INSTDIR\include"
