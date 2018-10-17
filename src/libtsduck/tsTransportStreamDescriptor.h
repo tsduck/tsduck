@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a transport_stream_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 960
+#include "tsAbstractDescriptor.h"
+#include "tsUString.h"
+
+namespace ts {
+    //!
+    //! Representation of a transport_stream_descriptor
+    //! @see ETSI 300 468, 6.2.46.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL TransportStreamDescriptor : public AbstractDescriptor
+    {
+    public:
+        // TransportStreamDescriptor public members:
+        UString compliance; //!< Standard compliance ("DVB" for DVB systems).
+
+        //!
+        //! Default constructor.
+        //! @param [in] comp Compliance name.
+        //!
+        TransportStreamDescriptor(const UString& comp = UString());
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        TransportStreamDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

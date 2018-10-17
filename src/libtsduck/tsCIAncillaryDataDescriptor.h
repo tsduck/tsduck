@@ -28,20 +28,42 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a CI_ancillary_data_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 960
+#include "tsAbstractDescriptor.h"
+
+namespace ts {
+    //!
+    //! Representation of a CI_ancillary_data_descriptor.
+    //! @see ETSI 300 468, 6.4.1.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL CIAncillaryDataDescriptor : public AbstractDescriptor
+    {
+    public:
+        // CIAncillaryDataDescriptor public members:
+        ByteBlock ancillary_data;  //!< CI ancillary data.
+
+        //!
+        //! Default constructor.
+        //!
+        CIAncillaryDataDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        CIAncillaryDataDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

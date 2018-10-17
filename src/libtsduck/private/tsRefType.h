@@ -37,6 +37,7 @@
     REF_TYPE(CADescriptor);
     REF_TYPE(CAIdentifierDescriptor);
     REF_TYPE(CarouselIdentifierDescriptor);
+    REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ContentDescriptor);
     REF_TYPE(CopyrightDescriptor);
@@ -50,6 +51,7 @@
     REF_TYPE(DeferredAssociationTagsDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
+    REF_TYPE(DTSNeuralDescriptor);
     REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);
     REF_TYPE(DVBHTMLApplicationDescriptor);
     REF_TYPE(DVBHTMLApplicationLocationDescriptor);
@@ -145,6 +147,7 @@
     REF_TYPE(TimeShiftedServiceDescriptor);
     REF_TYPE(TimeSliceFECIdentifierDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
+    REF_TYPE(TransportStreamDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
     REF_TYPE(VideoStreamDescriptor);
