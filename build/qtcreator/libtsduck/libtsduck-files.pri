@@ -75,6 +75,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCBC.h \
     ../../../src/libtsduck/tsCBCTemplate.h \
     ../../../src/libtsduck/tsCerrReport.h \
+    ../../../src/libtsduck/tsCIAncillaryDataDescriptor.h \
     ../../../src/libtsduck/tsCipherChaining.h \
     ../../../src/libtsduck/tsCOM.h \
     ../../../src/libtsduck/tsComponentDescriptor.h \
@@ -113,6 +114,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDoubleCheckLock.h \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
+    ../../../src/libtsduck/tsDTSNeuralDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
     ../../../src/libtsduck/tsDVBCharset.h \
@@ -393,6 +395,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTLVSyntax.h \
     ../../../src/libtsduck/tsTOT.h \
     ../../../src/libtsduck/tsTransportProtocolDescriptor.h \
+    ../../../src/libtsduck/tsTransportStreamDescriptor.h \
     ../../../src/libtsduck/tsTransportStreamId.h \
     ../../../src/libtsduck/tsTSAnalyzer.h \
     ../../../src/libtsduck/tsTSAnalyzerOptions.h \
@@ -512,6 +515,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCASSelectionArgs.cpp \
     ../../../src/libtsduck/tsCAT.cpp \
     ../../../src/libtsduck/tsCerrReport.cpp \
+    ../../../src/libtsduck/tsCIAncillaryDataDescriptor.cpp \
     ../../../src/libtsduck/tsCipherChaining.cpp \
     ../../../src/libtsduck/tsCOM.cpp \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
@@ -539,6 +543,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDiscontinuityInformationTable.cpp \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
+    ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
@@ -766,6 +771,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTLVSyntax.cpp \
     ../../../src/libtsduck/tsTOT.cpp \
     ../../../src/libtsduck/tsTransportProtocolDescriptor.cpp \
+    ../../../src/libtsduck/tsTransportStreamDescriptor.cpp \
     ../../../src/libtsduck/tsTSAnalyzer.cpp \
     ../../../src/libtsduck/tsTSAnalyzerOptions.cpp \
     ../../../src/libtsduck/tsTSAnalyzerReport.cpp \

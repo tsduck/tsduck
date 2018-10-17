@@ -31,8 +31,6 @@ TSDuck - List of features to be implemented or fixed
   - 6.2.30   PDC_descriptor
   - 6.2.38   short_smoothing_buffer_descriptor
   - 6.2.42   telephone_descriptor
-  - 6.2.46   transport_stream_descriptor
-  - 6.4.1    CI_ancillary_data_descriptor
   - 6.4.4    part 9 of ETSI TS 102 825
   - 6.4.5.1  C2_delivery_system_descriptor
   - 6.4.5.2  SH_delivery_system_descriptor
@@ -45,7 +43,6 @@ TSDuck - List of features to be implemented or fixed
   - 6.4.14   URI_linkage_descriptor
   - 6.4.15   video_depth_range_descriptor
   - G.3.1    DTS-HD_audio_stream_descriptor
-  - L.1      DTS_Neural_descriptor
 
   ETSI TS 102 006 (System Software Update)
   - 9.5.2.6   update_descriptor
