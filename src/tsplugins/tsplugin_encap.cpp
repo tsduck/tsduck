@@ -110,9 +110,9 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Specify a reference PID containing PCR's. The output PID will contain PCR's, "
          u"based on the same clock. By default, the output PID does not contain any PCR.");
 
-    option(u"pid", 'p', INTEGER, 1, UNLIMITED_COUNT, 0, PID_NULL - 1);
-    help(u"pid",
-         u"Specify an input PID to encapsulate. "
+    option(u"pid", 'p', STRING, 1, UNLIMITED_COUNT);
+    help(u"pid", u"pid1[-pid2]",
+         u"Specify an input PID or range of PID's to encapsulate. "
          u"Several --pid options can be specified. "
          u"The null PID 0x1FFF cannot be encapsulated.");
 }
@@ -128,7 +128,33 @@ bool ts::EncapPlugin::getOptions()
     _maxBuffered = intValue<size_t>(u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
     _pidOutput = intValue<PID>(u"output-pid", PID_NULL);
     _pidPCR = intValue<PID>(u"pcr-pid", PID_NULL);
-    getPIDSet(_pidsInput, u"pid");
+
+    // Get all PID ranges.
+    _pidsInput.reset();
+    for (size_t i = 0; i < count(u"pid"); ++i) {
+        const UString val(value(u"pid", u"", i));
+        PID pid1 = 0;
+        PID pid2 = 0;
+        size_t count = 0;
+        size_t last = 0;
+        // Correct value if we either extract one value or the complete format is matched.
+        bool ok = (val.scan(count, last, u"%d-%d", {&pid1, &pid2}) || count == 1) &&
+            // And then the values must be in range
+            ((count == 1 && pid1 < PID_NULL) || (count == 2 && pid2 < PID_NULL && pid1 <= pid2));
+        if (!ok) {
+            tsp->error(u"invalid PID range: %s", {val});
+            return false;
+        }
+        if (count == 1) {
+            _pidsInput.set(pid1);
+        }
+        else {
+            while (pid1 <= pid2) {
+                _pidsInput.set(pid1++);
+            }
+        }
+    }
+
     return true;
 }
 
