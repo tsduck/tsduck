@@ -49,6 +49,7 @@ SUBDIRS += \
     tsplugin_dektec \
     tsplugin_descrambler \
     tsplugin_drop \
+    tsplugin_duplicate \
     tsplugin_dvb \
     tsplugin_eit \
     tsplugin_encap \
