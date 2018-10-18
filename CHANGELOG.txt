@@ -9,6 +9,7 @@ VERSION 3.15-957
   * Added command "tsswitch", a TS input switcher with remote control.
   * Added command "tsgenecm", generate one ECM using any DVB SimulCrypt ECMG.
   * Added plugin "limit" to limit the global TS bitrate.
+  * Added plugin "duplicate" to duplicate one or more PID's.
   * Added plugins "encap" and "decap" to encapsulate and decapsulate PID's
     into one single tunnel PID.
 
