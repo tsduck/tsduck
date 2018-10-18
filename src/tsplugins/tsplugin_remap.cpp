@@ -99,7 +99,7 @@ TSPLUGIN_DECLARE_PROCESSOR(remap, ts::RemapPlugin)
 //----------------------------------------------------------------------------
 
 ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, u"Generic PID remapper.", u"[options] [pid[-pid]=newpid ...]"),
+    ProcessorPlugin (tsp_, u"Generic PID remapper", u"[options] [pid[-pid]=newpid ...]"),
     _check_integrity(false),
     _update_psi(false),
     _pmt_ready(false),
@@ -348,7 +348,7 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
     const PID new_pid = remap(pid);

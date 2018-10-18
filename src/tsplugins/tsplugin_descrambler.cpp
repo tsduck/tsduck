@@ -79,7 +79,7 @@ TSPLUGIN_DECLARE_PROCESSOR(descrambler, ts::DescramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
-    AbstractDescrambler(tsp_, u"Generic DVB descrambler."),
+    AbstractDescrambler(tsp_, u"Generic DVB descrambler"),
     _cas_id(0)
 {
     option(u"cas-id", 0, UINT16);

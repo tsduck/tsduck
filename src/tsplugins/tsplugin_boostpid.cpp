@@ -73,8 +73,8 @@ TSPLUGIN_DECLARE_PROCESSOR(boostpid, ts::BoostPIDPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::BoostPIDPlugin::BoostPIDPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, u"Boost the bitrate of a PID, stealing stuffing packets.", u"[options] pid addpkt inpkt"),
+ts::BoostPIDPlugin::BoostPIDPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Boost the bitrate of a PID, stealing stuffing packets", u"[options] pid addpkt inpkt"),
     _pid(PID_NULL),
     _opt_addpkt(0),
     _opt_inpkt(0),
@@ -124,7 +124,7 @@ bool ts::BoostPIDPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::BoostPIDPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::BoostPIDPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
 
