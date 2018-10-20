@@ -91,6 +91,16 @@ namespace ts {
         }
 
         //!
+        //! Check if a PID is filtered.
+        //! @param [in] pid The PID to test.
+        //! @return Tue if @a pid is filtered.
+        //!
+        virtual bool hasPID(PID pid) const
+        {
+            return pid < _pid_filter.size() && _pid_filter.test(pid);
+        }
+
+        //!
         //! Reset the demux.
         //!
         //! Useful when the transport stream changes.

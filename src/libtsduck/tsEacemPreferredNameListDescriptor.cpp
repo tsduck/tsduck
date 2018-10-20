@@ -90,7 +90,7 @@ void ts::EacemPreferredNameListDescriptor::serialize(Descriptor& desc, const DVB
         bbp->appendUInt8(uint8_t(it1->second.size()));  // name_count
         for (NameByIdMap::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
             bbp->appendUInt8(it2->first);  // name_id
-            bbp->append(it2->second.toDVBWithByteLength(0, UString::NPOS, charset));
+            bbp->append(it2->second.toDVBWithByteLength(0, NPOS, charset));
         }
     }
     serializeEnd(desc, bbp);

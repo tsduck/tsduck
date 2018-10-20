@@ -37,7 +37,7 @@ include ../Makefile.tsduck
 # This SDK is available on Linux and Windows, Intel CPU's only.
 
 DTAPI_TARGET :=
-ifeq ($(LOCAL_OS),linux)
+ifeq ($(NODTAPI)$(LOCAL_OS),linux)
     ifeq ($(MAIN_ARCH),i386)
         DTAPI_TARGET := dtapi
     endif
@@ -52,19 +52,16 @@ default: $(DTAPI_TARGET)
 EXTRA_DISTCLEAN += WinSDK*.zip WinSDK LinuxSDK.zip LinuxSDK*.tar.gz LinuxSDK LinuxSDK.version
 RECURSE_ORDER = none
 
-.PHONY: copy download sdkfile getversion expand dtapi
+.PHONY: copy download sdkfile geturl expand dtapi
 
-# The download URL is a generic one ending in ../LatestLinuxSDK.
-DEKTEC_URL = https://www.dektec.com/products/SDK/DTAPI/Downloads/LatestLinuxSDK
-
-# The actual file is redirected as ../LinuxSDK_v5.06.2017.0.tar.gz for instance.
-# The file LinuxSDK.version is created to contain the actual file name.
+# The file LinuxSDK.version is created to contain the actual URL name.
 DTNAME_FILE = LinuxSDK.version
 
 # If DTAPI_ORIGIN is defined (on the make command line for instance), it is the
 # path of a local copy of LinuxSDK*.tar.gz which is used instead of download.
 # The name of the tarball is either from DTAPI_ORIGIN, LinuxSDK.version or empty.
-DTAPI_FILE = $(if $(wildcard $(DTAPI_ORIGIN)),$(notdir $(DTAPI_ORIGIN)),$(if $(wildcard $(DTNAME_FILE)),$(shell cat $(DTNAME_FILE)),))
+DTAPI_URL = $(shell cat $(DTNAME_FILE))
+DTAPI_FILE = $(if $(wildcard $(DTAPI_ORIGIN)),$(notdir $(DTAPI_ORIGIN)),$(if $(wildcard $(DTNAME_FILE)),$(notdir $(DTAPI_URL)),))
 
 # The tarball file always expands as LinuxSDK.
 DTAPI_DIR = LinuxSDK
@@ -73,14 +70,14 @@ DTAPI_H   = $(DTAPI_DIR)/DTAPI/Include/DTAPI.h
 # Get the LinuxSDK tarball, either from a local copy or download.
 copy:
 	cp -f $(DTAPI_ORIGIN) $(DTAPI_FILE)
-download: getversion
-	curl -L '$(DEKTEC_URL)' -o $(DTAPI_FILE)
+download: geturl
+	curl --silent --show-error --location '$(DTAPI_URL)' -o $(DTAPI_FILE)
 sdkfile: $(if $(wildcard $(DTAPI_ORIGIN)),copy,download)
 	touch $(DTAPI_FILE)
 
-# Get version of LinuxSDK.
-getversion:
-	curl -D /dev/stdout '$(DEKTEC_URL)' | grep -i 'Location:' | sed -e 's/.*: *//' -e 's/.*\///' -e 's/\r//g' >$(DTNAME_FILE)
+# Get full URL of LinuxSDK.
+geturl:
+	./get-dektec-linux-sdk-url.sh >$(DTNAME_FILE)
 
 # Forced expand of LinuxSDK.
 expand:

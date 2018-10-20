@@ -113,7 +113,7 @@ void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
     const char* header = "Address mask: ";
     while (size >= 6) {
-        strm << margin << header << MACAddress(GetUInt48(data)).toString() << std::endl;
+        strm << margin << header << MACAddress(GetUInt48(data)) << std::endl;
         data += 6; size -= 6;
         header = "Address: ";
     }

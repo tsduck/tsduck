@@ -395,15 +395,11 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"address shall specify a local IP address or host name (by default, the "
          u"plugin accepts connections on any local IP interface).");
 
-    option(u"wait-first-batch");
+    option(u"wait-first-batch", 'w');
     help(u"wait-first-batch",
-         u"This option is typically designed to support automated non-regression testing. "
-         u"It is not really useful in real situations. "
-         u"When specified, the start of the plugin is suspended until the first batch "
-         u"of splice commands is loaded and queued. This is the guarantee for a "
-         u"deterministic behaviour and determinism is required for automated non-regression "
-         u"testing. Without this option, the input files or messages are loaded and queued "
-         u"asynchronously.");
+         u"When this option is specified, the start of the plugin is suspended until "
+         u"the first batch of splice commands is loaded and queued. Without this option, "
+         u"the input files or messages are loaded and queued asynchronously.");
 }
 
 
@@ -1012,7 +1008,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 
     // Loop on incoming messages.
     while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _tsp, error)) {
-        _tsp->verbose(u"received message, %d bytes, from %s", {insize, sender.toString()});
+        _tsp->verbose(u"received message, %d bytes, from %s", {insize, sender});
         _plugin->processSectionMessage(inbuf, insize);
     }
 

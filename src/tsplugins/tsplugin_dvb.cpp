@@ -52,6 +52,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         DVBInput(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
@@ -97,6 +98,18 @@ ts::DVBInput::DVBInput(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Command line options method
+//----------------------------------------------------------------------------
+
+bool ts::DVBInput::getOptions()
+{
+    // Get common tuning options from command line
+    _tuner_args.load(*this);
+    return Args::valid();
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
@@ -110,12 +123,6 @@ bool ts::DVBInput::start()
 
     // Check if tuner is already open.
     if (_tuner.isOpen()) {
-        return false;
-    }
-
-    // Get common tuning options from command line
-    _tuner_args.load(*this);
-    if (!Args::valid()) {
         return false;
     }
 

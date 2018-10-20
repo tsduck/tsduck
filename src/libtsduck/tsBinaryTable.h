@@ -262,6 +262,15 @@ namespace ts {
         size_t totalSize() const;
 
         //!
+        //! Minimum number of TS packets required to transport the table.
+        //! @param [in] pack If true, assume that sections are packed in TS packets.
+        //! When false, assume that each section starts at the beginning of a TS packet
+        //! and stuffing in applied at the end of each section.
+        //! @return The minimum number of TS packets required to transport the table.
+        //!
+        PacketCounter packetCount(bool pack = true) const;
+
+        //!
         //! Get a pointer to a section.
         //! @param [in] index Index of the section to get.
         //! @return A safe pointer to the section or a null pointer if the specified section is not present.

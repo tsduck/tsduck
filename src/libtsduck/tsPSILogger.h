@@ -92,7 +92,7 @@ namespace ts {
     private:
         const PSILoggerArgs& _opt;
         TablesDisplay&   _display;
-        Report& _report;
+        Report&          _report;
         bool             _abort;
         bool             _pat_ok;        // Got a PAT
         bool             _cat_ok;        // Got a CAT or not interested in CAT

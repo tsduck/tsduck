@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
@@ -39,7 +39,6 @@
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -243,9 +242,8 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     bool ok = true;
     if (opt.xmlModel) {
@@ -260,3 +258,5 @@ int main(int argc, char *argv[])
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TS_MAIN(MainCode)

@@ -26,19 +26,16 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for objects being part of a ring, ie. a double-linked
-//  list with no begin or end. Not thread-safe.
-//
-//----------------------------------------------------------------------------
 
 #include "tsRingNode.h"
 TSDUCK_SOURCE;
 
 
-// Insert in a ring after the specified node
+//----------------------------------------------------------------------------
+// Insert in a ring after or before the specified node
+//----------------------------------------------------------------------------
 
-void ts::RingNode::ringInsertAfter (RingNode* o)
+void ts::RingNode::ringInsertAfter(RingNode* o)
 {
     ringRemove();
     _ring_previous = o;
@@ -47,9 +44,7 @@ void ts::RingNode::ringInsertAfter (RingNode* o)
     _ring_previous->_ring_next = this;
 }
 
-// Insert in a ring before the specified node
-
-void ts::RingNode::ringInsertBefore (RingNode* o)
+void ts::RingNode::ringInsertBefore(RingNode* o)
 {
     ringRemove();
     _ring_next = o;
@@ -58,7 +53,10 @@ void ts::RingNode::ringInsertBefore (RingNode* o)
     _ring_previous->_ring_next = this;
 }
 
+
+//----------------------------------------------------------------------------
 // Remove a node from the ring it belongs to and creates its own ring.
+//----------------------------------------------------------------------------
 
 void ts::RingNode::ringRemove()
 {
@@ -69,8 +67,42 @@ void ts::RingNode::ringRemove()
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Swap this object and another one in their rings.
+//----------------------------------------------------------------------------
+
+void ts::RingNode::ringSwap(RingNode* o)
+{
+    // If the two objects are identical, do nothing.
+    if (this != o) {
+        // Save previous and next of current object.
+        // They will become previous and next of 'o'.
+        // Take care that if an object has previous/next to itself, it is alone.
+        RingNode* const next = _ring_next == this ? o : _ring_next;
+        RingNode* const previous = _ring_previous == this ? o : _ring_previous;
+
+        // Insert current object in same place as 'o'.
+        _ring_next = o->_ring_next == o ? this : o->_ring_next;
+        _ring_previous = o->_ring_previous == o ? this : o->_ring_previous;
+
+        // Insert 'o' in same place as this object was.
+        o->_ring_next = next;
+        o->_ring_previous = previous;
+
+        // Fix previous and next in each ring.
+        // It also works when nodes are alone in their ring.
+        _ring_next->_ring_previous = this;
+        _ring_previous->_ring_next = this;
+        o->_ring_next->_ring_previous = o;
+        o->_ring_previous->_ring_next = o;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Count the number of element in the rings.
-// Warning: linear response time, avoid this method when possible.
+//----------------------------------------------------------------------------
 
 size_t ts::RingNode::ringSize() const
 {

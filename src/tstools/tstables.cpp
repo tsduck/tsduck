@@ -31,10 +31,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsInputRedirector.h"
 #include "tsTablesLogger.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -83,14 +82,9 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt (argc, argv);
-    // IP initialization required when using UDP
-    if (opt.logger.use_udp && !ts::IPInitialize(opt)) {
-        return EXIT_FAILURE;
-    }
     ts::InputRedirector input(opt.infile, opt);
     ts::TablesDisplay display(opt.display, opt);
     ts::TablesLogger logger(opt.logger, display, opt);
@@ -109,3 +103,5 @@ int main(int argc, char *argv[])
 
     return logger.hasErrors() ? EXIT_FAILURE : EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

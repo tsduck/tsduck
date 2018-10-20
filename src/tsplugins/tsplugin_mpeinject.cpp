@@ -311,8 +311,7 @@ void ts::MPEInjectPlugin::main()
 
         // Enqueue the section immediately. Never wait.
         if (!section->isValid()) {
-            tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes",
-                       {sender.toString(), destination.toString(), insize});
+            tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes", {sender, destination, insize});
         }
         else {
             const bool queued = _section_queue.enqueue(section, 0);

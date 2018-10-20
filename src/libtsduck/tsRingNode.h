@@ -95,6 +95,14 @@ namespace ts {
         void ringInsertBefore(RingNode* o);
 
         //!
+        //! Swap this object and another one in their rings.
+        //! If the two objects belong to the same ring, their positions are swapped.
+        //! If they belong to distinct rings, they also move to each other's ring.
+        //! @param [in] o The node to swap with.
+        //!
+        void ringSwap(RingNode* o);
+
+        //!
         //! Get the next node in the ring.
         //! @tparam T A superclass of RingNode, the expected type of the next object in the ring.
         //! @return Address of the next node in the ring or zero if the next node is not a subclass of @a T.

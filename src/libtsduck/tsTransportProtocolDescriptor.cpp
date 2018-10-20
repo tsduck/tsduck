@@ -156,16 +156,16 @@ void ts::TransportProtocolDescriptor::serialize(Descriptor& desc, const DVBChars
             }
             bbp->appendUInt8(mpe.alignment_indicator ? 0xFF : 0x7F);
             for (auto it = mpe.urls.begin(); it != mpe.urls.end(); ++it) {
-                bbp->append(it->toDVBWithByteLength(0, UString::NPOS, charset));
+                bbp->append(it->toDVBWithByteLength(0, NPOS, charset));
             }
             break;
         }
         case MHP_PROTO_HTTP: {
             for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
-                bbp->append(it1->URL_base.toDVBWithByteLength(0, UString::NPOS, charset));
+                bbp->append(it1->URL_base.toDVBWithByteLength(0, NPOS, charset));
                 bbp->appendUInt8(uint8_t(it1->URL_extensions.size()));
                 for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
-                    bbp->append(it2->toDVBWithByteLength(0, UString::NPOS, charset));
+                    bbp->append(it2->toDVBWithByteLength(0, NPOS, charset));
                 }
             }
             break;

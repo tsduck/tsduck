@@ -112,9 +112,8 @@ RequestExecutionLevel admin
 ; Get installation folder from registry if available from a previous installation.
 InstallDirRegKey HKLM "${ProductKey}" "InstallDir"
 
-; Installer pages. The function ComponentsPre is invoked before the components page.
+; Installer pages.
 !insertmacro MUI_PAGE_LICENSE "${RootDir}\LICENSE.txt"
-!define MUI_PAGE_CUSTOMFUNCTION_PRE ComponentsPre
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -127,42 +126,11 @@ InstallDirRegKey HKLM "${ProductKey}" "InstallDir"
 !insertmacro MUI_LANGUAGE "English"
 
 ;-----------------------------------------------------------------------------
-; Initialization functions
-;-----------------------------------------------------------------------------
-
-; Installation initialization.
-function .onInit
-    ; In 64-bit installers, don't use registry redirection. Also prevent execution
-    ; of 64-bit installers on 32-bit systems (the installer itself is 32-bit and
-    ; can run on 32-bit systems but it contains 64-bit executables).
-    !ifdef Win64
-        ${If} ${RunningX64}
-            SetRegView 64
-        ${Else}
-            MessageBox MB_OK|MB_ICONSTOP \
-                "This is a 64-bit version of TSDuck.$\r$\n\
-                You have a 32-bit version of Windows.$\r$\n\
-                Please use a 32-bit version of TSDuck on this system."
-            Quit
-        ${EndIf}
-    !endif
-functionEnd
-
-; Uninstallation initialization.
-function un.onInit
-    ; In 64-bit installers, don't use registry redirection.
-    !ifdef Win64
-        ${If} ${RunningX64}
-            SetRegView 64
-        ${EndIf}
-    !endif
-functionEnd
-
-;-----------------------------------------------------------------------------
 ; Installation sections
 ;-----------------------------------------------------------------------------
 
-; Installation of command-line tools and plugins.
+; Installation of command-line tools and plugins
+; ----------------------------------------------
 Section "Tools & Plugins" SectionTools
 
     ; Work on "all users" context, not current user.
@@ -172,7 +140,12 @@ Section "Tools & Plugins" SectionTools
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
     File /x *_static.exe "${BinDir}\ts*.exe"
-    File "${BinDir}\ts*.dll"
+    !ifdef NoTeletext
+        Delete "$INSTDIR\bin\tsplugin_teletext.dll"
+        File /x tsplugin_teletext.dll "${BinDir}\ts*.dll"
+    !else
+        File "${BinDir}\ts*.dll"
+    !endif
     File "${RootDir}\src\libtsduck\tsduck.xml"
     File "${RootDir}\src\libtsduck\tsduck.*.names"
 
@@ -182,7 +155,8 @@ Section "Tools & Plugins" SectionTools
 
 SectionEnd
 
-; Installation of documentation files.
+; Installation of documentation files
+; -----------------------------------
 Section "Documentation" SectionDocumentation
 
     ; Work on "all users" context, not current user.
@@ -202,20 +176,26 @@ Section "Documentation" SectionDocumentation
 
 SectionEnd
 
-; Installation of development environment for third-party applications.
-; Unselected by default (/o).
+; Installation of development environment for third-party applications
+; --------------------------------------------------------------------
 Section /o "Development" SectionDevelopment
+    ; Unselected by default (/o).
 
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
-    ; Delete obsolete files from previous versions.
-    Delete "$INSTDIR\include\tinyxml*"
+    ; Delete obsolete files from previous versions (the list of files may change).
+    RMDir /r "$INSTDIR\include"
+    RMDir /r "$INSTDIR\lib"
 
     ; TSDuck header files.
     CreateDirectory "$INSTDIR\include"
     SetOutPath "$INSTDIR\include"
-    File "${RootDir}\src\libtsduck\*.h"
+    !ifdef NoTeletext
+        File /x tsTeletextDemux.h /x tsTeletextCharset.h "${RootDir}\src\libtsduck\*.h"
+    !else
+        File "${RootDir}\src\libtsduck\*.h"
+    !endif
     File "${RootDir}\src\libtsduck\windows\*.h"
 
     ; TSDuck libraries.
@@ -246,9 +226,10 @@ Section /o "Development" SectionDevelopment
 
 SectionEnd
 
-; Common final mandatory section.
-; Not selectable, not displayed (because of leading '-' in name).
+; Common final mandatory section
+; ------------------------------
 Section "-Common" SectionCommon
+    ; Not selectable, not displayed (because of leading '-' in name).
 
     ; Work on "all users" context, not current user.
     SetShellVarContext all
@@ -266,7 +247,8 @@ Section "-Common" SectionCommon
     WriteRegStr HKLM "${ProductKey}" "InstallDir" $INSTDIR
 
     ; Install or reinstall the Visual C++ redistributable library.
-    ExecWait '"$INSTDIR\setup\${MsvcRedistExe}" /q /norestart'
+    nsExec::Exec '"$INSTDIR\setup\${MsvcRedistExe}" /q /norestart'
+    Pop $0
 
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\TSDuckUninstall.exe"
@@ -289,13 +271,15 @@ Section "-Common" SectionCommon
     ${If} ${SectionIsSelected} ${SectionTools}
         WriteRegStr HKLM "${ProductKey}" "InstallTools" "true"
         ; Add binaries folder to system path
-        ExecWait '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\bin"'
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\bin"'
+        Pop $0
     ${Else}
         WriteRegStr HKLM "${ProductKey}" "InstallTools" "false"
         ; Remove previous installation of tools & plugins.
         RMDir /r "$INSTDIR\bin"
         ; Remove binaries folder from system path
-        ExecWait '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\bin"'
+        nsExec::Exec '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\bin"'
+        Pop $0
     ${EndIf}
     ${If} ${SectionIsSelected} ${SectionDocumentation}
         WriteRegStr HKLM "${ProductKey}" "InstallDocumentation" "true"
@@ -317,7 +301,10 @@ Section "-Common" SectionCommon
 
 SectionEnd
 
-; Description of installation sections (displayed by mouse hover).
+;-----------------------------------------------------------------------------
+; Description of installation sections (displayed by mouse hover)
+;-----------------------------------------------------------------------------
+
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionTools} \
         "TSDuck command-line tools and plugins."
@@ -326,32 +313,6 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${SectionDevelopment} \
         "TSDuck development environment, for use from third-party applications manipulating MPEG transport streams."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
-
-; This function is called before the "components" page.
-; It presets the selections identically to the previous installation.
-function ComponentsPre
-    ReadRegStr $0 HKLM "${ProductKey}" "InstallTools"
-    ${If} $0 == "true"
-        !insertmacro SelectSection ${SectionTools}
-    ${EndIf}
-    ${If} $0 == "false"
-        !insertmacro UnSelectSection ${SectionTools}
-    ${EndIf}
-    ReadRegStr $0 HKLM "${ProductKey}" "InstallDocumentation"
-    ${If} $0 == "true"
-        !insertmacro SelectSection ${SectionDocumentation}
-    ${EndIf}
-    ${If} $0 == "false"
-        !insertmacro UnSelectSection ${SectionDocumentation}
-    ${EndIf}
-    ReadRegStr $0 HKLM "${ProductKey}" "InstallDevelopment"
-    ${If} $0 == "true"
-        !insertmacro SelectSection ${SectionDevelopment}
-    ${EndIf}
-    ${If} $0 == "false"
-        !insertmacro UnSelectSection ${SectionDevelopment}
-    ${EndIf}
-functionEnd
 
 ;-----------------------------------------------------------------------------
 ; Uninstallation section
@@ -375,7 +336,8 @@ Section "Uninstall"
     DeleteRegValue HKLM ${EnvironmentKey} "TSDUCK"
 
     ; Remove binaries folder from system path
-    ExecWait '"$0\setup\setpath.exe" --remove "$0\bin"'
+    nsExec::Exec '"$0\setup\setpath.exe" --remove "$0\bin"'
+    Pop $1
 
     ; Delete product files.
     RMDir /r "$0\bin"
@@ -390,3 +352,73 @@ Section "Uninstall"
     RMDir "$0"
 
 SectionEnd
+
+;-----------------------------------------------------------------------------
+; Initialization functions
+;-----------------------------------------------------------------------------
+
+; Installation initialization.
+function .onInit
+
+    ; In 64-bit installers, don't use registry redirection. Also prevent execution
+    ; of 64-bit installers on 32-bit systems (the installer itself is 32-bit and
+    ; can run on 32-bit systems but it contains 64-bit executables).
+    !ifdef Win64
+        ${If} ${RunningX64}
+            SetRegView 64
+        ${Else}
+            MessageBox MB_OK|MB_ICONSTOP \
+                "This is a 64-bit version of TSDuck.$\r$\n\
+                You have a 32-bit version of Windows.$\r$\n\
+                Please use a 32-bit version of TSDuck on this system."
+            Quit
+        ${EndIf}
+    !endif
+
+    ; Preset sections to install.
+    ; First, check command line for "/all=true".
+    ${GetParameters} $0
+    ${GetOptions} $0 "/all=" $1
+    ${If} $1 == "true"
+        ; "/all=true" is set, install all sections.
+        !insertmacro SelectSection ${SectionTools}
+        !insertmacro SelectSection ${SectionDocumentation}
+        !insertmacro SelectSection ${SectionDevelopment}
+    ${Else}
+        ; Preset the selections identically to the previous installation.
+        ReadRegStr $0 HKLM "${ProductKey}" "InstallTools"
+        ${If} $0 == "true"
+            !insertmacro SelectSection ${SectionTools}
+        ${EndIf}
+        ${If} $0 == "false"
+            !insertmacro UnSelectSection ${SectionTools}
+        ${EndIf}
+        ReadRegStr $0 HKLM "${ProductKey}" "InstallDocumentation"
+        ${If} $0 == "true"
+            !insertmacro SelectSection ${SectionDocumentation}
+        ${EndIf}
+        ${If} $0 == "false"
+            !insertmacro UnSelectSection ${SectionDocumentation}
+        ${EndIf}
+        ReadRegStr $0 HKLM "${ProductKey}" "InstallDevelopment"
+        ${If} $0 == "true"
+            !insertmacro SelectSection ${SectionDevelopment}
+        ${EndIf}
+        ${If} $0 == "false"
+            !insertmacro UnSelectSection ${SectionDevelopment}
+        ${EndIf}
+    ${EndIf}
+
+functionEnd
+
+; Uninstallation initialization.
+function un.onInit
+
+    ; In 64-bit installers, don't use registry redirection.
+    !ifdef Win64
+        ${If} ${RunningX64}
+            SetRegView 64
+        ${EndIf}
+    !endif
+
+functionEnd

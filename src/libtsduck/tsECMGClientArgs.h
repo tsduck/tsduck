@@ -28,68 +28,54 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a SafeAccess date.
+//!  Command line arguments for the class ECMGClient.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractCASDate.h"
+#include "tsArgs.h"
+#include "tsByteBlock.h"
+#include "tsMPEG.h"
+#include "tsSocketAddress.h"
+#include "tstlv.h"
 
 namespace ts {
     //!
-    //! Representation of a SafeAccess date.
+    //! Command line arguments for the class ECMGClient.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL SafeAccessDate: public AbstractCASDate
+    class TSDUCKDLL ECMGClientArgs
     {
     public:
         //!
-        //! Default constructor, from a 16-bit integer.
-        //! @param [in] value 16-bit binary representation of the date.
+        //! Constructor.
         //!
-        SafeAccessDate(uint16_t value = InvalidDate) :
-            AbstractCASDate(2000, value)
-        {
-        }
+        ECMGClientArgs();
+
+        // Public fields, by options.
+        SocketAddress ecmg_address;     //!< -\-ecmg, ECMG socket address (required or optional)
+        uint32_t      super_cas_id;     //!< -\-super-cas-id, CA system & subsystem id
+        ByteBlock     access_criteria;  //!< -\-access-criteria
+        MilliSecond   cp_duration;      //!< -\-cp-duration, crypto-period duration
+        tlv::VERSION  dvbsim_version;   //!< -\-ecmg-scs-version
+        uint16_t      ecm_channel_id;   //!< -\-channel-id
+        uint16_t      ecm_stream_id;    //!< -\-stream-id
+        uint16_t      ecm_id;           //!< -\-ecm-id
+        int           log_protocol;     //!< -\-log-protocol
+        int           log_data;         //!< -\-log-data
 
         //!
-        //! Copy constructor.
-        //! @param [in] date another date to assign.
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        SafeAccessDate(const SafeAccessDate& date) :
-            AbstractCASDate(2000, date)
-        {
-        }
+        void defineOptions(Args& args) const;
 
         //!
-        //! Constructor from fields.
-        //! @param [in] year Year number.
-        //! @param [in] month Month number.
-        //! @param [in] day Day number.
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
         //!
-        SafeAccessDate(int year, int month, int day) :
-            AbstractCASDate(2000, year, month, day)
-        {
-        }
-
-        //!
-        //! Constructor from a Time object.
-        //! @param [in] time A Time object.
-        //!
-        SafeAccessDate(const Time& time) :
-            AbstractCASDate(2000, time)
-        {
-        }
-
-        //!
-        //! Assignment operator.
-        //! @param [in] date A data to assign.
-        //! @return A reference to this object.
-        //!
-        SafeAccessDate& operator=(const AbstractCASDate& date)
-        {
-            AbstractCASDate::operator=(date);
-            return *this;
-        }
+        bool loadArgs(Args& args);
     };
 }

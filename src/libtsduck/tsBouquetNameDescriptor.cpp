@@ -76,7 +76,7 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc, const D
 void ts::BouquetNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(name.toDVB(0, UString::NPOS, charset));
+    bbp->append(name.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

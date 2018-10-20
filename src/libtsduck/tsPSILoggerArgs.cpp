@@ -45,7 +45,9 @@ ts::PSILoggerArgs::PSILoggerArgs() :
     clear(false),
     cat_only(false),
     dump(false),
-    output()
+    output(),
+    use_current(true),
+    use_next(false)
 {
 }
 
@@ -74,6 +76,15 @@ void ts::PSILoggerArgs::defineOptions(Args& args) const
     args.option(u"dump", 'd');
     args.help(u"dump", u"Dump all PSI sections.");
 
+    args.option(u"exclude-current");
+    args.help(u"exclude-current",
+              u"Exclude PSI tables with \"current\" indicator. "
+              u"This is rarely necessary. See also --include-next.");
+
+    args.option(u"include-next");
+    args.help(u"include-next",
+              u"Include PSI tables with \"next\" indicator. By default, they are excluded.");
+
     args.option(u"output-file", 'o', Args::STRING);
     args.help(u"output-file", u"File name for text output.");
 }
@@ -84,11 +95,14 @@ void ts::PSILoggerArgs::defineOptions(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::PSILoggerArgs::load(Args& args)
+bool ts::PSILoggerArgs::load(Args& args)
 {
     all_versions = args.present(u"all-versions");
     cat_only = args.present(u"cat-only");
     clear = args.present(u"clear");
     dump = args.present(u"dump");
     output = args.value(u"output-file");
+    use_current = !args.present(u"exclude-current");
+    use_next = args.present(u"include-next");
+    return true;
 }

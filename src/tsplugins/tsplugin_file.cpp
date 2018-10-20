@@ -51,15 +51,18 @@ namespace ts {
     public:
         // Implementation of plugin API
         FileInput(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, size_t) override;
+        virtual bool abortInput() override;
     private:
         UStringVector _filenames;
         size_t        _current_file;
         size_t        _repeat_count;
         uint64_t      _start_offset;
         TSFileInput   _file;
+        volatile bool _aborted;
 
         // Inaccessible operations
         FileInput() = delete;
@@ -120,7 +123,8 @@ ts::FileInput::FileInput(TSP* tsp_) :
     _current_file(0),
     _repeat_count(1),
     _start_offset(0),
-    _file()
+    _file(),
+    _aborted(true)
 {
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"", u"Name of the input files. The files are read in sequence. Use standard input by default.");
@@ -190,11 +194,9 @@ ts::FileProcessor::FileProcessor(TSP* tsp_) :
 // Input plugin methods
 //----------------------------------------------------------------------------
 
-bool ts::FileInput::start()
+bool ts::FileInput::getOptions()
 {
-    // Get command line options.
     getValues(_filenames);
-    _current_file = 0;
     _repeat_count = present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1);
     _start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
 
@@ -203,6 +205,12 @@ bool ts::FileInput::start()
         return false;
     }
 
+    return true;
+}
+
+
+bool ts::FileInput::start()
+{
     // Name of first input file (or standard input if there is not input file).
     const UString first(_filenames.empty() ? UString() : _filenames.front());
     if (_filenames.size() > 1) {
@@ -210,12 +218,22 @@ bool ts::FileInput::start()
     }
 
     // Open first input file.
+    _aborted = false;
+    _current_file = 0;
     return _file.open(first, _repeat_count, _start_offset, *tsp);
 }
 
 bool ts::FileInput::stop()
 {
     return _file.close(*tsp);
+}
+
+bool ts::FileInput::abortInput()
+{
+    // Abort current operations on the file.
+    _aborted = true;
+    _file.abortRead();
+    return true;
 }
 
 size_t ts::FileInput::receive(TSPacket* buffer, size_t max_packets)
@@ -225,7 +243,7 @@ size_t ts::FileInput::receive(TSPacket* buffer, size_t max_packets)
 
         // Read some packets from current file.
         size_t count = _file.read(buffer, max_packets, *tsp);
-        if (count > 0) {
+        if (count > 0 || _aborted) {
             // Got packets, return them.
             return count;
         }
@@ -259,7 +277,7 @@ bool ts::FileOutput::stop()
     return _file.close(*tsp);
 }
 
-bool ts::FileOutput::send (const TSPacket* buffer, size_t packet_count)
+bool ts::FileOutput::send(const TSPacket* buffer, size_t packet_count)
 {
     return _file.write(buffer, packet_count, *tsp);
 }
@@ -279,7 +297,7 @@ bool ts::FileProcessor::stop()
     return _file.close(*tsp);
 }
 
-ts::ProcessorPlugin::Status ts::FileProcessor::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::FileProcessor::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     return _file.write(&pkt, 1, *tsp) ? TSP_OK : TSP_END;
 }

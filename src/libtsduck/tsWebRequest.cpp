@@ -67,6 +67,7 @@ ts::WebRequest::WebRequest(Report& report) :
     _dlData(0),
     _dlFile(),
     _dlHandler(0),
+    _interrupted(false),
     _guts(0)
 {
     allocateGuts();
@@ -203,7 +204,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
                 _report.warning(u"no HTTP status found in header: %s", {*it});
             }
         }
-        else if (colon != UString::NPOS) {
+        else if (colon != NPOS) {
             // Found a real header.
             UString name(*it, 0, colon);
             UString value(*it, colon + 1, it->size() - colon - 1);
@@ -262,6 +263,7 @@ bool ts::WebRequest::copyData(const void* addr, size_t size)
     // Pass data to application if a handler is defined.
     if (_dlHandler != 0 && !_dlHandler->handleWebData(*this, addr, size)) {
         _report.debug(u"Web transfer is interrupted by application");
+        _interrupted = true;
         return false;
     }
 
@@ -351,6 +353,7 @@ bool ts::WebRequest::clearTransferResults()
 bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
 {
     data.clear();
+    _interrupted = false;
 
     // Transfer initialization.
     bool ok = clearTransferResults() && downloadInitialize();
@@ -365,6 +368,7 @@ bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
             ok = false;
         }
         _dlData = 0;
+        downloadClose();
     }
 
     return ok;
@@ -377,6 +381,8 @@ bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
 
 bool ts::WebRequest::downloadFile(const UString& fileName)
 {
+    _interrupted = false;
+
     // Transfer initialization.
     if (!clearTransferResults() || !downloadInitialize()) {
         return false;
@@ -386,13 +392,14 @@ bool ts::WebRequest::downloadFile(const UString& fileName)
     _dlFile.open(fileName.toUTF8().c_str(), std::ios::out | std::ios::binary);
     if (!_dlFile) {
         _report.error(u"error creating file %s", {fileName});
-        downloadAbort();
+        downloadClose();
         return false;
     }
 
     // Actual transfer.
     const bool ok = download();
     _dlFile.close();
+    downloadClose();
     return ok;
 }
 
@@ -403,6 +410,8 @@ bool ts::WebRequest::downloadFile(const UString& fileName)
 
 bool ts::WebRequest::downloadToApplication(WebRequestHandlerInterface* handler)
 {
+    _interrupted = false;
+
     // Transfer initialization.
     bool ok = handler != 0 && clearTransferResults() && downloadInitialize();
 
@@ -416,13 +425,13 @@ bool ts::WebRequest::downloadToApplication(WebRequestHandlerInterface* handler)
             }
             else {
                 _report.debug(u"Web request is aborted by application before transfer");
-                downloadAbort();
             }
         }
         catch (...) {
             ok = false;
         }
         _dlHandler = 0;
+        downloadClose();
     }
 
     return ok;

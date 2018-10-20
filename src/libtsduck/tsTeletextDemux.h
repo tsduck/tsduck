@@ -36,6 +36,7 @@
 #include "tsPESDemux.h"
 #include "tsTeletextCharset.h"
 #include "tsTeletextHandlerInterface.h"
+#if !defined(TS_NOTELETEXT)
 
 namespace ts {
     //!
@@ -248,3 +249,5 @@ namespace ts {
         TeletextDemux& operator=(const TeletextDemux&) = delete;
     };
 }
+
+#endif // TS_NOTELETEXT

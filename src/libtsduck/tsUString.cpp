@@ -1648,16 +1648,19 @@ ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn> args)
+void ts::UString::format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args)
 {
-    // Output string. Pre-reserve some space. We don't really know how much. Just address the most comman cases.
-    UString result;
-    result.reserve(256);
+    // Pre-reserve some space. We don't really know how much. Just address the most comman cases.
+    reserve(256);
 
     // Process the string.
-    ArgMixInContext ctx(result, fmt, args);
+    ArgMixInContext ctx(*this, fmt, args);
+}
 
-    // Final formatted string.
+ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn>& args)
+{
+    UString result;
+    result.format(fmt, args);
     return result;
 }
 
@@ -1666,7 +1669,7 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 // Scan this string for integer or character values.
 //----------------------------------------------------------------------------
 
-bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, const std::initializer_list<ArgMixOut>& args) const
 {
     // Process this string instance.
     const UChar* input = data();
@@ -1838,8 +1841,9 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Now, the command is valid, process it.
-    if (_arg->isAnyString()) {
+    if (_arg->isAnyString() || (_arg->isBool() && cmd == u's')) {
         // String arguments are always treated as %s, regardless of the % command.
+        // Also if a bool is specified as %s, print true or false.
         if (cmd != u's' && debugActive()) {
             debug(u"type mismatch, got a string", cmd);
         }
@@ -1850,6 +1854,9 @@ void ts::UString::ArgMixInContext::processArg()
         }
         else if (_arg->isAnyString16()) {
             value.assign(_arg->toUCharPtr());
+        }
+        else if (_arg->isBool()) {
+            value.assign(TrueFalse(_arg->toBool()));
         }
         else {
             // Not a string, should not get there.

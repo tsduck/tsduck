@@ -40,6 +40,20 @@
 
   Generate everything which is needed for installer.
 
+ .PARAMETER NoLowPriority
+
+  Do not lower the process priority.
+
+ .PARAMETER NoPause
+
+  Do not wait for the user to press <enter> at end of execution. By default,
+  execute a "pause" instruction at the end of execution, which is useful
+  when the script was run from Windows Explorer.
+
+ .PARAMETER NoTeletext
+
+  Build without Teletext support. The plugin "teletext" is not provided.
+
  .PARAMETER Debug
 
   Generate the debug version of the binaries. If neither -Release nor -Debug
@@ -57,21 +71,18 @@
 
  .PARAMETER Win64
 
+  Generate the 64-bit version of the binaries. If neither -Win32 nor -Win64
   is specified, both versions are built by default.
-
- .PARAMETER NoPause
-
-  Do not wait for the user to press <enter> at end of execution. By default,
-  execute a "pause" instruction at the end of execution, which is useful
-  when the script was run from Windows Explorer.
 #>
 param(
     [switch]$GitPull = $false,
     [switch]$Installer = $false,
+    [switch]$NoLowPriority = $false,
     [switch]$Debug = $false,
     [switch]$Release = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false,
+    [switch]$NoTeletext = $false,
     [switch]$NoPause = $false
 )
 
@@ -97,6 +108,11 @@ $RootDir = (Split-Path -Parent $PSScriptRoot)
 # Make sure that Git hooks are installed.
 & (Join-Path $PSScriptRoot git-hook-update.ps1) -NoPause
 
+# Lower process priority so that the build does not eat up all CPU.
+if (-not $NoLowPriority) {
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
+}
+
 # Update git repository if requested.
 if ($GitPull) {
     # Search git command.
@@ -117,7 +133,13 @@ $SolutionFileName = (Join-Path $ProjDir "tsduck.sln")
 # A function to invoke MSBuild.
 function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $target
+    if ($NoTeletext) {
+        $OptTeletext = "/property:NoTeletext=true"
+    }
+    else {
+        $OptTeletext =""
+    }
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target 
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
     }

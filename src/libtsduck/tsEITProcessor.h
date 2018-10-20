@@ -49,6 +49,14 @@ namespace ts {
     //! Packets from one specific PID, the EIT PID, are replaced.
     //! The various required transformations on the EIT's are performed.
     //!
+    //! More generally, there are several input PID's and one output PID.
+    //! All EIT sections from any input PID are merged into one single
+    //! output PID. All input PID's are overwritten by packets for the
+    //! output PID (or null packets).
+    //!
+    //! By default, there is only one input PID which is also used as
+    //! output PID. This is PID 0x12, the standard DVB PID for EIT's.
+    //!
     class TSDUCKDLL EITProcessor :
         private SectionHandlerInterface,
         private SectionProviderInterface
@@ -57,24 +65,44 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] pid The PID containing EIT's to process.
+        //! This PID is used as only input PID and output PID.
         //! @param [in] report Where to report verbose and debug messages. Optional.
         //!
         EITProcessor(PID pid = PID_EIT, Report* report = 0);
 
         //!
-        //! Change the PID containing EIT's to process.
+        //! Change the single PID containing EIT's to process.
         //! @param [in] pid The PID containing EIT's to process.
+        //! This PID is used as only input PID and output PID.
         //!
         void setPID(PID pid);
 
         //!
-        //! Get the PID containing EIT's to process.
-        //! @return The PID containing EIT's to process.
+        //! Set one single input PID without altering the output PID.
+        //! @param [in] pid The single input PID.
         //!
-        PID getPID() const { return _pid; }
+        void setInputPID(PID pid);
+
+        //!
+        //! Change the output PID without altering the input PID's.
+        //! @param [in] pid The output PID.
+        //!
+        void setOutputPID(PID pid);
+
+        //!
+        //! Clear the set of input PID's.
+        //!
+        void clearInputPIDs();
+
+        //!
+        //! Add an input PID without altering the output PID.
+        //! @param [in] pid An input PID to add.
+        //!
+        void addInputPID(PID pid);
 
         //!
         //! Reset the EIT processor to default state.
+        //! The input and output PID's are unchanged.
         //!
         void reset();
 
@@ -158,7 +186,8 @@ namespace ts {
 
     private:
         Report*               _report;
-        PID                   _pid;
+        PIDSet                _input_pids;
+        PID                   _output_pid;
         SectionDemux          _demux;
         Packetizer            _packetizer;
         std::list<SectionPtr> _sections;

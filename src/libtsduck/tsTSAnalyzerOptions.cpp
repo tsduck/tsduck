@@ -43,6 +43,7 @@ TSDUCK_SOURCE;
 ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     ts_analysis(false),
     service_analysis(false),
+    wide(false),
     pid_analysis(false),
     table_analysis(false),
     error_analysis(false),
@@ -82,6 +83,9 @@ void ts::TSAnalyzerOptions::defineOptions(Args& args) const
 
     args.option(u"service-analysis");
     args.help(u"service-analysis", u"Report analysis for each service.");
+
+    args.option(u"wide-display", 'w');
+    args.help(u"wide-display", u"Use a wider grid display with more information on each line.");
 
     args.option(u"pid-analysis");
     args.help(u"pid-analysis", u"Report analysis for each PID.");
@@ -181,6 +185,7 @@ void ts::TSAnalyzerOptions::load(Args& args)
 {
     ts_analysis = args.present(u"ts-analysis");
     service_analysis = args.present(u"service-analysis");
+    wide = args.present(u"wide-display");
     pid_analysis = args.present(u"pid-analysis");
     table_analysis = args.present(u"table-analysis");
     error_analysis = args.present(u"error-analysis");

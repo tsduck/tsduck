@@ -50,7 +50,7 @@ GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/
 $(GITHOOKS_TARGETS): Makefile
 	@echo '  [GIT] updating $(notdir $@) hook'; \
 	 echo '#!/bin/bash' >$@; \
-	 echo 'exec $$GIT_DIR/../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
+	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
 	 chmod a+x "$@"
 
 # At least enforce the presence of the git hooks.
@@ -81,6 +81,9 @@ install-devel:
 TARNAME = tsduck-$(TS_FULL_VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
+ifdef NOTELETEXT
+    NOSOURCE += tsTeletextCharset.h tsTeletextDemux.h tsTeletextCharset.cpp tsTeletextDemux.cpp tsplugin_teletext.cpp
+endif
 .PHONY: tarball
 tarball:
 	rm -rf $(TMPROOT)
@@ -104,7 +107,7 @@ $(RPMBUILDROOT):
 	rpmdev-setuptree
 
 # Reuse local Dektec Linux SDK if present.
-DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(shell cat '$(ROOTDIR)/dektec/LinuxSDK.version'),)
+DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(notdir $(shell cat $(ROOTDIR)/dektec/LinuxSDK.version)),)
 
 # Build the tsduck binary RPM.
 .PHONY: rpm rpm32

@@ -34,6 +34,7 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
+#include "tsSocketAddress.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -146,9 +147,9 @@ private:
     ts::UString temporaryFileName(int) const;
     ts::UString newTemporaryFileName();
 
-    void testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn> list);
-    void testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> list);
-    void testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list);
+    void testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list);
+    void testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list);
+    void testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list);
 
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
@@ -1287,18 +1288,19 @@ void UStringTest::testArgMixIn()
 
     enum : uint16_t {EA = 7, EB = 48};
     enum : int8_t {EC = 4, ED = 8};
+    const ts::SocketAddress sock(ts::IPAddress(10, 20, 30, 40), 12345);
 
-    testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC});
+    testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
 }
 
-void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn> list)
+void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(0), list.size());
 }
 
-void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> list)
+void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list)
 {
-    CPPUNIT_ASSERT_EQUAL(size_t(13), list.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(14), list.size());
 
     std::initializer_list<ts::ArgMixIn>::const_iterator it = list.begin();
 
@@ -1597,6 +1599,29 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
     ++it;
 
+    // SocketAddress (ts::IPAddress(10, 20, 30, 40), 12345);
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"10.20.30.40:12345", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"10.20.30.40:12345", it->toUString());
+    ++it;
+
     CPPUNIT_ASSERT(it == list.end());
 }
 
@@ -1678,6 +1703,19 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefgh|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefgh"}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefghijkl|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefghijklmnop"}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefghijklmnop|", ts::UString::Format(u"|%-*s|", {8, u"abcdefghijklmnop"}));
+
+    // Stringifiable.
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|1.2.3.4|", ts::UString::Format(u"|%s|", {ts::IPAddress(1, 2, 3, 4)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|11.22.33.44:678|", ts::UString::Format(u"|%s|", {ts::SocketAddress(ts::IPAddress(11, 22, 33, 44), 678)}));
+
+    // Boolean.
+    bool b = false;
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {b}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|true|", ts::UString::Format(u"|%s|", {b = true}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|true|", ts::UString::Format(u"|%s|", {true}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {false}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|    true|", ts::UString::Format(u"|%8s|", {true}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false   |", ts::UString::Format(u"|%-8s|", {false}));
 }
 
 void UStringTest::testArgMixOut()
@@ -1712,7 +1750,7 @@ void UStringTest::testArgMixOut()
     CPPUNIT_ASSERT_EQUAL(E21, e2);
 }
 
-void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list)
+void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(11), list.size());
 

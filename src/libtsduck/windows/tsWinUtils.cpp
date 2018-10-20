@@ -229,16 +229,10 @@ bool ts::ComSuccess(::HRESULT hr, const UChar* message, Report& report)
     if (SUCCEEDED(hr)) {
         return true;
     }
-
-    // Report error message
-    if (message != 0) {
-        report.error(UString(message) + u": " + ComMessage(hr));
-    }
     else {
-        report.error(u"COM error: " + ComMessage(hr));
+        report.error(u"%s: %s", {message != 0 ? message : u"COM error", ComMessage(hr)});
+        return false;
     }
-
-    return false;
 }
 
 

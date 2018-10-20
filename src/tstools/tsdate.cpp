@@ -31,14 +31,13 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsInputRedirector.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
 #include "tsNames.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -190,9 +189,8 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     TableHandler handler(opt);
     ts::SectionDemux demux(&handler);
@@ -207,3 +205,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

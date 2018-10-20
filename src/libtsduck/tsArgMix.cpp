@@ -36,33 +36,190 @@ const ts::UString ts::ArgMix::uempty;
 
 
 //----------------------------------------------------------------------------
+// ArgMix constructors.
+//----------------------------------------------------------------------------
+
+ts::ArgMix::ArgMix() :
+    _type(0),
+    _size(0),
+    _value(int32_t(0)),
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+    _string(),
+#endif
+    _aux(0)
+{
+}
+
+ts::ArgMix::ArgMix(const ts::ArgMix& other) :
+    _type(other._type),
+    _size(other._size),
+    _value(other._value),
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+    _string(other._string),
+#endif
+    _aux(other._aux == 0 ? 0 : new UString(*other._aux))
+{
+}
+
+ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const Value value) :
+    _type(type),
+    _size(size),
+    _value(value),
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+    _string(),
+#endif
+    _aux(0)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Specific constructors without conformant temporary object lifetime.
+//----------------------------------------------------------------------------
+
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+
+ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const std::string& value) :
+    _type(type),
+    _size(size),
+    _value(int32_t(0)),
+    _string(value),
+    _aux(0)
+{
+}
+
+ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const UString& value) :
+    _type(type),
+    _size(size),
+    _value(int32_t(0)),
+    _string(),
+    _aux(new UString(value))
+{
+}
+
+ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const StringifyInterface& value) :
+    _type(type),
+    _size(size),
+    _value(int32_t(0)),
+    _string(),
+    _aux(new UString(value.toString()))
+{
+}
+
+#endif
+
+
+//----------------------------------------------------------------------------
+// Destructor.
+//----------------------------------------------------------------------------
+
+ts::ArgMix::~ArgMix()
+{
+    // Deallocate auxiliary string, when there is one.
+    if (_aux != 0) {
+        delete _aux;
+        _aux = 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Return ArgMix value as a string.
 //----------------------------------------------------------------------------
 
 const char* ts::ArgMix::toCharPtr() const
 {
     switch (_type) {
-        case STRING | BIT8 | CLASS:  return _value.string == 0 ? "" : _value.string->c_str();
-        case STRING | BIT8: return _value.charptr == 0 ? "" : _value.charptr;
-        default: return "";
+        case STRING | BIT8 | CLASS: {
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+            return _string.c_str();
+#else
+            return _value.string == 0 ? "" : _value.string->c_str();
+#endif
+        }
+        case STRING | BIT8: {
+            return _value.charptr == 0 ? "" : _value.charptr;
+        }
+        default: {
+            return "";
+        }
     }
 }
 
 const ts::UChar* ts::ArgMix::toUCharPtr() const
 {
     switch (_type) {
-        case STRING | BIT16 | CLASS:  return _value.ustring == 0 ? u"" : _value.ustring->c_str();
-        case STRING | BIT16: return _value.ucharptr == 0 ? u"" : _value.ucharptr;
-        default: return u"";
+        case STRING | BIT16: {
+            // A pointer to UChar.
+            return _value.ucharptr == 0 ? u"" : _value.ucharptr;
+        }
+        case STRING | BIT16 | CLASS: {
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+            assert(_aux != 0);
+            return _aux->c_str();
+#else
+            // A pointer to UString.
+            return _value.ustring == 0 ? u"" : _value.ustring->c_str();
+#endif
+        }
+        case STRING | BIT16 | CLASS | STRINGIFY: {
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+            assert(_aux != 0);
+            return _aux->c_str();
+#else
+            // A pointer to StringifyInterface. Need to allocate an auxiliary string.
+            if (_value.stringify != 0 && _aux == 0) {
+                _aux = new UString(_value.stringify->toString());
+            }
+            return _aux == 0 ? u"" : _aux->c_str();
+#endif
+        }
+        default: {
+            return u"";
+        }
     }
 }
 
 const std::string& ts::ArgMix::toString() const
 {
-    return _type == (STRING | BIT8 | CLASS) && _value.string != 0 ? *_value.string : empty;
+    if (_type == (STRING | BIT8 | CLASS)) {
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+        return _string;
+#else
+        return _value.string != 0 ? *_value.string : empty;
+#endif
+    }
+    else {
+        return empty;
+    }
 }
 
 const ts::UString& ts::ArgMix::toUString() const
 {
-    return _type == (STRING | BIT16 | CLASS) && _value.ustring != 0 ? *_value.ustring : uempty;
+    switch (_type) {
+        case STRING | BIT16 | CLASS: {
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+            assert(_aux != 0);
+            return *_aux;
+#else
+            // A pointer to UString.
+            return _value.ustring == 0 ? uempty : *_value.ustring;
+#endif
+        }
+        case STRING | BIT16 | CLASS | STRINGIFY: {
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+            assert(_aux != 0);
+            return *_aux;
+#else
+            // A pointer to StringifyInterface. Need to allocate an auxiliary string.
+            if (_value.stringify != 0 && _aux == 0) {
+                _aux = new UString(_value.stringify->toString());
+            }
+            return _aux == 0 ? uempty : *_aux;
+#endif
+        }
+        default: {
+            return uempty;
+        }
+    }
 }

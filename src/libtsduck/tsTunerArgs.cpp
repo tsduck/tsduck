@@ -137,12 +137,12 @@ void ts::TunerArgs::load(Args& args)
     else if (args.present(u"adapter")) {
         const int adapter = args.intValue(u"adapter", 0);
 #if defined(TS_LINUX)
-        device_name = UString::Format(u"/dev/dvb/adapter%d", {adapter});
+        device_name.format(u"/dev/dvb/adapter%d", {adapter});
 #elif defined(TS_WINDOWS)
-        device_name = UString::Format(u":%d", {adapter});
+        device_name.format(u":%d", {adapter});
 #else
         // Does not mean anything, just for error messages.
-        device_name = UString::Format(u"DVB adapter %d", {adapter});
+        device_name.format(u"DVB adapter %d", {adapter});
 #endif
     }
 
@@ -334,7 +334,7 @@ void ts::TunerArgs::defineOptions(Args& args) const
                   u"Specify the maximum number of media samples in the queue between the "
                   u"DirectShow capture thread and the input plugin thread. The default is " +
                   UString::Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + u" media samples.");
-        
+
 #endif
 
         // Tuning options.

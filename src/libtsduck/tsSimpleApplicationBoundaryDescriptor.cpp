@@ -74,7 +74,7 @@ void ts::SimpleApplicationBoundaryDescriptor::serialize(Descriptor& desc, const 
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(uint8_t(boundary_extension.size()));
     for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
-        bbp->append(it->toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->append(it->toDVBWithByteLength(0, NPOS, charset));
     }
     serializeEnd(desc, bbp);
 }

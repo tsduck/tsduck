@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsArgsWithPlugins.h"
+#include "tsDisplayInterface.h"
 
 namespace ts {
     //!
@@ -44,7 +46,7 @@ namespace ts {
         //! Transport stream processor command-line options
         //! @ingroup plugin
         //!
-        class Options: public Args
+        class Options: public ArgsWithPlugins, public DisplayInterface
         {
         public:
             //!
@@ -53,48 +55,6 @@ namespace ts {
             //! @param [in] argv Arguments from command line.
             //!
             Options(int argc, char *argv[]);
-
-            //!
-            //! Each plugin has one of the following types
-            //!
-            enum PluginType {
-                INPUT,     //!< Input plugin.
-                OUTPUT,    //!< Output plugin.
-                PROCESSOR  //!< Packet processor plugin.
-            };
-
-            //!
-            //! Displayable names of plugin types.
-            //!
-            static const Enumeration PluginTypeNames;
-
-            //!
-            //! Class containing the options for one plugin.
-            //!
-            struct PluginOptions
-            {
-                PluginType    type;  //!< Plugin type.
-                UString       name;  //!< Plugin name.
-                UStringVector args;  //!< Plugin options.
-
-                //!
-                //! Default constructor.
-                //!
-                PluginOptions();
-
-                //!
-                //! Display the content of this object to a stream.
-                //! @param [in,out] strm Where to output the content.
-                //! @param [in] indent Margin size, default: none.
-                //! @return A reference to @a strm.
-                //!
-                std::ostream& display(std::ostream& strm, int indent = 0) const;
-            };
-
-            //!
-            //! A vector of plugin options, representing the entire tsp processing chain.
-            //!
-            typedef std::vector<PluginOptions> PluginOptionsVector;
 
             // Option values
             bool          timed_log;       //!< Add time stamps in log messages.
@@ -113,9 +73,6 @@ namespace ts {
             BitRate       bitrate;         //!< Fixed input bitrate.
             MilliSecond   bitrate_adj;     //!< Bitrate adjust interval.
             Tristate      realtime;        //!< Use real-time options.
-            PluginOptions input;           //!< Input plugin.
-            PluginOptions output;          //!< Output plugin.
-            PluginOptionsVector plugins;   //!< List of packet processor plugins.
 
             //!
             //! Apply default values to options which were not specified on the command line.
@@ -123,43 +80,20 @@ namespace ts {
             //!
             void applyDefaults(bool realtime);
 
-            //!
-            //! Display the content of this object to a stream.
-            //! @param [in,out] strm Where to output the content.
-            //! @param [in] indent Margin size, default: none.
-            //! @return A reference to @a strm.
-            //!
-            std::ostream& display(std::ostream& strm, int indent = 0) const;
+            // Implementation of DisplayInterface
+            virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const override;
 
         private:
+            // Options for --list-processor.
+            static const Enumeration ListProcessorEnum;
+
+            // Display one vector of plugins.
+            std::ostream& display(const PluginOptionsVector& opts, const UString& name, std::ostream& stream, const UString& margin = UString()) const;
+
+            // Inaccessible operations.
             Options() = delete;
             Options(const Options&) = delete;
             Options& operator=(const Options&) = delete;
-
-            //!
-            //! Options for -\-list-processor.
-            //!
-            static const Enumeration ListProcessorEnum;
-
-            //!
-            //! Search the next plugin option.
-            //! @param [in] args Arguments from command line.
-            //! @param [in] index Start searching at @a index.
-            //! @param [out] type Plugin type.
-            //! @return Index of plugin option or @a args.size() if not found.
-            //!
-            static size_t nextProcOpt(const UStringVector& args, size_t index, PluginType& type);
         };
     }
-}
-
-//!
-//! Display operator for ts::tsp::Options.
-//! @param [in,out] strm Where to output the content.
-//! @param [in] opt The object to display.
-//! @return A reference to @a strm.
-//!
-inline std::ostream& operator<<(std::ostream& strm, const ts::tsp::Options& opt)
-{
-    return opt.display(strm);
 }

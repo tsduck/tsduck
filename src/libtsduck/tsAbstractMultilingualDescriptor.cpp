@@ -74,7 +74,7 @@ void ts::AbstractMultilingualDescriptor::serialize(Descriptor& desc, const DVBCh
             desc.invalidate();
             return;
         }
-        bbp->append(it->name.toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->append(it->name.toDVBWithByteLength(0, NPOS, charset));
     }
 
     serializeEnd(desc, bbp);

@@ -320,29 +320,29 @@ size_t ts::TSFileInput::read(TSPacket* buffer, size_t max_packets, Report& repor
 #if defined (TS_WINDOWS)
         // Windows implementation
         ::DWORD insize;
-        if (::ReadFile (_handle, data + got_size, ::DWORD (req_size - got_size), &insize, NULL)) {
+        if (::ReadFile(_handle, data + got_size, ::DWORD (req_size - got_size), &insize, NULL)) {
             // Normal case: some data were read
             got_size += insize;
-            assert (got_size <= req_size);
-            _at_eof = insize == 0;
+            assert(got_size <= req_size);
+            _at_eof = _at_eof || insize == 0;
         }
         else {
             error_code = LastErrorCode ();
-            _at_eof = error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
+            _at_eof = _at_eof || error_code == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE;
             got_error = !_at_eof;
         }
 #else
         // UNIX implementation
-        ssize_t insize = ::read (_fd, data + got_size, req_size - got_size);
+        ssize_t insize = ::read(_fd, data + got_size, req_size - got_size);
         if (insize > 0) {
             // Normal case: some data were read
             got_size += insize;
-            assert (got_size <= req_size);
+            assert(got_size <= req_size);
         }
         else if (insize == 0) {
             _at_eof = true;
         }
-        else if ((error_code = LastErrorCode ()) != EINTR) {
+        else if ((error_code = LastErrorCode()) != EINTR) {
             // Actual error (not an interrupt)
             got_error = true;
         }
@@ -370,4 +370,26 @@ size_t ts::TSFileInput::read(TSPacket* buffer, size_t max_packets, Report& repor
     const size_t count = got_size / PKT_SIZE;
     _total_packets += count;
     return count;
+}
+
+//----------------------------------------------------------------------------
+// Abort any currenly read operation in progress.
+//----------------------------------------------------------------------------
+
+void ts::TSFileInput::abortRead()
+{
+    if (_is_open) {
+        // Mark broken pipe, read or write.
+        _at_eof = true;
+
+        // Close pipe handle, ignore errors.
+#if defined(TS_WINDOWS)
+        ::CloseHandle(_handle);
+        _handle = INVALID_HANDLE_VALUE;
+#else // UNIX
+        ::close(_fd);
+        _fd = -1;
+#endif
+    }
+
 }

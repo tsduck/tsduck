@@ -74,3 +74,15 @@ void ts::Plugin::writeLog(int severity, const UString& message)
     // Force message to go through tsp
     tsp->log(severity, message);
 }
+
+
+//----------------------------------------------------------------------------
+// Displayable names of plugin types.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::PluginTypeNames({
+    {u"input",            ts::INPUT_PLUGIN},
+    {u"output",           ts::OUTPUT_PLUGIN},
+    {u"packet processor", ts::PROCESSOR_PLUGIN},
+});
+

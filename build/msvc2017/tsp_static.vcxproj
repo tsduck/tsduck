@@ -27,6 +27,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_http.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_inject.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_ip.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_limit.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_merge.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_mpe.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_mpeinject.cpp" />
@@ -50,6 +51,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_rmsplice.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_scrambler.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_sdt.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_sections.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_sifilter.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_skip.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_slice.cpp" />

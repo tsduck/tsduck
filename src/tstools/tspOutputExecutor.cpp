@@ -40,12 +40,12 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::OutputExecutor::OutputExecutor(Options* options,
-                                        const Options::PluginOptions* pl_options,
+                                        const PluginOptions* pl_options,
                                         const ThreadAttributes& attributes,
                                         Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
-    _output(dynamic_cast<OutputPlugin*>(_shlib))
+    _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
 }
 
@@ -65,7 +65,7 @@ void ts::tsp::OutputExecutor::main()
         // Wait for packets to output
         size_t pkt_first, pkt_cnt;
         bool input_end;
-        waitWork (pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
+        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
 
         // We ignore the returned "aborted" which comes from the "next"
         // processor in the chaine, here the input thread. For the
@@ -98,7 +98,7 @@ void ts::tsp::OutputExecutor::main()
 
             pkt += drop_cnt;
             pkt_remain -= drop_cnt;
-            addTotalPackets (drop_cnt);
+            addTotalPackets(drop_cnt);
 
             // Find last non-dropped packet
             size_t out_cnt;
@@ -106,20 +106,20 @@ void ts::tsp::OutputExecutor::main()
 
             // Output a contiguous range of non-dropped packets.
             if (out_cnt > 0) {
-                if (!_output->send (pkt, out_cnt)) {
+                if (!_output->send(pkt, out_cnt)) {
                     aborted = true;
                     break;
                 }
                 pkt += out_cnt;
                 pkt_remain -= out_cnt;
                 output_packets += out_cnt;
-                addTotalPackets (out_cnt);
+                addTotalPackets(out_cnt);
             }
         }
 
         // Pass free buffers to input processor.
-        // Do not transmit bitrate to next (since next is input processor).
-        passPackets (pkt_cnt, 0, false, aborted);
+        // Do not transmit bitrate or input end to next (since next is input processor).
+        aborted = !passPackets(pkt_cnt, 0, false, aborted);
 
     } while (!aborted);
 

@@ -240,8 +240,13 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
 
     // Loop across all sections.
     for (size_t i = 0; i < table.sectionCount(); ++i) {
-        strm << margin << "  - Section " << i << ":" << std::endl;
-        displaySection(*table.sectionAt(i), indent + 4, cas, true);
+        const SectionPtr section(table.sectionAt(i));
+        strm << margin << "  - Section " << i;
+        if (section->isNext()) {
+            strm << ", next (not yet applicable)";
+        }
+        strm << ":" << std::endl;
+        displaySection(*section, indent + 4, cas, true);
     }
 
     return strm;
@@ -286,6 +291,9 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
             strm << margin << "  Section: " << int(section.sectionNumber())
                 << " (last: " << int(section.lastSectionNumber())
                 << "), version: " << int(section.version());
+            if (section.isNext()) {
+                strm << ", next (not yet applicable)";
+            }
         }
         strm << ", size: " << section.size() << " bytes" << std::endl;
         indent += 2;
@@ -440,7 +448,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
         const size_t valueOffset = dataOffset + index + headerSize;
 
         // Description of the TLV record.
-        strm << UString::Format(u"%*s%04X:  %*sTag: %*u (0x%0*X), length: %*u bytes, value: ",
+        strm << UString::Format(u"%*s%04X:  %*sTag: %*d (0x%0*X), length: %*d bytes, value: ",
                                 {indent, u"",
                                  dataOffset + index,
                                  innerIndent, u"",

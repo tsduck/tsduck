@@ -119,10 +119,7 @@ namespace ts {
         //!
         //! @ingroup plugin
         //!
-        class PluginExecutor:
-            public RingNode,
-            public JointTermination,
-            public Thread
+        class PluginExecutor: public JointTermination, public RingNode
         {
         public:
             //!
@@ -138,14 +135,9 @@ namespace ts {
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
             //!
             PluginExecutor(Options* options,
-                           const Options::PluginOptions* pl_options,
+                           const PluginOptions* pl_options,
                            const ThreadAttributes& attributes,
                            Mutex& global_mutex);
-
-            //!
-            //! Destructor
-            //!
-            virtual ~PluginExecutor();
 
             //!
             //! Set the initial state of the buffer for this plugin.
@@ -165,15 +157,6 @@ namespace ts {
                             BitRate       bitrate);
 
             //!
-            //! Change the report method.
-            //! @param [in] rep Address of new report instance.
-            //!
-            void setReport(Report* rep)
-            {
-                _report = rep;
-            }
-
-            //!
             //! Inform if all plugins should use defaults for real-time.
             //! @param [in] on True if all plugins should use defaults for real-time.
             //!
@@ -188,33 +171,12 @@ namespace ts {
             void setAbort();
 
             //!
-            //! Plugin stack size overhead.
-            //! Each plugin defines its own usage of the stack. The PluginExector
-            //! class and its subclasses have their own addition stack usage.
-            //!
-            static const size_t STACK_SIZE_OVERHEAD = 32 * 1024; // 32 kB
-
-            //!
-            //! Access the shared library API.
-            //! @return Address of the plugin interface.
-            //!
-            Plugin* plugin()
-            {
-                return _shlib;
-            }
-
-            //!
             //! Check if the plugin a real time one.
             //! @return True if the plugin usually requires real-time responsiveness.
             //!
-            bool isRealTime()
-            {
-                return _shlib != 0 && _shlib->isRealTime();
-            }
+            bool isRealTime() const;
 
         protected:
-            UString       _name;   //!< Plugin name.
-            Plugin*       _shlib;  //!< Shared library API.
             PacketBuffer* _buffer; //!< Description of shared packet buffer.
 
             //!
@@ -227,8 +189,9 @@ namespace ts {
             //! from the previous processor. To be passed to next processor.
             //! @param [in] input_end If true, this processor will no longer produce packets.
             //! @param [in] aborted if true, this processor has encountered an error and will cease to accept packets.
+            //! @return True when the processor shall continue, false when it shall stop.
             //!
-            void passPackets(size_t count,
+            bool passPackets(size_t count,
                              BitRate bitrate,
                              bool input_end,
                              bool aborted);
@@ -253,11 +216,7 @@ namespace ts {
                           bool& input_end,
                           bool& aborted);
 
-            // Inherited from Report (via TSP)
-            virtual void writeLog(int severity, const UString& msg) override;
-
         private:
-            Report*   _report;   // Common report interface for all plugins
             Condition _to_do;    // Notify processor to do something
 
             // The following private data must be accessed exclusively under the

@@ -36,6 +36,9 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+// File string for standard output.
+const ts::UString ts::TSFileOutput::stdoutName(u"standard output");
+
 
 //----------------------------------------------------------------------------
 // Default constructor.
@@ -130,7 +133,7 @@ bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Rep
 #endif
 
     if (got_error) {
-        report.log(_severity, u"cannot create output file %s: %s", {_filename, ErrorCodeMessage(error_code)});
+        report.log(_severity, u"cannot create %s: %s", {getDisplayFileName(), ErrorCodeMessage(error_code)});
     }
 
     _total_packets = 0;
@@ -200,11 +203,11 @@ bool ts::TSFileOutput::write(const TSPacket* buffer, size_t packet_count, Report
     ::DWORD outsize;
 
     while (remain > 0 && !got_error) {
-        if (::WriteFile (_handle, data, remain, &outsize, NULL) != 0)  {
+        if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0)  {
             // Normal case, some data were written
-            outsize = std::min (outsize, remain);
+            outsize = std::min(outsize, remain);
             data += outsize;
-            remain -= std::max (remain, outsize);
+            remain -= std::max(remain, outsize);
         }
         else if ((error_code = LastErrorCode()) == ERROR_BROKEN_PIPE || error_code == ERROR_NO_DATA) {
             // Broken pipe: error state but don't report error.
@@ -228,16 +231,16 @@ bool ts::TSFileOutput::write(const TSPacket* buffer, size_t packet_count, Report
     ssize_t outsize;
 
     while (remain > 0 && !got_error) {
-        outsize = ::write (_fd, data, remain);
+        outsize = ::write(_fd, data, remain);
         if (outsize > 0) {
             // Normal case, some data were written
-            assert (size_t (outsize) <= remain);
+            assert(size_t(outsize) <= remain);
             data += outsize;
-            remain -= std::max (remain, size_t (outsize));
+            remain -= std::max(remain, size_t (outsize));
         }
         else if ((error_code = LastErrorCode()) != EINTR) {
             // Actual error (not an interrupt)
-            report.debug(u"write error on %s, fd=%d, error_code=%d", {_filename, _fd, error_code});
+            report.debug(u"write error on %s, fd=%d, error_code=%d", {getDisplayFileName(), _fd, error_code});
             got_error = true;
             if (error_code == EPIPE) {
                 // Broken pipe: keep the error state but don't report error.
@@ -249,7 +252,7 @@ bool ts::TSFileOutput::write(const TSPacket* buffer, size_t packet_count, Report
 #endif
 
     if (got_error && error_code != SYS_SUCCESS) {
-        report.log(_severity, u"error writing output file %s: %s (%d)", {_filename, ErrorCodeMessage(error_code), error_code});
+        report.log(_severity, u"error writing %s: %s (%d)", {getDisplayFileName(), ErrorCodeMessage(error_code), error_code});
     }
 
     _total_packets += (data - data_buffer) / PKT_SIZE;

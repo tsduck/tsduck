@@ -92,7 +92,7 @@ bool ts::AudioLanguageOptions::getFromArgs(Args& args, const UChar* option_name,
             goto error;
         }
         size_t col = val.find(u":", 4);
-        if (col == UString::NPOS) {
+        if (col == NPOS) {
             col = len;
         }
         else {

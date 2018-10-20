@@ -82,6 +82,11 @@ namespace ts {
         //!
         void clear();
 
+        //!
+        //! Adjust PTS time values using the "PTS adjustment".
+        //!
+        void adjustPTS();
+
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;

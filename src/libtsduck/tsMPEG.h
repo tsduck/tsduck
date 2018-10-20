@@ -53,6 +53,11 @@ namespace ts {
     const size_t PKT_SIZE = 188;
 
     //!
+    //! MPEG TS packet size in bits.
+    //!
+    const size_t PKT_SIZE_BITS = 8 * PKT_SIZE;
+
+    //!
     //! Size in bytes of a Reed-Solomon outer FEC.
     //!
     const size_t RS_SIZE = 16;
@@ -84,6 +89,11 @@ namespace ts {
     //! only 17 hours to transmit.
     //!
     typedef uint64_t PacketCounter;
+
+    //!
+    //! A impossible value for PacketCounter, meaning "undefined".
+    //!
+    const PacketCounter INVALID_PACKET_COUNTER = std::numeric_limits<PacketCounter>::max();
 
     //!
     //! Number of sections.
@@ -154,7 +164,7 @@ namespace ts {
     {
         // The required size for a section is section_size + 1 (1 for pointer_field
         // in first packet). In each packet, the useable size is 184 bytes.
-        return PacketCounter ((section_size + 184) / 184);
+        return PacketCounter((section_size + 184) / 184);
     }
 
     //!
@@ -265,26 +275,28 @@ namespace ts {
 
         // Valid in all MPEG contexts:
 
-        PID_PAT     = 0x0000, //!< PID for Program Association Table PAT
-        PID_CAT     = 0x0001, //!< PID for Conditional Access Table
-        PID_TSDT    = 0x0002, //!< PID for Transport Stream Description Table
-        PID_NULL    = 0x1FFF, //!< PID for Null packets (stuffing)
+        PID_PAT       = 0x0000, //!< PID for Program Association Table PAT
+        PID_CAT       = 0x0001, //!< PID for Conditional Access Table
+        PID_TSDT      = 0x0002, //!< PID for Transport Stream Description Table
+        PID_MPEG_LAST = 0x000F, //!< Last reserved PID for MPEG.
+        PID_NULL      = 0x1FFF, //!< PID for Null packets (stuffing)
 
         // Valid in DVB context:
 
-        PID_NIT     = 0x0010, //!< PID for Network Information Table
-        PID_SDT     = 0x0011, //!< PID for Service Description Table
-        PID_BAT     = 0x0011, //!< PID for Bouquet Association Table
-        PID_EIT     = 0x0012, //!< PID for Event Information Table
-        PID_RST     = 0x0013, //!< PID for Running Status Table
-        PID_TDT     = 0x0014, //!< PID for Time & Date Table
-        PID_TOT     = 0x0014, //!< PID for Time Offset Table
-        PID_NETSYNC = 0x0015, //!< PID for Network synchronization
-        PID_RNT     = 0x0016, //!< PID for TV-Anytime
-        PID_INBSIGN = 0x001C, //!< PID for Inband Signalling
-        PID_MEASURE = 0x001D, //!< PID for Measurement
-        PID_DIT     = 0x001E, //!< PID for Discontinuity Information Table
-        PID_SIT     = 0x001F  //!< PID for Selection Information Table
+        PID_NIT       = 0x0010, //!< PID for Network Information Table
+        PID_SDT       = 0x0011, //!< PID for Service Description Table
+        PID_BAT       = 0x0011, //!< PID for Bouquet Association Table
+        PID_EIT       = 0x0012, //!< PID for Event Information Table
+        PID_RST       = 0x0013, //!< PID for Running Status Table
+        PID_TDT       = 0x0014, //!< PID for Time & Date Table
+        PID_TOT       = 0x0014, //!< PID for Time Offset Table
+        PID_NETSYNC   = 0x0015, //!< PID for Network synchronization
+        PID_RNT       = 0x0016, //!< PID for TV-Anytime
+        PID_INBSIGN   = 0x001C, //!< PID for Inband Signalling
+        PID_MEASURE   = 0x001D, //!< PID for Measurement
+        PID_DIT       = 0x001E, //!< PID for Discontinuity Information Table
+        PID_SIT       = 0x001F, //!< PID for Selection Information Table
+        PID_DVB_LAST  = 0x001F, //!< Last reserved PID for DVB.
     };
 
     //---------------------------------------------------------------------

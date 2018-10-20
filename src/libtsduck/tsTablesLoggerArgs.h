@@ -65,6 +65,8 @@ namespace ts {
         UString  udp_destination;   //!< UDP/IP destination address:port.
         bool     multi_files;       //!< Multiple binary output files (one per section).
         bool     flush;             //!< Flush output file.
+        bool     rewrite_xml;       //!< Rewrite a new XML file for each table.
+        bool     rewrite_binary;    //!< Rewrite a new binary file for each table.
         UString  udp_local;         //!< Name of outgoing local address (empty if unspecified).
         int      udp_ttl;           //!< Time-to-live socket option.
         bool     udp_raw;           //!< UDP messages contain raw sections, not structured messages.
@@ -85,6 +87,8 @@ namespace ts {
         bool     pack_and_flush;    //!< Pack and flush incomplete tables before exiting.
         std::set<uint8_t>  tid;     //!< TID values to filter.
         std::set<uint16_t> tidext;  //!< TID-ext values to filter.
+        bool     use_current;       //!< Use tables with "current" flag.
+        bool     use_next;          //!< Use tables with "next" flag.
 
         //!
         //! Default table log size.
@@ -104,7 +108,8 @@ namespace ts {
         //! Load arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
         //!
-        virtual void load(Args& args);
+        virtual bool load(Args& args);
     };
 }

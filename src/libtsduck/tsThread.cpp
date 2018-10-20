@@ -290,12 +290,12 @@ bool ts::Thread::waitForTermination()
     ::WaitForSingleObject(_handle, INFINITE);
     ::CloseHandle(_handle);
 #else
-    ::pthread_join (_pthread, NULL);
+    ::pthread_join(_pthread, NULL);
 #endif
 
     // Critical section on flags
     {
-        Guard lock (_mutex);
+        Guard lock(_mutex);
         _started = false;
         _waiting = false;
     }
@@ -308,13 +308,23 @@ bool ts::Thread::waitForTermination()
 // Static method. Actual starting point of threads. Parameter is "this".
 //----------------------------------------------------------------------------
 
+void ts::Thread::mainWrapper()
+{
+    try {
+        main();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "*** Internal error, thread aborted: " << e.what() << std::endl;
+    }
+}
+
 #if defined(TS_WINDOWS)
 
 ::DWORD WINAPI ts::Thread::ThreadProc(::LPVOID parameter)
 {
     // Execute thread code.
-    Thread* thread(reinterpret_cast<Thread*>(parameter));
-    thread->main();
+    Thread* thread = reinterpret_cast<Thread*>(parameter);
+    thread->mainWrapper();
 
     // Perform auto-deallocation
     if (thread->_attributes._deleteWhenTerminated) {
@@ -331,8 +341,8 @@ bool ts::Thread::waitForTermination()
 void* ts::Thread::ThreadProc(void* parameter)
 {
     // Execute thread code.
-    Thread* thread(reinterpret_cast<Thread*>(parameter));
-    thread->main();
+    Thread* thread = reinterpret_cast<Thread*>(parameter);
+    thread->mainWrapper();
 
     // Perform auto-deallocation
     if (thread->_attributes._deleteWhenTerminated) {

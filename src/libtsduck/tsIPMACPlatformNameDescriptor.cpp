@@ -74,7 +74,7 @@ void ts::IPMACPlatformNameDescriptor::serialize(Descriptor& desc, const DVBChars
 {
     ByteBlockPtr bbp(serializeStart());
     if (SerializeLanguageCode(*bbp, language_code, charset)) {
-        bbp->append(text.toDVB(0, UString::NPOS, charset));
+        bbp->append(text.toDVB(0, NPOS, charset));
         serializeEnd(desc, bbp);
     }
     else {

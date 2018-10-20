@@ -2,6 +2,7 @@
     REF_TYPE(BAT);
     REF_TYPE(CAT);
     REF_TYPE(DiscontinuityInformationTable);
+    REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
     REF_TYPE(INT);
     REF_TYPE(NIT);
@@ -23,6 +24,7 @@
     REF_TYPE(ApplicationDescriptor);
     REF_TYPE(ApplicationIconsDescriptor);
     REF_TYPE(ApplicationNameDescriptor);
+    REF_TYPE(ApplicationRecordingDescriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
@@ -35,6 +37,7 @@
     REF_TYPE(CADescriptor);
     REF_TYPE(CAIdentifierDescriptor);
     REF_TYPE(CarouselIdentifierDescriptor);
+    REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ContentDescriptor);
     REF_TYPE(CopyrightDescriptor);
@@ -48,6 +51,7 @@
     REF_TYPE(DeferredAssociationTagsDescriptor);
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
+    REF_TYPE(DTSNeuralDescriptor);
     REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);
     REF_TYPE(DVBHTMLApplicationDescriptor);
     REF_TYPE(DVBHTMLApplicationLocationDescriptor);
@@ -62,6 +66,7 @@
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
+    REF_TYPE(GraphicsConstraintsDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
@@ -87,6 +92,8 @@
     REF_TYPE(MultilingualServiceNameDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
     REF_TYPE(NetworkNameDescriptor);
+    REF_TYPE(NPTEndpointDescriptor);
+    REF_TYPE(NPTReferenceDescriptor);
     REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
     REF_TYPE(PartialTransportStreamDescriptor);
@@ -115,7 +122,9 @@
     REF_TYPE(SSUDataBroadcastIdDescriptor);
     REF_TYPE(SSULinkageDescriptor);
     REF_TYPE(STDDescriptor);
+    REF_TYPE(StreamEventDescriptor);
     REF_TYPE(StreamIdentifierDescriptor);
+    REF_TYPE(StreamModeDescriptor);
     REF_TYPE(StuffingDescriptor);
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
@@ -138,6 +147,7 @@
     REF_TYPE(TimeShiftedServiceDescriptor);
     REF_TYPE(TimeSliceFECIdentifierDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
+    REF_TYPE(TransportStreamDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
     REF_TYPE(VideoStreamDescriptor);

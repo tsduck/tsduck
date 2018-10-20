@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tspOptions.h"
-#include "tsSysUtils.h"
 #include "tsAsyncReport.h"
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
@@ -44,15 +43,7 @@ TSDUCK_SOURCE;
 #define DEF_MAX_INPUT_PKT_OFL      0  // packets
 #define DEF_MAX_INPUT_PKT_RT    1000  // packets
 
-// Displayable names of plugin types.
-const ts::Enumeration ts::tsp::Options::PluginTypeNames({
-    {u"input",            ts::tsp::Options::INPUT},
-    {u"output",           ts::tsp::Options::OUTPUT},
-    {u"packet processor", ts::tsp::Options::PROCESSOR},
-});
-
 // Options for --list-processor.
-//!
 const ts::Enumeration ts::tsp::Options::ListProcessorEnum({
     {u"all",    ts::PluginRepository::LIST_ALL},
     {u"input",  ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_COMPACT},
@@ -66,7 +57,7 @@ const ts::Enumeration ts::tsp::Options::ListProcessorEnum({
 //----------------------------------------------------------------------------
 
 ts::tsp::Options::Options(int argc, char *argv[]) :
-    Args(),
+    ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
     timed_log(false),
     list_proc_flags(0),
     monitor(false),
@@ -82,10 +73,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     instuff_stop(0),
     bitrate(0),
     bitrate_adj(0),
-    realtime(MAYBE),
-    input(),
-    output(),
-    plugins()
+    realtime(MAYBE)
 {
     setDescription(u"MPEG transport stream processor using a chain of plugins");
 
@@ -173,7 +161,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
          u"Specify the maximum number of packets to be received at a time from "
          u"the input plug-in. By default, in offline mode, tsp reads as many packets "
          u"as it can, depending on the free space in the buffer. In real-time mode, "
-         u"the default is " + UString::Decimal(DEF_MAX_INPUT_PKT_RT) + u"packets.");
+         u"the default is " + UString::Decimal(DEF_MAX_INPUT_PKT_RT) + u" packets.");
 
     option(u"monitor", 'm');
     help(u"monitor",
@@ -204,23 +192,8 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option(u"timed-log", 't');
     help(u"timed-log", u"Each logged message contains a time stamp.");
 
-    // Load arguments and process redirections.
-    const UString app_name(argc > 0 ? BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX) : UString());
-    UStringVector args;
-    if (argc > 1) {
-        UString::Assign(args, argc - 1, argv + 1);
-    }
-    if (!processArgsRedirection(args)) {
-        exitOnError();
-        return;
-    }
-
-    // Locate the first processor option. All preceeding options are tsp options and must be analyzed.
-    PluginType plugin_type;
-    size_t plugin_index = nextProcOpt(args, 0, plugin_type);
-
-    // Analyze the tsp command, not including the plugin options, not processing redirections.
-    analyze(app_name, UStringVector(args.begin(), args.begin() + plugin_index), false);
+    // Analyze the command.
+    analyze(argc, argv);
 
     timed_log = present(u"timed-log");
     list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", PluginRepository::LIST_ALL) : 0;
@@ -241,64 +214,14 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
         error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
     }
 
-    // The first processor is always the input.
     // The default input is the standard input file.
-    input.type = INPUT;
-    input.name = u"file";
-    input.args.clear();
+    if (inputs.empty()) {
+        inputs.push_back(PluginOptions(INPUT_PLUGIN, u"file"));
+    }
 
     // The default output is the standard output file.
-    output.type = OUTPUT;
-    output.name = u"file";
-    output.args.clear();
-
-    // Locate all plugins
-    plugins.reserve(args.size());
-    bool got_input = false;
-    bool got_output = false;
-
-    while (plugin_index < args.size()) {
-
-        // Check that a plugin name is present after the processor option.
-        if (plugin_index >= args.size() - 1) {
-            error(u"missing plugin name for option %s", {args[plugin_index]});
-            break;
-        }
-
-        // Locate plugin description, search for next plugin
-        const size_t start = plugin_index;
-        PluginType type = plugin_type;
-        plugin_index = nextProcOpt(args, plugin_index + 2, plugin_type);
-        PluginOptions* opt = 0;
-
-        switch (type) {
-            case PROCESSOR:
-                plugins.resize(plugins.size() + 1);
-                opt = &plugins[plugins.size() - 1];
-                break;
-            case INPUT:
-                if (got_input) {
-                    error(u"do not specify more than one input plugin");
-                }
-                got_input = true;
-                opt = &input;
-                break;
-            case OUTPUT:
-                if (got_output) {
-                    error(u"do not specify more than one output plugin");
-                }
-                got_output = true;
-                opt = &output;
-                break;
-            default:
-                // Should not get there
-                assert(false);
-        }
-
-        opt->type = type;
-        opt->name = args[start + 1];
-        opt->args.clear();
-        opt->args.insert(opt->args.begin(), args.begin() + start + 2, args.begin() + plugin_index);
+    if (outputs.empty()) {
+        outputs.push_back(PluginOptions(OUTPUT_PLUGIN, u"file"));
     }
 
     // Debug display
@@ -328,38 +251,11 @@ void ts::tsp::Options::applyDefaults(bool rt)
 
 
 //----------------------------------------------------------------------------
-// Search the next plugin option.
-//----------------------------------------------------------------------------
-
-size_t ts::tsp::Options::nextProcOpt(const UStringVector& args, size_t index, PluginType& type)
-{
-    while (index < args.size()) {
-        const UString& arg(args[index]);
-        if (arg == u"-I" || arg == u"--input") {
-            type = INPUT;
-            return index;
-        }
-        if (arg == u"-O" || arg == u"--output") {
-            type = OUTPUT;
-            return index;
-        }
-        if (arg == u"-P" || arg == u"--processor") {
-            type = PROCESSOR;
-            return index;
-        }
-        index++;
-    }
-    return std::min(args.size(), index);
-}
-
-
-//----------------------------------------------------------------------------
 // Display the content of the object to a stream
 //----------------------------------------------------------------------------
 
-std::ostream& ts::tsp::Options::display(std::ostream& strm, int indent) const
+std::ostream& ts::tsp::Options::display(std::ostream& strm, const UString& margin) const
 {
-    const std::string margin(indent, ' ');
     strm << margin << "* tsp options:" << std::endl
          << margin << "  --add-input-stuffing: " << UString::Decimal(instuff_nullpkt)
          << "/" << UString::Decimal(instuff_inpkt) << std::endl
@@ -373,42 +269,18 @@ std::ostream& ts::tsp::Options::display(std::ostream& strm, int indent) const
          << margin << "  --realtime: " << UString::TristateTrueFalse(realtime) << std::endl
          << margin << "  --monitor: " << monitor << std::endl
          << margin << "  --verbose: " << verbose() << std::endl
-         << margin << "  Number of packet processors: " << plugins.size() << std::endl
-         << margin << "  Input plugin:" << std::endl;
-    input.display(strm, indent + 4);
-    for (size_t i = 0; i < plugins.size(); ++i) {
-        strm << margin << "  Packet processor plugin " << (i+1) << ":" << std::endl;
-        plugins[i].display(strm, indent + 4);
-    }
-    strm << margin << "  Output plugin:" << std::endl;
-    output.display(strm, indent + 4);
+         << margin << "  Number of packet processors: " << plugins.size() << std::endl;
+    display(inputs, u"Input plugin", strm, margin + u" ");
+    display(plugins, u"Packet processor plugin", strm, margin + u"  ");
+    display(outputs, u"Output plugin", strm, margin + u"  ");
     return strm;
 }
 
-
-//----------------------------------------------------------------------------
-// Default constructor for plugin options.
-//----------------------------------------------------------------------------
-
-ts::tsp::Options::PluginOptions::PluginOptions() :
-    type(PROCESSOR),
-    name(),
-    args()
+std::ostream& ts::tsp::Options::display(const ts::PluginOptionsVector& opts, const ts::UString& name, std::ostream& strm, const ts::UString& margin) const
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Display the content of the object to a stream
-//----------------------------------------------------------------------------
-
-std::ostream& ts::tsp::Options::PluginOptions::display(std::ostream& strm, int indent) const
-{
-    const std::string margin(indent, ' ');
-    strm << margin << "Name: " << name << std::endl
-         << margin << "Type: " << PluginTypeNames.name(type) << std::endl;
-    for (size_t i = 0; i < args.size(); ++i) {
-        strm << margin << "Arg[" << i << "]: \"" << args[i] << "\"" << std::endl;
+    for (size_t i = 0; i < opts.size(); ++i) {
+        strm << margin << name << " " << (i+1) << ":" << std::endl;
+        opts[i].display(strm, margin + u"  ");
     }
     return strm;
 }

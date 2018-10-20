@@ -163,6 +163,14 @@
     <_any in="_descriptors"/>
   </TOT>
 
+  <!-- DSM-CC Stream Descriptors Table -->
+  <DSMCC_stream_descriptors_table
+      version="uint5, default=0"
+      current="bool, default=true"
+      table_id_extension="uint16, default=0xFFFF">
+    <_any in="_descriptors"/>
+  </DSMCC_stream_descriptors_table>
+
   <!-- IP/MAC Notification Table -->
   <INT version="uint5, default=0"
        current="bool, default=true"
@@ -364,6 +372,26 @@
       <language code="char3, required" application_name="string, required"/>
     </application_name_descriptor>
 
+    <application_recording_descriptor
+        scheduled_recording="bool, required"
+        trick_mode_aware="bool, required"
+        time_shift="bool, required"
+        dynamic="bool, required"
+        av_synced="bool, required"
+        initiating_replay="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per label -->
+      <label label="string, required" storage_properties="uint2, required"/>
+      <!-- One per component tag -->
+      <component tag="uint8, required"/>
+      <private>
+        Hexadecimal content
+      </private>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </application_recording_descriptor>
+
     <application_signalling_descriptor>
       <!-- One per application -->
       <application application_type="uint15, required"
@@ -447,6 +475,12 @@
         Hexadecimal content
       </private_data>
     </carousel_identifier_descriptor>
+
+    <CI_ancillary_data_descriptor>
+      <ancillary_data>
+        Hexadecimal content
+      </ancillary_data>
+    </CI_ancillary_data_descriptor>
 
     <component_descriptor
         stream_content="uint4, required"
@@ -534,6 +568,12 @@
         Hexadecimal content
       </additional_info>
     </DTS_descriptor>
+
+    <DTS_neural_descriptor config_id="uint8, required">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DTS_neural_descriptor>
 
     <dvb_html_application_boundary_descriptor
         label="string, required"
@@ -630,6 +670,16 @@
     </external_application_authorization_descriptor>
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+
+    <graphics_constraints_descriptor
+        can_run_without_visible_ui="bool, required"
+        handles_configuration_changed="bool, required"
+        handles_externally_controlled_video="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <graphics_configuration>
+        Hexadecimal content
+      </graphics_configuration>
+    </graphics_constraints_descriptor>
 
     <HD_simulcast_logical_channel_descriptor>
       <!-- One per service -->
@@ -810,6 +860,18 @@
 
     <network_name_descriptor network_name="string, required"/>
 
+    <NPT_endpoint_descriptor
+        start_NPT="uint33, required"
+        stop_NPT="uint33, required"/>
+
+    <NPT_reference_descriptor
+        post_discontinuity="bool, default=false"
+        content_id="uint7, default=0x7F"
+        STC_reference="uint33, required"
+        NPT_reference="uint33, required"
+        scale_numerator="uint16, required"
+        scale_denominator="uint16, required"/>
+
     <NVOD_reference_descriptor>
       <!-- One per service -->
       <service transport_stream_id="uint16, required"
@@ -948,6 +1010,19 @@
         UTC_offset="uint16, required"/>
 
     <STD_descriptor leak_valid="bool, required"/>
+
+    <stream_mode_descriptor stream_mode="uint8, required"/>
+
+    <stream_event_descriptor
+        event_id="uint16, required"
+        event_NPT="uint33, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+      <private_text>
+        ASCII string to be used instead of private_data
+      </private_text>
+    </stream_event_descriptor>
 
     <stream_identifier_descriptor component_tag="uint8, required"/>
 
@@ -1131,6 +1206,8 @@
         Hexadecimal content.
       </protocol>
     </transport_protocol_descriptor>
+
+    <transport_stream_descriptor compliance="string, required"/>
 
     <VBI_data_descriptor>
       <!-- One per VBI data service -->

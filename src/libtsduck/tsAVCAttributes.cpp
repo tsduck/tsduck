@@ -60,7 +60,8 @@ ts::UString ts::AVCAttributes::toString() const
         return UString();
     }
 
-    UString desc(UString::Format(u"%dx%d, ", {_hsize, _vsize}));
+    UString desc;
+    desc.format(u"%dx%d, ", {_hsize, _vsize});
     desc += profileName();
     desc += u", level ";
     desc += levelName();

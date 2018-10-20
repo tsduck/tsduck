@@ -31,13 +31,12 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
 #include "tsByteBlock.h"
 #include "tsFatal.h"
 #include "tsMPEG.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #define MIN_SYNC_SIZE       (1024)              // 1 kB
@@ -278,9 +277,8 @@ bool Resynchronizer::checkSync(const uint8_t* buf, size_t buf_size, size_t pkt_s
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
     ts::OutputRedirector output(opt.outfile, opt);
@@ -407,3 +405,5 @@ int main(int argc, char *argv[])
 
     return resync.status() == RS_EOF ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TS_MAIN(MainCode)

@@ -47,9 +47,11 @@ public:
     virtual void tearDown() override;
 
     void testRingNode();
+    void testSwap();
 
     CPPUNIT_TEST_SUITE(RingTest);
     CPPUNIT_TEST(testRingNode);
+    CPPUNIT_TEST(testSwap);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -152,4 +154,64 @@ void RingTest::testRingNode()
     //   34. use_invalid_in_call: In r1.<unnamed>::R::~R(), using r1->_ring_previous, which points to an out-of-scope variable r5.
     // This is incorrect: r5 was auto-removed by its destructor at end of its scope.
     // coverity[RETURN_LOCAL]
+}
+
+void RingTest::testSwap()
+{
+    R r1(1);
+    R r2(2);
+    R r3(3);
+    R r4(4);
+    R r5(5);
+    R r6(6);
+
+    // Build 3 rings: {r1}, {r2, r3}, {r4, r5, r6]
+    r3.ringInsertAfter(&r2);
+    r5.ringInsertAfter(&r4);
+    r6.ringInsertAfter(&r5);
+
+    CPPUNIT_ASSERT_EQUAL(size_t(1), r1.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), r2.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), r3.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r4.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r5.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r6.ringSize());
+
+    // Swap r1 and r4: {r4}, {r2, r3}, {r1, r5, r6]
+    r1.ringSwap(&r4);
+
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r1.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), r2.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), r3.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), r4.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r5.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r6.ringSize());
+
+    CPPUNIT_ASSERT(r4.ringNext<R>() == &r4);
+    CPPUNIT_ASSERT(r4.ringPrevious<R>() == &r4);
+
+    CPPUNIT_ASSERT(r1.ringNext<R>() == &r5);
+    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r6);
+    CPPUNIT_ASSERT(r6.ringNext<R>() == &r1);
+    CPPUNIT_ASSERT(r5.ringPrevious<R>() == &r1);
+
+    // Swap r3 and r5: {r4}, {r2, r5}, {r1, r3, r6]
+    r3.ringSwap(&r5);
+
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r1.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), r2.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r3.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), r4.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), r5.ringSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), r6.ringSize());
+
+    CPPUNIT_ASSERT(r3.ringNext<R>() == &r6);
+    CPPUNIT_ASSERT(r3.ringPrevious<R>() == &r1);
+    CPPUNIT_ASSERT(r1.ringNext<R>() == &r3);
+    CPPUNIT_ASSERT(r6.ringPrevious<R>() == &r3);
+
+    CPPUNIT_ASSERT(r5.ringNext<R>() == &r2);
+    CPPUNIT_ASSERT(r5.ringPrevious<R>() == &r2);
+    CPPUNIT_ASSERT(r2.ringNext<R>() == &r5);
+    CPPUNIT_ASSERT(r2.ringPrevious<R>() == &r5);
 }

@@ -61,8 +61,11 @@ void ts::TSPacketQueue::reset(size_t size)
 {
     Guard lock(_mutex);
 
-    // Refuse to shrink too much. Keep at least one packet.
-    _buffer.resize(std::max<size_t>(size, 1));
+    // Resize the buffer if requested.
+    if (size != NPOS) {
+        // Refuse to shrink too much. Keep at least one packet.
+        _buffer.resize(std::max<size_t>(size, 1));
+    }
 
     _eof = false;
     _stopped = false;

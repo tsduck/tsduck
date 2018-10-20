@@ -52,7 +52,9 @@ ts::xml::Unknown::Unknown(Node* parent, const UString& text) :
 
 void ts::xml::Unknown::print(TextFormatter& output, bool keepNodeOpen) const
 {
-    output << "<!" << _value.toHTML(u"<>") << ">";
+    // In unknown nodes, we escape all 5 XML characters: < > & ' "
+    // Since the node is unknown, let's be conservative.
+    output << "<!" << _value.toHTML(u"<>&'\"") << ">";
 }
 
 
@@ -65,7 +67,7 @@ bool ts::xml::Unknown::parseNode(TextParser& parser, const Node* parent)
     // The current point of parsing is right after "<!", probably a DTD we do not manage.
     // The content of the node is up (but not including) the ">".
 
-    bool ok = parser.parseText(_value, u">", true, false);
+    bool ok = parser.parseText(_value, u">", true, true);
     if (!ok) {
         _report.error(u"line %d: error parsing unknown or DTD node, not properly terminated", {lineNumber()});
     }

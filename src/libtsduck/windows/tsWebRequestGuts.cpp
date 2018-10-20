@@ -125,7 +125,7 @@ bool ts::WebRequest::downloadInitialize()
     return _guts->init();
 }
 
-void ts::WebRequest::downloadAbort()
+void ts::WebRequest::downloadClose()
 {
     _guts->clear();
 }

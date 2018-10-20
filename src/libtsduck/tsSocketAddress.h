@@ -261,10 +261,7 @@ namespace ts {
         //!
         bool match(const SocketAddress& other) const;
 
-        //!
-        //! Convert to a string object in numeric format "a.b.c.d[:port]".
-        //! @return This object, converted as a string.
-        //!
+        // Implementation of StringifyInterface.
         virtual UString toString() const override;
 
         //!

@@ -1,5 +1,5 @@
 // Sample TSDuck plugin (packet processing).
-// Simpley count packets if --count is specified.
+// Simply count packets if --count is specified.
 
 #include "tsduck.h"
 TSDUCK_SOURCE;

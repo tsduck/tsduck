@@ -45,10 +45,10 @@ TSDUCK_SOURCE;
 #define TS_NO_CURL_MESSAGE u"This version of TSDuck was compiled without Web support"
 
 class ts::WebRequest::SystemGuts {};
-void ts::WebRequest::allocateGuts() {}
-void ts::WebRequest::deleteGuts() {}
+void ts::WebRequest::allocateGuts() { _guts = new SystemGuts; }
+void ts::WebRequest::deleteGuts() { delete _guts; }
 bool ts::WebRequest::downloadInitialize() { _report.error(TS_NO_CURL_MESSAGE); return false; }
-void ts::WebRequest::downloadAbort() {}
+void ts::WebRequest::downloadClose() {}
 bool ts::WebRequest::download() { _report.error(TS_NO_CURL_MESSAGE); return false; }
 ts::UString ts::WebRequest::GetLibraryVersion() { return UString(); }
 
@@ -315,7 +315,7 @@ bool ts::WebRequest::SystemGuts::start()
     const ::CURLcode status = ::curl_easy_perform(_curl);
     const bool ok = status == ::CURLE_OK;
 
-    if (!ok) {
+    if (!ok && !_request._interrupted) {
         _request._report.error(message(u"download error", status));
     }
 
@@ -371,7 +371,7 @@ bool ts::WebRequest::downloadInitialize()
 // Abort initialized download.
 //----------------------------------------------------------------------------
 
-void ts::WebRequest::downloadAbort()
+void ts::WebRequest::downloadClose()
 {
     _guts->clear();
 }

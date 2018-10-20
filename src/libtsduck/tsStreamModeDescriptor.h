@@ -28,68 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a MediaGuard date.
+//!  Representation of a DSM-CC stream_mode_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractCASDate.h"
+#include "tsAbstractDescriptor.h"
 
 namespace ts {
+
     //!
-    //! Representation of a MediaGuard date.
-    //! @ingroup mpeg
+    //! Representation of a DSM-CC stream_mode_descriptor.
+    //! @see ISO/IEC 13818-6, 8.2.
+    //! @ingroup descriptor
     //!
-    class TSDUCKDLL MediaGuardDate: public AbstractCASDate
+    class TSDUCKDLL StreamModeDescriptor : public AbstractDescriptor
     {
     public:
-        //!
-        //! Default constructor, from a 16-bit integer.
-        //! @param [in] value 16-bit binary representation of the date.
-        //!
-        MediaGuardDate(uint16_t value = InvalidDate) :
-            AbstractCASDate(1990, value)
-        {
-        }
+        // StreamModeDescriptor public members:
+        uint8_t stream_mode;    //!< Stream mode, state machine.
 
         //!
-        //! Copy constructor.
-        //! @param [in] date another date to assign.
+        //! Default constructor.
+        //! @param [in] mode Stream mode.
         //!
-        MediaGuardDate(const MediaGuardDate& date) :
-            AbstractCASDate(1990, date)
-        {
-        }
+        StreamModeDescriptor(uint8_t mode = 0);
 
         //!
-        //! Constructor from fields.
-        //! @param [in] year Year number.
-        //! @param [in] month Month number.
-        //! @param [in] day Day number.
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        MediaGuardDate(int year, int month, int day) :
-            AbstractCASDate(1990, year, month, day)
-        {
-        }
+        StreamModeDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
-        //!
-        //! Constructor from a Time object.
-        //! @param [in] time A Time object.
-        //!
-        MediaGuardDate(const Time& time) :
-            AbstractCASDate(1990, time)
-        {
-        }
-
-        //!
-        //! Assignment operator.
-        //! @param [in] date A data to assign.
-        //! @return A reference to this object.
-        //!
-        MediaGuardDate& operator=(const AbstractCASDate& date)
-        {
-            AbstractCASDate::operator=(date);
-            return *this;
-        }
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
     };
 }

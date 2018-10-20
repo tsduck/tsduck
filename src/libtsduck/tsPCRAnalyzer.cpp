@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 
 ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
     _use_dts(false),
+    _ignore_errors(false),
     _min_pid(std::max<size_t>(1, min_pid)),
     _min_pcr(std::max<size_t>(1, min_pcr)),
     _bitrate_valid(false),
@@ -161,6 +162,11 @@ void ts::PCRAnalyzer::resetAndUseDTS(size_t min_pid, size_t min_dts)
     _use_dts = true;
 }
 
+void ts::PCRAnalyzer::setIgnoreErrors(bool ignore)
+{
+    _ignore_errors = ignore;
+}
+
 
 //----------------------------------------------------------------------------
 // Process a discontinuity in the transport stream
@@ -247,7 +253,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
     _ts_pkt_cnt++;
 
     // Reject invalid packets, suspected TS corruption
-    if (!pkt.hasValidSync()) {
+    if (!_ignore_errors && !pkt.hasValidSync()) {
         processDiscountinuity();
         return _bitrate_valid;
     }
@@ -266,33 +272,35 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
 
     // Process discontinuities. If a discontinuity is discovered,
     // the PCR calculation across this packet is not valid.
-    bool broken_rate = false;
-    uint8_t continuity_cnt = pkt.getCC();
+    if (!_ignore_errors) {
+        bool broken_rate = false;
+        uint8_t continuity_cnt = pkt.getCC();
 
-    if (ps->ts_pkt_cnt == 1) {
-        // First packet on this PID, initialize continuity
+        if (ps->ts_pkt_cnt == 1) {
+            // First packet on this PID, initialize continuity
+            ps->cur_continuity = continuity_cnt;
+        }
+        else if (pkt.getDiscontinuityIndicator()) {
+            // Expected discontinuity
+            broken_rate = true;
+        }
+        else if (pkt.hasPayload()) {
+            // Packet has payload. Compute next continuity counter.
+            uint8_t next_cont((ps->cur_continuity + 1) & 0x0F);
+            // The countinuity counter must be either identical to previous one
+            // (duplicated packet) or adjacent.
+            broken_rate = continuity_cnt != ps->cur_continuity && continuity_cnt != next_cont;
+        }
+        else if (continuity_cnt != ps->cur_continuity) {
+            // Packet has no payload -> should have same counter
+            broken_rate = continuity_cnt != ps->cur_continuity;
+        }
         ps->cur_continuity = continuity_cnt;
-    }
-    else if (pkt.getDiscontinuityIndicator()) {
-        // Expected discontinuity
-        broken_rate = true;
-    }
-    else if (pkt.hasPayload()) {
-        // Packet has payload. Compute next continuity counter.
-        uint8_t next_cont((ps->cur_continuity + 1) & 0x0F);
-        // The countinuity counter must be either identical to previous one
-        // (duplicated packet) or adjacent.
-        broken_rate = continuity_cnt != ps->cur_continuity && continuity_cnt != next_cont;
-    }
-    else if (continuity_cnt != ps->cur_continuity) {
-        // Packet has no payload -> should have same counter
-        broken_rate = continuity_cnt != ps->cur_continuity;
-    }
-    ps->cur_continuity = continuity_cnt;
 
-    // In case of suspected packet loss, reset calculations
-    if (broken_rate) {
-        processDiscountinuity();
+        // In case of suspected packet loss, reset calculations
+        if (broken_rate) {
+            processDiscountinuity();
+        }
     }
 
     // Process PCR (or DTS)
@@ -333,9 +341,11 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             }
         }
 
-        // Save PCR for next calculation
-        ps->last_pcr_value = pcr;
-        ps->last_pcr_packet = _ts_pkt_cnt;
+        // Save PCR for next calculation, ignore duplicated PCR values.
+        if (ps->last_pcr_value != pcr) {
+            ps->last_pcr_value = pcr;
+            ps->last_pcr_packet = _ts_pkt_cnt;
+        }
     }
 
     return _bitrate_valid;

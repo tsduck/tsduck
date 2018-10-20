@@ -35,6 +35,7 @@
 #pragma once
 #include "tsxmlNode.h"
 #include "tsReport.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     namespace xml {
@@ -42,7 +43,7 @@ namespace ts {
         //! Representation of an XML document.
         //! @ingroup xml
         //!
-        class TSDUCKDLL Document: public Node
+        class TSDUCKDLL Document: public Node, public StringifyInterface
         {
         public:
             //!
@@ -108,12 +109,8 @@ namespace ts {
             //!
             bool save(const UString& fileName, size_t indent = 2);
 
-            //!
-            //! Convert the document to an XML string.
-            //! @param [in] indent Indentation width of each level.
-            //! @return The content of the XML document.
-            //!
-            UString toString(size_t indent = 2) const;
+            // Implementation of StringifyInterface.
+            virtual UString toString() const override;
 
             //!
             //! Get the root element of the document.

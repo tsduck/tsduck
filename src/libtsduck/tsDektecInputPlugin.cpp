@@ -52,6 +52,11 @@ ts::DektecInputPlugin::~DektecInputPlugin()
 {
 }
 
+bool ts::DektecInputPlugin::getOptions()
+{
+    return true;
+}
+
 bool ts::DektecInputPlugin::start()
 {
     tsp->error(TS_NO_DTAPI_MESSAGE);
@@ -86,6 +91,7 @@ public:
     bool                is_started;   // Device started
     int                 dev_index;    // Dektec device index
     int                 chan_index;   // Device input channel index
+    int                 timeout_ms;   // Receive timeout in milliseconds.
     DektecDevice        device;       // Device characteristics
     Dtapi::DtDevice     dtdev;        // Device descriptor
     Dtapi::DtInpChannel chan;         // Input channel
@@ -97,6 +103,7 @@ public:
         is_started(false),
         dev_index(-1),
         chan_index(-1),
+        timeout_ms(0),
         device(),
         dtdev(),
         chan(),
@@ -113,7 +120,7 @@ public:
 //----------------------------------------------------------------------------
 
 ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI device.", u"[options]"),
+    InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI device", u"[options]"),
     _guts(new Guts)
 {
     CheckNonNull(_guts);
@@ -129,6 +136,25 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"in the system). Use the command \"tsdektec -a [-v]\" to have a "
          u"complete list of devices in the system. By default, use the first "
          u"input Dektec device.");
+
+    option(u"receive-timeout", 't', UNSIGNED);
+    help(u"receive-timeout",
+         u"Specify the data reception timeout in milliseconds. "
+         u"This timeout applies to each receive operation, individually. "
+         u"By default, receive operations wait for data, possibly forever.");
+}
+
+
+//----------------------------------------------------------------------------
+// Command line options method
+//----------------------------------------------------------------------------
+
+bool ts::DektecInputPlugin::getOptions()
+{
+    _guts->dev_index = intValue<int>(u"device", -1);
+    _guts->chan_index = intValue<int>(u"channel", -1);
+    _guts->timeout_ms = intValue<int>(u"timeout", -1);
+    return true;
 }
 
 
@@ -142,10 +168,6 @@ bool ts::DektecInputPlugin::start()
         tsp->error(u"already started");
         return false;
     }
-
-    // Get command line argumentsu
-    _guts->dev_index = intValue<int>(u"device", -1);
-    _guts->chan_index = intValue<int>(u"channel", -1);
 
     // Locate the device
     if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, true, *tsp)) {
@@ -270,7 +292,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
         return 0;
     }
 
-    Dtapi::DTAPI_RESULT status;
+    Dtapi::DTAPI_RESULT status = DTAPI_OK;
 
     // After initialization, we check the receive FIFO load before reading it.
     // If the FIFO is full, we have lost packets.
@@ -292,8 +314,16 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
     // Do not read more than what a DTA device accepts
     size_t size = RoundDown(std::min(max_packets * PKT_SIZE, DTA_MAX_IO_SIZE), PKT_SIZE);
 
-    // Receive packets (wait if no input signal)
-    status = _guts->chan.Read(reinterpret_cast<char*> (buffer), int(size));
+    // Receive packets.
+    if (_guts->timeout_ms < 0) {
+        // Receive without timeout (wait forever if no input signal).
+        status = _guts->chan.Read(reinterpret_cast<char*> (buffer), int(size));
+    }
+    else {
+        // Receive with timeout (can be null, ie. non-blocking).
+        status = _guts->chan.Read(reinterpret_cast<char*> (buffer), int(size), _guts->timeout_ms);
+    }
+
     if (status == DTAPI_OK) {
         return size / PKT_SIZE;
     }

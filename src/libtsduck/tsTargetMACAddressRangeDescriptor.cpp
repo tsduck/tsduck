@@ -113,8 +113,8 @@ void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& displ
 
     while (size >= 12) {
         strm << margin
-             << "First address: " << MACAddress(GetUInt48(data)).toString()
-             << ", last: " << MACAddress(GetUInt48(data + 6)).toString()
+             << "First address: " << MACAddress(GetUInt48(data))
+             << ", last: " << MACAddress(GetUInt48(data + 6))
              << std::endl;
         data += 12; size -= 12;
     }

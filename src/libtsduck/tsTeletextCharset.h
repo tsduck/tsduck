@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsUChar.h"
+#if !defined(TS_NOTELETEXT)
 
 namespace ts {
     //!
@@ -145,3 +146,5 @@ namespace ts {
         G0CharsetData  _G0;        //!< Current character set data.
     };
 }
+
+#endif // TS_NOTELETEXT

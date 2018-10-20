@@ -51,6 +51,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         HttpInput(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual void processInput() override;
 
@@ -151,16 +152,11 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Command line options method
 //----------------------------------------------------------------------------
 
-bool ts::HttpInput::start()
+bool ts::HttpInput::getOptions()
 {
-    // Invoke superclass.
-    if (!PushInputPlugin::start()) {
-        return false;
-    }
-
     // Decode options.
     _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
     _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
@@ -178,8 +174,20 @@ bool ts::HttpInput::start()
         _request.setConnectionTimeout(intValue<MilliSecond>(u"connection-timeout"));
     }
 
-    _partial_size = 0;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::HttpInput::start()
+{
+    _partial_size = 0;
+
+    // Invoke superclass.
+    return PushInputPlugin::start();
 }
 
 
@@ -252,6 +260,7 @@ bool ts::HttpInput::handleWebData(const WebRequest& request, const void* addr, s
         // If the partial packet is full, push it.
         if (_partial_size == PKT_SIZE) {
             if (!pushPackets(&_partial, 1)) {
+                tsp->debug(u"error pushing packets");
                 return false;
             }
             _partial_size = 0;
@@ -264,6 +273,7 @@ bool ts::HttpInput::handleWebData(const WebRequest& request, const void* addr, s
 
     // Push complete packets.
     if (count > 0 && !pushPackets(reinterpret_cast<const TSPacket*>(data), count)) {
+        tsp->debug(u"error pushing packets");
         return false;
     }
 

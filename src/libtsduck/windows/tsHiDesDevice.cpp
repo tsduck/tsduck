@@ -537,17 +537,23 @@ void ts::HiDesDevice::Guts::close()
     // Release pointer to COM object.
     filter.release();
 
-    // Close handle.
+    // Close handle ?
     // WARNING: It is unclear if this handle should be closed here or not.
+    //
     // The handle is returned by IKsObject::KsGetObjectHandle. There is no
     // evidence if this is a permanent handle which was returned (and we
     // should not close it) or if this handle was specially created for
     // us in KsGetObjectHandle (and we should close it).
-
-    if (handle != INVALID_HANDLE_VALUE) {
-        ::CloseHandle(handle);
-        handle = INVALID_HANDLE_VALUE;
-    }
+    //
+    // When executing under control of the debugger, CloseHandle throws an
+    // "invalid handle" exception. It is probable that this handle is not
+    // recognized as the kind of handle which is open by the system.
+    //
+    // if (handle != 0 && handle != INVALID_HANDLE_VALUE) {
+    //     ::CloseHandle(handle);
+    // }
+    //
+    handle = INVALID_HANDLE_VALUE;
 
     // Close event handle used in overlapped operations.
     if (overlapped.hEvent != 0 && overlapped.hEvent != INVALID_HANDLE_VALUE) {
