@@ -221,6 +221,16 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
     grid.setLayout({decimalPids ? grid.both(14) : grid.right(6), grid.bothTruncateLeft(decimalPids ? 56 : 49), grid.right(14)});
     grid.putLayout({{u"PID", u""}, {u"Usage", u"Access "}, {u"Bitrate"}});
     grid.setLayout({decimalPids ? grid.both(14) : grid.right(6), grid.bothTruncateLeft(decimalPids ? 56 : 49, u'.'), grid.right(14)});
+    reportServiceSubtotal(grid, usage, scrambled, bitrate, ts_bitrate);
+}
+
+
+//----------------------------------------------------------------------------
+// Display one line of a subtotal
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const
+{
     grid.putLayout({{u"Total", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
 }
 
@@ -275,12 +285,15 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_global_pkt_cnt, _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids}));
     reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, decimalPids);
 
+    uint32_t sub_bitrate = 0;
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             reportServicePID(grid, pc);
+            if (pc.pid < 0x1F) sub_bitrate+= pc.bitrate;
         }
     }
+    reportServiceSubtotal(grid, u"PSI data (without NULLs)", _global_scr_pids > 0, sub_bitrate, _ts_bitrate);
 
     // Display unreferenced pids
 
