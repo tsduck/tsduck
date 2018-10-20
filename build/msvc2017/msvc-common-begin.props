@@ -22,9 +22,18 @@
     </ProjectConfiguration>
   </ItemGroup>
 
-  <PropertyGroup Label="Configuration">
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
+  <Choose>
+    <When Condition="'$(MSBuildToolsVersion)' == '14.0'">
+      <PropertyGroup Label="Configuration">
+        <PlatformToolset>v140</PlatformToolset>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup Label="Configuration">
+        <PlatformToolset>v141</PlatformToolset>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <ItemDefinitionGroup>
     <BuildLog>

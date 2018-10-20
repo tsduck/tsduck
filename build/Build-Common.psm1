@@ -388,10 +388,12 @@ function Search-VisualStudio
     param([Parameter(Mandatory=$false)][String] $BuildRoot = $PSScriptRoot)
 
     # List of known MSBuild with corresponding version of Visual Studio,
-    # in decreasinf order of preference.
+    # in decreasing order of preference.
     $KnownMSBuild = @(
         @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe'},
-        @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'}
+        @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'},
+        @{VS = '2017'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\amd64\MSBuild.exe'},
+        @{VS = '2017'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'}
     )
 
     # Find preferred version of MSBuild.

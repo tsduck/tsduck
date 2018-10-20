@@ -34,8 +34,10 @@ The git hooks are automatically installed when building TSDuck.
 
 Build scripts on Windows
 ------------------------
-- msvc2017 : A subdirectory containing all Visual Studio 2017 project files.
-  These files are also valid MSBuild project files.
+- msvc2017 : A subdirectory containing all Visual Studio 2017 and 2015 project
+  files. These files are also valid MSBuild project files. The software may be
+  built either using MSBuild (see Build.ps1) or using the tsduck.sln solution
+  file in the Visual Studio GUI.
 
 - tsduck.rc : The Microsoft resource file which is used to build the various
   TSDuck executables.
