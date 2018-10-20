@@ -285,15 +285,15 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_global_pkt_cnt, _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids}));
     reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, decimalPids);
 
-    uint32_t sub_bitrate = 0;
+    uint32_t psi_bitrate = 0;
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             reportServicePID(grid, pc);
-            if (pc.pid < 0x1F) sub_bitrate+= pc.bitrate;
+            if (pc.pid < 0x1F) psi_bitrate+= pc.bitrate;
         }
     }
-    reportServiceSubtotal(grid, u"PSI data (without NULLs)", _global_scr_pids > 0, sub_bitrate, _ts_bitrate);
+    reportServiceSubtotal(grid, u"PSI data (without NULLs)", _global_scr_pids > 0, psi_bitrate, _ts_bitrate);
 
     // Display unreferenced pids
 
