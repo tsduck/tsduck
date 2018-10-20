@@ -290,7 +290,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             reportServicePID(grid, pc);
-            if (pc.pid < 0x1F) psi_bitrate+= pc.bitrate;
+            if (pc.pid <= 0x1F) psi_bitrate+= pc.bitrate;
         }
     }
     reportServiceSubtotal(grid, u"PSI data (without NULLs)", _global_scr_pids > 0, psi_bitrate, _ts_bitrate);
