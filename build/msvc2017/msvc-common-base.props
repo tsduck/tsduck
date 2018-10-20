@@ -41,6 +41,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings Condition="'$(MSBuildToolsVersion)'=='14.0'">4800;4702;4592;4505</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>TS_WINVER_FILENAME="$(TargetName)$(TargetExt)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
