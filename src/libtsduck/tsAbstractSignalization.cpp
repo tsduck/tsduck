@@ -103,7 +103,7 @@ bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
 
 bool ts::AbstractSignalization::SerializeFixedLength(ByteBlock& bb, const UString& str, const size_t size, const DVBCharset* charset)
 {
-    const ByteBlock dvb(str.toDVB(0, UString::NPOS, charset));
+    const ByteBlock dvb(str.toDVB(0, NPOS, charset));
     if (dvb.size() == size) {
         bb.append(dvb);
         return true;

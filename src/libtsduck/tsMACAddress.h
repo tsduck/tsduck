@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsStringifyInterface.h"
 #include "tsCerrReport.h"
 #include "tsIPAddress.h"
 
@@ -41,7 +42,7 @@ namespace ts {
     //! A basic representation of a MAC address.
     //! @ingroup net
     //!
-    class TSDUCKDLL MACAddress
+    class TSDUCKDLL MACAddress: public StringifyInterface
     {
     public:
         //!
@@ -175,11 +176,8 @@ namespace ts {
         //!
         bool resolve(const UString& name, Report& report = CERR);
 
-        //!
-        //! Convert to a string object in numeric format "a:b:c:d:e:f".
-        //! @return This object, converted as a string.
-        //!
-        UString toString() const;
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
 
         //!
         //! Comparison "less than" operator.
@@ -201,15 +199,4 @@ namespace ts {
     //! Vector of MAC addresses.
     //!
     typedef std::vector<MACAddress> MACAddressVector;
-}
-
-//!
-//! Output operator for the class @link ts::MACAddress @endlink on standard text streams.
-//! @param [in,out] strm An standard stream in output mode.
-//! @param [in] addr The IP address object.
-//! @return A reference to the @a strm object.
-//!
-inline std::ostream& operator<< (std::ostream& strm, const ts::MACAddress& addr)
-{
-    return strm << addr.toString();
 }

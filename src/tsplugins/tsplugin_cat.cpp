@@ -32,15 +32,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
 #include "tsCADescriptor.h"
 #include "tsCAT.h"
 TSDUCK_SOURCE;
-
-#define DEFAULT_CAT_BITRATE 3000
 
 
 //----------------------------------------------------------------------------
@@ -48,35 +44,22 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class CATPlugin: public ProcessorPlugin, private TableHandlerInterface
+    class CATPlugin: public AbstractTablePlugin
     {
     public:
         // Implementation of plugin API
         CATPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        bool                  _cat_found;         // Found a CAT
-        PacketCounter         _pkt_current;       // Total number of packets
-        PacketCounter         _pkt_create_cat;    // Packet# after which a new CAT shall be created
-        PacketCounter         _pkt_insert_cat;    // Packet# after which a CAT packet shall be inserted
-        MilliSecond           _create_after_ms;   // Create a new CAT if none found after that time
-        BitRate               _cat_bitrate;       // CAT PID's bitrate (if no previous CAT)
-        PacketCounter         _cat_inter_pkt;     // Packet interval between two CAT packets
         bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        bool                  _incr_version;      // Increment table version
-        bool                  _set_version;       // Set a new table version
-        uint8_t               _new_version;       // New table version
         std::vector<uint16_t> _remove_casid;      // Set of CAS id to remove
         std::vector<uint16_t> _remove_pid;        // Set of EMM PID to remove
         DescriptorList        _add_descs;         // List of descriptors to add
-        SectionDemux          _demux;             // Section demux
-        CyclingPacketizer     _pzer;              // Packetizer for modified CAT
 
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-        void handleCAT(CAT&);
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
 
         // Inaccessible operations
         CATPlugin() = delete;
@@ -94,23 +77,11 @@ TSPLUGIN_DECLARE_PROCESSOR(cat, ts::CATPlugin)
 //----------------------------------------------------------------------------
 
 ts::CATPlugin::CATPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Perform various transformations on the CAT", u"[options]"),
-    _cat_found(false),
-    _pkt_current(0),
-    _pkt_create_cat(0),
-    _pkt_insert_cat(0),
-    _create_after_ms(0),
-    _cat_bitrate(0),
-    _cat_inter_pkt(0),
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the CAT", u"[options]", u"CAT", PID_CAT),
     _cleanup_priv_desc(false),
-    _incr_version(false),
-    _set_version(false),
-    _new_version(0),
     _remove_casid(),
     _remove_pid(),
-    _add_descs(0),
-    _demux(this),
-    _pzer()
+    _add_descs(0)
 {
     option(u"add-ca-descriptor", 'a', STRING, 0, UNLIMITED_COUNT);
     help(u"add-ca-descriptor", u"casid/pid[/private-data]",
@@ -119,39 +90,9 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
          u"Several --add-ca-descriptor options may be specified to add several "
          u"descriptors.");
 
-    option(u"bitrate", 'b', POSITIVE);
-    help(u"bitrate",
-         u"Specifies the bitrate in bits / second of the CAT if a new one is "
-         u"created. The default is " + UString::Decimal(DEFAULT_CAT_BITRATE) + u" b/s.");
-
     option(u"cleanup-private-descriptors");
     help(u"cleanup-private-descriptors",
          u"Remove all private descriptors without preceding private_data_specifier descriptor.");
-
-    option(u"create", 'c');
-    help(u"create",
-         u"Create a new empty CAT if none was received after one second. This is "
-         u"equivalent to --create-after 1000.");
-
-    option(u"create-after", 0, POSITIVE);
-    help(u"create-after",
-         u"e a new empty CAT if none was received after the specified number "
-         u"of milliseconds. This can be useful to force the creation of a CAT in "
-         u"a TS that has none (the CAT is an optional table). If an actual CAT is "
-         u"received later, it will be used as the base for transformations instead "
-         u"of the empty one.");
-
-    option(u"increment-version", 'i');
-    help(u"increment-version",
-         u"Increment the version number of the CAT.");
-
-    option(u"inter-packet", 0, POSITIVE);
-    help(u"inter-packet",
-         u"When a new CAT is created and --bitrate is not present, this option "
-         u"specifies the packet interval for the CAT PID, that is to say the "
-         u"number of TS packets in the transport between two packets of the "
-         u"CAT PID. Use instead of --bitrate if the global bitrate of the TS "
-         u"cannot be determined.");
 
     option(u"remove-casid", 'r', UINT16, 0, UNLIMITED_COUNT);
     help(u"remove-casid",
@@ -162,10 +103,6 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
     help(u"remove-pid",
          u"Remove all CA_descriptors with the specified EMM PID value. "
          u"Several --remove-pid options may be specified.");
-
-    option(u"new-version", 'v', INTEGER, 0, 1, 0, 31);
-    help(u"new-version",
-         u"Specify a new value for the version of the CAT.");
 }
 
 
@@ -176,13 +113,7 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
 bool ts::CATPlugin::start()
 {
     // Get option values
-    _incr_version = present(u"increment-version");
-    _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
-    _cat_bitrate = intValue<BitRate>(u"bitrate", DEFAULT_CAT_BITRATE);
-    _cat_inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
-    _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version", 0);
     getIntValues(_remove_casid, u"remove-casid");
     getIntValues(_remove_pid, u"remove-pid");
 
@@ -194,55 +125,41 @@ bool ts::CATPlugin::start()
         return false;
     }
 
-    // Initialize the demux and packetizer
-    _demux.reset();
-    _demux.addPID (PID_CAT);
-    _pzer.reset();
-    _pzer.setPID (PID_CAT);
-
-    // Reset other states
-    _cat_found = false;
-    _pkt_current = 0;
-    _pkt_create_cat = 0;
-    _pkt_insert_cat = 0;
-
-    return true;
+    // Start superclass.
+    return AbstractTablePlugin::start();
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete table is available.
+// Invoked by the superclass to create an empty table.
 //----------------------------------------------------------------------------
 
-void ts::CATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::CATPlugin::createNewTable(BinaryTable& table)
 {
-    if (table.tableId() == TID_CAT && table.sourcePID() == PID_CAT) {
-        CAT cat (table);
-        if (cat.isValid()) {
-            // Process this CAT
-            handleCAT (cat);
-            // No longer try to insert new CAT packets
-            _pkt_insert_cat = 0;
-        }
-    }
+    CAT cat;
+    cat.serialize(table);
 }
 
 
 //----------------------------------------------------------------------------
-// Process a new CAT
+// Invoked by the superclass when a table is found in the target PID.
 //----------------------------------------------------------------------------
 
-void ts::CATPlugin::handleCAT(CAT& cat)
+void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reinsert)
 {
-    // CAT is found, no longer try to create a new one
-    _cat_found = true;
-
-    // Modify CAT version
-    if (_incr_version) {
-        cat.version = (cat.version + 1) & 0x1F;
+    // Warn about non-CAT tables in the CAT PID but keep them.
+    if (table.tableId() != TID_CAT) {
+        tsp->warning(u"found table id 0x%X (%d) in the CAT PID", {table.tableId(), table.tableId()});
+        is_target = false;
+        return;
     }
-    else if (_set_version) {
-        cat.version = _new_version;
+
+    // Process the CAT.
+    CAT cat(table);
+    if (!cat.isValid()) {
+        tsp->warning(u"found invalid CAT");
+        reinsert = false;
+        return;
     }
 
     // Remove descriptors
@@ -273,64 +190,6 @@ void ts::CATPlugin::handleCAT(CAT& cat)
     // Add descriptors
     cat.descs.add(_add_descs);
 
-    // Place modified CAT in the packetizer
-    tsp->verbose(u"CAT version %d modified", {cat.version});
-    _pzer.removeSections(TID_CAT);
-    _pzer.addTable(cat);
-}
-
-
-//----------------------------------------------------------------------------
-// Packet processing method
-//----------------------------------------------------------------------------
-
-ts::ProcessorPlugin::Status ts::CATPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
-{
-    const PID pid = pkt.getPID();
-
-    // Count packets
-    _pkt_current++;
-
-    // Filter incoming sections
-    _demux.feedPacket(pkt);
-
-    // Determine when a new CAT shall be created. Executed only once, when the bitrate is known
-    if (_create_after_ms > 0 && _pkt_create_cat == 0) {
-        _pkt_create_cat = PacketDistance(tsp->bitrate(), _create_after_ms);
-    }
-
-    // Create a new CAT when necessary
-    if (!_cat_found && _pkt_create_cat > 0 && _pkt_current >= _pkt_create_cat) {
-        // Create a new empty CAT and process it as if it comes from the TS
-        CAT cat;
-        handleCAT(cat);
-        // Insert first CAT packet as soon as possible
-        _pkt_insert_cat = _pkt_current;
-    }
-
-    // Insertion of CAT packets
-    if (pid == PID_NULL && _pkt_insert_cat > 0 && _pkt_current >= _pkt_insert_cat) {
-        // It is time to replace stuffing by a created CAT packet
-        _pzer.getNextPacket (pkt);
-        // Next CAT insertion point
-        if (_cat_inter_pkt != 0) {
-            // CAT packet interval was explicitly specified
-            _pkt_insert_cat += _cat_inter_pkt;
-        }
-        else {
-            // Compute CAT packet interval from bitrates
-            const BitRate ts_bitrate = tsp->bitrate();
-            if (ts_bitrate < _cat_bitrate) {
-                tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
-                return TSP_END;
-            }
-            _pkt_insert_cat += ts_bitrate / _cat_bitrate;
-        }
-    }
-    else if (pid == PID_CAT) {
-        // Replace an existing CAT packet
-        _pzer.getNextPacket(pkt);
-    }
-
-    return TSP_OK;
+    // Reserialize modified CAT.
+    cat.serialize(table);
 }

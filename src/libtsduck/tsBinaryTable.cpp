@@ -272,6 +272,16 @@ size_t ts::BinaryTable::totalSize() const
 
 
 //----------------------------------------------------------------------------
+// Minimum number of TS packets required to transport the table.
+//----------------------------------------------------------------------------
+
+ts::PacketCounter ts::BinaryTable::packetCount(bool pack) const
+{
+    return Section::PacketCount(_sections, pack);
+}
+
+
+//----------------------------------------------------------------------------
 // Add several sections to a table
 //----------------------------------------------------------------------------
 

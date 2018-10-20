@@ -31,10 +31,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsInputRedirector.h"
 #include "tsPSILogger.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -83,9 +82,8 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
     ts::TablesDisplay display(opt.display, opt);
@@ -104,3 +102,5 @@ int main (int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

@@ -110,6 +110,51 @@ void ts::SpliceInsert::adjustPTS(uint64_t adjustment)
 
 
 //----------------------------------------------------------------------------
+// Get the highest or lowest PTS value in the command.
+//----------------------------------------------------------------------------
+
+uint64_t ts::SpliceInsert::highestPTS() const
+{
+    uint64_t result = INVALID_PTS;
+    if (!canceled && !immediate) {
+        // Check program splice time.
+        if (program_splice && program_pts.set() && program_pts.value() <= PTS_DTS_MASK) {
+            result = program_pts.value();
+        }
+        // Check components splice times.
+        if (!program_splice) {
+            for (auto it = components_pts.begin(); it != components_pts.end(); ++it) {
+                if (it->second.set() && it->second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it->second.value() > result)) {
+                    result = it->second.value();
+                }
+            }
+        }
+    }
+    return result;
+}
+
+uint64_t ts::SpliceInsert::lowestPTS() const
+{
+    uint64_t result = INVALID_PTS;
+    if (!canceled && !immediate) {
+        // Check program splice time.
+        if (program_splice && program_pts.set() && program_pts.value() <= PTS_DTS_MASK) {
+            result = program_pts.value();
+        }
+        // Check components splice times.
+        if (!program_splice) {
+            for (auto it = components_pts.begin(); it != components_pts.end(); ++it) {
+                if (it->second.set() && it->second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it->second.value() < result)) {
+                    result = it->second.value();
+                }
+            }
+        }
+    }
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
 // Display a SpliceInsert command.
 //----------------------------------------------------------------------------
 

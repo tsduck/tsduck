@@ -66,6 +66,8 @@ namespace ts {
         bool          _terminate;       // Terminate after one NIT
         bool          _dvb_options;     // Output format: dvb plugin options
         bool          _all_nits;        // Also include all "NIT other"
+        bool          _nit_other;       // Analyze one "NIT other"
+        uint16_t      _network_id;      // Network id of "NIT other" to analyze
         PID           _nit_pid;         // PID for the NIT (default: read PAT)
         size_t        _nit_count;       // Number of analyzed NIT's
         SectionDemux  _demux;           // Section demux
@@ -104,6 +106,8 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _terminate(false),
     _dvb_options(false),
     _all_nits(false),
+    _nit_other(false),
+    _network_id(0),
     _nit_pid(PID_NULL),
     _nit_count(0),
     _demux(this)
@@ -126,6 +130,11 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
          u"--symbol-rate, etc. By default, the tuning information are formatted "
          u"as Linux DVB \"zap\" configuration files as used by the standard "
          u"utilities \"szap\", \"czap\" and \"tzap\".");
+
+    option(u"network-id", 'n', UINT16);
+    help(u"network-id",
+         u"Specify the network-id of a NIT other to analyze instead of the NIT actual. "
+         u"By default, the NIT actual is analyzed.");
 
     option(u"output-file", 'o', STRING);
     help(u"output-file", u"filename",
@@ -163,6 +172,8 @@ bool ts::NITScanPlugin::start()
     _all_nits = present(u"all-nits");
     _terminate = present(u"terminate");
     _dvb_options = present(u"dvb-options");
+    _nit_other = present(u"network-id");
+    _network_id = intValue<uint16_t>(u"network-id");
     _nit_pid = intValue<PID>(u"pid", PID_NULL);
     _use_comment = present(u"comment");
     _comment_prefix = value(u"comment", u"# ");
@@ -219,7 +230,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                const PAT pat(table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -229,7 +240,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_NIT_ACT: {
             if (table.sourcePID() == _nit_pid) {
-                NIT nit(table);
+                const NIT nit(table);
                 if (nit.isValid()) {
                     processNIT(nit);
                 }
@@ -238,9 +249,9 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         }
 
         case TID_NIT_OTH: {
-            if (_all_nits && table.sourcePID() == _nit_pid) {
-                NIT nit(table);
-                if (nit.isValid()) {
+            if (table.sourcePID() == _nit_pid) {
+                const NIT nit(table);
+                if (nit.isValid() && (_all_nits || (_nit_other && _network_id == nit.network_id))) {
                     processNIT(nit);
                 }
             }

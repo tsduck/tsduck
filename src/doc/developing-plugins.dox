@@ -10,6 +10,26 @@ When some new kind of transport stream processing is needed, several solutions a
 - Check if an existing plugin can be extended (by adding new options for instance).
 - As a last resort, develop a new plugin, which is relatively easy.
 
+New plugins can be developed either as part of the TSDuck project or as independent
+third-party projects.
+
+## Developing independent third-party plugins {#pdev3rdpary}
+
+If you create your own third-party plugins (ie. if you are not a TSDuck maintainer),
+it is recommended to develop your plugins outside the TSDuck project.
+
+Do not modify your own copy of the TSDuck project with your private plugins.
+This could create useless difficulties to upgrade with new versions of the project.
+
+Consider developing your plugins in their own projects, outside TSDuck.
+You do not even need to get the full source code of TSDuck.
+It is sufficient to @ref usinglibrary "install the TSDuck development environment".
+
+An example of a third party plugin project is provided in the directory
+[sample/sample-plugin](https://github.com/tsduck/tsduck/tree/master/sample/sample-plugin).
+
+## Developing plugins for the TSDuck project {#pdevinternal}
+
 To develop a new plugin named `foo`, follow these steps:
 
 - Create a source file named `tsplugin_foo.cpp` in the `tsplugins` subdirectory.
@@ -23,19 +43,6 @@ To develop a new plugin named `foo`, follow these steps:
   an XML file) and replace the names of the project and source file.
   Finally, under Visual C++, add the new project in the solution (File / Add / Existing Project).
 
-In the source file, create a C++ class, derived from either ts::InputPlugin, ts::OutputPlugin
-or ts::ProcessorPlugin. If your plugin implements two capabilities (both input and output for
-instance), implement the corresponding two classes.
-
-See the class diagram of ts::Plugin for a global view of the plugin classes.
-
-Specialized descrambling plugins derive from ts::AbstractDescrambler. This abstract class
-performs the generic functions of a descrambler: service location, ECM collection,
-descrambling of elementary streams. The concrete classes which derive from
-ts::AbstractDescrambler must perform CAS-specific operations: ECM streams filtering,
-ECM deciphering, control words extraction. Most of the time, these concrete classes
-must interact with a smartcard reader containing a smartcard for the specific CAS.
-
 # Development guidelines {#pdevguidelines}
 
 Don't write a plugin from scratch. Use an existing plugin as code base (beware however
@@ -43,10 +50,31 @@ of the pitfalls of careless copy / paste). The simplest code bases can be found 
 plugins `null` (input), `drop` (output) , `skip` (basic packet processing), `nitscan`
 (reading content of PSI/SI), `svrename` (modifying PSI/SI on the fly).
 
-A last advice: Always create plugins which perform simple and elementary processing.
+Always create plugins which perform simple and elementary processing.
 If your requirements can be divided into two independent processing, create two distinct
 plugins. The strength of TSDuck is the flexibility, that is to say the ability to combine
 elementary processing independently and in any order.
+
+## Class hierarchy {#pdevclasses}
+
+In the source file of the plugin, create a C++ class, derived from either
+ts::InputPlugin, ts::OutputPlugin or ts::ProcessorPlugin.
+If your plugin implements two capabilities (both input and output for
+instance), implement the corresponding two classes.
+
+See the class diagram of ts::Plugin for a global view of the plugin classes.
+
+Specialized plugins which manipulate exiting tables derive from ts::AbstractTablePlugin.
+Examples of such plugins are @c pmt, @c pat, @c nit, etc. The actual plugin subclasses
+focus on the modification of the target table while the superclass automatically handles
+demuxing, remuxing and creation of non-existing tables.
+
+Specialized descrambling plugins derive from ts::AbstractDescrambler. This abstract class
+performs the generic functions of a descrambler: service location, ECM collection,
+descrambling of elementary streams. The concrete classes which derive from
+ts::AbstractDescrambler must perform CAS-specific operations: ECM streams filtering,
+ECM deciphering, control words extraction. Most of the time, these concrete classes
+must interact with a smartcard reader containing a smartcard for the specific CAS.
 
 ## Invoking tsp from a plugin, the ts::TSP callbacks {#pdevtsp}
 

@@ -35,16 +35,32 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsUChar.h"
+#include "tsStringifyInterface.h"
+
+// There is a problem here with Microsoft C/C++.
+//
+// In some cases, typically in std::initializer_list of ArgMixIn, the lifetime
+// of temporary string objects is not conformant with the C++11 standard
+// (discovered the hard way as you may imagine...)
+//
+// So, with MSC only, instead of storing a reference to the external string
+// object, we will keep a copy of it. This has a significant performance penalty,
+// so this method is used only with MSC.
+
+#if defined(TS_MSC) && !defined(NON_CONFORMANT_CXX11_TEMPLIFE) && !defined(DOXYGEN)
+#define NON_CONFORMANT_CXX11_TEMPLIFE 1
+#endif
 
 namespace ts {
-
-    class UString;
-
     //!
     //! Base class for elements of an argument list with mixed types.
     //!
-    //! This class is typically used as element in an std::initializer_list.
-    //! It is used only through the two derived classes ArgMixIn and ArgMixOut.
+    //! This class is typically used as element in an std::initializer_list
+    //! to build type-safe variable argument lists. Instances of ArgMix are
+    //! directly built in the initializer list and cannot be copied or assigned.
+    //!
+    //! This is a base class. It can be used only through the two derived
+    //! classes ArgMixIn and ArgMixOut.
     //!
     //! @ingroup cpp
     //!
@@ -71,6 +87,11 @@ namespace ts {
         //! @return True if the argument value is an unsigned integer.
         //!
         bool isUnsigned() const { return (_type & (SIGNED | INTEGER)) == INTEGER; }
+        //!
+        //! Check if the argument value is a bool.
+        //! @return True if the argument value is a bool.
+        //!
+        bool isBool() const { return (_type & (BIT1 | INTEGER)) == (BIT1 | INTEGER); }
         //!
         //! Check if the argument value is a string of any type.
         //! @return True if the argument value is a string.
@@ -140,6 +161,11 @@ namespace ts {
         //!
         uint64_t toUInt64() const { return toInteger<uint64_t>(); }
         //!
+        //! Get the argument data value as a bool.
+        //! @return The argument data as a bool value or false for a string.
+        //!
+        bool toBool() const { return toInteger<uint32_t>() != 0; }
+        //!
         //! Get the argument data value as a nul-terminated string of 8-bit characters.
         //! @return Address of the nul-terminated string for CHARPTR or STRING, an empty string for other data types.
         //!
@@ -169,6 +195,15 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool storeInteger(INT i) const;
 
+#if !defined(DOXYGEN)
+        // Copy constructor.
+        ArgMix(const ArgMix& other);
+        // Instances are directly built in initializer lists and cannot be assigned.
+        ArgMix& operator=(const ArgMix&) = delete;
+        // Destructor.
+        ~ArgMix();
+#endif
+
     protected:
         //!
         //! Type of an argument, used as bitmask.
@@ -179,15 +214,17 @@ namespace ts {
         //! Anonymous enum, used as bitmask.
         //!
         enum : TypeFlags {
-            INTEGER = 0x0001,  //!< Integer type.
-            SIGNED  = 0x0002,  //!< With INTEGER, 1 means signed, 0 means unsigned.
-            STRING  = 0x0004,  //!< String of characters.
-            CLASS   = 0x0008,  //!< With STRING, 1 means std::string or ts::UString, O means const char* or const UChar*.
-            BIT8    = 0x0010,  //!< 8-bit integer or string of 8-bit characters (char).
-            BIT16   = 0x0020,  //!< 16-bit integer or string of 16-bit characters (UChar).
-            BIT32   = 0x0040,  //!< 32-bit integer.
-            BIT64   = 0x0080,  //!< 64-bit integer.
-            POINTER = 0x0100,  //!< A pointer to a writeable data (data type is given by other bits).
+            INTEGER   = 0x0001,  //!< Integer type.
+            SIGNED    = 0x0002,  //!< With INTEGER, 1 means signed, 0 means unsigned.
+            STRING    = 0x0004,  //!< String of characters.
+            CLASS     = 0x0008,  //!< With STRING, 1 means std::string or ts::UString, O means const char* or const UChar*.
+            BIT1      = 0x0010,  //!< 1-bit integer, ie. bool.
+            BIT8      = 0x0020,  //!< 8-bit integer or string of 8-bit characters (char).
+            BIT16     = 0x0040,  //!< 16-bit integer or string of 16-bit characters (UChar).
+            BIT32     = 0x0080,  //!< 32-bit integer.
+            BIT64     = 0x0100,  //!< 64-bit integer.
+            POINTER   = 0x0200,  //!< A pointer to a writeable data (data type is given by other bits).
+            STRINGIFY = 0x0400,  //!< A pointer to a StringifyInterface object.
         };
 
 #if !defined(DOXYGEN)
@@ -195,33 +232,40 @@ namespace ts {
         //! Storage of an argument.
         //!
         union Value {
-            int32_t            int32;
-            uint32_t           uint32;
-            int64_t            int64;
-            uint64_t           uint64;
-            const char*        charptr;
-            const UChar*       ucharptr;
-            const std::string* string;
-            const UString*     ustring;
-            void*              intptr;  // output
+            int32_t                   int32;
+            uint32_t                  uint32;
+            int64_t                   int64;
+            uint64_t                  uint64;
+            const char*               charptr;
+            const UChar*              ucharptr;
+            void*                     intptr;  // output
+#if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+            const std::string*        string;
+            const UString*            ustring;
+            const StringifyInterface* stringify;
+#endif
 
             Value(void* p)              : intptr(p) {}
+            Value(bool b)               : uint32(b) {}
             Value(int32_t i)            : int32(i) {}
             Value(uint32_t i)           : uint32(i) {}
             Value(int64_t i)            : int64(i) {}
             Value(uint64_t i)           : uint64(i) {}
             Value(const char* s)        : charptr(s) {}
             Value(const UChar* s)       : ucharptr(s) {}
+#if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
             Value(const std::string& s) : string(&s) {}
             Value(const UString& s)     : ustring(&s) {}
-        };
+            Value(const StringifyInterface& s) : stringify(&s) {}
 #endif
+        };
+#endif // DOXYGEN
 
         //!
         //! Default constructor.
         //! The argument does not represent anything.
         //!
-        ArgMix() : _type(0), _size(0), _value(int32_t(0)) {}
+        ArgMix();
 
         //!
         //! Constructor for subclasses.
@@ -229,7 +273,14 @@ namespace ts {
         //! @param [in] size Original size for integer type.
         //! @param [in] value Actual value of the argument.
         //!
-        ArgMix(TypeFlags type, uint16_t size, const Value value) : _type(type), _size(size), _value(value) {}
+        ArgMix(TypeFlags type, uint16_t size, const Value value);
+
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+        // Specific constructors without conformant temporary object lifetime.
+        ArgMix(TypeFlags type, uint16_t size, const std::string& value);
+        ArgMix(TypeFlags type, uint16_t size, const UString& value);
+        ArgMix(TypeFlags type, uint16_t size, const StringifyInterface& value);
+#endif
 
 #if !defined(DOXYGEN)
         // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
@@ -338,9 +389,13 @@ namespace ts {
 
     private:
         // Implementation of an ArgMix.
-        TypeFlags _type;  //!< Indicate which overlay to use in _value.
-        uint16_t  _size;  //!< Original size for integer type.
-        Value     _value; //!< Actual value of the argument.
+        const TypeFlags        _type;    //!< Indicate which overlay to use in _value.
+        const uint16_t         _size;    //!< Original size for integer type.
+        const Value            _value;   //!< Actual value of the argument.
+#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
+        const std::string      _string;  //!< String copy because of non-conformant life time.
+#endif
+        mutable const UString* _aux;     //!< Auxiliary string (for StringifyInterface).
 
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
@@ -371,12 +426,12 @@ namespace ts {
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, s) {}
+        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, Value(s)) {}
         //!
         //! Constructor from a nul-terminated string of 16-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, s) {}
+        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, Value(s)) {}
         //!
         //! Constructor from a C++ string of 8-bit characters.
         //! @param [in] s Reference to a C++ string.
@@ -388,11 +443,25 @@ namespace ts {
         //!
         ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s) {}
         //!
+        //! Constructor from a stringifiable object.
+        //! @param [in] s Reference to a stringifiable object.
+        //!
+        ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s) {}
+        //!
+        //! Constructor from a bool.
+        //! @param [in] b Boolean value.
+        //!
+        ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b)) {}
+        //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
         ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
+
+    private:
+        // Instances are directly built in initializer lists and cannot be assigned.
+        ArgMixIn& operator=(const ArgMixIn&) = delete;
     };
 
     //!
@@ -420,7 +489,11 @@ namespace ts {
         //! @param [in] ptr Address of an integer or enum data.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
-        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), (ptr)) {}
+        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
+
+    private:
+        // Instances are directly built in initializer lists and cannot be assigned.
+        ArgMixOut& operator=(const ArgMixOut&) = delete;
     };
 }
 

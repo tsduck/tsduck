@@ -5,3 +5,4 @@ Jérôme Lévèque
 Frédéric Peignot
 Tristan Claverie
 Harald Jordan
+Chris Hibbert

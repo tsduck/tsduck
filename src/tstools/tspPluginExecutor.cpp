@@ -43,87 +43,18 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::PluginExecutor::PluginExecutor(Options* options,
-                                        const Options::PluginOptions* pl_options,
+                                        const PluginOptions* pl_options,
                                         const ThreadAttributes& attributes,
                                         Mutex& global_mutex) :
+    JointTermination(options, pl_options, attributes, global_mutex),
     RingNode(),
-    JointTermination(options, global_mutex),
-    Thread(attributes),
-    _name(pl_options->name),
-    _shlib(0),
     _buffer(0),
-    _report(options),
     _to_do(),
     _pkt_first(0),
     _pkt_cnt(0),
     _input_end(false),
     _bitrate(0)
 {
-    const UChar* shell = 0;
-
-    // Create the plugin instance object
-    switch (pl_options->type) {
-        case Options::INPUT: {
-            NewInputProfile allocator = PluginRepository::Instance()->getInput(_name, *options);
-            if (allocator != 0) {
-                _shlib = allocator(this);
-                shell = u"tsp -I";
-            }
-            break;
-        }
-        case Options::OUTPUT: {
-            NewOutputProfile allocator = PluginRepository::Instance()->getOutput(_name, *options);
-            if (allocator != 0) {
-                _shlib = allocator(this);
-                shell = u"tsp -O";
-            }
-            break;
-        }
-        case Options::PROCESSOR: {
-            NewProcessorProfile allocator = PluginRepository::Instance()->getProcessor(_name, *options);
-            if (allocator != 0) {
-                _shlib = allocator(this);
-               shell = u"tsp -P";
-            }
-            break;
-        }
-        default:
-            assert(false);
-    }
-
-    if (_shlib == 0) {
-        // Error message already displayed.
-        return;
-    }
-    else {
-        _shlib->setShell(shell);
-    }
-
-    // Submit the plugin arguments for analysis.
-    // The process should terminate on argument error.
-    // Do not process argument redirection, already done at tsp command level.
-    _shlib->analyze(pl_options->name, pl_options->args, false);
-    assert(_shlib->valid());
-
-    // Define thread stack size
-    ThreadAttributes attr;
-    Thread::getAttributes(attr);
-    attr.setStackSize(STACK_SIZE_OVERHEAD + _shlib->stackUsage());
-    Thread::setAttributes(attr);
-}
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
-ts::tsp::PluginExecutor::~PluginExecutor()
-{
-    // Deallocate plugin instance, if allocated.
-    if (_shlib != 0) {
-        delete _shlib;
-        _shlib = 0;
-    }
 }
 
 
@@ -150,17 +81,6 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
 
 
 //----------------------------------------------------------------------------
-// Invoked by shared library to log messages
-// Inherited from Report (via TSP)
-//----------------------------------------------------------------------------
-
-void ts::tsp::PluginExecutor::writeLog(int severity, const UString& msg)
-{
-    _report->log(severity, u"%s: %s", {_name, msg});
-}
-
-
-//----------------------------------------------------------------------------
 // This method signals that the specified number of packets have been
 // processed by this processor. These packets are passed to the next processor
 // (which is notified that there is something to do)
@@ -174,7 +94,7 @@ void ts::tsp::PluginExecutor::writeLog(int severity, const UString& msg)
 // cease to accept packets".
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pass
+bool ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pass
                                           BitRate bitrate,  // pass to next processor
                                           bool input_end,   // pass to next processor
                                           bool aborted)     // set to current processor
@@ -186,33 +106,35 @@ void ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pas
     log(10, u"passPackets (count = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {count, bitrate, input_end, aborted});
 
     // We access data under the protection of the global mutex.
-
     Guard lock(_global_mutex);
 
     // Update our buffer
-
     _pkt_first = (_pkt_first + count) % _buffer->count();
     _pkt_cnt -= count;
 
     // Update next processor's buffer.
-
     PluginExecutor* next = ringNext<PluginExecutor>();
     next->_pkt_cnt += count;
     next->_input_end = next->_input_end || input_end;
     next->_bitrate = bitrate;
 
     // Wake the next processor when there is some data
-
     if (count > 0 || input_end) {
         next->_to_do.signal();
     }
 
-    // Wake the previous processor when we abort
+    // Force to abort our processor when the next one is aborting.
+    // Already done in waitWork() but force immediately.
+    aborted = aborted || next->_tsp_aborting;
 
+    // Wake the previous processor when we abort
     if (aborted) {
         _tsp_aborting = true; // volatile bool in TSP superclass
         ringPrevious<PluginExecutor>()->_to_do.signal();
     }
+
+    // Return false when the current processor shall stop.
+    return !input_end && !aborted;
 }
 
 
@@ -225,6 +147,16 @@ void ts::tsp::PluginExecutor::setAbort()
     Guard lock(_global_mutex);
     _tsp_aborting = true;
     ringPrevious<PluginExecutor>()->_to_do.signal();
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the plugin a real time one.
+//----------------------------------------------------------------------------
+
+bool ts::tsp::PluginExecutor::isRealTime() const
+{
+    return plugin() != 0 && plugin()->isRealTime();
 }
 
 
@@ -245,16 +177,15 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
     log(10, u"waitWork(...)");
 
     // We access data under the protection of the global mutex.
-
     GuardCondition lock(_global_mutex, _to_do);
 
-    while (_pkt_cnt == 0 && !_input_end && !ringNext<PluginExecutor>()->_tsp_aborting) {
+    PluginExecutor* next = ringNext<PluginExecutor>();
 
+    while (_pkt_cnt == 0 && !_input_end && !next->_tsp_aborting) {
         // If packet area for this processor is empty, wait for some packet.
         // The mutex is implicitely released, we wait for the condition
         // '_to_do' and, once we get it, implicitely relock the mutex.
         // We loop on this until packets are actually available.
-
         lock.waitCondition();
     }
 
@@ -262,7 +193,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
     pkt_cnt = std::min(_pkt_cnt, _buffer->count() - _pkt_first);
     bitrate = _bitrate;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
-    aborted = ringNext<PluginExecutor>()->_tsp_aborting;
+    aborted = next->_tsp_aborting;
 
     log(10, u"waitWork (pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {pkt_first, pkt_cnt, bitrate, input_end, aborted});
 }

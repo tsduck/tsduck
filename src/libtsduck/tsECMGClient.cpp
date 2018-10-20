@@ -112,12 +112,7 @@ bool ts::ECMGClient::abortConnection(const UString& message)
 // Connect to a remote ECMG. Perform all initial channel and stream negotiation.
 //----------------------------------------------------------------------------
 
-bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
-                             uint32_t super_cas_id,
-                             uint16_t ecm_channel_id,
-                             uint16_t ecm_stream_id,
-                             uint16_t ecm_id,
-                             uint16_t nominal_cp_duration,
+bool ts::ECMGClient::connect(const ECMGClientArgs& args,
                              ecmgscs::ChannelStatus& channel_status,
                              ecmgscs::StreamStatus& stream_status,
                              const AbortInterface* abort,
@@ -145,15 +140,15 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
     if (!_connection.open(_logger.report())) {
         return false;
     }
-    if (!_connection.connect(ecmg_address, _logger.report())) {
+    if (!_connection.connect(args.ecmg_address, _logger.report())) {
         _connection.close(_logger.report());
         return false;
     }
 
     // Send a channel_setup message to ECMG
     ecmgscs::ChannelSetup channel_setup;
-    channel_setup.channel_id = ecm_channel_id;
-    channel_setup.Super_CAS_id = super_cas_id;
+    channel_setup.channel_id = args.ecm_channel_id;
+    channel_setup.Super_CAS_id = args.super_cas_id;
     if (!_connection.send(channel_setup, _logger)) {
         return abortConnection();
     }
@@ -179,10 +174,10 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
 
     // Send a stream_setup message to ECMG
     ecmgscs::StreamSetup stream_setup;
-    stream_setup.channel_id = ecm_channel_id;
-    stream_setup.stream_id = ecm_stream_id;
-    stream_setup.ECM_id = ecm_id;
-    stream_setup.nominal_CP_duration = nominal_cp_duration;
+    stream_setup.channel_id = args.ecm_channel_id;
+    stream_setup.stream_id = args.ecm_stream_id;
+    stream_setup.ECM_id = args.ecm_id;
+    stream_setup.nominal_CP_duration = uint16_t(args.cp_duration / 100); // unit is 1/10 second
     if (!_connection.send(stream_setup, _logger)) {
         return abortConnection();
     }

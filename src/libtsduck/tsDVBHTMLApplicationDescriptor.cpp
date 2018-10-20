@@ -77,7 +77,7 @@ void ts::DVBHTMLApplicationDescriptor::serialize(Descriptor& desc, const DVBChar
     for (size_t i = 0; i < application_ids.size(); ++i) {
         bbp->appendUInt16(application_ids[i]);
     }
-    bbp->append(parameter.toDVB(0, UString::NPOS, charset));
+    bbp->append(parameter.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

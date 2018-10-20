@@ -300,10 +300,10 @@ bool ts::xml::Document::save(const UString& fileName, size_t indent)
 // Convert the document to an XML string.
 //----------------------------------------------------------------------------
 
-ts::UString ts::xml::Document::toString(size_t indent) const
+ts::UString ts::xml::Document::toString() const
 {
     TextFormatter out(_report);
-    out.setIndentSize(indent);
+    out.setIndentSize(2);
     out.setString();
     print(out);
     UString str;

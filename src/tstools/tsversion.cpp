@@ -32,13 +32,12 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsForkPipe.h"
-#include "tsVersionInfo.h"
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
 #endif
@@ -555,9 +554,8 @@ bool ProcessVersion(Options& opt)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     bool success = true;
 
@@ -578,3 +576,5 @@ int main(int argc, char *argv[])
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TS_MAIN(MainCode)

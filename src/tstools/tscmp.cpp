@@ -31,14 +31,13 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsMemoryUtils.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsBinaryTable.h"
 #include "tsSection.h"
 #include "tsPMT.h"
 #include "tsStreamIdentifierDescriptor.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_BUFFERED_PACKETS 10000
@@ -293,9 +292,8 @@ bool Comparator::compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Opt
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt (argc, argv);
     ts::TSFileInputBuffered file1(opt.buffered_packets);
     ts::TSFileInputBuffered file2(opt.buffered_packets);
@@ -482,3 +480,5 @@ int main (int argc, char *argv[])
     file2.close (opt);
     return diff_count == 0 && opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TS_MAIN(MainCode)

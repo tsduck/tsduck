@@ -102,8 +102,9 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     help(u"start",
          u"Specify a new UTC date & time reference for the first packet in the "
          u"stream. Then, the time reference is updated according to the number "
-         u"of packets and the bitrate. A time value must be in the format "
-         u"\"year/month/day:hour:minute:second\".");
+         u"of packets and the bitrate. The time value can be in the format "
+         u"\"year/month/day:hour:minute:second\", or use the predefined name "
+         u"\"system\" for getting current time from the system clock.");
 }
 
 
@@ -123,7 +124,11 @@ bool ts::TimeRefPlugin::start()
     if (_use_timeref) {
         const UString start(value(u"start"));
         // Decode an absolute time string
-        if (!_timeref.decode(start)) {
+        if (start == u"system") {
+            _timeref = Time::CurrentUTC();
+            tsp->verbose(u"current system clock is %s", {ts::UString(_timeref)});
+        }
+        else if (!_timeref.decode(start)) {
             tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});
             return false;
         }

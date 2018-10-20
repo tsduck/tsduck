@@ -31,17 +31,15 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsTime.h"
 #include "tsSectionFile.h"
 #include "tsTablesDisplay.h"
 #include "tsUDPReceiver.h"
 #include "tsTablesLogger.h"
-#include "tsIPUtils.h"
 #include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsSysUtils.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -224,15 +222,8 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
-
-    // Need to initialize IP before resolving addresses in argument list..
-    if (!ts::IPInitialize()) {
-        return EXIT_FAILURE;
-    }
-
     // Get command line options.
     Options opt(argc, argv);
     bool ok = true;
@@ -253,3 +244,5 @@ int main(int argc, char *argv[])
 
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+TS_MAIN(MainCode)

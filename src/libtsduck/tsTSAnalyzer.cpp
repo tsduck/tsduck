@@ -1022,7 +1022,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
             eps->cas_operators.insert(opi);
             eps->carry_section = true;
             _demux.addPID(ca_pid);
-            eps->description = UString::Format(u"MediaGuard ECM for OPI %d (0x%X)", {opi, opi});
+            eps->description.format(u"MediaGuard ECM for OPI %d (0x%X)", {opi, opi});
             data += 15; size -= 15;
         }
     }
@@ -1039,7 +1039,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->cas_operators.insert(opi);
         eps->carry_section = true;
         _demux.addPID(ca_pid);
-        eps->description = UString::Format(u"MediaGuard EMM for OPI %d (0x%X), EMM types: 0x%X", {opi, opi, etypes});
+        eps->description.format(u"MediaGuard EMM for OPI %d (0x%X), EMM types: 0x%X", {opi, opi, etypes});
     }
 
     else if (cas == CAS_MEDIAGUARD && svp == 0 && size >= 1) {

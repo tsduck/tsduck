@@ -109,7 +109,7 @@ void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 {
     const PacketCounter due_packet = sect->due_packet;
     SectionDescList::iterator it;
-    for (it = _sched_sections.begin(); it != _sched_sections.end() && (*it)->due_packet <= due_packet; ++it) {}
+    for (it = _sched_sections.begin(); it != _sched_sections.end() && (*it)->due_packet < due_packet; ++it) {}
     _sched_sections.insert(it, sect);
 }
 

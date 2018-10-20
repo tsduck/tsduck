@@ -31,6 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsMain.h"
 #include "tspOptions.h"
 #include "tspInputExecutor.h"
 #include "tspOutputExecutor.h"
@@ -41,8 +42,6 @@
 #include "tsMonotonic.h"
 #include "tsResidentBuffer.h"
 #include "tsOutputPager.h"
-#include "tsIPUtils.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -95,17 +94,19 @@ void ts::tsp::TSPInterruptHandler::handleInterrupt()
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+//  Program main code.
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
+    // Internal sanity check about TS packets.
     ts::TSPacket::SanityCheck();
 
     // Get command line options.
     ts::tsp::Options opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
+    assert(opt.inputs.size() == 1);
+    assert(opt.outputs.size() == 1);
 
     // Get the repository of plugins.
     ts::PluginRepository* plugins = ts::PluginRepository::Instance();
@@ -137,11 +138,6 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    // IP initialization required on foolish OS
-    if (!ts::IPInitialize(opt)) {
-        return EXIT_FAILURE;
-    }
-
     // Prevent from being killed when writing on broken pipes.
     ts::IgnorePipeSignal();
 
@@ -157,14 +153,14 @@ int main(int argc, char *argv[])
     // plugin has a hight priority to make room in the buffer, but not as
     // high as the input which must remain the top-most priority?
 
-    ts::tsp::InputExecutor* input = new ts::tsp::InputExecutor(&opt, &opt.input, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), global_mutex);
-    ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.output, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
+    ts::tsp::InputExecutor* input = new ts::tsp::InputExecutor(&opt, &opt.inputs.front(), ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), global_mutex);
+    ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.outputs.front(), ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
     output->ringInsertAfter(input);
 
     // Check if at least one plugin prefers real-time defaults.
     bool realtime = opt.realtime == ts::TRUE || input->isRealTime() || output->isRealTime();
 
-    for (ts::tsp::Options::PluginOptionsVector::const_iterator it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
+    for (auto it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
         ts::tsp::PluginExecutor* p = new ts::tsp::ProcessorExecutor(&opt, &*it, ts::ThreadAttributes(), global_mutex);
         p->ringInsertBefore(output);
         realtime = realtime || p->isRealTime();
@@ -185,13 +181,18 @@ int main(int argc, char *argv[])
     // Create an asynchronous error logger. Can be used in multi-threaded context.
     ts::AsyncReport report(opt.maxSeverity(), opt.timed_log, opt.log_msg_count, opt.sync_log);
 
-    // Set this logger as report method for all executors.
-    // Also set realtime defaults.
+    // Initialize all executors.
     ts::tsp::PluginExecutor* proc = input;
     do {
+        // Set the asynchronous logger as report method for all executors.
         proc->setReport(&report);
         proc->setMaxSeverity(report.maxSeverity());
+        // Also set realtime defaults.
         proc->setRealTimeForAll(realtime);
+        // And decode command line parameters for the plugin.
+        if (!proc->plugin()->getOptions()) {
+            return EXIT_FAILURE;
+        }
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets
@@ -218,6 +219,8 @@ int main(int argc, char *argv[])
 
     // Start the output device (we now have an idea of the bitrate).
     // Exit application in case of error.
+    assert(output != 0);
+    assert(output->plugin() != 0);
     if (!output->plugin()->start()) {
         return EXIT_FAILURE;
     }
@@ -257,3 +260,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

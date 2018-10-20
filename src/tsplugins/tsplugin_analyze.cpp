@@ -101,9 +101,10 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 
     option(u"interval", 'i', POSITIVE);
     help(u"interval",
-         u"Produce a new output file at regular intervals. After outputing a file, "
-         u"the analysis context is reset, ie. each output file contains a fully "
-         u"independent analysis.");
+         u"Produce a new output file at regular intervals. "
+         u"The interval value is in seconds. "
+         u"After outputing a file, the analysis context is reset, "
+         u"ie. each output file contains a fully independent analysis.");
 
     option(u"multiple-files", 'm');
     help(u"multiple-files",
@@ -113,7 +114,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
          u"with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.");
 
     option(u"output-file", 'o', STRING);
-    help(u"output-file",
+    help(u"output-file", u"filename",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.");
 }

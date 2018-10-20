@@ -31,12 +31,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsAsyncReport.h"
 #include "tsFatal.h"
 #include "tsMutex.h"
 #include "tsThread.h"
-#include "tsIPUtils.h"
 #include "tsSysUtils.h"
 #include "tsECMGSCS.h"
 #include "tsTCPServer.h"
@@ -44,7 +43,6 @@
 #include "tsDuckProtocol.h"
 #include "tsVariable.h"
 #include "tsOneShotPacketizer.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 namespace {
@@ -680,15 +678,9 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     ECMGOptions opt(argc, argv);
-
-    // IP initialization.
-    if (!ts::IPInitialize(opt)) {
-        return EXIT_FAILURE;
-    }
 
     // Create ECMG shared data (including the asynchronous report).
     ECMGSharedData shared(opt);
@@ -703,7 +695,7 @@ int main (int argc, char *argv[])
         return EXIT_FAILURE;
     }
     shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d",
-                            {opt.serverAddress.toString(), ts::ecmgscs::Protocol::Instance()->version()});
+                            {opt.serverAddress, ts::ecmgscs::Protocol::Instance()->version()});
 
     // Manage incoming client connections.
     for (;;) {
@@ -734,3 +726,5 @@ int main (int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

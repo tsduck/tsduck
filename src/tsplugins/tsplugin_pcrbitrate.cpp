@@ -85,7 +85,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pcrbitrate, ts::PCRBitratePlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
+ts::PCRBitratePlugin::PCRBitratePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Permanently recompute bitrate based on PCR analysis", u"[options]"),
     _pcr_analyzer(),
     _bitrate(0),
@@ -95,6 +95,13 @@ ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
     help(u"dts",
          u"Use DTS (Decoding Time Stamps) from video PID's instead of PCR "
          u"(Program Clock Reference) from the transport layer.");
+
+    option(u"ignore-errors", 'i');
+    help(u"ignore-errors",
+         u"Ignore transport stream errors such as discontinuities. When errors are "
+         u"not ignored (the default), the bitrate of the original stream (before corruptions) "
+         u"is evaluated. When errors are ignored, the bitrate of the received stream is "
+         u"evaluated, missing packets being considered as non-existent.");
 
     option(u"min-pcr", 0, POSITIVE);
     help(u"min-pcr",
@@ -113,6 +120,7 @@ ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
 
 bool ts::PCRBitratePlugin::start()
 {
+    _pcr_analyzer.setIgnoreErrors(present(u"ignore-errors"));
     const size_t min_pcr = intValue<size_t>(u"min-pcr", DEF_MIN_PCR_CNT);
     const size_t min_pid = intValue<size_t>(u"min-pid", DEF_MIN_PID);
     if (present(u"dts")) {
@@ -143,11 +151,11 @@ ts::BitRate ts::PCRBitratePlugin::getBitrate()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PCRBitratePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PCRBitratePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Feed the packet into the PCR analyzer.
 
-    if (_pcr_analyzer.feedPacket (pkt)) {
+    if (_pcr_analyzer.feedPacket(pkt)) {
         // A new bitrate is available, get it and restart analysis
         BitRate new_bitrate = _pcr_analyzer.bitrate188();
         _pcr_analyzer.reset();

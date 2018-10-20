@@ -37,8 +37,25 @@
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsTSPacket.h"
+#include "tsEnumeration.h"
 
 namespace ts {
+
+    //!
+    //! Each plugin has one of the following types
+    //! @ingroup plugin
+    //!
+    enum PluginType {
+        INPUT_PLUGIN,     //!< Input plugin.
+        OUTPUT_PLUGIN,    //!< Output plugin.
+        PROCESSOR_PLUGIN  //!< Packet processor plugin.
+    };
+
+    //!
+    //! Displayable names of plugin types.
+    //!
+    TSDUCKDLL extern const Enumeration PluginTypeNames;
+
 
     //-------------------------------------------------------------------------
     //! TSP callback for plugins.
@@ -86,7 +103,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 5;
+        static const int API_VERSION = 8;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -188,6 +205,16 @@ namespace ts {
         virtual size_t stackUsage() const {return DEFAULT_STACK_USAGE;}
 
         //!
+        //! The main application invokes getOptions() only once, at application startup.
+        //! Optionally implemented by subclasses to analyze the command line options.
+        //! A plugin may ignore getOptions() and analyzes the command line options as
+        //! part of the start() method. However, if a plugin is started later, command
+        //! line errors may be reported too late.
+        //! @return True on success, false on error (ie. not started).
+        //!
+        virtual bool getOptions() {return true;}
+
+        //!
         //! The main application invokes start() to start the plugin.
         //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
@@ -244,6 +271,12 @@ namespace ts {
         virtual bool isRealTime() {return false;}
 
         //!
+        //! Get the plugin type.
+        //! @return The plugin type.
+        //!
+        virtual PluginType type() const = 0;
+
+        //!
         //! Constructor.
         //!
         //! @param [in] to_tsp Associated callback to @c tsp executable.
@@ -298,6 +331,20 @@ namespace ts {
         virtual size_t receive(TSPacket* buffer, size_t max_packets) = 0;
 
         //!
+        //! Abort the input operation currently in progress.
+        //!
+        //! This method is typically invoked from another thread when the input
+        //! plugin is waiting for input. When this method is invoked, the plugin
+        //! shall abort the current input and place the input plugin in some
+        //! "error" or "end of input" state. The only acceptable operation
+        //! after an abortInput() is a stop().
+        //!
+        //! @return True when the operation was properly handled. False in case
+        //! of fatal error or if not supported by the plugin.
+        //!
+        virtual bool abortInput() { return false; }
+
+        //!
         //! Constructor.
         //!
         //! @param [in] tsp_ Associated callback to @c tsp executable.
@@ -310,6 +357,9 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~InputPlugin() {}
+
+        // Implementation of inherited interface.
+        virtual PluginType type() const override { return INPUT_PLUGIN; }
 
     private:
         // Inaccessible operations
@@ -367,6 +417,9 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~OutputPlugin() {}
+
+        // Implementation of inherited interface.
+        virtual PluginType type() const override { return OUTPUT_PLUGIN; }
 
     private:
         // Inaccessible operations
@@ -447,6 +500,9 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~ProcessorPlugin() {}
+
+        // Implementation of inherited interface.
+        virtual PluginType type() const override { return PROCESSOR_PLUGIN; }
 
     private:
         // Inaccessible operations

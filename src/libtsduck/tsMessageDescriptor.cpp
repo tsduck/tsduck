@@ -92,7 +92,7 @@ void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
         desc.invalidate();
         return;
     }
-    bbp->append(message.toDVB(0, UString::NPOS, charset));
+    bbp->append(message.toDVB(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

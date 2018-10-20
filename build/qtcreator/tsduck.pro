@@ -45,11 +45,14 @@ SUBDIRS += \
     tsplugin_continuity \
     tsplugin_count \
     tsplugin_datainject \
+    tsplugin_decap \
     tsplugin_dektec \
     tsplugin_descrambler \
     tsplugin_drop \
+    tsplugin_duplicate \
     tsplugin_dvb \
     tsplugin_eit \
+    tsplugin_encap \
     tsplugin_file \
     tsplugin_filter \
     tsplugin_fork \
@@ -58,9 +61,10 @@ SUBDIRS += \
     tsplugin_http \
     tsplugin_inject \
     tsplugin_ip \
-    tsplugin_merge  \
+    tsplugin_limit \
+    tsplugin_merge \
     tsplugin_mpe  \
-    tsplugin_mpeinject  \
+    tsplugin_mpeinject \
     tsplugin_mux \
     tsplugin_nit \
     tsplugin_nitscan \
@@ -81,6 +85,7 @@ SUBDIRS += \
     tsplugin_rmsplice \
     tsplugin_scrambler \
     tsplugin_sdt \
+    tsplugin_sections \
     tsplugin_sifilter \
     tsplugin_skip \
     tsplugin_slice \
@@ -107,6 +112,7 @@ SUBDIRS += \
     tsemmg \
     tsfixcc \
     tsftrunc \
+    tsgenecm \
     tshides \
     tslsdvb \
     tsp \
@@ -116,6 +122,7 @@ SUBDIRS += \
     tsscan \
     tssmartcard \
     tsstuff \
+    tsswitch \
     tstabcomp \
     tstabdump \
     tstables \

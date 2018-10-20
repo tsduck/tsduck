@@ -134,7 +134,7 @@ namespace ts {
         //! @param [in] count Maximum number of characters to encode.
         //! @return True if all characters can be encoded.
         //!
-        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const = 0;
+        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = NPOS) const = 0;
 
         //!
         //! Encode the character set table code.
@@ -168,7 +168,7 @@ namespace ts {
                               size_t& size,
                               const UString& str,
                               size_t start = 0,
-                              size_t count = UString::NPOS) const = 0;
+                              size_t count = NPOS) const = 0;
 
         //!
         //! Virtual destructor.

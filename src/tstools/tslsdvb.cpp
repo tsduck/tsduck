@@ -31,12 +31,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsCOM.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsSysUtils.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)
@@ -69,7 +68,7 @@ Options::Options(int argc, char *argv[]) :
 #if defined(TS_WINDOWS)
 
     option(u"enumerate-devices", 'e');
-    help(u"test", u"Legacy option, equivalent to --test enumerate-devices.");
+    help(u"enumerate-devices", u"Legacy option, equivalent to --test enumerate-devices.");
 
     option(u"test", 't', ts::DirectShowTest::TestNames);
     help(u"test", u"name",
@@ -197,9 +196,8 @@ namespace {
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::COM com(opt);
 
@@ -210,3 +208,5 @@ int main(int argc, char *argv[])
     opt.exitOnError();
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

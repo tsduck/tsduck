@@ -175,8 +175,8 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
 
         // Insert as many item entries as possible
         while (it != entries.end()) {
-            const ByteBlock desc(it->item_description.toDVBWithByteLength(0, UString::NPOS, charset));
-            const ByteBlock item(it->item.toDVBWithByteLength(0, UString::NPOS, charset));
+            const ByteBlock desc(it->item_description.toDVBWithByteLength(0, NPOS, charset));
+            const ByteBlock item(it->item.toDVBWithByteLength(0, NPOS, charset));
             if (desc.size() + item.size() > remain) {
                 break;
             }
@@ -189,8 +189,8 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
         if (it != entries.end() && eed.entries.size() == 0) {
             Entry entry(*it);
             uint8_t* addr = buffer;
-            const size_t desc_size = entry.item_description.toDVBWithByteLength(addr, remain, 0, UString::NPOS, charset);
-            const size_t item_size = entry.item.toDVBWithByteLength(addr, remain, 0, UString::NPOS, charset);
+            const size_t desc_size = entry.item_description.toDVBWithByteLength(addr, remain, 0, NPOS, charset);
+            const size_t item_size = entry.item.toDVBWithByteLength(addr, remain, 0, NPOS, charset);
             assert(desc_size <= entry.item_description.length());
             assert(item_size <= entry.item.length());
             entry.item_description.resize(desc_size);
@@ -204,7 +204,7 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
 
         // Insert as much as possible of extended description
         uint8_t* addr = buffer;
-        const size_t text_size = text.toDVBWithByteLength(addr, remain, text_index, UString::NPOS, charset);
+        const size_t text_size = text.toDVBWithByteLength(addr, remain, text_index, NPOS, charset);
         eed.text = text.substr(text_index, text_size);
         text_index += text_size;
 
@@ -235,15 +235,15 @@ void ts::ExtendedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 
     // Serialize all entries.
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(it->item_description.toDVBWithByteLength(0, UString::NPOS, charset));
-        bbp->append(it->item.toDVBWithByteLength(0, UString::NPOS, charset));
+        bbp->append(it->item_description.toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(it->item.toDVBWithByteLength(0, NPOS, charset));
     }
 
     // Update length_of_items
     (*bbp)[length_index] = uint8_t(bbp->size() - length_index - 1);
 
     // Final text
-    bbp->append(text.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(text.toDVBWithByteLength(0, NPOS, charset));
     serializeEnd(desc, bbp);
 }
 

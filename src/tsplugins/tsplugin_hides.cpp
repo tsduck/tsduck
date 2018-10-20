@@ -229,7 +229,7 @@ bool ts::HiDesOutput::start()
         _device.close(*tsp);
         return false;
     }
-    tsp->verbose(u"using device %s", {_dev_info.toString()});
+    tsp->verbose(u"using device %s with nominal output bitrate of %'d bits/s", {_dev_info.toString(),_bitrate});
 
     // Tune to frequency.
     if (!_device.tune(params, *tsp)) {

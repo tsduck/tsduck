@@ -75,11 +75,11 @@ namespace ts {
         //!
         //! Reset and resize the buffer.
         //! It is illegal to reset the buffer while the writer thread has locked the buffer.
-        //! This is not enforced by this class. It is the responsibility of the application
-        //! to check this.
-        //! @param [in] size New size of the buffer in packets.
+        //! This is not enforced by this class. It is the responsibility of the application to check this.
+        //! @param [in] size New size of the buffer in packets. By default, when set to NPOS,
+        //! reset the queue without resizing the buffer.
         //!
-        void reset(size_t size);
+        void reset(size_t size = NPOS);
 
         //!
         //! Get the size of the buffer in packets.

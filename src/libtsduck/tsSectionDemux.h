@@ -108,6 +108,17 @@ namespace ts {
         }
 
         //!
+        //! Filter sections based on current/next indicator.
+        //! @param [in] current Get "current" tables. This is true by default.
+        //! @param [in] next Get "next" tables. This is false by default.
+        //!
+        void setCurrentNext(bool current, bool next)
+        {
+            _get_current = current;
+            _get_next = next;
+        }
+
+        //!
         //! Demux status information.
         //! It contains error counters.
         //!
@@ -120,6 +131,7 @@ namespace ts {
             uint64_t inv_sect_length;  //!< Number of invalid section length.
             uint64_t inv_sect_index;   //!< Number of invalid section index.
             uint64_t wrong_crc;        //!< Number of sections with wrong CRC32.
+            uint64_t is_next;          //!< Number of sections with "next" flag (not yet applicable).
 
             //!
             //! Default constructor.
@@ -222,6 +234,8 @@ namespace ts {
         SectionHandlerInterface* _section_handler;
         std::map<PID,PIDContext> _pids;
         Status                   _status;
+        bool                     _get_current;
+        bool                     _get_next;
 
         // Inacessible operations
         SectionDemux(const SectionDemux&) = delete;

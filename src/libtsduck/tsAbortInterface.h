@@ -49,6 +49,7 @@ namespace ts {
         //!
         //! This abstract method checks if the application is aborting for some reason.
         //! @return True if the application is aborting.
+        //!
         virtual bool aborting() const = 0;
 
         //!

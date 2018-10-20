@@ -51,8 +51,10 @@ namespace ts {
 
         //!
         //! Default constructor.
+        //! @param [in] systemTime If true, initialize with current system time.
+        //! @see getSystemTime()
         //!
-        Monotonic();
+        Monotonic(bool systemTime = false);
 
         //!
         //! Copy constructor.
@@ -186,9 +188,6 @@ namespace ts {
     private:
         // Monotonic clock value in system ticks
         int64_t _value;
-
-        // System-specific initialization
-        void init();
 
 #if defined(TS_WINDOWS)
         // Timer handle

@@ -218,12 +218,18 @@ void PlatformTest::testIntegerTypes()
     OverloadSizeT(0);
 #endif
 
-    utest::Out() << "PlatformTest: TS_ADDRESS_BITS = " << TS_ADDRESS_BITS << std::endl
-                 << "PlatformTest: TS_SIZE_T_IS_STDINT is"
-                 #if !defined(TS_SIZE_T_IS_STDINT)
-                 << " NOT"
-                 #endif
-                 << " defined" << std::endl;
+    utest::Out()
+        << "PlatformTest: TS_ADDRESS_BITS = " << TS_ADDRESS_BITS << std::endl
+        << "PlatformTest: TS_SIZE_T_IS_STDINT is"
+#if !defined(TS_SIZE_T_IS_STDINT)
+        << " NOT"
+#endif
+        << " defined" << std::endl
+        << "PlatformTest: sizeof(int) = " << sizeof(int)
+        << ", sizeof(long) = " << sizeof(long)
+        << ", sizeof(long long) = " << sizeof(long long)
+        << ", sizeof(void*) = " << sizeof(void*)
+        << std::endl;
 
     CPPUNIT_ASSERT_EQUAL(size_t(1), sizeof(int8_t));
     CPPUNIT_ASSERT_EQUAL(size_t(2), sizeof(int16_t));

@@ -72,5 +72,5 @@ ts::IPAddress ts::IPAddressMask::broadcastAddress() const
 
 ts::UString ts::IPAddressMask::toString() const
 {
-    return UString::Format(u"%s/%d", {address.toString(), maskSize()});
+    return UString::Format(u"%s/%d", {address, maskSize()});
 }

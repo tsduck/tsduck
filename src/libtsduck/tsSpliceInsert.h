@@ -85,6 +85,18 @@ namespace ts {
         void adjustPTS(uint64_t adjustment);
 
         //!
+        //! Get the highest PTS value in the command.
+        //! @return The highest PTS value in the command or INVALID_PTS if none found.
+        //!
+        uint64_t highestPTS() const;
+
+        //!
+        //! Get the lowest PTS value in the command.
+        //! @return The lowest PTS value in the command or INVALID_PTS if none found.
+        //!
+        uint64_t lowestPTS() const;
+
+        //!
         //! Display the splice insert command.
         //! @param [in,out] display Display engine.
         //! @param [in] indent Indentation width.

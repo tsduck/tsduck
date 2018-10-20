@@ -49,7 +49,7 @@ ts::DirectShowFilterCategory::DirectShowFilterCategory(Report& report) :
 //-----------------------------------------------------------------------------
 
 ts::DirectShowFilterCategory::DirectShowFilterCategory(const ::GUID& category, Report& report) :
-    DirectShowFilterCategory(_report)
+    DirectShowFilterCategory(report)
 {
     getAllFiltersInstance(category);
 }

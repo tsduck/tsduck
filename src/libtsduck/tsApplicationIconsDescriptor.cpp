@@ -75,7 +75,7 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(const Descriptor& des
 void ts::ApplicationIconsDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(icon_locator.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(icon_locator.toDVBWithByteLength(0, NPOS, charset));
     bbp->appendUInt16(icon_flags);
     bbp->append(reserved_future_use);
     serializeEnd(desc, bbp);

@@ -28,68 +28,39 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a Viaccess date.
+//!  Command-line options for one plugin.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractCASDate.h"
+#include "tsPlugin.h"
+#include "tsDisplayInterface.h"
 
 namespace ts {
     //!
-    //! Representation of a Viaccess date.
-    //! @ingroup mpeg
+    //! Command-line options for one plugin.
+    //! @ingroup plugin
     //!
-    class TSDUCKDLL ViaccessDate: public AbstractCASDate
+    class TSDUCKDLL PluginOptions: public DisplayInterface
     {
     public:
         //!
-        //! Default constructor, from a 16-bit integer.
-        //! @param [in] value 16-bit binary representation of the date.
+        //! Default constructor.
+        //! @param [in] type Plugin type.
+        //! @param [in] name Plugin name.
         //!
-        ViaccessDate(uint16_t value = InvalidDate) :
-            AbstractCASDate(1980, value)
-        {
-        }
+        PluginOptions(PluginType type = PROCESSOR_PLUGIN, const UString& name = UString());
 
-        //!
-        //! Copy constructor.
-        //! @param [in] date another date to assign.
-        //!
-        ViaccessDate(const ViaccessDate& date) :
-            AbstractCASDate(1980, date)
-        {
-        }
+        // Implementation of DisplayInterface
+        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const override;
 
-        //!
-        //! Constructor from fields.
-        //! @param [in] year Year number.
-        //! @param [in] month Month number.
-        //! @param [in] day Day number.
-        //!
-        ViaccessDate(int year, int month, int day) :
-            AbstractCASDate(1980, year, month, day)
-        {
-        }
-
-        //!
-        //! Constructor from a Time object.
-        //! @param [in] time A Time object.
-        //!
-        ViaccessDate(const Time& time) :
-            AbstractCASDate(1980, time)
-        {
-        }
-
-        //!
-        //! Assignment operator.
-        //! @param [in] date A data to assign.
-        //! @return A reference to this object.
-        //!
-        ViaccessDate& operator=(const AbstractCASDate& date)
-        {
-            AbstractCASDate::operator=(date);
-            return *this;
-        }
+        PluginType    type;  //!< Plugin type.
+        UString       name;  //!< Plugin name.
+        UStringVector args;  //!< Plugin options.
     };
+
+    //!
+    //! A vector of plugin options, representing a processing chain.
+    //!
+    typedef std::vector<PluginOptions> PluginOptionsVector;
 }

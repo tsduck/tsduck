@@ -31,15 +31,13 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsArgs.h"
+#include "tsMain.h"
 #include "tsIntegerUtils.h"
-#include "tsIPUtils.h"
 #include "tsEMMGClient.h"
 #include "tsUDPSocket.h"
 #include "tsPacketizer.h"
 #include "tsMonotonic.h"
 #include "tsSectionFile.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 namespace {
@@ -454,15 +452,8 @@ void EMMGSectionProvider::provideSection(ts::SectionCounter counter, ts::Section
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
-
-    // IP initialization.
-    if (!ts::IPInitialize()) {
-        return EXIT_FAILURE;
-    }
-
     // Command line options.
     EMMGOptions opt(argc, argv);
 
@@ -478,7 +469,7 @@ int main (int argc, char *argv[])
     }
 
     // Connect to the MUX.
-    opt.verbose(u"Connecting to MUX at %s", {opt.tcpMuxAddress.toString()});
+    opt.verbose(u"Connecting to MUX at %s", {opt.tcpMuxAddress});
     if (!client.connect(opt.tcpMuxAddress,
                         opt.udpMuxAddress,
                         opt.clientId,
@@ -510,8 +501,7 @@ int main (int argc, char *argv[])
     ts::Packetizer packetizer(ts::PID_NULL, &sectionProvider);
 
     // Start time.
-    ts::Monotonic startTime;
-    startTime.getSystemTime();
+    const ts::Monotonic startTime(true);
 
     // This clock will be our reference.
     ts::Monotonic currentTime(startTime);
@@ -593,3 +583,5 @@ int main (int argc, char *argv[])
     client.disconnect();
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)

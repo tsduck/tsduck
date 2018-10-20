@@ -47,6 +47,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
     _default_interface(false),
     _use_first_source(false),
     _recv_bufsize(0),
+    _recv_timeout(-1),
     _use_source(),
     _first_source(),
     _sources()
@@ -106,6 +107,12 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
               u"Set the reuse port socket option. This is now enabled by default, the option "
               u"is present for legacy only.");
 
+    args.option(u"receive-timeout", 0, Args::UNSIGNED);
+    args.help(u"receive-timeout",
+              u"Specify the UDP reception timeout in milliseconds. "
+              u"This timeout applies to each receive operation, individually. "
+              u"By default, receive operations wait for data, possibly forever.");
+
     args.option(u"source", _with_short_options ? 's' : 0, Args::STRING);
     args.help(u"source", u"address[:port]",
               u"Filter UDP packets based on the specified source address. This option is "
@@ -144,11 +151,12 @@ bool ts::UDPReceiver::load(ts::Args& args)
     _use_ssm = args.present(u"ssm");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
+    _recv_timeout = args.intValue<MilliSecond>(u"receive-timeout", -1);
 
     // Check the presence of the '@' indicating a source address.
     const size_t sep = destination.find(u'@');
     _use_source.clear();
-    if (sep != UString::NPOS) {
+    if (sep != NPOS) {
         // Resolve source address.
         if (!_use_source.resolve(destination.substr(0, sep), args)) {
             return false;
@@ -166,7 +174,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
 
     // If a destination address is specified, it must be a multicast address.
     if (_dest_addr.hasAddress() && !_dest_addr.isMulticast()) {
-        args.error(u"address %s is not multicast", {_dest_addr.toString()});
+        args.error(u"address %s is not multicast", {_dest_addr});
         return false;
     }
 
@@ -176,7 +184,7 @@ bool ts::UDPReceiver::load(ts::Args& args)
         return false;
     }
     if (_use_ssm && !_dest_addr.isSSM()) {
-        args.warning(u"address %s is not an SSM address", {_dest_addr.toString()});
+        args.warning(u"address %s is not an SSM address", {_dest_addr});
     }
     if (_use_ssm && _use_first_source) {
         args.error(u"SSM and --first-source are mutually exclusive");
@@ -283,6 +291,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         UDPSocket::open(report) &&
         reusePort(_reuse_port, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
+        (_recv_timeout < 0 || setReceiveTimeout(_recv_timeout, report)) &&
         bind(local_addr, report);
 
     // Optional SSM source address.
@@ -306,7 +315,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
     }
 
     if (!ok) {
-        close();
+        close(report);
     }
     return ok;
 }
@@ -333,7 +342,10 @@ bool ts::UDPReceiver::receive(void* data,
         }
 
         // Debug (level 2) message for each message.
-        report.log(2, u"received UDP packet, source: %s, destination: %s", {sender.toString(), destination.toString()});
+        if (report.maxSeverity() >= 2) {
+            // Prior report level checking to avoid evaluating parameters when not necessary.
+            report.log(2, u"received UDP packet, source: %s, destination: %s", {sender, destination});
+        }
 
         // Check the destination address to exclude packets from other streams.
         // When several multicast streams use the same destination port and several
@@ -352,7 +364,10 @@ bool ts::UDPReceiver::receive(void* data,
 
         if (destination.hasAddress() && ((_dest_addr.hasAddress() && destination != _dest_addr) || (!_dest_addr.hasAddress() && destination.isMulticast()))) {
             // This is a spurious packet.
-            report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination.toString(), _dest_addr.toString()});
+            if (report.maxSeverity() >= Severity::Debug) {
+                // Prior report level checking to avoid evaluating parameters when not necessary.
+                report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination, _dest_addr});
+            }
             continue;
         }
 
@@ -366,7 +381,7 @@ bool ts::UDPReceiver::receive(void* data,
             if (_use_first_source) {
                 assert(!_use_source.hasAddress());
                 _use_source = sender;
-                report.verbose(u"now filtering on source address %s", {sender.toString()});
+                report.verbose(u"now filtering on source address %s", {sender});
             }
         }
 
@@ -377,17 +392,20 @@ bool ts::UDPReceiver::receive(void* data,
             // With source filtering, this is just an informational verbose-level message.
             const int level = _use_source.hasAddress() ? Severity::Verbose : Severity::Warning;
             if (_sources.size() == 1) {
-                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination.toString()});
-                report.log(level, u"detected source: %s", {_first_source.toString()});
+                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination});
+                report.log(level, u"detected source: %s", {_first_source});
             }
-            report.log(level, u"detected source: %s", {sender.toString()});
+            report.log(level, u"detected source: %s", {sender});
             _sources.insert(sender);
         }
 
         // Filter packets based on source address if requested.
         if (!sender.match(_use_source)) {
             // Not the expected source, this is a spurious packet.
-            report.debug(u"rejecting packet, source: %s, expecting: %s", {sender.toString(), _use_source.toString()});
+            if (report.maxSeverity() >= Severity::Debug) {
+                // Prior report level checking to avoid evaluating parameters when not necessary.
+                report.debug(u"rejecting packet, source: %s, expecting: %s", {sender, _use_source});
+            }
             continue;
         }
 

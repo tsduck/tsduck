@@ -37,14 +37,14 @@ TSDUCK_SOURCE;
 
 ts::PushInputPlugin::PushInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     InputPlugin(tsp_, description, syntax),
-    _receiver(tsp_, this),
+    _receiver(this),
     _started(false),
+    _interrupted(false),
     _queue()
 {
 }
 
-ts::PushInputPlugin::Receiver::Receiver(TSP* tsp_, PushInputPlugin* plugin) :
-    _tsp(tsp_),
+ts::PushInputPlugin::Receiver::Receiver(PushInputPlugin* plugin) :
     _plugin(plugin)
 {
 }
@@ -71,7 +71,7 @@ void ts::PushInputPlugin::setQueueSize(size_t count)
 
 void ts::PushInputPlugin::Receiver::main()
 {
-    _tsp->debug(u"internal push-input thread started");
+    _plugin->tsp->debug(u"internal push-input thread started");
 
     // Simply let the subclass perform input until the end.
     _plugin->processInput();
@@ -79,7 +79,7 @@ void ts::PushInputPlugin::Receiver::main()
     // Push an end of file mark.
     _plugin->_queue.setEOF();
 
-    _tsp->debug(u"internal push-input thread completed");
+    _plugin->tsp->debug(u"internal push-input thread completed");
 }
 
 
@@ -89,8 +89,15 @@ void ts::PushInputPlugin::Receiver::main()
 
 bool ts::PushInputPlugin::start()
 {
-    // Nothing to do in this version.
-    return true;
+    if (_started) {
+        return false; // already started
+    }
+    else {
+        // Reset the packet queue to restart a new session (in case of restart).
+        _queue.reset();
+        _interrupted = false;
+        return true;
+    }
 }
 
 
@@ -105,6 +112,19 @@ bool ts::PushInputPlugin::stop()
 
     // Wait for received thread termination.
     _receiver.waitForTermination();
+    _started = false;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Abort input operation in progress
+//----------------------------------------------------------------------------
+
+bool ts::PushInputPlugin::abortInput()
+{
+    // Send the stop condition to the internal packet queue.
+    _queue.stop();
     return true;
 }
 
@@ -151,9 +171,14 @@ bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
         TSPacket* out_buffer = 0;
         size_t out_count = 0;
 
-        // Wait for space in the queue buffer.
         // Abort now if the application is terminating.
-        if (tsp->aborting() || _queue.stopped() || !_queue.lockWriteBuffer(out_buffer, out_count, count)) {
+        if (tsp->aborting() || _queue.stopped()) {
+            _interrupted = true;
+            return false;
+        }
+
+        // Wait for space in the queue buffer.
+        if (!_queue.lockWriteBuffer(out_buffer, out_count, count)) {
             return false;
         }
 

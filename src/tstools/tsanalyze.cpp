@@ -31,10 +31,10 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsMain.h"
 #include "tsTSAnalyzerReport.h"
 #include "tsTSAnalyzerOptions.h"
 #include "tsInputRedirector.h"
-#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -83,9 +83,8 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
+int MainCode(int argc, char *argv[])
 {
-    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::TSAnalyzerReport analyzer(opt.bitrate);
     ts::InputRedirector input(opt.infile, opt);
@@ -101,3 +100,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+TS_MAIN(MainCode)
