@@ -480,7 +480,7 @@ int MainCode(int argc, char *argv[])
                         opt.sectionMode,
                         channelStatus,
                         streamStatus,
-                        0,
+                        nullptr,
                         opt.logger))
     {
         return EXIT_FAILURE;

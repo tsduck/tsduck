@@ -845,7 +845,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, bo
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::CryptoPeriod::CryptoPeriod() :
-    _plugin(0),
+    _plugin(nullptr),
     _cp_number(0),
     _ecm_ok(false),
     _ecm(),

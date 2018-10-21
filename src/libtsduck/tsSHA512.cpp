@@ -244,7 +244,7 @@ bool ts::SHA512::getHash (void* hash, size_t bufsize, size_t* retsize)
         PutUInt64 (out + 8*i, _state[i]);
     }
 
-    if (retsize != 0) {
+    if (retsize != nullptr) {
         *retsize = HASH_SIZE;
     }
     return true;

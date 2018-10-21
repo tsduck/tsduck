@@ -153,7 +153,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _fixCC(false),
     _dropStatus(TSP_DROP),
     _service(this, *tsp),
-    _demux(0, this),
+    _demux(nullptr, this),
     _tagsByPID(),
     _states()
 {

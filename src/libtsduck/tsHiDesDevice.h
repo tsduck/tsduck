@@ -177,7 +177,7 @@ namespace ts {
         //! (in case of user-interrupt, return, otherwise retry).
         //! @return True on success, false on error.
         //!
-        bool send(const TSPacket* data, size_t packet_count, Report& report = CERR, AbortInterface* abort = 0);
+        bool send(const TSPacket* data, size_t packet_count, Report& report = CERR, AbortInterface* abort = nullptr);
 
     private:
         // The implementation is highly system-dependent.

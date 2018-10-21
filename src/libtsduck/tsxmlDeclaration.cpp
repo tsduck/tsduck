@@ -74,7 +74,7 @@ bool ts::xml::Declaration::parseNode(TextParser& parser, const Node* parent)
     if (!ok) {
         _report.error(u"line %d: error parsing XML declaration, not properly terminated", {lineNumber()});
     }
-    else if (dynamic_cast<const Document*>(parent) == 0) {
+    else if (dynamic_cast<const Document*>(parent) == nullptr) {
         _report.error(u"line %d: misplaced declaration, not directly inside a document", {lineNumber()});
         ok = false;
     }

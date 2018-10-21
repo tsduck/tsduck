@@ -42,15 +42,15 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
     _report(report),
     _name(options.name),
     _logname(),
-    _shlib(0)
+    _shlib(nullptr)
 {
-    const UChar* shellOpt = 0;
+    const UChar* shellOpt = nullptr;
 
     // Create the plugin instance object
     switch (options.type) {
         case INPUT_PLUGIN: {
             NewInputProfile allocator = PluginRepository::Instance()->getInput(_name, *report);
-            if (allocator != 0) {
+            if (allocator != nullptr) {
                 _shlib = allocator(this);
                 shellOpt = u" -I";
             }
@@ -58,7 +58,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
         }
         case OUTPUT_PLUGIN: {
             NewOutputProfile allocator = PluginRepository::Instance()->getOutput(_name, *report);
-            if (allocator != 0) {
+            if (allocator != nullptr) {
                 _shlib = allocator(this);
                 shellOpt = u" -O";
             }
@@ -66,7 +66,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
         }
         case PROCESSOR_PLUGIN: {
             NewProcessorProfile allocator = PluginRepository::Instance()->getProcessor(_name, *report);
-            if (allocator != 0) {
+            if (allocator != nullptr) {
                 _shlib = allocator(this);
                shellOpt = u" -P";
             }
@@ -76,7 +76,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
             assert(false);
     }
 
-    if (_shlib == 0) {
+    if (_shlib == nullptr) {
         // Error message already displayed.
         return;
     }
@@ -105,9 +105,9 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, const Plu
 ts::PluginThread::~PluginThread()
 {
     // Deallocate plugin instance, if allocated.
-    if (_shlib != 0) {
+    if (_shlib != nullptr) {
         delete _shlib;
-        _shlib = 0;
+        _shlib = nullptr;
     }
 }
 

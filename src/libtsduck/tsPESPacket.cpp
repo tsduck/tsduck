@@ -69,11 +69,11 @@ ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
             _data = pp._data;
             break;
         case COPY:
-            _data = pp._is_valid ? new ByteBlock (*pp._data) : 0;
+            _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
             break;
         default:
             // should not get there
-            assert (false);
+            assert(false);
     }
 }
 
@@ -111,7 +111,7 @@ void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
     _header_size = 0;
     _first_pkt = 0;
     _last_pkt = 0;
-    _data = 0;
+    _data.clear();
 
     if (bbp.isNull()) {
         return;
@@ -196,7 +196,7 @@ ts::PESPacket& ts::PESPacket::copy(const PESPacket& pp)
     _stream_type = pp._stream_type;
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
-    _data = pp._is_valid ? new ByteBlock (*pp._data) : 0;
+    _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
     return *this;
 }
 

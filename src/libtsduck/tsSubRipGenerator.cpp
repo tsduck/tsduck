@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 ts::SubRipGenerator::SubRipGenerator(const UString& fileName, Report& report) :
     _outputStream(),
-    _stream(0),
+    _stream(nullptr),
     _frameCount(0)
 {
     if (!fileName.empty()) {
@@ -47,7 +47,7 @@ ts::SubRipGenerator::SubRipGenerator(const UString& fileName, Report& report) :
 
 ts::SubRipGenerator::SubRipGenerator(std::ostream* stream) :
     _outputStream(),
-    _stream(0),
+    _stream(nullptr),
     _frameCount(0)
 {
     setStream(stream);
@@ -83,7 +83,7 @@ bool ts::SubRipGenerator::setStream(std::ostream* stream)
 {
     close();
     _stream = stream;
-    return _stream != 0;
+    return _stream != nullptr;
 }
 
 
@@ -93,9 +93,9 @@ bool ts::SubRipGenerator::setStream(std::ostream* stream)
 
 void ts::SubRipGenerator::close()
 {
-    if (_stream != 0) {
+    if (_stream != nullptr) {
         _stream->flush();
-        _stream = 0;
+        _stream = nullptr;
     }
     if (_outputStream.is_open()) {
         _outputStream.close();
@@ -124,7 +124,7 @@ void ts::SubRipGenerator::addFrame(MilliSecond showTimestamp, MilliSecond hideTi
     }
 
     // Generate the frame only when it is possible to do so.
-    if (notEmpty && _stream != 0) {
+    if (notEmpty && _stream != nullptr) {
         // First line: Frame count, starting at 1.
         // Second line: Start and end timestamps.
         *_stream << ++_frameCount << std::endl

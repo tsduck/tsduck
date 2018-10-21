@@ -278,7 +278,7 @@ void SafePtrTest::testSafePtr()
         CPPUNIT_ASSERT(p4->value() == 27);
         CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
 
-        p1 = 0;
+        p1 = nullptr;
 
         CPPUNIT_ASSERT(p1.count() == 1);
         CPPUNIT_ASSERT(p2.count() == 1);
@@ -292,7 +292,7 @@ void SafePtrTest::testSafePtr()
         CPPUNIT_ASSERT(p4->value() == 27);
         CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
 
-        p3 = 0;
+        p3 = nullptr;
 
         CPPUNIT_ASSERT(p1.count() == 1);
         CPPUNIT_ASSERT(p2.count() == 1);

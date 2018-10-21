@@ -53,7 +53,7 @@ ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
         case DVB_C: return new TunerParametersDVBC();
         case DVB_T: return new TunerParametersDVBT();
         case ATSC:  return new TunerParametersATSC();
-        default:    assert(false); return 0;
+        default:    assert(false); return nullptr;
     }
 }
 

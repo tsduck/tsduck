@@ -466,13 +466,13 @@ namespace ts {
         // Analyse a list of descriptors.
         // If svp is not 0, we are in the PMT of the specified service.
         // If ps is not 0, we are in the description of this PID in a PMT.
-        void analyzeDescriptors(const DescriptorList& descs, ServiceContext* svp = 0, PIDContext* ps = 0);
+        void analyzeDescriptors(const DescriptorList& descs, ServiceContext* svp = nullptr, PIDContext* ps = nullptr);
 
         // Analyse one CA descriptor, either from the CAT or a PMT.
         // If svp is not 0, we are in the PMT of the specified service.
         // If ps is not 0, we are in the description of this PID in a PMT.
         // If svp is 0, we are in the CAT.
-        void analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp = 0, PIDContext* ps = 0);
+        void analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp = nullptr, PIDContext* ps = nullptr);
 
         // Implementation of TableHandlerInterface
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

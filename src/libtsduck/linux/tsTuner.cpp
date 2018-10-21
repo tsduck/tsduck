@@ -135,7 +135,7 @@ ts::Tuner::Tuner(const UString& device_name) :
     _fe_info(),
     _signal_poll(DEFAULT_SIGNAL_POLL),
     _rt_signal(-1),
-    _rt_timer(0),
+    _rt_timer(nullptr),
     _rt_timer_valid(false)
 {
 }
@@ -575,7 +575,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
     switch (_tuner_type) {
         case DVB_S: {
             TunerParametersDVBS* tpp = dynamic_cast<TunerParametersDVBS*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             if (reset_unknown) {
                 tpp->frequency = 0;
                 tpp->polarity = TunerParametersDVBS::DEFAULT_POLARITY;
@@ -587,19 +587,19 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
         }
         case DVB_C: {
             TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             error = getCurrentTuningDVBC(*tpp);
             break;
         }
         case DVB_T: {
             TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             error = getCurrentTuningDVBT(*tpp);
             break;
         }
         case ATSC: {
             TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             error = getCurrentTuningATSC(*tpp);
             break;
         }
@@ -919,22 +919,22 @@ bool ts::Tuner::tune(const TunerParameters& params, Report& report)
     switch (_tuner_type) {
         case DVB_S: {
             const TunerParametersDVBS* tpp = dynamic_cast<const TunerParametersDVBS*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             return tuneDVBS(*tpp, report);
         }
         case DVB_C: {
             const TunerParametersDVBC* tpp = dynamic_cast<const TunerParametersDVBC*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             return tuneDVBC(*tpp, report);
         }
         case DVB_T: {
             const TunerParametersDVBT* tpp = dynamic_cast<const TunerParametersDVBT*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             return tuneDVBT(*tpp, report);
         }
         case ATSC: {
             const TunerParametersATSC* tpp = dynamic_cast<const TunerParametersATSC*>(&params);
-            assert(tpp != 0);
+            assert(tpp != nullptr);
             return tuneATSC(*tpp, report);
         }
         default: {
@@ -1075,7 +1075,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = empty_signal_handler;
-            if (::sigaction(_rt_signal, &sac, 0) < 0) {
+            if (::sigaction(_rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error setting tuner receive timer signal: %s", {ErrorCodeMessage()});
                 SignalAllocator::Instance()->release(_rt_signal);
                 _rt_signal = -1;
@@ -1112,7 +1112,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = SIG_IGN;
-            if (::sigaction(_rt_signal, &sac, 0) < 0) {
+            if (::sigaction(_rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error ignoring tuner receive timer signal: %s", {ErrorCodeMessage()});
                 ok = false;
             }
@@ -1164,7 +1164,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_value.tv_nsec = (unsigned long) (1000000 * (_receive_timeout % 1000));
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
-        if (::timer_settime(_rt_timer, 0, &timeout, 0) < 0) {
+        if (::timer_settime(_rt_timer, 0, &timeout, nullptr) < 0) {
             report.error(u"error arming tuner receive timer: %s", {ErrorCodeMessage()});
             return 0;
         }
@@ -1191,7 +1191,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         else if (errno == EINTR) {
             // Input was interrupted by a signal.
             // If the application should be interrupted, stop now.
-            if (abort != 0 && abort->aborting()) {
+            if (abort != nullptr && abort->aborting()) {
                 break;
             }
         }
@@ -1234,7 +1234,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_value.tv_nsec = 0;
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
-        if (::timer_settime(_rt_timer, 0, &timeout, 0) < 0) {
+        if (::timer_settime(_rt_timer, 0, &timeout, nullptr) < 0) {
             report.error(u"error disarming tuner receive timer: %s", {ErrorCodeMessage()});
         }
     }
@@ -1422,8 +1422,8 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Read current tuning parameters
     TunerParameters* params = TunerParameters::Factory(_tuner_type);
-    if (params != 0 && !getCurrentTuning(*params, false, report)) {
-        params = 0;
+    if (params != nullptr && !getCurrentTuning(*params, false, report)) {
+        params = nullptr;
     }
     const TunerParametersDVBS* params_dvbs = dynamic_cast <const TunerParametersDVBS*>(params);
     const TunerParametersDVBC* params_dvbc = dynamic_cast <const TunerParametersDVBC*>(params);
@@ -1469,13 +1469,13 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     // Display frequency characteristics
     const uint64_t hz_factor = _fe_info.type == ::FE_QPSK ? 1000 : 1;
     strm << margin << "Frequencies:" << std::endl;
-    if (params_dvbs != 0) {
+    if (params_dvbs != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbs->frequency), u"Hz");
     }
-    if (params_dvbc != 0) {
+    if (params_dvbc != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbc->frequency), u"Hz");
     }
-    if (params_dvbt != 0) {
+    if (params_dvbt != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbt->frequency), u"Hz");
         if (UHF::InBand(params_dvbt->frequency)) {
             Display(strm, margin, u"  UHF channel", UString::Decimal(UHF::Channel(params_dvbt->frequency)), u"");
@@ -1484,7 +1484,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
             Display(strm, margin, u"  VHF channel", UString::Decimal(VHF::Channel(params_dvbt->frequency)), u"");
         }
     }
-    if (params_atsc != 0) {
+    if (params_atsc != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_atsc->frequency), u"Hz");
     }
     Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _fe_info.frequency_min), u"Hz");
@@ -1494,10 +1494,10 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Display symbol rate characteristics.
 
-    if (params_dvbs != 0 || params_dvbc != 0) {
+    if (params_dvbs != nullptr || params_dvbc != nullptr) {
         strm << margin << "Symbol rates:" << std::endl;
         Display(strm, margin, u"  Current",
-                 UString::Decimal(params_dvbs != 0 ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
+                 UString::Decimal(params_dvbs != nullptr ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
                  u"sym/s");
         Display(strm, margin, u"  Min", UString::Decimal(_fe_info.symbol_rate_min), u"sym/s");
         Display(strm, margin, u"  Max", UString::Decimal(_fe_info.symbol_rate_max), u"sym/s");
@@ -1505,16 +1505,16 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     }
 
     // Frontend-specific information
-    if (params_dvbs != 0) {
+    if (params_dvbs != nullptr) {
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbs->inversion), u"");
         Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params_dvbs->inner_fec) , u"");
     }
-    if (params_dvbc != 0) {
+    if (params_dvbc != nullptr) {
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbc->inversion), u"");
         Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params_dvbc->inner_fec) , u"");
         Display(strm, margin, u"Modulation", ModulationEnum.name(params_dvbc->modulation) , u"");
     }
-    if (params_dvbt != 0) {
+    if (params_dvbt != nullptr) {
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbt->inversion), u"");
         Display(strm, margin, u"Bandwidth", BandWidthEnum.name(params_dvbt->bandwidth) , u"");
         Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params_dvbt->fec_hp) , u"");
@@ -1527,7 +1527,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
             Display(strm, margin, u"PLP", UString::Decimal(uint32_t(params_dvbt->plp)) , u"");
         }
     }
-    if (params_atsc != 0) {
+    if (params_atsc != nullptr) {
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_atsc->inversion), u"");
         Display(strm, margin, u"Modulation", ModulationEnum.name(params_atsc->modulation) , u"");
     }

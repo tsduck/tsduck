@@ -176,7 +176,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
     _scte35(false),
     _output_name(),
     _output_stream(),
-    _output(0),
+    _output(nullptr),
     _packet_count(0),
     _stats(),
     _splices(),

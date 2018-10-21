@@ -49,7 +49,7 @@ ts::SharedLibrary::SharedLibrary(const UString& filename, bool permanent, Report
 #if defined(TS_WINDOWS)
     _module(0)
 #else
-    _dl(0)
+    _dl(nullptr)
 #endif
 {
     if (!filename.empty()) {
@@ -94,7 +94,7 @@ void ts::SharedLibrary::load(const UString& filename)
     }
 #else
     _dl = ::dlopen(_filename.toUTF8().c_str(), RTLD_NOW | RTLD_GLOBAL);
-    _is_loaded = _dl != 0;
+    _is_loaded = _dl != nullptr;
     if (!_is_loaded) {
         _error = UString::FromUTF8(dlerror());
     }
@@ -139,10 +139,10 @@ void ts::SharedLibrary::unload()
 void* ts::SharedLibrary::getSymbol(const std::string& name) const
 {
     if (!_is_loaded) {
-        return 0;
+        return nullptr;
     }
     else {
-        void* result = 0;
+        void* result = nullptr;
 #if defined(TSDUCK_STATIC)
         // Nothing to do, load() previously failed.
 #elif defined(TS_WINDOWS)
@@ -150,7 +150,7 @@ void* ts::SharedLibrary::getSymbol(const std::string& name) const
 #else
         result = ::dlsym(_dl, name.c_str());
 #endif
-        if (result == 0) {
+        if (result == nullptr) {
             _report.debug(u"symbol %s not found in %s", {name, _filename});
         }
         return result;

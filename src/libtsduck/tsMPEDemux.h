@@ -64,7 +64,7 @@ namespace ts {
         //! @param [in] mpe_handler The object to invoke when MPE information is found.
         //! @param [in] pid_filter The set of MPE PID's to demux.
         //!
-        MPEDemux(MPEHandlerInterface* mpe_handler = 0, const PIDSet& pid_filter = NoPID);
+        MPEDemux(MPEHandlerInterface* mpe_handler = nullptr, const PIDSet& pid_filter = NoPID);
 
         //!
         //! Destructor.

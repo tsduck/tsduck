@@ -78,7 +78,7 @@ ts::TunerParametersDVBS::TunerParametersDVBS() :
 void ts::TunerParametersDVBS::copy(const TunerParameters& obj)
 {
     const TunerParametersDVBS* other = dynamic_cast <const TunerParametersDVBS*> (&obj);
-    if (other == 0) {
+    if (other == nullptr) {
         throw IncompatibleTunerParametersError(u"DVBS != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {

@@ -78,7 +78,7 @@ Options::Options(int argc, char *argv[]) :
     compile(false),
     decompile(false),
     xmlModel(false),
-    defaultCharset(0)
+    defaultCharset(nullptr)
 {
     option(u"", 0, STRING);
     help(u"",
@@ -146,7 +146,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Get default character set.
     const ts::UString csName(value(u"default-charset"));
-    if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == 0) {
+    if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == nullptr) {
         error(u"invalid character set name '%s", {csName});
     }
 

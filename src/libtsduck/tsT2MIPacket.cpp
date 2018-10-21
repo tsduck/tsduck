@@ -58,7 +58,7 @@ ts::T2MIPacket::T2MIPacket(const T2MIPacket& pp, CopyShare mode) :
             _data = pp._data;
             break;
         case COPY:
-            _data = pp._is_valid ? new ByteBlock(*pp._data) : 0;
+            _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
             break;
         default:
             // should not get there
@@ -174,7 +174,7 @@ ts::T2MIPacket& ts::T2MIPacket::copy(const T2MIPacket& pp)
     if (&pp != this) {
         _is_valid = pp._is_valid;
         _source_pid = pp._source_pid;
-        _data = pp._is_valid ? new ByteBlock(*pp._data) : 0;
+        _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
     }
     return *this;
 }

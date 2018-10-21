@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 ts::tsswitch::Core::Core(Options& opt, Report& log) :
     _opt(opt),
     _log(log),
-    _inputs(_opt.inputs.size(), 0),
+    _inputs(_opt.inputs.size(), nullptr),
     _output(*this, opt, log), // load output plugin and analyze options
     _receiveWatchDog(this, _opt.receiveTimeout, 0, _log),
     _mutex(),
@@ -441,7 +441,7 @@ bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, si
     GuardCondition lock(_mutex, _gotInput);
     for (;;) {
         if (_terminate) {
-            first = 0;
+            first = nullptr;
             count = 0;
         }
         else {

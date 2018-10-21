@@ -314,7 +314,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc, const DVBCharset* 
     bool success = true;
 
     // Analyze all tables in the document.
-    for (const xml::Element* node = root == 0 ? 0 : root->firstChildElement(); node != 0; node = node->nextSiblingElement()) {
+    for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
         BinaryTablePtr bin(new BinaryTable);
         CheckNonNull(bin.pointer());
         if (bin->fromXML(node) && bin->isValid()) {
@@ -354,7 +354,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc, const DVBCharset* cha
 {
     // Initialize the document structure.
     xml::Element* root = doc.initialize(u"tsduck");
-    if (root == 0) {
+    if (root == nullptr) {
         return false;
     }
 

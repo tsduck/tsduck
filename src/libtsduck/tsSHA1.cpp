@@ -215,7 +215,7 @@ bool ts::SHA1::getHash (void* hash, size_t bufsize, size_t* retsize)
         PutUInt32 (out + 4*i, _state[i]);
     }
 
-    if (retsize != 0) {
+    if (retsize != nullptr) {
         *retsize = HASH_SIZE;
     }
     return true;

@@ -47,14 +47,14 @@ ts::xml::Node::Node(Report& report, size_t line) :
     RingNode(),
     _report(report),
     _value(),
-    _parent(0),
-    _firstChild(0),
+    _parent(nullptr),
+    _firstChild(nullptr),
     _inputLineNum(line)
 {
 }
 
 ts::xml::Node::Node(Node* parent, const UString& value, bool last) :
-    Node(parent == 0 ? *static_cast<Report*>(&NULLREP) : parent->_report, 0)
+    Node(parent == nullptr ? *static_cast<Report*>(&NULLREP) : parent->_report, 0)
 {
     setValue(value);
     reparent(parent, last);
@@ -68,7 +68,7 @@ ts::xml::Node::Node(Node* parent, const UString& value, bool last) :
 ts::xml::Node::~Node()
 {
     clear();
-    reparent(0);
+    reparent(nullptr);
 }
 
 
@@ -79,7 +79,7 @@ ts::xml::Node::~Node()
 void ts::xml::Node::clear()
 {
     // Free all our children nodes.
-    while (_firstChild != 0) {
+    while (_firstChild != nullptr) {
         // The child will cleanly remove itself from the list of children.
         delete _firstChild;
     }
@@ -102,11 +102,11 @@ void ts::xml::Node::reparent(Node* newParent, bool last)
     }
 
     // Detach from our parent.
-    if (_parent != 0) {
+    if (_parent != nullptr) {
         // If we are the first child, make the parent point to the next child.
         // Unless we are alone in the ring of children, in which case the parent has no more children.
         if (_parent->_firstChild == this) {
-            _parent->_firstChild = ringAlone() ? 0 : ringNext<Node>();
+            _parent->_firstChild = ringAlone() ? nullptr : ringNext<Node>();
         }
         // Remove ourselves from our parent's children.
         ringRemove();
@@ -116,8 +116,8 @@ void ts::xml::Node::reparent(Node* newParent, bool last)
     _parent = newParent;
 
     // Insert inside new parent structure.
-    if (_parent != 0) {
-        if (_parent->_firstChild == 0) {
+    if (_parent != nullptr) {
+        if (_parent->_firstChild == nullptr) {
             // We become the only child of the parent.
             _parent->_firstChild = this;
         }
@@ -140,7 +140,7 @@ void ts::xml::Node::reparent(Node* newParent, bool last)
 ts::xml::Document* ts::xml::Node::document()
 {
     Node* node = this;
-    while (node->_parent != 0) {
+    while (node->_parent != nullptr) {
         node = node->_parent;
     }
     return dynamic_cast<Document*>(node);
@@ -155,7 +155,7 @@ size_t ts::xml::Node::depth() const
 {
     size_t count = 0;
     const Node* node = _parent;
-    while (node != 0) {
+    while (node != nullptr) {
         node = node->_parent;
         count++;
         // Fool-proof check.
@@ -173,13 +173,13 @@ ts::xml::Node* ts::xml::Node::nextSibling()
 {
     // When the ring points to the first child, this is the end of the list.
     Node* next = ringNext<Node>();
-    return next == this || (_parent != 0 && next == _parent->_firstChild) ? 0 : next;
+    return next == this || (_parent != nullptr && next == _parent->_firstChild) ? nullptr : next;
 }
 
 ts::xml::Node* ts::xml::Node::previousSibling()
 {
     Node* prev = ringPrevious<Node>();
-    return prev == this || (_parent != 0 && this == _parent->_firstChild) ? 0 : prev;
+    return prev == this || (_parent != nullptr && this == _parent->_firstChild) ? nullptr : prev;
 }
 
 
@@ -189,13 +189,13 @@ ts::xml::Node* ts::xml::Node::previousSibling()
 
 ts::xml::Element* ts::xml::Node::nextSiblingElement()
 {
-    for (Node* child = nextSibling(); child != 0; child = child->nextSibling()) {
+    for (Node* child = nextSibling(); child != nullptr; child = child->nextSibling()) {
         Element* elem = dynamic_cast<Element*>(child);
-        if (elem != 0) {
+        if (elem != nullptr) {
             return elem;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -206,13 +206,13 @@ ts::xml::Element* ts::xml::Node::nextSiblingElement()
 ts::xml::Element* ts::xml::Node::firstChildElement()
 {
     // Loop on all children.
-    for (Node* child = firstChild(); child != 0; child = child->nextSibling()) {
+    for (Node* child = firstChild(); child != nullptr; child = child->nextSibling()) {
         Element* elem = dynamic_cast<Element*>(child);
-        if (elem != 0) {
+        if (elem != nullptr) {
             return elem;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -227,7 +227,7 @@ bool ts::xml::Node::parseChildren(TextParser& parser)
 
     // Loop on each token we find.
     // Exit loop either at end of document or before a "</" sequence.
-    while ((node = identifyNextNode(parser)) != 0) {
+    while ((node = identifyNextNode(parser)) != nullptr) {
 
         // Read the complete node.
         if (node->parseNode(parser, this)) {
@@ -269,7 +269,7 @@ ts::xml::Node* ts::xml::Node::identifyNextNode(TextParser& parser)
 
     // Stop at end of document or before "</".
     if (parser.eof() || parser.match(u"</", false)) {
-        return 0;
+        return nullptr;
     }
 
     // Check each expected token.

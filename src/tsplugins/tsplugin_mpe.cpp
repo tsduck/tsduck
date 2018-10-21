@@ -509,7 +509,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
 ts::UString ts::MPEPlugin::dumpString(const MPEPacket& mpe)
 {
-    const uint8_t* data = 0;
+    const uint8_t* data = nullptr;
     size_t size = 0;
 
     // Select what to dump.

@@ -75,7 +75,7 @@ ts::TunerParametersDVBT::TunerParametersDVBT() :
 void ts::TunerParametersDVBT::copy(const TunerParameters& obj)
 {
     const TunerParametersDVBT* other = dynamic_cast <const TunerParametersDVBT*> (&obj);
-    if (other == 0) {
+    if (other == nullptr) {
         throw IncompatibleTunerParametersError(u"DVBT != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {
@@ -271,7 +271,7 @@ ts::UString ts::TunerParametersDVBT::toPluginOptions(bool no_local) const
 ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality) const
 {
     UString desc;
-    const UChar* band = 0;
+    const UChar* band = nullptr;
     int channel = 0;
     int offset = 0;
 
@@ -286,7 +286,7 @@ ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality)
         offset = VHF::OffsetCount(frequency);
     }
 
-    if (band != 0) {
+    if (band != nullptr) {
         desc += UString::Format(u"%s channel %d", {band, channel});
         if (offset != 0) {
             desc += UString::Format(u", offset %+d", {offset});
@@ -294,7 +294,7 @@ ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality)
         desc += u" (";
     }
     desc += UString::Decimal(frequency) + u" Hz";
-    if (band != 0) {
+    if (band != nullptr) {
         desc += u")";
     }
 

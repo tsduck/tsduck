@@ -132,7 +132,7 @@ void ts::MPEDemux::handleSection(SectionDemux& demux, const Section& section)
 
         // Build the corresponding MPE packet.
         MPEPacket mpe(section);
-        if (mpe.isValid() && _handler != 0) {
+        if (mpe.isValid() && _handler != nullptr) {
 
             // Send the MPE packet to the application.
             beforeCallingHandler(section.sourcePID());
@@ -293,7 +293,7 @@ void ts::MPEDemux::processINTDescriptors(const DescriptorList& descs)
 void ts::MPEDemux::processMPEDiscovery(const PMT& pmt, PID pid)
 {
     // Don't signal the same PID twice.
-    if (!_new_pids.test(pid) && _handler != 0) {
+    if (!_new_pids.test(pid) && _handler != nullptr) {
 
         // Remember we signalled this PID.
         _new_pids.set(pid);

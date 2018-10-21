@@ -55,21 +55,21 @@ ts::PluginRepository::PluginRepository() :
 
 void ts::PluginRepository::registerInput(const UString& name, NewInputProfile allocator)
 {
-    if (allocator != 0) {
+    if (allocator != nullptr) {
         _inputPlugins[name] = allocator;
     }
 }
 
 void ts::PluginRepository::registerProcessor(const UString& name, NewProcessorProfile allocator)
 {
-    if (allocator != 0) {
+    if (allocator != nullptr) {
         _processorPlugins[name] = allocator;
     }
 }
 
 void ts::PluginRepository::registerOutput(const UString& name, NewOutputProfile allocator)
 {
-    if (allocator != 0) {
+    if (allocator != nullptr) {
         _outputPlugins[name] = allocator;
     }
 }
@@ -99,29 +99,29 @@ ts::NewInputProfile ts::PluginRepository::getInput(const UString& name, Report& 
     // Search plugin in current cache.
     const InputMap::const_iterator it = _inputPlugins.find(name);
     if (it != _inputPlugins.end()) {
-        assert(it->second != 0);
+        assert(it->second != nullptr);
         return it->second;
     }
 
     // Do nothing if loading dynamic libraries is disallowed.
     if (!_sharedLibraryAllowed) {
         report.error(u"input plugin %s not found", {name});
-        return 0;
+        return nullptr;
     }
 
     // Try to load a shareable library.
     PluginSharedLibrary shlib(name, report);
     if (!shlib.isLoaded()) {
         // Error message already displayed.
-        return 0;
+        return nullptr;
     }
-    else if (shlib.new_input != 0) {
+    else if (shlib.new_input != nullptr) {
         registerInput(shlib.moduleName(), shlib.new_input);
         return shlib.new_input;
     }
     else {
         report.error(u"plugin %s has no input capability", {shlib.moduleName()});
-        return 0;
+        return nullptr;
     }
 }
 
@@ -130,29 +130,29 @@ ts::NewProcessorProfile ts::PluginRepository::getProcessor(const UString& name, 
     // Search plugin in current cache.
     const ProcessorMap::const_iterator it = _processorPlugins.find(name);
     if (it != _processorPlugins.end()) {
-        assert(it->second != 0);
+        assert(it->second != nullptr);
         return it->second;
     }
 
     // Do nothing if loading dynamic libraries is disallowed.
     if (!_sharedLibraryAllowed) {
         report.error(u"processor plugin %s not found", {name});
-        return 0;
+        return nullptr;
     }
 
     // Try to load a shareable library.
     PluginSharedLibrary shlib(name, report);
     if (!shlib.isLoaded()) {
         // Error message already displayed.
-        return 0;
+        return nullptr;
     }
-    else if (shlib.new_processor != 0) {
+    else if (shlib.new_processor != nullptr) {
         registerProcessor(shlib.moduleName(), shlib.new_processor);
         return shlib.new_processor;
     }
     else {
         report.error(u"plugin %s has no processor capability", {shlib.moduleName()});
-        return 0;
+        return nullptr;
     }
 }
 
@@ -161,29 +161,29 @@ ts::NewOutputProfile ts::PluginRepository::getOutput(const UString& name, Report
     // Search plugin in current cache.
     const OutputMap::const_iterator it = _outputPlugins.find(name);
     if (it != _outputPlugins.end()) {
-        assert(it->second != 0);
+        assert(it->second != nullptr);
         return it->second;
     }
 
     // Do nothing if loading dynamic libraries is disallowed.
     if (!_sharedLibraryAllowed) {
         report.error(u"output plugin %s not found", {name});
-        return 0;
+        return nullptr;
     }
 
     // Try to load a shareable library.
     PluginSharedLibrary shlib(name, report);
     if (!shlib.isLoaded()) {
         // Error message already displayed.
-        return 0;
+        return nullptr;
     }
-    else if (shlib.new_output != 0) {
+    else if (shlib.new_output != nullptr) {
         registerOutput(shlib.moduleName(), shlib.new_output);
         return shlib.new_output;
     }
     else {
         report.error(u"plugin %s has no output capability", {shlib.moduleName()});
-        return 0;
+        return nullptr;
     }
 }
 
@@ -257,7 +257,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
             out += u"\nList of tsp input plugins:\n\n";
         }
         for (InputMap::const_iterator it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
-            Plugin* p = it->second(0);
+            Plugin* p = it->second(nullptr);
             ListOnePlugin(out, it->first, p, name_width, flags);
             delete p;
         }
@@ -268,7 +268,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
             out += u"\nList of tsp output plugins:\n\n";
         }
         for (OutputMap::const_iterator it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
-            Plugin* p = it->second(0);
+            Plugin* p = it->second(nullptr);
             ListOnePlugin(out, it->first, p, name_width, flags);
             delete p;
         }
@@ -279,7 +279,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
             out += u"\nList of tsp packet processor plugins:\n\n";
         }
         for (ProcessorMap::const_iterator it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
-            Plugin* p = it->second(0);
+            Plugin* p = it->second(nullptr);
             ListOnePlugin(out, it->first, p, name_width, flags);
             delete p;
         }

@@ -61,7 +61,7 @@ ts::TunerParametersATSC::TunerParametersATSC() :
 void ts::TunerParametersATSC::copy(const TunerParameters& obj)
 {
     const TunerParametersATSC* other = dynamic_cast <const TunerParametersATSC*> (&obj);
-    if (other == 0) {
+    if (other == nullptr) {
         throw IncompatibleTunerParametersError(u"ATSC != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {

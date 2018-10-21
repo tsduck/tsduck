@@ -45,7 +45,7 @@ ts::OutputRedirector::OutputRedirector(const UString& name,
                                        std::ostream& stream,
                                        std::ios::openmode mode) :
     _stream(stream),
-    _previous(0),
+    _previous(nullptr),
     _file()
 {
     // Flawfinder: ignore: this is our open(), not ::open().
@@ -72,9 +72,9 @@ ts::OutputRedirector::OutputRedirector(const UString& name,
 
 ts::OutputRedirector::~OutputRedirector()
 {
-    if (_previous != 0) {
+    if (_previous != nullptr) {
         _stream.rdbuf(_previous);
-        _previous = 0;
+        _previous = nullptr;
     }
     if (_file.is_open()) {
         _file.close();

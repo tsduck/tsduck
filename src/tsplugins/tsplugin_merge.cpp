@@ -385,7 +385,7 @@ void ts::MergePlugin::main()
     // Loop on packet reception until the plugin request to stop.
     while (!_queue.stopped()) {
 
-        TSPacket* buffer = 0;
+        TSPacket* buffer = nullptr;
         size_t buffer_size = 0;  // In TS packets.
         size_t read_size = 0;    // In bytes.
 
@@ -396,7 +396,7 @@ void ts::MergePlugin::main()
             break;
         }
 
-        assert(buffer != 0);
+        assert(buffer != nullptr);
         assert(buffer_size > 0);
 
         // Read TS packets from the pipe, up to buffer size (but maybe less).

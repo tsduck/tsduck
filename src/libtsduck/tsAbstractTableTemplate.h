@@ -79,7 +79,7 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::swap(EntryWithDesc
 {
     if (&other != this) {
         // Unefficient but functionally correct.
-        const EntryWithDescriptorsMap tmp(0, other);
+        const EntryWithDescriptorsMap tmp(nullptr, other);
         other = *this;
         *this = tmp;
     }

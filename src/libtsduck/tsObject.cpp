@@ -65,7 +65,7 @@ ts::ObjectPtr ts::Object::RetrieveFromRepository(const UString& name)
 {
     Guard lock(_repository_mutex);
     const std::map <UString, ObjectPtr>::const_iterator pos = _repository.find(name);
-    return pos != _repository.end() ? pos->second : ObjectPtr(0);
+    return pos != _repository.end() ? pos->second : ObjectPtr();
 }
 
 

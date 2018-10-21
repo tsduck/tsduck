@@ -66,7 +66,7 @@ namespace ts {
         virtual bool residueAllowed() const override {return true;}
 
         // Implementation of BlockCipher interface.
-        virtual UString name() const override {return this->algo == 0 ? UString() : this->algo->name() + u"-CTS1";}
+        virtual UString name() const override {return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS1";}
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
                              size_t* cipher_length = 0) override;

@@ -48,7 +48,7 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
                                         Mutex& global_mutex) :
     JointTermination(options, pl_options, attributes, global_mutex),
     RingNode(),
-    _buffer(0),
+    _buffer(nullptr),
     _to_do(),
     _pkt_first(0),
     _pkt_cnt(0),
@@ -156,7 +156,7 @@ void ts::tsp::PluginExecutor::setAbort()
 
 bool ts::tsp::PluginExecutor::isRealTime() const
 {
-    return plugin() != 0 && plugin()->isRealTime();
+    return plugin() != nullptr && plugin()->isRealTime();
 }
 
 

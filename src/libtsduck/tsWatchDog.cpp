@@ -118,7 +118,7 @@ void ts::WatchDog::main()
 
     while (!_terminate) {
         bool expired = false;
-        WatchDogHandlerInterface* h = 0;
+        WatchDogHandlerInterface* h = nullptr;
 
         // Wait for the condition to be signaled. Get protected data while under mutex protection.
         {
@@ -128,7 +128,7 @@ void ts::WatchDog::main()
         }
 
         // Handle the expiration. No longer under mutex protection to avoid deadlocks in handler.
-        if (!_terminate && expired && h != 0) {
+        if (!_terminate && expired && h != nullptr) {
             _log.debug(u"Watchdog expired, id %d", { _watchDogId });
             h->handleWatchDogTimeout(*this);
         }

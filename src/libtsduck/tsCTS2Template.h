@@ -45,18 +45,19 @@
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::CTS2<CIPHER>::encrypt (const void* plain, size_t plain_length,
-                                  void* cipher, size_t cipher_maxsize,
-                                  size_t* cipher_length)
+bool ts::CTS2<CIPHER>::encrypt(const void* plain, size_t plain_length,
+                               void* cipher, size_t cipher_maxsize,
+                               size_t* cipher_length)
 {
-    if (this->algo == 0 ||
+    if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
         this->work.size() < this->block_size ||
         plain_length < this->block_size ||
-        cipher_maxsize < plain_length) {
+        cipher_maxsize < plain_length)
+    {
         return false;
     }
-    if (cipher_length != 0) {
+    if (cipher_length != nullptr) {
         *cipher_length = plain_length;
     }
 
@@ -108,18 +109,19 @@ bool ts::CTS2<CIPHER>::encrypt (const void* plain, size_t plain_length,
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::CTS2<CIPHER>::decrypt (const void* cipher, size_t cipher_length,
-                                  void* plain, size_t plain_maxsize,
-                                  size_t* plain_length)
+bool ts::CTS2<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
+                               void* plain, size_t plain_maxsize,
+                               size_t* plain_length)
 {
-    if (this->algo == 0 ||
+    if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
         this->work.size() < this->block_size ||
         cipher_length < this->block_size ||
-        plain_maxsize < cipher_length) {
+        plain_maxsize < cipher_length)
+    {
         return false;
     }
-    if (plain_length != 0) {
+    if (plain_length != nullptr) {
         *plain_length = cipher_length;
     }
 

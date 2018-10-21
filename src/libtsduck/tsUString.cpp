@@ -290,12 +290,12 @@ ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
 
 ts::UString& ts::UString::assignFromUTF8(const char* utf8)
 {
-    return assignFromUTF8(utf8, utf8 == 0 ? 0 : ::strlen(utf8));
+    return assignFromUTF8(utf8, utf8 == nullptr ? 0 : ::strlen(utf8));
 }
 
 ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
 {
-    if (utf8 == 0) {
+    if (utf8 == nullptr) {
         clear();
     }
     else {
@@ -1053,7 +1053,7 @@ bool ts::UString::similar(const UString& other) const
 
 bool ts::UString::similar(const void* addr, size_type size) const
 {
-    return addr != 0 && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
+    return addr != nullptr && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
 }
 
 
@@ -1446,7 +1446,7 @@ void ts::UString::appendDump(const void *data,
 ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DVBCharset* charset)
 {
     // Null or empty buffer is a valid empty string.
-    if (dvb == 0 || dvbSize == 0) {
+    if (dvb == nullptr || dvbSize == 0) {
         return UString();
     }
 
@@ -1463,10 +1463,10 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DV
     dvbSize -= codeSize;
 
     // Get the character set for this DVB string.
-    if (code != 0 || charset == 0) {
+    if (code != 0 || charset == nullptr) {
         charset = DVBCharset::GetCharset(code);
     }
-    if (charset == 0) {
+    if (charset == nullptr) {
         // Unsupported charset. Collect all ANSI characters, replace others by '.'.
         UString str(dvbSize, FULL_STOP);
         for (size_type i = 0; i < dvbSize; i++) {
@@ -1492,7 +1492,7 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_type dvbSize, const DV
 ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharset* charset)
 {
     // Null or empty buffer is a valid empty string.
-    if (buffer == 0 || size == 0) {
+    if (buffer == nullptr || size == 0) {
         return UString();
     }
 
@@ -1516,7 +1516,7 @@ ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& s
 ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_type start, size_type count, const DVBCharset* charset) const
 {
     // Skip degenerated cases where there is nothing to do.
-    if (buffer == 0 || size == 0 || start >= length()) {
+    if (buffer == nullptr || size == 0 || start >= length()) {
         return 0;
     }
 
@@ -1525,19 +1525,19 @@ ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t
         &ts::DVBCharsetSingleByte::ISO_6937,     // default charset
         &ts::DVBCharsetSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
         &ts::DVBCharsetUTF8::UTF_8,              // last chance, used when no other match
-        0                                        // end of list
+        nullptr                                  // end of list
     };
 
     // Look for a character set which can encode the string.
-    if (charset == 0 || !charset->canEncode(*this, start, count)) {
-        for (size_type i = 0; dvbEncoders[i] != 0; ++i) {
+    if (charset == nullptr || !charset->canEncode(*this, start, count)) {
+        for (size_type i = 0; dvbEncoders[i] != nullptr; ++i) {
             if (dvbEncoders[i]->canEncode(*this, start, count)) {
                 charset = dvbEncoders[i];
                 break;
             }
         }
     }
-    if (charset == 0) {
+    if (charset == nullptr) {
         // Should not happen since UTF-8 can encode everything.
         return 0;
     }
@@ -1583,7 +1583,7 @@ ts::ByteBlock ts::UString::toDVB(size_type start, size_type count, const DVBChar
 ts::UString::size_type ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_type start, size_type count, const DVBCharset* charset) const
 {
     // Skip degenerated cases where there is nothing to do.
-    if (buffer == 0 || size == 0 || start >= length()) {
+    if (buffer == nullptr || size == 0 || start >= length()) {
         return 0;
     }
 

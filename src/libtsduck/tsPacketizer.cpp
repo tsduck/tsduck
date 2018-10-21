@@ -40,15 +40,15 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Packetizer::Packetizer (PID pid, SectionProviderInterface* provider) :
-    _provider (provider),
-    _pid (pid),
-    _continuity (0),
-    _section (0),
-    _next_byte (0),
-    _packet_count (0),
-    _section_out_count (0),
-    _section_in_count (0)
+ts::Packetizer::Packetizer(PID pid, SectionProviderInterface* provider) :
+    _provider(provider),
+    _pid(pid),
+    _continuity(0),
+    _section(nullptr),
+    _next_byte(0),
+    _packet_count(0),
+    _section_out_count(0),
+    _section_in_count(0)
 {
 }
 
@@ -70,14 +70,14 @@ void ts::Packetizer::reset()
 // Build the next MPEG packet for the list of sections.
 //----------------------------------------------------------------------------
 
-bool ts::Packetizer::getNextPacket (TSPacket& pkt)
+bool ts::Packetizer::getNextPacket(TSPacket& pkt)
 {
     // Count generated packets
     _packet_count++;
 
     // If there is no current section, get the next one.
-    if (_section.isNull() && _provider != 0) {
-        _provider->provideSection (_section_in_count++, _section);
+    if (_section.isNull() && _provider != nullptr) {
+        _provider->provideSection(_section_in_count++, _section);
         _next_byte = 0;
     }
 
@@ -88,12 +88,11 @@ bool ts::Packetizer::getNextPacket (TSPacket& pkt)
     }
 
     // Various values to build the MPEG header.
-
     uint16_t pusi = 0x0000;         // payload_unit_start_indicator (set: 0x4000)
     uint8_t pointer_field = 0x00;   // pointer_field (used only if pusi is set)
     size_t remain_in_section = _section->size() - _next_byte;
-    bool do_stuffing = true;      // do we need to insert stuffing at end of packet?
-    SectionPtr next_section (0);  // next section after current one
+    bool do_stuffing = true;        // do we need to insert stuffing at end of packet?
+    SectionPtr next_section;        // next section after current one
 
     // Check if it is possible that a new section may start in the middle
     // of the packet. We check that after adding the remaining of the
@@ -103,10 +102,10 @@ bool ts::Packetizer::getNextPacket (TSPacket& pkt)
 
     if (remain_in_section <= PKT_SIZE - 5 - SHORT_SECTION_HEADER_SIZE) {
         // Check if next section requires stuffing before it.
-        do_stuffing = _provider == 0 ? true : _provider->doStuffing();
+        do_stuffing = _provider == nullptr ? true : _provider->doStuffing();
         if (!do_stuffing) {
             // No stuffing before next section => get next section
-            _provider->provideSection (_section_in_count++, next_section);
+            _provider->provideSection(_section_in_count++, next_section);
             if (next_section.isNull()) {
                 // If no next section, do stuffing anyway.
                 do_stuffing = true;
@@ -129,13 +128,13 @@ bool ts::Packetizer::getNextPacket (TSPacket& pkt)
     else if (!do_stuffing) {
         // A new section will start in the middle of the packet
         pusi = 0x4000;
-        pointer_field = uint8_t (remain_in_section);  // point after current section
+        pointer_field = uint8_t(remain_in_section);  // point after current section
     }
 
     // Build the header
 
     pkt.b[0] = SYNC_BYTE;
-    PutUInt16 (pkt.b + 1, (pusi | _pid));
+    PutUInt16(pkt.b + 1, (pusi | _pid));
     pkt.b[3] = 0x10 | _continuity; // 0x10 = no adaptation field, has payload
 
     // Update continuity counter for next packet
@@ -180,7 +179,7 @@ bool ts::Packetizer::getNextPacket (TSPacket& pkt)
             // If next section unknown, get it now
             if (_section.isNull()) {
                 // If stuffing required before this section, give up
-                if (_provider == 0 || _provider->doStuffing()) {
+                if (_provider == nullptr || _provider->doStuffing()) {
                     break;
                 }
                 _provider->provideSection (_section_in_count++, _section);

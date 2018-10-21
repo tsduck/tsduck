@@ -78,7 +78,7 @@ ts::TSScanner::TSScanner(Tuner& tuner, MilliSecond timeout, bool pat_only, Repor
 
     // Read packets and analyze tables until completed
     while (!_completed && Time::CurrentUTC() < deadline) {
-        const size_t pcount = tuner.receive(buffer.data(), buffer.size(), 0, _report);
+        const size_t pcount = tuner.receive(buffer.data(), buffer.size(), nullptr, _report);
         _report.debug(u"got %d packets", {pcount});
         if (pcount == 0) { // error
             break;

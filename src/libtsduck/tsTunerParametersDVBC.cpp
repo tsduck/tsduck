@@ -66,7 +66,7 @@ ts::TunerParametersDVBC::TunerParametersDVBC() :
 void ts::TunerParametersDVBC::copy(const TunerParameters& obj)
 {
     const TunerParametersDVBC* other = dynamic_cast <const TunerParametersDVBC*> (&obj);
-    if (other == 0) {
+    if (other == nullptr) {
         throw IncompatibleTunerParametersError(u"DVBC != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {

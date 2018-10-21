@@ -72,7 +72,7 @@ namespace ts {
     //!  A safe pointer can be @e null, this is the default value. In this case,
     //!  the safe pointer does not reference any object. To test if a safe
     //!  pointer is a null pointer, use the method @c isNull(). Do not
-    //!  use comparisons such as <code>p == 0</code>, the result will be incorrect.
+    //!  use comparisons such as <code>p == nullptr</code>, the result will be incorrect.
     //!
     //!  The ts::SafePtr template class can be made thread-safe using a mutex.
     //!  The type of mutex to use is given by the template parameter @a MUTEX
@@ -103,7 +103,7 @@ namespace ts {
         //!
         //! Default constructor using an optional unmanaged object.
         //!
-        //! The optional argument @a p can be either @c 0 (null pointer)
+        //! The optional argument @a p can be either @c nullptr
         //! or the address of an @e unmanaged dynamically allocated object
         //! (i.e. which has been allocated using the operator @c new).
         //! In this case, @e unmanaged means that the object must not
@@ -119,7 +119,7 @@ namespace ts {
         //! @endcode
         //!
         //! @param [in] p A pointer to an object of class @a T.
-        //! The default value is @c 0, the null pointer. In this
+        //! The default value is @c nullptr. In this
         //! case, the safe pointer is a null pointer.
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
@@ -170,7 +170,7 @@ namespace ts {
         //!
         //! The pointed @c T object becomes managed by this safe pointer.
         //!
-        //! The standard pointer @a p can be either @c 0 (null pointer)
+        //! The standard pointer @a p can be either @c nullptr
         //! or the address of an @e unmanaged dynamically allocated object
         //! (i.e. which has been allocated using the operator @c new).
         //! In this case, @e unmanaged means that the object must not
@@ -196,7 +196,7 @@ namespace ts {
         //!
         //! @b Caveat: Null pointers are not reliably compared with this operator.
         //! It shall not be used to compare against null pointer. Do not
-        //! check <code>== 0</code>, use the method @c isNull() instead.
+        //! check <code>== nullptr</code>, use the method @c isNull() instead.
         //! Also, if both safe pointers are null pointers, the result is
         //! unpredictable, it can be true or false.
         //!
@@ -216,7 +216,7 @@ namespace ts {
         //!
         //! @b Caveat: Null pointers are not reliably compared with this operator.
         //! It shall not be used to compare against null pointer. Do not
-        //! check <code>!= 0</code>, use the method @c isNull() instead.
+        //! check <code>!= nullptr</code>, use the method @c isNull() instead.
         //! Also, if both safe pointers are null pointers, the result is
         //! unpredictable, it can be true or false.
         //!
@@ -251,7 +251,7 @@ namespace ts {
         //! the further dereferencing operation will likely throw an exception.
         //!
         //! @return A standard pointer @c T* to the pointed object or
-        //! @c 0 if this object is the null pointer.
+        //! @c nullptr if this object is the null pointer.
         //!
         T* operator->() const
         {
@@ -286,14 +286,14 @@ namespace ts {
         //!
         //! The previously pointed object is not deallocated,
         //! its address is returned. All safe pointers which pointed
-        //! to the object now point to @c 0 (null pointers).
+        //! to the object now point to @c nullptr.
         //!
         //! @b Caveat: The previously pointed object will no longer
         //! be automatically deleted. The caller must explicitly delete
         //! it later using the returned pointer value.
         //!
         //! @return A standard pointer @c T* to the previously pointed object.
-        //! Return @c 0 if this object was the null pointer.
+        //! Return @c nullptr if this object was the null pointer.
         //!
         T* release()
         {
@@ -306,7 +306,7 @@ namespace ts {
         //! All safe pointers which pointed to the same object now point to the new one.
         //! The previously pointed object is deleted using the operator @c delete.
         //!
-        //! The standard pointer @a p can be either @c 0 (null pointer)
+        //! The standard pointer @a p can be either @c nullptr
         //! or the address of an @e unmanaged dynamically allocated object
         //! (i.e. which has been allocated using the operator @c new).
         //! In this case, @e unmanaged means that the object must not
@@ -314,7 +314,7 @@ namespace ts {
         //!
         //! @param [in] p A pointer to an object of class @a T.
         //!
-        void reset(T *p = 0)
+        void reset(T *p = nullptr)
         {
             _shared->reset(p);
         }
@@ -324,7 +324,7 @@ namespace ts {
         //!
         //! The referenced object is deallocated if no more reference exists.
         //! Then, this safe pointer becomes the null pointer.
-        //! @c sp.clear() is equivalent to <code>sp = (T*)(0)</code>.
+        //! @c sp.clear() is equivalent to <code>sp = (T*)(nullptr)</code>.
         //!
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
@@ -427,7 +427,7 @@ namespace ts {
         //! safe pointer reference the object.
         //!
         //! @return A standard pointer @c T* to the pointed object
-        //! or @c 0 if this object is the null pointer.
+        //! or @c nullptr if this object is the null pointer.
         //!
         T* pointer() const
         {
@@ -472,7 +472,7 @@ namespace ts {
 
         public:
             // Constructor. Initial reference count is 1.
-            SafePtrShared(T* p = 0) : _ptr(p), _ref_count(1), _mutex()
+            SafePtrShared(T* p = nullptr) : _ptr(p), _ref_count(1), _mutex()
             {
             }
 
@@ -481,7 +481,7 @@ namespace ts {
 
             // Same semantics as SafePtr counterparts:
             T* release();
-            void reset(T* p = 0);
+            void reset(T* p = nullptr);
             T* pointer();
             int count();
             bool isNull();
@@ -504,9 +504,9 @@ namespace ts {
             {
                 Guard lock(_mutex);
                 ST* sp = dynamic_cast<ST*>(_ptr);
-                if (sp != 0) {
+                if (sp != nullptr) {
                     // Successful downcast, the original safe pointer must be released.
-                    _ptr = 0;
+                    _ptr = nullptr;
                 }
                 return SafePtr<ST,MUTEX>(sp);
             }
@@ -516,17 +516,17 @@ namespace ts {
             {
                 Guard lock(_mutex);
                 ST* sp = _ptr;
-                _ptr = 0;
+                _ptr = nullptr;
                 return SafePtr<ST,MUTEX>(sp);
             }
 
             // Change mutex type.
             template <typename NEWMUTEX> SafePtr<T,NEWMUTEX> changeMutex()
             {
-                Guard lock (_mutex);
+                Guard lock(_mutex);
                 T* sp = _ptr;
-                _ptr = 0;
-                return SafePtr<T,NEWMUTEX> (sp);
+                _ptr = nullptr;
+                return SafePtr<T,NEWMUTEX>(sp);
             }
         };
 

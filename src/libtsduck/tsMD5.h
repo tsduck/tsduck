@@ -52,7 +52,7 @@ namespace ts {
         virtual size_t blockSize() const override {return BLOCK_SIZE;}
         virtual bool init() override;
         virtual bool add(const void* data, size_t size) override;
-        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = 0) override;
+        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = nullptr) override;
 
         //! Constructor
         MD5();

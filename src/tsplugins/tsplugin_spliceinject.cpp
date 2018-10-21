@@ -678,7 +678,7 @@ bool ts::SpliceInjectPlugin::doStuffing()
 
 void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t size)
 {
-    assert(addr != 0);
+    assert(addr != nullptr);
 
     // Try to determine the file type, binary or XML.
     SectionFile::FileType type = SectionFile::UNSPECIFIED;

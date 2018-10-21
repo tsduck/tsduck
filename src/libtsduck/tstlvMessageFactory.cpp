@@ -183,7 +183,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
         }
 
         // Store the parameter into the message factory
-        if (parm_it->second.compound != 0) {
+        if (parm_it->second.compound != nullptr) {
 
             // The parameter is a compound TLV, analyze it.
             // Store the parameter value in the multimap for this command.

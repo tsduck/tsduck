@@ -46,7 +46,7 @@ ts::TablesDisplayArgs::TablesDisplayArgs() :
     tlv_syntax(),
     min_nested_tlv(0),
     default_pds(0),
-    default_charset(0)
+    default_charset(nullptr)
 {
 }
 
@@ -153,7 +153,7 @@ bool ts::TablesDisplayArgs::load(Args& args)
     }
     else {
         const UString csName(args.value(u"default-charset"));
-        if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
+        if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == nullptr) {
             args.error(u"invalid character set name '%s", {csName});
             return false;
         }

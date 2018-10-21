@@ -95,7 +95,7 @@ namespace ts {
                                 size_t         atr1_size,
                                 const uint8_t* atr2,
                                 size_t         atr2_size,
-                                const uint8_t* mask = 0,
+                                const uint8_t* mask = nullptr,
                                 size_t         mask_size = 0);
 
         //!
@@ -184,13 +184,13 @@ namespace ts {
         //!
         TSDUCKDLL ::LONG SearchSmartCard(::SCARDCONTEXT  context,
                                          UString&        reader_name,
-                                         const uint8_t*  atr = 0,
+                                         const uint8_t*  atr = nullptr,
                                          size_t          atr_size = 0,
-                                         const uint8_t*  atr_mask = 0,
+                                         const uint8_t*  atr_mask = nullptr,
                                          size_t          atr_mask_size = 0,
-                                         const uint8_t*  pwr = 0,
+                                         const uint8_t*  pwr = nullptr,
                                          size_t          pwr_size = 0,
-                                         const uint8_t*  pwr_mask = 0,
+                                         const uint8_t*  pwr_mask = nullptr,
                                          size_t          pwr_mask_size = 0,
                                          uint32_t        timeout_ms = INFINITE);
 

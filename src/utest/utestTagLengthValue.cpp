@@ -158,7 +158,7 @@ void TagLengthValueTest::testECMG()
     CPPUNIT_ASSERT(!msg.isNull());
     CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::ecmgscs::Tags::channel_status), msg->tag());
     ts::ecmgscs::ChannelStatus* ptr = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != 0);
+    CPPUNIT_ASSERT(ptr != nullptr);
     CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.section_TSpkt_flag, ptr->section_TSpkt_flag);
     CPPUNIT_ASSERT_EQUAL(refMessage.has_AC_delay_start, ptr->has_AC_delay_start);
@@ -225,7 +225,7 @@ void TagLengthValueTest::testEMMG()
     CPPUNIT_ASSERT(!msg.isNull());
     CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_BW_allocation), msg->tag());
     ts::emmgmux::StreamBWAllocation* ptr = dynamic_cast<ts::emmgmux::StreamBWAllocation*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != 0);
+    CPPUNIT_ASSERT(ptr != nullptr);
     CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.stream_id, ptr->stream_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.client_id, ptr->client_id);
@@ -280,7 +280,7 @@ void TagLengthValueTest::testECMGError()
     CPPUNIT_ASSERT(!msg.isNull());
     CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::ecmgscs::Tags::stream_error), msg->tag());
     ts::ecmgscs::StreamError* ptr = dynamic_cast<ts::ecmgscs::StreamError*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != 0);
+    CPPUNIT_ASSERT(ptr != nullptr);
     CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.stream_id, ptr->stream_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.error_status, ptr->error_status);
@@ -337,7 +337,7 @@ void TagLengthValueTest::testEMMGError()
     CPPUNIT_ASSERT(!msg.isNull());
     CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_error), msg->tag());
     ts::emmgmux::StreamError* ptr = dynamic_cast<ts::emmgmux::StreamError*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != 0);
+    CPPUNIT_ASSERT(ptr != nullptr);
     CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.stream_id, ptr->stream_id);
     CPPUNIT_ASSERT_EQUAL(refMessage.error_status, ptr->error_status);

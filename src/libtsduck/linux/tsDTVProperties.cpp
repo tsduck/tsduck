@@ -117,7 +117,7 @@ void ts::DTVProperties::report(Report& report, int severity) const
         const char* name = CommandName(prop.cmd);
         report.log(severity,
                    u"[%d] cmd = %d (%s), data = %d (0x%08X)",
-                   {i, prop.cmd, name == 0 ? "?" : name, prop.u.data, prop.u.data});
+                   {i, prop.cmd, name == nullptr ? "?" : name, prop.u.data, prop.u.data});
     }
 }
 
@@ -186,6 +186,6 @@ const char* ts::DTVProperties::CommandName(uint32_t cmd)
 #if defined(DTV_ENUM_DELSYS)
         case DTV_ENUM_DELSYS: return "DTV_ENUM_DELSYS";
 #endif
-        default: return 0;
+        default: return nullptr;
     }
 }

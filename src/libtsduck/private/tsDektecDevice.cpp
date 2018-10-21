@@ -610,8 +610,8 @@ ts::UString ts::DektecDevice::DtCapsIndexToString(int index)
     static const int names_count = int(sizeof(names) / sizeof(names[0]));
     assert(names_count == TS_DT_CAPS_LAST + 1);
 
-    const UChar* const str = index < 0 || index >= names_count ? 0 : names[index];
-    return str == 0 || str[0] == 0 ? UString::Decimal(index) : UString(str);
+    const UChar* const str = (index < 0 || index >= names_count) ? nullptr : names[index];
+    return (str == nullptr || str[0] == 0) ? UString::Decimal(index) : UString(str);
 }
 
 

@@ -170,7 +170,7 @@ int MainCode(int argc, char *argv[])
     ts::ecmgscs::Protocol::Instance()->setVersion(opt.ecmg.dvbsim_version);
 
     // Connect to ECMG.
-    if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus, 0, logger)) {
+    if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus, nullptr, logger)) {
         // Error connecting to ECMG, error message already reported
         return EXIT_FAILURE;
     }

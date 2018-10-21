@@ -69,7 +69,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
     // Get the required size of the name buffer
 
     ::DWORD names_size = 0;
-    ::LONG status = ::SCardListReaders(context, 0, 0, &names_size);
+    ::LONG status = ::SCardListReaders(context, nullptr, nullptr, &names_size);
 
     if (status != SCARD_S_SUCCESS && status != ::LONG(SCARD_E_INSUFFICIENT_BUFFER)) {
         return status;
@@ -79,7 +79,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 
     char* names = new char[names_size];
     CheckNonNull (names);
-    status = ::SCardListReaders(context, 0, names, &names_size);
+    status = ::SCardListReaders(context, nullptr, names, &names_size);
 
     // Build the string vector
 
@@ -213,9 +213,9 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
 
     for (ReaderStateVector::const_iterator it = states.begin(); it != states.end(); ++it) {
         if ((it->event_state & SCARD_STATE_PRESENT) != 0 && // card present
-            (atr == 0 || // don't check ATR
-             MatchATR (it->atr.data(), it->atr.size(), atr, atr_size, atr_mask, atr_mask_size) ||
-             MatchATR (it->atr.data(), it->atr.size(), pwr, pwr_size, pwr_mask, pwr_mask_size))) {
+            (atr == nullptr || // don't check ATR
+             MatchATR(it->atr.data(), it->atr.size(), atr, atr_size, atr_mask, atr_mask_size) ||
+             MatchATR(it->atr.data(), it->atr.size(), pwr, pwr_size, pwr_mask, pwr_mask_size))) {
             // Found
             reader_name = it->reader;
             return SCARD_S_SUCCESS;

@@ -58,7 +58,7 @@ namespace ts {
             //! @param [in] code ISO-3166 country code, 3 characters, as a C-string. Can be null.
             //! @param [in] rate Parental rating.
             //!
-            Entry(const UChar* code = 0, uint8_t rate = 0);
+            Entry(const UChar* code = nullptr, uint8_t rate = 0);
 
             //!
             //! Constructor.

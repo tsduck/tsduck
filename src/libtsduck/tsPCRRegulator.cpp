@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
-    _report(report == 0 ? NullReport::Instance() : report),
+    _report(report == nullptr ? NullReport::Instance() : report),
     _log_level(log_level),
     _user_pid(PID_NULL),
     _pid(PID_NULL),
@@ -59,7 +59,7 @@ ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
 
 void ts::PCRRegulator::setReport(ts::Report *report, int log_level)
 {
-    _report = report == 0 ? NullReport::Instance() : report;
+    _report = report == nullptr ? NullReport::Instance() : report;
     _log_level = log_level;
 }
 

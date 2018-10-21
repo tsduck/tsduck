@@ -340,7 +340,7 @@ ts::Names::Names(const UString& fileName) :
     }
 
     // Read configuration file line by line.
-    ConfigSection* section = 0;
+    ConfigSection* section = nullptr;
     UString line;
     while (line.getLine(strm)) {
 
@@ -390,7 +390,7 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
 {
     // Check the presence of the '=' and in a valid section.
     const size_t equal = line.find(UChar('='));
-    if (equal == 0 || equal == NPOS || section == 0) {
+    if (equal == 0 || equal == NPOS || section == nullptr) {
         return false;
     }
 
@@ -539,7 +539,7 @@ ts::UString ts::Names::ConfigSection::getName(Value val) const
     }
 
     assert(it != entries.end());
-    assert(it->second != 0);
+    assert(it->second != nullptr);
 
     return val >= it->first && val <= it->second->last ? it->second->name : UString();
 }
@@ -633,9 +633,9 @@ ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, 
 {
     // Get the section, normalize the section name.
     ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
-    const ConfigSection* section = it == _sections.end() ? 0 : it->second;
+    const ConfigSection* section = it == _sections.end() ? nullptr : it->second;
 
-    if (section == 0) {
+    if (section == nullptr) {
         // Non-existent section, no name.
         return Formatted(value, UString(), flags, bits, alternateValue);
     }
@@ -653,9 +653,9 @@ ts::UString ts::Names::nameFromSectionWithFallback(const UString& sectionName, V
 {
     // Get the section, normalize the section name.
     ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
-    const ConfigSection* section = it == _sections.end() ? 0 : it->second;
+    const ConfigSection* section = it == _sections.end() ? nullptr : it->second;
 
-    if (section == 0) {
+    if (section == nullptr) {
         // Non-existent section, no name.
         return Formatted(value1, UString(), flags, bits, alternateValue);
     }

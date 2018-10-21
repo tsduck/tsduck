@@ -205,7 +205,7 @@ void ts::T2MIDemux::processT2MI(PID pid, PIDContext& pc)
             if (pkt.isValid()) {
 
                 // Notify the application.
-                if (_handler != 0) {
+                if (_handler != nullptr) {
                     _handler->handleT2MIPacket(*this, pkt);
                 }
 
@@ -238,7 +238,7 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
     const uint8_t* data = pkt.basebandFrame();
     size_t size = pkt.basebandFrameSize();
 
-    if (data == 0 || size < T2_BBHEADER_SIZE) {
+    if (data == nullptr || size < T2_BBHEADER_SIZE) {
         // Not a base band frame packet.
         return;
     }
@@ -325,7 +325,7 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
         plpp->ts_next += PKT_SIZE;
 
         // Notify the application. Note that we are already in a protected section.
-        if (_handler != 0) {
+        if (_handler != nullptr) {
             _handler->handleTSPacket(*this, pkt, tsPkt);
         }
     }
@@ -393,7 +393,7 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
         for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
             if (!dlist[index].isNull()) {
                 const T2MIDescriptor desc(*dlist[index]);
-                if (desc.isValid() && _handler != 0) {
+                if (desc.isValid() && _handler != nullptr) {
                     // Invoke the user-defined handler to signal the new PID.
                     beforeCallingHandler(pid);
                     try {

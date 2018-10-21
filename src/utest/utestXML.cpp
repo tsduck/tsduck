@@ -133,7 +133,7 @@ void XMLTest::testDocument()
     CPPUNIT_ASSERT_EQUAL(size_t(2), doc.childrenCount());
 
     ts::xml::Element* root = doc.rootElement();
-    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT(root != nullptr);
     CPPUNIT_ASSERT(root->hasChildren());
     CPPUNIT_ASSERT_EQUAL(size_t(4), root->childrenCount());
     CPPUNIT_ASSERT(root->hasAttribute(u"attr1"));
@@ -147,7 +147,7 @@ void XMLTest::testDocument()
     CPPUNIT_ASSERT(root->attribute(u"nonexistent", true).name().empty());
 
     ts::xml::Element* elem = root->firstChildElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT(elem->hasChildren());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node1", elem->name());
     CPPUNIT_ASSERT(elem->hasAttribute(u"a1"));
@@ -157,14 +157,14 @@ void XMLTest::testDocument()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Text in node1", elem->text());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT(elem->hasChildren());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node2", elem->name());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"x1", elem->attribute(u"b1").value());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Text in node2", elem->text());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT(!elem->hasChildren());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node3", elem->name());
     CPPUNIT_ASSERT(elem->hasAttribute(u"foo"));
@@ -172,14 +172,14 @@ void XMLTest::testDocument()
     CPPUNIT_ASSERT(elem->text().empty());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT(!elem->hasChildren());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node4", elem->name());
     CPPUNIT_ASSERT(!elem->hasAttribute(u"foo"));
     CPPUNIT_ASSERT(elem->text().empty());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem == 0);
+    CPPUNIT_ASSERT(elem == nullptr);
 }
 
 void XMLTest::testInvalid()
@@ -223,12 +223,12 @@ void XMLTest::testFileBOM()
 
     ts::xml::Element* root = doc.rootElement();
     CPPUNIT_ASSERT_EQUAL(size_t(2), doc.childrenCount());
-    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT(root != nullptr);
     CPPUNIT_ASSERT_EQUAL(size_t(1), root->childrenCount());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(rootName, root->name());
 
     ts::xml::Element* elem = root->firstChildElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(childName, elem->name());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(childAttrName, elem->attribute(childAttrName).name());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(childAttrValue, elem->attribute(childAttrName).value());
@@ -271,25 +271,25 @@ void XMLTest::testValidation()
 void XMLTest::testCreation()
 {
     ts::xml::Document doc(report());
-    ts::xml::Element* child1 = 0;
-    ts::xml::Element* child2 = 0;
-    ts::xml::Element* subchild2 = 0;
+    ts::xml::Element* child1 = nullptr;
+    ts::xml::Element* child2 = nullptr;
+    ts::xml::Element* subchild2 = nullptr;
 
     ts::xml::Element* root = doc.initialize(u"theRoot");
-    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT(root != nullptr);
     CPPUNIT_ASSERT_EQUAL(size_t(0), doc.depth());
     CPPUNIT_ASSERT_EQUAL(size_t(1), root->depth());
 
-    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != 0);
+    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
     CPPUNIT_ASSERT_EQUAL(size_t(2), child1->depth());
     child1->setAttribute(u"str", u"a string");
     child1->setIntAttribute(u"int", -47);
-    CPPUNIT_ASSERT(child1->addElement(u"subChild1") != 0);
-    CPPUNIT_ASSERT((subchild2 = child1->addElement(u"subChild2")) != 0);
+    CPPUNIT_ASSERT(child1->addElement(u"subChild1") != nullptr);
+    CPPUNIT_ASSERT((subchild2 = child1->addElement(u"subChild2")) != nullptr);
     subchild2->setIntAttribute(u"int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
 
-    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != 0);
-    CPPUNIT_ASSERT(child2->addElement(u"fooBar") != 0);
+    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
+    CPPUNIT_ASSERT(child2->addElement(u"fooBar") != nullptr);
 
     ts::UString str;
     CPPUNIT_ASSERT(child1->getAttribute(str, u"str", true));
@@ -337,10 +337,10 @@ void XMLTest::testKeepOpen()
     CPPUNIT_ASSERT(doc.parse(document));
 
     ts::xml::Element* root = doc.rootElement();
-    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT(root != nullptr);
 
     ts::xml::Element* node2 = root->findFirstChild(u"NODE2");
-    CPPUNIT_ASSERT(node2 != 0);
+    CPPUNIT_ASSERT(node2 != nullptr);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node2", node2->name());
 
     ts::TextFormatter out(report());
@@ -377,20 +377,20 @@ void XMLTest::testKeepOpen()
 void XMLTest::testEscape()
 {
     ts::xml::Document doc(report());
-    ts::xml::Element* child1 = 0;
-    ts::xml::Element* child2 = 0;
+    ts::xml::Element* child1 = nullptr;
+    ts::xml::Element* child2 = nullptr;
 
     ts::xml::Element* root = doc.initialize(u"theRoot");
-    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT(root != nullptr);
     CPPUNIT_ASSERT_EQUAL(size_t(0), doc.depth());
     CPPUNIT_ASSERT_EQUAL(size_t(1), root->depth());
 
-    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != 0);
+    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
     CPPUNIT_ASSERT_EQUAL(size_t(2), child1->depth());
     child1->setAttribute(u"str", u"ab&<>'\"cd");
 
-    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != 0);
-    CPPUNIT_ASSERT(child2->addText(u"text<&'\">text") != 0);
+    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
+    CPPUNIT_ASSERT(child2->addText(u"text<&'\">text") != nullptr);
 
     const ts::UString text(doc.toString());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
@@ -407,19 +407,19 @@ void XMLTest::testEscape()
     CPPUNIT_ASSERT_EQUAL(size_t(2), doc2.childrenCount());
 
     ts::xml::Element* root2 = doc2.rootElement();
-    CPPUNIT_ASSERT(root2 != 0);
+    CPPUNIT_ASSERT(root2 != nullptr);
     CPPUNIT_ASSERT(root2->hasChildren());
     CPPUNIT_ASSERT_EQUAL(size_t(2), root2->childrenCount());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"theRoot", root2->name());
 
     ts::xml::Element* elem = root2->firstChildElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child1", elem->name());
     CPPUNIT_ASSERT(elem->hasAttribute(u"str"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab&<>'\"cd", elem->attribute(u"str").value());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT(elem != nullptr);
     CPPUNIT_ASSERT(elem->hasChildren());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child2", elem->name());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"text<&'\">text", elem->text());

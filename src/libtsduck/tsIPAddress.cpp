@@ -158,10 +158,10 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
     // we specfied the family in hints, but check to be sure.
 
     ::addrinfo* ai = res;
-    while (ai != 0 && (ai->ai_family != AF_INET || ai->ai_addr == 0 || ai->ai_addr->sa_family != AF_INET)) {
+    while (ai != nullptr && (ai->ai_family != AF_INET || ai->ai_addr == nullptr || ai->ai_addr->sa_family != AF_INET)) {
         ai = ai->ai_next;
     }
-    if (ai != 0) {
+    if (ai != nullptr) {
         assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
         const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*> (ai->ai_addr);
         _addr = ntohl(sp->sin_addr.s_addr);
@@ -170,7 +170,7 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
         report.error(u"no IPv4 address found for " + name);
     }
     ::freeaddrinfo(res);
-    return ai != 0;
+    return ai != nullptr;
 
 #endif // TSDUCK_STATIC
 }

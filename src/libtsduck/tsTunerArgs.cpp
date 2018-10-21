@@ -587,7 +587,7 @@ bool ts::TunerArgs::tune(Tuner& tuner, TunerParametersPtr& params, Report& repor
 
 ts::UString ts::TunerArgs::DefaultZapFile(TunerType tuner_type)
 {
-    const UChar* file = 0;
+    const UChar* file = nullptr;
 
 #if defined(TS_WINDOWS)
     const UChar* root_env = u"APPDATA";

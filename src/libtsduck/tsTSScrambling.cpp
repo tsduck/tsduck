@@ -45,7 +45,7 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _decrypt_scv(SC_CLEAR),
     _dvbcsa(),
     _idsa(),
-    _scrambler{0, 0}
+    _scrambler{nullptr, nullptr}
 {
     setScramblingType(scrambling);
 }
@@ -60,7 +60,7 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _decrypt_scv(SC_CLEAR),
     _dvbcsa(),
     _idsa(),
-    _scrambler{0, 0}
+    _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
 }
@@ -85,7 +85,7 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
                 break;
             default:
                 // Fallback to DVB-CSA2 if no scrambler was previously defined.
-                if (_scrambler[0] == 0 || _scrambler[1] == 0) {
+                if (_scrambler[0] == nullptr || _scrambler[1] == nullptr) {
                     _scrambling_type = SCRAMBLING_DVB_CSA2;
                     _scrambler[0] = &_dvbcsa[0];
                     _scrambler[1] = &_dvbcsa[1];
@@ -247,7 +247,7 @@ bool ts::TSScrambling::setNextFixedCW(int parity)
 bool ts::TSScrambling::setCW(const ByteBlock& cw, int parity)
 {
     CipherChaining* algo = _scrambler[parity & 1];
-    assert(algo != 0);
+    assert(algo != nullptr);
 
     if (algo->setKey(cw.data(), cw.size())) {
         _report.debug(u"using scrambling key: " + UString::Dump(cw, UString::SINGLE_LINE));
@@ -300,7 +300,7 @@ bool ts::TSScrambling::encrypt(TSPacket& pkt)
     // Encrypt the packet.
     CipherChaining* algo = _scrambler[_encrypt_scv & 1];
 
-    assert(algo != 0);
+    assert(algo != nullptr);
     assert(_encrypt_scv == SC_EVEN_KEY || _encrypt_scv == SC_ODD_KEY);
 
     const bool ok = algo->encryptInPlace(pkt.getPayload(), pkt.getPayloadSize());
@@ -334,7 +334,7 @@ bool ts::TSScrambling::decrypt(TSPacket& pkt)
 
     // Decrypt the packet.
     CipherChaining* algo = _scrambler[_decrypt_scv & 1];
-    assert(algo != 0);
+    assert(algo != nullptr);
 
     const bool ok = algo->decryptInPlace(pkt.getPayload(), pkt.getPayloadSize());
     if (ok) {

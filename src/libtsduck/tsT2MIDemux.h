@@ -66,7 +66,7 @@ namespace ts {
         //! @param [in] t2mi_handler The object to invoke when T2-MI information is found.
         //! @param [in] pid_filter The set of T2-MI PID's to demux.
         //!
-        T2MIDemux(T2MIHandlerInterface* t2mi_handler = 0, const PIDSet& pid_filter = NoPID);
+        T2MIDemux(T2MIHandlerInterface* t2mi_handler = nullptr, const PIDSet& pid_filter = NoPID);
 
         //!
         //! Destructor.

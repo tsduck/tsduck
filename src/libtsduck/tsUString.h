@@ -1861,7 +1861,7 @@ namespace ts {
 
 #if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION)
         bool operator==(const std::string& other) const { return operator==(FromUTF8(other)); }
-        bool operator==(const char* other) const { return other != 0 && operator==(FromUTF8(other)); }
+        bool operator==(const char* other) const { return other != nullptr && operator==(FromUTF8(other)); }
         bool operator!=(const std::string& other) const { return !operator==(other); }
         bool operator!=(const char* other) const { return !operator==(other); }
 

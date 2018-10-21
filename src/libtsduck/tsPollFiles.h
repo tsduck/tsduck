@@ -68,7 +68,7 @@ namespace ts {
         //! @param [in,out] report For debug messages only.
         //!
         PollFiles(const UString& wildcard = UString(),
-                  PollFilesListener* listener = 0,
+                  PollFilesListener* listener = nullptr,
                   MilliSecond poll_interval = DEFAULT_POLL_INTERVAL,
                   MilliSecond min_stable_delay = DEFAULT_MIN_STABLE_DELAY,
                   Report& report = CERR);

@@ -88,7 +88,7 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _preceding_suspects(0),
     _min_error_before_suspect(1),
     _max_consecutive_suspects(1),
-    _default_charset(0),
+    _default_charset(nullptr),
     _demux(this, this),
     _pes_demux(this),
     _t2mi_demux(this)
@@ -802,7 +802,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_LANGUAGE: {
-                if (size >= 4 && ps != 0) {
+                if (size >= 4 && ps != nullptr) {
                     // First 3 bytes contains the audio language
                     ps->language = UString::FromDVB(data, 3);
                     // Next byte contains audio type, 0 is the default
@@ -817,7 +817,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_AC3: {
-                if (ps != 0) {
+                if (ps != nullptr) {
                     // The presence of this descriptor indicates an AC-3 audio track.
                     ps->description = u"AC-3 Audio";
                     ps->carry_audio = true;
@@ -825,7 +825,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_ENHANCED_AC3: {
-                if (ps != 0) {
+                if (ps != nullptr) {
                     // The presence of this descriptor indicates an Enhanced AC-3 audio track.
                     ps->description = u"E-AC-3 Audio";
                     ps->carry_audio = true;
@@ -833,7 +833,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_AAC: {
-                if (ps != 0) {
+                if (ps != nullptr) {
                     // The presence of this descriptor indicates an HE-AAC audio track.
                     ps->description = u"HE-AAC Audio";
                     ps->carry_audio = true;
@@ -841,7 +841,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_DTS: {
-                if (ps != 0) {
+                if (ps != nullptr) {
                     // The presence of this descriptor indicates a DTS audio track.
                     ps->description = u"DTS Audio";
                     ps->carry_audio = true;
@@ -849,7 +849,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_SUBTITLING: {
-                if (size >= 4 && ps != 0) {
+                if (size >= 4 && ps != nullptr) {
                     // First 3 bytes contains the language
                     ps->language = UString::FromDVB(data, 3);
                     // Next byte contains subtitling type
@@ -861,7 +861,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_TELETEXT: {
-                if (size >= 4 && ps != 0) {
+                if (size >= 4 && ps != nullptr) {
                     // First 3 bytes contains the language
                     ps->language = UString::FromDVB(data, 3);
                     // Next byte contains teletext type
@@ -873,7 +873,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_APPLI_SIGNALLING: {
-                if (ps != 0) {
+                if (ps != nullptr) {
                     // The presence of this descriptor indicates a PID carrying an AIT.
                     ps->comment = u"AIT";
                 }
@@ -917,11 +917,11 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                             // System Software Update(SSU, ETSI TS 102 006)
                             // Skip data_broadcast_id, already checked == 0x000A
                             data += 2; size -= 2;
-                            if (svp != 0) {
+                            if (svp != nullptr) {
                                 // Mark the service as carrying SSU
                                 svp->carry_ssu = true;
                             }
-                            if (ps != 0 && size >= 1) {
+                            if (ps != nullptr && size >= 1) {
                                 // Rest of descriptor is a system_software_update_info structure.
                                 // Store the list of OUI's in PID context.
                                 // OUI_data_length:
@@ -948,27 +948,27 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                         }
                         case 0x0005: {
                             // Multi-Protocol Encapsulation.
-                            if (ps != 0) {
+                            if (ps != nullptr) {
                                 ps->comment = u"MPE";
                             }
                             break;
                         }
                         case 0x000B: {
                             // IP/MAC Notification Table.
-                            if (ps != 0) {
+                            if (ps != nullptr) {
                                 ps->comment = u"INT";
                             }
                             break;
                         }
                         case 0x0123: {
                             // HbbTV data carousel.
-                            if (ps != 0) {
+                            if (ps != nullptr) {
                                 ps->comment = u"HbbTV";
                             }
                             break;
                         }
                         default: {
-                            if (ps != 0) {
+                            if (ps != nullptr) {
                                 ps->comment =  names::DataBroadcastId(dbid);
                             }
                             break;
@@ -1007,7 +1007,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
     data += 4; size -= 4;
 
     // Process CA descriptor private data
-    if (cas == CAS_MEDIAGUARD && svp != 0 && size >= 13) {
+    if (cas == CAS_MEDIAGUARD && svp != nullptr && size >= 13) {
 
         // MediaGuard CA descriptor in a PMT
         data -= 2; size += 2;
@@ -1027,7 +1027,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         }
     }
 
-    else if (cas == CAS_MEDIAGUARD && svp == 0 && size == 4) {
+    else if (cas == CAS_MEDIAGUARD && svp == nullptr && size == 4) {
 
         // MediaGuard CA descriptor in the CAT, new format
         uint16_t etypes(GetUInt16(data));
@@ -1042,7 +1042,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->description.format(u"MediaGuard EMM for OPI %d (0x%X), EMM types: 0x%X", {opi, opi, etypes});
     }
 
-    else if (cas == CAS_MEDIAGUARD && svp == 0 && size >= 1) {
+    else if (cas == CAS_MEDIAGUARD && svp == nullptr && size >= 1) {
 
         // MediaGuard CA descriptor in the CAT, old format
         uint8_t nb_opi = data[0];
@@ -1070,7 +1070,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         }
     }
 
-    else if (cas == CAS_SAFEACCESS && svp == 0 && size >= 1) {
+    else if (cas == CAS_SAFEACCESS && svp == nullptr && size >= 1) {
 
         // SafeAccess CA descriptor in the CAT
         data++; size --; // skip applicable EMM bitmask
@@ -1104,7 +1104,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->carry_section = true;
         _demux.addPID(ca_pid);
 
-        if (svp == 0) {
+        if (svp == nullptr) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
             eps->description = u"Viaccess EMM";
@@ -1146,7 +1146,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->carry_section = true;
         _demux.addPID(ca_pid);
 
-        if (svp == 0) {
+        if (svp == nullptr) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
             eps->description = names::CASId(ca_sysid) + u" EMM";

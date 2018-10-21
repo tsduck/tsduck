@@ -487,7 +487,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
             const bool isShort = etc.etid.isShortSection();
 
             // Repetition rates are displayed in ms if the TS bitrate is known, in packets otherwise.
-            const UChar* unit = 0;
+            const UChar* unit = nullptr;
             uint64_t rep, min_rep, max_rep;
             if (_ts_bitrate != 0) {
                 unit = u" ms";
@@ -504,7 +504,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
             // Version description
             const size_t version_count = etc.versions.count();
-            const UChar* version_title = 0;
+            const UChar* version_title = nullptr;
             UString version_list;
             bool first = true;
             for (size_t i = 0; i < etc.versions.size(); ++i) {

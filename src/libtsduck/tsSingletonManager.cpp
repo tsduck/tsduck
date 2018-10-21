@@ -30,12 +30,12 @@
 #include "tsSingletonManager.h"
 TSDUCK_SOURCE;
 
-ts::SingletonManager* volatile ts::SingletonManager::_instance = 0;
+ts::SingletonManager* volatile ts::SingletonManager::_instance = nullptr;
 
 // Instance. May be subject to race condition if threads are created
 // before creating the first singleton.
 
 ts::SingletonManager* ts::SingletonManager::Instance()
 {
-    return _instance != 0 ? _instance : (_instance = new SingletonManager);
+    return _instance != nullptr ? _instance : (_instance = new SingletonManager);
 }
