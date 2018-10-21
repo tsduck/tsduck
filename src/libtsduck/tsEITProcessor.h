@@ -68,7 +68,7 @@ namespace ts {
         //! This PID is used as only input PID and output PID.
         //! @param [in] report Where to report verbose and debug messages. Optional.
         //!
-        EITProcessor(PID pid = PID_EIT, Report* report = 0);
+        EITProcessor(PID pid = PID_EIT, Report* report = nullptr);
 
         //!
         //! Change the single PID containing EIT's to process.

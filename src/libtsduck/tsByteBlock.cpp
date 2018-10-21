@@ -95,7 +95,7 @@ ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
 
 void ts::ByteBlock::copy(const void* data_, size_type size_)
 {
-    resize(data_ == 0 ? 0 : size_);
+    resize(data_ == nullptr ? 0 : size_);
     if (size() > 0) {
         ::memcpy(data(), data_, size());  // Flawfinder: ignore: memcpy()
     }
@@ -175,7 +175,7 @@ bool ts::ByteBlock::appendFromFile(const UString& fileName, size_t maxSize, Repo
     // Open the input file.
     std::ifstream strm(fileName.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
-        if (report != 0) {
+        if (report != nullptr) {
             report->error(u"cannot open %s", {fileName});
         }
         return false;
@@ -187,7 +187,7 @@ bool ts::ByteBlock::appendFromFile(const UString& fileName, size_t maxSize, Repo
     // Success if no error or reached EOF without error
     const bool success = !strm.fail() || strm.eof();
     strm.close();
-    if (!success && report != 0) {
+    if (!success && report != nullptr) {
         report->error(u"error reading %s", {fileName});
     }
     return success;
@@ -234,7 +234,7 @@ bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode
     // Create the file
     std::ofstream strm(fileName.toUTF8().c_str(), mode);
     if (!strm.is_open()) {
-        if (report != 0) {
+        if (report != nullptr) {
             report->error(u"cannot create %s", {fileName});
         }
         return false;
@@ -244,7 +244,7 @@ bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode
     write(strm);
     const bool success = !strm.fail();
     strm.close();
-    if (!success && report != 0) {
+    if (!success && report != nullptr) {
         report->error(u"error writing %s", {fileName});
     }
     return success;

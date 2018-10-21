@@ -110,13 +110,13 @@ namespace ts {
             //! Check if the node has children.
             //! @return True if the node has children.
             //!
-            bool hasChildren() const { return _firstChild != 0; }
+            bool hasChildren() const { return _firstChild != nullptr; }
 
             //!
             //! Get the number of children.
             //! @return The number of children.
             //!
-            size_t childrenCount() const { return _firstChild == 0 ? 0 : _firstChild->ringSize(); }
+            size_t childrenCount() const { return _firstChild == nullptr ? 0 : _firstChild->ringSize(); }
 
             //!
             //! Get the first child of a node.
@@ -134,13 +134,13 @@ namespace ts {
             //! Get the last child.
             //! @return The last child or zero if there is none.
             //!
-            const Node* lastChild() const { return _firstChild == 0 ? 0 : _firstChild->ringPrevious<Node>(); }
+            const Node* lastChild() const { return _firstChild == nullptr ? nullptr : _firstChild->ringPrevious<Node>(); }
 
             //!
             //! Get the last child.
-            //! @return The last child or zero if there is none.
+            //! @return The last child or nullptr if there is none.
             //!
-            Node* lastChild() { return _firstChild == 0 ? 0 : _firstChild->ringPrevious<Node>(); }
+            Node* lastChild() { return _firstChild == nullptr ? nullptr : _firstChild->ringPrevious<Node>(); }
 
             //!
             //! Get the next sibling node.

@@ -1443,7 +1443,7 @@ bool ts::DES::encrypt (const void* plain, size_t plain_length,
     PutUInt32 (cipher, work[0]);
     PutUInt32 (reinterpret_cast<uint8_t*> (cipher) + 4, work[1]);
 
-    if (cipher_length != 0) {
+    if (cipher_length != nullptr) {
         *cipher_length = BLOCK_SIZE;
     }
 
@@ -1473,7 +1473,7 @@ bool ts::DES::decrypt (const void* cipher, size_t cipher_length,
     PutUInt32 (plain, work[0]);
     PutUInt32 (reinterpret_cast<uint8_t*> (plain) + 4, work[1]);
 
-    if (plain_length != 0) {
+    if (plain_length != nullptr) {
         *plain_length = BLOCK_SIZE;
     }
 

@@ -119,7 +119,7 @@ namespace ts {
                      size_t min_size, size_t max_size,
                      size_t min_count, size_t max_count)
             {
-                Parameter p = {0, min_size, max_size, min_count, max_count};
+                Parameter p = {nullptr, min_size, max_size, min_count, max_count};
                 _commands[cmd_tag].params[param_tag] = p;
             }
 

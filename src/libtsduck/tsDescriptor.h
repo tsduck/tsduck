@@ -51,7 +51,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        Descriptor() : _data(0) {}
+        Descriptor() : _data(nullptr) {}
 
         //!
         //! Copy constructor.

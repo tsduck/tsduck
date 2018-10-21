@@ -45,17 +45,17 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::Descriptor::Descriptor(const void* addr, size_t size) :
-    _data(size >= 2 && size < 258 && (reinterpret_cast<const uint8_t*>(addr))[1] == size - 2 ? new ByteBlock(addr, size) : 0)
+    _data(size >= 2 && size < 258 && (reinterpret_cast<const uint8_t*>(addr))[1] == size - 2 ? new ByteBlock(addr, size) : nullptr)
 {
 }
 
 ts::Descriptor::Descriptor(const ByteBlock& bb) :
-    _data(bb.size() >= 2 && bb.size() < 258 && bb[1] == bb.size() - 2 ? new ByteBlock(bb) : 0)
+    _data(bb.size() >= 2 && bb.size() < 258 && bb[1] == bb.size() - 2 ? new ByteBlock(bb) : nullptr)
 {
 }
 
 ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
-    _data(size < 256 ? new ByteBlock(size + 2) : 0)
+    _data(size < 256 ? new ByteBlock(size + 2) : nullptr)
 {
     if (!_data.isNull()) {
         (*_data)[0] = tag;
@@ -65,7 +65,7 @@ ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
 }
 
 ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
-    _data(data.size() < 256 ? new ByteBlock(2) : 0)
+    _data(data.size() < 256 ? new ByteBlock(2) : nullptr)
 {
     if (!_data.isNull()) {
         (*_data)[0] = tag;
@@ -75,7 +75,7 @@ ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
 }
 
 ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, CopyShare mode) :
-    _data(0)
+    _data(nullptr)
 {
     if (!bbp.isNull() && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
         switch (mode) {
@@ -93,7 +93,7 @@ ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, CopyShare mode) :
 }
 
 ts::Descriptor::Descriptor(const Descriptor& desc, CopyShare mode) :
-    _data(0)
+    _data(nullptr)
 {
     switch (mode) {
         case SHARE:
@@ -207,17 +207,17 @@ ts::xml::Element* ts::Descriptor::toXML(xml::Element* parent, PDS pds, TID tid, 
 {
     // Filter invalid descriptors.
     if (!isValid()) {
-        return 0;
+        return nullptr;
     }
 
     // The XML node we will generate.
-    xml::Element* node = 0;
+    xml::Element* node = nullptr;
 
     // Try to generate a specialized XML structure.
     if (!forceGeneric) {
         // Do we know how to deserialize this descriptor?
         TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(edid(pds), tid);
-        if (fac != 0) {
+        if (fac != nullptr) {
             // We know how to deserialize it.
             AbstractDescriptorPtr dp = fac();
             if (!dp.isNull()) {
@@ -232,7 +232,7 @@ ts::xml::Element* ts::Descriptor::toXML(xml::Element* parent, PDS pds, TID tid, 
     }
 
     // If we could not generate a typed node, generate a generic one.
-    if (node == 0) {
+    if (node == nullptr) {
         // Create the XML node.
         node = parent->addElement(TS_XML_GENERIC_DESCRIPTOR);
         node->setIntAttribute(u"tag", tag(), true);
@@ -251,7 +251,7 @@ bool ts::Descriptor::fromXML(const xml::Element* node, TID tid, const DVBCharset
 {
     // Filter invalid parameters.
     invalidate();
-    if (node == 0) {
+    if (node == nullptr) {
         // Not a valid XML name (not even an XML element).
         return false;
     }
@@ -264,7 +264,7 @@ bool ts::Descriptor::fromXML(const xml::Element* node, TID tid, const DVBCharset
 
     // Try to get the descriptor factory for that kind of XML tag.
     const TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(node->name());
-    if (fac != 0) {
+    if (fac != nullptr) {
         // Create a descriptor instance of the right type.
         AbstractDescriptorPtr desc = fac();
         if (!desc.isNull()) {

@@ -104,10 +104,10 @@ namespace ts {
         virtual size_t maxRounds() const override { return 8; }
         virtual size_t defaultRounds() const override { return 8; }
         virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
-        virtual bool encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length = 0) override;
-        virtual bool decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length = 0) override;
-        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0) override;
-        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0) override;
+        virtual bool encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length = nullptr) override;
+        virtual bool decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length = nullptr) override;
+        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = nullptr) override;
+        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = nullptr) override;
 
     private:
         // Block cipher data

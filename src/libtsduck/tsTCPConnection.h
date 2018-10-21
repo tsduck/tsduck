@@ -182,7 +182,7 @@ namespace ts {
         bool receive(void* buffer,
                      size_t max_size,
                      size_t& ret_size,
-                     const AbortInterface* abort = 0,
+                     const AbortInterface* abort = nullptr,
                      Report& report = CERR);
 
         //!
@@ -204,7 +204,7 @@ namespace ts {
         //!
         bool receive(void* buffer,
                      size_t size,
-                     const AbortInterface* abort = 0,
+                     const AbortInterface* abort = nullptr,
                      Report& report = CERR);
 
     protected:

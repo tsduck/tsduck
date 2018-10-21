@@ -107,7 +107,7 @@ namespace ts {
         //! @param [in] iv_max_blocks Maximum IV size in multiples of cipher block size (default: 1).
         //! @param [in] work_blocks Temporary work buffer size in multiples of cipher block size (default: 1).
         //!
-        CipherChaining(BlockCipher* cipher = 0,
+        CipherChaining(BlockCipher* cipher = nullptr,
                        size_t iv_min_blocks = 1,
                        size_t iv_max_blocks = 1,
                        size_t work_blocks = 1);
@@ -150,9 +150,9 @@ namespace ts {
         //!
         virtual ~CipherChainingTemplate()
         {
-            if (algo != 0) {
+            if (algo != nullptr) {
                 delete algo;
-                algo = 0;
+                algo = nullptr;
             }
         }
     };

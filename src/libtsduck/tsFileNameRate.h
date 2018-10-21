@@ -131,7 +131,7 @@ namespace ts {
         //! @param [in] default_rate Default repetition rate for files without repetition rate.
         //! @return True on success. On error, set error state in @a args and return false.
         //!
-        bool getArgs(Args& args, const UChar* option_name = 0, MilliSecond default_rate = 0);
+        bool getArgs(Args& args, const UChar* option_name = nullptr, MilliSecond default_rate = 0);
 
         //!
         //! Scan the files for update.

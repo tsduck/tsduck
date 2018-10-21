@@ -44,7 +44,7 @@ bool ts::DVBCharsetUTF16::decode(UString& str, const uint8_t* dvb, size_t dvbSiz
     // We simply copy 2 bytes per character.
     str.clear();
     str.reserve(dvbSize / 2);
-    for (size_t i = 0; dvb != 0 && i + 1 < dvbSize; i += 2) {
+    for (size_t i = 0; dvb != nullptr && i + 1 < dvbSize; i += 2) {
         const uint16_t cp = GetUInt16(dvb + i);
         str.push_back(cp == DVB_CODEPOINT_CRLF ? ts::LINE_FEED : UChar(cp));
     }
@@ -73,7 +73,7 @@ size_t ts::DVBCharsetUTF16::encode(uint8_t*& buffer, size_t& size, const UString
 {
     size_t result = 0;
     // Serialize characters as long as there is free space.
-    while (buffer != 0 && size > 1 && start < str.length() && count > 0) {
+    while (buffer != nullptr && size > 1 && start < str.length() && count > 0) {
         const UChar cp = str[start];
         if (cp != ts::CARRIAGE_RETURN) {
             // Encode character.

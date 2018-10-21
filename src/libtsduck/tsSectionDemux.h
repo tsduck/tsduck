@@ -61,14 +61,14 @@ namespace ts {
         //! @param [in] section_handler The object to invoke when any section is extracted.
         //! @param [in] pid_filter The set of PID's to demux.
         //!
-        SectionDemux(TableHandlerInterface* table_handler = 0,
-                     SectionHandlerInterface* section_handler = 0,
+        SectionDemux(TableHandlerInterface* table_handler = nullptr,
+                     SectionHandlerInterface* section_handler = nullptr,
                      const PIDSet& pid_filter = NoPID);
 
         //!
         //! Destructor.
         //!
-        virtual ~SectionDemux();
+        virtual ~SectionDemux() override;
 
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;

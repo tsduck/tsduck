@@ -74,7 +74,7 @@ namespace ts {
         //! Object is unusable as long as reset is not invoked.
         //!
         BitStream() :
-            _base(0),
+            _base(nullptr),
             _start_bit(0),
             _end_bit(0),
             _next_bit(0)
@@ -88,7 +88,7 @@ namespace ts {
         //! @param [in] bit_offset_in_first_byte The number of initial bits to ignore in the first byte. Default: zero.
         //!
         BitStream(const void* data, size_t size_in_bits, size_t bit_offset_in_first_byte = 0) :
-            _base(0),
+            _base(nullptr),
             _start_bit(0),
             _end_bit(0),
             _next_bit(0)
@@ -130,7 +130,7 @@ namespace ts {
         //!
         bool isAssociated() const
         {
-            return _base != 0;
+            return _base != nullptr;
         }
 
         //!

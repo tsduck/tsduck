@@ -46,8 +46,8 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
     if (this != &other) {
         // Don't copy the pointer to XML name, this is a const value.
         // In debug mode, check that we have the same XML name.
-        assert((_xml_name == 0 && other._xml_name == 0) ||
-               (_xml_name != 0 && other._xml_name != 0 && UString(_xml_name) == UString(other._xml_name)));
+        assert((_xml_name == nullptr && other._xml_name == nullptr) ||
+               (_xml_name != nullptr && other._xml_name != nullptr && UString(_xml_name) == UString(other._xml_name)));
         _is_valid = other._is_valid;
     }
     return *this;
@@ -70,8 +70,8 @@ ts::UString ts::AbstractSignalization::xmlName() const
 
 ts::xml::Element* ts::AbstractSignalization::toXML(xml::Element* parent) const
 {
-    xml::Element* root = _is_valid && parent != 0 ? parent->addElement(_xml_name) : 0;
-    if (root != 0) {
+    xml::Element* root = _is_valid && parent != nullptr ? parent->addElement(_xml_name) : nullptr;
+    if (root != nullptr) {
         buildXML(root);
     }
     return root;
@@ -84,7 +84,7 @@ ts::xml::Element* ts::AbstractSignalization::toXML(xml::Element* parent) const
 
 bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
 {
-    if (element == 0) {
+    if (element == nullptr) {
         return false;
     }
     else if (element->name().similar(_xml_name)) {

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsBetterSystemRandomGenerator.h"
+#include "tsSingletonManager.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 #include "tsGuard.h"
@@ -50,7 +51,7 @@ namespace {
 
 ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
     SystemRandomGenerator(),
-    _report(0),
+    _report(nullptr),
     _mutex(),
     _ready(true),
     _state_file(UserHomeDirectory() + PathSeparator + u".tsseed"),
@@ -158,7 +159,7 @@ bool ts::BetterSystemRandomGenerator::read(void* buffer, size_t size)
     Guard lock(_mutex);
 
     // Filter trivial cases.
-    if (!_ready || buffer == 0) {
+    if (!_ready || buffer == nullptr) {
         return false;
     }
 

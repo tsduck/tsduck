@@ -71,7 +71,7 @@ ts::DescriptorList& ts::DescriptorList::operator=(const DescriptorList& dl)
 
 ts::TID ts::DescriptorList::tableId() const
 {
-    return _table == 0 ? TID(TID_NULL) : _table->tableId();
+    return _table == nullptr ? TID(TID_NULL) : _table->tableId();
 }
 
 
@@ -479,7 +479,7 @@ bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) 
 {
     bool success = true;
     for (size_t index = 0; index < _list.size(); ++index) {
-        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, tableId() , false, charset) == 0) {
+        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, tableId() , false, charset) == nullptr) {
             success = false;
         }
     }
@@ -511,7 +511,7 @@ bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element*
     others.clear();
 
     // Analyze all children nodes.
-    for (const xml::Element* node = parent == 0 ? 0 : parent->firstChildElement(); node != 0; node = node->nextSiblingElement()) {
+    for (const xml::Element* node = parent == nullptr ? nullptr : parent->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
 
         DescriptorPtr bin = new Descriptor;
         CheckNonNull(bin.pointer());

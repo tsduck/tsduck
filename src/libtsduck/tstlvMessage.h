@@ -330,11 +330,11 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = 0)
+            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = nullptr)
             {
                 UString s;
                 for (typename std::vector<INT>::const_iterator it = val.begin(); it != val.end(); ++it) {
-                    if (toString == 0) {
+                    if (toString == nullptr) {
                         s += dumpInteger(indent, name, *it);
                     }
                     else {

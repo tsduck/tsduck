@@ -62,13 +62,13 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~Exception() throw();
+        virtual ~Exception() noexcept override;
 
         //!
         //! Get the error message as a C-string.
         //! @return The error message as a C-string (valid as long as this instance exists).
         //!
-        virtual const char* what() const throw() override;
+        virtual const char* what() const noexcept override;
     };
 }
 

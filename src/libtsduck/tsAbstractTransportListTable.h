@@ -67,8 +67,8 @@ namespace ts {
         SectionHintsMap section_hints;  //!< Section serialization hints by TS.
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
 
         //!
         //! Copy constructor.

@@ -73,7 +73,7 @@ bool ts::DVS042<CIPHER>::setShortIV(const void* iv_data, size_t iv_length)
         shortIV.clear();
         return true;
     }
-    else if (iv_data == 0 || iv_length < this->iv_min_size || iv_length > this->iv_max_size) {
+    else if (iv_data == nullptr || iv_length < this->iv_min_size || iv_length > this->iv_max_size) {
         shortIV.clear();
         return false;
     }
@@ -93,7 +93,7 @@ bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
                                  void* cipher, size_t cipher_maxsize,
                                  size_t* cipher_length)
 {
-    if (this->algo == 0 ||
+    if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
         this->shortIV.size() != this->block_size ||
         this->work.size() < this->block_size ||
@@ -103,7 +103,7 @@ bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
     }
 
     // Cipher length is always the same as plain length.
-    if (cipher_length != 0) {
+    if (cipher_length != nullptr) {
         *cipher_length = plain_length;
     }
 
@@ -155,7 +155,7 @@ bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
                                  void* plain, size_t plain_maxsize,
                                  size_t* plain_length)
 {
-    if (this->algo == 0 ||
+    if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
         this->shortIV.size() != this->block_size ||
         this->work.size() < this->block_size ||
@@ -165,7 +165,7 @@ bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
     }
 
     // Deciphered length is always the same as cipher length.
-    if (plain_length != 0) {
+    if (plain_length != nullptr) {
         *plain_length = cipher_length;
     }
 

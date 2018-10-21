@@ -183,9 +183,9 @@ namespace ts {
                 //! @param [in] addr_ Address of parameter value.
                 //! @param [in] length_ Length of parameter value.
                 //!
-                Parameter(const void* tlv_addr_ = 0,
+                Parameter(const void* tlv_addr_ = nullptr,
                           size_t      tlv_size_ = 0,
-                          const void* addr_     = 0,
+                          const void* addr_     = nullptr,
                           LENGTH      length_   = 0) :
                     tlv_addr(tlv_addr_),
                     tlv_size(tlv_size_),
@@ -328,11 +328,11 @@ namespace ts {
                 MessageFactoryPtr compound; // for compound TLV parameter
 
                 // Constructor:
-                ExtParameter(const void*     tlv_addr_ = 0,
+                ExtParameter(const void*     tlv_addr_ = nullptr,
                              size_t          tlv_size_ = 0,
-                             const void*     addr_ = 0,
+                             const void*     addr_ = nullptr,
                              LENGTH          length_ = 0,
-                             MessageFactory* compound_ = 0) :
+                             MessageFactory* compound_ = nullptr) :
                     Parameter(tlv_addr_, tlv_size_, addr_, length_),
                     compound(compound_)
                 {

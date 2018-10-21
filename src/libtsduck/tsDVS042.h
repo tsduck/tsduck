@@ -92,17 +92,17 @@ namespace ts {
         virtual bool setIV(const void* iv, size_t iv_length) override;
 
         //! @copydoc ts::BlockCipher::name()
-        virtual UString name() const override {return this->algo == 0 ? UString() : this->algo->name() + u"-DVS042";}
+        virtual UString name() const override {return this->algo == nullptr ? UString() : this->algo->name() + u"-DVS042";}
 
         //! @copydoc ts::BlockCipher::encrypt()
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = 0) override;
+                             size_t* cipher_length = nullptr) override;
 
         //! @copydoc ts::BlockCipher::decrypt()
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
-                             size_t* plain_length = 0) override;
+                             size_t* plain_length = nullptr) override;
 
     protected:
         ByteBlock shortIV;  //!< Current initialization vector for short blocks.

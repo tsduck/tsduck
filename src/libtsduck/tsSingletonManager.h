@@ -119,9 +119,9 @@ namespace ts {
 #define TS_DEFINE_SINGLETON(fullclassname)                           \
     fullclassname* fullclassname::Instance()                         \
     {                                                                \
-        if (_instance == 0) {                                        \
+        if (_instance == nullptr) {                                  \
             ts::Guard lock(ts::SingletonManager::Instance()->mutex); \
-            if (_instance == 0) {                                    \
+            if (_instance == nullptr) {                              \
                 _instance = new fullclassname();                     \
                 ::atexit(fullclassname::CleanupSingleton);           \
             }                                                        \
@@ -130,9 +130,9 @@ namespace ts {
     }                                                                \
     void fullclassname::CleanupSingleton()                           \
     {                                                                \
-        if (_instance != 0) {                                        \
+        if (_instance != nullptr) {                                  \
             delete _instance;                                        \
-            _instance = 0;                                           \
+            _instance = nullptr;                                     \
         }                                                            \
     }                                                                \
-    fullclassname* volatile fullclassname::_instance = 0
+    fullclassname* volatile fullclassname::_instance = nullptr

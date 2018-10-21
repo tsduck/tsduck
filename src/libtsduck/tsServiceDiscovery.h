@@ -58,7 +58,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! For incorrect signalization only.
         //!
-        explicit ServiceDiscovery(PMTHandlerInterface* pmtHandler = 0, Report& report = NULLREP, const DVBCharset* charset = nullptr);
+        explicit ServiceDiscovery(PMTHandlerInterface* pmtHandler = nullptr, Report& report = NULLREP, const DVBCharset* charset = nullptr);
 
         //!
         //! Constructor using a string description.
@@ -69,7 +69,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! For incorrect signalization only.
         //!
-        explicit ServiceDiscovery(const UString& desc, PMTHandlerInterface* pmtHandler = 0, Report& report = NULLREP, const DVBCharset* charset = nullptr);
+        explicit ServiceDiscovery(const UString& desc, PMTHandlerInterface* pmtHandler = nullptr, Report& report = NULLREP, const DVBCharset* charset = nullptr);
 
         // Inherited methods
         virtual void set(const UString& desc) override;

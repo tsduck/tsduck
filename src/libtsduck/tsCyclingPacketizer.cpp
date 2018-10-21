@@ -286,7 +286,7 @@ void ts::CyclingPacketizer::setBitRate(BitRate new_bitrate)
 void ts::CyclingPacketizer::provideSection(SectionCounter counter, SectionPtr& sect)
 {
     const PacketCounter current_packet(packetCount());
-    SectionDescPtr sp(0);
+    SectionDescPtr sp(nullptr);
 
     // Cycle end is initially undefined.
     // Will be defined only if end of cycle encountered.
@@ -298,7 +298,7 @@ void ts::CyclingPacketizer::provideSection(SectionCounter counter, SectionPtr& s
     // PID, the unscheduled sections will never pass. To address this, we
     // enforce that unscheduled section are passed from time to time.
 
-    SectionDesc* spp = 0;
+    SectionDesc* spp = nullptr;
     bool force_unscheduled =
         // if there are sections in both lists...
         !_other_sections.empty() && !_sched_sections.empty() &&

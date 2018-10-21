@@ -201,7 +201,7 @@ namespace ts {
         // A macro asserting the consistent state of this object.
         // Must be a macro to preserve the use of assert().
         #define ts_avcparser_assert_consistent() \
-            assert(_base != 0);                  \
+            assert(_base != nullptr);            \
             assert(_end == _base + _total_size); \
             assert(_byte >= _base);              \
             assert(_byte <= _end);               \

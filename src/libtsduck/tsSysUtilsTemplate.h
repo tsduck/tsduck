@@ -80,7 +80,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
 
     ::glob_t gl;
     ::memset(&gl, 0, sizeof (gl));
-    int status = ::glob(pattern.toUTF8().c_str(), 0, 0, &gl);
+    int status = ::glob(pattern.toUTF8().c_str(), 0, nullptr, &gl);
     if (status == 0) {
         for (size_t n = 0; n < gl.gl_pathc; n++) {
             const UString file(UString::FromUTF8(gl.gl_pathv[n]));

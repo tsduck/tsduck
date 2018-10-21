@@ -64,10 +64,10 @@ namespace ts {
         virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = 0) override;
+                             size_t* cipher_length = nullptr) override;
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
-                             size_t* plain_length = 0) override;
+                             size_t* plain_length = nullptr) override;
 
     private:
         int      _Nr;     //!< Number of rounds

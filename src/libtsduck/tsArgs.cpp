@@ -65,7 +65,7 @@ ts::Args::IOption::IOption(const UChar* name_,
                            int64_t      max_value_,
                            uint32_t     flags_) :
 
-    name(name_ == 0 ? UString() : name_),
+    name(name_ == nullptr ? UString() : name_),
     short_name(short_name_),
     type(type_),
     min_occur(min_occur_),
@@ -165,7 +165,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
                            size_t             max_occur_,
                            uint32_t           flags_) :
 
-    name(name_ == 0 ? UString() : name_),
+    name(name_ == nullptr ? UString() : name_),
     short_name(short_name_),
     type(INTEGER),
     min_occur(min_occur_),
@@ -240,7 +240,7 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 //----------------------------------------------------------------------------
 
 ts::Args::Args(const UString& description, const UString& syntax, int flags) :
-    _subreport(0),
+    _subreport(nullptr),
     _iopts(),
     _description(description),
     _shell(),
@@ -458,7 +458,7 @@ ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 void ts::Args::redirectReport(Report* rep)
 {
     _subreport = rep;
-    if (rep != 0 && rep->maxSeverity() > this->maxSeverity()) {
+    if (rep != nullptr && rep->maxSeverity() > this->maxSeverity()) {
         this->setMaxSeverity(rep->maxSeverity());
     }
 }
@@ -474,7 +474,7 @@ void ts::Args::raiseMaxSeverity(int level)
     Report::raiseMaxSeverity(level);
 
     // Propagate to redirected report, if one is set.
-    if (_subreport != 0) {
+    if (_subreport != nullptr) {
         _subreport->raiseMaxSeverity(level);
     }
 }
@@ -488,7 +488,7 @@ void ts::Args::writeLog(int severity, const UString& message)
 {
     // Process error message if flag NO_ERROR_DISPLAY it not set.
     if ((_flags & NO_ERROR_DISPLAY) == 0) {
-        if (_subreport != 0) {
+        if (_subreport != nullptr) {
             _subreport->log(severity, message);
         }
         else {
@@ -533,7 +533,7 @@ ts::Args::IOption* ts::Args::search(UChar c)
         }
     }
     error(UString::Format(u"unknown option -%c", {c}));
-    return 0;
+    return nullptr;
 }
 
 
@@ -543,7 +543,7 @@ ts::Args::IOption* ts::Args::search(UChar c)
 
 ts::Args::IOption* ts::Args::search(const UString& name)
 {
-    IOption* previous = 0;
+    IOption* previous = nullptr;
 
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
         if (it->second.name == name) {
@@ -552,29 +552,29 @@ ts::Args::IOption* ts::Args::search(const UString& name)
         }
         else if (!name.empty() && it->second.name.find(name) == 0) {
             // found an abbreviated version
-            if (previous == 0) {
+            if (previous == nullptr) {
                 // remember this one and continue searching
                 previous = &it->second;
             }
             else {
                 // another one already found, ambiguous option
                 error(u"ambiguous option --" + name + u" (--" + previous->name + u", --" + it->second.name + u")");
-                return 0;
+                return nullptr;
             }
         }
     }
 
-    if (previous != 0) {
+    if (previous != nullptr) {
         // exactly one abbreviation was found
         return previous;
     }
     else if (name.empty()) {
         error(u"no parameter allowed, use options only");
-        return 0;
+        return nullptr;
     }
     else {
         error(u"unknown option --" + name);
-        return 0;
+        return nullptr;
     }
 }
 
@@ -586,7 +586,7 @@ ts::Args::IOption* ts::Args::search(const UString& name)
 
 ts::Args::IOption& ts::Args::getIOption(const UChar* name)
 {
-    const UString name1(name == 0 ? u"" : name);
+    const UString name1(name == nullptr ? u"" : name);
     IOptionMap::iterator it = _iopts.find(name1);
     if (it != _iopts.end()) {
         return it->second;
@@ -740,7 +740,7 @@ bool ts::Args::analyze(bool processRedirections)
 
     while (_is_valid && (short_opt_arg != NPOS || next_arg < _args.size())) {
 
-        IOption* opt = 0;
+        IOption* opt = nullptr;
         ArgValue val;
 
         // Locate option name and value
@@ -756,7 +756,7 @@ bool ts::Args::analyze(bool processRedirections)
         }
         else if (force_parameters || _args[next_arg].empty() || _args[next_arg][0] != u'-') {
             // Arg is a parameter
-            if ((opt = search(u"")) == 0) {
+            if ((opt = search(u"")) == nullptr) {
                 ++next_arg;
             }
             force_parameters = (_flags & GATHER_PARAMETERS) != 0;
@@ -764,7 +764,7 @@ bool ts::Args::analyze(bool processRedirections)
         else if (_args[next_arg].length() == 1) {
             // Arg is '-', next arg is a parameter, even if it starts with '-'
             ++next_arg;
-            if ((opt = search(u"")) == 0) {
+            if ((opt = search(u"")) == nullptr) {
                 ++next_arg;
             }
         }
@@ -794,7 +794,7 @@ bool ts::Args::analyze(bool processRedirections)
         }
 
         // If IOption not found, error already reported
-        if (opt == 0) {
+        if (opt == nullptr) {
             continue;
         }
 

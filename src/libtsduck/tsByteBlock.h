@@ -118,7 +118,7 @@ namespace ts {
         //!
         void append(const void* data, size_type size)
         {
-            if (size > 0 && data != 0) {
+            if (size > 0 && data != nullptr) {
                 ::memcpy(enlarge(size), data, size);  // Flawfinder: ignore: memcpy()
             }
         }
@@ -479,7 +479,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = 0);
+        bool loadFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
 
         //!
         //! Read a byte block from a binary file and append to existing content.
@@ -488,7 +488,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool appendFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = 0);
+        bool appendFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
 
         //!
         //! Save a byte block to a binary file.
@@ -496,7 +496,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool saveToFile(const UString& fileName, Report* report = 0) const
+        bool saveToFile(const UString& fileName, Report* report = nullptr) const
         {
             return writeToFile(fileName, std::ios::out | std::ios::binary, report);
         }
@@ -507,7 +507,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool appendToFile(const UString& fileName, Report* report = 0) const
+        bool appendToFile(const UString& fileName, Report* report = nullptr) const
         {
             return writeToFile(fileName, std::ios::out | std::ios::app | std::ios::binary, report);
         }

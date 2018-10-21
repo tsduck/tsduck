@@ -525,9 +525,9 @@ namespace ts {
             //! @param [in] cw_addr Control word address.
             //! @param [in] cw_size Control word size in bytes.
             //!
-            CPCWCombination(uint16_t cpn = 0, const void* cw_addr = 0, size_t cw_size = DVBCSA2::KEY_SIZE) :
+            CPCWCombination(uint16_t cpn = 0, const void* cw_addr = nullptr, size_t cw_size = DVBCSA2::KEY_SIZE) :
                 CP(cpn),
-                CW(cw_addr, cw_addr != 0 ? cw_size : 0)
+                CW(cw_addr, cw_addr != nullptr ? cw_size : 0)
             {
             }
         };

@@ -434,17 +434,17 @@ ts::xml::Element* ts::BinaryTable::toXML(xml::Element* parent, bool forceGeneric
 {
     // Filter invalid tables.
     if (!_is_valid || _sections.size() == 0 || _sections[0].isNull()) {
-        return 0;
+        return nullptr;
     }
 
     // The XML node we will generate.
-    xml::Element* node = 0;
+    xml::Element* node = nullptr;
 
     // Try to generate a specialized XML structure.
     if (!forceGeneric) {
         // Do we know how to deserialize this table?
         TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(_tid);
-        if (fac != 0) {
+        if (fac != nullptr) {
             // We know how to deserialize this table.
             AbstractTablePtr tp = fac();
             if (!tp.isNull()) {
@@ -459,7 +459,7 @@ ts::xml::Element* ts::BinaryTable::toXML(xml::Element* parent, bool forceGeneric
     }
 
     // If we could not generate a typed node, generate a generic one.
-    if (node == 0) {
+    if (node == nullptr) {
         if (_sections[0]->isShortSection()) {
             // Create a short section node.
             node = parent->addElement(TS_XML_GENERIC_SHORT_TABLE);
@@ -499,14 +499,14 @@ bool ts::BinaryTable::fromXML(const xml::Element* node, const DVBCharset* charse
 {
     // Filter invalid parameters.
     clear();
-    if (node == 0) {
+    if (node == nullptr) {
         // Not a valid XML name (not even an XML element).
         return false;
     }
 
     // Get the table factory for that kind of XML tag.
     const TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(node->name());
-    if (fac != 0) {
+    if (fac != nullptr) {
         // Create a table instance of the right type.
         AbstractTablePtr table = fac();
         if (!table.isNull()) {
@@ -550,7 +550,7 @@ bool ts::BinaryTable::fromXML(const xml::Element* node, const DVBCharset* charse
             node->getChildren(sectionNodes, u"section", 1, 256))
         {
             for (size_t index = 0; index < sectionNodes.size(); ++index) {
-                assert(sectionNodes[index] != 0);
+                assert(sectionNodes[index] != nullptr);
                 ByteBlock payload;
                 if (sectionNodes[index]->getHexaText(payload, 0, MAX_PSI_LONG_SECTION_PAYLOAD_SIZE)) {
                     addSection(SectionPtr(new Section(tid, priv, tidExt, version, current, uint8_t(index), uint8_t(index), payload.data(), payload.size())));

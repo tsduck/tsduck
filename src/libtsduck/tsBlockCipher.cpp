@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 bool ts::BlockCipher::encryptInPlace(void* data, size_t data_length, size_t* max_actual_length)
 {
     const ByteBlock plain(data, data_length);
-    const size_t cipher_max_size = max_actual_length != 0 ? *max_actual_length : data_length;
+    const size_t cipher_max_size = max_actual_length != nullptr ? *max_actual_length : data_length;
     return encrypt(plain.data(), plain.size(), data, cipher_max_size, max_actual_length);
 }
 
@@ -51,6 +51,6 @@ bool ts::BlockCipher::encryptInPlace(void* data, size_t data_length, size_t* max
 bool ts::BlockCipher::decryptInPlace(void* data, size_t data_length, size_t* max_actual_length)
 {
     const ByteBlock cipher(data, data_length);
-    const size_t plain_max_size = max_actual_length != 0 ? *max_actual_length : data_length;
+    const size_t plain_max_size = max_actual_length != nullptr ? *max_actual_length : data_length;
     return decrypt(cipher.data(), cipher.size(), data, plain_max_size, max_actual_length);
 }

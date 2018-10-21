@@ -85,7 +85,7 @@ namespace ts {
             //! @param [in] other Another XML element.
             //! @return True is this object and @a other have identical names.
             //!
-            bool haveSameName(const Element* other) const { return other != 0 && _value.similar(other->_value); }
+            bool haveSameName(const Element* other) const { return other != nullptr && _value.similar(other->_value); }
 
             //!
             //! Find the first child element by name, case-insensitive.

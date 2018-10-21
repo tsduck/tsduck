@@ -45,7 +45,7 @@ const uint16_t ts::DVBCharset::DVB_CODEPOINT_CRLF;
 bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize)
 {
     // Null or empty buffer is a valid empty string.
-    if (dvb == 0 || dvbSize == 0) {
+    if (dvb == nullptr || dvbSize == 0) {
         code = 0;
         codeSize = 0;
         return true;
@@ -95,7 +95,7 @@ size_t ts::DVBCharset::encodeTableCode(uint8_t*& buffer, size_t& size) const
     uint8_t buf[4] = {0};
     size_t codeSize = 0;
 
-    if (buffer == 0 || size == 0 || _code == 0) {
+    if (buffer == nullptr || size == 0 || _code == 0) {
         // Empty buffer or default character set.
         return 0;
     }
@@ -151,7 +151,7 @@ ts::DVBCharset* ts::DVBCharset::GetCharset(const UString& name)
 {
     const CharSetRepo* repo = CharSetRepo::Instance();
     const std::map<UString, DVBCharset*>::const_iterator it = repo->byName.find(name);
-    return it == repo->byName.end() ? 0 : it->second;
+    return it == repo->byName.end() ? nullptr : it->second;
 }
 
 // Get a DVB character set by table code.
@@ -159,7 +159,7 @@ ts::DVBCharset* ts::DVBCharset::GetCharset(uint32_t tableCode)
 {
     const CharSetRepo* repo = CharSetRepo::Instance();
     const std::map<uint32_t, DVBCharset*>::const_iterator it = repo->byCode.find(tableCode);
-    return it == repo->byCode.end() ? 0 : it->second;
+    return it == repo->byCode.end() ? nullptr : it->second;
 }
 
 // Find all registered character set names.
@@ -171,7 +171,7 @@ ts::UStringList ts::DVBCharset::GetAllNames()
 // Remove the specified charset
 void ts::DVBCharset::Unregister(const DVBCharset* charset)
 {
-    if (charset != 0) {
+    if (charset != nullptr) {
         CharSetRepo* repo = CharSetRepo::Instance();
         repo->byName.erase(charset->name());
         repo->byCode.erase(charset->tableCode());

@@ -192,7 +192,7 @@ namespace ts {
     std::basic_ostream<typename OSTREAM::char_type, TRAITS>& IOManipulator(std::basic_ostream<typename OSTREAM::char_type, TRAITS>& strm, OSTREAM& (OSTREAM::*func)())
     {
         OSTREAM* sub = dynamic_cast<OSTREAM*>(&strm);
-        return sub == 0 ? strm : (sub->*func)();
+        return sub == nullptr ? strm : (sub->*func)();
     }
 
     //!

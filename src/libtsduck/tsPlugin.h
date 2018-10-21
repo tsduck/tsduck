@@ -288,7 +288,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~Plugin() {}
+        virtual ~Plugin() override {}
 
     protected:
         TSP* tsp; //!< The TSP callback structure can be directly accessed by subclasses.
@@ -356,7 +356,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~InputPlugin() {}
+        virtual ~InputPlugin() override {}
 
         // Implementation of inherited interface.
         virtual PluginType type() const override { return INPUT_PLUGIN; }
@@ -416,7 +416,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~OutputPlugin() {}
+        virtual ~OutputPlugin() override {}
 
         // Implementation of inherited interface.
         virtual PluginType type() const override { return OUTPUT_PLUGIN; }
@@ -499,7 +499,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~ProcessorPlugin() {}
+        virtual ~ProcessorPlugin() override {}
 
         // Implementation of inherited interface.
         virtual PluginType type() const override { return PROCESSOR_PLUGIN; }
