@@ -353,7 +353,7 @@ namespace ts {
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        Args& option(const UChar* name = 0,
+        Args& option(const UChar* name = nullptr,
                      UChar        short_name = 0,
                      ArgType      type = NONE,
                      size_t       min_occur = 0,
@@ -607,7 +607,7 @@ namespace ts {
         //! @return True if the corresponding option or parameter is present on the command line,
         //! false otherwise.
         //!
-        bool present(const UChar* name = 0) const;
+        bool present(const UChar* name = nullptr) const;
 
         //!
         //! Check the number of occurences of an option in the last analyzed command line.
@@ -618,7 +618,7 @@ namespace ts {
         //! @return The number of occurences of the corresponding option or parameter in the
         //! command line.
         //!
-        size_t count(const UChar* name = 0) const;
+        size_t count(const UChar* name = nullptr) const;
 
         //!
         //! Get the value of an option in the last analyzed command line.
@@ -632,7 +632,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        void getValue(UString& value, const UChar* name = 0, const UChar* def_value = u"", size_t index = 0) const;
+        void getValue(UString& value, const UChar* name = nullptr, const UChar* def_value = u"", size_t index = 0) const;
 
         //!
         //! Get the value of an option in the last analyzed command line.
@@ -646,7 +646,7 @@ namespace ts {
         //! first occurence.
         //! @return The value of the option or parameter.
         //!
-        UString value(const UChar* name = 0, const UChar* def_value = u"", size_t index = 0) const;
+        UString value(const UChar* name = nullptr, const UChar* def_value = u"", size_t index = 0) const;
 
         //!
         //! Get all occurences of an option in a container of strings.
@@ -656,19 +656,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        void getValues(UStringVector& values, const UChar* name = 0) const;
-
-        //!
-        //! Get all occurences of an option and interpret them as PID values.
-        //!
-        //! @param [out] values A set of PID's receiving all values of the option or parameter.
-        //! @param [in] name The full name of the option. If the parameter is a null pointer or
-        //! an empty string, this specifies a parameter, not an option. If the specified option
-        //! was not declared in the syntax of the command, a fatal error is reported.
-        //! @param [in] def_value The boolean to set in all PID values if the option or parameter
-        //! is not present in the command line.
-        //!
-        void getPIDSet(PIDSet& values, const UChar* name = 0, bool def_value = false) const;
+        void getValues(UStringVector& values, const UChar* name = nullptr) const;
 
         //!
         //! Get the value of an integer option in the last analyzed command line.
@@ -690,7 +678,7 @@ namespace ts {
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getIntValue(INT& value,
-                         const UChar* name = 0,
+                         const UChar* name = nullptr,
                          const INT& def_value = static_cast<INT>(0),
                          size_t index = 0) const;
 
@@ -709,7 +697,7 @@ namespace ts {
         //! @return The integer value of the option or parameter.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        INT intValue(const UChar* name = 0,
+        INT intValue(const UChar* name = nullptr,
                      const INT& def_value = static_cast<INT>(0),
                      size_t index = 0) const;
 
@@ -723,7 +711,7 @@ namespace ts {
         //! a fatal error is reported.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        void getIntValues(std::vector<INT>& values, const UChar* name = 0) const;
+        void getIntValues(std::vector<INT>& values, const UChar* name = nullptr) const;
 
         //!
         //! Get all occurences of an integer option in a set of integers.
@@ -735,7 +723,22 @@ namespace ts {
         //! a fatal error is reported.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        void getIntValues(std::set<INT>& values, const UChar* name = 0) const;
+        void getIntValues(std::set<INT>& values, const UChar* name = nullptr) const;
+
+        //!
+        //! Get all occurences of an option as a bitmask of values.
+        //!
+        //! @param [out] values A bitset receiving all values of the option or parameter.
+        //! For each value of the option, the corresponding bit is set. Values which are
+        //! out of range are ignored.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] defValue The boolean to set in all values if the option or parameter
+        //! is not present in the command line.
+        //!
+        template <std::size_t N>
+        void getIntValues(std::bitset<N>& values, const UChar* name = nullptr, bool defValue = false) const;
 
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
@@ -754,7 +757,7 @@ namespace ts {
         //! @return The OR'ed values of the integer option.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        INT bitMaskValue(const UChar* name = 0, const INT& def_value = static_cast<INT>(0)) const;
+        INT bitMaskValue(const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
@@ -773,7 +776,7 @@ namespace ts {
         //! is not present in the command line.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        void getBitMaskValue(INT& value, const UChar* name = 0, const INT& def_value = static_cast<INT>(0)) const;
+        void getBitMaskValue(INT& value, const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
         //! Get the value of an enum option in the last analyzed command line.
@@ -792,7 +795,7 @@ namespace ts {
         //!
         template <typename ENUM>
         void getEnumValue(ENUM& value,
-                          const UChar* name = 0,
+                          const UChar* name = nullptr,
                           ENUM def_value = static_cast<ENUM>(0),
                           size_t index = 0) const;
 
@@ -812,7 +815,7 @@ namespace ts {
         //! @return The enum value of the option or parameter.
         //!
         template <typename ENUM>
-        ENUM enumValue(const UChar* name = 0,
+        ENUM enumValue(const UChar* name = nullptr,
                        ENUM def_value = static_cast<ENUM>(0),
                        size_t index = 0) const;
 
@@ -831,7 +834,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        void getTristateValue(Tristate& value, const UChar* name = 0, size_t index = 0) const;
+        void getTristateValue(Tristate& value, const UChar* name = nullptr, size_t index = 0) const;
 
         //!
         //! Get the value of tristate option in the last analyzed command line.
@@ -848,7 +851,7 @@ namespace ts {
         //! than @a index, the returned value is MAYBE. For options with optional values, if the
         //! the option is present without value, the returned value is TRUE.
         //!
-        Tristate tristateValue(const UChar* name = 0, size_t index = 0) const;
+        Tristate tristateValue(const UChar* name = nullptr, size_t index = 0) const;
 
         //!
         //! Exit application when errors were reported in the last analyzed command line.

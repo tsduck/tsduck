@@ -157,7 +157,7 @@ bool ts::PCRVerifyPlugin::start()
     _jitter_max = intValue<int64_t>(u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
     _bitrate = intValue<BitRate>(u"bitrate", 0);
     _time_stamp = present(u"time-stamp");
-    getPIDSet(_pid_list, u"pid", true);
+    getIntValues(_pid_list, u"pid", true);
 
     if (!_absolute) {
         // Convert _jitter_max from micro-second to PCR units

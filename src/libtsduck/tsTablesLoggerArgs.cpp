@@ -332,7 +332,7 @@ bool ts::TablesLoggerArgs::load(Args& args)
     use_next = args.present(u"include-next");
 
     if (add_pmt_pids || args.present(u"pid")) {
-        args.getPIDSet(pid, u"pid"); // specific pids
+        args.getIntValues(pid, u"pid"); // specific pids
         if (args.present(u"negate-pid")) {
             pid.flip();
         }

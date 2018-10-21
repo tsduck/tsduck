@@ -78,7 +78,7 @@ namespace ts {
         //! Its content is replaced with a binary representation of this object.
         //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serialize(Descriptor& bin, const DVBCharset* charset = 0) const = 0;
+        virtual void serialize(Descriptor& bin, const DVBCharset* charset = nullptr) const = 0;
 
         //!
         //! This abstract method deserializes a binary descriptor.
@@ -87,7 +87,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to interpret according to the descriptor subclass.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        virtual void deserialize(const Descriptor& bin, const DVBCharset* charset = 0) = 0;
+        virtual void deserialize(const Descriptor& bin, const DVBCharset* charset = nullptr) = 0;
 
         //!
         //! Deserialize a descriptor from a descriptor list.
@@ -97,7 +97,7 @@ namespace ts {
         //! @param [in] index Index of the descriptor to deserialize in @a dlist.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset = 0);
+        void deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset = nullptr);
 
         //!
         //! Virtual destructor

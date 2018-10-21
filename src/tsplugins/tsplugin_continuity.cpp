@@ -106,7 +106,7 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
 bool ts::ContinuityPlugin::start()
 {
     // Command line arguments
-    getPIDSet(_pids, u"pid", true);
+    getIntValues(_pids, u"pid", true);
     _fix = present(u"fix");
     _tag = value(u"tag");
     if (!_tag.empty()) {

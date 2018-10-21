@@ -80,7 +80,7 @@ namespace ts {
             //! @return The service name, as found from the first DVB
             //! "service descriptor", if there is one in the list.
             //!
-            UString serviceName(const DVBCharset* charset = 0) const;
+            UString serviceName(const DVBCharset* charset = nullptr) const;
 
             //!
             //! Get the provider name.
@@ -88,7 +88,7 @@ namespace ts {
             //! @return The provider name, as found from the first DVB
             //! "service descriptor", if there is one in the list.
             //!
-            UString providerName(const DVBCharset* charset = 0) const;
+            UString providerName(const DVBCharset* charset = nullptr) const;
 
             //!
             //! Set the service name.
@@ -105,7 +105,7 @@ namespace ts {
             //! @param [in] charset If not zero, character set to use for decoding without explicit table code
             //! and preferred character set for DVB encoding.
             //!
-            void setName(const UString& name, uint8_t service_type = 1, const DVBCharset* charset = 0)
+            void setName(const UString& name, uint8_t service_type = 1, const DVBCharset* charset = nullptr)
             {
                 setString(&ServiceDescriptor::service_name, name, service_type, charset);
             }
@@ -125,7 +125,7 @@ namespace ts {
             //! @param [in] charset If not zero, character set to use for decoding without explicit table code
             //! and preferred character set for DVB encoding.
             //!
-            void setProvider(const UString& provider, uint8_t service_type = 1, const DVBCharset* charset = 0)
+            void setProvider(const UString& provider, uint8_t service_type = 1, const DVBCharset* charset = nullptr)
             {
                 setString(&ServiceDescriptor::provider_name, provider, service_type, charset);
             }
@@ -147,7 +147,7 @@ namespace ts {
             //! @param [in] charset If not zero, character set to use without explicit table code.
             //! @return True if found and valid, false otherwise.
             //!
-            bool locateServiceDescriptor(ServiceDescriptor& desc, const DVBCharset* charset = 0) const;
+            bool locateServiceDescriptor(ServiceDescriptor& desc, const DVBCharset* charset = nullptr) const;
 
         private:
             //!
@@ -193,7 +193,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SDT(const BinaryTable& table, const DVBCharset* charset = 0);
+        SDT(const BinaryTable& table, const DVBCharset* charset = nullptr);
 
         //!
         //! Copy constructor.

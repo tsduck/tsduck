@@ -364,7 +364,7 @@ bool ts::ScramblerPlugin::getOptions()
     // Plugin parameters.
     _use_service = present(u"");
     _service.set(value(u""));
-    getPIDSet(_scrambled_pids, u"pid");
+    getIntValues(_scrambled_pids, u"pid");
     _synchronous_ecmg = present(u"synchronous") || !tsp->realtime();
     _component_level = present(u"component-level");
     _scramble_audio = !present(u"no-audio");

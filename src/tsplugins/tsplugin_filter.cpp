@@ -191,7 +191,7 @@ bool ts::FilterPlugin::start()
     max_af = intValue<int>(u"max-adaptation-field-size", -1);
     after_packets = intValue<PacketCounter>(u"after-packets", 0);
 
-    getPIDSet(pid, u"pid");
+    getIntValues(pid, u"pid");
 
     return true;
 }

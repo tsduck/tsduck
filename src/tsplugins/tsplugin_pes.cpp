@@ -254,7 +254,7 @@ bool ts::PESPlugin::start()
     // PID values to filter
     if (present(u"pid")) {
         PIDSet pids;
-        getPIDSet(pids, u"pid");
+        getIntValues(pids, u"pid");
         if (present(u"negate-pid")) {
             pids.flip();
         }

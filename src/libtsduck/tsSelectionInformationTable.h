@@ -99,7 +99,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SelectionInformationTable(const BinaryTable& table, const DVBCharset* charset = 0);
+        SelectionInformationTable(const BinaryTable& table, const DVBCharset* charset = nullptr);
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;

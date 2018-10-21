@@ -72,7 +72,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~Mutex();
+        virtual ~Mutex() override;
 
         //!
         //! Acquire the mutex with a timeout.

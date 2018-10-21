@@ -341,7 +341,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to use.
         //! @return True on success, false on error.
         //!
-        bool toXML(xml::Element* parent, const DVBCharset* charset = 0) const;
+        bool toXML(xml::Element* parent, const DVBCharset* charset = nullptr) const;
 
         //!
         //! This method decodes an XML list of descriptors.
@@ -352,7 +352,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = 0);
+        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = nullptr);
 
         //!
         //! This method decodes an XML list of descriptors.
@@ -363,7 +363,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset = 0);
+        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset = nullptr);
 
         //!
         //! This method decodes an XML list of descriptors.

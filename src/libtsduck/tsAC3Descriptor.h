@@ -62,7 +62,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AC3Descriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        AC3Descriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Merge inside this object missing information which can be found in other object.

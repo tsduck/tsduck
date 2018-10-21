@@ -159,7 +159,7 @@ namespace ts {
         //! @param [in] charset For XML files, if not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& file_name, Report& report = CERR, FileType type = UNSPECIFIED, CRC32::Validation crc_op = CRC32::IGNORE, const DVBCharset* charset = 0);
+        bool load(const UString& file_name, Report& report = CERR, FileType type = UNSPECIFIED, CRC32::Validation crc_op = CRC32::IGNORE, const DVBCharset* charset = nullptr);
 
         //!
         //! Load a binary or XML file.
@@ -170,7 +170,7 @@ namespace ts {
         //! @param [in] charset For XML files, if not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm, Report& report = CERR, FileType type = UNSPECIFIED, CRC32::Validation crc_op = CRC32::IGNORE, const DVBCharset* charset = 0);
+        bool load(std::istream& strm, Report& report = CERR, FileType type = UNSPECIFIED, CRC32::Validation crc_op = CRC32::IGNORE, const DVBCharset* charset = nullptr);
 
         //!
         //! Load an XML file.
@@ -179,7 +179,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const UString& file_name, Report& report = CERR, const DVBCharset* charset = 0);
+        bool loadXML(const UString& file_name, Report& report = CERR, const DVBCharset* charset = nullptr);
 
         //!
         //! Load an XML file.
@@ -188,7 +188,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(std::istream& strm, Report& report = CERR, const DVBCharset* charset = 0);
+        bool loadXML(std::istream& strm, Report& report = CERR, const DVBCharset* charset = nullptr);
 
         //!
         //! Parse an XML content.
@@ -197,7 +197,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const UString& xml_content, Report& report = CERR, const DVBCharset* charset = 0);
+        bool parseXML(const UString& xml_content, Report& report = CERR, const DVBCharset* charset = nullptr);
 
         //!
         //! Save an XML file.
@@ -206,7 +206,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool saveXML(const UString& file_name, Report& report = CERR, const DVBCharset* charset = 0) const;
+        bool saveXML(const UString& file_name, Report& report = CERR, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Serialize as XML text.
@@ -214,7 +214,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return Complete XML document text, empty on error.
         //!
-        UString toXML(Report& report = CERR, const DVBCharset* charset = 0) const;
+        UString toXML(Report& report = CERR, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Load a binary section file from a stream.
@@ -322,7 +322,7 @@ namespace ts {
         //! @param [in] table The table to add.
         //! @param [in] charset If not zero, default character set to encode strings.
         //!
-        void add(const AbstractTablePtr& table, const DVBCharset* charset = 0);
+        void add(const AbstractTablePtr& table, const DVBCharset* charset = nullptr);
 
         //!
         //! Add a section in the file.

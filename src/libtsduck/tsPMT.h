@@ -136,7 +136,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        PMT(const BinaryTable& table, const DVBCharset* charset = 0);
+        PMT(const BinaryTable& table, const DVBCharset* charset = nullptr);
 
         //!
         //! Search the component PID for a given component tag.

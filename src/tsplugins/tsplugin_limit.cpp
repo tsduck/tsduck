@@ -203,7 +203,7 @@ bool ts::LimitPlugin::start()
     _threshold1 = intValue<PacketCounter>(u"threshold1", DEFAULT_THRESHOLD1);
     _threshold2 = intValue<PacketCounter>(u"threshold2", DEFAULT_THRESHOLD2);
     _threshold3 = intValue<PacketCounter>(u"threshold3", DEFAULT_THRESHOLD3);
-    getPIDSet(_pids1, u"pid");
+    getIntValues(_pids1, u"pid");
 
     // Threshold for audio/video packets. If a list of --pid is specified, we start
     // dropping a/v at --threshold2 only. But, without any --pid, we start at --threshold1.

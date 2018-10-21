@@ -61,7 +61,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        DataBroadcastIdDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        DataBroadcastIdDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Static method to display a data broadcast selector bytes.

@@ -663,32 +663,6 @@ void ts::Args::getValues(UStringVector& values, const UChar* name) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of this option and interpret them as PID values
-//----------------------------------------------------------------------------
-
-void ts::Args::getPIDSet(PIDSet& values, const UChar* name, bool defValue) const
-{
-    PID pid = PID_NULL;
-    const IOption& opt(getIOption(name));
-
-    if (!opt.values.empty()) {
-        values.reset();
-        for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-            if (it->set() && it->value().toInteger(pid, THOUSANDS_SEPARATORS)) {
-                values.set(pid);
-            }
-        }
-    }
-    else if (defValue) {
-        values.set();
-    }
-    else {
-        values.reset();
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Get the value of tristate option
 //----------------------------------------------------------------------------
 

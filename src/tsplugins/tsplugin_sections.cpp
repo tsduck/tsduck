@@ -156,7 +156,7 @@ bool ts::SectionsPlugin::start()
     _section_stuffing = present(u"stuffing");
     _use_null_pid = present(u"null-pid-reuse");
     _output_pid = intValue(u"output-pid", intValue<PID>(u"pid", PID_NULL, 0));
-    getPIDSet(_input_pids, u"pid");
+    getIntValues(_input_pids, u"pid");
     getIntValues(_removed_tids, u"tid-remove");
     getIntValues(_removed_etids, u"etid-remove");
 

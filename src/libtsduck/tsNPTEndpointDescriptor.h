@@ -61,7 +61,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        NPTEndpointDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        NPTEndpointDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

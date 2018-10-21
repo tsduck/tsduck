@@ -135,7 +135,7 @@ bool ts::AbstractDescrambler::start()
     _use_service = present(u"");
     _service.set(value(u""));
     _synchronous = present(u"synchronous") || !tsp->realtime();
-    getPIDSet(_pids, u"pid");
+    getIntValues(_pids, u"pid");
     if (!_scrambling.loadArgs(*this)) {
         return false;
     }

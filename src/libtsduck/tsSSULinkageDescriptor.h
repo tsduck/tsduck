@@ -99,7 +99,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        SSULinkageDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Constructor from a linkage_descriptor.
@@ -107,14 +107,14 @@ namespace ts {
         //! The data_broadcast_id must be 0x000A.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const LinkageDescriptor& desc, const DVBCharset* charset = 0);
+        SSULinkageDescriptor(const LinkageDescriptor& desc, const DVBCharset* charset = nullptr);
 
         //!
         //! Convert to a linkage_descriptor.
         //! @param [out] desc A linkage_descriptor to convert.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void toLinkageDescriptor(LinkageDescriptor& desc, const DVBCharset* charset = 0) const;
+        void toLinkageDescriptor(LinkageDescriptor& desc, const DVBCharset* charset = nullptr) const;
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

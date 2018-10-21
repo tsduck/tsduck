@@ -162,7 +162,7 @@ bool ts::CountPlugin::start()
     _brief_report = present(u"brief");
     _negate = present(u"negate");
     getIntValue(_report_interval, u"interval");
-    getPIDSet(_pids, u"pid");
+    getIntValues(_pids, u"pid");
 
     // By default, all PIDs are selected
     if (!present(u"pid")) {
