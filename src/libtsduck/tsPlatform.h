@@ -62,7 +62,6 @@
 //!  various C/C++ compilation issues.
 //!
 //!  @li Explicitly unused variables: See @link TS_UNUSED @endlink.
-//!  @li The null pointer and C++: See @link TS_NULL @endlink.
 //!  @li Definitions of C++ constants: See @link TS_NEED_STATIC_CONST_DEFINITIONS @endlink.
 //!
 //----------------------------------------------------------------------------
@@ -829,26 +828,6 @@
 #else
     #error "New unknown compiler, please update TS_UNUSED in tsPlatform.h"
 #endif
-
-//!
-//! Definition of a NULL pointer for C++.
-//!
-//! C++ normally does not use a @c NULL constant. Null pointers are simply @c 0.
-//! However, in untyped context (typically, a variable list of arguments),
-//! @c 0 is interpreted as an zero of type @c int and not as a null pointer.
-//! On platforms such as x86_64 where @c int and pointers do not have the same size,
-//! using @c 0 in a variable list of arguments may produce incorrect results.
-//!
-//! This header file ensure that @c NULL is defined for both C and C++ and has always
-//! the semantic of a null pointer, regardless of the context.
-//!
-#define TS_NULL (static_cast<void*>(0))
-
-//!
-//! Definition of a NULL pointer for C++ with an explicit char pointer.
-//! @see TS_NULL
-//!
-#define TS_NULL_CHAR_PTR (static_cast<char*>(0))
 
 //!
 //! Definition of the name of the current function.

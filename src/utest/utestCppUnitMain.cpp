@@ -146,7 +146,7 @@ int utest::CppUnitMain::usage()
 namespace {
     void ListTests(CppUnit::Test* test, size_t indent, bool print)
     {
-        if (test != 0) {
+        if (test != nullptr) {
             if (print) {
                 std::cout << std::string(indent, ' ') << test->getName() << std::endl;
                 indent += 4;

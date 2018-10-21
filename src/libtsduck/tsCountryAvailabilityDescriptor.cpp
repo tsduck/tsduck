@@ -72,9 +72,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descripto
 
 
 //----------------------------------------------------------------------------
-// Constructor using a variable-length argument list.
-// Each argument is a country_code
-// The end of the argument list must be marked by TS_NULL.
+// Constructor using a variable-length list of country codes.
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const std::initializer_list<UString> countries) :

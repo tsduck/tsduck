@@ -141,7 +141,7 @@ void ts::Monotonic::wait()
         ::timespec tspec;
         tspec.tv_sec = time_t(nano / NanoSecPerSec);
         tspec.tv_nsec = long(nano % NanoSecPerSec);
-        if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
+        if (::nanosleep(&tspec, nullptr) < 0 && errno != EINTR) {
             // Actual error, not interrupted by a signal
             throw MonotonicError(u"nanosleep error", errno);
         }
@@ -158,7 +158,7 @@ void ts::Monotonic::wait()
 
     // Loop on clock_nanosleep, ignoring signals
     int status;
-    while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
+    while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, nullptr)) != 0) {
         if (status != EINTR) {
             // Actual error, not interrupted by a signal
             throw MonotonicError(u"clock_nanosleep error", errno);

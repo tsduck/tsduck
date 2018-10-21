@@ -140,7 +140,7 @@ int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
 
 
 //----------------------------------------------------------------------------
-// Check for NULL on SafePtr object
+// Check for null pointer on SafePtr object
 //----------------------------------------------------------------------------
 
 template <typename T, class MUTEX>

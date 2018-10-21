@@ -84,7 +84,7 @@ namespace ts {
         bool             _csv_format;     // Output in CSV format
         bool             _log_format;     // Output in log format
         bool             _scte35;         // Detect SCTE 35 PTS values
-        UString          _output_name;    // Output file name (NULL means stderr)
+        UString          _output_name;    // Output file name (empty means stderr)
         std::ofstream    _output_stream;  // Output stream file
         std::ostream*    _output;         // Reference to actual output stream file
         PacketCounter    _packet_count;   // Global packets count
