@@ -249,7 +249,7 @@ namespace ts {
         //! @param [in] alloc Allocator.
         //!
         UString(const UChar* s, size_type count, const allocator_type& alloc = allocator_type()) :
-            SuperClass(s == 0 && count == 0 ? &CHAR_NULL : s, count, alloc) {}
+            SuperClass(s == nullptr && count == 0 ? &CHAR_NULL : s, count, alloc) {}
 
         //!
         //! Constructor using a null-terminated Unicode string.
@@ -257,7 +257,7 @@ namespace ts {
         //! @param [in] alloc Allocator.
         //!
         UString(const UChar* s, const allocator_type& alloc = allocator_type()) :
-            SuperClass(s == 0 ? &CHAR_NULL : s, alloc) {}
+            SuperClass(s == nullptr ? &CHAR_NULL : s, alloc) {}
 
         //!
         //! Constructor using a @c std::vector of 16-bit characters of any type.
@@ -479,7 +479,7 @@ namespace ts {
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVB(const std::string& dvb, const DVBCharset* charset = 0)
+        static UString FromDVB(const std::string& dvb, const DVBCharset* charset = nullptr)
         {
             return FromDVB(reinterpret_cast<const uint8_t*>(dvb.data()), dvb.size(), charset);
         }
@@ -494,7 +494,7 @@ namespace ts {
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVB(const uint8_t* dvb, size_type dvbSize, const DVBCharset* charset = 0);
+        static UString FromDVB(const uint8_t* dvb, size_type dvbSize, const DVBCharset* charset = nullptr);
 
         //!
         //! Convert a DVB string into UTF-16 (preceded by its one-byte length).
@@ -509,7 +509,7 @@ namespace ts {
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharset* charset = 0);
+        static UString FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharset* charset = nullptr);
 
         //!
         //! Encode this UTF-16 string into a DVB string.
@@ -523,7 +523,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_type toDVB(uint8_t*& buffer, size_t& size, size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
+        size_type toDVB(uint8_t*& buffer, size_t& size, size_type start = 0, size_type count = NPOS, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string.
@@ -533,7 +533,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The DVB string.
         //!
-        ByteBlock toDVB(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
+        ByteBlock toDVB(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
@@ -548,7 +548,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_type toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
+        size_type toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_type start = 0, size_type count = NPOS, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
@@ -558,7 +558,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The DVB string with the initial length byte.
         //!
-        ByteBlock toDVBWithByteLength(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
+        ByteBlock toDVBWithByteLength(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Assign from a @c std::vector of 16-bit characters of any type.
@@ -1559,15 +1559,6 @@ namespace ts {
         //! False otherwise. In other words, the method returns true when this object string
         //! exactly matches the format in @a fmt.
         //! @see Format(const UChar*, const std::initializer_list<ArgMixIn>&)
-        //!
-        //! @param [out] extractedCount The number of successfully extracted values.
-        //! @param [out] endIndex The index in this string after the last extracted value.
-        //! @param [in] fmt Format string with embedded '\%' sequences.
-        //! @param [in] args List of output arguments to receive extracted values.
-        //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
-        //! @return True if the entire string is consumed and the entire format is parsed.
-        //! False otherwise. In other words, the method returns true when this object string
-        //! exactly matches the format in @a fmt.
         //!
         bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, const std::initializer_list<ArgMixOut>& args) const;
 

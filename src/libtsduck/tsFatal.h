@@ -62,7 +62,7 @@ namespace ts {
     //!
     TSDUCKDLL inline void CheckNonNull(const void* ptr)
     {
-        if (ptr == 0) {
+        if (ptr == nullptr) {
             FatalMemoryAllocation();
         }
     }

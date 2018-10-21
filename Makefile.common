@@ -783,17 +783,16 @@ ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
     CXXFLAGS_WARNINGS += -Weffc++
 endif
 ifdef MACOS
-    CFLAGS_WARNINGS   += -Wno-unused-command-line-argument
-    CXXFLAGS_WARNINGS += -Wno-unused-command-line-argument
+    # TODO: add -Weverything (need some code cleanup first)
+    COMMON_WARNINGS += -Wno-unused-command-line-argument -Wno-c++98-compat \
+        -Wno-c++98-compat-pedantic -Wno-conversion -Wno-sign-conversion -Wno-date-time
 else
     CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
     ifeq ($(MAIN_ARCH),arm)
-        CFLAGS_WARNINGS   += -Wno-psabi
-        CXXFLAGS_WARNINGS += -Wno-psabi
+        COMMON_WARNINGS += -Wno-psabi
     else
         # ARM target is known to generate too many spurious cast-align errors
-        CFLAGS_WARNINGS   += -Wcast-align
-        CXXFLAGS_WARNINGS += -Wcast-align
+        COMMON_WARNINGS += -Wcast-align
     endif
     ifdef GCC_6_OR_MORE
         CXXFLAGS_WARNINGS += -Wsuggest-override

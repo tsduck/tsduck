@@ -147,7 +147,7 @@ bool ts::StuffAnalyzePlugin::start()
     // Get command line arguments
     _cas_args.load(*this);
     _output_name = value(u"output-file");
-    getPIDSet(_analyze_pids, u"pid");
+    getIntValues(_analyze_pids, u"pid");
 
     // Initialize the PSI demux.
     _psi_demux.reset();

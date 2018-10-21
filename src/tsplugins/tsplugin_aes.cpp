@@ -195,7 +195,7 @@ bool ts::AESPlugin::start()
 {
     // Get option values
     _descramble = present(u"descramble");
-    getPIDSet(_scrambled, u"pid");
+    getIntValues(_scrambled, u"pid");
     if (present(u"")) {
         _service.set(value(u""));
     }

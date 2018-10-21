@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        ExtendedEventDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        ExtendedEventDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Split into several descriptors if neccesary and add them in a descriptor list.
@@ -80,7 +80,7 @@ namespace ts {
         //! @param [in,out] dlist List of descriptors.
         //! @param [in] charset If not zero, default character set to use.
         //!
-        void splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = 0) const;
+        void splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = nullptr) const;
 
         //!
         //! Normalize all ExtendedEventDescriptor in a descriptor list.
@@ -89,7 +89,7 @@ namespace ts {
         //! @param [in] desc_list_size Descriptor list size in bytes.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharset* charset = 0);
+        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharset* charset = nullptr);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

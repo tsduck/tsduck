@@ -145,7 +145,7 @@ ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, const allocator_type
 template <class CONTAINER>
 void ts::UString::split(CONTAINER& container, UChar separator, bool trimSpaces, bool removeEmpty) const
 {
-    const UChar* sep = 0;
+    const UChar* sep = nullptr;
     const UChar* input = c_str();
     container.clear();
 
@@ -174,7 +174,7 @@ void ts::UString::split(CONTAINER& container, UChar separator, bool trimSpaces, 
 template <class CONTAINER>
 void ts::UString::splitBlocks(CONTAINER& container, UChar startWith, UChar endWith, bool trimSpaces) const
 {
-    const UChar *sep = 0;
+    const UChar *sep = nullptr;
     const UChar* input = c_str();
     container.clear();
 

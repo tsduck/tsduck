@@ -250,7 +250,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 
 bool ts::PCRExtractPlugin::start()
 {
-    getPIDSet(_pids, u"pid", true);
+    getIntValues(_pids, u"pid", true);
     _all_pids = !present(u"pid");
     _separator = value(u"separator", DEFAULT_SEPARATOR);
     _noheader = present(u"noheader");

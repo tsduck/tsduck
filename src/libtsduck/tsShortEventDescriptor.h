@@ -68,7 +68,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        ShortEventDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        ShortEventDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Split the content into several ShortEventDescriptor.
@@ -77,7 +77,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to use.
         //! @return The number of descriptors.
         //!
-        size_t splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = 0) const;
+        size_t splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = nullptr) const;
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

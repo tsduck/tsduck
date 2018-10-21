@@ -172,7 +172,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to use.
         //! @return True if the size has the required length and has been serialized.
         //!
-        static bool SerializeFixedLength(ByteBlock& bb, const UString& str, const size_t size, const DVBCharset* charset = 0);
+        static bool SerializeFixedLength(ByteBlock& bb, const UString& str, const size_t size, const DVBCharset* charset = nullptr);
 
         //!
         //! This abstract method serializes a 3-byte language or country code.
@@ -181,7 +181,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to use.
         //! @return True if the size has the required length and has been serialized.
         //!
-        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, const DVBCharset* charset = 0)
+        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, const DVBCharset* charset = nullptr)
         {
             return SerializeFixedLength(bb, str, 3, charset);
         }

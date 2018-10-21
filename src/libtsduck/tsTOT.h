@@ -65,7 +65,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TOT(const BinaryTable& table, const DVBCharset* charset = 0);
+        TOT(const BinaryTable& table, const DVBCharset* charset = nullptr);
 
         //!
         //! Copy constructor.

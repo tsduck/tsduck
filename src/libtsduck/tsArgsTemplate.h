@@ -126,6 +126,33 @@ void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 
 
 //----------------------------------------------------------------------------
+// Get all occurences of an option as a bitmask of values.
+//----------------------------------------------------------------------------
+
+template <std::size_t N>
+void ts::Args::getIntValues(std::bitset<N>& values, const UChar* name, bool defValue) const
+{
+    const IOption& opt(getIOption(name));
+
+    if (!opt.values.empty()) {
+        values.reset();
+        for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
+            size_t x = 0;
+            if (it->set() && it->value().toInteger(x, THOUSANDS_SEPARATORS) && x < values.size()) {
+                values.set(x);
+            }
+        }
+    }
+    else if (defValue) {
+        values.set();
+    }
+    else {
+        values.reset();
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get an OR'ed of all values of an integer option.
 //----------------------------------------------------------------------------
 

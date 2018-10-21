@@ -81,7 +81,8 @@ linux {
     LIBS += -lrt -ldl
 }
 mac {
-    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
+    QMAKE_CXXFLAGS_WARN_ON += -Weverything -Wno-unused-command-line-argument -Wno-c++98-compat \
+        -Wno-c++98-compat-pedantic -Wno-conversion -Wno-sign-conversion -Wno-date-time
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/mac -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/mac
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib

@@ -265,7 +265,7 @@ bool ts::MPEPlugin::getOptions()
     getIntValue(_dump_max, u"dump-max", NPOS);
     getIntValue(_skip_size, u"skip");
     getIntValue(_ttl, u"ttl");
-    getPIDSet(_pids, u"pid");
+    getIntValues(_pids, u"pid");
     const UString ipSource(value(u"source"));
     const UString ipDest(value(u"destination"));
     const UString ipForward(value(u"redirect"));

@@ -119,7 +119,7 @@ bool ts::PatternPlugin::start()
     _offset_pusi = intValue<uint8_t>(u"offset-pusi", 0);
     _offset_non_pusi = intValue<uint8_t>(u"offset-non-pusi", 0);
 
-    getPIDSet(_pid_list, u"pid", true);
+    getIntValues(_pid_list, u"pid", true);
     if (present(u"negate")) {
         _pid_list.flip();
     }

@@ -63,7 +63,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        NPTReferenceDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        NPTReferenceDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Recompute the NPT/STC scale using another NPT_reference_descriptor.
