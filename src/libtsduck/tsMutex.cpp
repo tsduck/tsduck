@@ -195,7 +195,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
             ::timespec tspec;
             tspec.tv_sec = time_t(remain / NanoSecPerSec);
             tspec.tv_nsec = long(remain % NanoSecPerSec);
-            if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
+            if (::nanosleep(&tspec, nullptr) < 0 && errno != EINTR) {
                 // Actual error, not interrupted by a signal
                 throw MutexError(u"nanosleep error", errno);
             }

@@ -290,7 +290,7 @@ void ts::UserInterrupt::deactivate ()
     act.sa_flags = 0;
     sigemptyset(&act.sa_mask);
 
-    if (::sigaction(SIGINT, &act, NULL) < 0) {
+    if (::sigaction(SIGINT, &act, nullptr) < 0) {
         ::perror("Error resetting SIGINT handler");
         ::exit(EXIT_FAILURE);
     }

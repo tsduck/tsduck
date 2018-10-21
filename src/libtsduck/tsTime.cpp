@@ -383,7 +383,7 @@ ts::Time ts::Time::CurrentUTC()
 #else
 
     ::timeval result;
-    if (::gettimeofday(&result, NULL) < 0) {
+    if (::gettimeofday(&result, nullptr) < 0) {
         throw TimeError(u"gettimeofday error", errno);
     }
     return Time(int64_t(result.tv_usec) + 1000000 * int64_t(result.tv_sec));

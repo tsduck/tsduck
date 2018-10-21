@@ -712,7 +712,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     }
 
     // Wait at least 15ms.
-    ::nanosleep(&delay, NULL);
+    ::nanosleep(&delay, nullptr);
 
     // Send tone burst: A for satellite 0, B for satellite 1.
     // Notes:
@@ -732,7 +732,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     }
 
     // Wait 15ms
-    ::nanosleep(&delay, NULL);
+    ::nanosleep(&delay, nullptr);
 
     // Send DiSEqC commands. See DiSEqC spec ...
     const bool high_band = params.lnb.useHighBand(params.frequency);
@@ -754,7 +754,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     }
 
     // Wait 15ms
-    ::nanosleep(&delay, NULL);
+    ::nanosleep(&delay, nullptr);
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
     if (::ioctl_fe_set_tone(_frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {

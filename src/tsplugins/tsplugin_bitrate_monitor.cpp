@@ -175,7 +175,7 @@ bool ts::BitrateMonitorPlugin::start()
 
     _periodic_countdown = _periodic_bitrate;
     _last_bitrate_status = IN_RANGE;
-    _last_second = time(NULL);
+    _last_second = ::time(nullptr);
     _startup = true;
 
     return true;
@@ -269,7 +269,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
 ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    time_t now = time(NULL);
+    time_t now = ::time(nullptr);
 
     // NOTE : the computation method used here is meaningful only if at least
     // one packet is received per second (whatever its PID).

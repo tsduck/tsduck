@@ -134,9 +134,9 @@ ts::SysInfo::SysInfo() :
     size_t len;
     mib[0] = CTL_KERN;
     mib[1] = KERN_OSRELEASE;
-    if (::sysctl(mib, 2, NULL, &len, NULL, 0) == 0 ) {
+    if (::sysctl(mib, 2, nullptr, &len, nullptr, 0) == 0 ) {
         std::string version(len, 0);
-        if (::sysctl(mib, 2, &version[0], &len, NULL, 0) == 0 ) {
+        if (::sysctl(mib, 2, &version[0], &len, nullptr, 0) == 0 ) {
             const bool wasEmpty = _systemVersion.empty();
             if (!wasEmpty) {
                 _systemVersion += u" (";
