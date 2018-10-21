@@ -123,7 +123,7 @@ void MPEPacketTest::testBuild()
     CPPUNIT_ASSERT_EQUAL(uint16_t(7920), mpe.sourceUDPPort());
     CPPUNIT_ASSERT_EQUAL(uint16_t(4654), mpe.destinationUDPPort());
     CPPUNIT_ASSERT_EQUAL(sizeof(ref), mpe.udpMessageSize());
-    CPPUNIT_ASSERT(mpe.udpMessage() != 0);
+    CPPUNIT_ASSERT(mpe.udpMessage() != nullptr);
     CPPUNIT_ASSERT_EQUAL(0, ::memcmp(mpe.udpMessage(), ref, mpe.udpMessageSize()));
 
     ts::Section sect;
@@ -139,6 +139,6 @@ void MPEPacketTest::testBuild()
     CPPUNIT_ASSERT_EQUAL(uint16_t(7920), mpe2.sourceUDPPort());
     CPPUNIT_ASSERT_EQUAL(uint16_t(4654), mpe2.destinationUDPPort());
     CPPUNIT_ASSERT_EQUAL(sizeof(ref), mpe2.udpMessageSize());
-    CPPUNIT_ASSERT(mpe2.udpMessage() != 0);
+    CPPUNIT_ASSERT(mpe2.udpMessage() != nullptr);
     CPPUNIT_ASSERT_EQUAL(0, ::memcmp(mpe2.udpMessage(), ref, mpe2.udpMessageSize()));
 }

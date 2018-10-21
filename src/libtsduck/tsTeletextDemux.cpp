@@ -163,7 +163,7 @@ int ts::TeletextDemux::pageBinaryToBcd(int bin)
 //-----------------------------------------------------------------------------
 
 ts::TeletextDemux::TeletextDemux(TeletextHandlerInterface* handler, const PIDSet& pidFilter) :
-    SuperClass(0, pidFilter),
+    SuperClass(nullptr, pidFilter),
     _txtHandler(handler),
     _pids(),
     _addColors(false)
@@ -572,9 +572,9 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
                         {u'<', u"&lt;"},
                         {u'>', u"&gt;"},
                         {u'&', u"&amp;"},
-                        {0, 0}
+                        {0, nullptr}
                     };
-                    for (const HtmlEntity* p = entities; p->entity != 0; ++p) {
+                    for (const HtmlEntity* p = entities; p->entity != nullptr; ++p) {
                         if (v == p->character) {
                             line.append(p->entity);
                             v = 0;  // v < 0x20 won't be printed in next block
@@ -601,7 +601,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
 
     // Now call the user-specified handler.
     // Note that the super class PESDemux has already placed us in "handler context".
-    if (_txtHandler != 0) {
+    if (_txtHandler != nullptr) {
         _txtHandler->handleTeletextMessage(*this, frame);
     }
 }

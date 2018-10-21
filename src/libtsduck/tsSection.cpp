@@ -69,7 +69,7 @@ ts::Section::Section(const Section& sect, CopyShare mode) :
             _data = sect._data;
             break;
         case COPY:
-            _data = sect._is_valid ? new ByteBlock (*sect._data) : 0;
+            _data = sect._is_valid ? new ByteBlock (*sect._data) : nullptr;
             break;
         default:
             // should not get there
@@ -238,7 +238,7 @@ void ts::Section::initialize(PID pid)
     _source_pid = pid;
     _first_pkt = 0;
     _last_pkt = 0;
-    _data = 0;
+    _data = nullptr;
 }
 
 
@@ -248,7 +248,7 @@ void ts::Section::initialize(PID pid)
 
 size_t ts::Section::SectionSize(const void* content, size_t content_size)
 {
-    if (content == 0 || content_size < MIN_SHORT_SECTION_SIZE || content_size > MAX_PRIVATE_SECTION_SIZE) {
+    if (content == nullptr || content_size < MIN_SHORT_SECTION_SIZE || content_size > MAX_PRIVATE_SECTION_SIZE) {
         return 0;
     }
     else {
@@ -296,7 +296,7 @@ void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation
     }
 
     if (!_is_valid) {
-        _data = 0;
+        _data = nullptr;
     }
 }
 
@@ -331,7 +331,7 @@ ts::Section& ts::Section::copy(const Section& sect)
         _source_pid = sect._source_pid;
         _first_pkt = sect._first_pkt;
         _last_pkt = sect._last_pkt;
-        _data = sect._is_valid ? new ByteBlock(*sect._data) : 0;
+        _data = sect._is_valid ? new ByteBlock(*sect._data) : nullptr;
     }
     return *this;
 }
@@ -477,8 +477,8 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
     }
 
     // Section size and content
-    size_t secsize = 3; // short header size
-    ByteBlockPtr secdata(0);
+    size_t secsize = 3;  // short header size
+    ByteBlockPtr secdata;
 
     // Read short header
     uint8_t header[3];

@@ -39,9 +39,9 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::StandaloneTableDemux::StandaloneTableDemux (const PIDSet& pid_filter) :
-    SectionDemux (this, 0, pid_filter),
-    _tables ()
+ts::StandaloneTableDemux::StandaloneTableDemux(const PIDSet& pid_filter) :
+    SectionDemux(this, nullptr, pid_filter),
+    _tables()
 {
 }
 
@@ -66,10 +66,10 @@ void ts::StandaloneTableDemux::reset()
 // Inherited from SectionDemux
 //----------------------------------------------------------------------------
 
-void ts::StandaloneTableDemux::resetPID (PID pid)
+void ts::StandaloneTableDemux::resetPID(PID pid)
 {
     // Reset the demux for the PID
-    SectionDemux::resetPID (pid);
+    SectionDemux::resetPID(pid);
 
     // Removed demuxed tables for this PID
     size_t index = 0;
@@ -87,7 +87,7 @@ void ts::StandaloneTableDemux::resetPID (PID pid)
 // Inherited from TableHandlerInterface
 //----------------------------------------------------------------------------
 
-void ts::StandaloneTableDemux::handleTable (SectionDemux&, const BinaryTable& table)
+void ts::StandaloneTableDemux::handleTable(SectionDemux&, const BinaryTable& table)
 {
-    _tables.push_back (new BinaryTable (table, SHARE));
+    _tables.push_back(new BinaryTable(table, SHARE));
 }

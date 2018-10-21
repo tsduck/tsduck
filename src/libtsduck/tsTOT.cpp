@@ -177,7 +177,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Get descriptor list.
     // Build a descriptor list.
-    DescriptorList dlist(0);
+    DescriptorList dlist(nullptr);
     dlist.add(data, length);
     addDescriptors(dlist);
 
@@ -210,7 +210,7 @@ void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
     remain -= MJD_SIZE;
 
     // Build a descriptor list.
-    DescriptorList dlist(0);
+    DescriptorList dlist(nullptr);
 
     // Add all regions in one or more local_time_offset_descriptor.
     LocalTimeOffsetDescriptor lto;

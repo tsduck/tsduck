@@ -89,7 +89,7 @@ namespace ts {
         //! Check if the generator is open and ready to output frames.
         //! @return True if the generator is open and ready.
         //!
-        bool isOpen() { return _stream != 0; }
+        bool isOpen() { return _stream != nullptr; }
 
         //!
         //! Add a multi-lines subtitle frame.

@@ -242,7 +242,7 @@ namespace ts {
         //! @return Address of the binary content of the complete network datagram.
         //! May be invalidated after modification in section.
         //!
-        const uint8_t* datagram() const { return _is_valid && !_datagram.isNull() ? _datagram->data() : 0; }
+        const uint8_t* datagram() const { return _is_valid && !_datagram.isNull() ? _datagram->data() : nullptr; }
 
         //!
         //! Size of the binary content of the complete network datagram.
@@ -268,7 +268,7 @@ namespace ts {
 
         // Locate UDP payload and size in a datagram.
         // Output parameters are optional. Return false on error.
-        static bool FindUDP(const uint8_t* dgAddress, size_t dgSize, const uint8_t** udpHeader = 0, const uint8_t** udpAddress = 0, size_t* udpSize = 0);
+        static bool FindUDP(const uint8_t* dgAddress, size_t dgSize, const uint8_t** udpHeader = nullptr, const uint8_t** udpAddress = nullptr, size_t* udpSize = nullptr);
 
         // Make sure the UDP datagram is valid.
         // If not valid, reallocate a new datagram area.
@@ -278,8 +278,8 @@ namespace ts {
 
         // Locate UDP payload and size in our datagram.
         // Output parameters are optional. Return false on error.
-        bool findUDP(const uint8_t** udpHeader = 0, const uint8_t** udpAddress = 0, size_t* udpSize = 0) const;
-        bool findUDP(uint8_t** udpHeader = 0, uint8_t** udpAddress = 0, size_t* udpSize = 0);
+        bool findUDP(const uint8_t** udpHeader = nullptr, const uint8_t** udpAddress = nullptr, size_t* udpSize = nullptr) const;
+        bool findUDP(uint8_t** udpHeader = nullptr, uint8_t** udpAddress = nullptr, size_t* udpSize = nullptr);
 
         // Inaccessible operations
         MPEPacket(const MPEPacket&) = delete;

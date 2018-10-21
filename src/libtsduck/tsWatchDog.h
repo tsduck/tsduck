@@ -66,7 +66,7 @@ namespace ts {
         //! The id is not interpreted by the watchdog, it is only stored for the application.
         //! @param [in,out] log Log report.
         //!
-        WatchDog(WatchDogHandlerInterface* handler = 0, MilliSecond timeout = 0, int id = 0, Report& log = NULLREP);
+        WatchDog(WatchDogHandlerInterface* handler = nullptr, MilliSecond timeout = 0, int id = 0, Report& log = NULLREP);
 
         //!
         //! Destructor.

@@ -59,7 +59,7 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     title(),
     suspect_min_error_count(1),
     suspect_max_consecutive(1),
-    default_charset(0)
+    default_charset(nullptr)
 {
 }
 
@@ -204,7 +204,7 @@ void ts::TSAnalyzerOptions::load(Args& args)
 
     // Get default DVB character set.
     const UString csName(args.value(u"default-charset"));
-    if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
+    if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == nullptr) {
         args.error(u"invalid character set name '%s", {csName});
     }
 

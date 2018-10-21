@@ -213,7 +213,7 @@ int MainCode(int argc, char *argv[])
     // Establish communication with PC/SC
 
     ::SCARDCONTEXT pcsc_context;
-    ::LONG sc_status = ::SCardEstablishContext(SCARD_SCOPE_SYSTEM, 0, 0, &pcsc_context);
+    ::LONG sc_status = ::SCardEstablishContext(SCARD_SCOPE_SYSTEM, nullptr, nullptr, &pcsc_context);
 
     if (!Check(sc_status, opt, u"SCardEstablishContext")) {
         return EXIT_FAILURE;

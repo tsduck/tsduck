@@ -230,7 +230,7 @@ bool ts::MD5::getHash (void* hash, size_t bufsize, size_t* retsize)
         PutUInt32LE (out + 4*i, _state[i]);
     }
 
-    if (retsize != 0) {
+    if (retsize != nullptr) {
         *retsize = HASH_SIZE;
     }
     return true;

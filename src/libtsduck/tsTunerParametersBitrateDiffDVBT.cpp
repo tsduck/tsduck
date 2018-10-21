@@ -56,7 +56,7 @@ ts::TunerParametersBitrateDiffDVBT::TunerParametersBitrateDiffDVBT() :
 void ts::TunerParametersBitrateDiffDVBT::copy(const TunerParameters& obj)
 {
     const TunerParametersBitrateDiffDVBT* other = dynamic_cast <const TunerParametersBitrateDiffDVBT*> (&obj);
-    if (other == 0) {
+    if (other == nullptr) {
         throw IncompatibleTunerParametersError(u"BitrateDiff DVBT != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {

@@ -267,7 +267,7 @@ void ts::ServiceDiscovery::processPMT(const PMT& pmt)
     _pmt = pmt;
 
     // Notify the application.
-    if (_pmtHandler != 0) {
+    if (_pmtHandler != nullptr) {
         _pmtHandler->handlePMT(_pmt);
     }
 }

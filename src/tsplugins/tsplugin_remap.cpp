@@ -261,7 +261,7 @@ ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer(PID pid, bo
         return ptr;
     }
     else {
-        return CyclingPacketizerPtr(0);
+        return CyclingPacketizerPtr(nullptr);
     }
 }
 
@@ -329,7 +329,7 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             // Process the PMT content
             processDescriptors(pmt.descs, TID_PMT);
             pmt.pcr_pid = remap(pmt.pcr_pid);
-            PMT::StreamMap new_map(0);
+            PMT::StreamMap new_map(nullptr);
             for (PMT::StreamMap::iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                 processDescriptors(it->second.descs, TID_PMT);
                 new_map[remap(it->first)] = it->second;

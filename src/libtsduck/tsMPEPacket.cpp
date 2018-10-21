@@ -145,13 +145,13 @@ bool ts::MPEPacket::FindUDP(const uint8_t* dgAddress, size_t dgSize, const uint8
     }
 
     // Found a valid UDP datagram.
-    if (udpHeader != 0) {
+    if (udpHeader != nullptr) {
         *udpHeader = dgAddress + ipHeaderSize;
     }
-    if (udpAddress != 0) {
+    if (udpAddress != nullptr) {
         *udpAddress = dgAddress + ipHeaderSize + UDP_HEADER_SIZE;
     }
-    if (udpSize != 0) {
+    if (udpSize != nullptr) {
         *udpSize = length - UDP_HEADER_SIZE;
     }
     return true;
@@ -192,7 +192,7 @@ ts::MPEPacket& ts::MPEPacket::copy(const MPEPacket& other)
         _is_valid = other._is_valid;
         _source_pid = other._source_pid;
         _dest_mac = other._dest_mac;
-        _datagram = other._is_valid ? new ByteBlock(*other._datagram) : 0;
+        _datagram = other._is_valid ? new ByteBlock(*other._datagram) : nullptr;
     }
     return *this;
 }
@@ -395,13 +395,13 @@ void ts::MPEPacket::setDestinationIPAddress(const IPAddress& ip)
 uint16_t ts::MPEPacket::sourceUDPPort() const
 {
     // Source port in bytes 0-1 of UDP header.
-    const uint8_t* udpHeader = 0;
+    const uint8_t* udpHeader = nullptr;
     return findUDP(&udpHeader) ? GetUInt16(udpHeader) : 0;
 }
 
 void ts::MPEPacket::setSourceUDPPort(uint16_t port)
 {
-    uint8_t* udpHeader = 0;
+    uint8_t* udpHeader = nullptr;
     if (findUDP(&udpHeader)) {
         // Source port in bytes 0-1 of UDP header.
         PutUInt16(udpHeader, port);
@@ -413,13 +413,13 @@ void ts::MPEPacket::setSourceUDPPort(uint16_t port)
 uint16_t ts::MPEPacket::destinationUDPPort() const
 {
     // Destination port in bytes 2-3 of UDP header.
-    const uint8_t* udpHeader = 0;
+    const uint8_t* udpHeader = nullptr;
     return findUDP(&udpHeader) ? GetUInt16(udpHeader + 2) : 0;
 }
 
 void ts::MPEPacket::setDestinationUDPPort(uint16_t port)
 {
-    uint8_t* udpHeader = 0;
+    uint8_t* udpHeader = nullptr;
     if (findUDP(&udpHeader)) {
         // Destination port in bytes 2-3 of UDP header.
         PutUInt16(udpHeader + 2, port);
@@ -470,14 +470,14 @@ void ts::MPEPacket::setDestinationSocket(const SocketAddress& sock)
 
 const uint8_t* ts::MPEPacket::udpMessage() const
 {
-    const uint8_t* addr = 0;
-    return findUDP(0, &addr) ? addr : 0;
+    const uint8_t* addr = nullptr;
+    return findUDP(nullptr, &addr) ? addr : nullptr;
 }
 
 size_t ts::MPEPacket::udpMessageSize() const
 {
     size_t size = 0;
-    return findUDP(0, 0, &size) ? size : 0;
+    return findUDP(nullptr, nullptr, &size) ? size : 0;
 }
 
 
@@ -487,7 +487,7 @@ size_t ts::MPEPacket::udpMessageSize() const
 
 bool ts::MPEPacket::setUDPMessage(const uint8_t* data, size_t size)
 {
-    if (data == 0 || size > 0xFFFF - IPv4_MIN_HEADER_SIZE - UDP_HEADER_SIZE) {
+    if (data == nullptr || size > 0xFFFF - IPv4_MIN_HEADER_SIZE - UDP_HEADER_SIZE) {
         // Incorrect parameters.
         return false;
     }
@@ -496,10 +496,10 @@ bool ts::MPEPacket::setUDPMessage(const uint8_t* data, size_t size)
         configureUDP(true, size);
 
         // Locate UDP payload.
-        uint8_t* udpAddress = 0;
+        uint8_t* udpAddress = nullptr;
         size_t udpSize = 0;
-        findUDP(0, &udpAddress, &udpSize);
-        assert(udpAddress != 0);
+        findUDP(nullptr, &udpAddress, &udpSize);
+        assert(udpAddress != nullptr);
         assert(udpSize == size);
 
         // Replace UDP payload.

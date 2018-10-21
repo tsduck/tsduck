@@ -36,7 +36,7 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = 0;
+ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 
 // On UNIX platforms, we use a semaphore (sem_t). On MacOS, the address of the
 // semaphore is returned by sep_open. On other UNIX, the semaphore instance is
@@ -59,7 +59,7 @@ void ts::UserInterrupt::sysHandler(int sig)
 {
     // There should be one active instance but just check...
     UserInterrupt* ui = _active_instance;
-    if (ui == 0) {
+    if (ui == nullptr) {
         return;
     }
 
@@ -97,7 +97,7 @@ void ts::UserInterrupt::main()
             // Set interrupted state
             _interrupted = true;
             // Notify the application handler
-            if (_handler != 0) {
+            if (_handler != nullptr) {
                 _handler->handleInterrupt();
             }
             if (_one_shot) {
@@ -200,7 +200,7 @@ void ts::UserInterrupt::activate()
 
     // Ensure that there is only one active instance at a time
     Guard lock(SingletonManager::Instance()->mutex);
-    if (_active_instance != 0) {
+    if (_active_instance != nullptr) {
         return;
     }
 
@@ -223,7 +223,7 @@ void ts::UserInterrupt::activate()
 #if defined(TS_MAC)
     // MacOS no longer supports unnamed semaphores, we need to use a named one.
     _sem_address = ::sem_open(_sem_name.c_str(), O_CREAT, 0700, 0);
-    if (_sem_address == SEM_FAILED || _sem_address == 0) {
+    if (_sem_address == SEM_FAILED || _sem_address == nullptr) {
         ::perror("Error initializing SIGINT semaphore");
         ::exit(EXIT_FAILURE);
     }
@@ -240,7 +240,7 @@ void ts::UserInterrupt::activate()
     act.sa_flags = _one_shot ? SA_ONESHOT : 0;
     sigemptyset(&act.sa_mask);
 
-    if (::sigaction(SIGINT, &act, 0) < 0) {
+    if (::sigaction(SIGINT, &act, nullptr) < 0) {
         ::perror("Error setting SIGINT handler");
         ::exit(EXIT_FAILURE);
     }
@@ -325,5 +325,5 @@ void ts::UserInterrupt::deactivate ()
 
     // Now inactive
     _active = false;
-    _active_instance = 0;
+    _active_instance = nullptr;
 }

@@ -99,7 +99,7 @@ namespace ts {
 
         // Decode an option "pid/value[/hexa]". Hexa is allowed only if hexa is non zero.
         template<typename INT>
-        bool decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& value, ByteBlock* hexa = 0);
+        bool decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& value, ByteBlock* hexa = nullptr);
 
         // Decode options like --set-stream-identifier which add a simple descriptor in a component.
         template<typename DESCRIPTOR, typename INT>
@@ -122,7 +122,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pmt, ts::PMTPlugin)
 
 ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     AbstractTablePlugin(tsp_, u"Perform various transformations on the PMT", u"[options]", u"PMT"),
-    _service(0, *tsp_),
+    _service(nullptr, *tsp_),
     _removed_pid(),
     _removed_desc(),
     _removed_stream(),
@@ -137,7 +137,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _ac3_atsc2dvb(false),
     _eac3_atsc2dvb(false),
     _cleanup_priv_desc(false),
-    _add_descs(0),
+    _add_descs(nullptr),
     _add_pid_descs(),
     _languages()
 {
@@ -268,7 +268,7 @@ void ts::PMTPlugin::addComponentDescriptor(PID pid, const AbstractDescriptor& de
 {
     // Get or create descriptor list for the component.
     if (_add_pid_descs[pid].isNull()) {
-        _add_pid_descs[pid] = new DescriptorList(0);
+        _add_pid_descs[pid] = new DescriptorList(nullptr);
     }
 
     // Add the new descriptor.
@@ -292,7 +292,7 @@ bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t param
 
     // Check number of fields.
     const size_t count = fields.size();
-    bool ok = (hexa == 0 && count == 2) || (hexa != 0 && (count == 2 || count == 3));
+    bool ok = (hexa == nullptr && count == 2) || (hexa != nullptr && (count == 2 || count == 3));
 
     // Get first two parameters.
     if (ok) {
@@ -308,7 +308,7 @@ bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t param
     }
 
     // Get third parameter.
-    if (ok && hexa != 0) {
+    if (ok && hexa != nullptr) {
         if (count < 3) {
             hexa->clear();
         }

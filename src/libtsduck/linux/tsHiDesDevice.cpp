@@ -160,9 +160,9 @@ ts::HiDesDevice::HiDesDevice() :
 ts::HiDesDevice::~HiDesDevice()
 {
     // Free internal resources.
-    if (_guts != 0) {
+    if (_guts != nullptr) {
         delete _guts;
-        _guts = 0;
+        _guts = nullptr;
     }
 }
 
@@ -820,7 +820,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
     while (remain > 0) {
 
         // Abort on user's request.
-        if (abort != 0 && abort->aborting()) {
+        if (abort != nullptr && abort->aborting()) {
             report.debug(u"HiDesDevice: user requested abort");
             return false;
         }

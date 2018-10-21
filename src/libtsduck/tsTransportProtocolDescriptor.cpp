@@ -533,6 +533,6 @@ void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element)
         _is_valid =
             proto[0]->getIntAttribute<uint16_t>(protocol_id, u"id", true) &&
             proto[0]->getHexaText(selector) &&
-            transferSelectorBytes(0);
+            transferSelectorBytes(nullptr);
     }
 }

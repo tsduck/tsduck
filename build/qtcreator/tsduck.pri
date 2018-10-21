@@ -66,7 +66,8 @@ linux|mac|mingw {
     GCC_MAJOR = $$member(GCC_FIELDS, 0)
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra -Wformat-security -Wswitch-default \
         -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wpointer-arith -Wsign-promo \
-        -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual
+        -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual \
+        -Wzero-as-null-pointer-constant
     greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
     QMAKE_CXXFLAGS += $$system(curl-config --cflags)
@@ -81,7 +82,7 @@ linux {
     LIBS += -lrt -ldl
 }
 mac {
-    QMAKE_CXXFLAGS_WARN_ON += -Wzero-as-null-pointer-constant -Wno-unused-command-line-argument
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/mac -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/mac
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib

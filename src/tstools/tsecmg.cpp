@@ -375,7 +375,7 @@ void ECMGClientHandler::main()
     // Loop on message reception
     ts::tlv::MessagePtr msg;
     bool ok = true;
-    while (ok && _conn->receive(msg, 0, _shared->logger())) {
+    while (ok && _conn->receive(msg, nullptr, _shared->logger())) {
         switch (msg->tag()) {
             case ts::ecmgscs::Tags::channel_setup:
                 ok = handleChannelSetup(dynamic_cast<ts::ecmgscs::ChannelSetup*>(msg.pointer()));
@@ -431,21 +431,21 @@ void ECMGClientHandler::main()
 
 bool ECMGClientHandler::sendErrorResponse(const ts::tlv::Message* msg, uint16_t errorStatus)
 {
-    const ts::tlv::ChannelMessage* channelMsg = 0;
-    const ts::tlv::StreamMessage* streamMsg = 0;
+    const ts::tlv::ChannelMessage* channelMsg = nullptr;
+    const ts::tlv::StreamMessage* streamMsg = nullptr;
     ts::ecmgscs::ChannelError channelError;
     ts::ecmgscs::StreamError streamError;
-    ts::tlv::Message* resp = 0;
+    ts::tlv::Message* resp = nullptr;
 
     // Build the appropriate response.
-    if ((streamMsg = dynamic_cast<const ts::tlv::StreamMessage*>(msg)) != 0) {
+    if ((streamMsg = dynamic_cast<const ts::tlv::StreamMessage*>(msg)) != nullptr) {
         // Response to a stream message.
         streamError.channel_id = streamMsg->channel_id;
         streamError.stream_id = streamMsg->stream_id;
         streamError.error_status.push_back(errorStatus);
         resp = &streamError;
     }
-    else if ((channelMsg = dynamic_cast<const ts::tlv::ChannelMessage*>(msg)) != 0) {
+    else if ((channelMsg = dynamic_cast<const ts::tlv::ChannelMessage*>(msg)) != nullptr) {
         // Response to a channel message.
         channelError.channel_id = channelMsg->channel_id;
         channelError.error_status.push_back(errorStatus);
@@ -469,7 +469,7 @@ bool ECMGClientHandler::sendErrorResponse(const ts::tlv::Message* msg, uint16_t 
 
 bool ECMGClientHandler::handleChannelSetup(ts::ecmgscs::ChannelSetup* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel.set()) {
         // Channel already set in this session.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
@@ -490,7 +490,7 @@ bool ECMGClientHandler::handleChannelSetup(ts::ecmgscs::ChannelSetup* msg)
 
 bool ECMGClientHandler::handleChannelTest(ts::ecmgscs::ChannelTest* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel != msg->channel_id) {
         // Not the right channel.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
@@ -507,7 +507,7 @@ bool ECMGClientHandler::handleChannelTest(ts::ecmgscs::ChannelTest* msg)
 
 bool ECMGClientHandler::handleChannelClose(ts::ecmgscs::ChannelClose* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel != msg->channel_id) {
         // Not the right channel.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
@@ -524,7 +524,7 @@ bool ECMGClientHandler::handleChannelClose(ts::ecmgscs::ChannelClose* msg)
 
 bool ECMGClientHandler::handleStreamSetup(ts::ecmgscs::StreamSetup* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel != msg->channel_id) {
         // Not the right channel.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
@@ -547,7 +547,7 @@ bool ECMGClientHandler::handleStreamSetup(ts::ecmgscs::StreamSetup* msg)
 
 bool ECMGClientHandler::handleStreamTest(ts::ecmgscs::StreamTest* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel != msg->channel_id) {
         // Not the right channel.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
@@ -569,7 +569,7 @@ bool ECMGClientHandler::handleStreamTest(ts::ecmgscs::StreamTest* msg)
 
 bool ECMGClientHandler::handleStreamCloseRequest(ts::ecmgscs::StreamCloseRequest* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel != msg->channel_id) {
         // Not the right channel.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
@@ -591,7 +591,7 @@ bool ECMGClientHandler::handleStreamCloseRequest(ts::ecmgscs::StreamCloseRequest
 
 bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
 {
-    assert(msg != 0);
+    assert(msg != nullptr);
     if (_channel != msg->channel_id) {
         // Not the right channel.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);

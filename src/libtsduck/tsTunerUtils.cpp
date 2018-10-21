@@ -105,7 +105,7 @@ ts::TunerParameters* ts::DecodeDeliveryDescriptor(const Descriptor& desc)
 {
     // All delivery system descriptors have a common payload size of 11 bytes.
     if (!desc.isValid() || desc.payloadSize() < 11) {
-        return 0;
+        return nullptr;
     }
     const uint8_t* data = desc.payload();
 
@@ -266,7 +266,7 @@ ts::TunerParameters* ts::DecodeDeliveryDescriptor(const Descriptor& desc)
 
         default: {
             // Not a known delivery descriptor
-            return 0;
+            return nullptr;
         }
     }
 }

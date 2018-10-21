@@ -63,7 +63,7 @@ namespace ts {
             //! @param [in] comp Composition page identifier.
             //! @param [in] ancil Ancillary page identifier.
             //!
-            Entry(const UChar* code = 0, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
+            Entry(const UChar* code = nullptr, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
 
             //!
             //! Default constructor.

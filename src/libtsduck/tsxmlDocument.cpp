@@ -44,19 +44,19 @@ TSDUCK_SOURCE;
 bool ts::xml::Document::parse(const UStringList& lines)
 {
     TextParser parser(lines, _report);
-    return parseNode(parser, 0);
+    return parseNode(parser, nullptr);
 }
 
 bool ts::xml::Document::parse(const UString& text)
 {
     TextParser parser(text, _report);
-    return parseNode(parser, 0);
+    return parseNode(parser, nullptr);
 }
 
 bool ts::xml::Document::load(std::istream& strm)
 {
     TextParser parser(_report);
-    return parser.loadStream(strm) && parseNode(parser, 0);
+    return parser.loadStream(strm) && parseNode(parser, nullptr);
 }
 
 bool ts::xml::Document::load(const UString& fileName, bool search)
@@ -72,7 +72,7 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
 
     // Parse the document from the file.
     TextParser parser(_report);
-    return parser.loadFile(actualFileName) && parseNode(parser, 0);
+    return parser.loadFile(actualFileName) && parseNode(parser, nullptr);
 }
 
 
@@ -85,7 +85,7 @@ void ts::xml::Document::print(TextFormatter& output, bool keepNodeOpen) const
     // Simply print all children one by one without encapsulation.
     // If keepNodeOpen is true, leave the last child open.
     const Node* last = lastChild();
-    for (const Node* node = firstChild(); node != 0; node = node->nextSibling()) {
+    for (const Node* node = firstChild(); node != nullptr; node = node->nextSibling()) {
         const bool keep = keepNodeOpen && node == last;
         node->print(output, keep);
         if (!keep) {
@@ -98,7 +98,7 @@ void ts::xml::Document::printClose(TextFormatter& output, size_t levels) const
 {
     // Close the last child.
     const Node* last = lastChild();
-    if (last != 0) {
+    if (last != nullptr) {
         last->printClose(output, levels);
     }
 }
@@ -126,12 +126,12 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
     Node* child = firstChild();
 
     // First, skip all leading declarations and comments (and unknown DTD).
-    while (dynamic_cast<Declaration*>(child) != 0 || dynamic_cast<Comment*>(child) != 0 || dynamic_cast<Unknown*>(child) != 0) {
+    while (dynamic_cast<Declaration*>(child) != nullptr || dynamic_cast<Comment*>(child) != nullptr || dynamic_cast<Unknown*>(child) != nullptr) {
         child = child->nextSibling();
     }
 
     // Check presence of root element.
-    if (dynamic_cast<Element*>(child) == 0) {
+    if (dynamic_cast<Element*>(child) == nullptr) {
         _report.error(u"invalid XML document, no root element found");
         return false;
     }
@@ -140,12 +140,12 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
     child = child->nextSibling();
 
     // Skip all subsequent comments.
-    while (dynamic_cast<Comment*>(child) != 0) {
+    while (dynamic_cast<Comment*>(child) != nullptr) {
         child = child->nextSibling();
     }
 
     // Verify that there is no additional children.
-    if (child != 0) {
+    if (child != nullptr) {
         _report.error(u"line %d: trailing %s, invalid XML document, need one single root element", {child->lineNumber(), child->typeName()});
         return false;
     }
@@ -164,7 +164,7 @@ bool ts::xml::Document::validate(const Document& model) const
     const Element* modelRoot = model.rootElement();
     const Element* docRoot = rootElement();
 
-    if (modelRoot == 0) {
+    if (modelRoot == nullptr) {
         _report.error(u"invalid XML model, no root element");
         return false;
     }
@@ -172,7 +172,7 @@ bool ts::xml::Document::validate(const Document& model) const
         return validateElement(modelRoot, docRoot);
     }
     else {
-        _report.error(u"invalid XML document, expected <%s> as root, found <%s>", {modelRoot->name(), docRoot == 0 ? u"(null)" : docRoot->name()});
+        _report.error(u"invalid XML document, expected <%s> as root, found <%s>", {modelRoot->name(), docRoot == nullptr ? u"(null)" : docRoot->name()});
         return false;
     }
 }
@@ -180,11 +180,11 @@ bool ts::xml::Document::validate(const Document& model) const
 // Validate an XML tree of elements, used by validate().
 bool ts::xml::Document::validateElement(const Element* model, const Element* doc) const
 {
-    if (model == 0) {
+    if (model == nullptr) {
         _report.error(u"invalid XML model document");
         return false;
     }
-    if (doc == 0) {
+    if (doc == nullptr) {
         _report.error(u"invalid XML document");
         return false;
     }
@@ -207,9 +207,9 @@ bool ts::xml::Document::validateElement(const Element* model, const Element* doc
     }
 
     // Check that all children elements in doc exist in model.
-    for (const Element* docChild = doc->firstChildElement(); docChild != 0; docChild = docChild->nextSiblingElement()) {
+    for (const Element* docChild = doc->firstChildElement(); docChild != nullptr; docChild = docChild->nextSiblingElement()) {
         const Element* modelChild = findModelElement(model, docChild->name());
-        if (modelChild == 0) {
+        if (modelChild == nullptr) {
             // The corresponding node does not exist in the model.
             _report.error(u"unexpected node <%s> in <%s>, line %d", {docChild->name(), doc->name(), docChild->lineNumber()});
             success = false;
@@ -234,12 +234,12 @@ namespace {
 const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem, const UString& name) const
 {
     // Filter invalid parameters.
-    if (elem == 0 || name.empty()) {
-        return 0;
+    if (elem == nullptr || name.empty()) {
+        return nullptr;
     }
 
     // Loop on all children.
-    for (const Element* child = elem->firstChildElement(); child != 0; child = child->nextSiblingElement()) {
+    for (const Element* child = elem->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
         if (name.similar(child->name())) {
             // Found the child.
             return child;
@@ -255,16 +255,16 @@ const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem,
             else {
                 // Locate the referenced node inside the model root.
                 const Document* document = elem->document();
-                const Element* root = document == 0 ? 0 : document->rootElement();
-                const Element* refElem = root == 0 ? 0 : root->findFirstChild(refName, true);
-                if (refElem == 0) {
+                const Element* root = document == nullptr ? nullptr : document->rootElement();
+                const Element* refElem = root == nullptr ? nullptr : root->findFirstChild(refName, true);
+                if (refElem == nullptr) {
                     // The referenced element does not exist.
                     _report.error(u"invalid XML model, <%s> not found in model root, referenced in line %d", {refName, child->attribute(TSXML_REF_ATTR).lineNumber()});
                 }
                 else {
                     // Check if the child is found inside the referenced element.
                     const Element* e = findModelElement(refElem, name);
-                    if (e != 0) {
+                    if (e != nullptr) {
                         return e;
                     }
                 }
@@ -273,7 +273,7 @@ const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem,
     }
 
     // Child node not found.
-    return 0;
+    return nullptr;
 }
 
 
@@ -320,7 +320,7 @@ ts::xml::Element* ts::xml::Document::initialize(const UString& rootName, const U
 {
     // Filter incorrect parameters.
     if (rootName.empty()) {
-        return 0;
+        return nullptr;
     }
 
     // Cleanup all previous content of the document.

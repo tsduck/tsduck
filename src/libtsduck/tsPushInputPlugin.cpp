@@ -168,7 +168,7 @@ bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
     // Send packets by chunks, loop until everything is pushed.
     while (count > 0) {
 
-        TSPacket* out_buffer = 0;
+        TSPacket* out_buffer = nullptr;
         size_t out_count = 0;
 
         // Abort now if the application is terminating.
@@ -182,7 +182,7 @@ bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
             return false;
         }
 
-        assert(out_buffer != 0);
+        assert(out_buffer != nullptr);
         assert(out_count > 0);
 
         // Move packets into the queue.

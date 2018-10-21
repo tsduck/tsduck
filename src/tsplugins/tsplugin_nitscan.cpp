@@ -98,7 +98,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Analyze the NIT and output a list of tuning information", u"[options]"),
     _output_name(),
     _output_stream(),
-    _output(0),
+    _output(nullptr),
     _comment_prefix(),
     _variable_prefix(),
     _use_comment(false),

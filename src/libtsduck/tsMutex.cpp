@@ -42,6 +42,12 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
+// The macro PTHREAD_MUTEX_INITIALIZER uses several zeroes as pointers.
+#if defined(TS_GCC)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
+
 ts::Mutex::Mutex() :
     _created(false),
 #if defined(TS_WINDOWS)
@@ -50,6 +56,11 @@ ts::Mutex::Mutex() :
     _mutex(PTHREAD_MUTEX_INITIALIZER)
 #endif
 {
+
+#if defined(TS_GCC)
+    #pragma GCC diagnostic pop
+#endif
+
 #if defined(TS_WINDOWS)
 
     // Windows implementation.

@@ -95,7 +95,7 @@ void ts::tsswitch::CommandListener::main()
     ReportBuffer<NullMutex> error(_log.maxSeverity());
 
     // Loop on incoming messages.
-    while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, 0, error)) {
+    while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, nullptr, error)) {
 
         // Filter out unauthorized remote systems.
         if (!_opt.allowedRemote.empty() && _opt.allowedRemote.find(sender) == _opt.allowedRemote.end()) {

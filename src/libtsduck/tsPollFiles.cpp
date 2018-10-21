@@ -79,7 +79,7 @@ void ts::PollFiles::pollRepeatedly()
 bool ts::PollFiles::pollOnce()
 {
     // Initially update the search criteria from the listener (it there is one).
-    if (_listener != 0) {
+    if (_listener != nullptr) {
         try {
             if (!_listener->updatePollFiles(_files_wildcard, _poll_interval, _min_stable_delay)) {
                 // The listener asks to stop.
@@ -88,7 +88,7 @@ bool ts::PollFiles::pollOnce()
         }
         catch (const std::exception& e) {
             const char* msg = e.what();
-            _report.error(u"Exception in PollFiles listener: %s", {msg == 0 ? "unknown" : msg});
+            _report.error(u"Exception in PollFiles listener: %s", {msg == nullptr ? "unknown" : msg});
         }
     }
 
@@ -142,7 +142,7 @@ bool ts::PollFiles::pollOnce()
     }
 
     // Notify the listener
-    if (!_notified_files.empty() && _listener != 0) {
+    if (!_notified_files.empty() && _listener != nullptr) {
         try {
             if (!_listener->handlePolledFiles(_notified_files)) {
                 // The listener asks to stop.
@@ -151,7 +151,7 @@ bool ts::PollFiles::pollOnce()
         }
         catch (const std::exception& e) {
             const char* msg = e.what();
-            _report.error(u"Exception in PollFiles listener: %s", {msg == 0 ? "unknown" : msg});
+            _report.error(u"Exception in PollFiles listener: %s", {msg == nullptr ? "unknown" : msg});
         }
     }
 

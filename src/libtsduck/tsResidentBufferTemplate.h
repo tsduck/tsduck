@@ -47,9 +47,9 @@
 
 template <typename T>
 ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
-    _allocated_base(0),
-    _locked_base(0),
-    _base(0),
+    _allocated_base(nullptr),
+    _locked_base(nullptr),
+    _base(nullptr),
     _allocated_size(0),
     _locked_size(0),
     _elem_count(elem_count),
@@ -136,14 +136,14 @@ ts::ResidentBuffer<T>::~ResidentBuffer()
     }
 
     // Free memory
-    if (_allocated_base != 0) {
+    if (_allocated_base != nullptr) {
         delete[] _allocated_base;
     }
 
     // Reset state (it explicit call of destructor)
-    _allocated_base = 0;
-    _locked_base = 0;
-    _base = 0;
+    _allocated_base = nullptr;
+    _locked_base = nullptr;
+    _base = nullptr;
     _allocated_size = 0;
     _locked_size = 0;
     _elem_count = 0;

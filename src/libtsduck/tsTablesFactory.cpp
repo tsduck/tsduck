@@ -113,25 +113,25 @@ ts::TablesFactory::Register::Register(const EDID& edid, DisplayDescriptorFunctio
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id) const
 {
     std::map<TID,TableFactory>::const_iterator it = _tableIds.find(id);
-    return it != _tableIds.end() ? it->second : 0;
+    return it != _tableIds.end() ? it->second : nullptr;
 }
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const UString& node_name) const
 {
     std::map<UString,TableFactory>::const_iterator it = node_name.findSimilar(_tableNames);
-    return it != _tableNames.end() ? it->second : 0;
+    return it != _tableNames.end() ? it->second : nullptr;
 }
 
 ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const UString& node_name) const
 {
     std::map<UString,DescriptorFactory>::const_iterator it = node_name.findSimilar(_descriptorNames);
-    return it != _descriptorNames.end() ? it->second : 0;
+    return it != _descriptorNames.end() ? it->second : nullptr;
 }
 
 ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id) const
 {
     std::map<TID,DisplaySectionFunction>::const_iterator it = _sectionDisplays.find(id);
-    return it != _sectionDisplays.end() ? it->second : 0;
+    return it != _sectionDisplays.end() ? it->second : nullptr;
 }
 
 
@@ -195,14 +195,14 @@ FUNCTION ts::TablesFactory::getDescriptorFunction(const EDID& edid, TID tid, con
         // If not found and there is a table-specific name for the descriptor,
         // do not fallback to non-table-specific function for this descriptor.
         if (it == funcMap.end() && (edid.isTableSpecific() || names::HasTableSpecificName(edid.did(), tid))) {
-            return 0;
+            return nullptr;
         }
     }
     if (it == funcMap.end()) {
         // If non-standard or no table-specific descriptor found, use direct lookup.
         it = funcMap.find(edid);
     }
-    return it != funcMap.end() ? it->second : 0;
+    return it != funcMap.end() ? it->second : nullptr;
 }
 
 ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const EDID& edid, TID tid) const

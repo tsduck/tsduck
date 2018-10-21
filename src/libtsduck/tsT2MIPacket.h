@@ -230,7 +230,7 @@ namespace ts {
         //!
         const uint8_t* payload() const
         {
-            return _is_valid ? _data->data() + T2MI_HEADER_SIZE : 0;
+            return _is_valid ? _data->data() + T2MI_HEADER_SIZE : nullptr;
         }
 
         //!
@@ -327,7 +327,7 @@ namespace ts {
         //!
         const uint8_t* basebandFrame() const
         {
-            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 3 ? _data->data() + T2MI_HEADER_SIZE + 3 : 0;
+            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 3 ? _data->data() + T2MI_HEADER_SIZE + 3 : nullptr;
         }
 
         //!

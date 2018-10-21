@@ -113,11 +113,11 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
     SectionHandlerInterface(),
     _output_name(),
     _output_stream(),
-    _output(0),
+    _output(nullptr),
     _cas_args(),
     _analyze_pids(),
-    _analyze_demux(0, this),  // this one intercepts all sections for stuffing analysis
-    _psi_demux(this, 0),      // this one is used for PSI parsing
+    _analyze_demux(nullptr, this),  // this one intercepts all sections for stuffing analysis
+    _psi_demux(this, nullptr),      // this one is used for PSI parsing
     _total(),
     _pid_contexts()
 {

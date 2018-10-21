@@ -61,7 +61,7 @@ void ts::tsswitch::OutputExecutor::main()
     debug(u"output thread started");
 
     size_t pluginIndex = 0;
-    TSPacket* first = 0;
+    TSPacket* first = nullptr;
     size_t count = 0;
 
     // Loop until there are packets to output.

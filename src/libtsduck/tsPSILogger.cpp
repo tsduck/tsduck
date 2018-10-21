@@ -58,7 +58,7 @@ ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& rep
     _received_pmt(0),
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
-    _demux(this, _opt.dump ? this : 0)
+    _demux(this, _opt.dump ? this : nullptr)
 {
     // Open/create the destination
     if (!_display.redirect(_opt.output)) {

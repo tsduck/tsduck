@@ -146,7 +146,7 @@ void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_secti
 // Notify the application if the table is complete.
 void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool force)
 {
-    if (!notified && (sect_received == sect_expected || force) && demux._table_handler != 0) {
+    if (!notified && (sect_received == sect_expected || force) && demux._table_handler != nullptr) {
 
         // Build the table
         BinaryTable table;
@@ -364,7 +364,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     // (example: detect incorrect stream as generated with old version
     // of Thomson Grass Valley NetProcessor).
 
-    const uint8_t* pusi_section = 0;
+    const uint8_t* pusi_section = nullptr;
 
     if (pkt.getPUSI()) {
         pusi_section = ts_start + ts_size - payload_size + pointer_field;
@@ -403,7 +403,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         // If we detect that the section is incorrectly truncated, skip it.
 
-        if (pusi_section != 0 && ts_start < pusi_section && ts_start + section_length > pusi_section) {
+        if (pusi_section != nullptr && ts_start < pusi_section && ts_start + section_length > pusi_section) {
             section_ok = false;
             // Resynchronize to actual section start
             section_length = uint16_t(pusi_section - ts_start);
@@ -472,7 +472,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
             SectionPtr sect_ptr;
 
-            if (section_ok && (_section_handler != 0 || tc.sects[section_number].isNull())) {
+            if (section_ok && (_section_handler != nullptr || tc.sects[section_number].isNull())) {
                 sect_ptr = new Section(ts_start, section_length, pid, CRC32::CHECK);
                 sect_ptr->setFirstTSPacketIndex(pusi_pkt_index);
                 sect_ptr->setLastTSPacketIndex(_packet_count);
@@ -488,7 +488,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             beforeCallingHandler(pid);
             try {
                 // If a handler is defined for sections, invoke it.
-                if (section_ok && _section_handler != 0) {
+                if (section_ok && _section_handler != nullptr) {
                     _section_handler->handleSection(*this, *sect_ptr);
                 }
 

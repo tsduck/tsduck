@@ -775,7 +775,7 @@ COMMON_WARNINGS   = -Werror -Wall -Wextra -Wformat-nonliteral -Wformat-security 
 CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
                     -Wbad-function-cast -Wc++-compat
 CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor \
-                    -Woverloaded-virtual -Wsign-promo
+                    -Woverloaded-virtual -Wsign-promo -Wzero-as-null-pointer-constant
 ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
     # Use these warnings on macOS or with GCC 5.x and higher only.
     # They are supported with GCC 4.x but are totally insane before 5.x.
@@ -783,8 +783,6 @@ ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
     CXXFLAGS_WARNINGS += -Weffc++
 endif
 ifdef MACOS
-    # TODO: need some code cleanup first
-    # COMMON_WARNINGS += -Wzero-as-null-pointer-constant -Wno-unused-command-line-argument
     COMMON_WARNINGS += -Wno-unused-command-line-argument
 else
     CXXFLAGS_WARNINGS += -Wstrict-null-sentinel

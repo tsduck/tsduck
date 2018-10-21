@@ -60,7 +60,7 @@ namespace ts {
             //! @param [in] type Teletext type, 5 bits.
             //! @param [in] page Teletext page number, combination of page and magazine number.
             //!
-            Entry(const UChar* code = 0, uint8_t type = 0, uint16_t page = 0);
+            Entry(const UChar* code = nullptr, uint8_t type = 0, uint16_t page = 0);
 
             //!
             //! Default constructor.

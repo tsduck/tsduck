@@ -312,7 +312,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 {
     DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId());
 
-    if (handler != 0) {
+    if (handler != nullptr) {
         handler(*this, section, indent);
     }
     else {
@@ -614,7 +614,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     // Locate the display handler for this descriptor payload.
     DisplayDescriptorFunction handler = TablesFactory::Instance()->getDescriptorDisplay(edid, tid);
 
-    if (handler != 0) {
+    if (handler != nullptr) {
         handler(*this, did, payload, size, indent, tid, actualPDS(pds));
     }
     else {

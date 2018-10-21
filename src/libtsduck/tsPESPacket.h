@@ -317,7 +317,7 @@ namespace ts {
         //!
         const uint8_t* header() const
         {
-            return _is_valid ? _data->data() : 0;
+            return _is_valid ? _data->data() : nullptr;
         }
 
         //!
@@ -335,7 +335,7 @@ namespace ts {
         //!
         const uint8_t* payload() const
         {
-            return _is_valid ? _data->data() + _header_size : 0;
+            return _is_valid ? _data->data() + _header_size : nullptr;
         }
 
         //!

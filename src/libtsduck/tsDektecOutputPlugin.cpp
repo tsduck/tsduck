@@ -988,7 +988,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 {
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
-    const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository(u"tsp.dvb.params") : 0);
+    const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository(u"tsp.dvb.params") : nullptr);
 
     // Various views of the input modulation parameters (at most one is non-zero)
     const TunerParameters*     input_dvb  = dynamic_cast <const TunerParameters*>(input_params.pointer());
@@ -998,9 +998,9 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     const TunerParametersATSC* input_atsc = dynamic_cast <const TunerParametersATSC*>(input_dvb);
 
     // Adjust default modulation type from input plugin
-    if (input_dvb != 0) {
+    if (input_dvb != nullptr) {
         tsp->debug(u"found input modulator parameters: %s %s", {TunerTypeEnum.name(input_dvb->tunerType()), input_dvb->toPluginOptions()});
-        if (input_dvbs != 0) {
+        if (input_dvbs != nullptr) {
             if (input_dvbs->delivery_system == DS_DVB_S) {
                 modulation_type = DTAPI_MOD_DVBS_QPSK;
             }
@@ -1011,7 +1011,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 modulation_type = DTAPI_MOD_DVBS2_8PSK;
             }
         }
-        else if (input_dvbc != 0) {
+        else if (input_dvbc != nullptr) {
             switch (input_dvbc->modulation) {
                 case QAM_16:  modulation_type = DTAPI_MOD_QAM16;  break;
                 case QAM_32:  modulation_type = DTAPI_MOD_QAM32;  break;
@@ -1021,10 +1021,10 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 default: break;
             }
         }
-        else if (input_dvbt != 0) {
+        else if (input_dvbt != nullptr) {
             modulation_type = DTAPI_MOD_DVBT;
         }
-        else if (input_atsc != 0) {
+        else if (input_atsc != nullptr) {
             modulation_type = DTAPI_MOD_ATSC;
         }
     }
@@ -1074,16 +1074,16 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     else if (present(u"frequency")) {
         frequency = intValue<uint64_t>(u"frequency", 0);
     }
-    else if (input_dvbs != 0) {
+    else if (input_dvbs != nullptr) {
         frequency = input_dvbs->frequency;
     }
-    else if (input_dvbt != 0) {
+    else if (input_dvbt != nullptr) {
         frequency = input_dvbt->frequency;
     }
-    else if (input_dvbc != 0) {
+    else if (input_dvbc != nullptr) {
         frequency = input_dvbc->frequency;
     }
-    else if (input_atsc != 0) {
+    else if (input_atsc != nullptr) {
         frequency = input_atsc->frequency;
     }
     if (frequency == 0) {
@@ -1098,7 +1098,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         case DTAPI_MOD_DVBS_BPSK: {
             // Various types of DVB-S
             int fec = DTAPI_MOD_3_4;
-            if (input_dvbs != 0) {
+            if (input_dvbs != nullptr) {
                 symbol_rate = input_dvbs->symbol_rate;
                 switch (input_dvbs->inner_fec) {
                     case FEC_1_2: fec = DTAPI_MOD_1_2; break;
@@ -1131,7 +1131,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             // Various types of DVB-S2
             int fec = DTAPI_MOD_3_4;
             int pilots = present(u"pilots") ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
-            if (input_dvbs != 0) {
+            if (input_dvbs != nullptr) {
                 symbol_rate = input_dvbs->symbol_rate;
                 switch (input_dvbs->pilots) {
                     case PILOT_ON:  pilots = DTAPI_MOD_S2_PILOTS; break;
@@ -1198,7 +1198,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             int guard = DTAPI_MOD_DVBT_G_1_32;
             int tr_mode = DTAPI_MOD_DVBT_8K;
             TunerParametersBitrateDiffDVBT params;
-            if (use_input_modulation && input_dvbt == 0 && _guts->cur_bitrate > 0) {
+            if (use_input_modulation && input_dvbt == nullptr && _guts->cur_bitrate > 0) {
                 // --input-modulation is specified but input plugin is not a DVB-T tuner,
                 // use input bitrate to determine modulation parameters.
                 TunerParametersBitrateDiffDVBTList params_list;
@@ -1208,7 +1208,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                     input_dvbt = &params;
                 }
             }
-            if (input_dvbt != 0) {
+            if (input_dvbt != nullptr) {
                 switch (input_dvbt->fec_hp) {
                     case FEC_1_2: fec = DTAPI_MOD_1_2; break;
                     case FEC_2_3: fec = DTAPI_MOD_2_3; break;
@@ -1336,7 +1336,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
         case DTAPI_MOD_ATSC: {
             int constel = DTAPI_MOD_ATSC_VSB8;
-            if (input_atsc != 0) {
+            if (input_atsc != nullptr) {
                 switch (input_atsc->modulation) {
                     case VSB_8:  constel = DTAPI_MOD_ATSC_VSB8;  break;
                     case VSB_16: constel = DTAPI_MOD_ATSC_VSB16; break;
@@ -1452,10 +1452,10 @@ bool ts::DektecOutputPlugin::stop()
 
 ts::DektecOutputPlugin::~DektecOutputPlugin()
 {
-    if (_guts != 0) {
+    if (_guts != nullptr) {
         stop();
         delete _guts;
-        _guts = 0;
+        _guts = nullptr;
     }
 }
 

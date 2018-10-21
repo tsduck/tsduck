@@ -138,9 +138,9 @@ void ts::PCRAnalyzer::reset()
     _pcr_pids = 0;
 
     for (size_t i = 0; i < PID_MAX; ++i) {
-        if (_pid[i] != 0) {
+        if (_pid[i] != nullptr) {
             delete _pid[i];
-            _pid[i] = 0;
+            _pid[i] = nullptr;
         }
     }
 }
@@ -176,7 +176,7 @@ void ts::PCRAnalyzer::processDiscountinuity()
 {
     // All collected PCR becomes invalid since at least one packet is missing.
     for (size_t i = 0; i < PID_MAX; ++i) {
-        if (_pid[i] != 0) {
+        if (_pid[i] != nullptr) {
             _pid[i]->last_pcr_value = 0;
         }
     }
@@ -206,13 +206,13 @@ ts::BitRate ts::PCRAnalyzer::bitrate204() const
 
 ts::BitRate ts::PCRAnalyzer::bitrate188(PID pid) const
 {
-    return pid >= PID_MAX || _ts_bitrate_cnt == 0 || _ts_pkt_cnt == 0 || _pid[pid] == 0 ? 0 :
+    return (pid >= PID_MAX || _ts_bitrate_cnt == 0 || _ts_pkt_cnt == 0 || _pid[pid] == nullptr) ? 0 :
         BitRate((_ts_bitrate_188 * _pid[pid]->ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
 }
 
 ts::BitRate ts::PCRAnalyzer::bitrate204(PID pid) const
 {
-    return pid >= PID_MAX || _ts_bitrate_cnt == 0 || _ts_pkt_cnt == 0 || _pid[pid] == 0 ? 0 :
+    return (pid >= PID_MAX || _ts_bitrate_cnt == 0 || _ts_pkt_cnt == 0 || _pid[pid] == nullptr) ? 0 :
         BitRate((_ts_bitrate_204 * _pid[pid]->ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
 }
 
@@ -223,7 +223,7 @@ ts::BitRate ts::PCRAnalyzer::bitrate204(PID pid) const
 
 ts::PacketCounter ts::PCRAnalyzer::packetCount(PID pid) const
 {
-    return pid >= PID_MAX || _pid[pid] == 0 ? 0 : _pid[pid]->ts_pkt_cnt;
+    return (pid >= PID_MAX || _pid[pid] == nullptr) ? 0 : _pid[pid]->ts_pkt_cnt;
 }
 
 
@@ -263,7 +263,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
     assert(pid < PID_MAX);
 
     PIDAnalysis* ps = _pid[pid];
-    if (ps == 0) {
+    if (ps == nullptr) {
         ps = _pid[pid] = new PIDAnalysis;
     }
 

@@ -149,8 +149,8 @@ private:
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _request(request),
-    _curl(0),
-    _headers(0),
+    _curl(nullptr),
+    _headers(nullptr),
     _error{0}
 {
 }
@@ -181,7 +181,7 @@ bool ts::WebRequest::SystemGuts::init()
     clear();
 
     // Initialize CURL Easy
-    if ((_curl = ::curl_easy_init()) == 0) {
+    if ((_curl = ::curl_easy_init()) == nullptr) {
         _request._report.error(u"libcurl 'curl easy' initialization error");
         return false;
     }
@@ -288,15 +288,15 @@ bool ts::WebRequest::SystemGuts::init()
 void ts::WebRequest::SystemGuts::clear()
 {
     // Deallocate list of headers.
-    if (_headers != 0) {
+    if (_headers != nullptr) {
         ::curl_slist_free_all(_headers);
-        _headers = 0;
+        _headers = nullptr;
     }
 
     // Make sure the CURL Easy is clean.
-    if (_curl != 0) {
+    if (_curl != nullptr) {
         ::curl_easy_cleanup(_curl);
-        _curl = 0;
+        _curl = nullptr;
     }
 
     // Erase nul-terminated error message.
@@ -310,7 +310,7 @@ void ts::WebRequest::SystemGuts::clear()
 
 bool ts::WebRequest::SystemGuts::start()
 {
-    assert(_curl != 0);
+    assert(_curl != nullptr);
 
     const ::CURLcode status = ::curl_easy_perform(_curl);
     const bool ok = status == ::CURLE_OK;
@@ -334,7 +334,7 @@ ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ::CURLcode
     if (code != ::CURLE_OK) {
         msg.append(u", ");
         const char* err = ::curl_easy_strerror(code);
-        if (err != 0 && err[0] != 0) {
+        if (err != nullptr && err[0] != 0) {
             msg.append(UString::FromUTF8(err));
         }
         else {
@@ -395,7 +395,7 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
 {
     // The userdata points to the guts object.
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
-    if (guts == 0) {
+    if (guts == nullptr) {
         return 0; // error
     }
     else {
@@ -419,7 +419,7 @@ size_t ts::WebRequest::SystemGuts::writeCallback(char *ptr, size_t size, size_t 
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
 
     // Process downloaded data. Return 0 on error.
-    return guts != 0 && guts->_request.copyData(ptr, dataSize) ? dataSize : 0;
+    return guts != nullptr && guts->_request.copyData(ptr, dataSize) ? dataSize : 0;
 }
 
 
@@ -433,7 +433,7 @@ int ts::WebRequest::SystemGuts::progressCallback(void *clientp, TS_CALLBACK_PARA
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(clientp);
 
     // We only use dltotal to reserve the buffer size. Return 0 on success.
-    return guts != 0 && guts->_request.setPossibleContentSize(size_t(dltotal)) ? 0 : 1;
+    return guts != nullptr && guts->_request.setPossibleContentSize(size_t(dltotal)) ? 0 : 1;
 }
 
 
@@ -447,14 +447,14 @@ ts::UString ts::WebRequest::GetLibraryVersion()
 
     // Get version from libcurl.
     const ::curl_version_info_data* info = ::curl_version_info(CURLVERSION_NOW);
-    if (info != 0) {
-        if (info->version != 0) {
+    if (info != nullptr) {
+        if (info->version != nullptr) {
             result += u": " + UString::FromUTF8(info->version);
         }
-        if (info->ssl_version != 0) {
+        if (info->ssl_version != nullptr) {
             result += u", ssl: " + UString::FromUTF8(info->ssl_version);
         }
-        if (info->libz_version != 0) {
+        if (info->libz_version != nullptr) {
             result += u", libz: " + UString::FromUTF8(info->libz_version);
         }
     }

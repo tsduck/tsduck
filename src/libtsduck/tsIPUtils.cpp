@@ -222,7 +222,7 @@ size_t ts::IPHeaderSize(const void* data, size_t size)
 
     // The first byte of the header contains the IP version and the number
     // of 32-bit words in the header.
-    if (ip != 0 && size >= IPv4_MIN_HEADER_SIZE && ((ip[0] >> 4) & 0x0F) == IPv4_VERSION) {
+    if (ip != nullptr && size >= IPv4_MIN_HEADER_SIZE && ((ip[0] >> 4) & 0x0F) == IPv4_VERSION) {
         headerSize = sizeof(uint32_t) * size_t(ip[0] & 0x0F);
     }
 

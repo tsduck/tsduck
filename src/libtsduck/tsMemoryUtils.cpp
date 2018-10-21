@@ -67,7 +67,7 @@ const void* ts::LocatePattern (const void* area, size_t area_size, const void* p
             --area_size;
         }
     }
-    return 0; // not found
+    return nullptr; // not found
 }
 
 //----------------------------------------------------------------------------

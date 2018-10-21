@@ -518,7 +518,7 @@ namespace {
             size_t totalSize = 0;
             char buffer [1024];
             size_t size = 0;
-            while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size, 0, CERR)) {
+            while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size, nullptr, CERR)) {
                 CERR.debug(u"TCPSocketTest: client thread: data received, %d bytes", {size});
                 totalSize += size;
             }
@@ -570,7 +570,7 @@ void NetworkingTest::testTCPSocket()
     ts::SocketAddress sender;
     char buffer [1024];
     size_t size = 0;
-    while (session.receive(buffer, sizeof(buffer), size, 0, CERR)) {
+    while (session.receive(buffer, sizeof(buffer), size, nullptr, CERR)) {
         CERR.debug(u"TCPSocketTest: main thread: data received, %d bytes", {size});
         CPPUNIT_ASSERT(session.send(buffer, size, CERR));
         CERR.debug(u"TCPSocketTest: main thread: data sent back");
@@ -630,7 +630,7 @@ namespace {
             ts::SocketAddress destination;
             char buffer [1024];
             size_t size;
-            CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, 0, CERR));
+            CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
             CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
             CPPUNIT_ASSERT(size == sizeof(message));
             CPPUNIT_ASSERT(::memcmp(message, buffer, size) == 0);
@@ -669,7 +669,7 @@ void NetworkingTest::testUDPSocket()
     ts::SocketAddress destination;
     char buffer [1024];
     size_t size;
-    CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, 0, CERR));
+    CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
     CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
     CPPUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
 

@@ -86,9 +86,9 @@ void PluginTest::display(const ts::PluginSharedLibrary& lib)
 {
     utest::Out() << "* File: " << lib.fileName() << std::endl
                  << "  isLoaded: " << lib.isLoaded() << std::endl
-                 << "  input: " << ts::UString::YesNo(lib.new_input != 0) << std::endl
-                 << "  output: " << ts::UString::YesNo(lib.new_output != 0) << std::endl
-                 << "  processor: " << ts::UString::YesNo(lib.new_processor != 0) << std::endl;
+                 << "  input: " << ts::UString::YesNo(lib.new_input != nullptr) << std::endl
+                 << "  output: " << ts::UString::YesNo(lib.new_output != nullptr) << std::endl
+                 << "  processor: " << ts::UString::YesNo(lib.new_processor != nullptr) << std::endl;
 }
 
 void PluginTest::testInput()
@@ -97,9 +97,9 @@ void PluginTest::testInput()
     display(plugin);
 
     CPPUNIT_ASSERT(plugin.isLoaded());
-    CPPUNIT_ASSERT(plugin.new_input != 0);
-    CPPUNIT_ASSERT(plugin.new_output == 0);
-    CPPUNIT_ASSERT(plugin.new_processor == 0);
+    CPPUNIT_ASSERT(plugin.new_input != nullptr);
+    CPPUNIT_ASSERT(plugin.new_output == nullptr);
+    CPPUNIT_ASSERT(plugin.new_processor == nullptr);
 }
 
 void PluginTest::testOutput()
@@ -108,9 +108,9 @@ void PluginTest::testOutput()
     display(plugin);
 
     CPPUNIT_ASSERT(plugin.isLoaded());
-    CPPUNIT_ASSERT(plugin.new_input == 0);
-    CPPUNIT_ASSERT(plugin.new_output != 0);
-    CPPUNIT_ASSERT(plugin.new_processor == 0);
+    CPPUNIT_ASSERT(plugin.new_input == nullptr);
+    CPPUNIT_ASSERT(plugin.new_output != nullptr);
+    CPPUNIT_ASSERT(plugin.new_processor == nullptr);
 }
 
 void PluginTest::testProcessor()
@@ -119,7 +119,7 @@ void PluginTest::testProcessor()
     display(plugin);
 
     CPPUNIT_ASSERT(plugin.isLoaded());
-    CPPUNIT_ASSERT(plugin.new_input == 0);
-    CPPUNIT_ASSERT(plugin.new_output == 0);
-    CPPUNIT_ASSERT(plugin.new_processor != 0);
+    CPPUNIT_ASSERT(plugin.new_input == nullptr);
+    CPPUNIT_ASSERT(plugin.new_output == nullptr);
+    CPPUNIT_ASSERT(plugin.new_processor != nullptr);
 }

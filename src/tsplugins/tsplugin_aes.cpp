@@ -118,7 +118,7 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
     _cts3(),
     _cts4(),
     _dvs042(),
-    _chain(0)
+    _chain(nullptr)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",

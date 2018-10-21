@@ -136,7 +136,7 @@ bool DumpUDP(Options& opt)
 
         // Wait for a UDP message
         size_t insize = 0;
-        ok = opt.udp.receive(packet.data(), packet.size(), insize, sender, destination, 0, opt);
+        ok = opt.udp.receive(packet.data(), packet.size(), insize, sender, destination, nullptr, opt);
 
         // Check packet.
         assert(insize <= packet.size());

@@ -248,10 +248,10 @@ bool ts::DektecInputPlugin::stop()
 
 ts::DektecInputPlugin::~DektecInputPlugin()
 {
-    if (_guts != 0) {
+    if (_guts != nullptr) {
         stop();
         delete _guts;
-        _guts = 0;
+        _guts = nullptr;
     }
 }
 

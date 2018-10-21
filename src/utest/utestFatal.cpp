@@ -95,7 +95,7 @@ void FatalTest::testCrash()
     if (ts::EnvironmentExists(u"UTEST_FATAL_CRASH_ALLOWED")) {
         std::cerr << "FatalTest: CheckNonNull(0) : should fail !" << std::endl
                   << "Unset UTEST_FATAL_CRASH_ALLOWED to skip the crash test" << std::endl;
-        ts::CheckNonNull(0);
+        ts::CheckNonNull(nullptr);
         CPPUNIT_FAIL("Should not get there, should have crashed");
     }
     else {

@@ -419,7 +419,7 @@ bool ts::UDPSocket::receive(void* data,
         // Wait for a message.
         const SocketErrorCode err = receiveOne(data, max_size, ret_size, sender, destination, report);
 
-        if (abort != 0 && abort->aborting()) {
+        if (abort != nullptr && abort->aborting()) {
             // Aborting, no error message.
             return false;
         }
@@ -429,7 +429,7 @@ bool ts::UDPSocket::receive(void* data,
                 return true;
             }
         }
-        else if (abort != 0 && abort->aborting()) {
+        else if (abort != nullptr && abort->aborting()) {
             // User-interrupt, end of processing but no error message
             return false;
         }
@@ -558,7 +558,7 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
     }
 
     // Browse returned ancillary data.
-    for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
+    for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != nullptr; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
             destination = SocketAddress(info->ipi_addr, _local_address.port());

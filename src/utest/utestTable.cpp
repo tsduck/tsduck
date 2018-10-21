@@ -332,7 +332,7 @@ void TableTest::testTSDT()
 void TableTest::testCleanupPrivateDescriptors()
 {
     // Issue #87 non-regression.
-    ts::DescriptorList dlist(0);
+    ts::DescriptorList dlist(nullptr);
     dlist.add(ts::EacemPreferredNameIdentifierDescriptor());
     dlist.add(ts::LogicalChannelNumberDescriptor());
     dlist.add(ts::ServiceDescriptor());

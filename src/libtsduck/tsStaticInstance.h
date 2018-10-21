@@ -142,43 +142,43 @@
 //! @see TS_STATIC_INSTANCE_DECLARATION for the @e declaration part and usage examples.
 //!
 #define TS_STATIC_INSTANCE_DEFINITION(ObjectClass, ObjectArgs, StaticInstancePath, StaticInstanceClass) \
-    /* The constructor of the static instance initializes */             \
-    /* the actual object. */                                             \
-    StaticInstancePath::StaticInstanceClass() :                          \
-        _object ObjectArgs                                               \
-    {                                                                    \
-    }                                                                    \
-    /* Public static method to access the instance. */                   \
-    ObjectClass& StaticInstancePath::Instance()                          \
-    {                                                                    \
-        if (_instance == 0) {                                            \
-            /* No thread synchronization here. */                        \
-            StaticInstanceClass* volatile tmp = new StaticInstanceClass; \
-            ts::MemoryBarrier();                                         \
-            _instance = tmp;                                             \
-        }                                                                \
-        return _instance->_object;                                       \
-    }                                                                    \
-    /* The controller constructor forces the creation of the static */   \
-    /* instance if not already created by an earlier method. */          \
-    StaticInstancePath::Controller::Controller()                         \
-    {                                                                    \
-        StaticInstanceClass::Instance();                                 \
-    }                                                                    \
-    /* The controller destructor forces the deletion of the */           \
-    /* static instance. */                                               \
-    StaticInstancePath::Controller::~Controller()                        \
-    {                                                                    \
-        if (StaticInstanceClass::_instance != 0) {                       \
-            delete StaticInstanceClass::_instance;                       \
-            StaticInstanceClass::_instance = 0;                          \
-        }                                                                \
-    }                                                                    \
-    /* Pointer to the actual instance is statically initialized to */    \
-    /* zero BEFORE invoking the initialization of the module. */         \
-    StaticInstancePath* volatile StaticInstancePath::_instance = 0;      \
-    /* The controller is initialized ("constructed") DURING the */       \
-    /* initialization of the module. */                                  \
+    /* The constructor of the static instance initializes */              \
+    /* the actual object. */                                              \
+    StaticInstancePath::StaticInstanceClass() :                           \
+        _object ObjectArgs                                                \
+    {                                                                     \
+    }                                                                     \
+    /* Public static method to access the instance. */                    \
+    ObjectClass& StaticInstancePath::Instance()                           \
+    {                                                                     \
+        if (_instance == nullptr) {                                       \
+            /* No thread synchronization here. */                         \
+            StaticInstanceClass* volatile tmp = new StaticInstanceClass;  \
+            ts::MemoryBarrier();                                          \
+            _instance = tmp;                                              \
+        }                                                                 \
+        return _instance->_object;                                        \
+    }                                                                     \
+    /* The controller constructor forces the creation of the static */    \
+    /* instance if not already created by an earlier method. */           \
+    StaticInstancePath::Controller::Controller()                          \
+    {                                                                     \
+        StaticInstanceClass::Instance();                                  \
+    }                                                                     \
+    /* The controller destructor forces the deletion of the */            \
+    /* static instance. */                                                \
+    StaticInstancePath::Controller::~Controller()                         \
+    {                                                                     \
+        if (StaticInstanceClass::_instance != nullptr) {                  \
+            delete StaticInstanceClass::_instance;                        \
+            StaticInstanceClass::_instance = nullptr;                     \
+        }                                                                 \
+    }                                                                     \
+    /* Pointer to the actual instance is statically initialized to */     \
+    /* zero BEFORE invoking the initialization of the module. */          \
+    StaticInstancePath* volatile StaticInstancePath::_instance = nullptr; \
+    /* The controller is initialized ("constructed") DURING the */        \
+    /* initialization of the module. */                                   \
     StaticInstancePath::Controller StaticInstancePath::_controller
 
 //!

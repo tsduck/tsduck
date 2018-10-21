@@ -660,7 +660,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
     static const char filename[] = "/proc/self/stat";
     FILE* fp = fopen(filename, "r");
-    if (fp == 0) {
+    if (fp == nullptr) {
         throw ts::Exception(UString::Format(u"error opening %s", {filename}), errno);
         return;
     }
@@ -800,7 +800,7 @@ bool ts::EnvironmentExists(const UString& name)
     return ::GetEnvironmentVariableW(name.wc_str(), unused.data(), ::DWORD(unused.size())) != 0;
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
-    return ::getenv(name.toUTF8().c_str()) != 0;
+    return ::getenv(name.toUTF8().c_str()) != nullptr;
 #endif
 }
 
@@ -826,7 +826,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
     const char* value = ::getenv(name.toUTF8().c_str());
-    return value != 0 ? UString::FromUTF8(value) : def;
+    return value != nullptr ? UString::FromUTF8(value) : def;
 #endif
 }
 
@@ -1002,7 +1002,7 @@ void ts::GetEnvironment(Environment& env)
 
 #else
 
-    for (char** p = ::environ; *p != 0; ++p) {
+    for (char** p = ::environ; *p != nullptr; ++p) {
         AddNameValue(env, UString::FromUTF8(*p), true);
     }
 

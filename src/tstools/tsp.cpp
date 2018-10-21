@@ -60,7 +60,7 @@ namespace ts {
         class TSPInterruptHandler: public InterruptHandler
         {
         public:
-            TSPInterruptHandler(AsyncReport* report = 0, PluginExecutor* first_plugin = 0);
+            TSPInterruptHandler(AsyncReport* report = nullptr, PluginExecutor* first_plugin = nullptr);
             virtual void handleInterrupt() override;
         private:
             AsyncReport*    _report;
@@ -219,8 +219,8 @@ int MainCode(int argc, char *argv[])
 
     // Start the output device (we now have an idea of the bitrate).
     // Exit application in case of error.
-    assert(output != 0);
-    assert(output->plugin() != 0);
+    assert(output != nullptr);
+    assert(output->plugin() != nullptr);
     if (!output->plugin()->start()) {
         return EXIT_FAILURE;
     }

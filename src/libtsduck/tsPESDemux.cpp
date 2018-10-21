@@ -341,7 +341,7 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
 
 void ts::PESDemux::handlePESPacket(const PESPacket& packet)
 {
-    if (_pes_handler != 0) {
+    if (_pes_handler != nullptr) {
         _pes_handler->handlePESPacket(*this, packet);
     }
 }
@@ -391,14 +391,14 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
             for (size_t offset = 0; offset < psize; ) {
                 // Look for next start code
                 const void* pnext = LocatePattern(pdata + offset + 1, psize - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
-                size_t next = pnext == 0 ? psize : reinterpret_cast <const uint8_t*> (pnext) - pdata;
+                size_t next = pnext == nullptr ? psize : reinterpret_cast<const uint8_t*>(pnext) - pdata;
                 // Invoke handler
-                if (_pes_handler != 0) {
+                if (_pes_handler != nullptr) {
                     _pes_handler->handleVideoStartCode(*this, pp, pdata[offset + 3], offset, next - offset);
                 }
                 // Accumulate info from video units to extract video attributes.
                 // If new attributes were found, invoke handler.
-                if (pc.video.moreBinaryData(pdata + offset, next - offset) && _pes_handler != 0) {
+                if (pc.video.moreBinaryData(pdata + offset, next - offset) && _pes_handler != nullptr) {
                     _pes_handler->handleNewVideoAttributes(*this, pp, pc.video);
                 }
                 // Move to next start code
@@ -412,7 +412,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                 // Locate next access unit: starts with 00 00 01 (this start code is not part of the NALunit)
                 const uint8_t* p1 = reinterpret_cast<const uint8_t*>(
                             LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix)));
-                if (p1 == 0) {
+                if (p1 == nullptr) {
                     break;
                 }
                 offset = p1 - pdata + sizeof(StartCodePrefix);
@@ -423,18 +423,18 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                 const uint8_t* p3 = reinterpret_cast<const uint8_t*>(
                             LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3)));
                 size_t nalunit_size = 0;
-                if (p2 == 0 && p3 == 0) {
+                if (p2 == nullptr && p3 == nullptr) {
                     // No 00 00 01, no 00 00 00, the NALunit extends up to the end of data.
                     nalunit_size = psize - offset;
                 }
-                else if (p2 == 0 || (p3 != 0 && p3 < p2)) {
+                else if (p2 == nullptr || (p3 != nullptr && p3 < p2)) {
                     // NALunit ends at 00 00 00.
-                    assert(p3 != 0);
+                    assert(p3 != nullptr);
                     nalunit_size = p3 - pdata - offset;
                 }
                 else {
                     // NALunit ends at 00 00 01.
-                    assert(p2 != 0);
+                    assert(p2 != nullptr);
                     nalunit_size = p2 - pdata - offset;
                 }
 
@@ -443,7 +443,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                 const uint8_t* nalunit_end = pdata + offset + nalunit_size;
 
                 // Invoke handler for the complete NALunit.
-                if (_pes_handler != 0) {
+                if (_pes_handler != nullptr) {
                     _pes_handler->handleAVCAccessUnit(*this, pp, nalunit_type, offset, nalunit_size);
                 }
 
@@ -470,14 +470,14 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                     }
                     sei_size = std::min<size_t>(sei_size, nalunit_end - p);
                     // Invoke handler for the SEI.
-                    if (_pes_handler != 0) {
+                    if (_pes_handler != nullptr) {
                         _pes_handler->handleSEI(*this, pp, sei_type, p - pdata, sei_size);
                     }
                 }
 
                 // Accumulate info from access units to extract video attributes.
                 // If new attributes were found, invoke handler.
-                if (pc.avc.moreBinaryData(pdata + offset, nalunit_size) && _pes_handler != 0) {
+                if (pc.avc.moreBinaryData(pdata + offset, nalunit_size) && _pes_handler != nullptr) {
                     _pes_handler->handleNewAVCAttributes(*this, pp, pc.avc);
                 }
 
@@ -492,7 +492,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
             pc.ac3_count++;
             // Accumulate info from audio frames to extract audio attributes.
             // If new attributes were found, invoke handler.
-            if (pc.ac3.moreBinaryData(pdata, psize) && _pes_handler != 0) {
+            if (pc.ac3.moreBinaryData(pdata, psize) && _pes_handler != nullptr) {
                 _pes_handler->handleNewAC3Attributes(*this, pp, pc.ac3);
             }
         }
@@ -501,7 +501,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
         else if (IsAudioSID(pp.getStreamId())) {
             // Accumulate info from audio frames to extract audio attributes.
             // If new attributes were found, invoke handler.
-            if (pc.audio.moreBinaryData(pdata, psize) && _pes_handler != 0) {
+            if (pc.audio.moreBinaryData(pdata, psize) && _pes_handler != nullptr) {
                 _pes_handler->handleNewAudioAttributes(*this, pp, pc.audio);
             }
         }

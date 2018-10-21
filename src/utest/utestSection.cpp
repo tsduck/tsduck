@@ -209,7 +209,7 @@ void SectionTest::testPackSections()
     CPPUNIT_ASSERT_EQUAL(uint8_t(0), sec->sectionNumber());
     CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->lastSectionNumber());
     CPPUNIT_ASSERT_EQUAL(size_t(2), sec->payloadSize());
-    CPPUNIT_ASSERT(sec->payload() != 0);
+    CPPUNIT_ASSERT(sec->payload() != nullptr);
     CPPUNIT_ASSERT_EQUAL(uint8_t(1), *sec->payload());
 
     sec = table.sectionAt(1);
@@ -227,7 +227,7 @@ void SectionTest::testPackSections()
     CPPUNIT_ASSERT_EQUAL(uint8_t(1), sec->sectionNumber());
     CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->lastSectionNumber());
     CPPUNIT_ASSERT_EQUAL(size_t(3), sec->payloadSize());
-    CPPUNIT_ASSERT(sec->payload() != 0);
+    CPPUNIT_ASSERT(sec->payload() != nullptr);
     CPPUNIT_ASSERT_EQUAL(uint8_t(3), *sec->payload());
 
     sec = table.sectionAt(2);
@@ -245,7 +245,7 @@ void SectionTest::testPackSections()
     CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->sectionNumber());
     CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->lastSectionNumber());
     CPPUNIT_ASSERT_EQUAL(size_t(4), sec->payloadSize());
-    CPPUNIT_ASSERT(sec->payload() != 0);
+    CPPUNIT_ASSERT(sec->payload() != nullptr);
     CPPUNIT_ASSERT_EQUAL(uint8_t(4), *sec->payload());
 }
 

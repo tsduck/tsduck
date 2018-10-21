@@ -42,7 +42,7 @@ const ts::IPv6Address ts::IPv6Address::LocalHost(0, 0, 0, 0, 0, 0, 0, 1);
 void ts::IPv6Address::setAddress(const uint8_t *addr, size_t size)
 {
     // Safely consider a null pointer as an empty buffer.
-    if (addr == 0) {
+    if (addr == nullptr) {
         size = 0;
     }
 

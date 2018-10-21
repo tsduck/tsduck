@@ -81,7 +81,7 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
     _cleanup_priv_desc(false),
     _remove_casid(),
     _remove_pid(),
-    _add_descs(0)
+    _add_descs(nullptr)
 {
     option(u"add-ca-descriptor", 'a', STRING, 0, UNLIMITED_COUNT);
     help(u"add-ca-descriptor", u"casid/pid[/private-data]",

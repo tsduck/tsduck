@@ -496,7 +496,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
 {
     // Interpret the message as a stream_BW_request.
     emmgmux::StreamBWRequest* m = dynamic_cast<emmgmux::StreamBWRequest*>(request.pointer());
-    if (m == 0) {
+    if (m == nullptr) {
         tsp->error(u"incorrect message, expected stream_BW_request");
         return false;
     }
@@ -535,7 +535,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 {
     // Interpret the message as a stream_BW_request.
     emmgmux::DataProvision* m = dynamic_cast<emmgmux::DataProvision*>(msg.pointer());
-    if (m == 0) {
+    if (m == nullptr) {
         tsp->error(u"incorrect message, expected data_provision");
         return false;
     }
@@ -674,7 +674,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                     }
                     else {
                         emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.pointer());
-                        assert (m != 0);
+                        assert (m != nullptr);
                         // Build and send the channel_status
                         channel_status.channel_id = m->channel_id;
                         channel_status.client_id = m->client_id;
@@ -717,7 +717,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                     }
                     else {
                         emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.pointer());
-                        assert(m != 0);
+                        assert(m != nullptr);
                         // Build and send the stream_status
                         stream_status.channel_id = m->channel_id;
                         stream_status.stream_id = m->stream_id;
@@ -753,7 +753,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         // Send the stream_close_response
                         emmgmux::StreamCloseResponse resp;
                         emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.pointer());
-                        assert (m != 0);
+                        assert (m != nullptr);
                         resp.channel_id = m->channel_id;
                         resp.stream_id = m->stream_id;
                         resp.client_id = m->client_id;
