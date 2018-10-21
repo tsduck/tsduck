@@ -76,7 +76,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TextFormatter();
+        virtual ~TextFormatter() override;
 
         //!
         //! Get the margin size for outer-most elements.

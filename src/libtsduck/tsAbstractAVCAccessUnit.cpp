@@ -66,9 +66,9 @@ void ts::AbstractAVCAccessUnit::clear()
 // Parse the binary access unit. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractAVCAccessUnit::parse (const void* nalunit, size_t nalunit_size)
+bool ts::AbstractAVCAccessUnit::parse(const void* nalunit, size_t nalunit_size)
 {
-    if (nalunit == 0 || nalunit_size < 1) {
+    if (nalunit == nullptr || nalunit_size < 1) {
         clear();
         return false;
     }
@@ -82,7 +82,7 @@ bool ts::AbstractAVCAccessUnit::parse (const void* nalunit, size_t nalunit_size)
         nal_ref_idc = (data[0] >> 5) & 0x03;
         nal_unit_type = data[0] & 0x1F;
 
-        AVCParser parser (data + 1, nalunit_size - 1);
-        return parseBody (parser);
+        AVCParser parser(data + 1, nalunit_size - 1);
+        return parseBody(parser);
     }
 }

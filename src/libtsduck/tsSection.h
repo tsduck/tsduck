@@ -443,7 +443,7 @@ namespace ts {
         //!
         const uint8_t* payload() const
         {
-            return _is_valid ? _data->data() + (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : 0;
+            return _is_valid ? _data->data() + (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : nullptr;
         }
 
         //!

@@ -783,9 +783,9 @@ ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
     CXXFLAGS_WARNINGS += -Weffc++
 endif
 ifdef MACOS
-    # TODO: add -Weverything (need some code cleanup first)
-    COMMON_WARNINGS += -Wno-unused-command-line-argument -Wno-c++98-compat \
-        -Wno-c++98-compat-pedantic -Wno-conversion -Wno-sign-conversion -Wno-date-time
+    # TODO: need some code cleanup first
+    # COMMON_WARNINGS += -Wzero-as-null-pointer-constant -Wno-unused-command-line-argument
+    COMMON_WARNINGS += -Wno-unused-command-line-argument
 else
     CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
     ifeq ($(MAIN_ARCH),arm)

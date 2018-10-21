@@ -52,7 +52,7 @@ namespace ts {
         //! @param [in] pid PID for generated TS packets.
         //! @param [in] provider An object which will be called each time a section is required.
         //!
-        Packetizer(PID pid = PID_NULL, SectionProviderInterface* provider = 0);
+        Packetizer(PID pid = PID_NULL, SectionProviderInterface* provider = nullptr);
 
         //!
         //! Destructor

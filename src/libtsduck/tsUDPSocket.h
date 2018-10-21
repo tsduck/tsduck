@@ -311,7 +311,7 @@ namespace ts {
                              size_t& ret_size,
                              SocketAddress& sender,
                              SocketAddress& destination,
-                             const AbortInterface* abort = 0,
+                             const AbortInterface* abort = nullptr,
                              Report& report = CERR);
 
         // Implementation of Socket interface.

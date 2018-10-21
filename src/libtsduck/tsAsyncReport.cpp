@@ -127,7 +127,7 @@ void ts::AsyncReport::main()
 
 void ts::AsyncReport::setMessageHandler(ReportHandler* h)
 {
-    _handler = h != 0 ? h : &_default_handler;
+    _handler = h != nullptr ? h : &_default_handler;
 }
 
 

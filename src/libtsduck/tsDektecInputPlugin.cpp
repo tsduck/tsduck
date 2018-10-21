@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 
 ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI device", u"[options]"),
-    _guts(0)
+    _guts(nullptr)
 {
 }
 

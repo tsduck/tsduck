@@ -132,9 +132,9 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
     ::addrinfo hints;
     TS_ZERO(hints);
     hints.ai_family = AF_INET;
-    ::addrinfo* res = 0;
+    ::addrinfo* res = nullptr;
 
-    const int status = ::getaddrinfo(name.toUTF8().c_str(), (char*)0, &hints, &res);
+    const int status = ::getaddrinfo(name.toUTF8().c_str(), nullptr, &hints, &res);
 
     if (status != 0) {
 #if defined(TS_WINDOWS)

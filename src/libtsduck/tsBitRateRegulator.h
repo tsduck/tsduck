@@ -51,14 +51,14 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @param [in] log_level Severity level for information messages.
         //!
-        BitRateRegulator(Report* report = 0, int log_level = Severity::Verbose);
+        BitRateRegulator(Report* report = nullptr, int log_level = Severity::Verbose);
 
         //!
         //! Set a new report.
         //! @param [in,out] report Where to report errors.
         //! @param [in] log_level Severity level for information messages.
         //!
-        void setReport(Report* report = 0, int log_level = Severity::Verbose);
+        void setReport(Report* report = nullptr, int log_level = Severity::Verbose);
 
         //!
         //! Set the number of packets to burst at a time.

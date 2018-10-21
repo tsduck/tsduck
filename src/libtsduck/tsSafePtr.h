@@ -124,7 +124,7 @@ namespace ts {
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
         //!
-        SafePtr(T* p = 0) :
+        SafePtr(T* p = nullptr) :
             _shared(new SafePtrShared(p))
         {
         }
@@ -332,7 +332,7 @@ namespace ts {
         void clear()
         {
             _shared->detach();
-            _shared = new SafePtrShared(0);
+            _shared = new SafePtrShared(nullptr);
         }
 
         //!

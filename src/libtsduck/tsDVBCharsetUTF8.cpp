@@ -66,7 +66,7 @@ size_t ts::DVBCharsetUTF8::encode(uint8_t*& buffer, size_t& size, const UString&
     size_t result = 0;
 
     // Serialize characters as long as there is free space.
-    while (buffer != 0 && size > 0 && start < str.length() && count > 0) {
+    while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
         if (str[start] != ts::CARRIAGE_RETURN) {
 
             // Convert a 1-character string to UTF-8.

@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
-    _report(report == 0 ? NullReport::Instance() : report),
+    _report(report == nullptr ? NullReport::Instance() : report),
     _log_level(log_level),
     _state(INITIAL),
     _opt_bitrate(0),
@@ -60,7 +60,7 @@ ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
 
 void ts::BitRateRegulator::setReport(ts::Report *report, int log_level)
 {
-    _report = report == 0 ? NullReport::Instance() : report;
+    _report = report == nullptr ? NullReport::Instance() : report;
     _log_level = log_level;
 }
 

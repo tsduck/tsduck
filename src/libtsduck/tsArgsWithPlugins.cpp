@@ -95,7 +95,7 @@ bool ts::ArgsWithPlugins::analyze(const ts::UString& app_name, const ts::UString
 
     // Locate the first processor option. All preceeding options are command-specific options and must be analyzed.
     PluginType plugin_type = PROCESSOR_PLUGIN;
-    PluginOptionsVector* options = 0;
+    PluginOptionsVector* options = nullptr;
     size_t plugin_index = nextProcOpt(args, 0, plugin_type, options);
 
     // Analyze the command-specifc options, not including the plugin options, not processing redirections.
@@ -186,6 +186,6 @@ size_t ts::ArgsWithPlugins::nextProcOpt(const UStringVector& args, size_t index,
         }
         index++;
     }
-    opts = 0;
+    opts = nullptr;
     return std::min(args.size(), index);
 }

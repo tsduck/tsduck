@@ -51,7 +51,7 @@ const ts::MilliSecond ts::ECMGClient::RESPONSE_TIMEOUT;
 ts::ECMGClient::ECMGClient(size_t extra_handler_stack_size) :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE + extra_handler_stack_size)),
     _state(INITIAL),
-    _abort(0),
+    _abort(nullptr),
     _logger(),
     _connection(ecmgscs::Protocol::Instance(), true, 3),
     _channel_status(),
@@ -74,7 +74,7 @@ ts::ECMGClient::~ECMGClient()
         GuardCondition lock(_mutex, _work_to_do);
 
         // Break connection, if not already done
-        _abort = 0;
+        _abort = nullptr;
         _logger.setReport(NullReport::Instance());
         _connection.disconnect(NULLREP);
         _connection.close(NULLREP);
@@ -169,7 +169,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
         return abortConnection(u"unexpected response from ECMG (expected channel_status):\n" + msg->dump(4));
     }
     ecmgscs::ChannelStatus* const csp = dynamic_cast<ecmgscs::ChannelStatus*>(msg.pointer());
-    assert(csp != 0);
+    assert(csp != nullptr);
     channel_status = _channel_status = *csp;
 
     // Send a stream_setup message to ECMG
@@ -190,7 +190,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
         return abortConnection(u"unexpected response from ECMG (expected stream_status):\n" + msg->dump(4));
     }
     ecmgscs::StreamStatus* const ssp = dynamic_cast<ecmgscs::StreamStatus*>(msg.pointer());
-    assert(ssp != 0);
+    assert(ssp != nullptr);
     stream_status = _stream_status = *ssp;
 
     // ECM stream now established
@@ -314,7 +314,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     }
     if (resp->tag() == ecmgscs::Tags::ECM_response) {
         ecmgscs::ECMResponse* const ep = dynamic_cast <ecmgscs::ECMResponse*>(resp.pointer());
-        assert(ep != 0);
+        assert(ep != nullptr);
         if (ep->CP_number == cp_number) {
             // This is our ECM
             ecm_response = *ep;
@@ -374,7 +374,7 @@ void ts::ECMGClient::main()
     // Main loop
     for (;;) {
 
-        TS_UNUSED const AbortInterface* abort = 0;
+        TS_UNUSED const AbortInterface* abort = nullptr;
 
         // Wait for a connection to be managed
         {
@@ -412,8 +412,8 @@ void ts::ECMGClient::main()
                 case ecmgscs::Tags::ECM_response: {
                     // Check if this is an asynchronous ECM response
                     ecmgscs::ECMResponse* const resp = dynamic_cast <ecmgscs::ECMResponse*>(msg.pointer());
-                    assert(resp != 0);
-                    ECMGClientHandlerInterface* handler = 0;
+                    assert(resp != nullptr);
+                    ECMGClientHandlerInterface* handler = nullptr;
                     {
                         Guard lock(_mutex);
                         AsyncRequests::iterator it = _async_requests.find(resp->CP_number);
@@ -422,7 +422,7 @@ void ts::ECMGClient::main()
                             _async_requests.erase(resp->CP_number);
                         }
                     }
-                    if (handler == 0) {
+                    if (handler == nullptr) {
                         // Not an asynchronous request -> enqueue response for application thread
                         _response_queue.enqueue(msg);
                     }

@@ -57,7 +57,7 @@ namespace ts {
         //! @param [in] data Address of binary data to analyze.
         //! @param [in] size Size in bytes of binary data to analyze.
         //!
-        AVCVUIParameters(const void* data = 0, size_t size = 0);
+        AVCVUIParameters(const void* data = nullptr, size_t size = 0);
 
         // Inherited methods
         virtual void clear() override;

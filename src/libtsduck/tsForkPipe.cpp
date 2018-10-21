@@ -322,7 +322,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // In the context of the created process (or application if EXIT_PROCESS mode).
         // In the first case, abort on error. In the latter, report error and return to caller.
         int error = 0;
-        const char* message = 0;
+        const char* message = nullptr;
 
         // Setup stdin.
         switch (in_mode) {
@@ -404,8 +404,8 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
 
         // Execute the command if there was no prior error.
-        if (message == 0) {
-            ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), TS_NULL);
+        if (message == nullptr) {
+            ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), nullptr);
             // Should not return, so this is an error if we get there.
             error = errno;
             message = "exec error";
@@ -475,7 +475,7 @@ bool ts::ForkPipe::close(Report& report)
 
     // Wait for termination of forked process
     assert(_fpid != 0);
-    if (_wait_mode == SYNCHRONOUS && ::waitpid(_fpid, NULL, 0) < 0) {
+    if (_wait_mode == SYNCHRONOUS && ::waitpid(_fpid, nullptr, 0) < 0) {
         report.error(u"error waiting for process termination: %s", {ErrorCodeMessage()});
         result = false;
     }

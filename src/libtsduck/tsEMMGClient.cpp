@@ -50,7 +50,7 @@ ts::EMMGClient::EMMGClient() :
     _state(INITIAL),
     _udp_address(),
     _total_bytes(0),
-    _abort(0),
+    _abort(nullptr),
     _logger(),
     _connection(emmgmux::Protocol::Instance(), true, 3),
     _udp_socket(),
@@ -77,7 +77,7 @@ ts::EMMGClient::~EMMGClient()
         GuardCondition lock(_mutex, _work_to_do);
 
         // Break connection, if not already done
-        _abort = 0;
+        _abort = nullptr;
         _logger.setReport(NullReport::Instance());
         _connection.disconnect(NULLREP);
         _connection.close(NULLREP);
@@ -500,7 +500,7 @@ void ts::EMMGClient::main()
     // Main loop
     for (;;) {
 
-        TS_UNUSED const AbortInterface* abort = 0;
+        TS_UNUSED const AbortInterface* abort = nullptr;
 
         // Wait for a connection to be managed
         {
@@ -543,7 +543,7 @@ void ts::EMMGClient::main()
                 case emmgmux::Tags::stream_BW_allocation: {
                     // Store returned bandwidth.
                     emmgmux::StreamBWAllocation* const resp = dynamic_cast<emmgmux::StreamBWAllocation*>(msg.pointer());
-                    assert(resp != 0);
+                    assert(resp != nullptr);
                     {
                         Guard lock(_mutex);
                         _allocated_bw = resp->has_bandwidth ? resp->bandwidth : 0;
@@ -553,7 +553,7 @@ void ts::EMMGClient::main()
                 case emmgmux::Tags::stream_error: {
                     // Store returned error.
                     emmgmux::StreamError* const resp = dynamic_cast<emmgmux::StreamError*>(msg.pointer());
-                    assert(resp != 0);
+                    assert(resp != nullptr);
                     {
                         Guard lock(_mutex);
                         _error_status = resp->error_status;
@@ -564,7 +564,7 @@ void ts::EMMGClient::main()
                 case emmgmux::Tags::channel_error: {
                     // Store returned error.
                     emmgmux::ChannelError* const resp = dynamic_cast<emmgmux::ChannelError*>(msg.pointer());
-                    assert(resp != 0);
+                    assert(resp != nullptr);
                     {
                         Guard lock(_mutex);
                         _error_status = resp->error_status;

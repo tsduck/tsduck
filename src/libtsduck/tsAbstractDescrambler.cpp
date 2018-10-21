@@ -54,7 +54,7 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
     _packet_count(0),
     _service(this, *tsp),
     _stack_usage(stack_usage),
-    _demux(0, this),
+    _demux(nullptr, this),
     _ecm_streams(),
     _scrambled_streams(),
     _mutex(),
@@ -82,7 +82,7 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
          u"specified. By default, descramble the specified service.");
 
     option(u"synchronous");
-    help(u"synchronous", 
+    help(u"synchronous",
          u"Specify to synchronously decipher the ECM's. By default, in real-time "
          u"mode, the packet processing continues while processing ECM's. This option "
          u"is always on in offline mode.");

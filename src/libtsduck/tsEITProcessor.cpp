@@ -39,10 +39,10 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::EITProcessor::EITProcessor(PID pid, Report* report) :
-    _report(report != 0 ? report : NullReport::Instance()),
+    _report(report != nullptr ? report : NullReport::Instance()),
     _input_pids(),
     _output_pid(pid),
-    _demux(0, this),
+    _demux(nullptr, this),
     _packetizer(pid, this),
     _sections(),
     _removed_tids(),

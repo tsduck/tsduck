@@ -85,7 +85,7 @@ namespace ts {
         //! the actual returned hash size. Can be a null pointer (ignored).
         //! @return True on success, false on error.
         //!
-        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = 0) = 0;
+        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = nullptr) = 0;
 
         //!
         //! Compute a hash in one operation.
@@ -98,7 +98,7 @@ namespace ts {
         //! the actual returned hash size. Can be a null pointer (ignored).
         //! @return True on success, false on error.
         //!
-        bool hash(const void* data, size_t data_size, void* hash, size_t hash_maxsize, size_t* hash_retsize = 0)
+        bool hash(const void* data, size_t data_size, void* hash, size_t hash_maxsize, size_t* hash_retsize = nullptr)
         {
             return init() && add(data, data_size) && getHash(hash, hash_maxsize, hash_retsize);
         }

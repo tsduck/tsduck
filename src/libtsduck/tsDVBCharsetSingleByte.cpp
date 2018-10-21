@@ -75,7 +75,7 @@ bool ts::DVBCharsetSingleByte::decode(UString& str, const uint8_t* dvb, size_t d
     str.reserve(dvbSize);
     bool status = true;
 
-    for (; dvb != 0 && dvbSize > 0; --dvbSize) {
+    for (; dvb != nullptr && dvbSize > 0; --dvbSize) {
         // Get next byte
         const uint8_t b = *dvb++;
         // Convert it to a code point
@@ -127,7 +127,7 @@ size_t ts::DVBCharsetSingleByte::encode(uint8_t*& buffer, size_t& size, const US
 {
     size_t result = 0;
     // Serialize characters as long as there is free space.
-    while (buffer != 0 && size > 0 && start < str.length() && count > 0) {
+    while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
         const UChar cp = str[start];
         const std::map<UChar, uint8_t>::const_iterator it = _bytesMap.find(cp);
         if (cp != ts::CARRIAGE_RETURN && it != _bytesMap.end()) {

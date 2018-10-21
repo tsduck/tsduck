@@ -382,7 +382,7 @@ namespace ts {
             PDS pds;
 
             // Constructor:
-            Element(const DescriptorPtr& desc_ = 0, PDS pds_ = 0) : desc(desc_), pds(pds_) {}
+            Element(const DescriptorPtr& desc_ = DescriptorPtr(), PDS pds_ = 0) : desc(desc_), pds(pds_) {}
         };
         typedef std::vector <Element> ElementVector;
 

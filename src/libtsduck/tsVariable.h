@@ -56,7 +56,7 @@ namespace ts {
         //!
         //! Default constructor, the variable is uninitialized.
         //!
-        Variable() throw() : _access(0)
+        Variable() noexcept : _access(nullptr)
         {
         }
 
@@ -68,9 +68,9 @@ namespace ts {
         //!
         //! @param [in] other Another instance from which to build this object.
         //!
-        Variable(const Variable<T>& other) : _access(0)
+        Variable(const Variable<T>& other) : _access(nullptr)
         {
-            if (other._access != 0) {
+            if (other._access != nullptr) {
                 _access = new(_data) T(*(other._access));
             }
         }
@@ -105,7 +105,7 @@ namespace ts {
         {
             if (&other != this) {
                 reset();
-                if (other._access != 0) {
+                if (other._access != nullptr) {
                     _access = new(_data) T(*(other._access));
                 }
             }
@@ -134,7 +134,7 @@ namespace ts {
         //!
         bool set() const
         {
-            return _access != 0;
+            return _access != nullptr;
         }
 
         //!
@@ -144,10 +144,10 @@ namespace ts {
         //!
         void reset()
         {
-            if (_access != 0) {
+            if (_access != nullptr) {
                 // Safe when the destructor throws an exception
                 T* tmp = _access;
-                _access = 0;
+                _access = nullptr;
                 tmp->~T();
             }
         }
@@ -160,7 +160,7 @@ namespace ts {
         //!
         const T& value() const
         {
-            if (_access != 0) {
+            if (_access != nullptr) {
                 return *_access;
             }
             else {
@@ -176,7 +176,7 @@ namespace ts {
         //!
         T& value()
         {
-            if (_access != 0) {
+            if (_access != nullptr) {
                 return *_access;
             }
             else {
@@ -193,7 +193,7 @@ namespace ts {
         //!
         T value(const T& def) const
         {
-            return _access != 0 ? *_access : def;
+            return _access != nullptr ? *_access : def;
         }
 
         //!
@@ -205,7 +205,7 @@ namespace ts {
         //!
         bool operator==(const Variable<T>& other) const
         {
-            return _access != 0 && other._access != 0 && *_access == *other._access;
+            return _access != nullptr && other._access != nullptr && *_access == *other._access;
         }
 
         //!
@@ -219,7 +219,7 @@ namespace ts {
         {
             // Note than we do not require that T provides operator!=.
             // We just require operator==. So we use !(.. == ..).
-            return _access == 0 || other._access == 0 || !(*_access == *other._access);
+            return _access == nullptr || other._access == nullptr || !(*_access == *other._access);
         }
 
         //!
@@ -231,7 +231,7 @@ namespace ts {
         //!
         bool operator==(const T& obj) const
         {
-            return _access != 0 && *_access == obj;
+            return _access != nullptr && *_access == obj;
         }
 
         //!
@@ -245,7 +245,7 @@ namespace ts {
         {
             // Note than we do not require that T provides operator!=.
             // We just require operator==. So we use !(.. == ..).
-            return _access == 0 || !(*_access == obj);
+            return _access == nullptr || !(*_access == obj);
         }
     };
 }

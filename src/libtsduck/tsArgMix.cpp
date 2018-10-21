@@ -46,7 +46,7 @@ ts::ArgMix::ArgMix() :
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(),
 #endif
-    _aux(0)
+    _aux(nullptr)
 {
 }
 
@@ -57,7 +57,7 @@ ts::ArgMix::ArgMix(const ts::ArgMix& other) :
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(other._string),
 #endif
-    _aux(other._aux == 0 ? 0 : new UString(*other._aux))
+    _aux(other._aux == nullptr ? nullptr : new UString(*other._aux))
 {
 }
 
@@ -68,7 +68,7 @@ ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const Value value) :
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(),
 #endif
-    _aux(0)
+    _aux(nullptr)
 {
 }
 
@@ -116,9 +116,9 @@ ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const StringifyInterface& valu
 ts::ArgMix::~ArgMix()
 {
     // Deallocate auxiliary string, when there is one.
-    if (_aux != 0) {
+    if (_aux != nullptr) {
         delete _aux;
-        _aux = 0;
+        _aux = nullptr;
     }
 }
 
@@ -134,11 +134,11 @@ const char* ts::ArgMix::toCharPtr() const
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
             return _string.c_str();
 #else
-            return _value.string == 0 ? "" : _value.string->c_str();
+            return _value.string == nullptr ? "" : _value.string->c_str();
 #endif
         }
         case STRING | BIT8: {
-            return _value.charptr == 0 ? "" : _value.charptr;
+            return _value.charptr == nullptr ? "" : _value.charptr;
         }
         default: {
             return "";
@@ -151,7 +151,7 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
     switch (_type) {
         case STRING | BIT16: {
             // A pointer to UChar.
-            return _value.ucharptr == 0 ? u"" : _value.ucharptr;
+            return _value.ucharptr == nullptr ? u"" : _value.ucharptr;
         }
         case STRING | BIT16 | CLASS: {
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
@@ -159,7 +159,7 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
             return _aux->c_str();
 #else
             // A pointer to UString.
-            return _value.ustring == 0 ? u"" : _value.ustring->c_str();
+            return _value.ustring == nullptr ? u"" : _value.ustring->c_str();
 #endif
         }
         case STRING | BIT16 | CLASS | STRINGIFY: {
@@ -168,10 +168,10 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
             return _aux->c_str();
 #else
             // A pointer to StringifyInterface. Need to allocate an auxiliary string.
-            if (_value.stringify != 0 && _aux == 0) {
+            if (_value.stringify != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.stringify->toString());
             }
-            return _aux == 0 ? u"" : _aux->c_str();
+            return _aux == nullptr ? u"" : _aux->c_str();
 #endif
         }
         default: {
@@ -186,7 +186,7 @@ const std::string& ts::ArgMix::toString() const
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
         return _string;
 #else
-        return _value.string != 0 ? *_value.string : empty;
+        return _value.string != nullptr ? *_value.string : empty;
 #endif
     }
     else {
@@ -199,23 +199,23 @@ const ts::UString& ts::ArgMix::toUString() const
     switch (_type) {
         case STRING | BIT16 | CLASS: {
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            assert(_aux != 0);
+            assert(_aux != nullptr);
             return *_aux;
 #else
             // A pointer to UString.
-            return _value.ustring == 0 ? uempty : *_value.ustring;
+            return _value.ustring == nullptr ? uempty : *_value.ustring;
 #endif
         }
         case STRING | BIT16 | CLASS | STRINGIFY: {
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            assert(_aux != 0);
+            assert(_aux != nullptr);
             return *_aux;
 #else
             // A pointer to StringifyInterface. Need to allocate an auxiliary string.
-            if (_value.stringify != 0 && _aux == 0) {
+            if (_value.stringify != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.stringify->toString());
             }
-            return _aux == 0 ? uempty : *_aux;
+            return _aux == nullptr ? uempty : *_aux;
 #endif
         }
         default: {

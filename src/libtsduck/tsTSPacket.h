@@ -274,7 +274,7 @@ namespace ts {
         //!
         inline size_t getHeaderSize() const
         {
-            return std::min(4 + (hasAF() ? ((size_t)(b[4])+1) : 0), PKT_SIZE);
+            return std::min(4 + (hasAF() ? (size_t(b[4]) + 1) : 0), PKT_SIZE);
         }
 
         //!
@@ -494,7 +494,7 @@ namespace ts {
         //!
         void copyFrom(const void* source)
         {
-            assert(source != 0);
+            assert(source != nullptr);
             ::memcpy(b, source, PKT_SIZE);
         }
 
@@ -504,7 +504,7 @@ namespace ts {
         //!
         void copyTo(void* dest) const
         {
-            assert(dest != 0);
+            assert(dest != nullptr);
             ::memcpy(dest, b, PKT_SIZE);
         }
 
@@ -516,8 +516,8 @@ namespace ts {
         //!
         static inline void Copy(TSPacket* dest, const TSPacket* source, size_t count = 1)
         {
-            assert(dest != 0);
-            assert(source != 0);
+            assert(dest != nullptr);
+            assert(source != nullptr);
             ::memcpy(dest->b, source->b, count * PKT_SIZE);
         }
 
@@ -529,8 +529,8 @@ namespace ts {
         //!
         static inline void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1)
         {
-            assert(dest != 0);
-            assert(source != 0);
+            assert(dest != nullptr);
+            assert(source != nullptr);
             ::memcpy(dest->b, source, count * PKT_SIZE);
         }
 
@@ -542,8 +542,8 @@ namespace ts {
         //!
         static inline void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1)
         {
-            assert(dest != 0);
-            assert(source != 0);
+            assert(dest != nullptr);
+            assert(source != nullptr);
             ::memcpy(dest, source->b, count * PKT_SIZE);
         }
 

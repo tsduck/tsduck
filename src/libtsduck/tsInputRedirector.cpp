@@ -45,7 +45,7 @@ ts::InputRedirector::InputRedirector(const UString& name,
                                      std::istream& stream,
                                      std::ios::openmode mode) :
     _stream(stream),
-    _previous(0),
+    _previous(nullptr),
     _file()
 {
     if (!name.empty()) {
@@ -72,9 +72,9 @@ ts::InputRedirector::InputRedirector(const UString& name,
 
 ts::InputRedirector::~InputRedirector()
 {
-    if (_previous != 0) {
+    if (_previous != nullptr) {
         _stream.rdbuf(_previous);
-        _previous = 0;
+        _previous = nullptr;
     }
     if (_file.is_open()) {
         _file.close();

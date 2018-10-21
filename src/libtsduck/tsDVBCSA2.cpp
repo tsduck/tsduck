@@ -181,9 +181,9 @@ void ts::DVBCSA2::StreamCipher::init (const uint8_t *key)
 }
 
 
-void ts::DVBCSA2::StreamCipher::cipher (const uint8_t* sb, uint8_t *cb)
+void ts::DVBCSA2::StreamCipher::cipher(const uint8_t* sb, uint8_t *cb)
 {
-    const bool init = sb != 0;
+    const bool init = sb != nullptr;
     int i,j;
     int in1 = 0;  //  most significant nibble of input byte
     int in2 = 0;  // least significant nibble of input byte
@@ -576,7 +576,7 @@ void ts::DVBCSA2::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
 bool ts::DVBCSA2::setKey(const void* key, size_t key_length, size_t rounds)
 {
     // Only one possible key size.
-    if (key == 0 || key_length != KEY_SIZE) {
+    if (key == nullptr || key_length != KEY_SIZE) {
         return false;
     }
 
@@ -609,12 +609,12 @@ bool ts::DVBCSA2::encryptInPlace(void* addr, size_t size, size_t* max_actual_len
     const size_t rsize = size % 8;     // residue size
 
     // Filter invalid parameters.
-    if (addr == 0 || nblocks > MAX_NBLOCKS || !_init) {
+    if (addr == nullptr || nblocks > MAX_NBLOCKS || !_init) {
         return false;
     }
 
     // Output size is the same as input size.
-    if (max_actual_length != 0) {
+    if (max_actual_length != nullptr) {
         *max_actual_length = size;
     }
 
@@ -646,13 +646,13 @@ bool ts::DVBCSA2::encryptInPlace(void* addr, size_t size, size_t* max_actual_len
     // Now perform stream cipher in the reverse direction.
     // Skip first block, as indicated above.
     for (size_t i = 1; i < nblocks; i++) {
-        stream_ctx.cipher (0, ostream);
+        stream_ctx.cipher(nullptr, ostream);
         xor_8(data + 8*i, ib[i], ostream);
     }
 
     // Cipher residue, if any
     if (rsize > 0) {
-        stream_ctx.cipher (0, ostream);
+        stream_ctx.cipher(nullptr, ostream);
         for (size_t i = 0; i < rsize; i++) {
             data[8*nblocks + i] ^= ostream[i];
         }
@@ -673,12 +673,12 @@ bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_len
     const size_t rsize = size % 8;    // residue size
 
     // Filter invalid parameters.
-    if (addr == 0 || nblocks > MAX_NBLOCKS || !_init) {
+    if (addr == nullptr || nblocks > MAX_NBLOCKS || !_init) {
         return false;
     }
 
     // Output size is the same as input size.
-    if (max_actual_length != 0) {
+    if (max_actual_length != nullptr) {
         *max_actual_length = size;
     }
 
@@ -700,8 +700,8 @@ bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_len
 
     // Decipher all blocks except last one.
     for (size_t i = 1; i < nblocks; i++) {
-        _block.decipher (ib, oblock);
-        stream_ctx.cipher (0, ostream);
+        _block.decipher(ib, oblock);
+        stream_ctx.cipher(nullptr, ostream);
         xor_8(ib, data + 8*i, ostream);
         xor_8(data + 8*(i-1), ib, oblock);
     }
@@ -712,7 +712,7 @@ bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_len
 
     // Decipher residue, if any
     if (rsize > 0) {
-        stream_ctx.cipher (0, ostream);
+        stream_ctx.cipher(nullptr, ostream);
         for (size_t i = 0; i < rsize; i++) {
             data [8*nblocks + i] ^= ostream[i];
         }
@@ -728,7 +728,7 @@ bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_len
 
 bool ts::DVBCSA2::encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
-    if (plain == 0 || cipher == 0 || cipher_maxsize < plain_length) {
+    if (plain == nullptr || cipher == nullptr || cipher_maxsize < plain_length) {
         return false;
     }
     else {
@@ -739,7 +739,7 @@ bool ts::DVBCSA2::encrypt(const void* plain, size_t plain_length, void* cipher, 
 
 bool ts::DVBCSA2::decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
-    if (cipher == 0 || plain == 0 || plain_maxsize < cipher_length) {
+    if (cipher == nullptr || plain == nullptr || plain_maxsize < cipher_length) {
         return false;
     }
     else {

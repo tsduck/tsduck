@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~NullReport();
+        virtual ~NullReport() override;
 
     protected:
         // String interface implementation

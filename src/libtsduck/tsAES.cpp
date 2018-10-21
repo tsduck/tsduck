@@ -1289,7 +1289,7 @@ bool ts::AES::encrypt(const void* plain, size_t plain_length,
         rk[3];
     PutUInt32 (ct+12, s3);
 
-    if (cipher_length != 0) {
+    if (cipher_length != nullptr) {
         *cipher_length = BLOCK_SIZE;
     }
 
@@ -1418,7 +1418,7 @@ bool ts::AES::decrypt(const void* cipher, size_t cipher_length,
         rk[3];
     PutUInt32 (pt+12, s3);
 
-    if (plain_length != 0) {
+    if (plain_length != nullptr) {
         *plain_length = BLOCK_SIZE;
     }
 

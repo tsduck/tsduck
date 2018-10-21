@@ -57,7 +57,7 @@ namespace ts {
             //! @param [in] default_level Default logging level of messages.
             //! @param [in] default_report Where to report messages. Can be null.
             //!
-            Logger(int default_level = Severity::Info, Report* default_report = 0);
+            Logger(int default_level = Severity::Info, Report* default_report = nullptr);
 
             //!
             //! Set the default severity level.
@@ -108,7 +108,7 @@ namespace ts {
             //!
             void setReport(Report* default_report)
             {
-                _report = default_report != 0 ? default_report : NullReport::Instance();
+                _report = default_report != nullptr ? default_report : NullReport::Instance();
             }
 
             //!
@@ -126,7 +126,7 @@ namespace ts {
             //! @param [in] comment Optional leading comment line (before the message).
             //! @param [in] report Where to report the message. If null, use the default report.
             //!
-            void log(const Message& msg, const UString& comment = UString(), Report* report = 0);
+            void log(const Message& msg, const UString& comment = UString(), Report* report = nullptr);
 
             // Make sure the compiler knows that we understand the consequences of
             // copying the Report* in the object: we point to the same external Report.

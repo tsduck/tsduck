@@ -51,7 +51,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~CerrReport();
+        virtual ~CerrReport() override;
 
     protected:
         // Report implementation

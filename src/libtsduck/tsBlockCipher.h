@@ -117,7 +117,7 @@ namespace ts {
         //!
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = 0) = 0;
+                             size_t* cipher_length = nullptr) = 0;
 
         //!
         //! Decrypt one block of data.
@@ -135,7 +135,7 @@ namespace ts {
         //!
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
-                             size_t* plain_length = 0) = 0;
+                             size_t* plain_length = nullptr) = 0;
 
         //!
         //! Encrypt one block of data in place.
@@ -155,7 +155,7 @@ namespace ts {
         //! same as @a data_length. For cipher chainings with padding, this can be larger.
         //! @return True on success, false on error.
         //!
-        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0);
+        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = nullptr);
 
         //!
         //! Decrypt one block of data in place.
@@ -175,7 +175,7 @@ namespace ts {
         //! same as @a data_length. For cipher chainings with padding, this can be smaller.
         //! @return True on success, false on error.
         //!
-        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = 0);
+        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = nullptr);
 
         //!
         //! Virtual destructor.

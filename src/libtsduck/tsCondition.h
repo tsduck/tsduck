@@ -83,7 +83,6 @@ namespace ts {
         //! is awaken. It is then the responsibility of the awaken threads
         //! to check that the expected situation actually exists.
         //!
-        //! @return true on success and false on error.
         //! @throw ts::Condition::ConditionError In case of operating system error.
         //!
         void signal();

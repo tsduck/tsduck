@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 
 bool ts::AbstractAVCStructure::parse (const void* data, size_t size)
 {
-    if (data == 0) {
+    if (data == nullptr) {
         return valid = false;
     }
     else {
