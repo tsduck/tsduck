@@ -47,7 +47,7 @@ namespace {
 
 ts::HiDesDevice::HiDesDevice() :
     _is_open(false),
-    _guts(0)
+    _guts(nullptr)
 {
 }
 

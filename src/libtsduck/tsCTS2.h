@@ -65,10 +65,10 @@ namespace ts {
         virtual UString name() const override {return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS2";}
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = 0) override;
+                             size_t* cipher_length = nullptr) override;
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
-                             size_t* plain_length = 0) override;
+                             size_t* plain_length = nullptr) override;
     };
 }
 

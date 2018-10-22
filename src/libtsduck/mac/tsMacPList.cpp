@@ -62,16 +62,16 @@ bool ts::MacPList::load(const ts::UString& fileName, Report& report)
     const xml::Element* root = doc.rootElement();
 
     // Get the <dict> element inside <plist>
-    const xml::Element* dict = root == 0 ? 0 : root->findFirstChild(u"dict");
-    if (dict == 0) {
+    const xml::Element* dict = root == nullptr ? nullptr : root->findFirstChild(u"dict");
+    if (dict == nullptr) {
         return false;
     }
 
     // Load all pairs of <key>Name</key> <string>Value</string>
-    for (const xml::Element* child = dict->firstChildElement(); child != 0; child = child->nextSiblingElement()) {
+    for (const xml::Element* child = dict->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
         if (child->name().similar(u"key")) {
             const xml::Element* next = child->nextSiblingElement();
-            if (next != 0 && next->name().similar(u"string")) {
+            if (next != nullptr && next->name().similar(u"string")) {
                 // Found a <key>Name</key> <string>Value</string>
                 UString name;
                 UString value;

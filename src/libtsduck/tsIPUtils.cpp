@@ -88,15 +88,15 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
 #if defined(TS_MAC)
 
     // Get the list of local addresses. The memory is allocated by getifaddrs().
-    ::ifaddrs* start = 0;
+    ::ifaddrs* start = nullptr;
     if (::getifaddrs(&start) != 0) {
         report.error(u"error getting local addresses: %s", {ErrorCodeMessage()});
         return false;
     }
 
     // Browse the list of interfaces.
-    for (::ifaddrs* ifa = start; ifa != 0; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr != 0) {
+    for (::ifaddrs* ifa = start; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr != nullptr) {
             IPAddress addr(*ifa->ifa_addr);
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
                 list.push_back(IPAddressMask(addr, IPAddress(*ifa->ifa_netmask)));

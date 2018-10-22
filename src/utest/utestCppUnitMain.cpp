@@ -33,6 +33,13 @@
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
+
+// Make sure that NULL in CppUnit headers does not trigger fatal warnings.
+#if defined(NULL)
+#undef NULL
+#endif
+#define NULL nullptr
+
 #include <cppunit/TextOutputter.h>
 #include <cppunit/XmlOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
