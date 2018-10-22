@@ -231,7 +231,6 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
 
 void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool header) const
 {
-    grid.putLayout({{u"Total", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
     grid.putLayout({{header ? u"Total" : u" ", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
 }
 
