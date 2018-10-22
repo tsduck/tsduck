@@ -118,7 +118,7 @@ namespace ts {
         void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool decimalPids) const;
 
          // Display one line of a subtotal.
-         void reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const;
+         void reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool header) const;
 
         // Display one line of a service PID list.
         void reportServicePID(Grid& grid, const PIDContext&) const;
