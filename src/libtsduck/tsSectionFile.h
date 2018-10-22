@@ -40,6 +40,7 @@
 #include "tsBinaryTable.h"
 #include "tsUString.h"
 #include "tsDVBCharset.h"
+#include "tsxmlTweaks.h"
 #include "tsTablesPtr.h"
 #include "tsCerrReport.h"
 
@@ -149,6 +150,12 @@ namespace ts {
         //! extension from @a file_name and add the extension corresponding to @a type.
         //!
         static UString BuildFileName(const UString& file_name, FileType type);
+
+        //!
+        //! Set new parsing and formatting tweaks for XML files.
+        //! @param [in] tweaks XML tweaks.
+        //!
+        void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
 
         //!
         //! Load a binary or XML file.
@@ -340,6 +347,7 @@ namespace ts {
         BinaryTablePtrVector _tables;          //!< Loaded tables.
         SectionPtrVector     _sections;        //!< All sections from the file.
         SectionPtrVector     _orphanSections;  //!< Sections which do not belong to any table.
+        xml::Tweaks          _xmlTweaks;       //!< XML formatting and parsing tweaks.
 
         //!
         //! Parse an XML document.

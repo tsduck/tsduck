@@ -27,9 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsxmlText.h"
-#include "tsxmlElement.h"
-#include "tsFatal.h"
+#include "tsxmlTweaksArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -37,62 +35,52 @@ TSDUCK_SOURCE;
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::xml::Text::Text(Report& report, size_t line, bool cdata) :
-    Node(report, line),
-    _isCData(cdata)
-{
-}
-
-ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
-    Node(parent, text),
-    _isCData(cdata)
+ts::xml::TweaksArgs::TweaksArgs() :
+    strictXML(false)
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Print the node.
+// Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
+void ts::xml::TweaksArgs::defineOptions(Args& args) const
 {
-    if (_isCData) {
-        output << "<![CDATA[" << _value << "]]>";
-    }
-    else {
-        // In text nodes, without strictly conformant XML, we escape 3 out of 5 XML characters: < > &
-        // This is the required minimum to make the syntax correct.
-        // The quotes (' ") are not escaped since this makes most XML text unreadable.
-        const Tweaks& tw(tweaks());
-        output << _value.toHTML(tw.strictTextNodeFormatting ? u"<>&'\"" : u"<>&");
-    }
+    args.option(u"strict-xml");
+    args.help(u"strict-xml",
+              u"Save XML documents in strictly conformant XML format. "
+              u"By default, do not escape characters when this is not syntactically "
+              u"necessary to make the XML text more human-readable.");
 }
 
 
 //----------------------------------------------------------------------------
-// Parse the node.
+// Load arguments from command line.
+// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
+bool ts::xml::TweaksArgs::load(Args& args)
 {
-    bool ok;
+    strictXML = args.present(u"strict-xml");
+    return true;
+}
 
-    // The current point of parsing is the first character of the text.
-    if (_isCData) {
-        // In the case of CDATA, we are right after the "<![CDATA[". Parse up to "]]>".
-        ok = parser.parseText(_value, u"]]>", true, false);
-        if (!ok) {
-            _report.error(u"line %d: no ]]> found to close the <![CDATA[", {lineNumber()});
-        }
-    }
-    else {
-        // Outside CDATA, the text ends at the next "<" (start of tag).
-        // HTML entities shall be translated.
-        ok = parser.parseText(_value, u"<", false, true);
-        if (!ok) {
-            _report.error(u"line %d: error parsing text element, not properly terminated", {lineNumber()});
-        }
-    }
 
-    return ok;
+//----------------------------------------------------------------------------
+// Set the relevant XML tweaks.
+//----------------------------------------------------------------------------
+
+void ts::xml::TweaksArgs::setTweaks(ts::xml::Tweaks& tweaks) const
+{
+    tweaks.attributeValueDoubleQuote = true;
+    tweaks.strictAttributeFormatting = true;
+    tweaks.strictTextNodeFormatting = strictXML;
+}
+
+ts::xml::Tweaks ts::xml::TweaksArgs::tweaks() const
+{
+    Tweaks tw;
+    setTweaks(tw);
+    return tw;
 }

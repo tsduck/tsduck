@@ -28,20 +28,56 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Command line options for parsing and formatting XML documents.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 972
+#include "tsArgs.h"
+#include "tsxmlTweaks.h"
+
+namespace ts {
+    namespace xml {
+        //!
+        //! Command line options for parsing and formatting XML documents.
+        //! @ingroup cmd
+        //!
+        class TSDUCKDLL TweaksArgs
+        {
+        public:
+            // Public fields
+            bool strictXML;  //!< Option -\-strict-xml.
+
+            //!
+            //! Default constructor.
+            //!
+            TweaksArgs();
+
+            //!
+            //! Define command line options in an Args.
+            //! @param [in,out] args Command line arguments to update.
+            //!
+            void defineOptions(Args& args) const;
+
+            //!
+            //! Load arguments from command line.
+            //! Args error indicator is set in case of incorrect arguments.
+            //! @param [in,out] args Command line arguments.
+            //! @return True on success, false on error in argument line.
+            //!
+            bool load(Args& args);
+
+            //!
+            //! Set the relevant XML tweaks.
+            //! @param [in,out] tweaks Tweaks to be updated from the command line options.
+            //!
+            void setTweaks(Tweaks& tweaks) const;
+
+            //!
+            //! Get relevant XML tweaks in a default tweaks structure.
+            //! @return Tweaks from the command line options.
+            //!
+            Tweaks tweaks() const;
+        };
+    }
+}

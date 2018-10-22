@@ -166,6 +166,19 @@ size_t ts::xml::Node::depth() const
 
 
 //----------------------------------------------------------------------------
+// Get the current XML parsing and formatting tweaks for this node.
+//----------------------------------------------------------------------------
+
+const ts::xml::Tweaks ts::xml::Node::defaultTweaks;
+
+const ts::xml::Tweaks& ts::xml::Node::tweaks() const
+{
+    const ts::xml::Document* const doc = document();
+    return doc != nullptr ? doc->tweaks() : defaultTweaks;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the next or previous sibling node.
 //----------------------------------------------------------------------------
 

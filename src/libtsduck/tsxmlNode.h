@@ -38,7 +38,7 @@
 #include "tsReportWithPrefix.h"
 #include "tsTextFormatter.h"
 #include "tsTextParser.h"
-#include "tsxml.h"
+#include "tsxmlTweaks.h"
 
 namespace ts {
     namespace xml {
@@ -99,6 +99,13 @@ namespace ts {
             //! @return The node's document or zero if there is no document.
             //!
             Document* document();
+
+            //!
+            //! Get a constant reference to the current XML parsing and formatting tweaks for this node.
+            //! @return A constant reference to the XML tweaks to apply. When the node is part of a
+            //! document, get the global tweaks of the document. Otherwise, get the default tweaks.
+            //!
+            virtual const Tweaks& tweaks() const;
 
             //!
             //! Get the depth of an XML element.
@@ -317,6 +324,8 @@ namespace ts {
             Node*   _parent;        //!< Parent node, null for a document.
             Node*   _firstChild;    //!< First child, can be null, other children are linked through the RingNode.
             size_t  _inputLineNum;  //!< Line number in input document, zero if build programmatically.
+
+            static const Tweaks defaultTweaks;  //!< Default XML tweaks for orphan nodes.
 
             // Inaccessible operations.
             Node(const Node&) = delete;

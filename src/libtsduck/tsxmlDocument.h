@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsxmlNode.h"
+#include "tsxmlTweaks.h"
+#include "tsxmlTweaksArgs.h"
 #include "tsReport.h"
 #include "tsStringifyInterface.h"
 
@@ -50,7 +52,7 @@ namespace ts {
             //! Constructor.
             //! @param [in,out] report Where to report errors.
             //!
-            explicit Document(Report& report = NULLREP) : Node(report, 1) {}
+            explicit Document(Report& report = NULLREP);
 
             //!
             //! Parse an XML document.
@@ -109,9 +111,6 @@ namespace ts {
             //!
             bool save(const UString& fileName, size_t indent = 2);
 
-            // Implementation of StringifyInterface.
-            virtual UString toString() const override;
-
             //!
             //! Get the root element of the document.
             //! @return The root element of the document or zero if there is none.
@@ -133,6 +132,27 @@ namespace ts {
             //! @return New root element of the document or null on error.
             //!
             Element* initialize(const UString& rootName, const UString& declaration = UString());
+
+            //!
+            //! Get a constant reference to the global XML parsing and formatting tweaks for the document.
+            //! @return A constant reference to the global XML tweaks.
+            //!
+            virtual const Tweaks& tweaks() const override { return _tweaks; }
+
+            //!
+            //! Set the global XML parsing and formatting tweaks for the document.
+            //! @param [in] tw The new global XML tweaks.
+            //!
+            void setTweaks(const Tweaks& tw) { _tweaks = tw; }
+
+            //!
+            //! Adjust the global XML tweaks for the document according to command line options.
+            //! @param [in] in The command line arguments.
+            //!
+            void setTweaks(const TweaksArgs& args) { args.setTweaks(_tweaks); }
+
+            // Implementation of StringifyInterface.
+            virtual UString toString() const override;
 
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Document"; }
@@ -159,6 +179,9 @@ namespace ts {
             //! @return Address of the child model or zero if not found.
             //!
             const Element* findModelElement(const Element* elem, const UString& name) const;
+
+            // Private members.
+            Tweaks _tweaks;  // Global XML tweaks for the document.
 
             // Inaccessible operations.
             Document(const Document&) = delete;

@@ -447,6 +447,8 @@ HEADERS += \
     ../../../src/libtsduck/tsxmlElementTemplate.h \
     ../../../src/libtsduck/tsxmlNode.h \
     ../../../src/libtsduck/tsxmlText.h \
+    ../../../src/libtsduck/tsxmlTweaks.h \
+    ../../../src/libtsduck/tsxmlTweaksArgs.h \
     ../../../src/libtsduck/tsxmlUnknown.h \
     ../../../src/libtsduck/private/tsDektec.h \
     ../../../src/libtsduck/private/tsDektecDevice.h \
@@ -814,6 +816,8 @@ SOURCES += \
     ../../../src/libtsduck/tsxmlElement.cpp \
     ../../../src/libtsduck/tsxmlNode.cpp \
     ../../../src/libtsduck/tsxmlText.cpp \
+    ../../../src/libtsduck/tsxmlTweaks.cpp \
+    ../../../src/libtsduck/tsxmlTweaksArgs.cpp \
     ../../../src/libtsduck/tsxmlUnknown.cpp \
     ../../../src/libtsduck/private/tsDektecDevice.cpp \
     ../../../src/libtsduck/private/tsDektecVPD.cpp \

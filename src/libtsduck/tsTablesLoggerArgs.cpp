@@ -78,7 +78,8 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     tid(),
     tidext(),
     use_current(true),
-    use_next(false)
+    use_next(false),
+    xml_tweaks()
 {
 }
 
@@ -89,6 +90,8 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
 
 void ts::TablesLoggerArgs::defineOptions(Args& args) const
 {
+    xml_tweaks.defineOptions(args);
+
     args.option(u"all-once");
     args.help(u"all-once",
               u"Same as --all-sections but collect each section only once per combination of "
@@ -356,5 +359,6 @@ bool ts::TablesLoggerArgs::load(Args& args)
         return false;
     }
 
-    return true;
+    // Load XML options.
+    return xml_tweaks.load(args);
 }

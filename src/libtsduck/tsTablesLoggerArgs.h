@@ -35,6 +35,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsMPEG.h"
+#include "tsxmlTweaksArgs.h"
 
 namespace ts {
     //!
@@ -89,6 +90,7 @@ namespace ts {
         std::set<uint16_t> tidext;  //!< TID-ext values to filter.
         bool     use_current;       //!< Use tables with "current" flag.
         bool     use_next;          //!< Use tables with "next" flag.
+        xml::TweaksArgs xml_tweaks; //!< XML tweak options.
 
         //!
         //! Default table log size.

@@ -48,7 +48,8 @@ TSDUCK_SOURCE;
 ts::SectionFile::SectionFile() :
     _tables(),
     _sections(),
-    _orphanSections()
+    _orphanSections(),
+    _xmlTweaks()
 {
 }
 
@@ -278,6 +279,7 @@ bool ts::SectionFile::loadXML(const UString& file_name, Report& report, const DV
 {
     clear();
     xml::Document doc(report);
+    doc.setTweaks(_xmlTweaks);
     return doc.load(file_name, false) && parseDocument(doc, charset);
 }
 
@@ -285,6 +287,7 @@ bool ts::SectionFile::loadXML(std::istream& strm, Report& report, const DVBChars
 {
     clear();
     xml::Document doc(report);
+    doc.setTweaks(_xmlTweaks);
     return doc.load(strm) && parseDocument(doc, charset);
 }
 
@@ -292,6 +295,7 @@ bool ts::SectionFile::parseXML(const UString& xml_content, Report& report, const
 {
     clear();
     xml::Document doc(report);
+    doc.setTweaks(_xmlTweaks);
     return doc.parse(xml_content) && parseDocument(doc, charset);
 }
 
@@ -336,12 +340,14 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc, const DVBCharset* 
 bool ts::SectionFile::saveXML(const UString& file_name, Report& report, const DVBCharset* charset) const
 {
     xml::Document doc(report);
+    doc.setTweaks(_xmlTweaks);
     return generateDocument(doc, charset) && doc.save(file_name);
 }
 
 ts::UString ts::SectionFile::toXML(Report& report, const DVBCharset* charset) const
 {
     xml::Document doc(report);
+    doc.setTweaks(_xmlTweaks);
     return generateDocument(doc, charset) ? doc.toString() : UString();
 }
 
