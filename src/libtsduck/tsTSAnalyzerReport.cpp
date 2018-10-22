@@ -293,7 +293,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
             if (pc.pid <= 0x1F) psi_bitrate+= pc.bitrate;
         }
     }
-    reportServiceSubtotal(grid, u"Global PID's (NULL stuffing excluded)", _global_scr_pids > 0, psi_bitrate, _ts_bitrate);
+    reportServiceSubtotal(grid, u"Aggregated bitrate of PIDs: 0x00-0x1f", _global_scr_pids > 0, psi_bitrate, _ts_bitrate);
 
     // Display unreferenced pids
 
