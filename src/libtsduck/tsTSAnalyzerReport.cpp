@@ -221,7 +221,7 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
     grid.setLayout({decimalPids ? grid.both(14) : grid.right(6), grid.bothTruncateLeft(decimalPids ? 56 : 49), grid.right(14)});
     grid.putLayout({{u"PID", u""}, {u"Usage", u"Access "}, {u"Bitrate"}});
     grid.setLayout({decimalPids ? grid.both(14) : grid.right(6), grid.bothTruncateLeft(decimalPids ? 56 : 49, u'.'), grid.right(14)});
-    reportServiceSubtotal(grid, usage, scrambled, bitrate, ts_bitrate);
+    reportServiceSubtotal(grid, usage, scrambled, bitrate, ts_bitrate, true);
 }
 
 
@@ -229,9 +229,10 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
 // Display one line of a subtotal
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const
+void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool header) const
 {
     grid.putLayout({{u"Total", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
+    grid.putLayout({{header ? u"Total" : u" ", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
 }
 
 
@@ -293,7 +294,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
             if (pc.pid <= 0x1F) psi_bitrate+= pc.bitrate;
         }
     }
-    reportServiceSubtotal(grid, u"Aggregated bitrate of PIDs: 0x00-0x1f", _global_scr_pids > 0, psi_bitrate, _ts_bitrate);
+    reportServiceSubtotal(grid, u"Aggregated bitrate of PIDs: 0x00-0x1F", _global_scr_pids > 0, psi_bitrate, _ts_bitrate, false);
 
     // Display unreferenced pids
 
