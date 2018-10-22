@@ -36,6 +36,7 @@
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
 #include "tsDVBCharset.h"
+#include "tsxmlTweaksArgs.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
@@ -62,6 +63,7 @@ struct Options: public ts::Args
     bool                  compile;         // Explicit compilation.
     bool                  decompile;       // Explicit decompilation.
     bool                  xmlModel;        // Display XML model instead of compilation.
+    ts::xml::TweaksArgs   xmlTweaks;       // XML formatting options.
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
 
 private:
@@ -78,8 +80,11 @@ Options::Options(int argc, char *argv[]) :
     compile(false),
     decompile(false),
     xmlModel(false),
+    xmlTweaks(),
     defaultCharset(nullptr)
 {
+    xmlTweaks.defineOptions(*this);
+
     option(u"", 0, STRING);
     help(u"",
          u"XML source files to compile or binary table files to decompile. By default, "
@@ -133,6 +138,7 @@ Options::Options(int argc, char *argv[]) :
     decompile = present(u"decompile");
     xmlModel = present(u"xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
+    xmlTweaks.load(*this);
 
     if (!infiles.empty() && xmlModel) {
         error(u"do not specify input files with --xml-model");
@@ -210,6 +216,8 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
     }
 
     ts::SectionFile file;
+    file.setTweaks(opt.xmlTweaks.tweaks());
+
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
 
     // Process the input file, starting with error cases.

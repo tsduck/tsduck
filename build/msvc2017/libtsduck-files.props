@@ -449,6 +449,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlText.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsxmlTweaks.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsxmlTweaksArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektec.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecDevice.h" />
@@ -826,6 +828,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsxmlElement.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlText.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsxmlTweaks.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsxmlTweaksArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlUnknown.cpp" />
     <ClCompile Include="..\..\src\libtsduck\private\tsDektecDevice.cpp" />
     <ClCompile Include="..\..\src\libtsduck\private\tsDektecVPD.cpp" />

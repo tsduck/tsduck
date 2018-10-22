@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.15-957
+VERSION 3.15-972
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,7 @@ VERSION 3.15-957
   * Added options --udp-size, --min-udp-size, --max-udp-size, --net-size,
     --min-net-size, --max-net-size to plugin "mpe".
   * Added option --network-id to plugin "nitscan".
+  * Added option --strict-xml to "tstabcomp", "tstables" and plugin "tables".
   * Added option --max-packets to "tsdump".
   * The command "tsdump" can now accept multiple input files.
 

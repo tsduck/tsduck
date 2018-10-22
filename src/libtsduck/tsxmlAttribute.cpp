@@ -61,6 +61,45 @@ ts::xml::Attribute::Attribute(const UString& name, const UString& value, size_t 
 
 
 //----------------------------------------------------------------------------
+// Get the formatted attribute value with quotes and escaped characters.
+//----------------------------------------------------------------------------
+
+const ts::UString ts::xml::Attribute::formattedValue(const ts::xml::Tweaks& tweaks) const
+{
+    // Get the quote character to use.
+    UChar quote = tweaks.attributeValueQuote();
+
+    // List of characters to escape.
+    UString escape;
+
+    if (tweaks.strictAttributeFormatting) {
+        // With strict formatting, escape all characters.
+        escape = u"<>&'\"";
+    }
+    else {
+        // Without strict formatting, escape required characters only.
+        escape = u"&";
+        // Try to find a unique quote to avoid escape characters.
+        if (_value.find(quote) != NPOS) {
+            // The default quote is present, try the other one.
+            const UChar otherQuote = tweaks.attributeValueOtherQuote();
+            if (_value.find(otherQuote) == NPOS) {
+                // The other quote is not present, use it. Nothing to escape.
+                quote = otherQuote;
+            }
+            else {
+                // The other quote is present as well. Keep default quote and escape it.
+                escape.append(quote);
+            }
+        }
+    }
+
+    // Full formatted value.
+    return quote + _value.toHTML(escape) + quote;
+}
+
+
+//----------------------------------------------------------------------------
 // Set attribute value.
 //----------------------------------------------------------------------------
 

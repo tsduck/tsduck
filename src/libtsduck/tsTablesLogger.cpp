@@ -85,6 +85,9 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
         return;
     }
 
+    // Set XML options in document.
+    _xmlDoc.setTweaks(_opt.xml_tweaks);
+
     // Open/create the XML output.
     if (_opt.use_xml && !_opt.rewrite_xml && !createXML(_opt.xml_destination)) {
         return;

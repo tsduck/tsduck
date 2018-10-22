@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsxmlNode.h"
+#include "tsxmlTweaks.h"
 #include "tsEnumeration.h"
 #include "tsTime.h"
 
@@ -83,6 +84,13 @@ namespace ts {
             //! @return A constant reference to the attribute value.
             //!
             const UString& value() const { return _value; }
+
+            //!
+            //! Get the formatted attribute value with quotes and escaped characters.
+            //! @param [in] tweaks Formatting tweaks.
+            //! @return The formatted value of the attribute.
+            //!
+            const UString formattedValue(const Tweaks& tweaks) const;
 
             //!
             //! Get the update sequence number.

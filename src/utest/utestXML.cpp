@@ -60,6 +60,7 @@ public:
     void testCreation();
     void testKeepOpen();
     void testEscape();
+    void testTweaks();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
@@ -69,6 +70,7 @@ public:
     CPPUNIT_TEST(testCreation);
     CPPUNIT_TEST(testKeepOpen);
     CPPUNIT_TEST(testEscape);
+    CPPUNIT_TEST(testTweaks);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -423,4 +425,51 @@ void XMLTest::testEscape()
     CPPUNIT_ASSERT(elem->hasChildren());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child2", elem->name());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"text<&'\">text", elem->text());
+}
+
+void XMLTest::testTweaks()
+{
+    ts::xml::Document doc(report());
+    ts::xml::Element* root = doc.initialize(u"root");
+    CPPUNIT_ASSERT(root != nullptr);
+    root->setAttribute(u"a1", u"foo");
+    root->setAttribute(u"a2", u"ab&<>'\"cd");
+    root->setAttribute(u"a3", u"ef\"gh");
+    root->setAttribute(u"a4", u"ij'kl");
+    CPPUNIT_ASSERT(root->addText(u"text<&'\">text") != nullptr);
+
+    ts::xml::Tweaks tweaks; // default values
+    doc.setTweaks(tweaks);
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root a1=\"foo\" a2=\"ab&amp;&lt;&gt;&apos;&quot;cd\" a3=\"ef&quot;gh\" a4=\"ij&apos;kl\">text&lt;&amp;'\"&gt;text</root>\n",
+        doc.toString());
+
+    tweaks.strictAttributeFormatting = true;
+    tweaks.strictTextNodeFormatting = true;
+    doc.setTweaks(tweaks);
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root a1=\"foo\" a2=\"ab&amp;&lt;&gt;&apos;&quot;cd\" a3=\"ef&quot;gh\" a4=\"ij&apos;kl\">text&lt;&amp;&apos;&quot;&gt;text</root>\n",
+        doc.toString());
+
+    tweaks.strictAttributeFormatting = false;
+    tweaks.strictTextNodeFormatting = true;
+    doc.setTweaks(tweaks);
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root a1=\"foo\" a2=\"ab&amp;<>'&quot;cd\" a3='ef\"gh' a4=\"ij'kl\">text&lt;&amp;&apos;&quot;&gt;text</root>\n",
+        doc.toString());
+
+    tweaks.strictAttributeFormatting = false;
+    tweaks.strictTextNodeFormatting = false;
+    doc.setTweaks(tweaks);
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root a1=\"foo\" a2=\"ab&amp;<>'&quot;cd\" a3='ef\"gh' a4=\"ij'kl\">text&lt;&amp;'\"&gt;text</root>\n",
+        doc.toString());
 }

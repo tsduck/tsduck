@@ -606,9 +606,7 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
     // Loop on all attributes.
     for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
         const Attribute& attr(attribute(*it));
-        // In attribute values, we escape all 5 XML characters: < > & ' "
-        // This may seem a bit excessive but needed by some XML analyzers.
-        output << " " << attr.name() << "=\"" << attr.value().toHTML(u"<>&'\"") << '"';
+        output << " " << attr.name() << "=" << attr.formattedValue(tweaks());
     }
 
     // Close the tag and return if nothing else to output.

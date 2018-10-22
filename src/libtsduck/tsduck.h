@@ -447,6 +447,8 @@
 #include "tsxmlElement.h"
 #include "tsxmlNode.h"
 #include "tsxmlText.h"
+#include "tsxmlTweaks.h"
+#include "tsxmlTweaksArgs.h"
 #include "tsxmlUnknown.h"
 
 #if defined(TS_LINUX)
