@@ -416,6 +416,10 @@ namespace ts {
         size_t      _global_scr_pids;    //!< Number of scrambled global PID's.
         uint64_t    _global_pkt_cnt;     //!< Number of packets in global PID's.
         uint32_t    _global_bitrate;     //!< Bitrate for global PID's.
+        size_t      _psisi_pid_cnt;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
+        size_t      _psisi_scr_pids;     //!< Number of scrambled global PSI/SI PID's (normally zero).
+        uint64_t    _psisi_pkt_cnt;      //!< Number of packets in global PSI/SI PID's.
+        uint32_t    _psisi_bitrate;      //!< Bitrate for global PSI/SI PID's.
         size_t      _unref_pid_cnt;      //!< Number of unreferenced PID's.
         size_t      _unref_scr_pids;     //!< Number of scrambled unreferenced PID's.
         uint64_t    _unref_pkt_cnt;      //!< Number of packets in unreferenced PID's.

@@ -59,6 +59,10 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _global_scr_pids(0),
     _global_pkt_cnt(0),
     _global_bitrate(0),
+    _psisi_pid_cnt(0),
+    _psisi_scr_pids(0),
+    _psisi_pkt_cnt(0),
+    _psisi_bitrate(0),
     _unref_pid_cnt(0),
     _unref_scr_pids(0),
     _unref_pkt_cnt(0),
@@ -134,6 +138,10 @@ void ts::TSAnalyzer::reset()
     _global_scr_pids = 0;
     _global_pkt_cnt = 0;
     _global_bitrate = 0;
+    _psisi_pid_cnt = 0;
+    _psisi_scr_pids = 0;
+    _psisi_pkt_cnt = 0;
+    _psisi_bitrate = 0;
     _unref_pid_cnt = 0;
     _unref_scr_pids = 0;
     _unref_pkt_cnt = 0;
@@ -1520,6 +1528,9 @@ void ts::TSAnalyzer::recomputeStatistics()
     _global_pid_cnt = 0;
     _global_pkt_cnt = 0;
     _global_scr_pids = 0;
+    _psisi_pid_cnt = 0;
+    _psisi_pkt_cnt = 0;
+    _psisi_scr_pids = 0;
     _unref_pid_cnt = 0;
     _unref_pkt_cnt = 0;
     _unref_scr_pids = 0;
@@ -1578,11 +1589,21 @@ void ts::TSAnalyzer::recomputeStatistics()
                 _global_scr_pids++;
             }
         }
+
+        // Count global PSI/SI PID's
+        if (pc.pid <= PID_DVB_LAST && pc.services.size() == 0 && pc.ts_pkt_cnt != 0) {
+            _psisi_pid_cnt++;
+            _psisi_pkt_cnt += pc.ts_pkt_cnt;
+            if (pc.scrambled) {
+                _psisi_scr_pids++;
+            }
+        }
     }
 
     // Complete unreferenced and global PID's bitrates
     if (_ts_pkt_cnt != 0) {
         _global_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_global_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
+        _psisi_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_psisi_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
         _unref_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_unref_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
     }
 

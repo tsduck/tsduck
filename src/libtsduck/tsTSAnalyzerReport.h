@@ -115,10 +115,10 @@ namespace ts {
 
     private:
         // Display header of a service PID list.
-        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool decimalPids) const;
+        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const;
 
          // Display one line of a subtotal.
-         void reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool header) const;
+         void reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const;
 
         // Display one line of a service PID list.
         void reportServicePID(Grid& grid, const PIDContext&) const;
