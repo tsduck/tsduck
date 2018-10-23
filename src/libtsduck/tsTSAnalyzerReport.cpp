@@ -37,6 +37,31 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Display layout
+//----------------------------------------------------------------------------
+
+#define DEF_WIDTH       79   // Default width.
+#define DEF_TSBR_COL1   56   // TS bitrate, column 1.
+#define DEF_TSBR_COL2   15   // TS bitrate, column 2.
+#define DEF_SRV_COL1     6   // Service list, column 1 (id).
+#define DEF_SRV_COL2    48   // Service list, column 2 (name).
+#define DEF_SRV_COL3    15   // Service list, column 3 (bitrate).
+#define DEF_PID_COL1     6   // PID list, column 1 (id).
+#define DEF_PID_COL2    49   // PID list, column 2 (name).
+#define DEF_PID_COL3    14   // PID list, column 3 (bitrate).
+
+#define WIDE_WIDTH      94   // Wide display.
+#define WIDE_TSBR_COL1  71   // TS bitrate, column 1.
+#define WIDE_TSBR_COL2  15   // TS bitrate, column 2.
+#define WIDE_SRV_COL1   15   // Service list, column 1 (id).
+#define WIDE_SRV_COL2   54   // Service list, column 2 (name).
+#define WIDE_SRV_COL3   15   // Service list, column 3 (bitrate).
+#define WIDE_PID_COL1   14   // PID list, column 1 (id).
+#define WIDE_PID_COL2   56   // PID list, column 2 (name).
+#define WIDE_PID_COL3   14   // PID list, column 3 (bitrate).
+
+
+//----------------------------------------------------------------------------
 // Set analysis options. Must be set before feeding the first packet.
 //----------------------------------------------------------------------------
 
@@ -117,7 +142,7 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
 
     // Then continue with grid reports.
     Grid grid(stm);
-    grid.setLineWidth(opt.wide ? 94 : 79, 2);
+    grid.setLineWidth(opt.wide ? WIDE_WIDTH : DEF_WIDTH, 2);
 
     if (opt.ts_analysis) {
         reportTS(grid, opt.title);
@@ -153,6 +178,9 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
 
+    // Display additional values when the display is wide enough.
+    const bool wide = grid.lineWidth() >= WIDE_WIDTH;
+
     grid.openTable();
     grid.putLine(u"TRANSPORT STREAM ANALYSIS REPORT", title);
     grid.section();
@@ -172,7 +200,8 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
                     {u"       Unreferenced:", UString::Decimal(_unref_pid_cnt)}});
     grid.subSection();
 
-    grid.setLayout({grid.bothTruncateLeft(56, u'.'), grid.right(15)});
+    grid.setLayout({grid.bothTruncateLeft(wide ? WIDE_TSBR_COL1 : DEF_TSBR_COL1, u'.'),
+                    grid.right(wide ? WIDE_TSBR_COL2 : DEF_TSBR_COL2)});
     grid.putLayout({{u"Transport stream bitrate, based on", u"188 bytes/pkt"},
                     {u"204 bytes/pkt"}});
     grid.putLayout({{u"User-specified:", _ts_user_bitrate == 0 ? u"None" : UString::Format(u"%'d b/s", {_ts_user_bitrate})},
@@ -192,20 +221,25 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 
     // Display list of services
 
-    grid.setLayout({grid.left(6), grid.bothTruncateLeft(48), grid.right(15)});
-    grid.putLayout({{u"Srv Id"}, {u"Service Name", u"Access"}, {u"Bitrate"}});
-    grid.setLayout({grid.left(6), grid.bothTruncateLeft(48, u'.'), grid.right(15)});
+    grid.setLayout({wide ? grid.both(WIDE_SRV_COL1) : grid.right(DEF_SRV_COL1),
+                    grid.bothTruncateLeft(wide ? WIDE_SRV_COL2 : DEF_SRV_COL2),
+                    grid.right(wide ? WIDE_SRV_COL3 : DEF_SRV_COL3)});
+    grid.putLayout({{u"Srv Id", u""}, {u"Service Name", u"Access"}, {u"Bitrate"}});
+    grid.setLayout({wide ? grid.both(WIDE_SRV_COL1) : grid.right(DEF_SRV_COL1),
+                    grid.bothTruncateLeft(wide ? WIDE_SRV_COL2 : DEF_SRV_COL2, u'.'),
+                    grid.right(wide ? WIDE_SRV_COL3 : DEF_SRV_COL3)});
 
     for (ServiceContextMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
         const ServiceContext& sv(*it->second);
-        grid.putLayout({{UString::Format(u"0x%X", {sv.service_id})},
+        // Not that the decimal service id is always built but ignored when the layout of the first column contains only one field.
+        grid.putLayout({{UString::Format(u"0x%X", {sv.service_id}), UString::Format(u"(%d)", {sv.service_id})},
                         {sv.getName(), sv.scrambled_pid_cnt > 0 ? u"S" : u"C"},
                         {sv.bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {sv.bitrate})}});
     }
 
     grid.putLine();
     grid.putLine(u"Note 1: C=Clear, S=Scrambled");
-    grid.putMultiLine(u"Note 2: Unless explicitly specified otherwise, all bitrates are based on 188 bytes per packet.");
+    grid.putMultiLine(u"Note 2: Unless specified otherwise, bitrates are based on 188 bytes/pkt");
 
     grid.closeTable();
 }
@@ -215,13 +249,17 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 // Display header of a service PID list
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool decimalPids) const
+void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const
 {
     grid.subSection();
-    grid.setLayout({decimalPids ? grid.both(14) : grid.right(6), grid.bothTruncateLeft(decimalPids ? 56 : 49), grid.right(14)});
+    grid.setLayout({wide ? grid.both(WIDE_PID_COL1) : grid.right(DEF_PID_COL1),
+                    grid.bothTruncateLeft(wide ? WIDE_PID_COL2 : DEF_PID_COL2),
+                    grid.right(wide ? WIDE_PID_COL3 : DEF_PID_COL3)});
     grid.putLayout({{u"PID", u""}, {u"Usage", u"Access "}, {u"Bitrate"}});
-    grid.setLayout({decimalPids ? grid.both(14) : grid.right(6), grid.bothTruncateLeft(decimalPids ? 56 : 49, u'.'), grid.right(14)});
-    reportServiceSubtotal(grid, usage, scrambled, bitrate, ts_bitrate, true);
+    grid.setLayout({wide ? grid.both(WIDE_PID_COL1) : grid.right(DEF_PID_COL1),
+                    grid.bothTruncateLeft(wide ? WIDE_PID_COL2 : DEF_PID_COL2, u'.'),
+                    grid.right(wide ? WIDE_PID_COL3 : DEF_PID_COL3)});
+    reportServiceSubtotal(grid, u"Total", usage, scrambled, bitrate, ts_bitrate, wide);
 }
 
 
@@ -229,9 +267,9 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
 // Display one line of a subtotal
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool header) const
+void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const
 {
-    grid.putLayout({{header ? u"Total" : u" ", u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
+    grid.putLayout({{header, u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
 }
 
 
@@ -272,8 +310,8 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
 
-    // Display PID's decimal values when the display is wide enough.
-    const bool decimalPids = grid.lineWidth() >= 94;
+    // Display additional values when the display is wide enough.
+    const bool wide = grid.lineWidth() >= WIDE_WIDTH;
 
     grid.openTable();
     grid.putLine(u"SERVICES ANALYSIS REPORT", title);
@@ -283,17 +321,15 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     grid.section();
     grid.putLine(u"Global PID's");
     grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_global_pkt_cnt, _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids}));
-    reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, decimalPids);
+    reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, wide);
+    reportServiceSubtotal(grid, wide ? u"Subtotal" : u"Subt.", u"Global PSI/SI PID's (0x00-0x1F)", _psisi_scr_pids > 0, _psisi_bitrate, _ts_bitrate, wide);
 
-    uint32_t psi_bitrate = 0;
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
         if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             reportServicePID(grid, pc);
-            if (pc.pid <= 0x1F) psi_bitrate+= pc.bitrate;
         }
     }
-    reportServiceSubtotal(grid, u"Aggregated bitrate of PIDs: 0x00-0x1F", _global_scr_pids > 0, psi_bitrate, _ts_bitrate, false);
 
     // Display unreferenced pids
 
@@ -301,7 +337,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.section();
         grid.putLine(u"Unreferenced PID's");
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_unref_pkt_cnt, _unref_pid_cnt, _unref_pid_cnt - _unref_scr_pids, _unref_scr_pids}));
-        reportServiceHeader(grid, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate, decimalPids);
+        reportServiceHeader(grid, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate, wide);
 
         for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
             const PIDContext& pc(*it->second);
@@ -327,7 +363,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
                      (sv.pcr_pid == 0 || sv.pcr_pid == PID_NULL ? u"None" : UString::Format(u"0x%X (%d)", {sv.pcr_pid, sv.pcr_pid})));
 
         // Display all PID's of this service
-        reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, decimalPids);
+        reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
         for (PIDContextMap::const_iterator pid_it = _pids.begin(); pid_it != _pids.end(); ++pid_it) {
             const PIDContext& pc(*pid_it->second);
             if (pc.services.find(sv.service_id) != pc.services.end()) {
@@ -335,7 +371,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
             }
         }
 
-        grid.setLayout({grid.both(decimalPids?14:6), grid.bothTruncateLeft(decimalPids?56:49), grid.right(14)});
+        grid.setLayout({grid.both(wide?14:6), grid.bothTruncateLeft(wide?56:49), grid.right(14)});
 
         grid.putLayout({{u""}, {u"(C=Clear, S=Scrambled, +=Shared)"}, {u""}});
     }
