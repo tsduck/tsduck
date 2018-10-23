@@ -153,7 +153,7 @@ bool ts::DektecInputPlugin::getOptions()
 {
     _guts->dev_index = intValue<int>(u"device", -1);
     _guts->chan_index = intValue<int>(u"channel", -1);
-    _guts->timeout_ms = intValue<int>(u"timeout", -1);
+    _guts->timeout_ms = intValue<int>(u"receive-timeout", -1);
     return true;
 }
 
