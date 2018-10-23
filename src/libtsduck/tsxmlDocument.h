@@ -147,7 +147,7 @@ namespace ts {
 
             //!
             //! Adjust the global XML tweaks for the document according to command line options.
-            //! @param [in] in The command line arguments.
+            //! @param [in] args The command line arguments.
             //!
             void setTweaks(const TweaksArgs& args) { args.setTweaks(_tweaks); }
 
