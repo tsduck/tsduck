@@ -33,6 +33,7 @@
 #include "tsDektecVPD.h"
 #include "tsIntegerUtils.h"
 #include "tsFatal.h"
+#include "tsLNB.h"
 TSDUCK_SOURCE;
 
 
@@ -98,6 +99,7 @@ public:
     int                 init_cnt;     // Count the first inputs
     BitRate             cur_bitrate;  // Current input bitrate
     bool                got_bitrate;  // Got bitrate at least once.
+    uint64_t            demod_freq;   // Demodulation frequency in Hz
 
     Guts() :                          // Constructor.
         is_started(false),
@@ -109,7 +111,8 @@ public:
         chan(),
         init_cnt(0),
         cur_bitrate(0),
-        got_bitrate(false)
+        got_bitrate(false),
+        demod_freq(0)
     {
     }
 };
@@ -142,6 +145,35 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"Specify the data reception timeout in milliseconds. "
          u"This timeout applies to each receive operation, individually. "
          u"By default, receive operations wait for data, possibly forever.");
+
+    option(u"frequency", 'f', POSITIVE);
+    help(u"frequency",
+        u"All satellite receiver devices: indicate the frequency, in Hz, of the "
+        u"input carrier. There is no default. "
+        u"For DVB-S/S2 receivers, the specified frequency is the \"intermediate\" "
+        u"frequency. For convenience, the option --satellite-frequency can be used "
+        u"instead of --frequency when the intermediate frequency is unknown. "
+        u"For DTA-2137 receivers, the valid range is 950 MHz to 2150 MHz (L Band).");
+
+    option(u"lnb", 0, Args::STRING);
+    help(u"lnb",
+        u"DVB-S/S2 receivers: description of the LNB which is used to convert the "
+        u"--satellite-frequency into an intermediate frequency. This option is "
+        u"useless when --satellite-frequency is not specified. The format of the "
+        u"string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies "
+        u"are in MHz. The characteristics of the default universal LNB are "
+        u"low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+
+    option(u"satellite-frequency", 0, POSITIVE);
+    help(u"satellite-frequency",
+        u"DVB-S/S2 receivers: indicate the target satellite frequency, in Hz, of "
+        u"the output carrier. The actual frequency at the output of the receiver "
+        u"is the \"intermediate\" frequency which is computed based on the "
+        u"characteristics of the LNB (see option --lnb). This option is useful "
+        u"when the satellite frequency is better known than the intermediate "
+        u"frequency. The options --frequency and --satellite-frequency are mutually "
+        u"exclusive.");
+
 }
 
 
@@ -154,6 +186,40 @@ bool ts::DektecInputPlugin::getOptions()
     _guts->dev_index = intValue<int>(u"device", -1);
     _guts->chan_index = intValue<int>(u"channel", -1);
     _guts->timeout_ms = intValue<int>(u"receive-timeout", -1);
+
+    // Get LNB description, in case --satellite-frequency is used
+    LNB lnb; // Universal LNB by default
+    if (present(u"lnb")) {
+        const UString s(value(u"lnb"));
+        LNB l(s);
+        if (!l.isValid()) {
+            tsp->error(u"invalid LNB description " + s);
+            return false;
+        }
+        else {
+            lnb = l;
+        }
+    }
+
+    // Compute carrier frequency
+    uint64_t frequency = 0;
+    if (present(u"frequency") + present(u"satellite-frequency") > 1) {
+        tsp->error(u"options --frequency and --satellite-frequency are mutually exclusive");
+        return false;
+    }
+
+    if (present(u"satellite-frequency")) {
+        uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
+        if (sat_frequency > 0) {
+            frequency = lnb.intermediateFrequency(sat_frequency);
+        }
+    }
+    else if (present(u"frequency")) {
+        frequency = intValue<uint64_t>(u"frequency", 0);
+    }
+
+    _guts->demod_freq = frequency;
+
     return true;
 }
 
@@ -196,6 +262,39 @@ bool ts::DektecInputPlugin::start()
         _guts->chan.Detach(0);
         _guts->dtdev.Detach();
         return false;
+    }
+
+    status = _guts->chan.SetRxControl(DTAPI_RXCTRL_IDLE);
+    if (status != DTAPI_OK) {
+        tsp->error(u"device SetRxControl error: %s", {DektecStrError(status)});
+        _guts->chan.Detach(0);
+        _guts->dtdev.Detach();
+        return false;
+    }
+
+    status = _guts->chan.ClearFifo();            // Clear FIFO (i.e. start with zero load)
+    status = _guts->chan.ClearFlags(0xFFFFFFFF); // Clear all flags
+
+    if (_guts->demod_freq != 0) {
+        // Apply demodulation settings
+        status = _guts->chan.SetTunerFrequency(__int64(_guts->demod_freq));
+        if (status != DTAPI_OK)
+        {
+            tsp->error(u"device SetTunerFrequency error: %s", {DektecStrError(status)});
+            _guts->chan.Detach(0);
+            _guts->dtdev.Detach();
+            return false;
+        }
+
+        // Set modulation control--use some defaults for now until suitable command-line options exist
+        status = _guts->chan.SetDemodControl(DTAPI_MOD_DVBS_QPSK, DTAPI_MOD_CR_AUTO, -1, DTAPI_MOD_SYMRATE_AUTO);
+        if (status != DTAPI_OK)
+        {
+            tsp->error(u"device SetDemodControl error: %s", {DektecStrError(status)});
+            _guts->chan.Detach(0);
+            _guts->dtdev.Detach();
+            return false;
+        }
     }
 
     // Set the receiving packet size to 188 bytes (the size of the packets
