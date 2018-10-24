@@ -140,14 +140,33 @@ namespace ts {
         void renameTS(const TransportStreamId& old_ts, const TransportStreamId& new_ts);
 
         //!
+        //! Keep all EIT's for a given service in the current transport stream (EIT Actual).
+        //! @param [in] service_id Id of the service to keep in EIT Actual.
+        //!
+        //! Note: Keeping services always prevails over removing them. This means that if
+        //! keepService() is called once or more, all services are removed except the
+        //! explicitly kept ones and removeService() is ignored.
+        //!
+        void keepService(uint16_t service_id);
+
+        //!
+        //! Keep all EIT's for a given service.
+        //! @param [in] service Description of the service to keep.
+        //! @see keepService(uint16_t)
+        //!
+        void keepService(const Service& service);
+
+        //!
         //! Remove all EIT's for a given service in the current transport stream (EIT Actual).
         //! @param [in] service_id Id of the service to remove in EIT Actual.
+        //! @see keepService(uint16_t)
         //!
         void removeService(uint16_t service_id);
 
         //!
         //! Remove all EIT's for a given service.
         //! @param [in] service Description of the service to remove.
+        //! @see keepService(uint16_t)
         //!
         void removeService(const Service& service);
 
@@ -193,6 +212,7 @@ namespace ts {
         std::list<SectionPtr> _sections;
         std::set<TID>         _removed_tids;
         std::list<Service>    _removed;
+        std::list<Service>    _kept;
         std::list<std::pair<Service,Service>> _renamed;
 
         // Check if a service matches a DVB triplet.
