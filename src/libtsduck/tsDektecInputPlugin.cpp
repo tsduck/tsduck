@@ -148,32 +148,31 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 
     option(u"frequency", 'f', POSITIVE);
     help(u"frequency",
-        u"All satellite receiver devices: indicate the frequency, in Hz, of the "
-        u"input carrier. There is no default. "
-        u"For DVB-S/S2 receivers, the specified frequency is the \"intermediate\" "
-        u"frequency. For convenience, the option --satellite-frequency can be used "
-        u"instead of --frequency when the intermediate frequency is unknown. "
-        u"For DTA-2137 receivers, the valid range is 950 MHz to 2150 MHz (L Band).");
+         u"All satellite receiver devices: indicate the frequency, in Hz, of the "
+         u"input carrier. There is no default. "
+         u"For DVB-S/S2 receivers, the specified frequency is the \"intermediate\" "
+         u"frequency. For convenience, the option --satellite-frequency can be used "
+         u"instead of --frequency when the intermediate frequency is unknown. "
+         u"For DTA-2137 receivers, the valid range is 950 MHz to 2150 MHz (L Band).");
 
     option(u"lnb", 0, Args::STRING);
     help(u"lnb",
-        u"DVB-S/S2 receivers: description of the LNB which is used to convert the "
-        u"--satellite-frequency into an intermediate frequency. This option is "
-        u"useless when --satellite-frequency is not specified. The format of the "
-        u"string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies "
-        u"are in MHz. The characteristics of the default universal LNB are "
-        u"low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+         u"DVB-S/S2 receivers: description of the LNB which is used to convert the "
+         u"--satellite-frequency into an intermediate frequency. This option is "
+         u"useless when --satellite-frequency is not specified. The format of the "
+         u"string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies "
+         u"are in MHz. The characteristics of the default universal LNB are "
+         u"low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
 
     option(u"satellite-frequency", 0, POSITIVE);
     help(u"satellite-frequency",
-        u"DVB-S/S2 receivers: indicate the target satellite frequency, in Hz, of "
-        u"the output carrier. The actual frequency at the output of the receiver "
-        u"is the \"intermediate\" frequency which is computed based on the "
-        u"characteristics of the LNB (see option --lnb). This option is useful "
-        u"when the satellite frequency is better known than the intermediate "
-        u"frequency. The options --frequency and --satellite-frequency are mutually "
-        u"exclusive.");
-
+         u"DVB-S/S2 receivers: indicate the target satellite frequency, in Hz, of "
+         u"the input carrier. The actual frequency at the input of the receiver "
+         u"is the \"intermediate\" frequency which is computed based on the "
+         u"characteristics of the LNB (see option --lnb). This option is useful "
+         u"when the satellite frequency is better known than the intermediate "
+         u"frequency. The options --frequency and --satellite-frequency are mutually "
+         u"exclusive.");
 }
 
 
