@@ -75,6 +75,7 @@ namespace ts {
         bool              _abort;              // Error (service not found, etc)
         Service           _service;            // Service name & id
         UString           _audio;              // Audio language code to keep
+        PID               _audio_pid;          // Audio PID to keep
         UString           _subtitles;          // Subtitles language code to keep
         bool              _no_subtitles;       // Remove all subtitles
         bool              _no_ecm;             // Remove all ECM PIDs
@@ -120,6 +121,7 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _abort(false),
     _service(),
     _audio(),
+    _audio_pid(PID_NULL),
     _subtitles(),
     _no_subtitles(false),
     _no_ecm (false),
@@ -142,7 +144,14 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     option(u"audio", 'a', STRING);
     help(u"audio",
          u"Remove all audio components except the specified one. The name is a "
-         u"three-letters language code. By default, keep all audio components.");
+         u"three-letters language code. By default, keep all audio components. "
+         u"This option and the --audio-pid option are mutually exclusive.");
+
+    option(u"audio-pid", 0, PIDVAL);
+    help(u"audio-pid",
+         u"Remove all audio components except the specified audio PID. By default, "
+         u"keep all audio components. "
+         u"This option and the --audio option are mutually exclusive.");
 
     option(u"cas", 'c');
     help(u"cas",
@@ -181,9 +190,15 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
 
 bool ts::ZapPlugin::start()
 {
+    if (present(u"audio") + present(u"audio-pid") > 1) {
+        tsp->error(u"options --audio and --audio-pid are mutually exclusive");
+        return false;
+    }
+
     // Get option values
     _service.set (value(u""));
     _audio = value(u"audio");
+    _audio_pid = intValue<PID>(u"audio-pid", PID_NULL, 0);
     _subtitles = value(u"subtitles");
     _no_subtitles = present(u"no-subtitles");
     _no_ecm = present(u"no-ecm");
@@ -497,6 +512,10 @@ void ts::ZapPlugin::processPMT (PMT& pmt)
                 pmt.streams.erase (pid);
                 continue;
             }
+            else if ((_audio_pid != PID_NULL) && (pid != _audio_pid)) {
+                pmt.streams.erase(pid);
+                continue;
+            }
             else {
                 audio_out++;
             }
@@ -527,6 +546,11 @@ void ts::ZapPlugin::processPMT (PMT& pmt)
 
     if (!_audio.empty() && audio_in > 0 && audio_out == 0) {
         tsp->error(u"audio language \"%s\" not found in PMT", {_audio});
+        _abort = true;
+        return;
+    }
+    else if ((_audio_pid != PID_NULL) && (audio_in > 0) && (audio_out == 0)) {
+        tsp->error(u"audio pid \"%d\" not found in PMT", {int32_t(_audio_pid)});
         _abort = true;
         return;
     }
