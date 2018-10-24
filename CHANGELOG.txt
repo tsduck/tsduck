@@ -27,7 +27,7 @@ VERSION 3.15-972
   * Added option --max-packets to "tsdump".
   * The command "tsdump" can now accept multiple input files.
   * Added demodulator support in the input plugin "dektec" (e.g. DTA-2137).
-  * Added option --audio-pid to plugin "zap".
+  * Added options --audio-pid and --eit to plugin "zap".
 
 [BUG] Bug fixes:
 
