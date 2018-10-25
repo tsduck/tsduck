@@ -278,11 +278,11 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
     else if (cmd.immediate) {
         // We ignore "immediate" splice events since they do not give a precise time where to cut.
-        tsp->verbose(u"ignoring 'immediate' splice event");
+        tsp->verbose(u"ignoring 'immediate' splice event %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.event_id});
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
-        tsp->verbose(u"adding splice %s at PTS %s", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString()});
+        tsp->verbose(u"adding splice %s at PTS %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id});
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.addEvent(cmd, _tagsByPID);
         }
