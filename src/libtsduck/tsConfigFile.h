@@ -75,9 +75,11 @@ namespace ts {
 
         //!
         //! Get the default configuration file name.
+        //! @param [in] style System style for file name.
+        //! @param [in] name Application name (default: executable base name).
         //! @return The default configuration file name for the application.
         //!
-        static UString DefaultFileName(FileStyle style = LOCAL_SYSTEM);
+        static UString DefaultFileName(FileStyle style = LOCAL_SYSTEM, const UString& name = UString());
 
         //!
         //! Reload the configuration from a file.

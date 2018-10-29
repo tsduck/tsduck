@@ -859,6 +859,17 @@ namespace ts {
         void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const;
 
         //!
+        //! Split the string into shell-style arguments.
+        //! Spaces are used as argument delimiters.
+        //! Arguments can be quoted using single or double quotes.
+        //! Any character can be escaped using a backslash.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of @c UString which receives the segments of the splitted string.
+        //!
+        template <class CONTAINER>
+        void splitShellStyle(CONTAINER& container) const;
+
+        //!
         //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.

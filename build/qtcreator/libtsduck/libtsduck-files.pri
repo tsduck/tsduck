@@ -119,6 +119,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
+    ../../../src/libtsduck/tsDuckConfigFile.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
     ../../../src/libtsduck/tsDVBCharset.h \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
@@ -551,6 +552,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
+    ../../../src/libtsduck/tsDuckConfigFile.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
