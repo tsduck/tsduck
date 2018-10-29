@@ -1294,6 +1294,17 @@ namespace ts {
         bool getLine(std::istream& strm);
 
         //!
+        //! Convert a string into a bool value.
+        //!
+        //! This string must contain the representation of an integer value in decimal or hexadecimal
+        //! (prefix @c 0x) or one of "false", "true", "yes", "no", "on", "off" (not case sensitive).
+        //!
+        //! @param [out] value The returned decoded value. On error @a value contains false.
+        //! @return True on success, false on error (invalid string).
+        //!
+        bool toBool(bool& value) const;
+
+        //!
         //! Convert a string into a Tristate value.
         //!
         //! This string must contain the representation of an integer value in decimal or hexadecimal

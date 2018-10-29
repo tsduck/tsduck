@@ -102,6 +102,8 @@
 #include "tsCOM.h"
 #include "tsComponentDescriptor.h"
 #include "tsCondition.h"
+#include "tsConfigFile.h"
+#include "tsConfigSection.h"
 #include "tsContentDescriptor.h"
 #include "tsCopyrightDescriptor.h"
 #include "tsCountryAvailabilityDescriptor.h"
