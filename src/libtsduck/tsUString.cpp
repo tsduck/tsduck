@@ -1093,6 +1093,37 @@ bool ts::UString::getLine(std::istream& strm)
 
 
 //----------------------------------------------------------------------------
+// Convert a string into a bool value.
+//----------------------------------------------------------------------------
+
+namespace {
+    const ts::Enumeration BoolEnum({
+        {u"false",   0},
+        {u"true",    1},
+        {u"yes",     1},
+        {u"no",      0},
+        {u"on",      1},
+        {u"off",     0},
+    });
+}
+
+bool ts::UString::toBool(bool& value) const
+{
+    const int iValue = BoolEnum.value(*this, false);
+
+    if (iValue == Enumeration::UNKNOWN) {
+        // Invalid string and invalid integer.
+        value = false;
+        return false;
+    }
+    else {
+        value = iValue != 0;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Convert a string into a Tristate value.
 //----------------------------------------------------------------------------
 

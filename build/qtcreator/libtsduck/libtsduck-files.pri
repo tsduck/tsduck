@@ -80,6 +80,9 @@ HEADERS += \
     ../../../src/libtsduck/tsCOM.h \
     ../../../src/libtsduck/tsComponentDescriptor.h \
     ../../../src/libtsduck/tsCondition.h \
+    ../../../src/libtsduck/tsConfigFile.h \
+    ../../../src/libtsduck/tsConfigSection.h \
+    ../../../src/libtsduck/tsConfigSectionTemplate.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
     ../../../src/libtsduck/tsCopyrightDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
@@ -522,6 +525,8 @@ SOURCES += \
     ../../../src/libtsduck/tsCOM.cpp \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
     ../../../src/libtsduck/tsCondition.cpp \
+    ../../../src/libtsduck/tsConfigFile.cpp \
+    ../../../src/libtsduck/tsConfigSection.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
     ../../../src/libtsduck/tsCopyrightDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
