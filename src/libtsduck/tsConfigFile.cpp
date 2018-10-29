@@ -59,7 +59,7 @@ ts::ConfigFile::ConfigFile(std::istream& strm) :
 // Default configuration file name (executable file name with ".ini" extension)
 //----------------------------------------------------------------------------
 
-ts::UString ts::ConfigFile::DefaultFileName(FileStyle style)
+ts::UString ts::ConfigFile::DefaultFileName(FileStyle style, const UString& name)
 {
     if (style == LOCAL_SYSTEM) {
 #if defined(TS_WINDOWS)
@@ -69,11 +69,16 @@ ts::UString ts::ConfigFile::DefaultFileName(FileStyle style)
 #endif
     }
 
+    UString fileName(name);
+    if (fileName.empty()) {
+        fileName = PathPrefix(BaseName(ExecutableFile()));
+    }
+
     if (style == WINDOWS_STYLE) {
-        return PathPrefix(ExecutableFile()) + u".ini";
+        return DirectoryName(ExecutableFile()) + PathSeparator + fileName + u".ini";
     }
     else {
-        return (UserHomeDirectory() + PathSeparator) + u'.' + PathPrefix(BaseName(ExecutableFile()));
+        return (UserHomeDirectory() + PathSeparator) + u'.' + fileName;
     }
 }
 

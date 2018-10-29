@@ -26,22 +26,35 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsDuckConfigFile.h"
+#include "tsNullReport.h"
+#include "tsSysUtils.h"
+TSDUCK_SOURCE;
+
+// Define singleton instance
+TS_DEFINE_SINGLETON(ts::DuckConfigFile);
+
+
+//----------------------------------------------------------------------------
+// Default constructor.
+// Load file using UNIX style, ignore errors.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 997
+ts::DuckConfigFile::DuckConfigFile() :
+    ConfigFile(DefaultFileName(UNIX_STYLE, u"tsduck"), NULLREP),
+    _appName(PathPrefix(BaseName(ExecutableFile())).toLower()),
+    _appSection(section(_appName)),
+    _mainSection(section(u""))
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Get the value of an entry.
+//----------------------------------------------------------------------------
+
+const ts::UString&ts::DuckConfigFile::value(const ts::UString& entry, const ts::UString& defvalue) const
+{
+    return _appSection.valueCount(entry) > 0 ? _appSection.value(entry) : _mainSection.value(entry, 0, defvalue);
+}

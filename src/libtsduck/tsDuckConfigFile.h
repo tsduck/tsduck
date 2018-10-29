@@ -28,20 +28,38 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  A singleton which contains the TSDuck configuration file.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 15
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 997
+#include "tsConfigFile.h"
+#include "tsSingletonManager.h"
+
+namespace ts {
+    //!
+    //! A singleton which contains the TSDuck configuration file.
+    //! @ingroup app
+    //!
+    class TSDUCKDLL DuckConfigFile : public ConfigFile
+    {
+        // This class is a singleton. Use static Instance() method.
+        TS_DECLARE_SINGLETON(DuckConfigFile);
+
+    public:
+        //!
+        //! Get the value of an entry.
+        //! A section with the name of the executable is searched first.
+        //! Then, the global section is used.
+        //! @param [in] entry Entry name.
+        //! @param [in] defvalue Default value.
+        //! @return The value in the entry or @a defvalue if @a entry does not exist.
+        //!
+        const UString& value(const UString& entry, const UString& defvalue = UString()) const;
+
+    private:
+        const UString        _appName;
+        const ConfigSection& _appSection;
+        const ConfigSection& _mainSection;
+    };
+}
