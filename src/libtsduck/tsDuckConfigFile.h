@@ -55,7 +55,16 @@ namespace ts {
         //! @param [in] defvalue Default value.
         //! @return The value in the entry or @a defvalue if @a entry does not exist.
         //!
-        const UString& value(const UString& entry, const UString& defvalue = UString()) const;
+        UString value(const UString& entry, const UString& defvalue = UString()) const;
+
+        //!
+        //! Get all values of an entry.
+        //! A section with the name of the executable is searched first.
+        //! Then, the global section is used.
+        //! @param [in] entry Entry name.
+        //! @param [out] values Vector of values.
+        //!
+        void getValues(const UString& entry, UStringVector& values) const;
 
     private:
         const UString        _appName;

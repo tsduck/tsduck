@@ -54,7 +54,29 @@ ts::DuckConfigFile::DuckConfigFile() :
 // Get the value of an entry.
 //----------------------------------------------------------------------------
 
-const ts::UString&ts::DuckConfigFile::value(const ts::UString& entry, const ts::UString& defvalue) const
+ts::UString ts::DuckConfigFile::value(const ts::UString& entry, const ts::UString& defvalue) const
 {
     return _appSection.valueCount(entry) > 0 ? _appSection.value(entry) : _mainSection.value(entry, 0, defvalue);
+}
+
+
+//----------------------------------------------------------------------------
+// Get all values of an entry.
+//----------------------------------------------------------------------------
+
+void ts::DuckConfigFile::getValues(const ts::UString& entry, ts::UStringVector& values) const
+{
+    values.clear();
+    size_t count = 0;
+
+    if ((count = _appSection.valueCount(entry)) > 0) {
+        for (size_t i = 0; i < count; ++i) {
+            values.push_back(_appSection.value(entry, i));
+        }
+    }
+    else if ((count = _mainSection.valueCount(entry)) > 0) {
+        for (size_t i = 0; i < count; ++i) {
+            values.push_back(_mainSection.value(entry, i));
+        }
+    }
 }

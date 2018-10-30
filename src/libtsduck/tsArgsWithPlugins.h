@@ -88,6 +88,9 @@ namespace ts {
         // Search next plugin option.
         size_t nextProcOpt(const UStringVector& args, size_t index, PluginType& type, PluginOptionsVector*& opts);
 
+        // Load default list of plugins by type.
+        void loadDefaultPlugins(PluginType type, const UString& entry, PluginOptionsVector& options);
+
         // Inaccessible operations.
         ArgsWithPlugins(const ArgsWithPlugins&) = delete;
         ArgsWithPlugins& operator=(const ArgsWithPlugins&) = delete;

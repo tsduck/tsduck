@@ -88,9 +88,7 @@ namespace ts {
         //! @param [in] defvalue Default value.
         //! @return The value in the entry or @a defvalue if @a entry does not exist, or if @a index is out of range
         //!
-        const UString& value(const UString& entry,
-                             size_t index = 0,
-                             const UString& defvalue = UString()) const;
+        UString value(const UString& entry, size_t index = 0, const UString& defvalue = UString()) const;
 
         //!
         //! Get an integer value in an entry.

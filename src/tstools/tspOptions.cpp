@@ -270,7 +270,7 @@ std::ostream& ts::tsp::Options::display(std::ostream& strm, const UString& margi
          << margin << "  --monitor: " << monitor << std::endl
          << margin << "  --verbose: " << verbose() << std::endl
          << margin << "  Number of packet processors: " << plugins.size() << std::endl;
-    display(inputs, u"Input plugin", strm, margin + u" ");
+    display(inputs, u"Input plugin", strm, margin + u"  ");
     display(plugins, u"Packet processor plugin", strm, margin + u"  ");
     display(outputs, u"Output plugin", strm, margin + u"  ");
     return strm;
