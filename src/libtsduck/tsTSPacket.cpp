@@ -150,9 +150,13 @@ size_t ts::TSPacket::OPCROffset () const
     }
 }
 
-size_t ts::TSPacket::SplicingPointOffset() const
+//----------------------------------------------------------------------------
+// Compute offset of splice_countdown
+//----------------------------------------------------------------------------
+
+size_t ts::TSPacket::spliceCountdownOffset() const
 {
-    if (!hasSplicingPoint()) {
+    if (!hasSpliceCountdown()) {
         return 0;
     }
     else if (hasPCR() && hasOPCR()) {
@@ -162,7 +166,7 @@ size_t ts::TSPacket::SplicingPointOffset() const
         return b[4] >= 8 ? 12 : 0;
     }
     else {
-        return b[4] >= 1 ? 6 : 0;
+        return b[4] >= 2 ? 6 : 0;
     }
 }
 
@@ -183,9 +187,9 @@ uint64_t ts::TSPacket::getOPCR () const
     return offset == 0 ? 0 : GetPCR (b + offset);
 }
 
-int8_t ts::TSPacket::getSplicingPoint() const
+int8_t ts::TSPacket::getSpliceCountdown() const
 {
-    const size_t offset = SplicingPointOffset();
+    const size_t offset = spliceCountdownOffset();
     return offset == 0 ? 0 : *(b + offset);
 }
 
