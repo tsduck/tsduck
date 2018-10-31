@@ -362,7 +362,7 @@ namespace ts {
         //! Check if packet has splicing point countdown
         //! @return True if packet has a splicing point countdown.
         //!
-        inline bool hasSplicingPoint() const
+        inline bool hasSpliceCountdown() const
         {
             return getAFSize() > 0 && (b[5] & 0x04) != 0;
         }
@@ -380,10 +380,10 @@ namespace ts {
         uint64_t getOPCR() const;
 
         //!
-        //! Get the splicing point countdown - 8 bits.
+        //! Get the splicing point countdown - 8 bits (signed).
         //! @return The splicing point countdown or 0 if not found.
         //!
-        int8_t getSplicingPoint() const;
+        int8_t getSpliceCountdown() const;
 
 
         //!
@@ -577,9 +577,9 @@ namespace ts {
         // Return 0 if there is none.
         size_t PCROffset() const;
         size_t OPCROffset() const;
-        size_t SplicingPointOffset() const;
         size_t PTSOffset() const;
         size_t DTSOffset() const;
+        size_t spliceCountdownOffset() const;
 
         // Get or set PTS or DTS at specified offset. Return 0 if offset is zero.
         uint64_t getPDTS(size_t offset) const;
