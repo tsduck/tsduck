@@ -359,6 +359,15 @@ namespace ts {
         }
 
         //!
+        //! Check if packet has splicing point countdown
+        //! @return True if packet has a splicing point countdown.
+        //!
+        inline bool hasSplicingPoint() const
+        {
+            return getAFSize() > 0 && (b[5] & 0x04) != 0;
+        }
+
+        //!
         //! Get the PCR - 42 bits.
         //! @return The PCR or 0 if not found.
         //!
@@ -369,6 +378,13 @@ namespace ts {
         //! @return The OPCR or 0 if not found.
         //!
         uint64_t getOPCR() const;
+
+        //!
+        //! Get the splicing point countdown - 8 bits.
+        //! @return The splicing point countdown or 0 if not found.
+        //!
+        int8_t getSplicingPoint() const;
+
 
         //!
         //! Replace the PCR value - 42 bits
@@ -561,6 +577,7 @@ namespace ts {
         // Return 0 if there is none.
         size_t PCROffset() const;
         size_t OPCROffset() const;
+        size_t SplicingPointOffset() const;
         size_t PTSOffset() const;
         size_t DTSOffset() const;
 
