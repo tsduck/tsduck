@@ -67,6 +67,7 @@ namespace ts {
         bool            _dump_nal_units;
         bool            _dump_avc_sei;
         std::bitset<32> _nal_unit_filter;
+        std::bitset<32> _sei_type_filter;
         std::list<ByteBlock> _sei_uuid_filter;
         bool            _video_attributes;
         bool            _audio_attributes;
@@ -118,6 +119,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _dump_nal_units(false),
     _dump_avc_sei(false),
     _nal_unit_filter(),
+    _sei_type_filter(),
     _sei_uuid_filter(),
     _video_attributes(false),
     _audio_attributes(false),
@@ -205,6 +207,12 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     option(u"trace-packets", 't');
     help(u"trace-packets", u"race all PES packets.");
 
+    option(u"sei-type", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    help(u"sei-type",
+         u"SEI type filter: with --sei-avc, select SEI access units with this "
+         u"type (default: all SEI access units). Several --sei-type options "
+         u"may be specified.");
+
     option(u"uuid-sei", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"uuid-sei",
          u"AVC SEI filter: with --sei-avc, select \"user data unregistered\" SEI "
@@ -277,6 +285,19 @@ bool ts::PESPlugin::start()
         }
         if (present(u"negate-nal-unit-type")) {
             _nal_unit_filter.flip();
+        }
+    }
+
+    // SEI types to filter
+    const size_t sei_type_count = count(u"sei-type");
+    if (sei_type_count == 0) {
+        // Default: all SEI types
+        _sei_type_filter.set();
+    }
+    else {
+        _sei_type_filter.reset();
+        for (size_t n = 0; n < sei_type_count; n++) {
+            _sei_type_filter.set(intValue<size_t>(u"sei-type", 0, n));
         }
     }
 
@@ -497,7 +518,7 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
 
 void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t sei_type, size_t offset, size_t size)
 {
-    if ( !_dump_avc_sei) {
+    if (!_dump_avc_sei || !_sei_type_filter.test(sei_type)) {
         return;
     }
 
