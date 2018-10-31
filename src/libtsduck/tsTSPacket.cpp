@@ -150,6 +150,22 @@ size_t ts::TSPacket::OPCROffset () const
     }
 }
 
+size_t ts::TSPacket::SplicingPointOffset() const
+{
+    if (!hasSplicingPoint()) {
+        return 0;
+    }
+    else if (hasPCR() && hasOPCR()) {
+        return b[4] >= 14 ? 18 : 0;
+    }
+    else if (hasPCR() || hasOPCR()) {
+        return b[4] >= 8 ? 12 : 0;
+    }
+    else {
+        return b[4] >= 1 ? 6 : 0;
+    }
+}
+
 //----------------------------------------------------------------------------
 // Get PCR or OPCR - 42 bits
 // Return 0 if not found.
@@ -165,6 +181,12 @@ uint64_t ts::TSPacket::getOPCR () const
 {
     const size_t offset = OPCROffset ();
     return offset == 0 ? 0 : GetPCR (b + offset);
+}
+
+int8_t ts::TSPacket::getSplicingPoint() const
+{
+    const size_t offset = SplicingPointOffset();
+    return offset == 0 ? 0 : *(b + offset);
 }
 
 //----------------------------------------------------------------------------
