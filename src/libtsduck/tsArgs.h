@@ -309,6 +309,7 @@ namespace ts {
             NO_HELP            = 0x0080,  //!< No predefined option "--help".
             NO_VERBOSE         = 0x0100,  //!< No predefined option "--verbose".
             NO_VERSION         = 0x0200,  //!< No predefined option "--version".
+            NO_CONFIG_FILE     = 0x0400,  //!< No default option from the configuration file.
         };
 
         //!

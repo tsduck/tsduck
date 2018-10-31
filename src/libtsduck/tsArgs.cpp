@@ -31,6 +31,7 @@
 #include "tsSysUtils.h"
 #include "tsVersionInfo.h"
 #include "tsOutputPager.h"
+#include "tsDuckConfigFile.h"
 TSDUCK_SOURCE;
 
 // Unlimited number of occurences
@@ -727,6 +728,22 @@ bool ts::Args::analyze(bool processRedirections)
     // Clear previous values
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
         it->second.values.clear();
+    }
+
+    // Process default arguments from configuration file.
+    if ((_flags & NO_CONFIG_FILE) == 0) {
+        // Prepend and append default options.
+        UStringVector pre;
+        UStringVector post;
+        DuckConfigFile::Instance()->value(u"prepend.options").splitShellStyle(pre);
+        DuckConfigFile::Instance()->value(u"append.options").splitShellStyle(post);
+        _args.insert(_args.begin(), pre.begin(), pre.end());
+        _args.insert(_args.end(), post.begin(), post.end());
+
+        // Default arguments if there is none.
+        if (_args.empty()) {
+            DuckConfigFile::Instance()->value(u"default.options").splitShellStyle(_args);
+        }
     }
 
     // Process redirections.

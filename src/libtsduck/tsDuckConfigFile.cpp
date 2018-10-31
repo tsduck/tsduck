@@ -27,62 +27,56 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
+#include "tsDuckConfigFile.h"
+#include "tsNullReport.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+// Define singleton instance
+TS_DEFINE_SINGLETON(ts::DuckConfigFile);
+
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Default constructor.
+// Load file using UNIX style, ignore errors.
 //----------------------------------------------------------------------------
 
-ts::TSP::TSP(int max_severity) :
-    Report(max_severity),
-    _use_realtime(false),
-    _tsp_bitrate(0),
-    _tsp_aborting(false)
-{
-}
-
-ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
-    Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION | NO_CONFIG_FILE),
-    tsp(to_tsp)
-{
-}
-
-ts::InputPlugin::InputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::OutputPlugin::OutputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
+ts::DuckConfigFile::DuckConfigFile() :
+    ConfigFile(DefaultFileName(UNIX_STYLE, u"tsduck"), NULLREP),
+    _appName(PathPrefix(BaseName(ExecutableFile())).toLower()),
+    _appSection(section(_appName)),
+    _mainSection(section(u""))
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Report implementation.
+// Get the value of an entry.
 //----------------------------------------------------------------------------
 
-void ts::Plugin::writeLog(int severity, const UString& message)
+ts::UString ts::DuckConfigFile::value(const ts::UString& entry, const ts::UString& defvalue) const
 {
-    // Force message to go through tsp
-    tsp->log(severity, message);
+    return _appSection.valueCount(entry) > 0 ? _appSection.value(entry) : _mainSection.value(entry, 0, defvalue);
 }
 
 
 //----------------------------------------------------------------------------
-// Displayable names of plugin types.
+// Get all values of an entry.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PluginTypeNames({
-    {u"input",            ts::INPUT_PLUGIN},
-    {u"output",           ts::OUTPUT_PLUGIN},
-    {u"packet processor", ts::PROCESSOR_PLUGIN},
-});
+void ts::DuckConfigFile::getValues(const ts::UString& entry, ts::UStringVector& values) const
+{
+    values.clear();
+    size_t count = 0;
 
+    if ((count = _appSection.valueCount(entry)) > 0) {
+        for (size_t i = 0; i < count; ++i) {
+            values.push_back(_appSection.value(entry, i));
+        }
+    }
+    else if ((count = _mainSection.valueCount(entry)) > 0) {
+        for (size_t i = 0; i < count; ++i) {
+            values.push_back(_mainSection.value(entry, i));
+        }
+    }
+}

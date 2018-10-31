@@ -66,6 +66,7 @@ public:
     void testRemove();
     void testSubstitute();
     void testSplit();
+    void testSplitShellStyle();
     void testJoin();
     void testBreakLines();
     void testRemovePrefix();
@@ -112,6 +113,7 @@ public:
     CPPUNIT_TEST(testRemove);
     CPPUNIT_TEST(testSubstitute);
     CPPUNIT_TEST(testSplit);
+    CPPUNIT_TEST(testSplitShellStyle);
     CPPUNIT_TEST(testJoin);
     CPPUNIT_TEST(testBreakLines);
     CPPUNIT_TEST(testRemovePrefix);
@@ -620,7 +622,7 @@ void UStringTest::testSubstitute()
 
 void UStringTest::testSplit()
 {
-    std::vector<ts::UString> v1;
+    ts::UStringVector v1;
     ts::UString(u"az, ,  fr,  ze ,t").split(v1);
     CPPUNIT_ASSERT_EQUAL(size_t(5), v1.size());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"az", v1[0]);
@@ -629,7 +631,7 @@ void UStringTest::testSplit()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ze", v1[3]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"t", v1[4]);
 
-    std::vector<ts::UString> v2;
+    ts::UStringVector v2;
     const ts::UString s2(u"az, ,  fr,  ze ,t");
     s2.split(v2);
     CPPUNIT_ASSERT_EQUAL(size_t(5), v2.size());
@@ -639,7 +641,7 @@ void UStringTest::testSplit()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ze", v2[3]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"t", v2[4]);
 
-    std::vector<ts::UString> v3;
+    ts::UStringVector v3;
     ts::UString(u"az, ,  fr,  ze ,t").split(v3, ts::COMMA, false);
     CPPUNIT_ASSERT_EQUAL(size_t(5), v3.size());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"az", v3[0]);
@@ -648,7 +650,7 @@ void UStringTest::testSplit()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  ze ", v3[3]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"t", v3[4]);
 
-    std::vector<ts::UString> v4;
+    ts::UStringVector v4;
     ts::UString(u"az, ,  fr,  ze ,t").split(v4, ts::UChar('z'), false);
     CPPUNIT_ASSERT_EQUAL(size_t(3), v4.size());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", v4[0]);
@@ -656,9 +658,20 @@ void UStringTest::testSplit()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"e ,t", v4[2]);
 }
 
+void UStringTest::testSplitShellStyle()
+{
+    ts::UStringVector v;
+    ts::UString(u" qfdjh qf f'az ef ' df\"nn'\\\"ju\" ").splitShellStyle(v);
+    CPPUNIT_ASSERT_EQUAL(size_t(4), v.size());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"qfdjh", v[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"qf", v[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"faz ef ", v[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dfnn'\"ju", v[3]);
+}
+
 void UStringTest::testJoin()
 {
-    std::vector<ts::UString> v;
+    ts::UStringVector v;
     v.push_back(u"az");
     v.push_back(u"sd");
     v.push_back(u"tg");
@@ -668,14 +681,14 @@ void UStringTest::testJoin()
 
 void UStringTest::testBreakLines()
 {
-    std::vector<ts::UString> v1;
+    ts::UStringVector v1;
     ts::UString(u"aze arf erf r+oih zf").splitLines(v1, 8);
     CPPUNIT_ASSERT(v1.size() == 3);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v1[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"erf", v1[1]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"r+oih zf", v1[2]);
 
-    std::vector<ts::UString> v2;
+    ts::UStringVector v2;
     ts::UString(u"aze arf erf r+oih zf").splitLines(v2, 8, u"+");
     CPPUNIT_ASSERT(v2.size() == 3);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v2[0]);
@@ -690,21 +703,21 @@ void UStringTest::testBreakLines()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"==r+oih", v3[2]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"==zf", v3[3]);
 
-    std::vector<ts::UString> v4;
+    ts::UStringVector v4;
     ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v4, 8);
     CPPUNIT_ASSERT(v4.size() == 3);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v4[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dkvyfngofnb", v4[1]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ff", v4[2]);
 
-    std::vector<ts::UString> v5;
+    ts::UStringVector v5;
     ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v5, 8, u"", u"", true);
     CPPUNIT_ASSERT(v5.size() == 3);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v5[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dkvyfngo", v5[1]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fnb ff", v5[2]);
 
-    std::vector<ts::UString> v6;
+    ts::UStringVector v6;
     ts::UString(u"abc def ghi\nfoo bar tom").splitLines(v6, 8);
     CPPUNIT_ASSERT(v6.size() == 4);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc def", v6[0]);
@@ -712,7 +725,7 @@ void UStringTest::testBreakLines()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo bar", v6[2]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"tom", v6[3]);
 
-    std::vector<ts::UString> v7;
+    ts::UStringVector v7;
     ts::UString(u"abc def ghi\n\n\nfoo bar tom").splitLines(v7, 8);
     CPPUNIT_ASSERT(v7.size() == 6);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc def", v7[0]);

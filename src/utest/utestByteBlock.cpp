@@ -61,7 +61,7 @@ private:
     ts::UString _tempFileName;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ByteBlockTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ByteBlockTest);
 
 
 //----------------------------------------------------------------------------

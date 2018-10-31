@@ -80,6 +80,9 @@ HEADERS += \
     ../../../src/libtsduck/tsCOM.h \
     ../../../src/libtsduck/tsComponentDescriptor.h \
     ../../../src/libtsduck/tsCondition.h \
+    ../../../src/libtsduck/tsConfigFile.h \
+    ../../../src/libtsduck/tsConfigSection.h \
+    ../../../src/libtsduck/tsConfigSectionTemplate.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
     ../../../src/libtsduck/tsCopyrightDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
@@ -116,6 +119,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
+    ../../../src/libtsduck/tsDuckConfigFile.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
     ../../../src/libtsduck/tsDVBCharset.h \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
@@ -522,6 +526,8 @@ SOURCES += \
     ../../../src/libtsduck/tsCOM.cpp \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
     ../../../src/libtsduck/tsCondition.cpp \
+    ../../../src/libtsduck/tsConfigFile.cpp \
+    ../../../src/libtsduck/tsConfigSection.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
     ../../../src/libtsduck/tsCopyrightDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
@@ -546,6 +552,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
+    ../../../src/libtsduck/tsDuckConfigFile.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \

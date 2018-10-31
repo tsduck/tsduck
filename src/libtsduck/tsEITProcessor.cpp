@@ -47,6 +47,7 @@ ts::EITProcessor::EITProcessor(PID pid, Report* report) :
     _sections(),
     _removed_tids(),
     _removed(),
+    _kept(),
     _renamed()
 {
     _input_pids.set(pid);
@@ -60,6 +61,7 @@ void ts::EITProcessor::reset()
     _sections.clear();
     _removed_tids.clear();
     _removed.clear();
+    _kept.clear();
     _renamed.clear();
 }
 
@@ -192,8 +194,18 @@ void ts::EITProcessor::renameTS(const TransportStreamId& old_ts, const Transport
 
 
 //----------------------------------------------------------------------------
-// Remove all EIT's for a given service.
+// Keep / remove all EIT's for a given service.
 //----------------------------------------------------------------------------
+
+void ts::EITProcessor::keepService(uint16_t service_id)
+{
+    _kept.push_back(Service(service_id));
+}
+
+void ts::EITProcessor::keepService(const Service& service)
+{
+    _kept.push_back(service);
+}
 
 void ts::EITProcessor::removeService(uint16_t service_id)
 {
@@ -299,12 +311,26 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
     const uint16_t ts_id  = pl_size < 2 ? 0 : GetUInt16(section.payload());
     const uint16_t net_id = pl_size < 4 ? 0 : GetUInt16(section.payload() + 2);
 
-    // Look for EIT's to remove.
+    // Look for EIT's in services to keep or remove.
     if (is_eit) {
-        for (auto it = _removed.begin(); it != _removed.end(); ++it) {
-            if (Match(*it, srv_id, ts_id, net_id)) {
-                return;
+        bool keep = false;
+        if (_kept.empty()) {
+            // No service to keep, only check services to remove.
+            keep = true;
+            for (auto it = _removed.begin(); keep && it != _removed.end(); ++it) {
+                keep = !Match(*it, srv_id, ts_id, net_id);
             }
+        }
+        else {
+            // There are some services to keep, remove any other service.
+            keep = false;
+            for (auto it = _kept.begin(); !keep && it != _kept.end(); ++it) {
+                keep = Match(*it, srv_id, ts_id, net_id);
+            }
+        }
+        if (!keep) {
+            // Ignore all EIT's for services to remove.
+            return;
         }
     }
 

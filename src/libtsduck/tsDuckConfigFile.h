@@ -26,63 +26,49 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsPlugin.h"
-TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// Constructors.
+//!
+//!  @file
+//!  A singleton which contains the TSDuck configuration file.
+//!
 //----------------------------------------------------------------------------
 
-ts::TSP::TSP(int max_severity) :
-    Report(max_severity),
-    _use_realtime(false),
-    _tsp_bitrate(0),
-    _tsp_aborting(false)
-{
+#pragma once
+#include "tsConfigFile.h"
+#include "tsSingletonManager.h"
+
+namespace ts {
+    //!
+    //! A singleton which contains the TSDuck configuration file.
+    //! @ingroup app
+    //!
+    class TSDUCKDLL DuckConfigFile : public ConfigFile
+    {
+        // This class is a singleton. Use static Instance() method.
+        TS_DECLARE_SINGLETON(DuckConfigFile);
+
+    public:
+        //!
+        //! Get the value of an entry.
+        //! A section with the name of the executable is searched first.
+        //! Then, the global section is used.
+        //! @param [in] entry Entry name.
+        //! @param [in] defvalue Default value.
+        //! @return The value in the entry or @a defvalue if @a entry does not exist.
+        //!
+        UString value(const UString& entry, const UString& defvalue = UString()) const;
+
+        //!
+        //! Get all values of an entry.
+        //! A section with the name of the executable is searched first.
+        //! Then, the global section is used.
+        //! @param [in] entry Entry name.
+        //! @param [out] values Vector of values.
+        //!
+        void getValues(const UString& entry, UStringVector& values) const;
+
+    private:
+        const UString        _appName;
+        const ConfigSection& _appSection;
+        const ConfigSection& _mainSection;
+    };
 }
-
-ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
-    Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION | NO_CONFIG_FILE),
-    tsp(to_tsp)
-{
-}
-
-ts::InputPlugin::InputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::OutputPlugin::OutputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Report implementation.
-//----------------------------------------------------------------------------
-
-void ts::Plugin::writeLog(int severity, const UString& message)
-{
-    // Force message to go through tsp
-    tsp->log(severity, message);
-}
-
-
-//----------------------------------------------------------------------------
-// Displayable names of plugin types.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::PluginTypeNames({
-    {u"input",            ts::INPUT_PLUGIN},
-    {u"output",           ts::OUTPUT_PLUGIN},
-    {u"packet processor", ts::PROCESSOR_PLUGIN},
-});
-
