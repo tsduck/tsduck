@@ -125,6 +125,7 @@ namespace ts {
         SectionDemux     _demux;       // Section filter for splice information.
         TagByPID         _tagsByPID;   // Mapping between PID's and component tags in the service.
         StateByPID       _states;      // Map of current state by PID in the service.
+        std::set<uint32_t> _eventIDs;  // set of event IDs of interest
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
@@ -185,6 +186,12 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     help(u"stuffing",
          u"Replace excluded packets with stuffing (null packets) instead "
          u"of removing them. Useful to preserve bitrate.");
+
+    option(u"event-id", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    help(u"event-id",
+        u"Only remove splices associated with event ID.  Several --event-id options "
+        u"may be specified.");
+
 }
 
 
@@ -200,6 +207,14 @@ bool ts::RMSplicePlugin::start()
     _continue = present(u"continue");
     _adjustTime = present(u"adjust-time");
     _fixCC = present(u"fix-cc");
+
+    // event IDs to filter
+    const size_t event_id_count = count(u"event-id");
+    if (event_id_count) {
+        for (size_t n = 0; n < event_id_count; n++) {
+            _eventIDs.insert(intValue<uint32_t>(u"event-id", 0, n));
+        }
+    }
 
     // Reinitialize the plugin state.
     _tagsByPID.clear();
@@ -266,6 +281,11 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     if (!SpliceInformationTable::ExtractSpliceInsert(cmd, section)) {
         // Not the right table or command, just ignore it.
         return;
+    }
+
+    if (!_eventIDs.empty()) {
+        if (_eventIDs.find(cmd.event_id) == _eventIDs.end())
+            return;
     }
 
     // Either cancel or add the event.
