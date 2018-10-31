@@ -82,6 +82,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
     <ClInclude Include="..\..\src\libtsduck\tsComponentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCondition.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsConfigFile.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsConfigSection.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsConfigSectionTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCopyrightDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h" />
@@ -118,6 +121,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDuckConfigFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
@@ -534,6 +538,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsComponentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCondition.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsConfigFile.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsConfigSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCopyrightDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp" />
@@ -558,6 +564,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDuckConfigFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />

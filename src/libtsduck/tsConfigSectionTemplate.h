@@ -27,62 +27,57 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlugin.h"
-TSDUCK_SOURCE;
+#pragma once
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Get a value in an entry.
 //----------------------------------------------------------------------------
 
-ts::TSP::TSP(int max_severity) :
-    Report(max_severity),
-    _use_realtime(false),
-    _tsp_bitrate(0),
-    _tsp_aborting(false)
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+INT ts::ConfigSection::value(const UString& entry, size_t index, const INT& defvalue) const
 {
-}
-
-ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
-    Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION | NO_CONFIG_FILE),
-    tsp(to_tsp)
-{
-}
-
-ts::InputPlugin::InputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::OutputPlugin::OutputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
-}
-
-ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
-    Plugin(tsp_, description, syntax)
-{
+    INT result = static_cast<INT>(0);
+    if (this->value(entry, index).toInteger(result, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+        return result;
+    }
+    else {
+        return defvalue;
+    }
 }
 
 
 //----------------------------------------------------------------------------
-// Report implementation.
+// Set the value of an entry as a vector of integers
 //----------------------------------------------------------------------------
 
-void ts::Plugin::writeLog(int severity, const UString& message)
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::ConfigSection::set(const UString& entry, const std::vector<INT>& val)
 {
-    // Force message to go through tsp
-    tsp->log(severity, message);
+    this->deleteEntry(entry);
+    this->append(entry, val);
 }
 
 
 //----------------------------------------------------------------------------
-// Displayable names of plugin types.
+// Append an integer value in an antry
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PluginTypeNames({
-    {u"input",            ts::INPUT_PLUGIN},
-    {u"output",           ts::OUTPUT_PLUGIN},
-    {u"packet processor", ts::PROCESSOR_PLUGIN},
-});
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::ConfigSection::append(const UString& entry, const INT& val)
+{
+    this->append(entry, UString::Decimal(val, 0, true, UString()));
+}
 
+
+//----------------------------------------------------------------------------
+// Append a vector of integer values in an antry
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::ConfigSection::append(const UString& entry, const std::vector<INT>& val)
+{
+    for (size_t i = 0; i < val.size(); ++i) {
+        this->append(entry, val[i]);
+    }
+}
