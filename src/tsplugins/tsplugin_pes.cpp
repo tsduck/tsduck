@@ -207,7 +207,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     option(u"trace-packets", 't');
     help(u"trace-packets", u"race all PES packets.");
 
-    option(u"sei-type", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    option(u"sei-type", 0, UINT32);
     help(u"sei-type",
          u"SEI type filter: with --sei-avc, select SEI access units with this "
          u"type (default: all SEI access units). Several --sei-type options "
