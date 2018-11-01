@@ -130,6 +130,7 @@ namespace ts {
         TagByPID         _tagsByPID;   // Mapping between PID's and component tags in the service.
         StateByPID       _states;      // Map of current state by PID in the service.
         std::set<uint32_t> _eventIDs;  // set of event IDs of interest
+        bool             _dryRun;      // Just report what it would do
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
@@ -161,7 +162,8 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _demux(nullptr, this),
     _tagsByPID(),
     _states(),
-    _eventIDs()
+    _eventIDs(),
+    _dryRun(false)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -197,6 +199,10 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
          u"Only remove splices associated with event ID. Several --event-id options "
          u"may be specified.");
 
+    option(u"dry-run");
+    help(u"dry-run",
+         u"Perform a dry run--report what operations would be performed.  Use with --verbose.");
+
 }
 
 
@@ -213,6 +219,7 @@ bool ts::RMSplicePlugin::start()
     _adjustTime = present(u"adjust-time");
     _fixCC = present(u"fix-cc");
     getIntValues(_eventIDs, u"event-id");
+    _dryRun = present(u"dry-run");
 
     // Reinitialize the plugin state.
     _tagsByPID.clear();
@@ -290,6 +297,9 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     if (cmd.canceled) {
         // Cancel an identified splice event. Search and remove from all PID's.
         tsp->verbose(u"Canceling splice event id %d", {cmd.event_id});
+        if (_dryRun) {
+            return;
+        }
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.cancelEvent(cmd.event_id);
         }
@@ -299,12 +309,17 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             tsp->verbose(u"Adding 'immediate' splice %s with event ID %d on PID %d at PTS %d (%d ms)", {cmd.splice_out ? u"out" : u"in", cmd.event_id,
                 (*it).second.pid, (*it).second.lastPTS, ((*it).second.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
-            it->second.addEvent(cmd, _tagsByPID);
+            if (!_dryRun) {
+                it->second.addEvent(cmd, _tagsByPID);
+            }
         }
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
         tsp->verbose(u"Adding splice %s at PTS %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id});
+        if (!_dryRun) {
+            return;
+        }
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.addEvent(cmd, _tagsByPID);
         }
