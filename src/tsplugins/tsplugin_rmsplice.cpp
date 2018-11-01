@@ -92,12 +92,16 @@ namespace ts {
             uint64_t   totalAdjust;   // Total removed time in PTS units.
             uint64_t   lastPTS;       // Last PTS value in this PID.
             EventByPTS events;        // Ordered map of upcoming slice events.
+            bool       immediateOut;  // Currently splicing out for an immediate event
+            uint32_t   immediateEventId; // Event ID associated with immediate splice out event
+            bool       cancelImmediateOut; // Want to cancel current immediate splice out event
 
             // Constructor
-            PIDState(PID pid_) : pid(pid_), cc(0xFF), currentlyOut(false), outStart(INVALID_PTS), totalAdjust(0), lastPTS(INVALID_PTS), events() {}
+            PIDState(PID pid_) : pid(pid_), cc(0xFF), currentlyOut(false), outStart(INVALID_PTS), totalAdjust(0),
+                lastPTS(INVALID_PTS), events(), immediateOut(false), immediateEventId(0), cancelImmediateOut(false) {}
 
             // Add a splicing event in a PID.
-            void addEvent(uint64_t pts, bool spliceOut, uint32_t eventId);
+            void addEvent(uint64_t pts, bool spliceOut, uint32_t eventId, bool immediate);
             void addEvent(const SpliceInsert& cmd, const TagByPID& tags);
 
             // Remove all splicing events with specified id.
@@ -291,18 +295,22 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     // Either cancel or add the event.
     if (cmd.canceled) {
         // Cancel an identified splice event. Search and remove from all PID's.
-        tsp->verbose(u"canceling splice event id 0x%X", {cmd.event_id});
+        tsp->verbose(u"Canceling splice event id %d", {cmd.event_id});
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.cancelEvent(cmd.event_id);
         }
     }
     else if (cmd.immediate) {
-        // We ignore "immediate" splice events since they do not give a precise time where to cut.
-        tsp->verbose(u"ignoring 'immediate' splice event %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.event_id});
+        // Add an immediate splice event, which doesn't have a PTS value and is handled differently that scheduled splice events.
+        for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
+            tsp->verbose(u"Adding 'immediate' splice %s with event ID %d on PID %d at PTS %d (%d ms)", {cmd.splice_out ? u"out" : u"in", cmd.event_id,
+                (*it).second.pid, (*it).second.lastPTS, ((*it).second.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+            it->second.addEvent(cmd, _tagsByPID);
+        }
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
-        tsp->verbose(u"adding splice %s at PTS %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id});
+        tsp->verbose(u"Adding splice %s at PTS %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id});
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
             it->second.addEvent(cmd, _tagsByPID);
         }
@@ -314,13 +322,30 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
 // Add a splicing event in a PID, basic form.
 //----------------------------------------------------------------------------
 
-void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool spliceOut, uint32_t eventId)
+void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool spliceOut, uint32_t eventId, bool immediate)
 {
-    // Ignore invalid PTS or PTS from the past, before last PTS value in this PID.
-    // Note that the initial "lastPTS" of a PID is an invalid value, indicating "not yet available".
-    if (pts <= PTS_DTS_MASK && (lastPTS > PTS_DTS_MASK || SequencedPTS(lastPTS, pts))) {
-        // Simply replace the event if it already existed.
-        events[pts] = Event(spliceOut, eventId);
+    if (immediate) {
+        // Ignore immediate splice in events if not coupled with a prior splice out event
+        // In addition, only support a single event ID at a time--if currently splicing out for a
+        // particular event ID and receive a splice immediate event for another event ID, disregard it
+        if (immediateOut) {
+            if (!spliceOut && (immediateEventId == eventId)) {
+                cancelImmediateOut = true;
+            }
+        }
+        else if (spliceOut) {
+            immediateOut = true;
+            immediateEventId = eventId;
+            cancelImmediateOut = false;
+        }
+    }
+    else {
+        // Ignore invalid PTS or PTS from the past, before last PTS value in this PID.
+        // Note that the initial "lastPTS" of a PID is an invalid value, indicating "not yet available".
+        if (pts <= PTS_DTS_MASK && (lastPTS > PTS_DTS_MASK || SequencedPTS(lastPTS, pts))) {
+            // Simply replace the event if it already existed.
+            events[pts] = Event(spliceOut, eventId);
+        }
     }
 }
 
@@ -332,32 +357,35 @@ void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool spliceOut, uint32
 void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagByPID& tags)
 {
     uint64_t pts = 0;
-    if (cmd.program_splice && cmd.program_pts.set()) {
-        // Same PTS value for all components in the service.
-        pts = cmd.program_pts.value();
-    }
-    else {
-        // There is one PTS value per service component in the command, search our PTS value.
-        const TagByPID::const_iterator it1 = tags.find(pid);
-        const SpliceInsert::SpliceByComponent::const_iterator it2 =
-            it1 == tags.end() ?                     // no component tag found for our PID
-            cmd.components_pts.end() :              // so there won't be any PTS
-            cmd.components_pts.find(it1->second);   // search PTS value for the component type
-        if (it2 == cmd.components_pts.end() || !it2->second.set()) {
-            // The SpliceInsert does not specify any PTS for our PID, nothing to do.
-            return;
+
+    if (!cmd.immediate) {
+        if (cmd.program_splice && cmd.program_pts.set()) {
+            // Same PTS value for all components in the service.
+            pts = cmd.program_pts.value();
         }
         else {
-            pts = it2->second.value();
+            // There is one PTS value per service component in the command, search our PTS value.
+            const TagByPID::const_iterator it1 = tags.find(pid);
+            const SpliceInsert::SpliceByComponent::const_iterator it2 =
+                it1 == tags.end() ?                     // no component tag found for our PID
+                cmd.components_pts.end() :              // so there won't be any PTS
+                cmd.components_pts.find(it1->second);   // search PTS value for the component type
+            if (it2 == cmd.components_pts.end() || !it2->second.set()) {
+                // The SpliceInsert does not specify any PTS for our PID, nothing to do.
+                return;
+            }
+            else {
+                pts = it2->second.value();
+            }
         }
     }
 
     // Add the splicing event.
-    addEvent(pts, cmd.splice_out, cmd.event_id);
+    addEvent(pts, cmd.splice_out, cmd.event_id, cmd.immediate);
 
     // If this is a "splice out" event with "auto return", then also add the "splice in" event at the end of the sequence.
     if (cmd.splice_out && cmd.use_duration && cmd.auto_return) {
-        addEvent((pts + cmd.duration_pts) & PTS_DTS_MASK, false, cmd.event_id);
+        addEvent((pts + cmd.duration_pts) & PTS_DTS_MASK, false, cmd.event_id, cmd.immediate);
     }
 }
 
@@ -411,6 +439,65 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                 eventPTS = state.events.begin()->first;
                 event = state.events.begin()->second;
                 state.events.erase(state.events.begin());
+            }
+
+            if (state.immediateOut) {
+                // Handle immediate splicing here
+                //
+                // Basically, when splicing out and state.currentlyOut is false, we look for the first packet with the random access indicator
+                // turned on.  Once it is found, it is safe to disregard this packet and subsequent packets for the current PID without affecting
+                // decoding.  As currently implemented, audio packets will almost certainly be discarded earlier than video packets due to the likelihood
+                // that seek points are more frequent for audio than for video.  In addition, the PTS for video packets typically corresponds to a later point
+                // in time than the PTS for audio packets in the vicinity of video packets in order to provide enough time for video decoding delays in relation
+                // to audio decoding delays.  This situation will be addressed in a future commit--ideally, what we want is not to drop any audio packets until
+                // the first video packet is dropped, and in addition, we only want to drop audio packets that have PTS that occurs after the PTS of the first
+                // video packet that was dropped.
+                //
+                // When splicing back in, it looks for the first packet with the random access indicator turned on and behaves similarly.
+                //
+                // This approach may result in some delay depending on where the immediate splice event appears in the stream with respect to the nearest seekable
+                // packet, particularly for video packets.  If the video encoder marks the first packet in a GOP, for example, as seekable (i.e. has the random
+                // access indicator turned on), then it could take up to the GOP length to reach a seekable packet in the video stream.  Generally, it is preferable
+                // to use scheduled splice insert events, rather than immediate splice insert events, to allow encoders to make sure it is safe to splice in/out
+                // right around the point of the splice insert event.
+                if (state.cancelImmediateOut) {
+                    if (!state.currentlyOut) {
+                        // then didn't find any place to splice out in the stream
+                        state.cancelImmediateOut = false;
+                        state.immediateOut = false;
+                        state.immediateEventId = 0;
+
+                        tsp->verbose(u"Immediate splice out disregarded on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                    }
+                    else {
+                        if (pkt.getRandomAccessIndicator()) {
+                            // can splice back in at this point
+                            state.cancelImmediateOut = false;
+                            state.immediateOut = false;
+                            state.immediateEventId = 0;
+                            state.currentlyOut = false;
+
+                            // Splicing back in, restarting the transmission of the PID.
+                            // Add removed period to the total removed time (in PTS units).
+                            if (state.outStart != INVALID_PTS) {
+                                state.totalAdjust = (state.totalAdjust + (state.lastPTS - state.outStart)) & PTS_DTS_MASK;
+                                state.outStart = INVALID_PTS;
+                            }
+
+                            tsp->verbose(u"Immediate splice in on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                        }
+                    }
+                }
+                else {
+                    if (!state.currentlyOut) {
+                        if (pkt.getRandomAccessIndicator()) {
+                            state.currentlyOut = true;
+                            state.outStart = state.lastPTS;
+
+                            tsp->verbose(u"Immediate splice out on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                        }
+                    }
+                }
             }
 
             // Process the last event, if there is one.
