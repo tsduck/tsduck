@@ -67,7 +67,7 @@ namespace ts {
         bool            _dump_nal_units;
         bool            _dump_avc_sei;
         std::bitset<32> _nal_unit_filter;
-        std::bitset<32> _sei_type_filter;
+        std::set<uint32_t>   _sei_type_filter;
         std::list<ByteBlock> _sei_uuid_filter;
         bool            _video_attributes;
         bool            _audio_attributes;
@@ -207,7 +207,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     option(u"trace-packets", 't');
     help(u"trace-packets", u"race all PES packets.");
 
-    option(u"sei-type", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    option(u"sei-type", 0, UINT32);
     help(u"sei-type",
          u"SEI type filter: with --sei-avc, select SEI access units with this "
          u"type (default: all SEI access units). Several --sei-type options "
@@ -289,17 +289,7 @@ bool ts::PESPlugin::start()
     }
 
     // SEI types to filter
-    const size_t sei_type_count = count(u"sei-type");
-    if (sei_type_count == 0) {
-        // Default: all SEI types
-        _sei_type_filter.set();
-    }
-    else {
-        _sei_type_filter.reset();
-        for (size_t n = 0; n < sei_type_count; n++) {
-            _sei_type_filter.set(intValue<size_t>(u"sei-type", 0, n));
-        }
-    }
+    getIntValues(_sei_type_filter, u"sei-type");
 
     // SEI UUID's to filter.
     const size_t uuid_count = count(u"uuid-sei");
@@ -518,7 +508,7 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
 
 void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t sei_type, size_t offset, size_t size)
 {
-    if (!_dump_avc_sei || !_sei_type_filter.test(sei_type)) {
+    if (!_dump_avc_sei || (!_sei_type_filter.empty() && _sei_type_filter.find(sei_type) == _sei_type_filter.end())) {
         return;
     }
 

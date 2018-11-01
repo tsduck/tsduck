@@ -160,7 +160,8 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _service(this, *tsp),
     _demux(nullptr, this),
     _tagsByPID(),
-    _states()
+    _states(),
+    _eventIDs()
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -193,8 +194,8 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
 
     option(u"event-id", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
     help(u"event-id",
-        u"Only remove splices associated with event ID.  Several --event-id options "
-        u"may be specified.");
+         u"Only remove splices associated with event ID. Several --event-id options "
+         u"may be specified.");
 
 }
 
@@ -211,14 +212,7 @@ bool ts::RMSplicePlugin::start()
     _continue = present(u"continue");
     _adjustTime = present(u"adjust-time");
     _fixCC = present(u"fix-cc");
-
-    // event IDs to filter
-    const size_t event_id_count = count(u"event-id");
-    if (event_id_count) {
-        for (size_t n = 0; n < event_id_count; n++) {
-            _eventIDs.insert(intValue<uint32_t>(u"event-id", 0, n));
-        }
-    }
+    getIntValues(_eventIDs, u"event-id");
 
     // Reinitialize the plugin state.
     _tagsByPID.clear();
@@ -287,9 +281,9 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
         return;
     }
 
-    if (!_eventIDs.empty()) {
-        if (_eventIDs.find(cmd.event_id) == _eventIDs.end())
-            return;
+    // Filter events by ids if --event-id was specified.
+    if (!_eventIDs.empty() && _eventIDs.find(cmd.event_id) == _eventIDs.end()) {
+        return;
     }
 
     // Either cancel or add the event.
