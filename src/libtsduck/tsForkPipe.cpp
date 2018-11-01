@@ -649,7 +649,7 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
             insize = std::max(::DWORD(0), insize);  // just in case we got a negative value
             ret_size += insize;
             data += insize;
-            remain -= std::max(remain, insize);
+            remain -= std::min(remain, insize);
             // Exit when we read an integral number of "units" or the buffer is full.
             if (unit_size == 0 || remain == 0 || ret_size % unit_size == 0) {
                 break;
@@ -684,9 +684,9 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
         else if (insize > 0) {
             // Normal case, some data were read.
             assert(size_t(insize) <= remain);
-            ret_size += insize;
+            ret_size += size_t(insize);
             data += insize;
-            remain -= std::max(remain, size_t(insize));
+            remain -= std::min(remain, size_t(insize));
             // Exit when we read an integral number of "units" or the buffer is full.
             if (unit_size == 0 || remain == 0 || ret_size % unit_size == 0) {
                 break;
