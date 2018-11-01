@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.15-972
+VERSION 3.15-1007
 
 [NEW] New commands and plugins:
 
@@ -28,6 +28,8 @@ VERSION 3.15-972
   * The command "tsdump" can now accept multiple input files.
   * Added demodulator support in the input plugin "dektec" (e.g. DTA-2137).
   * Added options --audio-pid and --eit to plugin "zap".
+  * Added option --sei-type to plugin "pes".
+  * Added option --event-id to plugin "rmsplice".
   * Added the per-user configuration file $HOME/.tsduck to specify default or
     alternate options to various commands.
 
