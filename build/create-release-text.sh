@@ -44,9 +44,11 @@ WIN32=$(getlink '/TSDuck-Win32-.*\.exe$')
 WIN64=$(getlink '/TSDuck-Win64-.*\.exe$')
 WIN32Z=$(getlink '/TSDuck-Win32-.*-Portable\.zip$')
 WIN64Z=$(getlink '/TSDuck-Win64-.*-Portable\.zip$')
+EL64=$(getlink '/tsduck-[0-9].*\.el[0-9]*\.x86_64\.rpm$')
 FC64=$(getlink '/tsduck-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64=$(getlink '/tsduck_[0-9].*_amd64\.deb$')
 ARM=$(getlink '/tsduck_[0-9].*_armhf\.deb$')
+EL64DEV=$(getlink '/tsduck-devel-[0-9].*\.el[0-9]*\.x86_64\.rpm$')
 FC64DEV=$(getlink '/tsduck-devel-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64DEV=$(getlink '/tsduck-dev_[0-9].*_amd64\.deb$')
 ARMDEV=$(getlink '/tsduck-dev_[0-9].*_armhf\.deb$')
@@ -60,6 +62,7 @@ Binaries for command-line tools and plugins:
 * Windows 64 bits: $WIN64
 * Windows 32 bits (portable): $WIN32Z
 * Windows 64 bits (portable): $WIN64Z
+* CentOS 64 bits: $EL64
 * Fedora 64 bits: $FC64
 * Ubuntu 64 bits: $UB64
 * Raspbian 32 bits (Raspberry Pi): $ARM
@@ -67,6 +70,7 @@ Binaries for command-line tools and plugins:
 
 Binaries for development environment:
 * Windows: Included in installer (select option "Development")
+* CentOS 64 bits: $EL64DEV
 * Fedora 64 bits: $FC64DEV
 * Ubuntu 64 bits: $UB64DEV
 * Raspbian 32 bits (Raspberry Pi): $ARMDEV
