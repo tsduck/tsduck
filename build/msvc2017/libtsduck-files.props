@@ -173,6 +173,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsHiDesDevice.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHiDesDeviceInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tshls.h" />
+    <ClInclude Include="..\..\src\libtsduck\tshlsPlayList.h" />
+    <ClInclude Include="..\..\src\libtsduck\tshlsTagAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIBPDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIDSA.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
@@ -443,6 +446,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsWatchDog.h" />
     <ClInclude Include="..\..\src\libtsduck\tsWatchDogHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsWebRequest.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsWebRequestArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsWebRequestHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxml.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlAttribute.h" />
@@ -607,6 +611,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHiDesDeviceInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tshls.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tshlsPlayList.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tshlsTagAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIBPDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIDSA.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
@@ -828,6 +835,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVideoWindowDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsWatchDog.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsWebRequest.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsWebRequestArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlAttribute.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlComment.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlDeclaration.cpp" />

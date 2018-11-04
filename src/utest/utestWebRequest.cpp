@@ -287,7 +287,7 @@ void WebRequestTest::testNoRedirection()
 
 void WebRequestTest::testNonExistentHost()
 {
-        ts::ReportBuffer<> rep;
+    ts::ReportBuffer<> rep;
     ts::WebRequest request(rep);
 
     ts::ByteBlock data;

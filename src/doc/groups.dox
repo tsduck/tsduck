@@ -64,6 +64,10 @@ Digital television features.
   @ingroup dtv
   Most common descriptors used in MPEG-DVB systems.
 
+  @defgroup hls HTTP Live Streaming (HLS)
+  @ingroup dtv
+  Classes for HTTP Live Streaming (HLS)
+
   @defgroup hardware Hardware support
   @ingroup dtv
   Specific hardware support (Dektec, tuners)

@@ -171,6 +171,9 @@ HEADERS += \
     ../../../src/libtsduck/tsHiDesDevice.h \
     ../../../src/libtsduck/tsHiDesDeviceInfo.h \
     ../../../src/libtsduck/tsHierarchyDescriptor.h \
+    ../../../src/libtsduck/tshls.h \
+    ../../../src/libtsduck/tshlsPlayList.h \
+    ../../../src/libtsduck/tshlsTagAttributes.h \
     ../../../src/libtsduck/tsIBPDescriptor.h \
     ../../../src/libtsduck/tsIDSA.h \
     ../../../src/libtsduck/tsInputRedirector.h \
@@ -441,6 +444,7 @@ HEADERS += \
     ../../../src/libtsduck/tsWatchDog.h \
     ../../../src/libtsduck/tsWatchDogHandlerInterface.h \
     ../../../src/libtsduck/tsWebRequest.h \
+    ../../../src/libtsduck/tsWebRequestArgs.h \
     ../../../src/libtsduck/tsWebRequestHandlerInterface.h \
     ../../../src/libtsduck/tsxml.h \
     ../../../src/libtsduck/tsxmlAttribute.h \
@@ -595,6 +599,9 @@ SOURCES += \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsHiDesDeviceInfo.cpp \
     ../../../src/libtsduck/tsHierarchyDescriptor.cpp \
+    ../../../src/libtsduck/tshls.cpp \
+    ../../../src/libtsduck/tshlsPlayList.cpp \
+    ../../../src/libtsduck/tshlsTagAttributes.cpp \
     ../../../src/libtsduck/tsIBPDescriptor.cpp \
     ../../../src/libtsduck/tsIDSA.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \
@@ -816,6 +823,7 @@ SOURCES += \
     ../../../src/libtsduck/tsVideoWindowDescriptor.cpp \
     ../../../src/libtsduck/tsWatchDog.cpp \
     ../../../src/libtsduck/tsWebRequest.cpp \
+    ../../../src/libtsduck/tsWebRequestArgs.cpp \
     ../../../src/libtsduck/tsxmlAttribute.cpp \
     ../../../src/libtsduck/tsxmlComment.cpp \
     ../../../src/libtsduck/tsxmlDeclaration.cpp \
