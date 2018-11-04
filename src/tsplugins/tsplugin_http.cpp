@@ -35,6 +35,7 @@
 #include "tsPushInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsWebRequest.h"
+#include "tsWebRequestArgs.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -60,12 +61,13 @@ namespace ts {
         virtual bool handleWebData(const WebRequest& request, const void* data, size_t size) override;
 
     private:
-        size_t      _repeat_count;
-        bool        _ignore_errors;
-        MilliSecond _reconnect_delay;
-        WebRequest  _request;
-        TSPacket    _partial;       // Buffer for incomplete packets.
-        size_t      _partial_size;  // Number of bytes in partial.
+        size_t         _repeat_count;
+        bool           _ignore_errors;
+        MilliSecond    _reconnect_delay;
+        WebRequest     _request;
+        WebRequestArgs _web_args;
+        TSPacket       _partial;       // Buffer for incomplete packets.
+        size_t         _partial_size;  // Number of bytes in partial.
 
         // Inaccessible operations
         HttpInput() = delete;
@@ -88,17 +90,15 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
     _ignore_errors(false),
     _reconnect_delay(0),
     _request(*tsp),
+    _web_args(),
     _partial(),
     _partial_size(0)
 {
+    _web_args.defineOptions(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specify the URL from which to read the transport stream.");
-
-    option(u"connection-timeout", 0, POSITIVE);
-    help(u"connection-timeout",
-         u"Specify the connection timeout in milliseconds. By default, let the "
-         u"operating system decide.");
 
     option(u"ignore-errors");
     help(u"ignore-errors",
@@ -115,28 +115,6 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
          u"Specify the maximum number of queued TS packets before their "
          u"insertion into the stream. The default is " +
          UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
-
-    option(u"proxy-host", 0, STRING);
-    help(u"proxy-host", u"name",
-         u"Optional proxy host name for Internet access.");
-
-    option(u"proxy-password", 0, STRING);
-    help(u"proxy-password", u"string",
-         u"Optional proxy password for Internet access (for use with --proxy-user).");
-
-    option(u"proxy-port", 0, UINT16);
-    help(u"proxy-port",
-         u"Optional proxy port for Internet access (for use with --proxy-host).");
-
-    option(u"proxy-user", 0, STRING);
-    help(u"proxy-user", u"name",
-         u"Optional proxy user name for Internet access.");
-
-    option(u"receive-timeout", 0, POSITIVE);
-    help(u"receive-timeout",
-         u"Specify the data reception timeout in milliseconds. This timeout applies "
-         u"to each receive operation, individually. By default, let the operating "
-         u"system decide.");
 
     option(u"reconnect-delay", 0, UNSIGNED);
     help(u"reconnect-delay",
@@ -161,6 +139,7 @@ bool ts::HttpInput::getOptions()
     _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
     _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
     _ignore_errors = present(u"ignore-errors");
+    _web_args.loadArgs(*this);
 
     // Resize the inter-thread packet queue.
     setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));
@@ -168,11 +147,7 @@ bool ts::HttpInput::getOptions()
     // Prepare web request.
     _request.setURL(value(u""));
     _request.setAutoRedirect(true);
-    _request.setProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"));
-    _request.setProxyUser(value(u"proxy-user"), value(u"proxy-password"));
-    if (present(u"connection-timeout")) {
-        _request.setConnectionTimeout(intValue<MilliSecond>(u"connection-timeout"));
-    }
+    _request.setArgs(_web_args);
 
     return true;
 }
@@ -218,18 +193,13 @@ void ts::HttpInput::processInput()
 bool ts::HttpInput::handleWebStart(const WebRequest& request, size_t size)
 {
     // Get complete MIME type.
-    const UString mime(request.reponseHeader(u"Content-Type"));
-
-    // Get initial type, before ';'.
-    UStringVector types;
-    mime.split(types, u';');
-    types.resize(1);
+    const UString mime(request.mimeType());
 
     // Print a message.
     tsp->verbose(u"downloading from %s", {request.finalURL()});
     tsp->verbose(u"MIME type: %s, expected size: %s", {mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", {size})});
-    if (!types[0].empty() && !types[0].similar(u"video/mp2t")) {
-        tsp->warning(u"MIME type is %d, maybe not a valid transport stream", {types[0]});
+    if (!mime.empty() && !mime.similar(u"video/mp2t")) {
+        tsp->warning(u"MIME type is %d, maybe not a valid transport stream", {mime});
     }
 
     // Reinitialize partial packet if some bytes were left from a previous iteration.

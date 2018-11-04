@@ -141,6 +141,27 @@ void ts::WebRequest::SetDefaultProxyUser(const UString& user, const UString& pas
 
 
 //----------------------------------------------------------------------------
+// Set various arguments from command line.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
+{
+    if (!args.proxyHost.empty()) {
+        setProxyHost(args.proxyHost, args.proxyPort);
+    }
+    if (!args.proxyUser.empty()) {
+        setProxyUser(args.proxyUser, args.proxyPassword);
+    }
+    if (args.connectionTimeout > 0) {
+        setConnectionTimeout(args.connectionTimeout);
+    }
+    if (args.receiveTimeout > 0) {
+        setReceiveTimeout(args.receiveTimeout);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Set request headers.
 //----------------------------------------------------------------------------
 
@@ -168,6 +189,33 @@ ts::UString ts::WebRequest::reponseHeader(const UString& name) const
 {
     const HeadersMap::const_iterator it = _responseHeaders.find(name);
     return it == _responseHeaders.end() ? UString() : it->second;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the MIME type in the response headers.
+//----------------------------------------------------------------------------
+
+ts::UString ts::WebRequest::mimeType(bool simple, bool lowercase) const
+{
+    // Get complete MIME type.
+    UString mime(reponseHeader(u"Content-Type"));
+
+    // Get initial type, before ';', in simple form.
+    if (simple) {
+        const size_t semi = mime.find(u';');
+        if (semi != NPOS) {
+            mime.erase(semi);
+        }
+        mime.trim();
+    }
+
+    // Force case.
+    if (lowercase) {
+        mime.convertToLower();
+    }
+
+    return mime;
 }
 
 

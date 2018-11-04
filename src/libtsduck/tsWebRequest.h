@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsWebRequestHandlerInterface.h"
+#include "tsWebRequestArgs.h"
 #include "tsReport.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
@@ -149,13 +150,19 @@ namespace ts {
 
         //!
         //! Enable or disable the automatic redirection of HTTP requests.
-        //! This option in active by default.
+        //! This option is active by default.
         //! @param [in] on If true, allow automatic redirection of HTTP requests.
         //!
         void setAutoRedirect(bool on)
         {
             _autoRedirect = on;
         }
+
+        //!
+        //! Set various arguments from command line.
+        //! @param [in] args Command line arguments.
+        //!
+        void setArgs(const WebRequestArgs& args);
 
         //!
         //! Set a header which will be sent with the request.
@@ -220,6 +227,14 @@ namespace ts {
         //! If the header is present more than once, the first value is returned.
         //!
         UString reponseHeader(const UString& name) const;
+
+        //!
+        //! Get the MIME type in the response headers.
+        //! @param [in] simple If true, simple type name. If false, return the full specification with options.
+        //! @param [in] lowercase Force lowercase in the result.
+        //! @return The MIME type.
+        //!
+        UString mimeType(bool simple = true, bool lowercase = true) const;
 
         //!
         //! Get the size in bytes of the downloaded content.

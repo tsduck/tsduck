@@ -64,6 +64,7 @@ SOURCES += \
     ../../../src/utest/utestVariable.cpp \
     ../../../src/utest/utestWebRequest.cpp \
     ../../../src/utest/utestXML.cpp \
+    ../../../src/utest/utestHLS.cpp \
     ../../../src/utest/utestCppUnitThread.cpp
 
 DISTFILES += \
