@@ -85,7 +85,7 @@ namespace ts {
         class PIDState
         {
         public:
-            const PID  pid;           // PID value.
+            PID        pid;           // PID value.
             uint8_t    cc;            // Last continuity counter in the PID.
             bool       currentlyOut;  // PID is currently spliced out.
             uint64_t   outStart;      // When spliced out, PTS value at the time of splicing out.
@@ -95,10 +95,17 @@ namespace ts {
             bool       immediateOut;  // Currently splicing out for an immediate event
             uint32_t   immediateEventId; // Event ID associated with immediate splice out event
             bool       cancelImmediateOut; // Want to cancel current immediate splice out event
+            bool       isAudio;       // Associated with audio stream
+            bool       isVideo;       // Associated with video stream
+            uint64_t   lastOutEnd;    // When spliced back in, PTS value at the time of the splice in
+            uint64_t   ptsLastSeekPoint; // PTS of last seek point for this PID
+            uint64_t   ptsBetweenSeekPoints; // PTS difference between last seek points for this PID
 
             // Constructor
-            PIDState(PID pid_) : pid(pid_), cc(0xFF), currentlyOut(false), outStart(INVALID_PTS), totalAdjust(0),
-                lastPTS(INVALID_PTS), events(), immediateOut(false), immediateEventId(0), cancelImmediateOut(false) {}
+            PIDState() : pid(0), cc(0xFF), currentlyOut(false), outStart(INVALID_PTS), totalAdjust(0), lastPTS(INVALID_PTS),
+                events(), immediateOut(false), immediateEventId(0), cancelImmediateOut(false),
+                isAudio(false), isVideo(false), lastOutEnd(INVALID_PTS),
+                ptsLastSeekPoint(INVALID_PTS), ptsBetweenSeekPoints(INVALID_PTS) {}
 
             // Add a splicing event in a PID.
             void addEvent(uint64_t pts, bool spliceOut, uint32_t eventId, bool immediate);
@@ -107,10 +114,6 @@ namespace ts {
             // Remove all splicing events with specified id.
             void cancelEvent(uint32_t event_id);
 
-        private:
-            // Inaccessible operations.
-            PIDState() = delete;
-            PIDState& operator=(const PIDState&) = delete;
         };
 
         // All PID's in the service are described by a map, indexed by PID.
@@ -131,6 +134,7 @@ namespace ts {
         StateByPID       _states;      // Map of current state by PID in the service.
         std::set<uint32_t> _eventIDs;  // set of event IDs of interest
         bool             _dryRun;      // Just report what it would do
+        PID              _videoPID;    // First video PID, if there is one
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
@@ -163,7 +167,8 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _tagsByPID(),
     _states(),
     _eventIDs(),
-    _dryRun(false)
+    _dryRun(false),
+    _videoPID(0)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -254,7 +259,13 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt)
             // Other component, possibly a PID to splice.
             // Enforce the creation of the state for this PID if non-existent.
             if (_states.find(pid) == _states.end()) {
-                _states.insert(std::make_pair(pid, PIDState(pid)));
+                if ((_videoPID == 0) && stream.isVideo())
+                    _videoPID = pid;
+                PIDState pidState;
+                pidState.pid = pid;
+                pidState.isAudio = stream.isAudio();
+                pidState.isVideo = stream.isVideo();
+                _states.insert(std::make_pair(pid, pidState));
             }
 
             // Look for an optional stream_identifier_descriptor for this component.
@@ -437,9 +448,19 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
 
         // If this packet has a PTS, there is maybe a splice point to process.
         if (pkt.hasPTS()) {
-
             // Keep last PTS of the PID.
-            state.lastPTS = pkt.getPTS();
+            uint64_t currentPTS = pkt.getPTS();
+            if (pkt.getRandomAccessIndicator()) {
+                // keep track of time between seek points
+                // this time is used for determining which audio seek point is closest to the
+                // video splice out time when handling immediate splice events
+                if (state.ptsLastSeekPoint != INVALID_PTS) {
+                    state.ptsBetweenSeekPoints = currentPTS - state.ptsLastSeekPoint;
+                }
+
+                state.ptsLastSeekPoint = currentPTS;
+            }
+            state.lastPTS = currentPTS;
 
             // Remove all leading splicing events older than current PTS.
             uint64_t eventPTS = INVALID_PTS;
@@ -453,22 +474,25 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
             if (state.immediateOut) {
                 // Handle immediate splicing here
                 //
-                // Basically, when splicing out and state.currentlyOut is false, we look for the first packet with the random access indicator
-                // turned on.  Once it is found, it is safe to disregard this packet and subsequent packets for the current PID without affecting
-                // decoding.  As currently implemented, audio packets will almost certainly be discarded earlier than video packets due to the likelihood
-                // that seek points are more frequent for audio than for video.  In addition, the PTS for video packets typically corresponds to a later point
-                // in time than the PTS for audio packets in the vicinity of video packets in order to provide enough time for video decoding delays in relation
-                // to audio decoding delays.  This situation will be addressed in a future commit--ideally, what we want is not to drop any audio packets until
-                // the first video packet is dropped, and in addition, we only want to drop audio packets that have PTS that occurs after the PTS of the first
-                // video packet that was dropped.
+                // Basically, when splicing out and state.currentlyOut is false, we look for the first packet with the random access
+                // indicator turned on.  Once it is found, it is safe to disregard this packet and subsequent packets for the
+                // current PID without affecting decoding.  This simple approach isn't quite sufficient to maintain audio/video
+                // sync, however.  That's because audio packets will almost certainly be discarded earlier than video packets due
+                // to the likelihood that seek points are more frequent for audio than for video.  In addition, the PTS for video
+                // packets typically corresponds to a later point in time than the PTS for audio packets in the vicinity of video
+                // packets in order to provide enough time for video decoding delays in relation to audio decoding delays.
+                // This situation is addressed as follows:  it doesn't drop any audio packets initially, and once the first video
+                // packet with the random access indicator turned on has been dropped, it notes the out time for video and tries to
+                // match the out time for audio as closely as possible to the video time.  A similar approach is used when splicing
+                // back in.  This results in very good audio/video sync although it isn't quite perfect.  Making it perfect, however,
+                // is not a simple problem to solve.
                 //
-                // When splicing back in, it looks for the first packet with the random access indicator turned on and behaves similarly.
-                //
-                // This approach may result in some delay depending on where the immediate splice event appears in the stream with respect to the nearest seekable
-                // packet, particularly for video packets.  If the video encoder marks the first packet in a GOP, for example, as seekable (i.e. has the random
-                // access indicator turned on), then it could take up to the GOP length to reach a seekable packet in the video stream.  Generally, it is preferable
-                // to use scheduled splice insert events, rather than immediate splice insert events, to allow encoders to make sure it is safe to splice in/out
-                // right around the point of the splice insert event.
+                // This approach may result in some delay depending on where the immediate splice event appears in the stream with
+                // respect to the nearest seekable packet, particularly for video packets.  If the video encoder marks the first
+                // packet in a GOP, for example, as seekable (i.e. has the random access indicator turned on), then it could take up
+                // to the GOP length to reach a seekable packet in the video stream.  Generally, it is preferable to use scheduled
+                // splice insert events, rather than immediate splice insert events, to allow encoders to make sure it is safe to
+                // splice in/out right around the point of the splice insert event.
                 if (state.cancelImmediateOut) {
                     if (!state.currentlyOut) {
                         // then didn't find any place to splice out in the stream
@@ -480,30 +504,66 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                     }
                     else {
                         if (pkt.getRandomAccessIndicator()) {
-                            // can splice back in at this point
-                            state.cancelImmediateOut = false;
-                            state.immediateOut = false;
-                            state.immediateEventId = 0;
-                            state.currentlyOut = false;
+                            bool doSpliceIn = true;
 
-                            // Splicing back in, restarting the transmission of the PID.
-                            // Add removed period to the total removed time (in PTS units).
-                            if (state.outStart != INVALID_PTS) {
-                                state.totalAdjust = (state.totalAdjust + (state.lastPTS - state.outStart)) & PTS_DTS_MASK;
-                                state.outStart = INVALID_PTS;
+                            if (state.isAudio && (_videoPID != 0)) {
+                                PIDState& videoState = _states[_videoPID];
+                                if (videoState.currentlyOut) {
+                                    doSpliceIn = false;
+                                }
+                                else if (state.lastPTS < videoState.lastOutEnd) {
+                                    if ((state.ptsBetweenSeekPoints == INVALID_PTS) ||
+                                        ((videoState.lastOutEnd - state.lastPTS) > (state.ptsBetweenSeekPoints / 2))) {
+                                        doSpliceIn = false;
+                                    }
+                                }
                             }
 
-                            tsp->verbose(u"Immediate splice in on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                            if (doSpliceIn) {
+                                // can splice back in at this point
+                                state.cancelImmediateOut = false;
+                                state.immediateOut = false;
+                                state.immediateEventId = 0;
+                                state.currentlyOut = false;
+
+                                // Splicing back in, restarting the transmission of the PID.
+                                // Add removed period to the total removed time (in PTS units).
+                                if (state.outStart != INVALID_PTS) {
+                                    state.totalAdjust = (state.totalAdjust + (state.lastPTS - state.outStart)) & PTS_DTS_MASK;
+                                    state.outStart = INVALID_PTS;
+                                    state.lastOutEnd = state.lastPTS;
+                                }
+
+                                tsp->verbose(u"Immediate splice in on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                            }
                         }
                     }
                 }
                 else {
                     if (!state.currentlyOut) {
                         if (pkt.getRandomAccessIndicator()) {
-                            state.currentlyOut = true;
-                            state.outStart = state.lastPTS;
+                            bool doSpliceOut = true;
 
-                            tsp->verbose(u"Immediate splice out on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                            if (state.isAudio && (_videoPID != 0)) {
+                                PIDState& videoState = _states[_videoPID];
+                                if (!videoState.currentlyOut) {
+                                    doSpliceOut = false;
+                                }
+                                else if (state.lastPTS < videoState.outStart) {
+                                    if ((state.ptsBetweenSeekPoints == INVALID_PTS) ||
+                                        ((videoState.outStart - state.lastPTS) > (state.ptsBetweenSeekPoints / 2))) {
+                                        doSpliceOut = false;
+                                    }
+                                }
+                            }
+
+                            if (doSpliceOut) {
+                                state.currentlyOut = true;
+                                state.outStart = state.lastPTS;
+
+                                tsp->verbose(u"Immediate splice out on PID 0x%X (%d) at PTS %d (%d ms)",
+                                    {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                            }
                         }
                     }
                 }
