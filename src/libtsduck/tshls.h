@@ -53,6 +53,7 @@ namespace ts {
         //! Tags to be used in the .M3U8 playlists.
         //! @ingroup hls
         //! @see RFC 8216, chapter 4.
+        //! @see draft-pantos-hls-rfc8216bis-03
         //!
         enum Tag {
             //
@@ -68,8 +69,10 @@ namespace ts {
             DISCONTINUITY,           //!< \#EXT-X-DISCONTINUITY - next media segment only.
             KEY,                     //!< \#EXT-X-KEY:attribute-list - all media segments until next KEY.
             MAP,                     //!< \#EXT-X-MAP:attribute-list - all media segments until next MAP.
-            PROGRAM_DATE_TIME,       //!< \#EXT-X-PROGRAM-DATE-TIME:<date-time-msec> - next media segment only.
+            PROGRAM_DATE_TIME,       //!< \#EXT-X-PROGRAM-DATE-TIME:date-time-msec - next media segment only.
             DATERANGE,               //!< \#EXT-X-DATERANGE:attribute-list
+            GAP,                     //!< \#EXT-X-GAP
+            BITRATE,                 //!< \#EXT-X-BITRATE:rate
             //
             // 4.3.3 Media Playlist Tags, global parameters of a Media Playlist.
             //
@@ -92,6 +95,7 @@ namespace ts {
             //
             INDEPENDENT_SEGMENTS,    //!< \#EXT-X-INDEPENDENT-SEGMENTS
             START,                   //!< \#EXT-X-START:attribute-list
+            DEFINE,                  //!< \#EXT-X-DEFINE:attribute-list
         };
 
         //!

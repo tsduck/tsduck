@@ -28,20 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Description of a media segment in an HLS playlist.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 16
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1011
+#include "tshls.h"
+#include "tsMPEG.h"
+
+namespace ts {
+    namespace hls {
+        //!
+        //! Description of a media segment in an HLS playlist.
+        //! @ingroup hls
+        //!
+        class TSDUCKDLL MediaSegment
+        {
+        public:
+            //!
+            //! Constructor.
+            //!
+            MediaSegment();
+
+            // Public fields.
+            UString     uri;       //!< Relative URI of segment.
+            UString     title;     //!< Optional segment title.
+            MilliSecond duration;  //!< Segment duration in milliseconds.
+            BitRate     bitrate;   //!< Indicative bitrate.
+            bool        gap;       //!< Media is a "gap", should not be loaded by clients.
+        };
+    }
+}

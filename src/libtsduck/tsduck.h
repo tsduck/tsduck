@@ -185,6 +185,8 @@
 #include "tsHiDesDeviceInfo.h"
 #include "tsHierarchyDescriptor.h"
 #include "tshls.h"
+#include "tshlsMediaPlayList.h"
+#include "tshlsMediaSegment.h"
 #include "tshlsPlayList.h"
 #include "tshlsTagAttributes.h"
 #include "tsIBPDescriptor.h"

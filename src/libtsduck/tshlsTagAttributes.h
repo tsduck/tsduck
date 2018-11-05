@@ -79,41 +79,57 @@ namespace ts {
             //!
             //! Get the value of an integer attribute.
             //! @tparam INT An integer type.
+            //! @param [out] val Decoded value.
             //! @param [in] name Attribute name.
             //! @param [in] defValue Default value if not present.
             //! @return Attribute value.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            INT intValue(const UString& name, INT defValue = static_cast<INT>(0)) const
+            void getIntValue(INT& val, const UString& name, INT defValue = static_cast<INT>(0)) const
             {
-                INT i = static_cast<INT>(0);
-                return value(name).toInteger(i) ? i : defValue;
+                if (!value(name).toInteger(val)) {
+                    val = defValue;
+                }
             }
 
             //!
-            //! Get the value of a numerical attribute in kilo-units.
+            //! Get the value of a numerical attribute in milli-units.
             //! @tparam INT An integer type.
-            //! @param [in] name Attribute name.
-            //! @param [in] defValue Default value if not present.
-            //! @return Attribute value. If the value is an integer, return this value times 1000.
+            //! @param [out] val Decoded value. If the value is an integer, return this value times 1000.
             //! If the value is a decimal one, use 3 decimal digits. Examples: "90" -> 90000,
             //! "1.12" -> 1120, "32.1234" -> 32123.
+            //! @param [in] name Attribute name.
+            //! @param [in] defValue Default value if not present.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            INT kiloValue(const UString& name, INT defValue = static_cast<INT>(0)) const
+            void getMilliValue(INT& val, const UString& name, INT defValue = static_cast<INT>(0)) const
             {
-                const UString str(value(name));
+                if (!ToMilliValue(val, value(name))) {
+                    val = defValue;
+                }
+            }
+
+            //!
+            //! Get the value of a String in milli-units.
+            //! @tparam INT An integer type.
+            //! @param [out] value Decoded value. If the value is an integer, return this value times 1000.
+            //! If the value is a decimal one, use 3 decimal digits. Examples: "90" -> 90000,
+            //! "1.12" -> 1120, "32.1234" -> 32123.
+            //! @param [in] str String to decode.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            static bool ToMilliValue(INT& value, const UString& str)
+            {
                 const size_t dot = str.find(u'.');
                 INT i = static_cast<INT>(0);
                 INT j = static_cast<INT>(0);
-                if (dot == NPOS) {
-                    return str.toInteger(i) ? i * 1000 : defValue;
-                }
-                else if (str.substr(0, dot).toInteger(i) && str.substr(dot+1).toJustifiedLeft(3, u'0', true).toInteger(j)) {
-                    return (i * 1000) + j;
+                if (str.substr(0, dot).toInteger(i) && (dot == NPOS || str.substr(dot+1).toJustifiedLeft(3, u'0', true).toInteger(j))) {
+                    value = (i * 1000) + j;
+                    return true;
                 }
                 else {
-                    return defValue;
+                    return false;
                 }
             }
 
