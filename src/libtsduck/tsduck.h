@@ -39,6 +39,7 @@
 #include "tsAbstractDescrambler.h"
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractDescriptorsTable.h"
+#include "tsAbstractHTTPInputPlugin.h"
 #include "tsAbstractLongTable.h"
 #include "tsAbstractMultilingualDescriptor.h"
 #include "tsAbstractSignalization.h"

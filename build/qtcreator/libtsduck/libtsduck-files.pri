@@ -10,6 +10,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractDescrambler.h \
     ../../../src/libtsduck/tsAbstractDescriptor.h \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.h \
+    ../../../src/libtsduck/tsAbstractHTTPInputPlugin.h \
     ../../../src/libtsduck/tsAbstractLongTable.h \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.h \
     ../../../src/libtsduck/tsAbstractSignalization.h \
@@ -475,6 +476,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
+    ../../../src/libtsduck/tsAbstractHTTPInputPlugin.cpp \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractSignalization.cpp \
     ../../../src/libtsduck/tsAbstractTable.cpp \

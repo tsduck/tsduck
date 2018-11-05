@@ -28,20 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Abstract base class for HTTP-based input plugins.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 16
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1012
+#include "tsPushInputPlugin.h"
+#include "tsWebRequestHandlerInterface.h"
+
+namespace ts {
+    //!
+    //! Abstract base class for HTTP-based input plugins.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL AbstractHTTPInputPlugin: public PushInputPlugin, protected WebRequestHandlerInterface
+    {
+    public:
+        // Implementation of Plugin interface.
+        // If overridden by descrambler subclass, superclass must be explicitly invoked.
+        virtual bool start() override;
+
+    protected:
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] tsp Object to communicate with the Transport Stream Processor main executable.
+        //! @param [in] description A short one-line description, eg. "Descrambler for 'xyz' CAS".
+        //! @param [in] syntax A short one-line syntax summary, default: u"[options] [service]".
+        //!
+        AbstractHTTPInputPlugin(TSP* tsp, const UString& description, const UString& syntax);
+
+        // Implementation of WebRequestHandlerInterface
+        virtual bool handleWebStart(const WebRequest& request, size_t size) override;
+        virtual bool handleWebData(const WebRequest& request, const void* data, size_t size) override;
+
+    private:
+        TSPacket _partial;       // Buffer for incomplete packets.
+        size_t   _partial_size;  // Number of bytes in partial.
+
+        // Inaccessible operations
+        AbstractHTTPInputPlugin() = delete;
+        AbstractHTTPInputPlugin(const AbstractHTTPInputPlugin&) = delete;
+        AbstractHTTPInputPlugin& operator=(const AbstractHTTPInputPlugin&) = delete;
+    };
+}

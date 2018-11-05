@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  HTTP stream input
+//  HLS stream input
 //
 //----------------------------------------------------------------------------
 
@@ -47,41 +47,36 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class HttpInput: public AbstractHTTPInputPlugin
+    class HlsInput: public AbstractHTTPInputPlugin
     {
     public:
         // Implementation of plugin API
-        HttpInput(TSP*);
+        HlsInput(TSP*);
         virtual bool getOptions() override;
+        virtual bool start() override;
         virtual void processInput() override;
 
     private:
-        size_t         _repeat_count;
-        bool           _ignore_errors;
-        MilliSecond    _reconnect_delay;
         WebRequest     _request;
         WebRequestArgs _web_args;
 
         // Inaccessible operations
-        HttpInput() = delete;
-        HttpInput(const HttpInput&) = delete;
-        HttpInput& operator=(const HttpInput&) = delete;
+        HlsInput() = delete;
+        HlsInput(const HlsInput&) = delete;
+        HlsInput& operator=(const HlsInput&) = delete;
     };
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(http, ts::HttpInput)
+TSPLUGIN_DECLARE_INPUT(hls, ts::HlsInput)
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::HttpInput::HttpInput(TSP* tsp_) :
-    AbstractHTTPInputPlugin(tsp_, u"Read a transport stream from an HTTP server", u"[options] url"),
-    _repeat_count(0),
-    _ignore_errors(false),
-    _reconnect_delay(0),
+ts::HlsInput::HlsInput(TSP* tsp_) :
+    AbstractHTTPInputPlugin(tsp_, u"Read a transport stream from an HLS server", u"[options] url"),
     _request(*tsp),
     _web_args()
 {
@@ -89,34 +84,13 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
 
     option(u"", 0, STRING, 1, 1);
     help(u"",
-         u"Specify the URL from which to read the transport stream.");
-
-    option(u"ignore-errors");
-    help(u"ignore-errors",
-         u"With --repeat or --infinite, repeat also in case of error. By default, "
-         u"repetition stops on error.");
-
-    option(u"infinite", 'i');
-    help(u"infinite",
-         u"Repeat the playout of the content infinitely (default: only once). "
-         u"The URL is re-opened each time and the content may be different.");
+         u"Specify the URL of an HLS manifest or playlist.");
 
     option(u"max-queue", 0, POSITIVE);
     help(u"max-queue",
-         u"Specify the maximum number of queued TS packets before their "
-         u"insertion into the stream. The default is " +
-         UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
-
-    option(u"reconnect-delay", 0, UNSIGNED);
-    help(u"reconnect-delay",
-         u"With --repeat or --infinite, wait the specified number of milliseconds "
-         u"before reconnecting. By default, repeat immediately.");
-
-    option(u"repeat", 'r', POSITIVE);
-    help(u"repeat", u"count",
-         u"Repeat the playout of the content the specified number of times "
-         u"(default: only once). The URL is re-opened each time and the content "
-         u"may be different.");
+        u"Specify the maximum number of queued TS packets before their "
+        u"insertion into the stream. The default is " +
+        UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
 }
 
 
@@ -124,23 +98,28 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
 // Command line options method
 //----------------------------------------------------------------------------
 
-bool ts::HttpInput::getOptions()
+bool ts::HlsInput::getOptions()
 {
     // Decode options.
-    _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
-    _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
-    _ignore_errors = present(u"ignore-errors");
     _web_args.loadArgs(*this);
 
     // Resize the inter-thread packet queue.
     setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));
 
-    // Prepare web request.
-    _request.setURL(value(u""));
-    _request.setAutoRedirect(true);
-    _request.setArgs(_web_args);
-
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::HlsInput::start()
+{
+    //@@@@
+
+    // Invoke superclass.
+    return AbstractHTTPInputPlugin::start();
 }
 
 
@@ -148,17 +127,7 @@ bool ts::HttpInput::getOptions()
 // Input method. Executed in a separate thread.
 //----------------------------------------------------------------------------
 
-void ts::HttpInput::processInput()
+void ts::HlsInput::processInput()
 {
-    bool ok = true;
-
-    // Loop on request count.
-    for (size_t count = 0; count < _repeat_count && (ok || _ignore_errors); count++) {
-        // Wait between reconnections.
-        if (count > 0 && _reconnect_delay > 0) {
-            SleepThread(_reconnect_delay);
-        }
-        // Perform one download.
-        ok = _request.downloadToApplication(this);
-    }
+    //@@@@
 }
