@@ -26,22 +26,27 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tshlsMediaPlayList.h"
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 16
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1011
+ts::hls::MediaPlayList::MediaPlayList() :
+    uri(),
+    bandwidth(0),
+    averageBandwidth(0),
+    width(0),
+    height(0),
+    frameRate(0),
+    codecs(),
+    hdcp(),
+    videoRange(),
+    video(),
+    audio(),
+    subtitles(),
+    closedCaptions()
+{
+}

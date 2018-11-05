@@ -28,20 +28,42 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Description of a media playlist inside an HLS master playlist.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 16
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1011
+#include "tshls.h"
+#include "tsMPEG.h"
+
+namespace ts {
+    namespace hls {
+        //!
+        //! Description of a media playlist inside an HLS master playlist.
+        //! @ingroup hls
+        //!
+        class TSDUCKDLL MediaPlayList
+        {
+        public:
+            //!
+            //! Constructor.
+            //!
+            MediaPlayList();
+
+            // Public fields.
+            UString     uri;              //!< Relative URI of playlist.
+            BitRate     bandwidth;        //!< Peak bandwidth.
+            BitRate     averageBandwidth; //!< Average bandwidth.
+            size_t      width;            //!< Resolution width in pixels.
+            size_t      height;           //!< Resolution height in pixels.
+            size_t      frameRate;        //!< Frame rate in milli-fps.
+            UString     codecs;           //!< List of codecs.
+            UString     hdcp;             //!< HDCP level.
+            UString     videoRange;       //!< Video range description.
+            UString     video;            //!< Video description.
+            UString     audio;            //!< Audio description.
+            UString     subtitles;        //!< Subtitles description.
+            UString     closedCaptions;   //!< Closed-captions description.
+        };
+    }
+}

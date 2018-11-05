@@ -39,6 +39,8 @@ const ts::Enumeration ts::hls::TagNames({
     {u"EXT-X-MAP",                    ts::hls::MAP},
     {u"EXT-X-PROGRAM-DATE-TIME",      ts::hls::PROGRAM_DATE_TIME},
     {u"EXT-X-DATERANGE",              ts::hls::DATERANGE},
+    {u"EXT-X-GAP",                    ts::hls::GAP},
+    {u"EXT-X-BITRATE",                ts::hls::BITRATE},
     {u"EXT-X-TARGETDURATION",         ts::hls::TARGETDURATION},
     {u"EXT-X-MEDIA-SEQUENCE",         ts::hls::MEDIA_SEQUENCE},
     {u"EXT-X-DISCONTINUITY-SEQUENCE", ts::hls::DISCONTINUITY_SEQUENCE},
@@ -52,6 +54,7 @@ const ts::Enumeration ts::hls::TagNames({
     {u"EXT-X-SESSION-KEY",            ts::hls::SESSION_KEY},
     {u"EXT-X-INDEPENDENT-SEGMENTS",   ts::hls::INDEPENDENT_SEGMENTS},
     {u"EXT-X-START",                  ts::hls::START},
+    {u"EXT-X-DEFINE",                 ts::hls::DEFINE},
 });
 
 
@@ -70,6 +73,8 @@ namespace {
         {ts::hls::MAP,                    ts::hls::TAG_MEDIA},
         {ts::hls::PROGRAM_DATE_TIME,      ts::hls::TAG_MEDIA},
         {ts::hls::DATERANGE,              ts::hls::TAG_MEDIA},
+        {ts::hls::GAP,                    ts::hls::TAG_MEDIA},
+        {ts::hls::BITRATE,                ts::hls::TAG_MEDIA},
         {ts::hls::TARGETDURATION,         ts::hls::TAG_MEDIA},
         {ts::hls::MEDIA_SEQUENCE,         ts::hls::TAG_MEDIA},
         {ts::hls::DISCONTINUITY_SEQUENCE, ts::hls::TAG_MEDIA},
@@ -83,6 +88,7 @@ namespace {
         {ts::hls::SESSION_KEY,            ts::hls::TAG_MASTER},
         {ts::hls::INDEPENDENT_SEGMENTS,   ts::hls::TAG_MASTER | ts::hls::TAG_MEDIA},
         {ts::hls::START,                  ts::hls::TAG_MASTER | ts::hls::TAG_MEDIA},
+        {ts::hls::DEFINE,                 ts::hls::TAG_MASTER | ts::hls::TAG_MEDIA},
     });
 }
 
