@@ -35,8 +35,16 @@
 #include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
 #include "tsServiceDiscovery.h"
-#include "tsTables.h"
 #include "tsAudioLanguageOptions.h"
+#include "tsPAT.h"
+#include "tsPMT.h"
+#include "tsCADescriptor.h"
+#include "tsStreamIdentifierDescriptor.h"
+#include "tsDataBroadcastIdDescriptor.h"
+#include "tsRegistrationDescriptor.h"
+#include "tsAC3Descriptor.h"
+#include "tsEnhancedAC3Descriptor.h"
+#include "tsCueIdentifierDescriptor.h"
 TSDUCK_SOURCE;
 
 
