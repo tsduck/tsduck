@@ -1327,6 +1327,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsVersionString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h">
       <Filter>Header Files</Filter>
     </ClInclude>

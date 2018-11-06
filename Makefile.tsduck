@@ -145,6 +145,10 @@ endif
 
 CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)
 
+ifneq ($(TS_NO_BUILD_VERSION),)
+    CPPFLAGS += -DTS_NO_BUILD_VERSION
+endif
+
 # The following script is used to build a few project files.
 # It shall be used when source files are added or removed in the library.
 

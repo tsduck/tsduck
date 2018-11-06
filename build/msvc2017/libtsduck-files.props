@@ -443,6 +443,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVBITeletextDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsVersionString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoWindowDescriptor.h" />

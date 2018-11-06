@@ -29,6 +29,7 @@
 
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tsWebRequest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

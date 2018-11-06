@@ -3140,29 +3140,6 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// TSDuck versioning.
-//----------------------------------------------------------------------------
-
-// The file tsVersion.h is automatically updated during git commit.
-#include "tsVersion.h"
-
-//!
-//! Define the TSDuck version as an 8-bit string literal.
-//!
-#define TS_VERSION_STRING TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR) "-" TS_STRINGIFY(TS_COMMIT)
-
-//!
-//! Define the TSDuck version as a 16-bit string literal.
-//!
-#define TS_VERSION_USTRING TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT)
-
-//!
-//! Define the TSDuck version as an integer, suitable for comparisons.
-//!
-#define TS_VERSION_INTEGER ((TS_VERSION_MAJOR * 10000000) + (TS_VERSION_MINOR * 100000) + TS_COMMIT)
-
-
-//----------------------------------------------------------------------------
 // Define a mechanism to identify source code and compilation time in the
 // object files.
 //----------------------------------------------------------------------------
@@ -3190,10 +3167,19 @@ namespace ts {
 //
 // Define the prefix which is used to locate the build marker string in the object file.
 // The first character in the prefix will be used as field separator.
+// By default, the TSDuck version string is included in each binary.
+// The price to pay is to recompile everything after a git commit since each commit
+// updates the globale TSDuck version. To avoid this, define TS_NO_BUILD_VERSION.
 //
 #define TS_BUILD_MARK_SEPARATOR "|"
-#define TS_BUILD_MARK_MARKER    "@($%)"
-#define TS_BUILD_MARK_PREFIX    TS_BUILD_MARK_SEPARATOR TS_BUILD_MARK_MARKER TS_BUILD_MARK_SEPARATOR "tsduck" TS_BUILD_MARK_SEPARATOR TS_VERSION_STRING TS_BUILD_MARK_SEPARATOR
+#define TS_BUILD_MARK_MARKER "@($%)"
+#if defined(TS_NO_BUILD_VERSION)
+    #define TS_BUILD_VERSION
+#else
+    #include "tsVersionString.h"
+    #define TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR TS_VERSION_STRING
+#endif
+#define TS_BUILD_MARK_PREFIX TS_BUILD_MARK_SEPARATOR TS_BUILD_MARK_MARKER TS_BUILD_MARK_SEPARATOR "tsduck" TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR
 
 #endif // DOXYGEN
 

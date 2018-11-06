@@ -31,6 +31,7 @@
 #include "tshlsTagAttributes.h"
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
