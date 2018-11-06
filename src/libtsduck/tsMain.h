@@ -38,6 +38,10 @@
 #include "tsVersionInfo.h"
 #include "tsIPUtils.h"
 
+#if defined(TS_WINDOWS) && !defined(TS_NO_BUILD_VERSION)
+#include "tsVersion.h"
+#endif
+
 //!
 //! A macro which expands to a main() program.
 //! Uncaught exceptions are displayed.
@@ -50,7 +54,34 @@
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!
-#if defined(TS_WINDOWS)
+#if !defined(TS_WINDOWS)
+#define TS_MAIN(func)                                                         \
+    int main(int argc, char *argv[])                                          \
+    {                                                                         \
+        try {                                                                 \
+            return func(argc, argv);                                          \
+        }                                                                     \
+        catch (const std::exception& e) {                                     \
+            std::cerr << "Program aborted: " << e.what() << std::endl;        \
+            return EXIT_FAILURE;                                              \
+        }                                                                     \
+    }
+#elif defined(TS_NO_BUILD_VERSION)
+#define TS_MAIN(func)                                                         \
+    int main(int argc, char *argv[])                                          \
+    {                                                                         \
+        try {                                                                 \
+            if (!ts::IPInitialize()) {                                        \
+                return EXIT_FAILURE;                                          \
+            }                                                                 \
+            return func(argc, argv);                                          \
+        }                                                                     \
+        catch (const std::exception& e) {                                     \
+            std::cerr << "Program aborted: " << e.what() << std::endl;        \
+            return EXIT_FAILURE;                                              \
+        }                                                                     \
+    }
+#else
 #define TS_MAIN(func)                                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
@@ -70,18 +101,6 @@
             if (!ts::IPInitialize()) {                                        \
                 return EXIT_FAILURE;                                          \
             }                                                                 \
-            return func(argc, argv);                                          \
-        }                                                                     \
-        catch (const std::exception& e) {                                     \
-            std::cerr << "Program aborted: " << e.what() << std::endl;        \
-            return EXIT_FAILURE;                                              \
-        }                                                                     \
-    }
-#else
-#define TS_MAIN(func)                                                         \
-    int main(int argc, char *argv[])                                          \
-    {                                                                         \
-        try {                                                                 \
             return func(argc, argv);                                          \
         }                                                                     \
         catch (const std::exception& e) {                                     \
