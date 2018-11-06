@@ -441,6 +441,7 @@
 #include "tsVBITeletextDescriptor.h"
 #include "tsVersion.h"
 #include "tsVersionInfo.h"
+#include "tsVersionString.h"
 #include "tsVideoAttributes.h"
 #include "tsVideoStreamDescriptor.h"
 #include "tsVideoWindowDescriptor.h"

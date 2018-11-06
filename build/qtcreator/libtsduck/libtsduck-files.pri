@@ -441,6 +441,7 @@ HEADERS += \
     ../../../src/libtsduck/tsVBITeletextDescriptor.h \
     ../../../src/libtsduck/tsVersion.h \
     ../../../src/libtsduck/tsVersionInfo.h \
+    ../../../src/libtsduck/tsVersionString.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
     ../../../src/libtsduck/tsVideoStreamDescriptor.h \
     ../../../src/libtsduck/tsVideoWindowDescriptor.h \

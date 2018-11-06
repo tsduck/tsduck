@@ -26,55 +26,28 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tstlvLogger.h"
-TSDUCK_SOURCE;
-
-
-//----------------------------------------------------------------------------
-// Constructors.
+//!
+//!  @file
+//!  Version identification of TSDuck as strings.
+//!
 //----------------------------------------------------------------------------
 
-ts::tlv::Logger::Logger(int default_level, Report* default_report) :
-    _report(default_report != nullptr ? default_report : NullReport::Instance()),
-    _default_level(default_level),
-    _levels()
-{
-}
+#pragma once
 
+// The file tsVersion.h is automatically updated during git commit.
+#include "tsVersion.h"
 
-//----------------------------------------------------------------------------
-// Severity levels.
-//----------------------------------------------------------------------------
+//!
+//! Define the TSDuck version as an 8-bit string literal.
+//!
+#define TS_VERSION_STRING TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR) "-" TS_STRINGIFY(TS_COMMIT)
 
-int ts::tlv::Logger::severity(TAG tag) const
-{
-    auto it = _levels.find(tag);
-    return it == _levels.end() ? _default_level : it->second;
-}
+//!
+//! Define the TSDuck version as a 16-bit string literal.
+//!
+#define TS_VERSION_USTRING TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT)
 
-void ts::tlv::Logger::resetSeverities(int default_level)
-{
-    _default_level = default_level;
-    _levels.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Report a TLV message.
-//----------------------------------------------------------------------------
-
-void ts::tlv::Logger::log(const Message& msg, const UString& comment, Report* report)
-{
-    Report* rep = report != nullptr ? report : _report;
-    const int level = severity(msg.tag());
-    if (rep->maxSeverity() >= level) {
-        const UString dump(msg.dump(4));
-        if (comment.empty()) {
-            rep->log(level, dump);
-        }
-        else {
-            rep->log(level, u"%s\n%s", {comment, dump});
-        }
-    }
-}
+//!
+//! Define the TSDuck version as an integer, suitable for comparisons.
+//!
+#define TS_VERSION_INTEGER ((TS_VERSION_MAJOR * 10000000) + (TS_VERSION_MINOR * 100000) + TS_COMMIT)

@@ -58,6 +58,7 @@ SUBDIRS += \
     tsplugin_fork \
     tsplugin_hides \
     tsplugin_history \
+    tsplugin_hls \
     tsplugin_http \
     tsplugin_inject \
     tsplugin_ip \

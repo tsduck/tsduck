@@ -28,14 +28,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsVersionInfo.h"
-#include "tsVersion.h"
 TSDUCK_SOURCE;
 
 // We also include all libtsduck header files. This is done on purpose to
 // make sure that all inlined functions are compiled at least once. Otherwise,
 // on Windows, the libtsduck DLL will no contain the referenced code.
 #include "tsduck.h"
-#include "tsTables.h"
 
 // Exported version of the TSDuck library.
 const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;

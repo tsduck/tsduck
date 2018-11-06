@@ -29,6 +29,7 @@
 
 #include "tsAbstractSignalization.h"
 #include "tsxmlElement.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
