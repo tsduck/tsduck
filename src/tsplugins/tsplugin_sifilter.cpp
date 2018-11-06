@@ -38,7 +38,7 @@
 #include "tsSectionDemux.h"
 #include "tsDescriptorList.h"
 #include "tsPIDOperator.h"
-#include "tsTables.h"
+#include "tsPAT.h"
 TSDUCK_SOURCE;
 
 

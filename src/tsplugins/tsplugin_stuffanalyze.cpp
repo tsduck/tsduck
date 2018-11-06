@@ -36,7 +36,7 @@
 #include "tsPluginRepository.h"
 #include "tsCASSelectionArgs.h"
 #include "tsSectionDemux.h"
-#include "tsTables.h"
+#include "tsPAT.h"
 TSDUCK_SOURCE;
 
 

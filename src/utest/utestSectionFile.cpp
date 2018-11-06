@@ -32,7 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionFile.h"
-#include "tsTables.h"
+#include "tsPAT.h"
+#include "tsTDT.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsCerrReport.h"

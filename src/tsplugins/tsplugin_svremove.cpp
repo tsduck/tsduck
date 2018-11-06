@@ -38,8 +38,13 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
-#include "tsTables.h"
 #include "tsEITProcessor.h"
+#include "tsCADescriptor.h"
+#include "tsPAT.h"
+#include "tsPMT.h"
+#include "tsSDT.h"
+#include "tsBAT.h"
+#include "tsNIT.h"
 TSDUCK_SOURCE;
 
 

@@ -38,7 +38,10 @@
 #include "tsNames.h"
 #include "tsVariable.h"
 #include "tsTime.h"
-#include "tsTables.h"
+#include "tsPAT.h"
+#include "tsPMT.h"
+#include "tsTOT.h"
+#include "tsTDT.h"
 TSDUCK_SOURCE;
 
 

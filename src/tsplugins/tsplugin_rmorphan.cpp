@@ -35,8 +35,12 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
-#include "tsTables.h"
 #include "tsCASFamily.h"
+#include "tsDescriptorList.h"
+#include "tsCADescriptor.h"
+#include "tsPAT.h"
+#include "tsCAT.h"
+#include "tsPMT.h"
 TSDUCK_SOURCE;
 
 

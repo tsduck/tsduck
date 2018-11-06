@@ -36,8 +36,11 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsService.h"
-#include "tsTables.h"
 #include "tsTime.h"
+#include "tsPAT.h"
+#include "tsTDT.h"
+#include "tsSDT.h"
+#include "tsEIT.h"
 #include "tsMJD.h"
 TSDUCK_SOURCE;
 
