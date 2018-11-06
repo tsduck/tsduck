@@ -58,6 +58,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <ItemDefinitionGroup Condition="'$(TS_NO_BUILD_VERSION)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>TS_NO_BUILD_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
   <ItemDefinitionGroup Condition="'$(NoTeletext)'!=''">
     <ClCompile>
       <PreprocessorDefinitions>TS_NOTELETEXT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
