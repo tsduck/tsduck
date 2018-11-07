@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1010
+VERSION 3.16-1016
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --pack to plugin "encap".
 
 [BUG] Bug fixes:
 

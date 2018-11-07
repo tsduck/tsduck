@@ -181,11 +181,22 @@ namespace ts {
         //!
         void setMaxBufferedPackets(size_t count);
 
+        //!
+        //! Set packing mode.
+        //! When packing mode is of (the default), encapsulated packets are issued
+        //! as soon as null packet are available for replacement, potentioally leaving
+        //! unused part in some outer packet. When packing mode if off, outer packets
+        //! are emitted only when they are full.
+        //! @param [in] on Packing mode.
+        //!
+        void setPacking(bool on) { _packing = on; }
+
     private:
         typedef std::map<PID,uint8_t> PIDCCMap;  // map of continuity counters, indexed by PID
         typedef SafePtr<TSPacket> TSPacketPtr;
         typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
 
+        bool             _packing;         // Packing mode.
         PID              _pidOutput;       // Output PID.
         PIDSet           _pidInput;        // Input PID's to encapsulate.
         PID              _pcrReference;    // Insert PCR's based on this reference PID.
