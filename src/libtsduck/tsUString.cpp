@@ -37,6 +37,8 @@
 // implicit conversions.
 #define TS_ALLOW_IMPLICIT_UTF8_CONVERSION 1
 
+#include <cuchar>
+
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
@@ -1802,7 +1804,7 @@ void ts::UString::ArgMixInContext::processArg()
     //       + : Force a '+' sign with decimal integers.
     //       0 : Zero padding for integers.
     //  digits : Minimum field width.
-    // .digits : Maximum field width.
+    // .digits : Maximum field width or precision for floating point values.
     //       ' : For integer conversions, use a separator for groups of thousands.
     //       * : Can be used instead of @e digits. The integer value is taken from the argument list.
 
@@ -1812,6 +1814,7 @@ void ts::UString::ArgMixInContext::processArg()
     UChar pad = u' ';
     size_t minWidth = 0;
     size_t maxWidth = std::numeric_limits<size_t>::max();
+    size_t precision = 6;
 
     if (*_fmt == u'-') {
         leftJustified = true;
@@ -1829,6 +1832,7 @@ void ts::UString::ArgMixInContext::processArg()
     if (*_fmt == u'.') {
         ++_fmt;
         getFormatSize(maxWidth);
+        precision = maxWidth;
         if (maxWidth < minWidth) {
             maxWidth = minWidth;
         }
@@ -1847,6 +1851,7 @@ void ts::UString::ArgMixInContext::processArg()
     // - %d : Integer in decimal.
     // - %x : Integer in lowercase hexadecimal.
     // - %X : Integer in uppercase hexadecimal.
+    // - %f : Floating point value.
     // - %% : Insert a literal % (already done).
 
     // Extract the command and set fmt to its final value, after the '%' sequence.
@@ -1856,7 +1861,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Process invalid '%' sequence.
-    if (cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X') {
+    if (cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X' && cmd != u'f') {
         if (debugActive()) {
             debug(u"invalid '%' sequence", cmd);
         }
@@ -1937,6 +1942,13 @@ void ts::UString::ArgMixInContext::processArg()
                 _result.append(HexaMin(_arg->toInteger<uint64_t>(), minWidth, separator, false, upper));
                 break;
         }
+    }
+    else if (cmd == u'f') {
+        // Insert a floating point value
+        if (!_arg->isDouble() && debugActive()) {
+            debug(u"type mismatch, not a double", cmd);
+        }
+        _result.append(Float(_arg->toDouble(), minWidth, precision, forceSign));
     }
     else {
         // Insert an integer in decimal.
@@ -2150,4 +2162,52 @@ bool ts::UString::ArgMixOutContext::processField()
     // Finally, absorb the extracted argument.
     ++_arg;
     return true;
+}
+
+//----------------------------------------------------------------------------
+// Format a string containing a floating point value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::Float(double value, size_type width, size_type precision, bool force_sign)
+{
+    UString s;
+
+    // Format the value
+    if (value == 0.0) {
+        s = u"0.0";
+    }
+    else {
+        char valueStr[3 + DBL_MANT_DIG - DBL_MIN_EXP + 1];
+        if (force_sign) {
+            std::snprintf(valueStr, sizeof(valueStr), "%+*.*f", (int) width, (int) precision, value);
+        }
+        else {
+            std::snprintf(valueStr, sizeof(valueStr), "%*.*f", (int) width, (int) precision, value);
+        }
+
+        char16_t valueUStr[3 + DBL_MANT_DIG - DBL_MIN_EXP + 1];
+        memset(valueUStr, 0, sizeof(valueUStr));
+        std::mbstate_t state{};
+        size_t nBytes = sizeof(valueStr);
+        char16_t *pUChar = valueUStr;
+        char *pChar = valueStr;
+        while (nBytes) {
+            // just converting digits (and '.' and possibly whitespace)--shouldn't encounter any issues with
+            // this conversion and could just as easily iterate through all the characters and cast to
+            // char16_t to convert
+            size_t ret = std::mbrtoc16(pUChar, pChar, nBytes, &state);
+            if (ret > 0) {
+                nBytes -= ret;
+                pUChar++;
+                pChar += ret;
+            }
+            else if (ret == 0)
+                break;
+        }
+
+        s = valueUStr;
+    }
+
+    // Return the formatted result
+    return s;
 }
