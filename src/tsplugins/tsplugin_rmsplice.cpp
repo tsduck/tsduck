@@ -318,8 +318,9 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     else if (cmd.immediate) {
         // Add an immediate splice event, which doesn't have a PTS value and is handled differently that scheduled splice events.
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
-            tsp->verbose(u"Adding 'immediate' splice %s with event ID %d on PID %d at PTS %d (%d ms)", {cmd.splice_out ? u"out" : u"in", cmd.event_id,
-                (*it).second.pid, (*it).second.lastPTS, ((*it).second.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+            tsp->verbose(u"Adding 'immediate' splice %s with event ID %d on PID %d at PTS %d (%.3f s)",
+                {cmd.splice_out ? u"out" : u"in", cmd.event_id, (*it).second.pid, (*it).second.lastPTS,
+                (double) (*it).second.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
             if (!_dryRun) {
                 it->second.addEvent(cmd, _tagsByPID);
             }
@@ -500,7 +501,8 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                         state.immediateOut = false;
                         state.immediateEventId = 0;
 
-                        tsp->verbose(u"Immediate splice out disregarded on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                        tsp->verbose(u"Immediate splice out disregarded on PID 0x%X (%d) at PTS %d (%.3f s)",
+                            {pid, pid, state.lastPTS, (double) state.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
                     }
                     else {
                         if (pkt.getRandomAccessIndicator()) {
@@ -534,7 +536,8 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                                     state.lastOutEnd = state.lastPTS;
                                 }
 
-                                tsp->verbose(u"Immediate splice in on PID 0x%X (%d) at PTS %d (%d ms)", {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                                tsp->verbose(u"Immediate splice in on PID 0x%X (%d) at PTS %d (%.3f s)",
+                                    {pid, pid, state.lastPTS, (double) state.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
                             }
                         }
                     }
@@ -561,8 +564,8 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                                 state.currentlyOut = true;
                                 state.outStart = state.lastPTS;
 
-                                tsp->verbose(u"Immediate splice out on PID 0x%X (%d) at PTS %d (%d ms)",
-                                    {pid, pid, state.lastPTS, (state.lastPTS * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                                tsp->verbose(u"Immediate splice out on PID 0x%X (%d) at PTS %d (%.3f s)",
+                                    {pid, pid, state.lastPTS, (double) state.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
                             }
                         }
                     }
@@ -591,7 +594,9 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                 }
 
                 // Display message in verbose mode. If the PTS is beyond the event PTS, display the delay.
-                tsp->verbose(u"%s PID 0x%X (%d) at PTS 0x%09X (+%d ms)", {event.out ? u"suspending" : u"restarting", pid, pid, state.lastPTS, ((state.lastPTS - eventPTS) * 1000) / SYSTEM_CLOCK_SUBFREQ});
+                tsp->verbose(u"%s PID 0x%X (%d) at PTS 0x%09X (+%.3f s)",
+                    {event.out ? u"suspending" : u"restarting", pid, pid, state.lastPTS,
+                    (double) (state.lastPTS - eventPTS) / (double) SYSTEM_CLOCK_SUBFREQ});
             }
         }
 
