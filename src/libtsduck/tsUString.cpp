@@ -37,8 +37,6 @@
 // implicit conversions.
 #define TS_ALLOW_IMPLICIT_UTF8_CONVERSION 1
 
-#include <cuchar>
-
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
@@ -2185,27 +2183,7 @@ ts::UString ts::UString::Float(double value, size_type width, size_type precisio
             std::snprintf(valueStr, sizeof(valueStr), "%*.*f", (int) width, (int) precision, value);
         }
 
-        char16_t valueUStr[3 + DBL_MANT_DIG - DBL_MIN_EXP + 1];
-        memset(valueUStr, 0, sizeof(valueUStr));
-        std::mbstate_t state{};
-        size_t nBytes = sizeof(valueStr);
-        char16_t *pUChar = valueUStr;
-        char *pChar = valueStr;
-        while (nBytes) {
-            // just converting digits (and '.' and possibly whitespace)--shouldn't encounter any issues with
-            // this conversion and could just as easily iterate through all the characters and cast to
-            // char16_t to convert
-            size_t ret = std::mbrtoc16(pUChar, pChar, nBytes, &state);
-            if (ret > 0) {
-                nBytes -= ret;
-                pUChar++;
-                pChar += ret;
-            }
-            else if (ret == 0)
-                break;
-        }
-
-        s = valueUStr;
+        s = UString::FromUTF8(valueStr);
     }
 
     // Return the formatted result
