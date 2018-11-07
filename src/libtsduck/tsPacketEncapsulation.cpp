@@ -41,6 +41,7 @@ const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
 //----------------------------------------------------------------------------
 
 ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInput, PID pcrReference) :
+    _packing(false),
     _pidOutput(pidOutput),
     _pidInput(pidInput),
     _pcrReference(pcrReference),
@@ -65,6 +66,7 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
 
 void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID pcrReference)
 {
+    _packing = false;
     _pidOutput = pidOutput;
     _pidInput = pidInput;
     _pcrReference = pcrReference;
@@ -233,67 +235,98 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
     // Replace input or null packets.
     if (pid == PID_NULL && !_latePackets.empty()) {
 
-        // Build the new packet header.
-        TS_ZERO(pkt.b);
-        pkt.b[0] = SYNC_BYTE;
-        pkt.b[3] = 0x10; // no adaptation_field, payload only
-        pkt.setPID(_pidOutput);
-        pkt.setCC(_ccOutput);
+        // Do we need to add a PCR in this packet?
+        const bool addPCR = _insertPCR && _bitrate != 0 && _pcrLastPacket != INVALID_PACKET_COUNTER && _pcrLastValue != INVALID_PCR;
 
-        // Index in pkt where we write data.
-        size_t pktIndex = 4;
+        // How many bytes do we have in the queue (at least).
+        const size_t addBytes = (PKT_SIZE - _lateIndex) + (_latePackets.size() > 1 ? PKT_SIZE : 0);
 
-        // Continuity counter of next output packet.
-        _ccOutput = (_ccOutput + 1) & CC_MASK;
+        // Depending on packing option, we may decide to not insert an outer packet which is not full.
+        // Available size in outer packet:
+        //   PKT_SIZE
+        //   -4 => TS header.
+        //   -8 => Adaptation field in case of PCR: 1-byte AF size, 1-byte flags, 6-byte PCR.
+        //   -1 => Pointer field, first byte of payload (not always, but very often).
+        // We insert a packet all the time if packing is off.
+        // Otherwise, we insert a packet when there is enough data to fill it.
+        if (!_packing || addBytes >= PKT_SIZE - (addPCR ? 12 : 4) - 1) {
 
-        // Insert a PCR if requested.
-        if (_insertPCR && _bitrate != 0 && _pcrLastPacket != INVALID_PACKET_COUNTER && _pcrLastValue != INVALID_PCR) {
+            // Build the new packet header.
+            pkt.b[0] = SYNC_BYTE;
+            pkt.b[1] = 0;
+            pkt.b[2] = 0;
+            pkt.b[3] = 0x10; // no adaptation_field, payload only
+            pkt.setPID(_pidOutput);
+            pkt.setCC(_ccOutput);
+            ::memset(pkt.b + 4, 0xFF, PKT_SIZE - 4);
 
-            // Compute the PCR of this packet.
-            const uint64_t pcrDistance = (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
-            const uint64_t pcr = (_pcrLastValue + pcrDistance) & PCR_MASK;
+            // Index in pkt where we write data. Start at beginning of payload.
+            size_t pktIndex = 4;
 
-            // We need to add an adaptation field in the TS packet.
-            pkt.b[3] |= 0x20; // adaptation field present
-            pkt.b[4] = 7;     // adaptation field size (1 byte for flags, 6 bytes for PCR)
-            pkt.b[5] = 0x10;  // PCR_flag
-            pktIndex += 8;    // including 1-byte AF size and 7-byte AF
+            // Continuity counter of next output packet.
+            _ccOutput = (_ccOutput + 1) & CC_MASK;
 
-            // Set the PCR in the adaptation field.
-            pkt.setPCR(pcr);
-            assert(pkt.getPCR() == pcr); // make sure the AF was properly built
+            // Insert a PCR if requested.
+            if (addPCR) {
 
-            // Don't insert another PCR in output PID until a PCR is found in reference PID.
-            _insertPCR = false;
-        }
+                // Compute the PCR of this packet.
+                const uint64_t pcrDistance = (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
+                const uint64_t pcr = (_pcrLastValue + pcrDistance) & PCR_MASK;
 
-        // If there are less "late" bytes than the output payload size, enlarge the adaptation field
-        // with stuffing. Note that if there is so few bytes in the only "late" packet, this cannot
-        // be the beginning of a packet and there will be no pointer field.
-        if (_latePackets.size() == 1 && _lateIndex > pktIndex) {
-            // This code works identically whether there was an adaptation field or not.
-            pkt.b[3] |= 0x20;  // adaptation field present
-            pkt.b[4] = uint8_t(_lateIndex - 5);  // adaptation field size
-            pktIndex = _lateIndex;
-        }
+                // We need to add an adaptation field in the TS packet.
+                pkt.b[3] |= 0x20; // adaptation field present
+                pkt.b[4] = 7;     // adaptation field size (1 byte for flags, 6 bytes for PCR)
+                pkt.b[5] = 0x10;  // PCR_flag
+                pktIndex += 8;    // including 1-byte AF size and 7-byte AF
 
-        // If the remaining bytes in the first packet are less than the output payload,
-        // we will start a new packet in this payload. Set PUSI and add pointer field.
-        if (_lateIndex > pktIndex) {
-            pkt.setPUSI();
-            pkt.b[pktIndex++] = uint8_t(PKT_SIZE - _lateIndex); // pointer field
-        }
+                // Set the PCR in the adaptation field.
+                pkt.setPCR(pcr);
+                assert(pkt.getPCR() == pcr); // make sure the AF was properly built
 
-        // Copy first part of output payload from the first queued packet.
-        fillPacket(pkt, pktIndex);
+                // Don't insert another PCR in output PID until a PCR is found in reference PID.
+                _insertPCR = false;
+            }
 
-        // Then copy remaining from next packet.
-        if (pktIndex < PKT_SIZE) {
+            // If there are less "late" bytes than the output payload size, enlarge the adaptation field
+            // with stuffing. Note that if there is so few bytes in the only "late" packet, this cannot
+            // be the beginning of a packet and there will be no pointer field.
+            if (_latePackets.size() == 1 && _lateIndex > pktIndex) {
+                // This code works identically whether there was an adaptation field or not.
+                pkt.b[3] |= 0x20;  // adaptation field present
+                pkt.b[4] = uint8_t(_lateIndex - 5);  // adaptation field size
+                if (!addPCR) {
+                    pkt.b[5] = 0x00; // AF flags
+                }
+                pktIndex = _lateIndex;
+            }
+
+            // At this point, pktIndex points at the beginning of the TS payload.
+            assert(pktIndex == pkt.getHeaderSize());
+
+            // Insert PUSI and pointer field when necessary.
+            if (_lateIndex == 1) {
+                // We immediately start with the start of a packet.
+                pkt.setPUSI();
+                pkt.b[pktIndex++] = 0; // pointer field
+            }
+            else if (_lateIndex > pktIndex + 1 && _latePackets.size() > 1) {
+                // The remaining bytes in the first packet are less than the output payload,
+                // we will start a new packet in this payload.
+                pkt.setPUSI();
+                pkt.b[pktIndex++] = uint8_t(PKT_SIZE - _lateIndex); // pointer field
+            }
+
+            // Copy first part of output payload from the first queued packet.
             fillPacket(pkt, pktIndex);
-        }
 
-        // The output packet shall be exactly full.
-        assert(pktIndex == PKT_SIZE);
+            // Then copy remaining from next packet.
+            if (pktIndex < PKT_SIZE) {
+                fillPacket(pkt, pktIndex);
+            }
+
+            // The output packet shall be exactly full.
+            assert(pktIndex == PKT_SIZE);
+        }
     }
 
     // Count packets before returning.
