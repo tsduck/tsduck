@@ -126,6 +126,7 @@ void HLSTest::testMasterPlaylist()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aud1", pl.playList(0).audio);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"sub1", pl.playList(0).subtitles);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cc1", pl.playList(0).closedCaptions);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"prog_index.m3u8, 960x540, 2,227,464 b/s, @60 fps", pl.playList(0).toString());
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"v2/prog_index.m3u8", pl.playList(23).uri);
     CPPUNIT_ASSERT_EQUAL(ts::BitRate(582387), pl.playList(23).bandwidth);
@@ -140,6 +141,7 @@ void HLSTest::testMasterPlaylist()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aud3", pl.playList(23).audio);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"sub1", pl.playList(23).subtitles);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cc1", pl.playList(23).closedCaptions);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"prog_index.m3u8, 480x270, 582,387 b/s, @30 fps", pl.playList(23).toString());
 
     CPPUNIT_ASSERT_EQUAL(size_t(0), pl.selectPlayList(0, 0, 0, 0, 0, 0));
     CPPUNIT_ASSERT_EQUAL(ts::NPOS, pl.selectPlayList(10000000, 0, 0, 0, 0, 0));

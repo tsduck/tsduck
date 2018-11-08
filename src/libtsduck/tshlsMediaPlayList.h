@@ -35,6 +35,7 @@
 #pragma once
 #include "tshls.h"
 #include "tsMPEG.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     namespace hls {
@@ -42,13 +43,16 @@ namespace ts {
         //! Description of a media playlist inside an HLS master playlist.
         //! @ingroup hls
         //!
-        class TSDUCKDLL MediaPlayList
+        class TSDUCKDLL MediaPlayList: public StringifyInterface
         {
         public:
             //!
             //! Constructor.
             //!
             MediaPlayList();
+
+            // Implementation of StringifyInterface
+            virtual UString toString() const override;
 
             // Public fields.
             UString     uri;              //!< Relative URI of playlist.

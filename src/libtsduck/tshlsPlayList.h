@@ -38,6 +38,7 @@
 #include "tshlsMediaSegment.h"
 #include "tsCerrReport.h"
 #include "tsWebRequestArgs.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     namespace hls {
@@ -45,7 +46,7 @@ namespace ts {
         //! Playlist for HTTP Live Streaming (HLS).
         //! @ingroup hls
         //!
-        class TSDUCKDLL PlayList
+        class TSDUCKDLL PlayList: public StringifyInterface
         {
         public:
             //!
@@ -152,6 +153,12 @@ namespace ts {
             bool endList() const { return _endList; }
 
             //!
+            //! Check if the playlist can be updated (and must be reloaded later).
+            //! @return True if the playlist can be updated (and must be reloaded later).
+            //!
+            bool updatable() const;
+
+            //!
             //! Get the media playlist type ("EVENT" or "VOD", in media playlist).
             //! @return The media playlist type.
             //!
@@ -199,6 +206,7 @@ namespace ts {
             //! @param [in] minHeight Minimum height. Zero means no minimum.
             //! @param [in] maxHeight Maximum height. Zero means no maximum.
             //! @return Index of the selected media play list or NPOS if there is none.
+            //! If all criteria are zero, select the first playlist.
             //!
             size_t selectPlayList(BitRate minBitrate,
                                   BitRate maxBitrate,
@@ -230,6 +238,9 @@ namespace ts {
             //! @return Index of the selected media play list or NPOS if there is none.
             //!
             size_t selectPlayListHighestResolution() const;
+
+            // Implementation of StringifyInterface
+            virtual UString toString() const override;
 
         private:
             // We need to access lists of media, with index access and fast insert at beginning and end.

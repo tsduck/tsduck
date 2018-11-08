@@ -51,3 +51,34 @@ ts::hls::MediaPlayList::MediaPlayList() :
     closedCaptions()
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface
+//----------------------------------------------------------------------------
+
+ts::UString ts::hls::MediaPlayList::toString() const
+{
+    UString str(uri);
+
+    if (str.empty()) {
+        str.assign(u"unknown URI");
+    }
+    if (width > 0 || height > 0) {
+        str += UString::Format(u", %dx%d", {width, height});
+    }
+    if (bandwidth > 0) {
+        str += UString::Format(u", %'d b/s", {bandwidth});
+    }
+    else if (averageBandwidth > 0) {
+        str += UString::Format(u", %'d b/s", {averageBandwidth});
+    }
+    if (frameRate % 1000 != 0) {
+        str += UString::Format(u", @%d.%03d fps", {frameRate / 1000, frameRate % 1000});
+    }
+    else if (frameRate > 0) {
+        str += UString::Format(u", @%d fps", {frameRate / 1000});
+    }
+
+    return str;
+}
