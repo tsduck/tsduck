@@ -90,7 +90,7 @@ TSPLUGIN_DECLARE_INPUT(hls, ts::HlsInput)
 //----------------------------------------------------------------------------
 
 ts::HlsInput::HlsInput(TSP* tsp_) :
-    AbstractHTTPInputPlugin(tsp_, u"Read a transport stream from an HLS server", u"[options] url"),
+    AbstractHTTPInputPlugin(tsp_, u"Receive HTTP Live Streaming (HLS) media", u"[options] url"),
     _url(),
     _minRate(0),
     _maxRate(0),
