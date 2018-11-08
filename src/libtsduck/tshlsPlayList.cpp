@@ -90,6 +90,17 @@ ts::UString ts::hls::PlayList::buildURL(const ts::UString& uri) const
 
 
 //----------------------------------------------------------------------------
+// Check if the playlist can be updated (and must be reloaded later).
+//----------------------------------------------------------------------------
+
+bool ts::hls::PlayList::updatable() const
+{
+    // See RFC 8216, sections 4.3.3.5 and 6.2.1.
+    return _type == MEDIA_PLAYLIST && _playlistType != u"VOD" && !_endList;
+}
+
+
+//----------------------------------------------------------------------------
 // Get a constant reference to a component.
 //----------------------------------------------------------------------------
 
@@ -115,7 +126,7 @@ bool ts::hls::PlayList::popFirstSegment(ts::hls::MediaSegment& seg)
     }
 }
 
-const ts::hls::MediaPlayList&ts::hls::PlayList::playList(size_t index) const
+const ts::hls::MediaPlayList& ts::hls::PlayList::playList(size_t index) const
 {
     return index < _playlists.size() ? _playlists[index] : emptyPlayList;
 }
@@ -648,4 +659,48 @@ bool ts::hls::PlayList::setType(PlayListType type, Report& report)
         _valid = false;
         return false;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface
+//----------------------------------------------------------------------------
+
+ts::UString ts::hls::PlayList::toString() const
+{
+    UString str;
+
+    if (_isURL) {
+        const size_t slash = _url.rfind(u'/');
+        str = slash == NPOS ? _url : _url.substr(slash + 1);
+    }
+    else {
+        str = BaseName(_url);
+    }
+    if (!str.empty()) {
+        str.append(u", ");
+    }
+    if (!_valid) {
+        str.append(u"invalid playlist");
+    }
+    else if (_type == MEDIA_PLAYLIST) {
+        str.append(u"media playlist");
+    }
+    else if (_type == MASTER_PLAYLIST) {
+        str.append(u"master playlist");
+    }
+    else {
+        str.append(u"unknown playlist");
+    }
+    str.append(updatable() ? u", updatable (live)" : u", static");
+    if (_type == MEDIA_PLAYLIST) {
+        str += UString::Format(u", %d segments", {_segments.size()});
+    }
+    else if (_type == MASTER_PLAYLIST) {
+        str += UString::Format(u", %d media playlists", {_playlists.size()});
+    }
+    if (_targetDuration > 0) {
+        str += UString::Format(u", %d seconds/segment", {_targetDuration});
+    }
+    return str;
 }
