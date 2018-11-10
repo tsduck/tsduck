@@ -1438,6 +1438,19 @@ namespace ts {
                                bool use_upper = true);
 
         //!
+        //! Format a string containing a floating point value.
+        //! @param [in] value The floating point value to format.
+        //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+        //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+        //! @param [in] force_sign If true, force a '+' sign for positive values.
+        //! @return The formatted string.
+        //!
+        static UString Float(double value,
+                             size_type width = 0,
+                             size_type precision = 6,
+                             bool force_sign = false);
+
+        //!
         //! Format a string using a template and arguments.
         //!
         //! This method is similar in principle to @c printf(). The @a fmt paramter is used as a
@@ -1453,16 +1466,17 @@ namespace ts {
         //! - @c \%d : Integer in decimal. Treated as @c \%s if the argument is a string.
         //! - @c \%x : Integer in lowercase hexadecimal. Treated as @c \%s if the argument is a string.
         //! - @c \%X : Integer in uppercase hexadecimal. Treated as @c \%s if the argument is a string.
+        //! - @c \%f : Floating point value. Treated as @c \%s if the argument is a string.
         //! - @c \%\% : Insert a literal \%.
         //!
         //! The allowed options, between the '\%' and the letter are, in this order:
         //! - @c - : Left-justified (right-justified by default).
-        //! - @c + : Force a '+' sign with positive decimal integers (@c \%d only).
+        //! - @c + : Force a '+' sign with positive decimal integers or floating point values (@c \%d or @c \%f only).
         //! - @c 0 : Zero padding for integers. This is the default with @c \%x and @c \%X.
         //! - @e digits : Minimum field width. This is a display width, not a number of characters for strings.
         //!   With @c \%x or @c \%X, the default width is the "natural" width of the parameter
         //!   (e.g. 8 digits for a @c uint32_t value without thousands separator).
-        //! - @c . @e digits : Starting with a dot. Maximum field width for strings. Ignored for integers.
+        //! - @c . @e digits : Starting with a dot. Maximum field width for strings or precision for floating point values. Ignored for integers.
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
         //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.
         //!
