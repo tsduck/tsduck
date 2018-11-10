@@ -128,41 +128,46 @@ namespace ts {
         //!
         bool isUString() const { return (_type & (STRING | BIT16 | CLASS)) == (STRING | BIT16 | CLASS); }
         //!
+        //! Check if the argument value is a double floating point value, either input or output.
+        //! @return True if the argument value is a double.
+        //!
+        bool isDouble() const { return (_type & DOUBLE) == DOUBLE; }
+        //!
         //! Get the original integer size in bytes of the argument data.
-        //! @return The original integer size in bytes of the argument data or zero for a string.
+        //! @return The original integer size in bytes of the argument data or zero for a string or double.
         //!
         size_t size() const { return _size; }
 
         //!
         //! Get the argument data value as an integer.
         //! @tparam INT An integer type.
-        //! @return The argument data as an integer value of type @a INT or zero for a string.
+        //! @return The argument data as an integer value of type @a INT or zero for a string or double.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         INT toInteger() const;
         //!
         //! Get the argument data value as a 32-bit signed integer.
-        //! @return The argument data as an integer value or zero for a string.
+        //! @return The argument data as an integer value or zero for a string or double.
         //!
         int32_t toInt32() const { return toInteger<int32_t>(); }
         //!
         //! Get the argument data value as a 32-bit unsigned integer.
-        //! @return The argument data as an integer value or zero for a string.
+        //! @return The argument data as an integer value or zero for a string or double.
         //!
         uint32_t toUInt32() const { return toInteger<uint32_t>(); }
         //!
         //! Get the argument data value as a 64-bit signed integer.
-        //! @return The argument data as an integer value or zero for a string.
+        //! @return The argument data as an integer value or zero for a string or double.
         //!
         int64_t toInt64() const { return toInteger<int64_t>(); }
         //!
         //! Get the argument data value as a 64-bit unsigned integer.
-        //! @return The argument data as an integer value or zero for a string.
+        //! @return The argument data as an integer value or zero for a string or double.
         //!
         uint64_t toUInt64() const { return toInteger<uint64_t>(); }
         //!
         //! Get the argument data value as a bool.
-        //! @return The argument data as a bool value or false for a string.
+        //! @return The argument data as a bool value or false for a string or double.
         //!
         bool toBool() const { return toInteger<uint32_t>() != 0; }
         //!
@@ -185,6 +190,11 @@ namespace ts {
         //! @return Reference to the string for USTRING, to an empty string for other data types.
         //!
         const UString& toUString() const;
+        //!
+        //! Get the argument data value as a double floating point value.
+        //! @return The argument data as a double or zero for a string. Integers are converted to double.
+        //!
+        double toDouble() const;
 
         //!
         //! Store an integer value in the argument data, for pointers to integer.
@@ -225,6 +235,7 @@ namespace ts {
             BIT64     = 0x0100,  //!< 64-bit integer.
             POINTER   = 0x0200,  //!< A pointer to a writeable data (data type is given by other bits).
             STRINGIFY = 0x0400,  //!< A pointer to a StringifyInterface object.
+            DOUBLE    = 0x0800   //!< Double floating point type.
         };
 
 #if !defined(DOXYGEN)
@@ -244,6 +255,7 @@ namespace ts {
             const UString*            ustring;
             const StringifyInterface* stringify;
 #endif
+            double                    dbl;
 
             Value(void* p)              : intptr(p) {}
             Value(bool b)               : uint32(b) {}
@@ -258,6 +270,7 @@ namespace ts {
             Value(const UString& s)     : ustring(&s) {}
             Value(const StringifyInterface& s) : stringify(&s) {}
 #endif
+            Value(double d)             : dbl(d) {}
         };
 #endif // DOXYGEN
 
@@ -452,6 +465,11 @@ namespace ts {
         //! @param [in] b Boolean value.
         //!
         ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b)) {}
+        //!
+        //! Constructor from a double.
+        //! @param [in] d double value.
+        //!
+        ArgMixIn(double d) : ArgMix(DOUBLE, 0, Value(d)) {}
         //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
