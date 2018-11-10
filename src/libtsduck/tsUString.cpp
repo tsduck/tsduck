@@ -2162,30 +2162,26 @@ bool ts::UString::ArgMixOutContext::processField()
     return true;
 }
 
+
 //----------------------------------------------------------------------------
 // Format a string containing a floating point value.
 //----------------------------------------------------------------------------
 
 ts::UString ts::UString::Float(double value, size_type width, size_type precision, bool force_sign)
 {
-    UString s;
-
     // Format the value
     if (value == 0.0) {
-        s = u"0.0";
+        return u"0.0";
     }
     else {
-        char valueStr[3 + DBL_MANT_DIG - DBL_MIN_EXP + 1];
+        // Slightly oversized buffer.
+        char valueStr[10 + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent];
         if (force_sign) {
-            std::snprintf(valueStr, sizeof(valueStr), "%+*.*f", (int) width, (int) precision, value);
+            std::snprintf(valueStr, sizeof(valueStr), "%+*.*f", int(width), int(precision), value);
         }
         else {
-            std::snprintf(valueStr, sizeof(valueStr), "%*.*f", (int) width, (int) precision, value);
+            std::snprintf(valueStr, sizeof(valueStr), "%*.*f", int(width), int(precision), value);
         }
-
-        s = UString::FromUTF8(valueStr);
+        return FromUTF8(valueStr);
     }
-
-    // Return the formatted result
-    return s;
 }

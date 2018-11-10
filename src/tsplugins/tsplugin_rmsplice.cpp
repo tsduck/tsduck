@@ -85,27 +85,24 @@ namespace ts {
         class PIDState
         {
         public:
-            PID        pid;           // PID value.
-            uint8_t    cc;            // Last continuity counter in the PID.
-            bool       currentlyOut;  // PID is currently spliced out.
-            uint64_t   outStart;      // When spliced out, PTS value at the time of splicing out.
-            uint64_t   totalAdjust;   // Total removed time in PTS units.
-            uint64_t   lastPTS;       // Last PTS value in this PID.
-            EventByPTS events;        // Ordered map of upcoming slice events.
-            bool       immediateOut;  // Currently splicing out for an immediate event
-            uint32_t   immediateEventId; // Event ID associated with immediate splice out event
-            bool       cancelImmediateOut; // Want to cancel current immediate splice out event
-            bool       isAudio;       // Associated with audio stream
-            bool       isVideo;       // Associated with video stream
-            uint64_t   lastOutEnd;    // When spliced back in, PTS value at the time of the splice in
-            uint64_t   ptsLastSeekPoint; // PTS of last seek point for this PID
+            PID        pid;                  // PID value.
+            uint8_t    cc;                   // Last continuity counter in the PID.
+            bool       currentlyOut;         // PID is currently spliced out.
+            uint64_t   outStart;             // When spliced out, PTS value at the time of splicing out.
+            uint64_t   totalAdjust;          // Total removed time in PTS units.
+            uint64_t   lastPTS;              // Last PTS value in this PID.
+            EventByPTS events;               // Ordered map of upcoming slice events.
+            bool       immediateOut;         // Currently splicing out for an immediate event
+            uint32_t   immediateEventId;     // Event ID associated with immediate splice out event
+            bool       cancelImmediateOut;   // Want to cancel current immediate splice out event
+            bool       isAudio;              // Associated with audio stream
+            bool       isVideo;              // Associated with video stream
+            uint64_t   lastOutEnd;           // When spliced back in, PTS value at the time of the splice in
+            uint64_t   ptsLastSeekPoint;     // PTS of last seek point for this PID
             uint64_t   ptsBetweenSeekPoints; // PTS difference between last seek points for this PID
 
             // Constructor
-            PIDState() : pid(0), cc(0xFF), currentlyOut(false), outStart(INVALID_PTS), totalAdjust(0), lastPTS(INVALID_PTS),
-                events(), immediateOut(false), immediateEventId(0), cancelImmediateOut(false),
-                isAudio(false), isVideo(false), lastOutEnd(INVALID_PTS),
-                ptsLastSeekPoint(INVALID_PTS), ptsBetweenSeekPoints(INVALID_PTS) {}
+            PIDState(PID = PID_NULL);
 
             // Add a splicing event in a PID.
             void addEvent(uint64_t pts, bool spliceOut, uint32_t eventId, bool immediate);
@@ -123,18 +120,18 @@ namespace ts {
         // Plugin Implementation
         // ------------------------------------------------------------
 
-        bool             _abort;       // Error (service not found, etc)
-        bool             _continue;    // Continue processing if no splice information is found.
-        bool             _adjustTime;  // Adjust PTS and DTS time stamps.
-        bool             _fixCC;       // Fix continuity counters.
-        Status           _dropStatus;  // Status for dropped packets
-        ServiceDiscovery _service;     // Service name & id.
-        SectionDemux     _demux;       // Section filter for splice information.
-        TagByPID         _tagsByPID;   // Mapping between PID's and component tags in the service.
-        StateByPID       _states;      // Map of current state by PID in the service.
-        std::set<uint32_t> _eventIDs;  // set of event IDs of interest
-        bool             _dryRun;      // Just report what it would do
-        PID              _videoPID;    // First video PID, if there is one
+        bool               _abort;       // Error (service not found, etc)
+        bool               _continue;    // Continue processing if no splice information is found.
+        bool               _adjustTime;  // Adjust PTS and DTS time stamps.
+        bool               _fixCC;       // Fix continuity counters.
+        Status             _dropStatus;  // Status for dropped packets
+        ServiceDiscovery   _service;     // Service name & id.
+        SectionDemux       _demux;       // Section filter for splice information.
+        TagByPID           _tagsByPID;   // Mapping between PID's and component tags in the service.
+        StateByPID         _states;      // Map of current state by PID in the service.
+        std::set<uint32_t> _eventIDs;    // set of event IDs of interest
+        bool               _dryRun;      // Just report what it would do
+        PID                _videoPID;    // First video PID, if there is one
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
@@ -168,7 +165,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _states(),
     _eventIDs(),
     _dryRun(false),
-    _videoPID(0)
+    _videoPID(PID_NULL)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -204,10 +201,9 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
          u"Only remove splices associated with event ID. Several --event-id options "
          u"may be specified.");
 
-    option(u"dry-run");
+    option(u"dry-run", 'n');
     help(u"dry-run",
-         u"Perform a dry run--report what operations would be performed.  Use with --verbose.");
-
+         u"Perform a dry run, report what operations would be performed. Use with --verbose.");
 }
 
 
@@ -230,8 +226,33 @@ bool ts::RMSplicePlugin::start()
     _tagsByPID.clear();
     _states.clear();
     _demux.reset();
+    _videoPID = PID_NULL;
     _abort = false;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::RMSplicePlugin::PIDState::PIDState(PID pid_) :
+    pid(pid_),
+    cc(0xFF),
+    currentlyOut(false),
+    outStart(INVALID_PTS),
+    totalAdjust(0),
+    lastPTS(INVALID_PTS),
+    events(),
+    immediateOut(false),
+    immediateEventId(0),
+    cancelImmediateOut(false),
+    isAudio(false),
+    isVideo(false),
+    lastOutEnd(INVALID_PTS),
+    ptsLastSeekPoint(INVALID_PTS),
+    ptsBetweenSeekPoints(INVALID_PTS)
+{
 }
 
 
@@ -259,10 +280,10 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt)
             // Other component, possibly a PID to splice.
             // Enforce the creation of the state for this PID if non-existent.
             if (_states.find(pid) == _states.end()) {
-                if ((_videoPID == 0) && stream.isVideo())
+                if (_videoPID == PID_NULL && stream.isVideo()) {
                     _videoPID = pid;
-                PIDState pidState;
-                pidState.pid = pid;
+                }
+                PIDState pidState(pid);
                 pidState.isAudio = stream.isAudio();
                 pidState.isVideo = stream.isVideo();
                 _states.insert(std::make_pair(pid, pidState));
@@ -307,20 +328,19 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     // Either cancel or add the event.
     if (cmd.canceled) {
         // Cancel an identified splice event. Search and remove from all PID's.
-        tsp->verbose(u"Canceling splice event id %d", {cmd.event_id});
-        if (_dryRun) {
-            return;
-        }
-        for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
-            it->second.cancelEvent(cmd.event_id);
+        tsp->verbose(u"cancelling splice event id 0x%X (%d)", {cmd.event_id, cmd.event_id});
+        if (!_dryRun) {
+            for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
+                it->second.cancelEvent(cmd.event_id);
+            }
         }
     }
     else if (cmd.immediate) {
         // Add an immediate splice event, which doesn't have a PTS value and is handled differently that scheduled splice events.
         for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
-            tsp->verbose(u"Adding 'immediate' splice %s with event ID %d on PID %d at PTS %d (%.3f s)",
-                {cmd.splice_out ? u"out" : u"in", cmd.event_id, (*it).second.pid, (*it).second.lastPTS,
-                (double) (*it).second.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
+            tsp->verbose(u"adding 'immediate' splice %s with event ID 0x%X (%d) on PID 0x%X (%d) at PTS %d (%.3f s)",
+                {cmd.splice_out ? u"out" : u"in", cmd.event_id, cmd.event_id, it->second.pid, it->second.pid, it->second.lastPTS,
+                double(it->second.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
             if (!_dryRun) {
                 it->second.addEvent(cmd, _tagsByPID);
             }
@@ -328,12 +348,11 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
-        tsp->verbose(u"Adding splice %s at PTS %s with event ID %d", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id});
+        tsp->verbose(u"adding splice %s at PTS %s with event ID 0x%X (%d)", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id, cmd.event_id});
         if (!_dryRun) {
-            return;
-        }
-        for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
-            it->second.addEvent(cmd, _tagsByPID);
+            for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
+                it->second.addEvent(cmd, _tagsByPID);
+            }
         }
     }
 }
@@ -502,13 +521,13 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                         state.immediateEventId = 0;
 
                         tsp->verbose(u"Immediate splice out disregarded on PID 0x%X (%d) at PTS %d (%.3f s)",
-                            {pid, pid, state.lastPTS, (double) state.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
+                            {pid, pid, state.lastPTS, double(state.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
                     }
                     else {
                         if (pkt.getRandomAccessIndicator()) {
                             bool doSpliceIn = true;
 
-                            if (state.isAudio && (_videoPID != 0)) {
+                            if (state.isAudio && _videoPID != PID_NULL) {
                                 PIDState& videoState = _states[_videoPID];
                                 if (videoState.currentlyOut) {
                                     doSpliceIn = false;
@@ -547,7 +566,7 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                         if (pkt.getRandomAccessIndicator()) {
                             bool doSpliceOut = true;
 
-                            if (state.isAudio && (_videoPID != 0)) {
+                            if (state.isAudio && _videoPID != PID_NULL) {
                                 PIDState& videoState = _states[_videoPID];
                                 if (!videoState.currentlyOut) {
                                     doSpliceOut = false;
@@ -596,7 +615,7 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                 // Display message in verbose mode. If the PTS is beyond the event PTS, display the delay.
                 tsp->verbose(u"%s PID 0x%X (%d) at PTS 0x%09X (+%.3f s)",
                     {event.out ? u"suspending" : u"restarting", pid, pid, state.lastPTS,
-                    (double) (state.lastPTS - eventPTS) / (double) SYSTEM_CLOCK_SUBFREQ});
+                    double(state.lastPTS - eventPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
             }
         }
 

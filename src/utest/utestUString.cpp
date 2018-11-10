@@ -1729,6 +1729,16 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {false}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|    true|", ts::UString::Format(u"|%8s|", {true}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|false   |", ts::UString::Format(u"|%-8s|", {false}));
+
+    // Floats.
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0.666667", ts::UString::Format(u"%f", {2.0 / 3.0}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"-0.666667", ts::UString::Format(u"%f", {2.0 / -3.0}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"+0.666667", ts::UString::Format(u"%+f", {2.0 / 3.0}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"-0.666667", ts::UString::Format(u"%+f", {2.0 / -3.0}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2.000000", ts::UString::Format(u"%f", {2.0}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2.000000", ts::UString::Format(u"%f", {2}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"-2.000000", ts::UString::Format(u"%f", {-2}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u" 0.667", ts::UString::Format(u"%6.3f", {2.0 / 3.0}));
 }
 
 void UStringTest::testArgMixOut()
