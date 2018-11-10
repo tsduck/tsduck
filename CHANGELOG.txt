@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1018
+VERSION 3.16-1034
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,7 @@ VERSION 3.16-1018
 [IMP] Improvements on existing commands and plugins:
 
   * Added option --pack to plugin "encap".
+  * In plugin "rmsplice", immediate splice events are no longer ignored.
 
 [BUG] Bug fixes:
 
