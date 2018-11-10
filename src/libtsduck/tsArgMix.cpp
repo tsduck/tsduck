@@ -223,3 +223,13 @@ const ts::UString& ts::ArgMix::toUString() const
         }
     }
 }
+
+const double ts::ArgMix::toDouble() const
+{
+    if ((_type & DOUBLE) == 0) {
+        // Not a double.
+        return 0.0;
+    }
+
+    return _value.dbl;
+}
