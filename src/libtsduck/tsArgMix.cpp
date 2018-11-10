@@ -224,12 +224,23 @@ const ts::UString& ts::ArgMix::toUString() const
     }
 }
 
-const double ts::ArgMix::toDouble() const
+
+//----------------------------------------------------------------------------
+// Return ArgMix value as a double.
+//----------------------------------------------------------------------------
+
+double ts::ArgMix::toDouble() const
 {
-    if ((_type & DOUBLE) == 0) {
-        // Not a double.
+    if ((_type & DOUBLE) != 0) {
+        return _value.dbl;
+    }
+    else if (isSigned()) {
+        return double(toInt64());
+    }
+    else if (isUnsigned()) {
+        return double(toUInt64());
+    }
+    else {
         return 0.0;
     }
-
-    return _value.dbl;
 }

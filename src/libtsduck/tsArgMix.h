@@ -134,7 +134,7 @@ namespace ts {
         bool isDouble() const { return (_type & DOUBLE) == DOUBLE; }
         //!
         //! Get the original integer size in bytes of the argument data.
-        //! @return The original integer size in bytes of the argument data or zero for a string.
+        //! @return The original integer size in bytes of the argument data or zero for a string or double.
         //!
         size_t size() const { return _size; }
 
@@ -192,9 +192,9 @@ namespace ts {
         const UString& toUString() const;
         //!
         //! Get the argument data value as a double floating point value.
-        //! @return The argument data as a double or zero for a string or integer.
+        //! @return The argument data as a double or zero for a string. Integers are converted to double.
         //!
-        const double toDouble() const;
+        double toDouble() const;
 
         //!
         //! Store an integer value in the argument data, for pointers to integer.
@@ -469,7 +469,7 @@ namespace ts {
         //! Constructor from a double.
         //! @param [in] d double value.
         //!
-        ArgMixIn(double d) : ArgMix(DOUBLE, 8, Value(d)) {}
+        ArgMixIn(double d) : ArgMix(DOUBLE, 0, Value(d)) {}
         //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
