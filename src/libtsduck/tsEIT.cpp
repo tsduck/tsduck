@@ -144,6 +144,18 @@ void ts::EIT::setActual(bool is_actual)
 
 
 //----------------------------------------------------------------------------
+// Clear preferred section in all events.
+//----------------------------------------------------------------------------
+
+void ts::EIT::clearPreferredSections()
+{
+    for (auto it = events.begin(); it != events.end(); ++it) {
+        it->second.preferred_section = -1;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
@@ -198,7 +210,7 @@ void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         data += 6;
         remain -= 6;
 
-        // Get services description
+        // Get events description
         while (remain >= 12) {
             uint16_t event_id = GetUInt16(data);
             Event& event(events[event_id]);
@@ -209,6 +221,7 @@ void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
             event.duration = (hour * 3600) + (min * 60) + sec;
             event.running_status = (data[10] >> 5) & 0x07;
             event.CA_controlled = (data[10] >> 4) & 0x01;
+            event.preferred_section = int(si);
 
             size_t info_length = GetUInt16(data + 10) & 0x0FFF;
             data += 12;
@@ -222,6 +235,35 @@ void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
     }
 
     _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Select an event for serialization in current section.
+//----------------------------------------------------------------------------
+
+bool ts::EIT::getNextEvent(EventIdSet& idset, uint16_t& id, int section_number) const
+{
+    // Search one event which should be serialized in current section
+    for (auto it = idset.begin(); it != idset.end(); ++it) {
+        if (events[*it].preferred_section == section_number) {
+            id = *it;
+            idset.erase(it);
+            return true;
+        }
+    }
+
+    // No event for this section. Search an evnt without section or with a previous section.
+    for (auto it = idset.begin(); it != idset.end(); ++it) {
+        if (events[*it].preferred_section < section_number) { // including preferred_section == -1
+            id = *it;
+            idset.erase(it);
+            return true;
+        }
+    }
+
+    // No even found. Either no more event or all remaining one have subsequent sections.
+    return false;
 }
 
 
@@ -253,16 +295,28 @@ void ts::EIT::serialize(BinaryTable& table, const DVBCharset* charset) const
     data += 6;
     remain -= 6;
 
-    // Add all events
-    for (EventMap::const_iterator it = events.begin(); it != events.end(); ++it) {
+    // We won't serialize events in order, we use the preferred sections.
+    // First, build a set of event ids.
+    EventIdSet idset;
+    for (auto it = events.begin(); it != events.end(); ++it) {
+        idset.insert(it->first);
+    }
 
-        const uint16_t event_id = it->first;
-        const Event& event(it->second);
+    // Add all events.
+    while (!idset.empty()) {
 
         // If we cannot at least add the fixed part, open a new section
         if (remain < 12) {
             addSection(table, section_number, payload, data, remain);
         }
+
+        // Get an event to serialize in current section.
+        uint16_t event_id = 0;
+        while (!getNextEvent(idset, event_id, section_number)) {
+            // No event found for this section, close it and starts a new one.
+            addSection(table, section_number, payload, data, remain);
+        }
+        const Event& event(events[event_id]);
 
         // Insert the characteristics of the event. When the section is
         // not large enough to hold the entire descriptor list, open a
@@ -349,7 +403,8 @@ ts::EIT::Event::Event(const AbstractTable* table) :
     start_time(),
     duration(0),
     running_status(0),
-    CA_controlled(false)
+    CA_controlled(false),
+    preferred_section(-1)
 {
 }
 
@@ -437,6 +492,9 @@ void ts::EIT::buildXML(xml::Element* root) const
         e->setTimeAttribute(u"duration", it->second.duration);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
         e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
+        if (it->second.preferred_section >= 0) {
+            e->setIntAttribute(u"preferred_section", it->second.preferred_section, false);
+        }
         it->second.descs.toXML(e);
     }
 }
@@ -492,5 +550,11 @@ void ts::EIT::fromXML(const xml::Element* element)
             children[i]->getIntEnumAttribute<uint8_t>(events[event_id].running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
             children[i]->getBoolAttribute(events[event_id].CA_controlled, u"CA_mode", false, false) &&
             events[event_id].descs.fromXML(children[i]);
+        if (_is_valid && children[i]->hasAttribute(u"preferred_section")) {
+            _is_valid = children[i]->getIntAttribute<int>(events[event_id].preferred_section, u"preferred_section", true, 0, 0, 255);
+        }
+        else {
+            events[event_id].preferred_section = -1;
+        }
     }
 }

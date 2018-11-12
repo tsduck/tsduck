@@ -40,11 +40,11 @@
   </TSDT>
   <NIT version="0" current="true" network_id="0x4589" actual="true">
     <network_name_descriptor network_name="net 1"/>
-    <transport_stream transport_stream_id="0x0014" original_network_id="0x0282">
+    <transport_stream transport_stream_id="0x0014" original_network_id="0x0282" preferred_section="0">
       <bouquet_name_descriptor bouquet_name="nit 11"/>
       <bouquet_name_descriptor bouquet_name="nit 12"/>
     </transport_stream>
-    <transport_stream transport_stream_id="0x1234" original_network_id="0x0682">
+    <transport_stream transport_stream_id="0x1234" original_network_id="0x0682" preferred_section="0">
       <bouquet_name_descriptor bouquet_name="nit 1"/>
       <bouquet_name_descriptor bouquet_name="nit 2"/>
     </transport_stream>
@@ -162,17 +162,17 @@
     </teletext_descriptor>
     <terrestrial_delivery_system_descriptor centre_frequency="841,465,000" bandwidth="8MHz" priority="LP" no_time_slicing="true" no_MPE_FEC="false" constellation="64-QAM" hierarchy_information="5" code_rate_HP_stream="3/4" code_rate_LP_stream="2/3" guard_interval="1/16" transmission_mode="8k" other_frequency="false"/>
     <AVC_video_descriptor profile_idc="0x2D" constraint_set0="true" constraint_set1="false" constraint_set2="true" AVC_compatible_flags="0x17" level_idc="0x4E" AVC_still_present="true" AVC_24_hour_picture="false"/>
-    <transport_stream transport_stream_id="0x6543" original_network_id="0x9876">
+    <transport_stream transport_stream_id="0x6543" original_network_id="0x9876" preferred_section="0">
       <bouquet_name_descriptor bouquet_name="nit 21"/>
       <bouquet_name_descriptor bouquet_name="nit 22"/>
     </transport_stream>
   </NIT>
   <BAT version="19" current="false" bouquet_id="0x921A">
     <bouquet_name_descriptor bouquet_name="bat 31"/>
-    <transport_stream transport_stream_id="0x9823" original_network_id="0x0018">
+    <transport_stream transport_stream_id="0x9823" original_network_id="0x0018" preferred_section="0">
       <bouquet_name_descriptor bouquet_name="bat 41"/>
     </transport_stream>
-    <transport_stream transport_stream_id="0x9893" original_network_id="0x9818">
+    <transport_stream transport_stream_id="0x9893" original_network_id="0x9818" preferred_section="0">
       <bouquet_name_descriptor bouquet_name="bat 51"/>
     </transport_stream>
   </BAT>
@@ -205,7 +205,7 @@
     </local_time_offset_descriptor>
   </TOT>
   <EIT type="pf" version="2" current="true" actual="true" service_id="0x0234" transport_stream_id="0x4661" original_network_id="0x621A" segment_last_section_number="0x03" last_table_id="0x4E">
-    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
+    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true" preferred_section="0">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
         <text>Event description</text>
@@ -213,7 +213,7 @@
     </event>
   </EIT>
   <EIT type="8" version="4" current="true" actual="false" service_id="0x0666" transport_stream_id="0x4693" original_network_id="0x1268" segment_last_section_number="0x12" last_table_id="0x69">
-    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
+    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true" preferred_section="0">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
         <text>Event description</text>

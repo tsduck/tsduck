@@ -311,6 +311,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Reserialize modified NIT.
+    nit.clearPreferredSections();
     nit.serialize(table);
 }
 

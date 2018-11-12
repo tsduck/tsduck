@@ -370,9 +370,12 @@ void ts::TSRenamePlugin::processNITBAT(AbstractTransportListTable& table, bool a
                 }
             }
 
-            return;
+            break;
         }
     }
+
+    // No need to get the same section layout as input.
+    table.clearPreferredSections();
 }
 
 

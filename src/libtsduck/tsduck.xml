@@ -89,7 +89,8 @@
     <_any in="_descriptors"/>
     <!-- One per transport stream -->
     <transport_stream transport_stream_id="uint16, required"
-                      original_network_id="uint16, required">
+                      original_network_id="uint16, required"
+                      preferred_section="uint8, optional">
       <_any in="_descriptors"/>
     </transport_stream>
   </NIT>
@@ -102,7 +103,8 @@
     <_any in="_descriptors"/>
     <!-- One per transport stream -->
     <transport_stream transport_stream_id="uint16, required"
-                      original_network_id="uint16, required">
+                      original_network_id="uint16, required"
+                      preferred_section="uint8, optional">
       <_any in="_descriptors"/>
     </transport_stream>
   </BAT>
@@ -150,7 +152,8 @@
            start_time="YYYY-MM-DD hh:mm:ss, required"
            duration="hh:mm:ss, required"
            running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
-           CA_mode="bool, default=false">
+           CA_mode="bool, default=false"
+           preferred_section="uint8, optional">
       <_any in="_descriptors"/>
     </event>
   </EIT>

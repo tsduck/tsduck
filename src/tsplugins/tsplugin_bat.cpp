@@ -207,6 +207,7 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Reserialize modified BAT.
+    bat.clearPreferredSections();
     bat.serialize(table);
 }
 

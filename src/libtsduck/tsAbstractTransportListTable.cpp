@@ -50,7 +50,6 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
     AbstractLongTable(tid_, xml_name, version_, is_current_),
     descs(this),
     transports(this),
-    section_hints(),
     _tid_ext(tid_ext_)
 {
     _is_valid = true;
@@ -60,7 +59,6 @@ ts::AbstractTransportListTable::AbstractTransportListTable(const AbstractTranspo
     AbstractLongTable(other),
     descs(this, other.descs),
     transports(this, other.transports),
-    section_hints(other.section_hints),
     _tid_ext(other._tid_ext)
 {
 }
@@ -69,10 +67,27 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid, const UChar*
     AbstractLongTable(tid, xml_name),
     descs(this),
     transports(this),
-    section_hints(),
     _tid_ext(0xFFFF)
 {
     deserialize(table, charset);
+}
+
+ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table) :
+    EntryWithDescriptors(table),
+    preferred_section(-1)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Clear preferred section in all transports.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTransportListTable::clearPreferredSections()
+{
+    for (auto it = transports.begin(); it != transports.end(); ++it) {
+        it->second.preferred_section = -1;
+    }
 }
 
 
@@ -87,7 +102,6 @@ void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const
     _tid_ext = 0xFFFF;
     descs.clear();
     transports.clear();
-    section_hints.clear();
 
     if (!table.isValid()) {
         return;
@@ -153,6 +167,7 @@ void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const
             remain -= 6;
             info_length = std::min(info_length, remain);
             transports[id].descs.add(data, info_length);
+            transports[id].preferred_section = int(si);
             data += info_length;
             remain -= info_length;
         }
@@ -230,9 +245,8 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
                                                       int section_number) const
 {
     // Search one TS which should be serialized in current section
-    for (TransportStreamIdSet::const_iterator it = ts_set.begin(); it != ts_set.end(); ++it) {
-        const SectionHintsMap::const_iterator hint(section_hints.find(*it));
-        if (hint != section_hints.end() && hint->second == section_number && transports.find(*it) != transports.end()) {
+    for (auto it = ts_set.begin(); it != ts_set.end(); ++it) {
+        if (transports[*it].preferred_section == section_number) {
             ts_id = *it;
             ts_set.erase(it);
             return true;
@@ -241,11 +255,10 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 
     // No transport for this section.
     // Search one TS without section hint or with a previous section hint.
-    for (TransportStreamIdSet::const_iterator it = ts_set.begin(); it != ts_set.end(); ++it) {
-        const SectionHintsMap::const_iterator hint (section_hints.find (*it));
-        if ((hint == section_hints.end() || hint->second < section_number) && transports.find (*it) != transports.end()) {
+    for (auto it = ts_set.begin(); it != ts_set.end(); ++it) {
+        if (transports[*it].preferred_section < section_number) { // including preferred_section == -1
             ts_id = *it;
-            ts_set.erase (it);
+            ts_set.erase(it);
             return true;
         }
     }

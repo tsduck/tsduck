@@ -510,6 +510,9 @@ void ts::SVRemovePlugin::processNITBAT(AbstractTransportListTable& table)
     for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
         processNITBATDescriptorList(it->second.descs);
     }
+
+    // No need to get the same section layout as input.
+    table.clearPreferredSections();
 }
 
 
