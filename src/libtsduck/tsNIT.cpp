@@ -149,6 +149,9 @@ void ts::NIT::buildXML(xml::Element* root) const
         xml::Element* e = root->addElement(u"transport_stream");
         e->setIntAttribute(u"transport_stream_id", it->first.transport_stream_id, true);
         e->setIntAttribute(u"original_network_id", it->first.original_network_id, true);
+        if (it->second.preferred_section >= 0) {
+            e->setIntAttribute(u"preferred_section", it->second.preferred_section, false);
+        }
         it->second.descs.toXML(e);
     }
 }
@@ -182,5 +185,11 @@ void ts::NIT::fromXML(const xml::Element* element)
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
             transports[ts].descs.fromXML(children[index]);
+        if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
+            _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
+        }
+        else {
+            transports[ts].preferred_section = -1;
+        }
     }
 }

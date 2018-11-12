@@ -496,6 +496,9 @@ void ts::SVRenamePlugin::processNITBAT(AbstractTransportListTable& table)
             processNITBATDescriptorList(it->second.descs);
         }
     }
+
+    // No need to get the same section layout as input.
+    table.clearPreferredSections();
 }
 
 

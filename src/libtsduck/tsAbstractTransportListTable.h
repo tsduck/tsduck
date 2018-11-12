@@ -48,23 +48,41 @@ namespace ts {
     {
     public:
         //!
-        //! List of DescriptorList's, indexed by TransportStreamId.
+        //! Description of a transport stream.
         //!
-        typedef EntryWithDescriptorsMap<TransportStreamId, EntryWithDescriptors> TransportMap;
+        //! The field @c preferred_section indicates in which section a TS should be preferably serialized.
+        //! When unspecified for a TS, the corresponding TS description is serialized in an arbitrary section.
+        //!
+        //! Note: by inheriting from EntryWithDescriptors, there is a
+        //! public field "DescriptorList descs".
+        //!
+        class TSDUCKDLL Transport : public EntryWithDescriptors
+        {
+        public:
+            // Public members
+            int preferred_section;  //!< Preferred section index for serialization (-1 means no preference).
+
+            //!
+            //! Constructor.
+            //! @param [in] table Parent table.
+            //!
+            Transport(const AbstractTable* table);
+
+        private:
+            // Inaccessible operations.
+            Transport() = delete;
+            Transport(const Transport&) = delete;
+        };
 
         //!
-        //! Map of section serialization "hint".
-        //! Used in serialize() only.
-        //! Indicate in which section a TS should be preferably serialized.
-        //! When unspecified for a TS, the corresponding TS description is
-        //! serialized in an arbitrary section.
+        //! List of Transport's, indexed by TransportStreamId.
         //!
-        typedef std::map<TransportStreamId, int> SectionHintsMap;
+        typedef EntryWithDescriptorsMap<TransportStreamId, Transport> TransportMap;
+
 
         // NIT/BAT common public members:
         DescriptorList  descs;          //!< Top-level descriptor list.
         TransportMap    transports;     //!< Map of TS descriptions, key=onid/tsid, value=descriptor_list.
-        SectionHintsMap section_hints;  //!< Section serialization hints by TS.
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
@@ -75,6 +93,11 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //!
         AbstractTransportListTable(const AbstractTransportListTable& other);
+
+        //!
+        //! Clear preferred section in all transport.
+        //!
+        void clearPreferredSections();
 
     protected:
         //!
@@ -103,7 +126,7 @@ namespace ts {
         AbstractTransportListTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset);
 
     private:
-        typedef std::set <TransportStreamId> TransportStreamIdSet;
+        typedef std::set<TransportStreamId> TransportStreamIdSet;
 
         // Add a new section to a table being serialized.
         // Session number is incremented. Data and remain are reinitialized.

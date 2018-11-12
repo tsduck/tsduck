@@ -48,6 +48,9 @@ namespace ts {
         //!
         //! Description of an event.
         //!
+        //! The field @c preferred_section indicates in which section an event should be preferably serialized.
+        //! When unspecified (-1), the corresponding event description is serialized in an arbitrary section.
+        //!
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
@@ -55,10 +58,11 @@ namespace ts {
         {
         public:
             // Public members
-            Time    start_time;      //!< Event start_time.
-            Second  duration;        //!< Event duration in seconds.
-            uint8_t running_status;  //!< Running status code.
-            bool    CA_controlled;   //!< Controlled by a CA_system.
+            Time    start_time;         //!< Event start_time.
+            Second  duration;           //!< Event duration in seconds.
+            uint8_t running_status;     //!< Running status code.
+            bool    CA_controlled;      //!< Controlled by a CA_system.
+            int     preferred_section;  //!< Preferred section index for serialization (-1 means no preference).
 
             //!
             //! Constructor.
@@ -148,6 +152,11 @@ namespace ts {
             return _table_id == TID_EIT_PF_ACT || _table_id == TID_EIT_PF_OTH;
         }
 
+        //!
+        //! Clear preferred section in all events.
+        //!
+        void clearPreferredSections();
+
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
@@ -156,8 +165,14 @@ namespace ts {
         DeclareDisplaySection();
 
     private:
+        typedef std::set<uint16_t> EventIdSet;
+
         // Add a new section to a table being serialized
         // Section number is incremented. Data and remain are reinitialized.
         void addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const;
+
+        // Select an event for serialization in current section.
+        // If found, set id, remove the id from the set and return true. Otherwise, return false.
+        bool getNextEvent(EventIdSet& idset, uint16_t& id, int section_number) const;
     };
 }
