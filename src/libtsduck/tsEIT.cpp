@@ -416,41 +416,51 @@ ts::EIT::Event::Event(const AbstractTable* table) :
 // Static method to fix the segmentation of a binary EIT.
 //----------------------------------------------------------------------------
 
-void ts::EIT::FixSegmentation(BinaryTable& table, TID last_table_id)
+void ts::EIT::FixSegmentation(BinaryTable& table)
 {
     const TID tid = table.tableId();
-    const uint8_t last_section = table.sectionCount() == 0 ? 0 : uint8_t(table.sectionCount() - 1);
+
+    // Filter invalid or non-EIT tables.
+    // For EIT's, the last_table_id field is at offset 5 in payload.
+    if (!table.isValid() ||
+        tid < TID_EIT_MIN ||
+        tid > TID_EIT_MAX ||
+        table.sectionCount() < 1 ||
+        table.sectionAt(0).isNull() ||
+        !table.sectionAt(0)->isValid() ||
+        table.sectionAt(0)->payloadSize() < 6)
+    {
+        return;
+    }
+
+    // Always use actual last section in table as last section in segment.
+    const uint8_t last_section = uint8_t(table.sectionCount() - 1);
+
+    // Get last_table_id field in first section.
+    uint8_t last_tid = table.sectionAt(0)->payload()[5];
 
     // Compute the actual last table id to use.
-    if (!table.isValid()) {
-        // Ignore invalid tables.
-        return;
-    }
-    else if (tid == TID_EIT_PF_ACT || tid == TID_EIT_PF_OTH) {
-        // EITp/f have no last table if.
-        last_table_id = tid;
+    if (tid == TID_EIT_PF_ACT || tid == TID_EIT_PF_OTH) {
+        // EITp/f have no last table id.
+        last_tid = tid;
     }
     else if (tid >= TID_EIT_S_ACT_MIN && tid <= TID_EIT_S_ACT_MAX) {
-        // EITs: max of current specified value.
-        last_table_id = std::min<TID>(std::max(tid, last_table_id), TID_EIT_S_ACT_MAX);
-    }
-    else if (tid >= TID_EIT_S_OTH_MIN && tid <= TID_EIT_S_OTH_MAX) {
-        // EITs: max of current specified value.
-        last_table_id = std::min<TID>(std::max(tid, last_table_id), TID_EIT_S_OTH_MAX);
+        // EITs actual: max of current specified value.
+        last_tid = std::min<TID>(std::max(tid, last_tid), TID_EIT_S_ACT_MAX);
     }
     else {
-        // Ignore non-EIT tables.
-        return;
+        // EITs other: max of current specified value.
+        last_tid = std::min<TID>(std::max(tid, last_tid), TID_EIT_S_OTH_MAX);
     }
 
     // Patch all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
         const SectionPtr& sec(table.sectionAt(si));
         if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= 6) {
-            uint8_t* pl = const_cast<uint8_t*>(sec->payload());
-            if (pl[4] != last_section || pl[5] != last_table_id) {
+            uint8_t* const pl = const_cast<uint8_t*>(sec->payload());
+            if (pl[4] != last_section || pl[5] != last_tid) {
                 pl[4] = last_section;
-                pl[5] = last_table_id;
+                pl[5] = last_tid;
                 sec->recomputeCRC();
             }
         }

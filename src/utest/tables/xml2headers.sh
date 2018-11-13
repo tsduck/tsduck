@@ -31,7 +31,7 @@ for f in $*; do
         echo >&2 "$f: not a .xml file"
     else
         (
-            echo "static const ts::UChar ${X}_xml[] = "
+            echo "static const ts::UChar ${X}_xml[] ="
             sed -e 's/"/\\"/g' \
                 -e 's/^/    u"/' \
                 -e 's/$/\\n"/' \
