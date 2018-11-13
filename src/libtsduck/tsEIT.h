@@ -157,6 +157,20 @@ namespace ts {
         //!
         void clearPreferredSections();
 
+        //!
+        //! Static method to fix the segmentation of a binary EIT.
+        //! The following transformations are made on EIT tables:
+        //! - The @c segment_last_section_number field is modified in all sections
+        //!   to the last section number of the table.
+        //! - The @c last_table_id field is modified in all sections. For EIT p/f,
+        //!   it is set to the current table id. For EIT schedule, it is set to the
+        //!   maximum of the @a last_table_id parameter and the current table id.
+        //! 
+        //! @param [in,out] table The table to fix. Ignored if it is not valid or not an EIT.
+        //! @param [in] last_table_id Forced value for @c last_table_id (if not zero).
+        //!
+        static void FixSegmentation(BinaryTable& table, TID last_table_id = 0);
+
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;

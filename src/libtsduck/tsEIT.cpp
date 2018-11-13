@@ -366,6 +366,9 @@ void ts::EIT::serialize(BinaryTable& table, const DVBCharset* charset) const
     if (data > payload + 6 || table.sectionCount() == 0) {
         addSection(table, section_number, payload, data, remain);
     }
+
+    // Finally, fix the segmentation values in the serialized binary table.
+    FixSegmentation(table);
 }
 
 
@@ -406,6 +409,52 @@ ts::EIT::Event::Event(const AbstractTable* table) :
     CA_controlled(false),
     preferred_section(-1)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to fix the segmentation of a binary EIT.
+//----------------------------------------------------------------------------
+
+void ts::EIT::FixSegmentation(BinaryTable& table, TID last_table_id)
+{
+    const TID tid = table.tableId();
+    const uint8_t last_section = table.sectionCount() == 0 ? 0 : uint8_t(table.sectionCount() - 1);
+
+    // Compute the actual last table id to use.
+    if (!table.isValid()) {
+        // Ignore invalid tables.
+        return;
+    }
+    else if (tid == TID_EIT_PF_ACT || tid == TID_EIT_PF_OTH) {
+        // EITp/f have no last table if.
+        last_table_id = tid;
+    }
+    else if (tid >= TID_EIT_S_ACT_MIN && tid <= TID_EIT_S_ACT_MAX) {
+        // EITs: max of current specified value.
+        last_table_id = std::min<TID>(std::max(tid, last_table_id), TID_EIT_S_ACT_MAX);
+    }
+    else if (tid >= TID_EIT_S_OTH_MIN && tid <= TID_EIT_S_OTH_MAX) {
+        // EITs: max of current specified value.
+        last_table_id = std::min<TID>(std::max(tid, last_table_id), TID_EIT_S_OTH_MAX);
+    }
+    else {
+        // Ignore non-EIT tables.
+        return;
+    }
+
+    // Patch all sections.
+    for (size_t si = 0; si < table.sectionCount(); ++si) {
+        const SectionPtr& sec(table.sectionAt(si));
+        if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= 6) {
+            uint8_t* pl = const_cast<uint8_t*>(sec->payload());
+            if (pl[4] != last_section || pl[5] != last_table_id) {
+                pl[4] = last_section;
+                pl[5] = last_table_id;
+                sec->recomputeCRC();
+            }
+        }
+    }
 }
 
 
