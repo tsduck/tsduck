@@ -187,5 +187,8 @@ namespace ts {
         // Select an event for serialization in current section.
         // If found, set id, remove the id from the set and return true. Otherwise, return false.
         bool getNextEvent(EventIdSet& idset, uint16_t& id, int section_number) const;
+
+        // Get the table id from XML element.
+        bool getTableId(const xml::Element*);
     };
 }

@@ -566,38 +566,19 @@ void ts::EIT::buildXML(xml::Element* root) const
 void ts::EIT::fromXML(const xml::Element* element)
 {
     events.clear();
-    UString type;
-    bool actual = 0;
 
     xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
-        element->getAttribute(type, u"type", false, u"pf") &&
+        getTableId(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        element->getBoolAttribute(actual, u"actual", false, true) &&
         element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<uint16_t>(onetw_id, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
-        element->getIntAttribute<uint8_t>(segment_last, u"segment_last_section_number", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute<TID>(last_table_id, u"last_table_id", true, 0, 0x00, 0xFF) &&
+        element->getIntAttribute<uint8_t>(segment_last, u"segment_last_section_number", false, 0x00, 0x00, 0xFF) &&
+        element->getIntAttribute<TID>(last_table_id, u"last_table_id", false, _table_id, 0x00, 0xFF) &&
         element->getChildren(children, u"event");
-
-    // Update table id.
-    if (_is_valid) {
-        if (type.similar(u"pf")) {
-            // This is an EIT p/f
-            _table_id = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
-        }
-        else if (type.toInteger(_table_id)) {
-            // This is an EIT schedule
-            _table_id += actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN;
-        }
-        else {
-            element->report().error(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", {type, element->name(), element->lineNumber()});
-            _is_valid = false;
-        }
-    }
 
     // Get all events.
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
@@ -615,5 +596,35 @@ void ts::EIT::fromXML(const xml::Element* element)
         else {
             events[event_id].preferred_section = -1;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the table id from XML element.
+//----------------------------------------------------------------------------
+
+bool ts::EIT::getTableId(const xml::Element* element)
+{
+    UString type;
+    bool actual = 0;
+
+    if (!element->getAttribute(type, u"type", false, u"pf") || !element->getBoolAttribute(actual, u"actual", false, true)) {
+        // Invalid XML.
+        return false;
+    }
+    else if (type.similar(u"pf")) {
+        // This is an EIT p/f
+        _table_id = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
+        return true;
+    }
+    else if (type.toInteger(_table_id)) {
+        // This is an EIT schedule
+        _table_id += actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN;
+        return true;
+    }
+    else {
+        element->report().error(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", {type, element->name(), element->lineNumber()});
+        return false;
     }
 }
