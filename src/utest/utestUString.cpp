@@ -1964,4 +1964,12 @@ void UStringTest::testScan()
     CPPUNIT_ASSERT(ts::UString(u"73/-3457").scan(u" %i/%i", {&u8, &i16}));
     CPPUNIT_ASSERT_EQUAL(uint8_t(73), u8);
     CPPUNIT_ASSERT_EQUAL(int16_t(-3457), i16);
+
+    CPPUNIT_ASSERT(ts::UString(u"12345").scan(u"%d", {&i}));
+    CPPUNIT_ASSERT_EQUAL(12345, i);
+
+    CPPUNIT_ASSERT(!ts::UString(u"62,852").scan(u"%d", {&i}));
+
+    CPPUNIT_ASSERT(ts::UString(u"67,654").scan(u"%'d", {&i}));
+    CPPUNIT_ASSERT_EQUAL(67654, i);
 }

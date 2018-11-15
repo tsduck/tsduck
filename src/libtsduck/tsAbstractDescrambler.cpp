@@ -77,9 +77,10 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
          u"PID's to descramble and fixed control words shall be specified as well.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Descramble packets with this PID value. Several -p or --pid options may be "
-         u"specified. By default, descramble the specified service.");
+    help(u"pid", u"pid1[-pid2]",
+         u"Descramble packets with this PID value or range of PID values. "
+         u"Several -p or --pid options may be specified. "
+         u"By default, descramble the specified service.");
 
     option(u"synchronous");
     help(u"synchronous",

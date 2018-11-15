@@ -194,8 +194,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"messages are written without any encapsulation.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Extract MPE datagrams from this PID. Several -p or --pid options may be "
+    help(u"pid", u"pid1[-pid2]",
+         u"Extract MPE datagrams from these PID's. Several -p or --pid options may be "
          u"specified. When no PID is specified, use all PID's carrying MPE which are "
          u"properly declared in the signalization.");
 

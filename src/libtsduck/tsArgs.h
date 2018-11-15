@@ -895,8 +895,19 @@ namespace ts {
         Args(const Args&) = delete;
         Args& operator=(const Args&) = delete;
 
+        // Representation of an option value.
+        class ArgValue
+        {
+        public:
+            Variable<UString> string;     // Orginal string value from command line (unset if option is present without value).
+            int64_t           int_base;   // First (or only) integer value.
+            size_t            int_count;  // Number of consecutive integer values.
+
+            // Constructor.
+            ArgValue();
+        };
+
         // List of values
-        typedef Variable<UString> ArgValue;
         typedef std::vector<ArgValue> ArgValueVector;
 
         // Flags for IOption.
@@ -907,8 +918,9 @@ namespace ts {
         };
 
         // Internal representation of Option
-        struct IOption
+        class IOption
         {
+        public:
             UString        name;        // Long name (u"verbose" for --verbose)
             UChar          short_name;  // Short option name (u'v' for -v), 0 if unused
             ArgType        type;        // Argument type
@@ -921,6 +933,7 @@ namespace ts {
             UString        syntax;      // Syntax of value (informational, "address:port" for instance)
             UString        help;        // Help description
             ArgValueVector values;      // Set of values after analysis
+            size_t         value_count; // Number of values, can be > values.size() in case of ranges of integers
 
             // Constructor:
             IOption(const UChar* name,
@@ -946,10 +959,17 @@ namespace ts {
             // Description of the option value.
             enum ValueContext {ALONE, SHORT, LONG};
             UString valueDescription(ValueContext ctx) const;
+
+            // Check if an integer value is in range.
+            template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type* = nullptr>
+            bool inRange(INT value) const;
+
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            bool inRange(INT value) const;
         };
 
         // Map of options by name.
-        typedef std::map <UString, IOption> IOptionMap;
+        typedef std::map<UString,IOption> IOptionMap;
 
         // Private fields
         Report*       _subreport;
@@ -971,6 +991,10 @@ namespace ts {
 
         // Add a new option.
         void addOption(const IOption& opt);
+
+        // Validate the content of an option, add the value,
+        // compute integer values when necessary, return false if not valid.
+        bool validateParameter(IOption& opt, const Variable<UString>& val);
 
         // Process --help and --version predefined options.
         void processHelp();

@@ -1586,6 +1586,9 @@ namespace ts {
         //! - @c \%c : Matches the next non-space character. The Unicode code point is returned.
         //! - @c \%\% : Matches a literal \%.
         //!
+        //! The allowed options, between the '\%' and the letter are, in this order:
+        //! - @c ' : For decimal integer conversions, ignore separator for groups of thousands.
+        //!
         //! @param [out] extractedCount The number of successfully extracted values.
         //! @param [out] endIndex The index in this string after the last extracted value.
         //! @param [in] fmt Format string with embedded '\%' sequences.

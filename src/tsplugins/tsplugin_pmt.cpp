@@ -229,8 +229,8 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
          u"descriptors. See also option --pds.");
 
     option(u"remove-pid", 'r', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"remove-pid",
-         u"Remove the component with the specified PID from the PMT. Several "
+    help(u"remove-pid", u"pid1[-pid2]",
+         u"Remove the component with the specified PID's from the PMT. Several "
          u"--remove-pid options may be specified to remove several components.");
 
     option(u"remove-stream-type", 0, STRING, 0, UNLIMITED_COUNT);
