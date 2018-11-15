@@ -221,8 +221,8 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"section or table.");
 
     args.option(u"pid", 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
-    args.help(u"pid",
-              u"PID filter: select packets with this PID value, "
+    args.help(u"pid", u"pid1[-pid2]",
+              u"PID filter: select packets with this PID value or range of PID values, "
               u"Several -p or --pid options may be specified. "
               u"Without -p or --pid option, all PID's are used (this can be a "
               u"dangerous option on complete transport streams since PID's not "
@@ -248,15 +248,15 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.help(u"text-output", u"A synonym for --output-file.");
 
     args.option(u"tid", 't', Args::UINT8, 0, Args::UNLIMITED_COUNT);
-    args.help(u"tid",
-              u"TID filter: select sections with this TID (table id) value. "
+    args.help(u"tid", u"tid1[-tid2]",
+              u"TID filter: select sections with this TID (table id) value or range of TID values. "
               u"Several -t or --tid options may be specified. "
               u"Without -t or --tid option, all tables are saved.");
 
     args.option(u"tid-ext", 'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
-    args.help(u"tid-ext",
+    args.help(u"tid-ext", u"ext1[-ext2]",
               u"TID extension filter: select sections with this table id "
-              u"extension value (apply to long sections only). "
+              u"extension value or range of values (apply to long sections only). "
               u"Several -e or --tid-ext options may be specified. "
               u"Without -e or --tid-ext option, all tables are saved.");
 

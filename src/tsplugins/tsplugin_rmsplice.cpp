@@ -197,8 +197,8 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
          u"of removing them. Useful to preserve bitrate.");
 
     option(u"event-id", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 31);
-    help(u"event-id",
-         u"Only remove splices associated with event ID. Several --event-id options "
+    help(u"event-id", u"id1[-id2]",
+         u"Only remove splices associated with event ID's. Several --event-id options "
          u"may be specified.");
 
     option(u"dry-run", 'n');

@@ -131,7 +131,8 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
          u"the same byte value (all 0x00 or all 0xFF for instance).");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid", u"Analyze all tables from this PID. Several -p or --pid options may be specified.");
+    help(u"pid",  u"pid1[-pid2]",
+         u"Analyze all tables from these PID's. Several -p or --pid options may be specified.");
 
     // CAS filtering options.
     _cas_args.defineOptions(*this);

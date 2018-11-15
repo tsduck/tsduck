@@ -165,8 +165,8 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
          u"in bits/second. This is a mandatory option, there is no default.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Specify a PID the content of which can be dropped when the maximum bitrate "
+    help(u"pid", u"pid1[-pid2]",
+         u"Specify PID's the content of which can be dropped when the maximum bitrate "
          u"is exceeded. Several --pid options can be specified.");
 
     option(u"threshold1", '1', UINT32);

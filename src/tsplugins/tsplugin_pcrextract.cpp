@@ -222,8 +222,8 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
          u"--opcr, --pts, --dts is specified, report them all.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Specifies a PID to analyze. By default, all PID's are analyzed. "
+    help(u"pid", u"pid1[-pid2]",
+         u"Specifies PID's to analyze. By default, all PID's are analyzed. "
          u"Several --pid options may be specified.");
 
     option(u"pts");

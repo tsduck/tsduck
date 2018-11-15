@@ -322,8 +322,8 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"while keeping the service mostly scrambled.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Scramble packets with this PID value. Several -p or --pid options may be "
+    help(u"pid", u"pid1[-pid2]",
+         u"Scramble packets with these PID values. Several -p or --pid options may be "
          u"specified. By default, scramble the specified service.");
 
     option(u"pid-ecm", 0, PIDVAL);

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1040
+VERSION 3.16-1045
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,9 @@ VERSION 3.16-1040
 
 [IMP] Improvements on existing commands and plugins:
 
+  * In all commands and plugins, when an option takes an integer value and can
+    be present several times, it is now possible to specify ranges of values
+    (e.g. "--pid 0-3" instead of "--pid 0 --pid 1 --pid 2 --pid 3").
   * Added option --pack to plugin "encap".
   * In plugin "rmsplice", immediate splice events are no longer ignored.
   * In XML descriptions of NIT, BAT and EIT, it is now possible to specify a

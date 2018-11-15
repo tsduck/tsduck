@@ -87,8 +87,8 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
          u"Fix incorrect continuity counters. By default, only display discontinuities.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Check or fix continuity counters only in packets with this PID value. "
+    help(u"pid", u"pid1[-pid2]",
+         u"Check or fix continuity counters only in packets with this PID value or range of values. "
          u"Several -p or --pid options may be specified. By default, all PID's "
          u"are checked or fixed.");
 

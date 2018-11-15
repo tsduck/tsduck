@@ -103,8 +103,8 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     _packetizer(PID_NULL, this)
 {
     option(u"etid-remove", 'e', UINT32, 0, UNLIMITED_COUNT, 0, 0x00FFFFFF);
-    help(u"etid-remove",
-         u"Remove all sections with the corresponding \"extended table id\". "
+    help(u"etid-remove", u"id1[-id2]",
+         u"Remove all sections with the corresponding \"extended table id\" values. "
          u"The value is a combination of the table id and the table id extension. "
          u"For example, the option -e 0x4A1234 removes all BAT sections (table id 0x4A) "
          u"for bouquet id 0x1234 (table id extension). "
@@ -127,8 +127,8 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
          u"an error is generated.");
 
     option(u"pid", 'p', PIDVAL, 1, UNLIMITED_COUNT);
-    help(u"pid",
-         u"Specify an input PID. More than one input PID can be specified. "
+    help(u"pid", u"pid1[-pid2]",
+         u"Specify input PID's. More than one input PID can be specified. "
          u"All sections from all input PID's are merged into the output PID. "
          u"At least one input PID must be specified. ");
 
@@ -140,7 +140,7 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
          u"section headers are never scattered over a packet boundary.");
 
     option(u"tid-remove", 't', UINT8, 0, UNLIMITED_COUNT);
-    help(u"tid-remove",
+    help(u"tid-remove", u"id1[-id2]",
          u"Remove all sections with the corresponding table id. "
          u"Several options --tid-remove can be specified.");
 }

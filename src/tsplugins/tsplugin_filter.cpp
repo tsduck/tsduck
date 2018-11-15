@@ -146,8 +146,8 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     help(u"pes", u"Select packets with clear PES headers.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"PID filter: select packets with this PID value. "
+    help(u"pid", u"pid1[-pid2]",
+         u"PID filter: select packets with these PID values. "
          u"Several -p or --pid options may be specified.");
 
     option(u"scrambling-control", 0, INTEGER, 0, 1, 0, 3);

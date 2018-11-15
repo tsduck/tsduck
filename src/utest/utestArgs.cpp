@@ -71,6 +71,7 @@ public:
     void testGatherParameters();
     void testRedirection();
     void testTristate();
+    void testRanges();
 
     CPPUNIT_TEST_SUITE(ArgsTest);
     CPPUNIT_TEST(testAccessors);
@@ -93,6 +94,7 @@ public:
     CPPUNIT_TEST(testGatherParameters);
     CPPUNIT_TEST(testRedirection);
     CPPUNIT_TEST(testTristate);
+    CPPUNIT_TEST(testRanges);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -140,7 +142,7 @@ void ArgsTest::testAccessors()
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"description", args.getDescription());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"syntax", args.getSyntax());
-    CPPUNIT_ASSERT(args.getFlags() == (ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS));
+    CPPUNIT_ASSERT_EQUAL(int(ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS), args.getFlags());
 
     args.setDescription(u"description-1");
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"description-1", args.getDescription());
@@ -152,7 +154,7 @@ void ArgsTest::testAccessors()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"shell-1", args.getShell());
 
     args.setFlags(ts::Args::NO_EXIT_ON_ERROR);
-    CPPUNIT_ASSERT(args.getFlags() == ts::Args::NO_EXIT_ON_ERROR);
+    CPPUNIT_ASSERT_EQUAL(int(ts::Args::NO_EXIT_ON_ERROR), args.getFlags());
 }
 
 // Test case: help text
@@ -215,6 +217,7 @@ void ArgsTest::testHelp()
     log.resetMessages();
     CPPUNIT_ASSERT(!args.analyze(u"test", {u"--version=short"}));
     const ts::UString version(log.getMessages());
+    utest::Out() << "ArgsTest::testHelp: version = \"" << version << "\"" << std::endl;
     const size_t dash = version.find(u'-');
     CPPUNIT_ASSERT(dash != ts::NPOS);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
@@ -273,27 +276,27 @@ void ArgsTest::testValidCommandVariableArgs()
     CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt3", u"6", u"a", u"--opt1", u"b", u"--opt9", u"val2", u"--opt3", u"0", u"--opt3", u"6"}));
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", args.appName());
-    CPPUNIT_ASSERT(args.count(u"") == 2);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), args.count(u""));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", args.value(u"", u"", 0));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", args.value(u"", u"", 1));
-    CPPUNIT_ASSERT(args.count(u"opt1") == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), args.count(u"opt1"));
     CPPUNIT_ASSERT(args.present(u"opt1"));
-    CPPUNIT_ASSERT(args.count(u"opt2") == 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt2"));
     CPPUNIT_ASSERT(!args.present(u"opt2"));
-    CPPUNIT_ASSERT(args.count(u"opt3") == 3);
+    CPPUNIT_ASSERT_EQUAL(size_t(3), args.count(u"opt3"));
     CPPUNIT_ASSERT(args.present(u"opt3"));
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 0) == 6);
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 1) == 0);
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 2) == 6);
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 3) == -1);
-    CPPUNIT_ASSERT(args.count(u"opt4") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt5") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt6") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt7") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt8") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt9") == 1);
+    CPPUNIT_ASSERT_EQUAL(6, args.intValue<int>(u"opt3", -1, 0));
+    CPPUNIT_ASSERT_EQUAL(0, args.intValue<int>(u"opt3", -1, 1));
+    CPPUNIT_ASSERT_EQUAL(6, args.intValue<int>(u"opt3", -1, 2));
+    CPPUNIT_ASSERT_EQUAL(-1, args.intValue<int>(u"opt3", -1, 3));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt4"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt5"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt6"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt7"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt8"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), args.count(u"opt9"));
     CPPUNIT_ASSERT(args.present(u"opt9"));
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt9") == 12);
+    CPPUNIT_ASSERT_EQUAL(12, args.intValue<int>(u"opt9"));
 
     ts::UString s;
     args.getValue(s, u"", u"x", 0);
@@ -312,13 +315,13 @@ void ArgsTest::testValidCommandVariableArgs()
 
     int i;
     args.getIntValue(i, u"opt3", -1, 0);
-    CPPUNIT_ASSERT(i == 6);
+    CPPUNIT_ASSERT_EQUAL(6, i);
     args.getIntValue(i, u"opt3", -1, 1);
-    CPPUNIT_ASSERT(i == 0);
+    CPPUNIT_ASSERT_EQUAL(0, i);
     args.getIntValue(i, u"opt3", -1, 2);
-    CPPUNIT_ASSERT(i == 6);
+    CPPUNIT_ASSERT_EQUAL(6, i);
     args.getIntValue(i, u"opt3", -1, 3);
-    CPPUNIT_ASSERT(i == -1);
+    CPPUNIT_ASSERT_EQUAL(-1, i);
 
     std::vector<int> vi;
     args.getIntValues(vi, u"opt3");
@@ -358,26 +361,26 @@ void ArgsTest::testValidCommandArgcArgv()
     CPPUNIT_ASSERT(args.analyze(argc, argv));
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", args.appName());
-    CPPUNIT_ASSERT(args.count(u"") == 2);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), args.count(u""));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", args.value(u"", u"", 0));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", args.value(u"", u"", 1));
-    CPPUNIT_ASSERT(args.count(u"opt1") == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), args.count(u"opt1"));
     CPPUNIT_ASSERT(args.present(u"opt1"));
-    CPPUNIT_ASSERT(args.count(u"opt2") == 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt2"));
     CPPUNIT_ASSERT(!args.present(u"opt2"));
-    CPPUNIT_ASSERT(args.count(u"opt3") == 2);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), args.count(u"opt3"));
     CPPUNIT_ASSERT(args.present(u"opt3"));
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 0) == 6);
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 1) == 0);
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 2) == -1);
-    CPPUNIT_ASSERT(args.count(u"opt4") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt5") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt6") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt7") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt8") == 0);
-    CPPUNIT_ASSERT(args.count(u"opt9") == 1);
+    CPPUNIT_ASSERT_EQUAL(6, args.intValue<int>(u"opt3", -1, 0));
+    CPPUNIT_ASSERT_EQUAL(0, args.intValue<int>(u"opt3", -1, 1));
+    CPPUNIT_ASSERT_EQUAL(-1, args.intValue<int>(u"opt3", -1, 2));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt4"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt5"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt6"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt7"));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), args.count(u"opt8"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), args.count(u"opt9"));
     CPPUNIT_ASSERT(args.present(u"opt9"));
-    CPPUNIT_ASSERT(args.intValue<int>(u"opt9") == 12);
+    CPPUNIT_ASSERT_EQUAL(12, args.intValue<int>(u"opt9"));
 
     ts::UString s;
     args.getValue(s, u"", u"x", 0);
@@ -396,11 +399,11 @@ void ArgsTest::testValidCommandArgcArgv()
 
     int i;
     args.getIntValue(i, u"opt3", -1, 0);
-    CPPUNIT_ASSERT(i == 6);
+    CPPUNIT_ASSERT_EQUAL(6, i);
     args.getIntValue(i, u"opt3", -1, 1);
-    CPPUNIT_ASSERT(i == 0);
+    CPPUNIT_ASSERT_EQUAL(0, i);
     args.getIntValue(i, u"opt3", -1, 2);
-    CPPUNIT_ASSERT(i == -1);
+    CPPUNIT_ASSERT_EQUAL(-1, i);
 
     std::vector<int> vi;
     args.getIntValues(vi, u"opt3");
@@ -609,13 +612,13 @@ void ArgsTest::testBitMask()
     TestArgs args(&log);
 
     CPPUNIT_ASSERT(args.analyze(u"test", {u"a"}));
-    CPPUNIT_ASSERT(args.bitMaskValue<int>(u"mask", 0x10) == 0x10);
+    CPPUNIT_ASSERT_EQUAL(0x10, args.bitMaskValue<int>(u"mask", 0x10));
 
     CPPUNIT_ASSERT(args.analyze(u"test", {u"--mask", u"bit1", u"a"}));
-    CPPUNIT_ASSERT(args.bitMaskValue<int>(u"mask", 0x10) == 0x01);
+    CPPUNIT_ASSERT_EQUAL(0x01, args.bitMaskValue<int>(u"mask", 0x10));
 
     CPPUNIT_ASSERT(args.analyze(u"test", {u"--mask", u"bit2", u"--mask", u"bit3", u"a"}));
-    CPPUNIT_ASSERT(args.bitMaskValue<int>(u"mask", 0x10) == 0x06);
+    CPPUNIT_ASSERT_EQUAL(0x06, args.bitMaskValue<int>(u"mask", 0x10));
 }
 
 // Test case: "gather parameters" option
@@ -702,4 +705,48 @@ void ArgsTest::testTristate()
     CPPUNIT_ASSERT_EQUAL(ts::TRUE,  args.tristateValue(u"opt6"));
     CPPUNIT_ASSERT_EQUAL(ts::MAYBE, args.tristateValue(u"opt7"));
     CPPUNIT_ASSERT_EQUAL(ts::MAYBE, args.tristateValue(u"opt8"));
+}
+
+// Test case: tristate parameters.
+void ArgsTest::testRanges()
+{
+    ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR);
+    args.option(u"opt1", 0, ts::Args::UINT8, 0, ts::Args::UNLIMITED_COUNT);
+    args.option(u"opt2", 0, ts::Args::UINT8, 0, 3, 0, 100);
+    args.option(u"opt3", 0, ts::Args::INTEGER, 0, ts::Args::UNLIMITED_COUNT, 0, ts::Args::UNLIMITED_VALUE, true);
+
+    ts::ReportBuffer<> log;
+    args.redirectReport(&log);
+
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"0", u"--opt1", u"1,0-0x00C", u"--opt1", u"4,7"}));
+    CPPUNIT_ASSERT(args.present(u"opt1"));
+    CPPUNIT_ASSERT(!args.present(u"opt2"));
+    CPPUNIT_ASSERT(!args.present(u"opt3"));
+    CPPUNIT_ASSERT_EQUAL(size_t(5), args.count(u"opt1"));
+    CPPUNIT_ASSERT_EQUAL(0,  args.intValue<int>(u"opt1", -1, 0));
+    CPPUNIT_ASSERT_EQUAL(10, args.intValue<int>(u"opt1", -1, 1));
+    CPPUNIT_ASSERT_EQUAL(11, args.intValue<int>(u"opt1", -1, 2));
+    CPPUNIT_ASSERT_EQUAL(12, args.intValue<int>(u"opt1", -1, 3));
+    CPPUNIT_ASSERT_EQUAL(47, args.intValue<int>(u"opt1", -1, 4));
+    CPPUNIT_ASSERT_EQUAL(-1, args.intValue<int>(u"opt1", -1, 5));
+
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt2", u"1", u"--opt2", u"10-12"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: too many option --opt2, 3 maximum", log.getMessages());
+
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt2", u"1", u"--opt2", u"10-11"}));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), args.count(u"opt2"));
+    CPPUNIT_ASSERT_EQUAL(1,  args.intValue<int>(u"opt2", -1, 0));
+    CPPUNIT_ASSERT_EQUAL(10, args.intValue<int>(u"opt2", -1, 1));
+    CPPUNIT_ASSERT_EQUAL(11, args.intValue<int>(u"opt2", -1, 2));
+    CPPUNIT_ASSERT_EQUAL(-1, args.intValue<int>(u"opt2", -1, 3));
+
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt3=100,000", u"--opt3", u"--opt3=9000-9,003"}));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), args.count(u"opt3"));
+    CPPUNIT_ASSERT_EQUAL(100000, args.intValue<int>(u"opt3", -1, 0));
+    CPPUNIT_ASSERT_EQUAL(-1,   args.intValue<int>(u"opt3", -1, 1));
+    CPPUNIT_ASSERT_EQUAL(9000, args.intValue<int>(u"opt3", -1, 2));
+    CPPUNIT_ASSERT_EQUAL(9001, args.intValue<int>(u"opt3", -1, 3));
+    CPPUNIT_ASSERT_EQUAL(9002, args.intValue<int>(u"opt3", -1, 4));
+    CPPUNIT_ASSERT_EQUAL(9003, args.intValue<int>(u"opt3", -1, 5));
+    CPPUNIT_ASSERT_EQUAL(-1,   args.intValue<int>(u"opt3", -1, 6));
 }
