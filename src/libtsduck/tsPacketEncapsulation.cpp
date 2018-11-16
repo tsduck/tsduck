@@ -169,6 +169,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
     PID pid = pkt.getPID();
     bool status = true;  // final return value.
 
+    if (_lateIndex < 1) _lateIndex = 1; // Resolves incorrect optimization in the initialization
     // Keep track of continuity counter per PID, detect discontinuity.
     // Do not check discontinuity on the stuffing PID, there is none.
     if (pid != PID_NULL) {
