@@ -169,7 +169,6 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
     PID pid = pkt.getPID();
     bool status = true;  // final return value.
 
-    if (_lateIndex < 1) _lateIndex = 1; // Resolves incorrect optimization in the initialization
     // Keep track of continuity counter per PID, detect discontinuity.
     // Do not check discontinuity on the stuffing PID, there is none.
     if (pid != PID_NULL) {
@@ -235,6 +234,8 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
 
     // Replace input or null packets.
     if (pid == PID_NULL && !_latePackets.empty()) {
+
+        if (_lateIndex <= 1) _lateIndex = 1; // When starting a new set, put the pointer to the first valid byte.
 
         // Do we need to add a PCR in this packet?
         const bool addPCR = _insertPCR && _bitrate != 0 && _pcrLastPacket != INVALID_PACKET_COUNTER && _pcrLastValue != INVALID_PCR;
@@ -356,6 +357,9 @@ void ts::PacketEncapsulation::fillPacket(ts::TSPacket& pkt, size_t& pktIndex)
     // If the first queued packet if fully encapsulated, remove it.
     if (_lateIndex >= PKT_SIZE) {
         _latePackets.pop_front();
-        _lateIndex = 1;  // skip 0x47 in next packet
+        if (!_latePackets.empty())
+            _lateIndex = 1;  // skip 0x47 in next packet
+        else
+            _lateIndex = 0;  // Fully empty (not really needed, but safe to add)
     }
 }
