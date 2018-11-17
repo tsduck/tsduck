@@ -222,7 +222,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
 
     args.option(u"pid", 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
     args.help(u"pid", u"pid1[-pid2]",
-              u"PID filter: select packets with this PID value or range of PID values, "
+              u"PID filter: select packets with this PID value or range of PID values. "
               u"Several -p or --pid options may be specified. "
               u"Without -p or --pid option, all PID's are used (this can be a "
               u"dangerous option on complete transport streams since PID's not "

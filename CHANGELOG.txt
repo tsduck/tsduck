@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1045
+VERSION 3.16-1047
 
 [NEW] New commands and plugins:
 
@@ -14,6 +14,7 @@ VERSION 3.16-1045
     be present several times, it is now possible to specify ranges of values
     (e.g. "--pid 0-3" instead of "--pid 0 --pid 1 --pid 2 --pid 3").
   * Added option --pack to plugin "encap".
+  * Added options --log, --log-size, --no-headers and --pid to "tsdump".
   * In plugin "rmsplice", immediate splice events are no longer ignored.
   * In XML descriptions of NIT, BAT and EIT, it is now possible to specify a
     preferred section index for each TS (NIT, BAT) or event (EIT).

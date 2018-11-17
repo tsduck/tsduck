@@ -378,7 +378,7 @@ std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
 // may also be used. Indent indicates the base indentation of lines.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, int indent) const
+std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t indent, size_t max_size) const
 {
     const std::string margin(indent, ' ');
 
@@ -397,6 +397,24 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, int inde
         flags = (flags & 0x0000FFFF) | DUMP_RAW;
     }
 
+    // Display full packet or payload only.
+
+    const size_t header_size = getHeaderSize();
+    const size_t payload_size = getPayloadSize();
+    const uint8_t* const display_data = (flags & DUMP_PAYLOAD) ? b + header_size : b;
+    const size_t display_size = std::min((flags & DUMP_PAYLOAD) ? payload_size : PKT_SIZE, max_size);
+
+    // Handle single line mode.
+
+    if (flags & UString::SINGLE_LINE) {
+        strm << margin;
+        if (flags & DUMP_TS_HEADER) {
+            strm << UString::Format(u"PID: 0x%X, PUSI: %d, ", {getPID(), getPUSI()});
+        }
+        strm << UString::Dump(display_data, display_size, flags & 0x0000FFFF) << std::endl;
+        return strm;
+    }
+
     // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
     // header if the 'payload unit start' is set in the TS header and the
     // payload starts with 0x000001.
@@ -408,9 +426,6 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, int inde
     //  0x00 : pointer field -> a section starts at next byte
     //  0x00 : table id -> a PAT
     //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
-
-    size_t header_size = getHeaderSize();
-    size_t payload_size = getPayloadSize();
 
     bool has_pes_header = hasValidSync() &&
                           getPUSI() &&
@@ -465,22 +480,14 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, int inde
     // Display full packet or payload in hexa
 
     if (flags & (DUMP_RAW | DUMP_PAYLOAD)) {
-        const uint8_t* data;
-        size_t size;
         if (flags & DUMP_RAW) {
-            // Full packet
-            data = b;
-            size = PKT_SIZE;
             strm << margin << "---- Full TS Packet Content ----" << std::endl;
         }
         else {
-            // Payload only
-            data = b + header_size;
-            size = payload_size;
-            strm << margin << "---- TS Packet Payload (" << size << " bytes) ----" << std::endl;
+            strm << margin << "---- TS Packet Payload (" << payload_size << " bytes) ----" << std::endl;
         }
         // The 16 LSB contains flags for Hexa.
-        strm << UString::Dump(data, size, flags & 0x0000FFFF, indent);
+        strm << UString::Dump(display_data, display_size, flags & 0x0000FFFF, indent);
     }
 
     return strm;

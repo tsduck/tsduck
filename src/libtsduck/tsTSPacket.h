@@ -500,9 +500,10 @@ namespace ts {
         //! @param [in] flags Indicate which part must be dumped. If DUMP_RAW or
         //! DUMP_PAYLOAD is specified, flags from ts::UString::HexaFlags may also be used.
         //! @param [in] indent Indicates the base indentation of lines.
+        //! @param [in] size Maximum size to display in the packet.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& display(std::ostream& strm, uint32_t flags = 0, int indent = 0) const;
+        std::ostream& display(std::ostream& strm, uint32_t flags = 0, size_t indent = 0, size_t size = PKT_SIZE) const;
 
         //!
         //! Init packet from a memory area.
