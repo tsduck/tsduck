@@ -156,6 +156,11 @@ Options::Options(int argc, char *argv[]) :
         dump_flags |= ts::TSPacket::DUMP_PAYLOAD;
     }
 
+    // Filter TS-specific options when used with --raw-file.
+    if (raw_file && (log || present(u"max-packets") || present(u"pid") || present(u"headers-only") || present(u"no-headers") || present(u"payload"))) {
+        error(u"--raw-file is incompatible with TS-specific options --pid --log --max-packets --headers-only --no-header --payload");
+    }
+
     exitOnError();
 }
 
