@@ -329,15 +329,16 @@ bool ts::InjectPlugin::reloadFiles()
 
     // Load sections from input files
     bool success = true;
-    SectionFile file;
     uint64_t bits_per_1000s = 0;  // Total bits in 1000 seconds.
+    SectionFile file;
+    file.setCRCValidation(_crc_op);
 
     for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
         if (_poll_files && !FileExists(it->file_name)) {
             // With --poll-files, we ignore non-existent files.
             it->retry_count = 0;  // no longer needed to retry
         }
-        else if (!file.load(it->file_name, *tsp, _inType, _crc_op)) {
+        else if (!file.load(it->file_name, *tsp, _inType)) {
             success = false;
             if (it->retry_count > 0) {
                 it->retry_count--;

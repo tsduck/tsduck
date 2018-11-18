@@ -161,6 +161,7 @@ int MainCode(int argc, char *argv[])
     ts::OutputRedirector output(opt.outfile, opt);
     ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
     ts::SectionFile file;
+    file.setCRCValidation(opt.crc_op);
 
     // Load sections
 
@@ -171,7 +172,7 @@ int MainCode(int argc, char *argv[])
             SetBinaryModeStdin(opt);
             opt.inType = ts::SectionFile::BINARY;
         }
-        if (!file.load(std::cin, opt, opt.inType, opt.crc_op)) {
+        if (!file.load(std::cin, opt, opt.inType)) {
             return EXIT_FAILURE;
         }
         pzer.addSections(file.sections());
@@ -181,7 +182,7 @@ int MainCode(int argc, char *argv[])
     }
     else {
         for (ts::FileNameRateList::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
-            if (!file.load(it->file_name, opt, opt.inType, opt.crc_op)) {
+            if (!file.load(it->file_name, opt, opt.inType)) {
                 return EXIT_FAILURE;
             }
             pzer.addSections(file.sections(), it->repetition);

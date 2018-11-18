@@ -1218,6 +1218,19 @@ namespace ts {
     };
 
     //---------------------------------------------------------------------
+    //! Running status values (in RST, EIT, etc.)
+    //---------------------------------------------------------------------
+
+    enum : uint8_t {
+        RS_UNDEFINED   = 0x00, //!< Undefined
+        RS_NOT_RUNNING = 0x01, //!< Not running
+        RS_STARTING    = 0x02, //!< Starts in a few seconds (e.g. for video recording)
+        RS_PAUSING     = 0x03, //!< Pausing
+        RS_RUNNING     = 0x04, //!< Running
+        RS_OFF_AIR     = 0x05, //!< Service off-air
+    };
+
+    //---------------------------------------------------------------------
     //! Scrambling mode values (in scrambling_descriptor)
     //---------------------------------------------------------------------
 

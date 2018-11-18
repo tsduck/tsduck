@@ -74,7 +74,7 @@ namespace ts {
         virtual void feedPacket(const TSPacket& pkt) override;
 
         //!
-        //! Pack sections and in all incomplete tables and notify these rebuilt tables.
+        //! Pack sections in all incomplete tables and notify these rebuilt tables.
         //!
         //! All incomplete tables which have not yet been notified are packed.
         //! This means that missing sections are ignored and the tables are
@@ -83,11 +83,29 @@ namespace ts {
         //!
         //! This may create inconsistent tables since sections are missing.
         //! But this may me useful at the end of a table collecting sessions
-        //! to grab incomplete EIT's.
+        //! to grab incomplete tables.
         //!
         //! @see BinaryTable::packSections()
         //!
-        void packAndFlushSections();
+        void packAndFlushSections()
+        {
+            fixAndFlush(true, false);
+        }
+
+        //!
+        //! Add missing sections in all incomplete EIT's and notify these rebuilt tables.
+        //!
+        //! All DVB Event Information Tables (EIT) which have not yet been notified are
+        //! completed. Missing sections are added with sections without events.
+        //! Then, the table handler is invoked for each table.
+        //!
+        //! This is typically useful at the end of processing when segmented EIT's are
+        //! collected but no empty section was collected at end of segments.
+        //!
+        void fillAndFlushEITs()
+        {
+            fixAndFlush(false, true);
+        }
 
         //!
         //! Replace the table handler.
@@ -209,8 +227,9 @@ namespace ts {
 
             // Notify the application if the table is complete.
             // Do not notify twice the same table.
-            // If force is true, build a packed version of the table and report it.
-            void notify(SectionDemux& demux, bool force);
+            // If pack is true, build a packed version of the table and report it.
+            // If fill_eit is true, add missing sections in EIT.
+            void notify(SectionDemux& demux, bool pack, bool fill_eit);
         };
 
         // This internal structure contains the analysis context for one PID.
@@ -228,6 +247,12 @@ namespace ts {
             // Called when packet synchronization is lost on the pid.
             void syncLost();
         };
+
+        // Notify the application if the table is complete.
+        // Do not notify twice the same table.
+        // If pack is true, build a packed version of the table and report it.
+        // If fill_eit is true, add missing sections in EIT.
+        void fixAndFlush(bool pack, bool fill_eit);
 
         // Private members:
         TableHandlerInterface*   _table_handler;
