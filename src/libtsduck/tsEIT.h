@@ -46,6 +46,23 @@ namespace ts {
     {
     public:
         //!
+        //! Number of logical segments per EIT schedule.
+        //! EIT schedule are logically divided into 32 segments of up to 8 sections each.
+        //!
+        static constexpr size_t SEGMENTS_PER_TABLE = 32;
+        //!
+        //! Number of sections per logical segment in EIT schedule.
+        //! EIT schedule are logically divided into 32 segments of up to 8 sections each.
+        //!
+        static constexpr size_t SECTIONS_PER_SEGMENT = 8;
+        //!
+        //! Number of millisecond per logical segments in EIT schedule.
+        //! EIT schedule are logically divided into 32 segments.
+        //! Each segment contains the events for a given duration.
+        //!
+        static constexpr MilliSecond SEGMENT_DURATION = 3 * MilliSecPerHour;
+
+        //!
         //! Description of an event.
         //!
         //! The field @c preferred_section indicates in which section an event should be preferably serialized.
@@ -58,11 +75,11 @@ namespace ts {
         {
         public:
             // Public members
-            Time    start_time;         //!< Event start_time.
-            Second  duration;           //!< Event duration in seconds.
-            uint8_t running_status;     //!< Running status code.
-            bool    CA_controlled;      //!< Controlled by a CA_system.
-            int     preferred_section;  //!< Preferred section index for serialization (-1 means no preference).
+            uint16_t event_id;           //!< Event id.
+            Time     start_time;         //!< Event start_time.
+            Second   duration;           //!< Event duration in seconds.
+            uint8_t  running_status;     //!< Running status code.
+            bool     CA_controlled;      //!< Controlled by a CA_system.
 
             //!
             //! Constructor.
@@ -77,17 +94,16 @@ namespace ts {
         };
 
         //!
-        //! List of events, indexed by event_id.
+        //! List of events.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t,Event> EventMap;
+        typedef EntryWithDescriptorsList<Event> EventList;
 
         // EIT public members:
-        uint16_t service_id;     //!< Service_id.
-        uint16_t ts_id;          //!< Transport stream_id.
-        uint16_t onetw_id;       //!< Original network id.
-        uint8_t  segment_last;   //!< Segment last section number.
-        TID      last_table_id;  //!< Last table id.
-        EventMap events;         //!< Map of event: key=event_id, value=event_description.
+        uint16_t  service_id;     //!< Service_id.
+        uint16_t  ts_id;          //!< Transport stream_id.
+        uint16_t  onetw_id;       //!< Original network id.
+        TID       last_table_id;  //!< Last table id.
+        EventList events;         //!< List of events.
 
         //!
         //! Compute an EIT table id.
@@ -153,22 +169,21 @@ namespace ts {
         }
 
         //!
-        //! Clear preferred section in all events.
-        //!
-        void clearPreferredSections();
-
-        //!
         //! Static method to fix the segmentation of a binary EIT.
         //! The following transformations are made on EIT tables:
+        //! - Missing sections are created without events.
+        //! And if @a fix_existing is true:
         //! - The @c segment_last_section_number field is modified in all sections
-        //!   to the last section number of the table.
+        //!   to the last non-empty section number of the segment.
         //! - The @c last_table_id field is modified in all sections. For EIT p/f,
         //!   it is set to the current table id. For EIT schedule, it is set to the
         //!   maximum of the current @c last_table_id value and the current table id.
         //! 
         //! @param [in,out] table The table to fix. Ignored if it is not valid or not an EIT.
+        //! @param [in] fix_existing  If false, only add missing sections. If true, also
+        //! fix content of existing sections.
         //!
-        static void FixSegmentation(BinaryTable& table);
+        static void FixSegmentation(BinaryTable& table, bool fix_existing);
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
@@ -178,15 +193,13 @@ namespace ts {
         DeclareDisplaySection();
 
     private:
-        typedef std::set<uint16_t> EventIdSet;
+        constexpr static size_t EIT_HEADER_SIZE        = LONG_SECTION_HEADER_SIZE;
+        constexpr static size_t EIT_PAYLOAD_FIXED_SIZE = 6;   // Payload size before event loop.
+        constexpr static size_t EIT_EVENT_FIXED_SIZE   = 12;  // Event size before descriptor loop.
 
         // Add a new section to a table being serialized
         // Section number is incremented. Data and remain are reinitialized.
         void addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const;
-
-        // Select an event for serialization in current section.
-        // If found, set id, remove the id from the set and return true. Otherwise, return false.
-        bool getNextEvent(EventIdSet& idset, uint16_t& id, int section_number) const;
 
         // Get the table id from XML element.
         bool getTableId(const xml::Element*);

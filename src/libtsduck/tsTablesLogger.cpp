@@ -135,6 +135,9 @@ void ts::TablesLogger::close()
         if (_opt.pack_and_flush) {
             _demux.packAndFlushSections();
         }
+        if (_opt.fill_eit) {
+            _demux.fillAndFlushEITs();
+        }
 
         // Close files and documents.
         closeXML();

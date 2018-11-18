@@ -86,6 +86,7 @@ namespace ts {
         bool     no_duplicate;      //!< Exclude duplicated short sections on a PID.
         bool     pack_all_sections; //!< Pack all sections as if they were one table.
         bool     pack_and_flush;    //!< Pack and flush incomplete tables before exiting.
+        bool     fill_eit;          //!< Add missing empty sections to incomplete EIT's before exiting.
         std::set<uint8_t>  tid;     //!< TID values to filter.
         std::set<uint16_t> tidext;  //!< TID-ext values to filter.
         bool     use_current;       //!< Use tables with "current" flag.
