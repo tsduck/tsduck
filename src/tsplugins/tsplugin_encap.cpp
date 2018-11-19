@@ -60,6 +60,7 @@ namespace ts {
         PID                 _pidOutput;     // Output PID.
         PID                 _pidPCR;        // PCR reference PID.
         PIDSet              _pidsInput;     // Input PID's.
+        uint8_t             _modePES;       // Enable PES mode and select type.
         PacketEncapsulation _encap;         // Encapsulation engine.
 
         // Inaccessible operations
@@ -85,6 +86,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
     _pidOutput(PID_NULL),
     _pidPCR(PID_NULL),
     _pidsInput(),
+    _modePES(0),
     _encap()
 {
     option(u"ignore-errors", 'i');
@@ -124,6 +126,12 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Specify an input PID or range of PID's to encapsulate. "
          u"Several --pid options can be specified. "
          u"The null PID 0x1FFF cannot be encapsulated.");
+
+    option(u"pes-mode", 0, INTEGER, 0, 1, 0, 2);
+    help(u"pes-mode", u"mode",
+         u"Enable PES mode encapsulation. "
+         u"Modes available are: "
+         u"0=disabled; 1=fixed; 2=variable.");
 }
 
 
@@ -138,6 +146,7 @@ bool ts::EncapPlugin::getOptions()
     _maxBuffered = intValue<size_t>(u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
     _pidOutput = intValue<PID>(u"output-pid", PID_NULL);
     _pidPCR = intValue<PID>(u"pcr-pid", PID_NULL);
+    _modePES = intValue<uint8_t>(u"pes-mode", 0);
     getIntValues(_pidsInput, u"pid");
 
     return true;
@@ -152,6 +161,7 @@ bool ts::EncapPlugin::start()
 {
     _encap.reset(_pidOutput, _pidsInput, _pidPCR);
     _encap.setPacking(_pack);
+    _encap.setPES(_modePES);
     _encap.setMaxBufferedPackets(_maxBuffered);
     return true;
 }
