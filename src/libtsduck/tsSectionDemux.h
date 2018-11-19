@@ -65,11 +65,6 @@ namespace ts {
                      SectionHandlerInterface* section_handler = nullptr,
                      const PIDSet& pid_filter = NoPID);
 
-        //!
-        //! Destructor.
-        //!
-        virtual ~SectionDemux() override;
-
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;
 

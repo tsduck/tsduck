@@ -24,6 +24,8 @@ VERSION 3.16-1049
 [BUG] Bug fixes:
 
   * In plugin "http", the option --receive-timeout was ignored.
+  * In "tsanalyze" and plugin "analyze", section analysis was missing on some
+    PID's (including EIT's).
 
 -------------------------------------------------------------------------------
 

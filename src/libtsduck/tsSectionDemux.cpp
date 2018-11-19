@@ -162,7 +162,7 @@ void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool pack, bool 
 
         // Add missing sections in EIT (if the table is an EIT).
         if (fill_eit) {
-            EIT::FixSegmentation(table, false);
+            EIT::Fix(table, EIT::ADD_MISSING);
         }
 
         // Invoke the table handler.
@@ -209,10 +209,6 @@ ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
     _status(),
     _get_current(true),
     _get_next(false)
-{
-}
-
-ts::SectionDemux::~SectionDemux ()
 {
 }
 
@@ -265,7 +261,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     // synchronization on this PID (usually, PID's carrying sections
     // are not scrambled).
 
-    if (pkt.getScrambling ()) {
+    if (pkt.getScrambling()) {
         _status.scrambled++;
         pc.syncLost ();
         return;
@@ -450,7 +446,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
 
-            ETIDContext& tc (pc.tids[etid]);
+            ETIDContext& tc(pc.tids[etid]);
 
             // If this is a new version of the table, reset the TID context.
             // Note that short sections do not have versions, so the version

@@ -169,21 +169,20 @@ namespace ts {
         }
 
         //!
-        //! Static method to fix the segmentation of a binary EIT.
-        //! The following transformations are made on EIT tables:
-        //! - Missing sections are created without events.
-        //! And if @a fix_existing is true:
-        //! - The @c segment_last_section_number field is modified in all sections
-        //!   to the last non-empty section number of the segment.
-        //! - The @c last_table_id field is modified in all sections. For EIT p/f,
-        //!   it is set to the current table id. For EIT schedule, it is set to the
-        //!   maximum of the current @c last_table_id value and the current table id.
-        //! 
-        //! @param [in,out] table The table to fix. Ignored if it is not valid or not an EIT.
-        //! @param [in] fix_existing  If false, only add missing sections. If true, also
-        //! fix content of existing sections.
+        //! EIT fixing modes as used by Fix().
         //!
-        static void FixSegmentation(BinaryTable& table, bool fix_existing);
+        enum FixMode {
+            FILL_SEGMENTS,  //!< Add empty sections at end of segments, after @e segment_last_section_number.
+            ADD_MISSING,    //!< Add empty sections for all missing sections, not only end of segment.
+            FIX_EXISTING,   //!< Add empty sections and fix @e segment_last_section_number and @e last_table_id in all existing sections.
+        };
+
+        //!
+        //! Static method to fix the segmentation of a binary EIT.
+        //! @param [in,out] table The table to fix. Ignored if it is not valid or not an EIT.
+        //! @param [in] mode The type of fix to apply.
+        //!
+        static void Fix(BinaryTable& table, FixMode mode);
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
