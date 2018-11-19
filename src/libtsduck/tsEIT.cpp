@@ -353,7 +353,7 @@ void ts::EIT::serialize(BinaryTable& table, const DVBCharset* charset) const
     }
 
     // Finally, fix the segmentation values in the serialized binary table.
-    FixSegmentation(table, true);
+    Fix(table, FIX_EXISTING);
 }
 
 
@@ -386,103 +386,105 @@ void ts::EIT::addSection(BinaryTable& table, int& section_number, uint8_t* paylo
 // Static method to fix the segmentation of a binary EIT.
 //----------------------------------------------------------------------------
 
-void ts::EIT::FixSegmentation(BinaryTable& table, bool fix_existing)
+void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 {
     const TID tid = table.tableId();
 
     // Filter non-EIT tables.
-    if (tid < TID_EIT_MIN || tid > TID_EIT_MAX) {
+    if (tid < TID_EIT_MIN || tid > TID_EIT_MAX || table.sectionCount() == 0) {
         return;
     }
 
     // Common EIT fields in all sections.
     const bool is_schedule = tid >= TID_EIT_S_ACT_MIN;
     const bool is_actual = tid <= TID_EIT_S_ACT_MAX;
+    const uint8_t last_section = uint8_t(table.sectionCount() - 1);
     bool is_private = true;
     bool is_current = true;
+
+    // Last table id: same as table id for EIT p/f, max 0x5F or 0x6F for EIT schedule.
     TID last_table_id = tid;
     const TID max_table_id = is_schedule ? TID(is_actual ? TID_EIT_S_ACT_MAX : TID_EIT_S_OTH_MAX) : tid;
 
     // Payload of an empty section (without event).
-    uint8_t payload[EIT_PAYLOAD_FIXED_SIZE];
-    TS_ZERO(payload);
+    // The field segment_last_section_number will be updated segment by segment.
+    uint8_t empty_payload[EIT_PAYLOAD_FIXED_SIZE];
+    TS_ZERO(empty_payload);
+    bool got_empty_payload = false;
 
-    // Search meaningful content for this empty payload and other parameters in the first valid section.
+    // Array of segment_last_section_number value by segment, with their default values.
+    uint8_t segment_last_section_number[SEGMENTS_PER_TABLE];
+    if (is_schedule) {
+        // EIT schedule: default is first section of each segment.
+        for (uint8_t i = 0; i < SEGMENTS_PER_TABLE; ++i) {
+            segment_last_section_number[i] = i * SECTIONS_PER_SEGMENT;
+        }
+    }
+    else {
+        // EIT p/f: no segment, always use last section of table.
+        ::memset(segment_last_section_number, last_section, SEGMENTS_PER_TABLE);
+    }
+
+    // Search meaningful content for empty payload and other parameters.
     for (size_t si = 0; si < table.sectionCount(); si++) {
         const SectionPtr& sec(table.sectionAt(si));
         if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
-            ::memcpy(payload, sec->payload(), EIT_PAYLOAD_FIXED_SIZE);
-            is_private = sec->isPrivateSection();
-            is_current = sec->isCurrent();
-            if (is_schedule) {
-                last_table_id = std::min(max_table_id, std::max(payload[5], tid));
+            // Get a copy of a valid empty payload from the first valid section.
+            if (!got_empty_payload) {
+                ::memcpy(empty_payload, sec->payload(), EIT_PAYLOAD_FIXED_SIZE);
+                got_empty_payload = true;
+                is_private = sec->isPrivateSection();
+                is_current = sec->isCurrent();
             }
-            break;
+            // Get common section fields for EIT schedule.
+            if (is_schedule) {
+                last_table_id = std::min(max_table_id, std::max(sec->payload()[5], last_table_id));
+                // Update known last section in segment.
+                const size_t seg = si / SECTIONS_PER_SEGMENT;
+                const uint8_t max_section = std::min(last_section, uint8_t((seg + 1) * SECTIONS_PER_SEGMENT - 1));
+                assert(seg < SEGMENTS_PER_TABLE);
+                segment_last_section_number[seg] = std::min(max_section, std::max(segment_last_section_number[seg], sec->payload()[4]));
+            }
         }
     }
 
-    // Add missing empty sections if the table is not complete.
-    if (!table.isValid()) {
-        for (size_t si = 0; si < table.sectionCount(); si++) {
-            if (table.sectionAt(si).isNull()) {
+    // Complete empty payload.
+    empty_payload[5] = last_table_id;
+
+    // Now add or fix sections.
+    for (size_t si = 0; si < table.sectionCount(); si++) {
+
+        // Section pointer.
+        const SectionPtr& sec(table.sectionAt(si));
+        // Segment number of this section:
+        const size_t seg = si / SECTIONS_PER_SEGMENT;
+        // Identified last section in this segment:
+        const uint8_t seg_last = segment_last_section_number[seg];
+
+        // Process non-existent section.
+        if (sec.isNull()) {
+            // Create an empty section if required.
+            if (mode > FILL_SEGMENTS || si > seg_last) {
+                empty_payload[4] = seg_last;
                 table.addSection(new Section(tid,
                                              is_private,
                                              table.tableIdExtension(),
                                              table.version(),
                                              is_current,
-                                             uint8_t(si),// section_number
-                                             uint8_t(table.sectionCount() - 1), // last_section_number
-                                             payload,
+                                             uint8_t(si),  // section_number
+                                             last_section, // last_section_number
+                                             empty_payload,
                                              EIT_PAYLOAD_FIXED_SIZE));
 
             }
         }
-    }
-
-    // Filter invalid tables after adding missing sections.
-    // Also stop here if there is no need to fix existing sections.
-    if (!table.isValid() || !fix_existing) {
-        return;
-    }
-
-    // Patch all sections: update last section in segment and last table id.
-    if (is_schedule) {
-        // For EIT schedule, loop on segments rather than sections.
-        for (size_t seg_base = 0; seg_base < table.sectionCount(); seg_base += SECTIONS_PER_SEGMENT) {
-            // Find the last non-empty section in the segment.
-            uint8_t seg_last = uint8_t(seg_base);
-            for (size_t si = seg_base + 1; si < seg_base + SECTIONS_PER_SEGMENT && si < table.sectionCount(); ++si) {
-                const SectionPtr& sec(table.sectionAt(si));
-                if (!sec.isNull() && sec->isValid() && sec->payloadSize() > EIT_PAYLOAD_FIXED_SIZE) {
-                    seg_last = uint8_t(si);
-                }
-            }
-            // Then, patch all sections in the segment.
-            for (size_t si = seg_base; si < seg_base + SECTIONS_PER_SEGMENT && si < table.sectionCount(); ++si) {
-                const SectionPtr& sec(table.sectionAt(si));
-                if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
-                    uint8_t* const pl = const_cast<uint8_t*>(sec->payload());
-                    if (pl[4] != seg_last || pl[5] != last_table_id) {
-                        pl[4] = seg_last;
-                        pl[5] = last_table_id;
-                        sec->recomputeCRC();
-                    }
-                }
-            }
-        }
-    }
-    else {
-        // For EIT present/following, loop on sections (typically one or two only).
-        const uint8_t last_section = uint8_t(table.sectionCount() - 1);
-        for (size_t si = 0; si < table.sectionCount(); ++si) {
-            const SectionPtr& sec(table.sectionAt(si));
-            if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
-                uint8_t* const pl = const_cast<uint8_t*>(sec->payload());
-                if (pl[4] != last_section || pl[5] != last_table_id) {
-                    pl[4] = last_section;
-                    pl[5] = last_table_id;
-                    sec->recomputeCRC();
-                }
+        else if (mode == FIX_EXISTING && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
+            // Patch section: update last section in segment and last table id.
+            uint8_t* const pl = const_cast<uint8_t*>(sec->payload());
+            if (pl[4] != seg_last || pl[5] != last_table_id) {
+                pl[4] = seg_last;
+                pl[5] = last_table_id;
+                sec->recomputeCRC();
             }
         }
     }
