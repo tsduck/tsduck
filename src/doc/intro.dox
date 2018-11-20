@@ -15,6 +15,10 @@ as well as specialized classes for MPEG/DVB transport streams. This library
 can be used as a general-purpose C++ library for third-party applications,
 outside the TSDuck tools and plugins.
 
+The diagram below illustrates the TSDuck software architecture.
+
+@image html tsduck-soft-arch.png "TSDuck software architecture"
+
 This set of documentation is a reference for the TSDuck library. It can be
 used either by TSDuck maintainers and developers of third-party applications.
 

@@ -16,6 +16,10 @@ h3 {
 a {
     font-weight: bold;
 }
+.image {
+    text-align: left;
+    margin-left: 50px;
+}
 table.directory {
     font-family: var(--main-font-family);
 }
