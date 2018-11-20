@@ -42,6 +42,7 @@ const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
 
 ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInput, PID pcrReference) :
     _packing(false),
+    _packDistance(-1),
     _pesmode(0),
     _pidOutput(pidOutput),
     _pidInput(pidInput),
@@ -54,6 +55,7 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
     _insertPCR(false),
     _ccOutput(0),
     _lastCC(),
+    _lateDistance(0),
     _lateMaxPackets(DEFAULT_MAX_BUFFERED_PACKETS),
     _lateIndex(0),
     _latePackets()
@@ -68,6 +70,7 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
 void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID pcrReference)
 {
     _packing = false;
+    _packDistance = -1;
     _pesmode = 0;
     _pidOutput = pidOutput;
     _pidInput = pidInput;
@@ -76,6 +79,7 @@ void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID p
     _currentPacket = 0;
     _ccOutput = 0;
     _lastCC.clear();
+    _lateDistance = 0;
     _lateIndex = 0;
     _latePackets.clear();
     resetPCR();
@@ -93,6 +97,7 @@ void ts::PacketEncapsulation::setOutputPID(PID pid)
         // Reset encapsulation.
         _ccOutput = 0;
         _lastCC.clear();
+        _lateDistance = 0;
         _lateIndex = 0;
         _latePackets.clear();
     }
@@ -213,6 +218,9 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         status = false;
     }
 
+    // Increase the counter of the distance with each incoming packet.
+    _lateDistance++;
+
     // We need to guarantee the limits of all packages.
     // When the buffer is empty we alredy set the late pointer to the first byte after 0x47.
     if (_lateIndex < 1) _lateIndex = 1;
@@ -269,8 +277,10 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         // -26|27 => PES size (when PES mode is enabled)
         // We insert a packet all the time if packing is off.
         // Otherwise, we insert a packet when there is enough data to fill it.
-        if (!_packing || addBytes >= PKT_SIZE - (addPCR ? 12 : 4) - 1) {
-
+        bool packout = !_packing;
+        if (_packing && _packDistance > 0 && _lateDistance > _packDistance)
+            packout = true;
+        if (packout || addBytes >= PKT_SIZE - (addPCR ? 12 : 4) - 1) {
             // Build the new packet header.
             pkt.b[0] = SYNC_BYTE;
             pkt.b[1] = 0;
@@ -472,5 +482,6 @@ void ts::PacketEncapsulation::fillPacket(ts::TSPacket& pkt, size_t& pktIndex)
     if (_lateIndex >= PKT_SIZE) {
         _latePackets.pop_front();
         _lateIndex = 1;  // skip 0x47 in next packet
+        _lateDistance = 0;  // reset the distance counter
     }
 }

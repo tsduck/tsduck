@@ -241,7 +241,7 @@ namespace ts {
         //! are emitted only when they are full.
         //! @param [in] on Packing mode.
         //!
-        void setPacking(bool on) { _packing = on; }
+        void setPacking(bool on, size_t limit) { _packing = on; _packDistance = limit; }
 
         //!
         //! Set PES mode.
@@ -258,6 +258,7 @@ namespace ts {
         typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
 
         bool             _packing;         // Packing mode.
+        size_t           _packDistance;    // Maximum distance between inner packets.
         uint8_t          _pesmode;         // PES mode selected.
         PID              _pidOutput;       // Output PID.
         PIDSet           _pidInput;        // Input PID's to encapsulate.
@@ -270,6 +271,7 @@ namespace ts {
         bool             _insertPCR;       // Insert a PCR in next output packet.
         uint8_t          _ccOutput;        // Continuity counter in output PID.
         PIDCCMap         _lastCC;          // Continuity counter by PID.
+        size_t           _lateDistance;    // Distance from the last packet.
         size_t           _lateMaxPackets;  // Maximum number of packets in _latePackets.
         size_t           _lateIndex;       // Index in first late packet.
         TSPacketPtrQueue _latePackets;     // Packets to insert later.
