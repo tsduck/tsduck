@@ -296,6 +296,10 @@
     //!
     #define TS_ARM
     //!
+    //! Defined when the target processor architecture is ARM64.
+    //!
+    #define TS_ARM64
+    //!
     //! Defined when the target processor architecture is STxP70.
     //!
     #define TS_STXP70
@@ -348,6 +352,13 @@
     #if !defined(TS_ADDRESS_BITS)
         // To be fixed for ARM 64
         #define TS_ADDRESS_BITS 32
+    #endif
+#elif defined(__aarch64__)
+    #if !defined(TS_ARM64)
+        #define TS_ARM64 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__stxp70__) || defined(__STxP70__)
     #if !defined(TS_STXP70)
@@ -409,7 +420,7 @@
     #define TS_BIG_ENDIAN 1
 #endif
 
-#if defined (TS_ARM)
+#if defined (TS_ARM) || defined (TS_ARM64)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -2632,6 +2643,10 @@ namespace ts {
         // For later reference, not sure this is valid.
         unsigned dest = 0;
         __asm__ __volatile__ ("@MemoryBarrier\n mcr p15,0,%0,c7,c10,5\n" : "=&r"(dest) : :  "memory");
+
+#elif defined(TS_GCC) && defined(TS_ARM64)
+
+        __asm__ __volatile__ ("dmb sy" : : : "memory");
 
 #elif defined(TS_MSC)
 
