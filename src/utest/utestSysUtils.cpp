@@ -76,6 +76,7 @@ public:
     void testProcessMetrics();
     void testIsTerminal();
     void testSysInfo();
+    void testSymLinks();
 
     CPPUNIT_TEST_SUITE(SysUtilsTest);
     CPPUNIT_TEST(testCurrentProcessId);
@@ -97,6 +98,7 @@ public:
     CPPUNIT_TEST(testProcessMetrics);
     CPPUNIT_TEST(testIsTerminal);
     CPPUNIT_TEST(testSysInfo);
+    CPPUNIT_TEST(testSymLinks);
     CPPUNIT_TEST_SUITE_END();
 private:
     ts::NanoSecond  _nsPrecision;
@@ -692,4 +694,21 @@ void SysUtilsTest::testSysInfo()
     // We can't predict the memory page size, except that it must be a multiple of 256.
     CPPUNIT_ASSERT(ts::SysInfo::Instance()->memoryPageSize() > 0);
     CPPUNIT_ASSERT(ts::SysInfo::Instance()->memoryPageSize() % 256 == 0);
+}
+
+void SysUtilsTest::testSymLinks()
+{
+    utest::Out() << "SysUtilsTest::testSymLinks: " << std::endl
+                 << "    /proc/self -> \"" << ts::ResolveSymbolicLinks(u"/proc/self") << '"' << std::endl;
+
+    // Obviously non existent paths should translate to themselves.
+    const ts::UString badName(u"khzkfjhzHJKHK35464.foo.BAD.NOT.THERE");
+    CPPUNIT_ASSERT(!ts::IsSymbolicLink(badName));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(badName, ts::ResolveSymbolicLinks(badName));
+
+#if defined(TS_LINUX)
+    CPPUNIT_ASSERT(ts::IsSymbolicLink(u"/proc/self"));
+    CPPUNIT_ASSERT(!ts::ResolveSymbolicLinks(u"/proc/self").empty());
+    CPPUNIT_ASSERT(ts::ResolveSymbolicLinks(u"/proc/self") != u"/proc/self");
+#endif
 }
