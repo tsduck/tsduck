@@ -223,18 +223,7 @@ ts::UString ts::ExecutableFile()
 
     // Linux implementation.
     // /proc/self/exe is a symbolic link to the executable.
-    // Read the value of the symbolic link.
-    int length;
-    char name[1024];
-    // Flawfinder: ignore: readlink does not terminate with ASCII NUL.
-    if ((length = ::readlink("/proc/self/exe", name, sizeof(name))) < 0) {
-        throw ts::Exception(u"Symbolic link /proc/self/exe error", errno);
-    }
-    else {
-        assert(length <= int(sizeof(name)));
-        // We handle here the fact that readlink does not terminate with ASCII NUL.
-        return UString::FromUTF8(name, length);
-    }
+    return ResolveSymbolicLinks(u"/proc/self/exe", false);
 
 #elif defined(TS_MAC)
 
@@ -1086,5 +1075,67 @@ bool ts::StdErrIsTerminal()
     return StdHandleIsATerminal(STD_ERROR_HANDLE);
 #else
     return ::isatty(STDERR_FILENO);
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a file path is a symbolic link.
+//----------------------------------------------------------------------------
+
+bool ts::IsSymbolicLink(const UString& path)
+{
+#if defined(TS_UNIX)
+    struct stat st;
+    TS_ZERO(st);
+    if (::lstat(path.toUTF8().c_str(), &st) != 0) {
+        return false; // lstat() error
+    }
+    else {
+        return (st.st_mode & S_IFMT) == S_IFLNK;
+    }
+#else
+    // Non Unix systems, no symbolic links.
+    return false;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Resolve symbolic links.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ResolveSymbolicLinks(const ts::UString &path, bool recurse)
+{
+#if defined(TS_UNIX)
+
+    UString link(path);
+    int foolproof = 64; // Avoid endless loops in failing links.
+    char name[2048];
+
+    // Loop on nested symbolic links.
+    while (IsSymbolicLink(link)) {
+
+        // Translate the symbolic link.
+        const ssize_t length = ::readlink(link.toUTF8().c_str(), name, sizeof(name));
+        if (length <= 0) {
+            // Error, cannot translate the link or empty value, return the path.
+            break;
+        }
+        assert(length <= ssize_t(sizeof(name)));
+
+        // Next step is the translated link.
+        link.assignFromUTF8(name, size_t(length));
+
+        // Without recursion, do not loop.
+        if (!recurse || foolproof-- <= 0) {
+            break;
+        }
+    }
+    return link;
+
+#else
+    // Non Unix systems, return unchanged path.
+    return path;
 #endif
 }

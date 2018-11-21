@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1049
+VERSION 3.16-1060
 
 [NEW] New commands and plugins:
 
@@ -26,6 +26,8 @@ VERSION 3.16-1049
   * In plugin "http", the option --receive-timeout was ignored.
   * In "tsanalyze" and plugin "analyze", section analysis was missing on some
     PID's (including EIT's).
+  * On Linux with BusyBox environment, the --help options (and other paged
+    commands) no longer fail due to unsupported option for less.
 
 -------------------------------------------------------------------------------
 

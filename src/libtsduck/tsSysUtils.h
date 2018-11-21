@@ -191,6 +191,23 @@ namespace ts {
     TSDUCKDLL UString ExecutableFile();
 
     //!
+    //! Check if a file path is a symbolic link.
+    //! @param [in] path A file path.
+    //! @return True if @a path is a symbolic link.
+    //!
+    TSDUCKDLL bool IsSymbolicLink(const UString& path);
+
+    //!
+    //! Resolve symbolic links.
+    //! On Unix systems, resolve symbolic links and return the corresponding link.
+    //! On Windows and systems without symbolic links, return @a path.
+    //! @param [in] path A file path.
+    //! @param [in] recurse If the resolved link is another link, resolve it recursively.
+    //! @return The fully resolved path.
+    //!
+    TSDUCKDLL UString ResolveSymbolicLinks(const UString& path, bool recurse = true);
+
+    //!
     //! Suspend the current thread for the specified period.
     //! @param [in] delay Number of milliseconds to sleep the current thread.
     //!
