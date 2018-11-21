@@ -323,6 +323,10 @@
     //! Defined when the target processor architecture is Sun SPARC architecture.
     //!
     #define TS_SPARC
+    //!
+    //! Defined when the target processor architecture is MIPS architecture.
+    //!
+    #define TS_MIPS
 
 #elif defined(__i386__) || defined(TS_I386) || defined(_M_IX86)
     #if !defined(TS_I386)
@@ -396,6 +400,13 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
     #endif
+#elif defined(__mips__)
+    #if !defined(TS_MIPS)
+        #define TS_MIPS 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
+    #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"
 #endif
@@ -420,7 +431,7 @@
     #define TS_BIG_ENDIAN 1
 #endif
 
-#if defined (TS_ARM) || defined (TS_ARM64)
+#if defined(TS_ARM) || defined(TS_ARM64) || defined(TS_MIPS)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -2647,6 +2658,10 @@ namespace ts {
 #elif defined(TS_GCC) && defined(TS_ARM64)
 
         __asm__ __volatile__ ("dmb sy" : : : "memory");
+
+#elif defined(TS_GCC) && defined(TS_MIPS)
+
+       __asm__ __volatile__ ("sync" : : :"memory");
 
 #elif defined(TS_MSC)
 
