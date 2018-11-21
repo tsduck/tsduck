@@ -354,7 +354,6 @@
         #define TS_ARM 1
     #endif
     #if !defined(TS_ADDRESS_BITS)
-        // To be fixed for ARM 64
         #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__aarch64__)
@@ -2610,7 +2609,7 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// Cross-plaftorms portable definitions for memory barrier.
+// Cross-platforms portable definitions for memory barrier.
 //----------------------------------------------------------------------------
 
 #if defined(TS_MSC)
