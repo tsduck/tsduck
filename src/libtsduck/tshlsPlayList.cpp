@@ -49,6 +49,8 @@ ts::hls::PlayList::PlayList() :
     _mediaSequence(0),
     _endList(false),
     _playlistType(),
+    _utcDownload(),
+    _utcTermination(),
     _segments(),
     _playlists()
 {
@@ -329,6 +331,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
         return false;
     }
     assert(plNew._valid);
+    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", {_mediaSequence, _segments.size(), plNew._mediaSequence, plNew._segments.size()});
 
     // If no new segment is present, nothing to do.
     if (plNew._mediaSequence + plNew._segments.size() <= _mediaSequence + _segments.size()) {
@@ -341,6 +344,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
     _targetDuration = plNew._targetDuration;
     _endList = plNew._endList;
     _playlistType = plNew._playlistType;
+    _utcTermination = plNew._utcTermination;
 
     // Copy missing segments.
     if (_mediaSequence + _segments.size() < plNew._mediaSequence) {
@@ -402,6 +406,9 @@ bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& rep
     // Assume valid playlist, invalidate when necessary.
     _valid = true;
 
+    // Initial download time.
+    _utcDownload = _utcTermination = Time::CurrentUTC();
+
     // Loop on all lines in file.
     for (auto it = lines.begin(); it != lines.end(); ++it) {
 
@@ -410,6 +417,7 @@ bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& rep
         if (!strict) {
             line.trim();
         }
+        report.log(2, u"playlist: %s", {line});
 
         // A line is one of blank, comment, tag, URI.
         if (isURI(line, strict, report)) {
@@ -425,6 +433,7 @@ bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& rep
                 case MEDIA_PLAYLIST:
                     // Enqueue a new media segment.
                     segNext.uri = line;
+                    _utcTermination += segNext.duration;
                     _segments.push_back(segNext);
                     // Reset description of next segment.
                     segNext = segGlobal;
