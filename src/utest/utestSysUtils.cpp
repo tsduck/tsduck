@@ -77,6 +77,10 @@ public:
     void testIsTerminal();
     void testSysInfo();
     void testSymLinks();
+    void testCurrentWorkingDirectory();
+    void testIsAbsoluteFilePath();
+    void testAbsoluteFilePath();
+    void testCleanupFilePath();
 
     CPPUNIT_TEST_SUITE(SysUtilsTest);
     CPPUNIT_TEST(testCurrentProcessId);
@@ -99,7 +103,12 @@ public:
     CPPUNIT_TEST(testIsTerminal);
     CPPUNIT_TEST(testSysInfo);
     CPPUNIT_TEST(testSymLinks);
+    CPPUNIT_TEST(testCurrentWorkingDirectory);
+    CPPUNIT_TEST(testIsAbsoluteFilePath);
+    CPPUNIT_TEST(testAbsoluteFilePath);
+    CPPUNIT_TEST(testCleanupFilePath);
     CPPUNIT_TEST_SUITE_END();
+
 private:
     ts::NanoSecond  _nsPrecision;
     ts::MilliSecond _msPrecision;
@@ -710,5 +719,63 @@ void SysUtilsTest::testSymLinks()
     CPPUNIT_ASSERT(ts::IsSymbolicLink(u"/proc/self"));
     CPPUNIT_ASSERT(!ts::ResolveSymbolicLinks(u"/proc/self").empty());
     CPPUNIT_ASSERT(ts::ResolveSymbolicLinks(u"/proc/self") != u"/proc/self");
+#endif
+}
+
+void SysUtilsTest::testCurrentWorkingDirectory()
+{
+    utest::Out() << "SysUtilsTest::testCurrentWorkingDirectory: " << ts::CurrentWorkingDirectory() << std::endl;
+
+    CPPUNIT_ASSERT(!ts::CurrentWorkingDirectory().empty());
+    CPPUNIT_ASSERT(ts::IsDirectory(ts::CurrentWorkingDirectory()));
+}
+
+
+void SysUtilsTest::testIsAbsoluteFilePath()
+{
+#if defined(TS_WINDOWS)
+    CPPUNIT_ASSERT(ts::IsAbsoluteFilePath(u"C:\\foo\\bar"));
+    CPPUNIT_ASSERT(ts::IsAbsoluteFilePath(u"\\\\foo\\bar"));
+    CPPUNIT_ASSERT(!ts::IsAbsoluteFilePath(u"foo\\bar"));
+    CPPUNIT_ASSERT(!ts::IsAbsoluteFilePath(u"bar"));
+#else
+    CPPUNIT_ASSERT(ts::IsAbsoluteFilePath(u"/foo/bar"));
+    CPPUNIT_ASSERT(ts::IsAbsoluteFilePath(u"/"));
+    CPPUNIT_ASSERT(!ts::IsAbsoluteFilePath(u"foo/bar"));
+    CPPUNIT_ASSERT(!ts::IsAbsoluteFilePath(u"bar"));
+#endif
+}
+
+
+void SysUtilsTest::testAbsoluteFilePath()
+{
+#if defined(TS_WINDOWS)
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C:\\foo\\bar\\ab\\cd", ts::AbsoluteFilePath(u"ab\\cd", u"C:\\foo\\bar"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C:\\ab\\cd", ts::AbsoluteFilePath(u"C:\\ab\\cd", u"C:\\foo\\bar"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C:\\foo\\ab\\cd", ts::AbsoluteFilePath(u"..\\ab\\cd", u"C:\\foo\\bar"));
+#else
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"/foo/bar/ab/cd", ts::AbsoluteFilePath(u"ab/cd", u"/foo/bar"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"/ab/cd", ts::AbsoluteFilePath(u"/ab/cd", u"/foo/bar"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"/foo/ab/cd", ts::AbsoluteFilePath(u"../ab/cd", u"/foo/bar"));
+#endif
+}
+
+
+void SysUtilsTest::testCleanupFilePath()
+{
+#if defined(TS_WINDOWS)
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab\\cd", ts::CleanupFilePath(u"ab\\cd"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab\\cd", ts::CleanupFilePath(u"ab\\\\\\\\cd\\\\"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab\\cd", ts::CleanupFilePath(u"ab\\.\\cd\\."));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab\\cd", ts::CleanupFilePath(u"ab\\zer\\..\\cd"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cd\\ef", ts::CleanupFilePath(u"ab\\..\\cd\\ef"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"\\cd\\ef", ts::CleanupFilePath(u"\\..\\cd\\ef"));
+#else
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab/cd", ts::CleanupFilePath(u"ab/cd"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab/cd", ts::CleanupFilePath(u"ab////cd//"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab/cd", ts::CleanupFilePath(u"ab/./cd/."));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab/cd", ts::CleanupFilePath(u"ab/zer/../cd"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cd/ef", ts::CleanupFilePath(u"ab/../cd/ef"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"/cd/ef", ts::CleanupFilePath(u"/../cd/ef"));
 #endif
 }

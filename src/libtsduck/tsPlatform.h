@@ -375,7 +375,7 @@
         #define TS_ALPHA 1
     #endif
     #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
+        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__sparc__)
     #if !defined(TS_SPARC)

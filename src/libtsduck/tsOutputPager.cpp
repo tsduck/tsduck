@@ -90,7 +90,7 @@ ts::OutputPager::OutputPager(const UString& envName) :
                     // On Linux, with the BusyBox environment, many commands are redirected to the busybox executable.
                     // In that case, the busybox version may not understand some options of the GNU version.
                     #if defined(TS_LINUX)
-                        useParameters = !ResolveSymbolicLinks(exe, false).contain(u"busybox", CASE_INSENSITIVE);
+                        useParameters = !ResolveSymbolicLinks(exe).contain(u"busybox", CASE_INSENSITIVE);
                     #endif
                     // Build the command line.
                     _pagerCommand = u'"' + exe + u"\" " + (useParameters ? itPager->parameters : UString());
