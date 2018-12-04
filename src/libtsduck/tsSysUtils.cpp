@@ -92,6 +92,11 @@ ts::UString ts::VernacularFilePath(const UString& path)
     UString vern(path);
 
 #if defined(TS_WINDOWS)
+    // With Windows Linux Subsystem, the syntax "/mnt/c/" means "C:\"
+    if (vern.length() >= 7 && vern.startWith(u"/mnt/") && IsAlpha(vern[5]) && vern[6] == u'/') {
+        vern.erase(0, 4);
+    }
+
     // On Cygwin, the syntax "/cygdrive/C/" means "C:\"
     if (vern.startWith(u"/cygdrive/")) {
         vern.erase(0, 9);

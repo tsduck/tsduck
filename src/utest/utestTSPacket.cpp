@@ -48,9 +48,17 @@ public:
     virtual void tearDown() override;
 
     void testPacket();
+    void testInit();
+    void testCreatePCR();
+    void testAFStuffingSize();
+    void testSetPayloadSize();
 
     CPPUNIT_TEST_SUITE(TSPacketTest);
     CPPUNIT_TEST(testPacket);
+    CPPUNIT_TEST(testInit);
+    CPPUNIT_TEST(testCreatePCR);
+    CPPUNIT_TEST(testAFStuffingSize);
+    CPPUNIT_TEST(testSetPayloadSize);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -76,7 +84,6 @@ void TSPacketTest::tearDown()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-
 void TSPacketTest::testPacket()
 {
     ts::TSPacket::SanityCheck();
@@ -87,4 +94,113 @@ void TSPacketTest::testPacket()
     TS_ZERO(packets); // to avoid unreferenced or uninitialized warning
 
     CPPUNIT_ASSERT_EQUAL(size_t(7 * ts::PKT_SIZE), sizeof(packets));
+}
+
+void TSPacketTest::testInit()
+{
+    ts::TSPacket pkt;
+    pkt.init(0x1ABC, 7, 0x35);
+    CPPUNIT_ASSERT(pkt.hasValidSync());
+    CPPUNIT_ASSERT(!pkt.hasAF());
+    CPPUNIT_ASSERT(pkt.hasPayload());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(7), pkt.getCC());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(0x1ABC), pkt.getPID());
+    CPPUNIT_ASSERT_EQUAL(size_t(184), pkt.getPayloadSize());
+    for (size_t i = 4; i < ts::PKT_SIZE; ++i) {
+        CPPUNIT_ASSERT_EQUAL(uint8_t(0x35), pkt.b[i]);
+    }
+}
+
+void TSPacketTest::testCreatePCR()
+{
+    ts::TSPacket pkt;
+    pkt.init(0x1ABC);
+
+    CPPUNIT_ASSERT(pkt.hasValidSync());
+    CPPUNIT_ASSERT(!pkt.hasAF());
+    CPPUNIT_ASSERT(pkt.hasPayload());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(0x1ABC), pkt.getPID());
+    CPPUNIT_ASSERT_EQUAL(size_t(184), pkt.getPayloadSize());
+    CPPUNIT_ASSERT(!pkt.hasPCR());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), pkt.getPCR());
+
+    pkt.createPCR(TS_UCONST64(0x000000126789ABCD));
+
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(7), pkt.getAFSize());
+    CPPUNIT_ASSERT(pkt.hasPayload());
+    CPPUNIT_ASSERT_EQUAL(size_t(176), pkt.getPayloadSize());
+    CPPUNIT_ASSERT(pkt.hasPCR());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x000000126789ABCD), pkt.getPCR());
+
+    pkt.createPCR(TS_UCONST64(0x0000023456789ABC));
+
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(7), pkt.getAFSize());
+    CPPUNIT_ASSERT(pkt.hasPayload());
+    CPPUNIT_ASSERT_EQUAL(size_t(176), pkt.getPayloadSize());
+    CPPUNIT_ASSERT(pkt.hasPCR());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x0000023456789ABC), pkt.getPCR());
+}
+
+void TSPacketTest::testAFStuffingSize()
+{
+    ts::TSPacket pkt;
+
+    pkt.init();
+    CPPUNIT_ASSERT(!pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pkt.getAFStuffingSize());
+
+    pkt.createPCR(0);
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(7), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pkt.getAFStuffingSize());
+
+    pkt.b[4] += 25;
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(32), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(25), pkt.getAFStuffingSize());
+}
+
+void TSPacketTest::testSetPayloadSize()
+{
+    ts::TSPacket pkt;
+
+    pkt.init();
+    CPPUNIT_ASSERT(!pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pkt.getAFStuffingSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(184), pkt.getPayloadSize());
+
+    CPPUNIT_ASSERT(pkt.setPayloadSize(100));
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(83), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(82), pkt.getAFStuffingSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(100), pkt.getPayloadSize());
+
+    CPPUNIT_ASSERT(pkt.setPayloadSize(130));
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(53), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(52), pkt.getAFStuffingSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(130), pkt.getPayloadSize());
+
+    CPPUNIT_ASSERT(!pkt.setPayloadSize(190));
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(53), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(52), pkt.getAFStuffingSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(130), pkt.getPayloadSize());
+
+    pkt.init();
+    pkt.createPCR(0);
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(7), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pkt.getAFStuffingSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(176), pkt.getPayloadSize());
+
+    CPPUNIT_ASSERT(pkt.setPayloadSize(100));
+    CPPUNIT_ASSERT(pkt.hasAF());
+    CPPUNIT_ASSERT_EQUAL(size_t(83), pkt.getAFSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(76), pkt.getAFStuffingSize());
+    CPPUNIT_ASSERT_EQUAL(size_t(100), pkt.getPayloadSize());
 }
