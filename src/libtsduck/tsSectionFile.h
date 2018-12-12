@@ -114,11 +114,6 @@ namespace ts {
         SectionFile();
 
         //!
-        //! Destructor.
-        //!
-        virtual ~SectionFile();
-
-        //!
         //! Section file formats.
         //!
         enum FileType {
@@ -158,88 +153,89 @@ namespace ts {
         void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
 
         //!
+        //! Set the default DVB charset to use when load or saving section files.
+        //! @param [in] charset If not zero, default character set to encode or decode strings.
+        //!
+        void setDefaultCharset(const DVBCharset* charset = nullptr) { _charset = charset; }
+
+        //!
+        //! Set the CRC32 processing mode when loading binary sections.
+        //! @param [in] crc_op For binary files, how to process the CRC32 of the input sections.
+        //!
+        void setCRCValidation(CRC32::Validation crc_op) { _crc_op = crc_op; }
+
+        //!
         //! Load a binary or XML file.
         //! @param [in] file_name XML file name.
         //! @param [in,out] report Where to report errors.
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
-        //! @param [in] crc_op For binary files, how to process the CRC32 of the input sections.
-        //! @param [in] charset For XML files, if not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& file_name, Report& report = CERR, FileType type = UNSPECIFIED, CRC32::Validation crc_op = CRC32::IGNORE, const DVBCharset* charset = nullptr);
+        bool load(const UString& file_name, Report& report = CERR, FileType type = UNSPECIFIED);
 
         //!
         //! Load a binary or XML file.
         //! @param [in,out] strm A standard stream in input mode (binary mode for binary files).
         //! @param [in,out] report Where to report errors.
         //! @param [in] type File type. If UNSPECIFIED, return an error.
-        //! @param [in] crc_op For binary files, how to process the CRC32 of the input sections.
-        //! @param [in] charset For XML files, if not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm, Report& report = CERR, FileType type = UNSPECIFIED, CRC32::Validation crc_op = CRC32::IGNORE, const DVBCharset* charset = nullptr);
+        bool load(std::istream& strm, Report& report = CERR, FileType type = UNSPECIFIED);
 
         //!
         //! Load an XML file.
         //! @param [in] file_name XML file name.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const UString& file_name, Report& report = CERR, const DVBCharset* charset = nullptr);
+        bool loadXML(const UString& file_name, Report& report = CERR);
 
         //!
         //! Load an XML file.
         //! @param [in,out] strm A standard text stream in input mode.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(std::istream& strm, Report& report = CERR, const DVBCharset* charset = nullptr);
+        bool loadXML(std::istream& strm, Report& report = CERR);
 
         //!
         //! Parse an XML content.
         //! @param [in] xml_content XML file content in UTF-8.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const UString& xml_content, Report& report = CERR, const DVBCharset* charset = nullptr);
+        bool parseXML(const UString& xml_content, Report& report = CERR);
 
         //!
         //! Save an XML file.
         //! @param [in] file_name XML file name.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool saveXML(const UString& file_name, Report& report = CERR, const DVBCharset* charset = nullptr) const;
+        bool saveXML(const UString& file_name, Report& report = CERR) const;
 
         //!
         //! Serialize as XML text.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return Complete XML document text, empty on error.
         //!
-        UString toXML(Report& report = CERR, const DVBCharset* charset = nullptr) const;
+        UString toXML(Report& report = CERR) const;
 
         //!
         //! Load a binary section file from a stream.
         //! @param [in,out] strm A standard stream in input mode (binary mode).
-        //! @param [in] crc_op How to process the CRC32 of the input packet.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadBinary(std::istream& strm, Report& report = CERR, CRC32::Validation crc_op = CRC32::IGNORE);
+        bool loadBinary(std::istream& strm, Report& report = CERR);
 
         //!
         //! Load a binary section file.
         //! @param [in] file_name Binary file name.
-        //! @param [in] crc_op How to process the CRC32 of the input packet.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadBinary(const UString& file_name, Report& report = CERR, CRC32::Validation crc_op = CRC32::IGNORE);
+        bool loadBinary(const UString& file_name, Report& report = CERR);
 
         //!
         //! Save a binary section file.
@@ -327,9 +323,8 @@ namespace ts {
         //! Add a table in the file.
         //! The table is serialized
         //! @param [in] table The table to add.
-        //! @param [in] charset If not zero, default character set to encode strings.
         //!
-        void add(const AbstractTablePtr& table, const DVBCharset* charset = nullptr);
+        void add(const AbstractTablePtr& table);
 
         //!
         //! Add a section in the file.
@@ -343,27 +338,33 @@ namespace ts {
         //!
         void add(const SectionPtrVector& sections);
 
+#if !defined(DOXYGEN)
+        // Just to make sure the compiler is aware that we do this on purpose, despite the private charset pointer.
+        SectionFile(const SectionFile&) = default;
+        SectionFile& operator=(const SectionFile&) = default;
+#endif
+
     private:
         BinaryTablePtrVector _tables;          //!< Loaded tables.
         SectionPtrVector     _sections;        //!< All sections from the file.
         SectionPtrVector     _orphanSections;  //!< Sections which do not belong to any table.
         xml::Tweaks          _xmlTweaks;       //!< XML formatting and parsing tweaks.
+        const DVBCharset*    _charset;         //!< Default DVB charset.
+        CRC32::Validation    _crc_op;          //!< Processing of CRC32 when loading sections.
 
         //!
         //! Parse an XML document.
         //! @param [in] doc Document to load.
-        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseDocument(const xml::Document& doc, const DVBCharset* charset);
+        bool parseDocument(const xml::Document& doc);
 
         //!
         //! Generate an XML document.
         //! @param [in,out] doc XML document.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool generateDocument(xml::Document& doc, const DVBCharset* charset) const;
+        bool generateDocument(xml::Document& doc) const;
 
         //!
         //! Check it a table can be formed using the last sections in _orphanSections.

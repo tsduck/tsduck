@@ -85,8 +85,15 @@ ts::OutputPager::OutputPager(const UString& envName) :
                 // Full path of executable file.
                 const UString exe(*itDir + PathSeparator + itPager->command + TS_EXECUTABLE_SUFFIX);
                 if (FileExists(exe)) {
-                    // The executable exists. Build the command line.
-                    _pagerCommand = u'"' + exe + u"\" " + itPager->parameters;
+                    // The executable exists.
+                    bool useParameters = true;
+                    // On Linux, with the BusyBox environment, many commands are redirected to the busybox executable.
+                    // In that case, the busybox version may not understand some options of the GNU version.
+                    #if defined(TS_LINUX)
+                        useParameters = !ResolveSymbolicLinks(exe).contain(u"busybox", CASE_INSENSITIVE);
+                    #endif
+                    // Build the command line.
+                    _pagerCommand = u'"' + exe + u"\" " + (useParameters ? itPager->parameters : UString());
                 }
             }
         }

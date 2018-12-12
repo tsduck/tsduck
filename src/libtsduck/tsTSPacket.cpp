@@ -117,6 +117,110 @@ void ts::TSPacket::SanityCheck()
 }
 
 //----------------------------------------------------------------------------
+// Initialize a TS packet.
+//----------------------------------------------------------------------------
+
+void ts::TSPacket::init(PID pid, uint8_t cc, uint8_t data)
+{
+    b[0] = 0x47;
+    b[1] = uint8_t(pid >> 8) & 0x1F;
+    b[2] = uint8_t(pid);
+    b[3] = 0x10 | (cc & 0x0F); // no adaptation field, payload only.
+    ::memset(b + 4, data, PKT_SIZE - 4);
+}
+
+//----------------------------------------------------------------------------
+// Compute the size of the stuffing part in the adaptation_field.
+//----------------------------------------------------------------------------
+
+size_t ts::TSPacket::getAFStuffingSize() const
+{
+    if ((b[3] & 0x20) == 0 || b[4] == 0) {
+        // No or empty adaptation field.
+        return 0;
+    }
+
+    // Compute all present bytes in the adaptation fields.
+    const uint8_t flags = b[5];
+    size_t size = 1;              // Flags
+    const uint8_t *data = b + 6;  // Point to first AF byte after flags
+
+    if ((flags & 0x10) != 0) {
+        // PCR present
+        size += 6;
+        data += 6;
+    }
+    if ((flags & 0x08) != 0) {
+        // OPCR present
+        size += 6;
+        data += 6;
+    }
+    if ((flags & 0x04) != 0) {
+        // Splicing point countdown present
+        size += 1;
+        data += 1;
+    }
+    if ((flags & 0x02) != 0) {
+        // Transport private data present
+        size += 1 + *data;
+        data += 1 + *data;
+    }
+    if ((flags & 0x01) != 0 && data < b + PKT_SIZE) {
+        // Adaptation field extension present
+        size += 1 + *data;
+        data += 1 + *data;
+    }
+
+    // Now return the stuffing size (make sur it is consistent with AF size).
+    return size > b[4] ? 0 : b[4] - size;
+}
+
+//----------------------------------------------------------------------------
+// Set the payload size.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::setPayloadSize(size_t size)
+{
+    // Previous payload size.
+    size_t plSize = getPayloadSize();
+
+    if (size == plSize) {
+        return true; // no change
+    }
+    else if (size < plSize) {
+        // It is always possible to shrink the payload.
+        if ((b[3] & 0x20) == 0) {
+            // No previous adaptation field, create one.
+            b[3] |= 0x20;
+            b[4] = 0;
+            // We just created a 1-byte adaptation field.
+            if (--plSize == size) {
+                return true;
+            }
+        }
+        // If the adaptation field exists but is empty, create the flags field.
+        if (b[4] == 0) {
+            b[4] = 1; // new AF size
+            b[5] = 0; // flags
+            --plSize; // payload has shrunk by one byte
+        }
+        // Fill the stuffing extension with FF.
+        ::memset(b + 5 + b[4], 0xFF, plSize - size);
+        b[4] += uint8_t(plSize - size);
+        return true;
+    }
+    else if (plSize + getAFStuffingSize() < size) {
+        // Payload shall be extended but cannot reach the requested size, even with all current stuffing
+        return false;
+    }
+    else {
+        // Payload can be be extended by removing some stuffing from adaptation field.
+        b[4] -= uint8_t(size - plSize);
+        return true;
+    }
+}
+
+//----------------------------------------------------------------------------
 // Check if the packet contains the start of a clear PES header.
 //----------------------------------------------------------------------------
 
@@ -178,19 +282,19 @@ size_t ts::TSPacket::spliceCountdownOffset() const
 uint64_t ts::TSPacket::getPCR () const
 {
     const size_t offset = PCROffset ();
-    return offset == 0 ? 0 : GetPCR (b + offset);
+    return offset == 0 ? 0 : GetPCR(b + offset);
 }
 
 uint64_t ts::TSPacket::getOPCR () const
 {
     const size_t offset = OPCROffset ();
-    return offset == 0 ? 0 : GetPCR (b + offset);
+    return offset == 0 ? 0 : GetPCR(b + offset);
 }
 
 int8_t ts::TSPacket::getSpliceCountdown() const
 {
     const size_t offset = spliceCountdownOffset();
-    return offset == 0 ? 0 : *(b + offset);
+    return offset == 0 ? 0 : int8_t(b[offset]);
 }
 
 //----------------------------------------------------------------------------
@@ -200,7 +304,7 @@ int8_t ts::TSPacket::getSpliceCountdown() const
 
 void ts::TSPacket::setPCR(const uint64_t& pcr)
 {
-    size_t offset(PCROffset());
+    const size_t offset = PCROffset();
     if (offset == 0) {
         throw AdaptationFieldError(u"No PCR in packet, cannot replace");
     }
@@ -211,13 +315,40 @@ void ts::TSPacket::setPCR(const uint64_t& pcr)
 
 void ts::TSPacket::setOPCR(const uint64_t& opcr)
 {
-    size_t offset(OPCROffset());
+    const size_t offset = OPCROffset();
     if (offset == 0) {
         throw AdaptationFieldError(u"No OPCR in packet, cannot replace");
     }
     else {
         PutPCR(b + offset, opcr);
     }
+}
+
+//----------------------------------------------------------------------------
+// Create or replace the PCR value - 42 bits.
+//----------------------------------------------------------------------------
+
+void ts::TSPacket::createPCR(const uint64_t &pcr)
+{
+    if (!hasAF() || b[4] < 1) {
+        // No or invalid adaptation field, we need to create one.
+        b[3] |= 0x20;  // Has adaptation field.
+        b[4] = 7;      // Adaptation field size.
+        b[5] = 0x10;   // PCR flag only.
+    }
+    else if ((b[5] & 0x10) == 0) {
+        // There is an adaptation field, but no PCR in it.
+        // Compute new adaptation field size:
+        const size_t size = std::min<size_t>(183, b[4] + 6);
+        b[4] = uint8_t(size);  // set new AF size
+        b[5] |= 0x10;          // set PCR flag
+        // Shift the existing AF 6 bytes ahead to make room for the PCR value.
+        // Note that we use memmove and not memcpy because the source and destination overlap.
+        ::memmove(b + 6, b + 12, size - 7);
+    }
+
+    // Finally write the PCR value. The PCR is always at offset 6.
+    PutPCR(b + 6, pcr);
 }
 
 //----------------------------------------------------------------------------

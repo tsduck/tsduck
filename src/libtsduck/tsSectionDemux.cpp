@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionDemux.h"
+#include "tsEIT.h"
 TSDUCK_SOURCE;
 
 
@@ -144,9 +145,9 @@ void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_secti
 }
 
 // Notify the application if the table is complete.
-void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool force)
+void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool pack, bool fill_eit)
 {
-    if (!notified && (sect_received == sect_expected || force) && demux._table_handler != nullptr) {
+    if (!notified && (sect_received == sect_expected || pack || fill_eit) && demux._table_handler != nullptr) {
 
         // Build the table
         BinaryTable table;
@@ -155,8 +156,13 @@ void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool force)
         }
 
         // Pack incomplete table with force.
-        if (force) {
+        if (pack) {
             table.packSections();
+        }
+
+        // Add missing sections in EIT (if the table is an EIT).
+        if (fill_eit) {
+            EIT::Fix(table, EIT::ADD_MISSING);
         }
 
         // Invoke the table handler.
@@ -203,10 +209,6 @@ ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
     _status(),
     _get_current(true),
     _get_next(false)
-{
-}
-
-ts::SectionDemux::~SectionDemux ()
 {
 }
 
@@ -259,7 +261,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     // synchronization on this PID (usually, PID's carrying sections
     // are not scrambled).
 
-    if (pkt.getScrambling ()) {
+    if (pkt.getScrambling()) {
         _status.scrambled++;
         pc.syncLost ();
         return;
@@ -444,7 +446,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
 
-            ETIDContext& tc (pc.tids[etid]);
+            ETIDContext& tc(pc.tids[etid]);
 
             // If this is a new version of the table, reset the TID context.
             // Note that short sections do not have versions, so the version
@@ -500,7 +502,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     tc.sect_received++;
 
                     // If the table is completed and a handler is present, build the table.
-                    tc.notify(*this, false);
+                    tc.notify(*this, false, false);
                 }
             }
             catch (...) {
@@ -543,10 +545,10 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
 
 //----------------------------------------------------------------------------
-// Pack sections and in all incomplete tables and notify these rebuilt tables.
+// Fix incomplete tables and notify these rebuilt tables.
 //----------------------------------------------------------------------------
 
-void ts::SectionDemux::packAndFlushSections()
+void ts::SectionDemux::fixAndFlush(bool pack, bool fill_eit)
 {
     // Loop on all PID's.
     for (auto it1 = _pids.begin(); it1 != _pids.end(); ++it1) {
@@ -561,7 +563,7 @@ void ts::SectionDemux::packAndFlushSections()
             // Loop on all TID's currently found in the PID.
             for (auto it2 = pc.tids.begin(); it2 != pc.tids.end(); ++it2) {
                 // Force a notification of the partial table, if any.
-                it2->second.notify(*this, true);
+                it2->second.notify(*this, pack, fill_eit);
             }
         }
         catch (...) {

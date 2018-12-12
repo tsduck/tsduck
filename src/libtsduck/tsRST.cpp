@@ -51,12 +51,12 @@ TS_ID_SECTION_DISPLAY(ts::RST::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::RST::RunningStatusNames({
-    {u"undefined", 0},
-    {u"not-running", 1},
-    {u"starting", 2},
-    {u"pausing", 3},
-    {u"running", 4},
-    {u"off-air", 5},
+    {u"undefined",   RS_UNDEFINED},
+    {u"not-running", RS_NOT_RUNNING},
+    {u"starting",    RS_STARTING},
+    {u"pausing",     RS_PAUSING},
+    {u"running",     RS_RUNNING},
+    {u"off-air",     RS_OFF_AIR},
 });
 
 

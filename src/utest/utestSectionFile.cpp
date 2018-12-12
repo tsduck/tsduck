@@ -420,7 +420,8 @@ void SectionFileTest::testBuildSections()
 
     // Reload files.
     ts::SectionFile binFile;
-    CPPUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin, report(), ts::CRC32::CHECK));
+    binFile.setCRCValidation(ts::CRC32::CHECK);
+    CPPUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin, report()));
     CPPUNIT_ASSERT_EQUAL(size_t(3), binFile.tables().size());
     CPPUNIT_ASSERT_EQUAL(size_t(5), binFile.sections().size());
     CPPUNIT_ASSERT_EQUAL(size_t(0), binFile.orphanSections().size());

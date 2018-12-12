@@ -788,9 +788,6 @@ else
     CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
     ifeq ($(MAIN_ARCH),arm)
         COMMON_WARNINGS += -Wno-psabi
-    else
-        # ARM target is known to generate too many spurious cast-align errors
-        COMMON_WARNINGS += -Wcast-align
     endif
     ifdef GCC_6_OR_MORE
         CXXFLAGS_WARNINGS += -Wsuggest-override

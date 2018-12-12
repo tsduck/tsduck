@@ -204,16 +204,16 @@
       <region country_code="erg" country_region_id="17" local_time_offset="120" time_of_change="2018-03-07 04:00:00" next_time_offset="90"/>
     </local_time_offset_descriptor>
   </TOT>
-  <EIT type="pf" version="2" current="true" actual="true" service_id="0x0234" transport_stream_id="0x4661" original_network_id="0x621A" segment_last_section_number="0x00" last_table_id="0x4E">
-    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true" preferred_section="0">
+  <EIT type="pf" version="2" current="true" actual="true" service_id="0x0234" transport_stream_id="0x4661" original_network_id="0x621A" last_table_id="0x4E">
+    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
         <text>Event description</text>
       </short_event_descriptor>
     </event>
   </EIT>
-  <EIT type="8" version="4" current="true" actual="false" service_id="0x0666" transport_stream_id="0x4693" original_network_id="0x1268" segment_last_section_number="0x00" last_table_id="0x69">
-    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true" preferred_section="0">
+  <EIT type="8" version="4" current="true" actual="false" service_id="0x0666" transport_stream_id="0x4693" original_network_id="0x1268" last_table_id="0x69">
+    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
         <text>Event description</text>
