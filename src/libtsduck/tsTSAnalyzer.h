@@ -264,11 +264,6 @@ namespace ts {
             //! @param [in] etid Externded table id.
             //!
             ETIDContext(const ETID& etid = ETID());
-
-            //!
-            //! Destructor.
-            //!
-            ~ETIDContext();
         };
 
         //!
@@ -355,11 +350,6 @@ namespace ts {
             //! @param [in] description PID description.
             //!
             PIDContext(PID pid, const UString& description = UNREFERENCED);
-
-            //!
-            //! Destructor.
-            //!
-            ~PIDContext();
 
             //!
             //! Register a service id for the PID.

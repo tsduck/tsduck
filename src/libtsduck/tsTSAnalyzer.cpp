@@ -98,13 +98,10 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _t2mi_demux(this)
 {
     // Specify the PID filters to collect PSI tables.
-    _demux.addPID(PID_PAT);
-    _demux.addPID(PID_CAT);
-    _demux.addPID(PID_TSDT);
-    _demux.addPID(PID_NIT);
-    _demux.addPID(PID_RST);
-    _demux.addPID(PID_SDT);  // also BAT
-    _demux.addPID(PID_TDT);  // also TOT
+    // Start with all MPEG/DVB reserved PID's.
+    for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
+        _demux.addPID(pid);
+    }
 }
 
 
@@ -172,10 +169,10 @@ void ts::TSAnalyzer::reset()
     _pes_demux.reset();
 
     // Specify the PID filters to collect PSI tables.
-    _demux.addPID(PID_PAT);
-    _demux.addPID(PID_CAT);
-    _demux.addPID(PID_SDT);  // also BAT
-    _demux.addPID(PID_TDT);  // also TOT
+    // Start with all MPEG/DVB reserved PID's.
+    for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
+        _demux.addPID(pid);
+    }
 }
 
 
@@ -330,15 +327,6 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
 
 
 //----------------------------------------------------------------------------
-// Destructor for the PID context
-//----------------------------------------------------------------------------
-
-ts::TSAnalyzer::PIDContext::~PIDContext()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Constructor for the ETID context
 //----------------------------------------------------------------------------
 
@@ -354,15 +342,6 @@ ts::TSAnalyzer::ETIDContext::ETIDContext(const ETID& etid_) :
     versions(),
     first_pkt(0),
     last_pkt(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Destructor for the ETID context
-//----------------------------------------------------------------------------
-
-ts::TSAnalyzer::ETIDContext::~ETIDContext()
 {
 }
 
@@ -437,7 +416,7 @@ ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
     }
     else {
         ETIDContextPtr result(new ETIDContext(etid));
-        pc->sections [etid] = result;
+        pc->sections[etid] = result;
         result->first_version = section.version();
         return result;
     }

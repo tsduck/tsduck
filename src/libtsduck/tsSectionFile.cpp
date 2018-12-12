@@ -49,11 +49,9 @@ ts::SectionFile::SectionFile() :
     _tables(),
     _sections(),
     _orphanSections(),
-    _xmlTweaks()
-{
-}
-
-ts::SectionFile::~SectionFile()
+    _xmlTweaks(),
+    _charset(),
+    _crc_op(CRC32::IGNORE)
 {
 }
 
@@ -74,11 +72,11 @@ void ts::SectionFile::clear()
 // Add a table in the file.
 //----------------------------------------------------------------------------
 
-void ts::SectionFile::add(const AbstractTablePtr& table, const DVBCharset* charset)
+void ts::SectionFile::add(const AbstractTablePtr& table)
 {
     if (!table.isNull() && table->isValid()) {
         BinaryTablePtr bin(new BinaryTable);
-        table->serialize(*bin, charset);
+        table->serialize(*bin, _charset);
         if (bin->isValid()) {
             add(bin);
         }
@@ -201,7 +199,7 @@ void ts::SectionFile::collectLastTable()
 // Load a binary section file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadBinary(const UString& file_name, Report& report, CRC32::Validation crc_op)
+bool ts::SectionFile::loadBinary(const UString& file_name, Report& report)
 {
     // Open the input file.
     std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
@@ -213,20 +211,20 @@ bool ts::SectionFile::loadBinary(const UString& file_name, Report& report, CRC32
 
     // Load the section file.
     ReportWithPrefix report_internal(report, file_name + u": ");
-    const bool success = loadBinary(strm, report_internal, crc_op);
+    const bool success = loadBinary(strm, report_internal);
     strm.close();
 
     return success;
 }
 
-bool ts::SectionFile::loadBinary(std::istream& strm, Report& report, CRC32::Validation crc_op)
+bool ts::SectionFile::loadBinary(std::istream& strm, Report& report)
 {
     clear();
 
     // Read all binary sections one by one.
     for (;;) {
         SectionPtr sp(new Section);
-        if (sp->read(strm, crc_op, report)) {
+        if (sp->read(strm, _crc_op, report)) {
             add(sp);
         }
         else {
@@ -275,31 +273,31 @@ bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadXML(const UString& file_name, Report& report, const DVBCharset* charset)
+bool ts::SectionFile::loadXML(const UString& file_name, Report& report)
 {
     clear();
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
-    return doc.load(file_name, false) && parseDocument(doc, charset);
+    return doc.load(file_name, false) && parseDocument(doc);
 }
 
-bool ts::SectionFile::loadXML(std::istream& strm, Report& report, const DVBCharset* charset)
+bool ts::SectionFile::loadXML(std::istream& strm, Report& report)
 {
     clear();
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
-    return doc.load(strm) && parseDocument(doc, charset);
+    return doc.load(strm) && parseDocument(doc);
 }
 
-bool ts::SectionFile::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
+bool ts::SectionFile::parseXML(const UString& xml_content, Report& report)
 {
     clear();
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
-    return doc.parse(xml_content) && parseDocument(doc, charset);
+    return doc.parse(xml_content) && parseDocument(doc);
 }
 
-bool ts::SectionFile::parseDocument(const xml::Document& doc, const DVBCharset* charset)
+bool ts::SectionFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     xml::Document model(doc.report());
@@ -337,18 +335,18 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc, const DVBCharset* 
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::saveXML(const UString& file_name, Report& report, const DVBCharset* charset) const
+bool ts::SectionFile::saveXML(const UString& file_name, Report& report) const
 {
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
-    return generateDocument(doc, charset) && doc.save(file_name);
+    return generateDocument(doc) && doc.save(file_name);
 }
 
-ts::UString ts::SectionFile::toXML(Report& report, const DVBCharset* charset) const
+ts::UString ts::SectionFile::toXML(Report& report) const
 {
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
-    return generateDocument(doc, charset) ? doc.toString() : UString();
+    return generateDocument(doc) ? doc.toString() : UString();
 }
 
 
@@ -356,7 +354,7 @@ ts::UString ts::SectionFile::toXML(Report& report, const DVBCharset* charset) co
 // Generate an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::generateDocument(xml::Document& doc, const DVBCharset* charset) const
+bool ts::SectionFile::generateDocument(xml::Document& doc) const
 {
     // Initialize the document structure.
     xml::Element* root = doc.initialize(u"tsduck");
@@ -368,7 +366,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc, const DVBCharset* cha
     for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
         const BinaryTablePtr& table(*it);
         if (!table.isNull()) {
-            table->toXML(root, false, charset);
+            table->toXML(root, false, _charset);
         }
     }
 
@@ -421,29 +419,28 @@ ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType ty
 // Load a binary or XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::load(const UString& file_name, Report& report, FileType type, CRC32::Validation crc_op, const DVBCharset* charset)
+bool ts::SectionFile::load(const UString& file_name, Report& report, FileType type)
 {
     switch (GetFileType(file_name, type)) {
         case BINARY:
-            return loadBinary(file_name, report, crc_op);
+            return loadBinary(file_name, report);
         case XML:
-            return loadXML(file_name, report, charset);
+            return loadXML(file_name, report);
         default:
             report.error(u"unknown file type for %s", {file_name});
             return false;
     }
 }
 
-bool ts::SectionFile::load(std::istream& strm, Report& report, FileType type, CRC32::Validation crc_op, const DVBCharset* charset)
+bool ts::SectionFile::load(std::istream& strm, Report& report, FileType type)
 {
     switch (type) {
         case BINARY:
-            return loadBinary(strm, report, crc_op);
+            return loadBinary(strm, report);
         case XML:
-            return loadXML(strm, report, charset);
+            return loadXML(strm, report);
         default:
             report.error(u"unknown input file type");
             return false;
     }
 }
-

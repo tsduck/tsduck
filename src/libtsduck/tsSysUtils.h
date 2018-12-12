@@ -130,6 +130,33 @@ namespace ts {
     TSDUCKDLL UString VernacularFilePath(const UString& path);
 
     //!
+    //! Check if a file path is absolute (starting at a root of a file system).
+    //!
+    //! @param [in] path A file path.
+    //! @return True if @a path is an absolute file path.
+    //!
+    TSDUCKDLL bool IsAbsoluteFilePath(const UString& path);
+
+    //!
+    //! Build the absolute form of a file path.
+    //!
+    //! @param [in] path A file path.
+    //! @param [in] base The base directory to use if @a path is a relative file path.
+    //! By default, when @a base is empty, the current working directory is used.
+    //! @return The absolute form of @a path after cleanup.
+    //!
+    TSDUCKDLL UString AbsoluteFilePath(const UString& path, const UString& base = UString());
+
+    //!
+    //! Cleanup a file path.
+    //!
+    //! @param [in] path A file path.
+    //! @return The clean form of @a path. Double slashes are removed.
+    //! Forms such as "." or ".." are reduced.
+    //!
+    TSDUCKDLL UString CleanupFilePath(const UString& path);
+
+    //!
     //! Return the directory name of a file path ("dir/foo.bar" => "dir").
     //!
     //! @param [in] path A file path.
@@ -189,6 +216,38 @@ namespace ts {
     //! @return The full path of the executable file which is run in the current process.
     //!
     TSDUCKDLL UString ExecutableFile();
+
+    //!
+    //! Check if a file path is a symbolic link.
+    //! @param [in] path A file path.
+    //! @return True if @a path is a symbolic link.
+    //!
+    TSDUCKDLL bool IsSymbolicLink(const UString& path);
+
+    //!
+    //! Flags for ResolveSymbolicLinks().
+    //!
+    enum ResolveSymbolicLinksFlags {
+        LINK_SINGLE   = 0x0000,  //!< Default: simply single name resolution.
+        LINK_RECURSE  = 0x0001,  //!< Resolve symbolic recursively.
+        LINK_ABSOLUTE = 0x0002,  //!< Rebuild absolute path.
+    };
+
+    //!
+    //! Resolve symbolic links.
+    //! On Unix systems, resolve symbolic links and return the corresponding link.
+    //! On Windows and systems without symbolic links, return @a path.
+    //! @param [in] path A file path.
+    //! @param [in] flags Option flags, bit mask of ResolveSymbolicLinksFlags values.
+    //! @return The fully resolved path.
+    //!
+    TSDUCKDLL UString ResolveSymbolicLinks(const UString& path, ResolveSymbolicLinksFlags flags = LINK_SINGLE);
+
+    //!
+    //! Get the current working directory.
+    //! @return The current working directory.
+    //!
+    TSDUCKDLL UString CurrentWorkingDirectory();
 
     //!
     //! Suspend the current thread for the specified period.
@@ -562,4 +621,5 @@ namespace ts {
     TSDUCKDLL bool SetBinaryModeStdout(Report& report = CERR);
 }
 
+TS_FLAGS_OPERATORS(ts::ResolveSymbolicLinksFlags)
 #include "tsSysUtilsTemplate.h"

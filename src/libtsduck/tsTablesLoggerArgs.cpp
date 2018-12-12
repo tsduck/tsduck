@@ -75,6 +75,7 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     no_duplicate(false),
     pack_all_sections(false),
     pack_and_flush(false),
+    fill_eit(false),
     tid(),
     tidext(),
     use_current(true),
@@ -115,6 +116,12 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"section payloads containing the same byte value (all 0x00 or all 0xFF "
               u"for instance) are ignored. Typically, such sections are stuffing and "
               u"can be ignored that way.");
+
+    args.option(u"fill-eit");
+    args.help(u"fill-eit",
+              u"Before exiting, add missing empty sections in EIT's and flush them. "
+              u"This can be useful with segmented EIT schedule where empty sections "
+              u"at end of segments are usually not transmitted.");
 
     args.option(u"flush", 'f');
     args.help(u"flush", u"Flush output after each display.");
@@ -206,7 +213,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"valid complete table. Its section_number and last_section_number are forced "
               u"to zero. Use with care because this may create inconsistent tables. This "
               u"option can be useful with tables with sparse sections such as EIT's to save "
-              u"them in XML format.");
+              u"them in XML format (as an alternative, see also --fill-eit).");
 
     args.option(u"pack-and-flush");
     args.help(u"pack-and-flush",
@@ -318,6 +325,7 @@ bool ts::TablesLoggerArgs::load(Args& args)
     udp_ttl = args.intValue(u"ttl", 0);
     pack_all_sections = args.present(u"pack-all-sections");
     pack_and_flush = args.present(u"pack-and-flush");
+    fill_eit = args.present(u"fill-eit");
     all_once = args.present(u"all-once");
     all_sections = all_once || pack_all_sections || args.present(u"all-sections");
     max_tables = args.intValue<uint32_t>(u"max-tables", 0);

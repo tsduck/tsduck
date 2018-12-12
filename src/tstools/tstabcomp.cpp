@@ -217,6 +217,8 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
 
     ts::SectionFile file;
     file.setTweaks(opt.xmlTweaks.tweaks());
+    file.setDefaultCharset(opt.defaultCharset);
+    file.setCRCValidation(ts::CRC32::CHECK);
 
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
 
@@ -236,12 +238,12 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
     else if (compile) {
         // Load XML file and save binary sections.
         opt.verbose(u"Compiling %s to %s", {infile, outname});
-        return file.loadXML(infile, report, opt.defaultCharset) && file.saveBinary(outname, report);
+        return file.loadXML(infile, report) && file.saveBinary(outname, report);
     }
     else {
         // Load binary sections and save XML file.
         opt.verbose(u"Decompiling %s to %s", {infile, outname});
-        return file.loadBinary(infile, report, ts::CRC32::CHECK) && file.saveXML(outname, report, opt.defaultCharset);
+        return file.loadBinary(infile, report) && file.saveXML(outname, report);
     }
 }
 

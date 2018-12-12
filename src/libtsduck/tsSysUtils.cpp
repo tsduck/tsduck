@@ -55,6 +55,35 @@ TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex)
 
 
 //----------------------------------------------------------------------------
+// Get the current working directory.
+//----------------------------------------------------------------------------
+
+ts::UString ts::CurrentWorkingDirectory()
+{
+#if defined(TS_WINDOWS)
+
+    // Window implementation.
+    std::array<::WCHAR, 2048> name;
+    const ::DWORD length = ::GetCurrentDirectoryW(::DWORD(name.size()), name.data());
+    return UString(name, length);
+
+#else
+
+    // Unix implementation.
+    std::array<char, 2048> name;
+    if (::getcwd(name.data(), name.size() - 1) == nullptr) {
+        name[0] = '\0'; // error
+    }
+    else {
+        name[name.size() - 1] = '\0'; // enforce null termination.
+    }
+    return UString::FromUTF8(name.data());
+
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Return a "vernacular" version of a file path.
 //----------------------------------------------------------------------------
 
@@ -63,7 +92,17 @@ ts::UString ts::VernacularFilePath(const UString& path)
     UString vern(path);
 
 #if defined(TS_WINDOWS)
-    // On Windows, transform "/c/" pattern into "C:\"
+    // With Windows Linux Subsystem, the syntax "/mnt/c/" means "C:\"
+    if (vern.length() >= 7 && vern.startWith(u"/mnt/") && IsAlpha(vern[5]) && vern[6] == u'/') {
+        vern.erase(0, 4);
+    }
+
+    // On Cygwin, the syntax "/cygdrive/C/" means "C:\"
+    if (vern.startWith(u"/cygdrive/")) {
+        vern.erase(0, 9);
+    }
+
+    // On Windows, transform "/c/" pattern into "C:\" (typical on Msys).
     if (vern.length() >= 3 && vern[0] == u'/' && IsAlpha(vern[1]) && vern[2] == u'/') {
         vern[0] = ToUpper(vern[1]);
         vern[1] = u':';
@@ -79,6 +118,88 @@ ts::UString ts::VernacularFilePath(const UString& path)
     }
 
     return vern;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a file path is absolute (starting at a root of a file system).
+//----------------------------------------------------------------------------
+
+bool ts::IsAbsoluteFilePath(const ts::UString& path)
+{
+#if defined(TS_WINDOWS)
+    return path.startWith(u"\\\\") || (path.length() >= 3 && IsAlpha(path[0]) && path[1] == u':' && path[2] == u'\\');
+#else
+    return !path.empty() && path[0] == u'/';
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Cleanup a file path.
+//----------------------------------------------------------------------------
+
+ts::UString ts::CleanupFilePath(const UString& path)
+{
+    // Include a trailing slash for subsequent substitutions.
+    UString clean(path);
+    clean.append(PathSeparator);
+
+    // Patterns to clean.
+    const UString parent{PathSeparator, u'.', u'.', PathSeparator};  //  /../
+    const UString current{PathSeparator, u'.', PathSeparator};       //  /./
+    const UString dslash{PathSeparator, PathSeparator};              //  //
+    size_t pos = NPOS;
+    size_t up = NPOS;
+
+    // Remove redundant directory forms.
+    while ((pos = clean.find(dslash)) != NPOS) {
+        clean.erase(pos, 1);
+    }
+    while ((pos = clean.find(current)) != NPOS) {
+        clean.erase(pos, 2);
+    }
+
+    // Remove redundant "parent/../".
+    while ((pos = clean.find(parent)) != NPOS) {
+        if (pos == 0) {
+            // Path starting with "/../" -> can be removed.
+            clean.erase(0, 3);
+        }
+        else if ((up = clean.rfind(PathSeparator, pos - 1)) == NPOS) {
+            // No "/" before "/../" -> the start of the string is the parent.
+            clean.erase(0, pos + 4);
+        }
+        else {
+            // Replace "/parent/../" by "/".
+            clean.erase(up, pos - up + 3);
+        }
+    }
+
+    // Remove trailing slashes.
+    while (!clean.empty() && clean.back() == PathSeparator) {
+        clean.pop_back();
+    }
+    return clean;
+}
+
+
+//----------------------------------------------------------------------------
+// Build the absolute form af a file path.
+//----------------------------------------------------------------------------
+
+ts::UString ts::AbsoluteFilePath(const UString& path, const UString& base)
+{
+    // Starting with a local form of the file path.
+    UString full(VernacularFilePath(path));
+
+    // If the path is already absolute, nothing to do.
+    if (IsAbsoluteFilePath(full)) {
+        return CleanupFilePath(full);
+    }
+    else {
+        return CleanupFilePath((base.empty() ? CurrentWorkingDirectory() : base) + PathSeparator + full);
+    }
 }
 
 
@@ -223,18 +344,7 @@ ts::UString ts::ExecutableFile()
 
     // Linux implementation.
     // /proc/self/exe is a symbolic link to the executable.
-    // Read the value of the symbolic link.
-    int length;
-    char name[1024];
-    // Flawfinder: ignore: readlink does not terminate with ASCII NUL.
-    if ((length = ::readlink("/proc/self/exe", name, sizeof(name))) < 0) {
-        throw ts::Exception(u"Symbolic link /proc/self/exe error", errno);
-    }
-    else {
-        assert(length <= int(sizeof(name)));
-        // We handle here the fact that readlink does not terminate with ASCII NUL.
-        return UString::FromUTF8(name, length);
-    }
+    return ResolveSymbolicLinks(u"/proc/self/exe");
 
 #elif defined(TS_MAC)
 
@@ -1087,4 +1197,71 @@ bool ts::StdErrIsTerminal()
 #else
     return ::isatty(STDERR_FILENO);
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a file path is a symbolic link.
+//----------------------------------------------------------------------------
+
+bool ts::IsSymbolicLink(const UString& path)
+{
+#if defined(TS_UNIX)
+    struct stat st;
+    TS_ZERO(st);
+    if (::lstat(path.toUTF8().c_str(), &st) != 0) {
+        return false; // lstat() error
+    }
+    else {
+        return (st.st_mode & S_IFMT) == S_IFLNK;
+    }
+#else
+    // Non Unix systems, no symbolic links.
+    return false;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Resolve symbolic links.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ResolveSymbolicLinks(const ts::UString &path, ResolveSymbolicLinksFlags flags)
+{
+    UString link((flags & LINK_ABSOLUTE) != 0 ? AbsoluteFilePath(path) : path);
+
+#if defined(TS_UNIX)
+
+    // Only on Unix systems: resolve symbolic links.
+    std::array<char, 2048> name;
+    int foolproof = 64; // Avoid endless loops in failing links.
+
+    // Loop on nested symbolic links.
+    while (IsSymbolicLink(link)) {
+
+        // Translate the symbolic link.
+        const ssize_t length = ::readlink(link.toUTF8().c_str(), name.data(), name.size());
+        if (length <= 0) {
+            // Error, cannot translate the link or empty value, return the path.
+            break;
+        }
+        assert(length <= ssize_t(name.size()));
+
+        // Next step is the translated link.
+        if ((flags & LINK_ABSOLUTE) != 0) {
+            link = AbsoluteFilePath(UString::FromUTF8(name.data(), size_t(length)), DirectoryName(link));
+        }
+        else {
+            link.assignFromUTF8(name.data(), size_t(length));
+        }
+
+        // Without recursion, do not loop.
+        if ((flags & LINK_RECURSE) == 0 || foolproof-- <= 0) {
+            break;
+        }
+    }
+
+#endif
+
+    return link;
 }
