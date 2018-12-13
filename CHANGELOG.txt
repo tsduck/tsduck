@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1060
+VERSION 3.16-1065
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,7 @@ VERSION 3.16-1060
   * Added option --pack to plugin "encap".
   * Added options --log, --log-size, --no-headers and --pid to "tsdump".
   * Added option --fill-eit to "tstables" and plugin "tables".
+  * Added options for Dektec demodulators in input plugin "dektec".
   * In plugin "rmsplice", immediate splice events are no longer ignored.
   * Implement guidelines from ETSI TR 101 211 when compiling EIT's.
   * In XML descriptions of NIT and BAT, it is now possible to specify a
