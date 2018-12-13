@@ -214,8 +214,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"64-QAM", DTAPI_MOD_DVBT_QAM64},
     }));
     help(u"constellation",
-         u"DVB-T modulators: indicate the constellation type. Must be one of "
-         u"QPSK, 16-QAM, 64-QAM. The default is 64-QAM.");
+         u"DVB-T modulators: indicate the constellation type. The default is 64-QAM.");
 
     option(u"convolutional-rate", 'r', Enumeration({
         {u"1/2",  DTAPI_MOD_1_2},
@@ -456,11 +455,8 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"CMMB",          DTAPI_MOD_CMMB},
     }));
     help(u"modulation",
-         u"For modulators, indicate the modulation type. Must be one of:  "
-         u"4-QAM, 16-QAM, 32-QAM, 64-QAM, 128-QAM, 256-QAM, ADTB-T, ATSC-VSB, CMMB, "
-         u"DMB-T, DVB-S, DVB-S-QPSK (same as DVB-S), DVB-S-BPSK, DVB-S2, DVB-S2-QPSK "
-         u"(same as DVB-S2), DVB-S2-8PSK, DVB-S2-16APSK, DVB-S2-32APSK, DVB-T,  "
-         u"DVB-T2, ISDB-T. For DVB-H, specify DVB-T. For DMB-H, specify DMB-T. "
+         u"For modulators, indicate the modulation type. "
+         u"For DVB-H, specify DVB-T. For DMB-H, specify DMB-T. "
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is:\n"
          u"DTA-107:   DVB-S-QPSK\n"
@@ -621,7 +617,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     }));
     help(u"qam-b",
          u"QAM modulators: with --j83 B, indicate the QAM-B interleaver mode. "
-         u"The default is I128-J1D. ");
+         u"The default is I128-J1D.");
 
     option(u"s2-gold-code", 0, INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
     help(u"s2-gold-code",
@@ -727,8 +723,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"16", DTAPI_MOD_ATSC_VSB16},
     }));
     help(u"vsb",
-         u"ATSC modulators: indicate the VSB constellation. Must be one of "
-         u"8 (19,392,658 Mb/s) or 16 (38,785,317 Mb/s). The default is 8.");
+         u"ATSC modulators: indicate the VSB constellation. The default is 8.");
 
     option(u"vsb-taps", 0, INTEGER, 0, 1, 2, 256);
     help(u"vsb-taps",
