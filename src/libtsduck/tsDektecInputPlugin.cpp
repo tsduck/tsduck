@@ -31,7 +31,9 @@
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
+#include "tsModulation.h"
 #include "tsIntegerUtils.h"
+#include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsLNB.h"
 TSDUCK_SOURCE;
@@ -64,6 +66,11 @@ bool ts::DektecInputPlugin::start()
     return false;
 }
 
+bool ts::DektecInputPlugin::configureLNB()
+{
+    return false;
+}
+
 bool ts::DektecInputPlugin::stop()
 {
     return true;
@@ -89,6 +96,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
 class ts::DektecInputPlugin::Guts
 {
 public:
+    Guts();                           // Constructor.
     bool                is_started;   // Device started
     int                 dev_index;    // Dektec device index
     int                 chan_index;   // Device input channel index
@@ -101,23 +109,31 @@ public:
     bool                got_bitrate;  // Got bitrate at least once.
     uint64_t            demod_freq;   // Demodulation frequency in Hz
     Dtapi::DtDemodPars  demod_pars;   // Demodulation parameters
-
-    Guts() :                          // Constructor.
-        is_started(false),
-        dev_index(-1),
-        chan_index(-1),
-        timeout_ms(0),
-        device(),
-        dtdev(),
-        chan(),
-        init_cnt(0),
-        cur_bitrate(0),
-        got_bitrate(false),
-        demod_freq(0),
-        demod_pars()
-    {
-    }
+    int                 sat_number;   // Satellite number
+    Polarization        polarity;     // Polarity.
+    bool                high_band;    // Use LNB high frequency band.
+    bool                lnb_setup;    // Need LNB setup.
 };
+
+ts::DektecInputPlugin::Guts::Guts() :
+    is_started(false),
+    dev_index(-1),
+    chan_index(-1),
+    timeout_ms(0),
+    device(),
+    dtdev(),
+    chan(),
+    init_cnt(0),
+    cur_bitrate(0),
+    got_bitrate(false),
+    demod_freq(0),
+    demod_pars(),
+    sat_number(0),
+    polarity(POL_VERTICAL),
+    high_band(false),
+    lnb_setup(false)
+{
+}
 
 
 //----------------------------------------------------------------------------
@@ -210,8 +226,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 
     option(u"frequency", 'f', POSITIVE);
     help(u"frequency",
-         u"All satellite receiver devices: indicate the frequency, in Hz, of the "
-         u"input carrier. There is no default. "
+         u"All demodulators: indicate the frequency, in Hz, of the input carrier. There is no default. "
          u"For DVB-S/S2 receivers, the specified frequency is the \"intermediate\" "
          u"frequency. For convenience, the option --satellite-frequency can be used "
          u"instead of --frequency when the intermediate frequency is unknown. "
@@ -294,6 +309,10 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is DVB-S.\n");
 
+    option(u"polarity", 0, PolarizationEnum);
+    help(u"polarity",
+         u"DVB-S/S2 receivers: indicate the polarity. The default is \"vertical\".");
+
     option(u"qam-b", 0, Enumeration({
         {u"auto",     DTAPI_MOD_QAMB_IL_AUTO},
         {u"I128-J1D", DTAPI_MOD_QAMB_I128_J1D},
@@ -329,6 +348,12 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"when the satellite frequency is better known than the intermediate "
          u"frequency. The options --frequency and --satellite-frequency are mutually "
          u"exclusive.");
+
+    option(u"satellite-number", 0, INTEGER, 0, 1, 0, 3);
+    help(u"satellite-number",
+         u"DVB-S/S2 receivers: indicate the satellite/dish number. "
+         u"Must be 0 to 3 with DiSEqC switches and 0 to 1 for non-DiSEqC switches. "
+         u"The default is 0.");
 
     option(u"symbol-rate", 0, POSITIVE);
     help(u"symbol-rate",
@@ -368,6 +393,10 @@ bool ts::DektecInputPlugin::getOptions()
     _guts->dev_index = intValue<int>(u"device", -1);
     _guts->chan_index = intValue<int>(u"channel", -1);
     _guts->timeout_ms = intValue<int>(u"receive-timeout", -1);
+    _guts->sat_number = intValue<int>(u"satellite-number", 0);
+    _guts->polarity = enumValue<Polarization>(u"polarity", POL_VERTICAL);
+    _guts->high_band = false;
+    _guts->lnb_setup = false;
 
     // Get LNB description, in case --satellite-frequency is used
     LNB lnb; // Universal LNB by default
@@ -391,6 +420,7 @@ bool ts::DektecInputPlugin::getOptions()
     uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
     if (sat_frequency > 0) {
         _guts->demod_freq = lnb.intermediateFrequency(sat_frequency);
+        _guts->high_band = lnb.useHighBand(sat_frequency);
     }
     else {
         _guts->demod_freq = intValue<uint64_t>(u"frequency", 0);
@@ -447,6 +477,7 @@ bool ts::DektecInputPlugin::getOptions()
                     dvbs->m_SymRate = intValue<int>(u"symbol-rate", DTAPI_MOD_SYMRATE_AUTO);
                     dvbs->m_SpecInv = DTAPI_MOD_S_S2_SPECINV_AUTO;
                 }
+                _guts->lnb_setup = true;
                 break;
             }
             case DTAPI_MOD_DVBS2_8PSK:
@@ -462,6 +493,7 @@ bool ts::DektecInputPlugin::getOptions()
                     dvbs2->m_Pilots = DTAPI_MOD_S2_PILOTS_AUTO;
                     dvbs2->m_SpecInv = DTAPI_MOD_S_S2_SPECINV_AUTO;
                 }
+                _guts->lnb_setup = true;
                 break;
             }
             case DTAPI_MOD_DVBT: {
@@ -588,6 +620,13 @@ bool ts::DektecInputPlugin::start()
 
     // Apply demodulation settings
     if (_guts->demod_freq > 0) {
+
+        // Configure the LNB for satellite reception.
+        if (_guts->lnb_setup && !configureLNB()) {
+            return false;
+        }
+
+        // Tune to the frequency and demodulation parameters.
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
             tsp->error(u"error tuning Dektec demodulator: %s", {DektecStrError(status)});
@@ -622,6 +661,103 @@ bool ts::DektecInputPlugin::start()
     // packet loss.
     _guts->init_cnt = 5;
     _guts->is_started = true;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Configure the LNB.
+//----------------------------------------------------------------------------
+
+bool ts::DektecInputPlugin::configureLNB()
+{
+    // For satellite reception, control the dish first.
+    // See the LinuxTV implementation for more details (file linux/tsTuner.cpp).
+    //
+    // Modern LNB's switch their polarisation depending of the DC component of
+    // their input (13V for vertical polarisation, 18V for horizontal).
+    // When they see a 22kHz signal at their input they switch into the high
+    // band and use a somewhat higher intermediate frequency to downconvert
+    // the signal.
+    //
+    // When your satellite equipment contains a DiSEqC switch device to switch
+    // between different satellites you have to send the according DiSEqC
+    // commands, usually command 0x38. Take a look into the DiSEqC spec
+    // available at http://www.eutelsat.org/ for the complete list of commands.
+    //
+    // The burst signal is used in old equipments and by cheap satellite A/B
+    // switches.
+    //
+    // Voltage, burst and 22kHz tone have to be consistent to the values
+    // encoded in the DiSEqC commands.
+
+    // Enable the LNB controller.
+    Dtapi::DTAPI_RESULT status = _guts->chan.LnbEnable(false);
+    if (status != DTAPI_OK) {
+        tsp->error(u"error enabling Dektec LNB controller: %s", {DektecStrError(status)});
+        return false;
+    }
+
+    // Stop 22 kHz continuous tone (was on if previously tuned on high band).
+    status = _guts->chan.LnbEnableTone(false);
+    if (status != DTAPI_OK) {
+        tsp->error(u"error stopping LNB tone: %s", {DektecStrError(status)});
+        return false;
+    }
+
+    // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
+    status = _guts->chan.LnbSetVoltage(_guts->polarity == POL_VERTICAL ? DTAPI_LNB_13V : DTAPI_LNB_18V);
+    if (status != DTAPI_OK) {
+        tsp->error(u"error setting LNB voltage: %s", {DektecStrError(status)});
+        return false;
+    }
+
+    // Wait at least 15ms. Not sure it is necessary with Dektec. It is necessary with LinuxTV.
+    // Is this required by Linux TV or this is the required LNB setup ?
+    SleepThread(15);
+
+    // Send tone burst: A for satellite 0, B for satellite 1.
+    // DiSEqC switches may address up to 4 dishes (satellite number 0 to 3)
+    // while non-DiSEqC switches can address only 2 (satellite number 0 to 1).
+    // This is why the DiSEqC command has space for 2 bits (4 states) while
+    // the "send tone burst" command is binary (A or B).
+    status = _guts->chan.LnbSendBurst(_guts->sat_number == 0 ? DTAPI_LNB_BURST_A : DTAPI_LNB_BURST_B);
+    if (status != DTAPI_OK) {
+        tsp->error(u"error sending LNB burst: %s", {DektecStrError(status)});
+        return false;
+    }
+
+    // Wait 15ms again.
+    SleepThread(15);
+
+    // Send DiSEqC commands. See DiSEqC spec ...
+    uint8_t cmd[6];
+    cmd[0] = 0xE0;  // Command from master, no reply expected, first transmission
+    cmd[1] = 0x10;  // Any LNB or switcher (master to all)
+    cmd[2] = 0x38;  // Write to port group 0
+    cmd[3] = 0xF0 | // Clear all 4 flags first, then set according to next 4 bits
+        ((uint8_t(_guts->sat_number) << 2) & 0x0F) |
+        (_guts->polarity == POL_VERTICAL ? 0x00 : 0x02) |
+        (_guts->high_band ? 0x01 : 0x00);
+    cmd[4] = 0x00;  // Unused
+    cmd[5] = 0x00;  // Unused
+
+    status = _guts->chan.LnbSendDiseqcMessage(cmd, int(sizeof(cmd)));
+    if (status != DTAPI_OK) {
+        tsp->error(u"error sending DiSeqC command: %s", {DektecStrError(status)});
+        return false;
+    }
+
+    // Wait 15ms again.
+    SleepThread(15);
+
+    // Start the 22kHz continuous tone when tuning to a transponder in the high band
+    status = _guts->chan.LnbEnableTone(_guts->high_band);
+    if (status != DTAPI_OK) {
+        tsp->error(u"error set LNB tone: %s", {DektecStrError(status)});
+        return false;
+    }
+
     return true;
 }
 
