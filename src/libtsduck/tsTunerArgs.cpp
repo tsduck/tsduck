@@ -427,7 +427,7 @@ void ts::TunerArgs::defineOptions(Args& args) const
         args.help(u"satellite-number",
                   u"Used for DVB-S and DVB-S2 tuners only. "
                   u"Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for "
-                  u"non-DiSEqC switches. The default is 0. ");
+                  u"non-DiSEqC switches. The default is 0.");
 
         args.option(u"spectral-inversion", 0, SpectralInversionEnum);
         args.help(u"spectral-inversion",

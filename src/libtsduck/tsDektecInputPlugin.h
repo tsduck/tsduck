@@ -67,6 +67,9 @@ namespace ts {
         class Guts;
         Guts* _guts;
 
+        // Configure the LNB. Return true on success.
+        bool configureLNB();
+
         // Inaccessible operations
         DektecInputPlugin() = delete;
         DektecInputPlugin(const DektecInputPlugin&) = delete;

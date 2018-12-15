@@ -76,7 +76,7 @@ linux|mingw {
 linux {
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
     INCLUDEPATH += $$SRCROOT/libtsduck/linux
-    LIBS += -lrt -ldl
+    LIBS += -lrt -ldl $$PROJROOT/dektec/LinuxSDK/DTAPI/Lib/GCC4.4/DTAPI64.o
 }
 mac {
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
