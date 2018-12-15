@@ -142,14 +142,14 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
         {u"8-MHz",  DTAPI_ATSC3_8MHZ},
     }));
     help(u"atsc3-bandwidth",
-         u"ATSC demodulators: indicate the ATSC 3.0 bandwitdth. The default is 8-MHz.");
+         u"ATSC demodulators: indicate the ATSC 3.0 bandwidth. The default is 8-MHz.");
 
     option(u"c2-bandwidth", 0, Enumeration({
         {u"6-MHz",  DTAPI_DVBC2_6MHZ},
         {u"8-MHz",  DTAPI_DVBC2_8MHZ},
     }));
     help(u"c2-bandwidth",
-         u"DVB-C2 demodulators: indicate the DVB-C2 bandwitdth. The default is 8-MHz.");
+         u"DVB-C2 demodulators: indicate the DVB-C2 bandwidth. The default is 8-MHz.");
 
     option(u"channel", 'c', UNSIGNED);
     help(u"channel",
@@ -205,7 +205,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
         {u"10",  DTAPI_DVBT2_10MHZ},
     }));
     help(u"dvbt-bandwidth",
-         u"DVB-T/T2 demodulators: indicate bandwidth in MHz. The default is 8 MHz. "
+         u"DVB-T/T2 demodulators: indicate the bandwidth in MHz. The default is 8 MHz. "
          u"The bandwidth values 1.7, 5 and 10 MHz are valid for DVB-T2 only.");
 
     option(u"frequency", 'f', POSITIVE);
@@ -217,7 +217,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"instead of --frequency when the intermediate frequency is unknown. "
          u"For DTA-2137 receivers, the valid range is 950 MHz to 2150 MHz (L Band).");
 
-    option(u"guard-interval", 'g', Enumeration({
+    option(u"guard-interval", 0, Enumeration({
         {u"auto", DTAPI_MOD_DVBT_GU_AUTO},
         {u"1/32", DTAPI_MOD_DVBT_G_1_32},
         {u"1/16", DTAPI_MOD_DVBT_G_1_16},
@@ -234,7 +234,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
         {u"8", DTAPI_ISDBT_BW_8MHZ},
     }));
     help(u"isdbt-bandwidth",
-         u"ISDB-T demodulators: indicate bandwidth in MHz. The default is 8 MHz.");
+         u"ISDB-T demodulators: indicate the bandwidth in MHz. The default is 8 MHz.");
 
     option(u"isdbt-segments", 0, Enumeration({
         {u"1",  DTAPI_ISDBT_SEGM_1},
