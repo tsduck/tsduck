@@ -94,11 +94,116 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     // Where to look at in input packet. Start at beginning of payload.
     size_t pktIndex = pkt.getHeaderSize();
 
-    // Get pointer field in PUSI packets.
-    const bool pusi = pkt.getPUSI();
-    const size_t pointerField = pusi && pktIndex < PKT_SIZE ? pkt.b[pktIndex++] : 0;
-    if (pusi && pktIndex + pointerField > PKT_SIZE) {
-        return lostSync(pkt, u"invalid packet, adaptation field or pointer field out of range");
+    // when PLAIN encapsulation is used it corresponds to PUSI;
+    // and when using the PES encapsulation it's an internal flag.
+    bool start_mark = false;
+
+    // A special case may arise when one original PES packet is fragmented
+    // and the pointer to the next inernal packet points to a position in the
+    // second part of the packet. This offset solves the problem.
+    // However, it's good to overcome the fragmentation!
+    size_t pes_fragment = 0;
+
+     // Differentiate whether it's a plain encapsulation or a PES encapsulation
+    if (!pkt.getTEI() && pkt.isClear() && pkt.hasPayload()) { // General checks
+        if (pkt.getPUSI() && pktIndex < (PKT_SIZE - 9) &&
+            pkt.b[pktIndex]   == 0x00 &&
+            pkt.b[pktIndex+1] == 0x00 &&
+            pkt.b[pktIndex+2] == 0x01) {
+            // PES header found, continue...
+            pktIndex += 3;
+
+             // Check for correct Type Signature of the PES packet
+            if (pkt.b[pktIndex++] != 0xBD) {
+                return lostSync(pkt, u"invalid PES packet, type differs");
+            }
+            // Private Stream 1 found, continue...
+
+            // Check for PES Size (2 bytes) and valid Flags
+            if (pkt.b[pktIndex++] != 0x00) {
+                return lostSync(pkt, u"invalid PES packet, size incompatible");
+            }
+            const size_t pes_size = pkt.b[pktIndex++];
+            // 178 bytes is the maximum PES packet size in origin.
+            // However, if an external processor splits the packet and inserts
+            // some PES header data (like PTS marks), then the size increases.
+            // We see PES lengths of 189, but a more conservative value is used.
+            if (pes_size > 255 || pes_size < 18) {
+                return lostSync(pkt, u"invalid PES packet, wrong size");
+            }
+            if (pkt.b[pktIndex] != 0x80 && pkt.b[pktIndex] != 0x84) {
+                return lostSync(pkt, u"invalid PES packet, incorrect flags");
+            }
+            pktIndex++; // Ignore these flags
+            pktIndex++; // Ignore these flags
+            size_t header_size = pkt.b[pktIndex++]; // PES optional header size (1 byte)
+            if (header_size > 0) {
+                // Advance up to the end of the PES header
+                pktIndex += header_size;
+                pes_fragment = header_size; // When fragmentation appears in the outer packet, this offset is added to checks.
+            }
+            // PES header OK!
+
+            // Start reading KLVA data...
+            if (pktIndex > PKT_SIZE - 18) {
+                return lostSync(pkt, u"invalid PES packet, data unknown");
+            }
+            // Check for our KLV correct KEY
+            // UL Used: 060E2B34.01010101.0F010800.0F0F0F0F
+            // This is an Unique ID in the testing range.
+            if (pkt.b[pktIndex]    != 0x06 || pkt.b[pktIndex+1]  != 0x0E || pkt.b[pktIndex+2]  != 0x2B || pkt.b[pktIndex+3]  != 0x34 ||
+                pkt.b[pktIndex+4]  != 0x01 || pkt.b[pktIndex+5]  != 0x01 || pkt.b[pktIndex+6]  != 0x01 || pkt.b[pktIndex+7]  != 0x01 ||
+                pkt.b[pktIndex+8]  != 0x0F || pkt.b[pktIndex+9]  != 0x01 || pkt.b[pktIndex+10] != 0x08 || pkt.b[pktIndex+11] != 0x00 ||
+                pkt.b[pktIndex+12] != 0x0F || pkt.b[pktIndex+13] != 0x0F || pkt.b[pktIndex+14] != 0x0F || (pkt.b[pktIndex+15] != 0x0F && pkt.b[pktIndex+15] != 0x1F)
+                ) {
+                return lostSync(pkt, u"invalid PES packet, incorrect UL Signature");
+            }
+            // KLV KEY OK, continue...
+            pktIndex += 16;
+            start_mark = pkt.b[pktIndex-1] & 0x10; // Get the equivalent PUSI flag from the last UL Key byte.
+
+            // Check for KLV correct LENGTH
+            size_t readed_length = pkt.b[pktIndex++];
+            if (readed_length > 127 && readed_length != 0x81) {
+                return lostSync(pkt, u"invalid PES packet, incorrect KLVA size");
+            }
+            if (readed_length > 127) readed_length = pkt.b[pktIndex++]; // BER long mode with 2 bytes
+            // KLV LENGTH OK, continue...
+
+            // Check for KLV correct VALUE
+            // No check here, this is the Data/Payload
+
+            // Warning: We assume that each packet is a complete PES packet.
+            // One special case is when an external processor has changed this,
+            // and here the PES packet is delivered in multiple TS packets!
+            // Following check breaks this case, so it's removed; as we can
+            // continue after this point with PUSI flag off like with plain
+            // encapsulation.
+            //#if (readed_length + pktIndex != PKT_SIZE) {
+            //#    return lostSync(pkt, u"invalid PES packet, KLVA payload doesn't match");
+            //#}
+            if (readed_length > 188) {
+                return lostSync(pkt, u"invalid PES packet, KLVA payload doesn't match");
+            }
+
+            // At this point ALL checks are OK!
+            // We assume that this is a valid PES envelope and
+            // the remainig data is the encapsulated packet.
+            }
+        else {
+            // We assume it's a PLAIN encapsultation.
+            start_mark = pkt.getPUSI();
+        }
+    } else return lostSync(pkt, u"incorrect packet");
+
+    // From this point the PES envelope is consumed (therefore transparent).
+    // We continue with the the PLAIN encapsulation.
+
+    // Get pointer field when INIT MARK appears.
+    const size_t pointerField = start_mark && pktIndex < PKT_SIZE ? pkt.b[pktIndex++] : 0;
+    if (start_mark && pktIndex + pointerField > PKT_SIZE + pes_fragment) {
+    // "pes_fragment" offset solves pointer overflows in fragmented outer packets.
+    return lostSync(pkt, u"invalid packet, adaptation field or pointer field out of range");
     }
 
     // Check continuity counter.
@@ -111,7 +216,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
 
     // If we previously lost synchronization, try to resync in current packet.
     if (!_synchronized) {
-        if (pusi) {
+        if (start_mark) { // PUSI mark
             // There is a packet start here, we have a chance to resync.
             pktIndex += pointerField;
             _synchronized = true;
