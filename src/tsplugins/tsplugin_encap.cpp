@@ -116,7 +116,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Specify a reference PID containing PCR's. The output PID will contain PCR's, "
          u"based on the same clock. By default, the output PID does not contain any PCR.");
 
-    option(u"pack", 0, INTEGER, 0, 1, 0, UNLIMITED_VALUE);
+    option(u"pack", 0, INTEGER, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"pack",
          u"Emit outer packets when they are full only. By default, emit outer packets "
          u"as soon as possible, when null packets are available on input. With the default "
