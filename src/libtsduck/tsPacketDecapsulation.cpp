@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2018, Thierry Lelegard
+// Copyright (c) 2005-2018, Thierry Lelegard (PES mode by lars18th)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -96,20 +96,22 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
 
     // when PLAIN encapsulation is used it corresponds to PUSI;
     // and when using the PES encapsulation it's an internal flag.
-    bool start_mark = false;
+    bool startMark = false;
 
     // A special case may arise when one original PES packet is fragmented
     // and the pointer to the next inernal packet points to a position in the
     // second part of the packet. This offset solves the problem.
     // However, it's good to overcome the fragmentation!
-    size_t pes_fragment = 0;
+    size_t pesFragment = 0;
 
      // Differentiate whether it's a plain encapsulation or a PES encapsulation
     if (!pkt.getTEI() && pkt.isClear() && pkt.hasPayload()) { // General checks
+
         if (pkt.getPUSI() && pktIndex < (PKT_SIZE - 9) &&
             pkt.b[pktIndex]   == 0x00 &&
             pkt.b[pktIndex+1] == 0x00 &&
-            pkt.b[pktIndex+2] == 0x01) {
+            pkt.b[pktIndex+2] == 0x01)
+        {
             // PES header found, continue...
             pktIndex += 3;
 
@@ -140,7 +142,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             if (header_size > 0) {
                 // Advance up to the end of the PES header
                 pktIndex += header_size;
-                pes_fragment = header_size; // When fragmentation appears in the outer packet, this offset is added to checks.
+                pesFragment = header_size; // When fragmentation appears in the outer packet, this offset is added to checks.
             }
             // PES header OK!
 
@@ -154,20 +156,22 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             if (pkt.b[pktIndex]    != 0x06 || pkt.b[pktIndex+1]  != 0x0E || pkt.b[pktIndex+2]  != 0x2B || pkt.b[pktIndex+3]  != 0x34 ||
                 pkt.b[pktIndex+4]  != 0x01 || pkt.b[pktIndex+5]  != 0x01 || pkt.b[pktIndex+6]  != 0x01 || pkt.b[pktIndex+7]  != 0x01 ||
                 pkt.b[pktIndex+8]  != 0x0F || pkt.b[pktIndex+9]  != 0x01 || pkt.b[pktIndex+10] != 0x08 || pkt.b[pktIndex+11] != 0x00 ||
-                pkt.b[pktIndex+12] != 0x0F || pkt.b[pktIndex+13] != 0x0F || pkt.b[pktIndex+14] != 0x0F || (pkt.b[pktIndex+15] != 0x0F && pkt.b[pktIndex+15] != 0x1F)
-                ) {
+                pkt.b[pktIndex+12] != 0x0F || pkt.b[pktIndex+13] != 0x0F || pkt.b[pktIndex+14] != 0x0F || (pkt.b[pktIndex+15] != 0x0F && pkt.b[pktIndex+15] != 0x1F))
+            {
                 return lostSync(pkt, u"invalid PES packet, incorrect UL Signature");
             }
             // KLV KEY OK, continue...
             pktIndex += 16;
-            start_mark = pkt.b[pktIndex-1] & 0x10; // Get the equivalent PUSI flag from the last UL Key byte.
+            startMark = pkt.b[pktIndex-1] & 0x10; // Get the equivalent PUSI flag from the last UL Key byte.
 
             // Check for KLV correct LENGTH
-            size_t readed_length = pkt.b[pktIndex++];
-            if (readed_length > 127 && readed_length != 0x81) {
+            size_t readLength = pkt.b[pktIndex++];
+            if (readLength > 127 && readLength != 0x81) {
                 return lostSync(pkt, u"invalid PES packet, incorrect KLVA size");
             }
-            if (readed_length > 127) readed_length = pkt.b[pktIndex++]; // BER long mode with 2 bytes
+            if (readLength > 127) {
+                readLength = pkt.b[pktIndex++]; // BER long mode with 2 bytes
+            }
             // KLV LENGTH OK, continue...
 
             // Check for KLV correct VALUE
@@ -182,28 +186,31 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             //#if (readed_length + pktIndex != PKT_SIZE) {
             //#    return lostSync(pkt, u"invalid PES packet, KLVA payload doesn't match");
             //#}
-            if (readed_length > 188) {
+            if (readLength > 188) {
                 return lostSync(pkt, u"invalid PES packet, KLVA payload doesn't match");
             }
 
             // At this point ALL checks are OK!
             // We assume that this is a valid PES envelope and
             // the remainig data is the encapsulated packet.
-            }
+        }
         else {
             // We assume it's a PLAIN encapsultation.
-            start_mark = pkt.getPUSI();
+            startMark = pkt.getPUSI();
         }
-    } else return lostSync(pkt, u"incorrect packet");
+    }
+    else {
+        return lostSync(pkt, u"incorrect packet");
+    }
 
     // From this point the PES envelope is consumed (therefore transparent).
     // We continue with the the PLAIN encapsulation.
 
     // Get pointer field when INIT MARK appears.
-    const size_t pointerField = start_mark && pktIndex < PKT_SIZE ? pkt.b[pktIndex++] : 0;
-    if (start_mark && pktIndex + pointerField > PKT_SIZE + pes_fragment) {
-    // "pes_fragment" offset solves pointer overflows in fragmented outer packets.
-    return lostSync(pkt, u"invalid packet, adaptation field or pointer field out of range");
+    const size_t pointerField = startMark && pktIndex < PKT_SIZE ? pkt.b[pktIndex++] : 0;
+    if (startMark && pktIndex + pointerField > PKT_SIZE + pesFragment) {
+        // "pes_fragment" offset solves pointer overflows in fragmented outer packets.
+        return lostSync(pkt, u"invalid packet, adaptation field or pointer field out of range");
     }
 
     // Check continuity counter.
@@ -216,7 +223,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
 
     // If we previously lost synchronization, try to resync in current packet.
     if (!_synchronized) {
-        if (start_mark) { // PUSI mark
+        if (startMark) { // PUSI mark
             // There is a packet start here, we have a chance to resync.
             pktIndex += pointerField;
             _synchronized = true;

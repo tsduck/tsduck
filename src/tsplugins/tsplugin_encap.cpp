@@ -54,15 +54,15 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        bool                _ignoreErrors;  // Ignore encapsulation errors.
-        bool                _pack;          // Outer packet packing option.
-        size_t              _packLimit;     // Max limit distance.
-        size_t              _maxBuffered;   // Max buffered packets.
-        PID                 _pidOutput;     // Output PID.
-        PID                 _pidPCR;        // PCR reference PID.
-        PIDSet              _pidsInput;     // Input PID's.
-        size_t              _modePES;       // Enable PES mode and select type.
-        PacketEncapsulation _encap;         // Encapsulation engine.
+        bool                         _ignoreErrors;  // Ignore encapsulation errors.
+        bool                         _pack;          // Outer packet packing option.
+        size_t                       _packLimit;     // Max limit distance.
+        size_t                       _maxBuffered;   // Max buffered packets.
+        PID                          _pidOutput;     // Output PID.
+        PID                          _pidPCR;        // PCR reference PID.
+        PIDSet                       _pidsInput;     // Input PID's.
+        PacketEncapsulation::PESMode _pesMode;       // Enable PES mode and select type.
+        PacketEncapsulation          _encap;         // Encapsulation engine.
 
         // Inaccessible operations
         EncapPlugin() = delete;
@@ -88,7 +88,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
     _pidOutput(PID_NULL),
     _pidPCR(PID_NULL),
     _pidsInput(),
-    _modePES(0),
+    _pesMode(PacketEncapsulation::DISABLED),
     _encap()
 {
     option(u"ignore-errors", 'i');
@@ -132,11 +132,12 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Several --pid options can be specified. "
          u"The null PID 0x1FFF cannot be encapsulated.");
 
-    option(u"pes-mode", 0, INTEGER, 0, 1, 0, 2);
-    help(u"pes-mode", u"mode",
-         u"Enable PES mode encapsulation. "
-         u"Modes available are: "
-         u"0=disabled; 1=fixed; 2=variable.");
+    option(u"pes-mode", 0, Enumeration({
+        {u"disabled", PacketEncapsulation::DISABLED},
+        {u"fixed",    PacketEncapsulation::FIXED},
+        {u"variable", PacketEncapsulation::VARIABLE},
+    }));
+    help(u"pes-mode", u"mode", u"Enable PES mode encapsulation.");
 }
 
 
@@ -152,7 +153,7 @@ bool ts::EncapPlugin::getOptions()
     _maxBuffered = intValue<size_t>(u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
     _pidOutput = intValue<PID>(u"output-pid", PID_NULL);
     _pidPCR = intValue<PID>(u"pcr-pid", PID_NULL);
-    _modePES = intValue<size_t>(u"pes-mode", 0);
+    _pesMode = enumValue<PacketEncapsulation::PESMode>(u"pes-mode", PacketEncapsulation::DISABLED);
     getIntValues(_pidsInput, u"pid");
 
     return true;
@@ -167,7 +168,7 @@ bool ts::EncapPlugin::start()
 {
     _encap.reset(_pidOutput, _pidsInput, _pidPCR);
     _encap.setPacking(_pack, _packLimit);
-    _encap.setPES(_modePES);
+    _encap.setPES(_pesMode);
     _encap.setMaxBufferedPackets(_maxBuffered);
     return true;
 }
