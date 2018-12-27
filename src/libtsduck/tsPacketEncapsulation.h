@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2018, Thierry Lelegard
+// Copyright (c) 2005-2018, Thierry Lelegard (PES mode by lars18th)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -81,14 +81,14 @@ namespace ts {
     //! marks are used, and the payload size is larger.
     //!
     //! Two variant strategies are implemented. The FIXED mode uses the
-    //! short (7bit) BER encoding. This limits the PES payload to a maximum
+    //! short (7-bit) BER encoding. This limits the PES payload to a maximum
     //! of 127 bytes. And the adaptation field of the outer packet is
     //! enlarged with some stuff. However, the advantage is that the PES
     //! is sufficient small to include more data in the outer TS packet.
     //! This reduces the possibility than some external processing will
     //! split the outer packet in two to accomodate the entire PES data.
     //!
-    //! The VARIABLE mode does not imposses this restriction, and outer
+    //! The VARIABLE mode does not impose this restriction, and outer
     //! packets are filled as maximum. The drawback is that some times
     //! the long form of BER encoding is used with two bytes and others
     //! the short form with one byte. Futhermore, this increases the chances
@@ -99,23 +99,25 @@ namespace ts {
     //! payload can be distributed in thge following TS packets.
     //!
     //! The PES envelope has an overhead of 26 or 27 bytes based on:
-    //!   9 bytes for the PES header.
-    //!  16 bytes for the UL key
-    //! 1|2 bytes for the payload size (BER short or long format)
+    //! - 9 bytes for the PES header.
+    //! - 16 bytes for the UL key
+    //! - 1|2 bytes for the payload size (BER short or long format)
     //!
     //! In order to correctly identify the encapsulated PES stream is
     //! recommended to include in the PMT table a format identifier
     //! descriptor for "KLVA" (0x4B4C5641); and use the Private Type (0x06)
     //! for the stream type.
-    //!  Example:
-    //!   "tsp ... \                                                     "
-    //!   " -P encap -o 7777 --pes-mode ... \                            "
-    //!   " -P pmt -s 100 -a 7777/0x06 --add-programinfo-id 0x4B4C5641 \ "
-    //!   " ...                                                          "
-    //!   where the target pid is 7777 and the attached service is 100.
     //!
-    //! References:
-    //! https://impleotv.com/2017/02/17/klv-encoded-metadata-in-stanag-4609-streams/
+    //! Example:
+    //! @code
+    //! tsp ...
+    //!     -P encap -o 7777 --pes-mode ...
+    //!     -P pmt -s 100 -a 7777/0x06 --add-programinfo-id 0x4B4C5641
+    //!     ...
+    //! @endcode
+    //! where the target pid is 7777 and the attached service is 100.
+    //!
+    //! @see https://impleotv.com/2017/02/17/klv-encoded-metadata-in-stanag-4609-streams/
     //!
     class TSDUCKDLL PacketEncapsulation
     {
@@ -240,16 +242,25 @@ namespace ts {
         //! unused part in some outer packet. When packing mode if off, outer packets
         //! are emitted only when they are full.
         //! @param [in] on Packing mode.
+        //! @param [in] limit Number of packets after which encapsulation is forced, even when packing is off.
         //!
         void setPacking(bool on, size_t limit) { _packing = on; _packDistance = limit; }
-         //!
+
+        //!
+        //! Type of PES encapsulation mode.
+        //!
+        enum PESMode {
+            DISABLED = 0,  //!< PES mode is disabled.
+            FIXED    = 1,  //!< Fixed PES mode.
+            VARIABLE = 2,  //!< Variable PES mode.
+        };
+
+        //!
         //! Set PES mode.
         //! Enbles the PES mode encapsulation (disabled by default).
-        //! Accepted values are:
-        //! 0=disabled; 1=fixed; 2=variable.
-        //! @param [in] on PES mode.
+        //! @param [in] mode PES mode.
         //!
-        void setPES(size_t mode) { _pesmode = mode; }
+        void setPES(PESMode mode) { _pesMode = mode; }
 
     private:
         typedef std::map<PID,uint8_t> PIDCCMap;  // map of continuity counters, indexed by PID
@@ -258,7 +269,7 @@ namespace ts {
 
         bool             _packing;         // Packing mode.
         size_t           _packDistance;    // Maximum distance between inner packets.
-        size_t           _pesmode;         // PES mode selected.
+        PESMode          _pesMode;         // PES mode selected.
         PID              _pidOutput;       // Output PID.
         PIDSet           _pidInput;        // Input PID's to encapsulate.
         PID              _pcrReference;    // Insert PCR's based on this reference PID.
