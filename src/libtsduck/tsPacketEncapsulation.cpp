@@ -42,7 +42,7 @@ const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
 
 ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInput, PID pcrReference) :
     _packing(false),
-    _packDistance(-1),
+    _packDistance(NPOS),
     _pesMode(DISABLED),
     _pidOutput(pidOutput),
     _pidInput(pidInput),
@@ -70,7 +70,7 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
 void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID pcrReference)
 {
     _packing = false;
-    _packDistance = -1;
+    _packDistance = NPOS;
     _pesMode = DISABLED;
     _pidOutput = pidOutput;
     _pidInput = pidInput;
@@ -338,7 +338,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
                 pkt.b[pktIndex++] = 0x00; // PES packet length (2 bytes)
                 pkt.b[pktIndex++] = 0x00; // Pending to complete at end (**)
 
-                pes_pointer = pktIndex;   // Store for reference
+                pes_pointer = uint8_t(pktIndex);   // Store for reference
 
                 pkt.b[pktIndex++] = 0x84; // Header flags
                 pkt.b[pktIndex++] = 0x00; // Header flags
@@ -370,13 +370,13 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
                 pkt.b[pktIndex++] = 0x0f; // 0x1f when equivalent PUSI flag is set
 
                 // >>> (L)ength
-                uint8_t payload_size = PKT_SIZE - pktIndex - 1;
+                size_t payload_size = PKT_SIZE - pktIndex - 1;
                 assert(payload_size > 0);
                 if (payload_size > 127) {
                     pkt.b[pktIndex++] = 0x81; // Long flag with size length = 1
                     payload_size--;
                 }
-                pkt.b[pktIndex++] = payload_size; // Final size of data/payload
+                pkt.b[pktIndex++] = uint8_t(payload_size); // Final size of data/payload
 
                 // Update the remaining value of the PES packet length (**)
                 pkt.b[pes_pointer-1] = uint8_t(PKT_SIZE - pes_pointer);
