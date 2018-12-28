@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1065
+VERSION 3.16-1074
 
 [NEW] New commands and plugins:
 
@@ -18,6 +18,8 @@ VERSION 3.16-1065
   * Added option --fill-eit to "tstables" and plugin "tables".
   * Added options for Dektec demodulators in input plugin "dektec".
   * In plugin "rmsplice", immediate splice events are no longer ignored.
+  * Added PES encapsulation mode in plugin "encap" (added option --pes-mode,
+    added optional value in option --pack).
   * Implement guidelines from ETSI TR 101 211 when compiling EIT's.
   * In XML descriptions of NIT and BAT, it is now possible to specify a
     preferred section index for each TS.
