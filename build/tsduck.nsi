@@ -1,7 +1,7 @@
 ;-----------------------------------------------------------------------------
 ;
 ;  TSDuck - The MPEG Transport Stream Toolkit
-;  Copyright (c) 2005-2018, Thierry Lelegard
+;  Copyright (c) 2005-2019, Thierry Lelegard
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ VIAddVersionKey ProductName "TSDuck"
 VIAddVersionKey ProductVersion "${tsduckVersion}"
 VIAddVersionKey Comments "TSDuck - The MPEG Transport Stream Toolkit"
 VIAddVersionKey CompanyName "Thierry Lelegard"
-VIAddVersionKey LegalCopyright "Copyright (c) 2005-2018, Thierry Lelegard"
+VIAddVersionKey LegalCopyright "Copyright (c) 2005-2019, Thierry Lelegard"
 VIAddVersionKey FileVersion "${tsduckVersionInfo}"
 VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
 
