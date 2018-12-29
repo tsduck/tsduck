@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2018, Thierry Lelegard
+// Copyright (c) 2005-2018, Thierry Lelegard (PES mode by lars18th)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,8 @@ const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
 
 ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInput, PID pcrReference) :
     _packing(false),
+    _packDistance(NPOS),
+    _pesMode(DISABLED),
     _pidOutput(pidOutput),
     _pidInput(pidInput),
     _pcrReference(pcrReference),
@@ -53,6 +55,7 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
     _insertPCR(false),
     _ccOutput(0),
     _lastCC(),
+    _lateDistance(0),
     _lateMaxPackets(DEFAULT_MAX_BUFFERED_PACKETS),
     _lateIndex(0),
     _latePackets()
@@ -67,6 +70,8 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
 void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID pcrReference)
 {
     _packing = false;
+    _packDistance = NPOS;
+    _pesMode = DISABLED;
     _pidOutput = pidOutput;
     _pidInput = pidInput;
     _pcrReference = pcrReference;
@@ -74,6 +79,7 @@ void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID p
     _currentPacket = 0;
     _ccOutput = 0;
     _lastCC.clear();
+    _lateDistance = 0;
     _lateIndex = 0;
     _latePackets.clear();
     resetPCR();
@@ -91,6 +97,7 @@ void ts::PacketEncapsulation::setOutputPID(PID pid)
         // Reset encapsulation.
         _ccOutput = 0;
         _lastCC.clear();
+        _lateDistance = 0;
         _lateIndex = 0;
         _latePackets.clear();
     }
@@ -211,6 +218,15 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         status = false;
     }
 
+    // Increase the counter of the distance with each incoming packet.
+    _lateDistance++;
+
+    // We need to guarantee the limits of all packages.
+    // When the buffer is empty we alredy set the late pointer to the first byte after 0x47.
+    if (_lateIndex < 1) {
+        _lateIndex = 1;
+    }
+
     // If this packet is part of the input set, place it in the "late" queue.
     // Note that a packet always need to go into the queue, even if the queue
     // is empty because no input packet can fit into an output packet. At least
@@ -232,6 +248,12 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         pid = PID_NULL;
     }
 
+    // Check PES mode support
+    if (_pesMode > VARIABLE) {
+        _lastError.assign(u"PES mode %d not implemented!", _pesMode);
+        status = false;
+    }
+
     // Replace input or null packets.
     if (pid == PID_NULL && !_latePackets.empty()) {
 
@@ -247,21 +269,17 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         //   -4 => TS header.
         //   -8 => Adaptation field in case of PCR: 1-byte AF size, 1-byte flags, 6-byte PCR.
         //   -1 => Pointer field, first byte of payload (not always, but very often).
+        // -26|27 => PES size (when PES mode is enabled).
         // We insert a packet all the time if packing is off.
         // Otherwise, we insert a packet when there is enough data to fill it.
-        if (!_packing || addBytes >= PKT_SIZE - (addPCR ? 12 : 4) - 1) {
+        bool packout = !_packing;
+        if (_packing && _packDistance > 0 && _lateDistance > _packDistance) {
+            packout = true;
+        }
+        if (packout || addBytes >= PKT_SIZE - (addPCR ? 12 : 4) - 1) {
 
-            // Build the new packet header.
-            pkt.b[0] = SYNC_BYTE;
-            pkt.b[1] = 0;
-            pkt.b[2] = 0;
-            pkt.b[3] = 0x10; // no adaptation_field, payload only
-            pkt.setPID(_pidOutput);
-            pkt.setCC(_ccOutput);
-            ::memset(pkt.b + 4, 0xFF, PKT_SIZE - 4);
-
-            // Index in pkt where we write data. Start at beginning of payload.
-            size_t pktIndex = 4;
+            // Build the new packet.
+            pkt.init(_pidOutput, _ccOutput);
 
             // Continuity counter of next output packet.
             _ccOutput = (_ccOutput + 1) & CC_MASK;
@@ -273,46 +291,127 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
                 const uint64_t pcrDistance = (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
                 const uint64_t pcr = (_pcrLastValue + pcrDistance) & PCR_MASK;
 
-                // We need to add an adaptation field in the TS packet.
-                pkt.b[3] |= 0x20; // adaptation field present
-                pkt.b[4] = 7;     // adaptation field size (1 byte for flags, 6 bytes for PCR)
-                pkt.b[5] = 0x10;  // PCR_flag
-                pktIndex += 8;    // including 1-byte AF size and 7-byte AF
-
                 // Set the PCR in the adaptation field.
-                pkt.setPCR(pcr);
-                assert(pkt.getPCR() == pcr); // make sure the AF was properly built
+                pkt.createPCR(pcr);
 
                 // Don't insert another PCR in output PID until a PCR is found in reference PID.
                 _insertPCR = false;
             }
 
+            // Increase the header size to the limit of the selected PES mode:
+            //  PES mode 1: 127+9+16+1 max payload
+            //  PES mode 2: no limit
+            if (_pesMode == FIXED && pkt.getPayloadSize() > 153) {
+                pkt.setPayloadSize(153);
+            }
+
+            // How many bytes consumes de PES encapsulation, based on this calculus:
+            //   26|27 bytes =
+            //          9 bytes PES header;
+            //       + 16 bytes KLVA UL key;
+            //       +  1 byte with BER short mode | 2 bytes with BER long mode.
+            //   and 0 when PES mode is OFF.
+            const uint8_t pes_header = _pesMode != DISABLED ? (addBytes <= 127 || pkt.getPayloadSize() <= 153 ? 26 : 27) : 0;
+
             // If there are less "late" bytes than the output payload size, enlarge the adaptation field
             // with stuffing. Note that if there is so few bytes in the only "late" packet, this cannot
             // be the beginning of a packet and there will be no pointer field.
-            if (_latePackets.size() == 1 && _lateIndex > pktIndex) {
-                // This code works identically whether there was an adaptation field or not.
-                pkt.b[3] |= 0x20;  // adaptation field present
-                pkt.b[4] = uint8_t(_lateIndex - 5);  // adaptation field size
-                if (!addPCR) {
-                    pkt.b[5] = 0x00; // AF flags
-                }
-                pktIndex = _lateIndex;
+            if (_latePackets.size() == 1 && _lateIndex > (pes_header + pkt.getHeaderSize())) {
+                pkt.setPayloadSize(PKT_SIZE - _lateIndex + pes_header);
             }
 
-            // At this point, pktIndex points at the beginning of the TS payload.
-            assert(pktIndex == pkt.getHeaderSize());
+            // Index in pkt where we write data. Start at beginning of payload.
+            size_t pktIndex = pkt.getHeaderSize();
+
+            // When PES mode is ON add here the envelope before the data/payload
+            uint8_t pes_pointer = 0; // Indirect reference for futher completion
+            if (pes_header > 0) {
+
+                // Fill the PES Header
+
+                pkt.b[pktIndex++] = 0x00; // PES start code prefix
+                pkt.b[pktIndex++] = 0x00;
+                pkt.b[pktIndex++] = 0x01;
+
+                pkt.b[pktIndex++] = 0xBD; // Stream_id == Pivate_Stream_1
+
+                pkt.b[pktIndex++] = 0x00; // PES packet length (2 bytes)
+                pkt.b[pktIndex++] = 0x00; // Pending to complete at end (**)
+
+                pes_pointer = uint8_t(pktIndex);   // Store for reference
+
+                pkt.b[pktIndex++] = 0x84; // Header flags
+                pkt.b[pktIndex++] = 0x00; // Header flags
+                pkt.b[pktIndex++] = 0x00; // Length of remaining optional fields
+
+                // Fill the KLVA Data
+
+                // >>> (K)ey
+                // UL Used: 060E2B34.01010101.0F010800.0F0F0F0F
+                // It's an Unique ID value in the testing range.
+                pkt.b[pktIndex++] = 0x06;
+                pkt.b[pktIndex++] = 0x0e;
+                pkt.b[pktIndex++] = 0x2b;
+                pkt.b[pktIndex++] = 0x34;
+
+                pkt.b[pktIndex++] = 0x01;
+                pkt.b[pktIndex++] = 0x01;
+                pkt.b[pktIndex++] = 0x01;
+                pkt.b[pktIndex++] = 0x01;
+
+                pkt.b[pktIndex++] = 0x0f;
+                pkt.b[pktIndex++] = 0x01;
+                pkt.b[pktIndex++] = 0x08;
+                pkt.b[pktIndex++] = 0x00;
+
+                pkt.b[pktIndex++] = 0x0f;
+                pkt.b[pktIndex++] = 0x0f;
+                pkt.b[pktIndex++] = 0x0f;
+                pkt.b[pktIndex++] = 0x0f; // 0x1f when equivalent PUSI flag is set
+
+                // >>> (L)ength
+                size_t payload_size = PKT_SIZE - pktIndex - 1;
+                assert(payload_size > 0);
+                if (payload_size > 127) {
+                    pkt.b[pktIndex++] = 0x81; // Long flag with size length = 1
+                    payload_size--;
+                }
+                pkt.b[pktIndex++] = uint8_t(payload_size); // Final size of data/payload
+
+                // Update the remaining value of the PES packet length (**)
+                pkt.b[pes_pointer-1] = uint8_t(PKT_SIZE - pes_pointer);
+
+                // >>> (V)alue
+                // At this point the PES packet is fully filled and only remains the payload
+                assert(pktIndex < PKT_SIZE);
+
+                // In PES mode any packet is an unique PES packet, so set the Payload Unit Start
+                pkt.setPUSI();
+                // When using the PES encapsulation the PUSI flag is mapped
+                // at bit 0x10 in the last byte of the UL Key.
+            }
 
             // Insert PUSI and pointer field when necessary.
             if (_lateIndex == 1) {
                 // We immediately start with the start of a packet.
-                pkt.setPUSI();
+                // Note: The flag is different in the PES mode!
+                if (_pesMode != DISABLED) {
+                    pkt.b[pes_pointer+18] |= 0x10;
+                }
+                else {
+                    pkt.setPUSI();
+                }
                 pkt.b[pktIndex++] = 0; // pointer field
             }
             else if (_lateIndex > pktIndex + 1 && _latePackets.size() > 1) {
                 // The remaining bytes in the first packet are less than the output payload,
                 // we will start a new packet in this payload.
-                pkt.setPUSI();
+                if (_pesMode != DISABLED) {
+                    pkt.b[pes_pointer+18] |= 0x10;
+                }
+                else {
+                    pkt.setPUSI();
+                }
                 pkt.b[pktIndex++] = uint8_t(PKT_SIZE - _lateIndex); // pointer field
             }
 

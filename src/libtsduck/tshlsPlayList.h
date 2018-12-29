@@ -36,6 +36,7 @@
 #include "tshls.h"
 #include "tshlsMediaPlayList.h"
 #include "tshlsMediaSegment.h"
+#include "tsTime.h"
 #include "tsCerrReport.h"
 #include "tsWebRequestArgs.h"
 #include "tsStringifyInterface.h"
@@ -191,6 +192,18 @@ namespace ts {
             bool popFirstSegment(MediaSegment& seg);
 
             //!
+            //! Get the download UTC time of the playlist.
+            //! @return The download UTC time of the playlist.
+            //!
+            Time downloadUTC() const { return _utcDownload; }
+
+            //!
+            //! Get the playout estimated termination UTC time of the playlist (in media playlist).
+            //! @return The estimated playout UTC time of the playlist.
+            //!
+            Time terminationUTC() const { return _utcTermination; }
+
+            //!
             //! Get a constant reference to a media playlist description (in master playlist).
             //! @param [in] index Index of the playlist, from 0 to playListCount().
             //! @return A constant reference to the media playlist description at @a index.
@@ -257,6 +270,8 @@ namespace ts {
             size_t             _mediaSequence;   // Sequence number of first segment (media playlist).
             bool               _endList;         // End of list indicator (media playlist).
             UString            _playlistType;    // Media playlist type ("EVENT" or "VOD", media playlist).
+            Time               _utcDownload;     // UTC time of download.
+            Time               _utcTermination;  // UTC time of termination (download + all segment durations).
             MediaSegmentQueue  _segments;        // List of media segments (media playlist).
             MediaPlayListQueue _playlists;       // List of media playlists (master playlist).
 

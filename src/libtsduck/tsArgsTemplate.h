@@ -31,6 +31,23 @@
 
 
 //----------------------------------------------------------------------------
+// Check if an integer value is in range for an option.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type*>
+bool ts::Args::IOption::inRange(INT value) const
+{
+    return value < TS_UCONST64(0x8000000000000000) && static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::Args::IOption::inRange(INT value) const
+{
+    return static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the integer value of an option.
 //----------------------------------------------------------------------------
 
@@ -38,11 +55,29 @@ template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::t
 void ts::Args::getIntValue(INT& value, const UChar* name, const INT& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
-    if (index >= opt.values.size() ||
-        !opt.values[index].set() ||
-        !opt.values[index].value().toInteger(value, THOUSANDS_SEPARATORS))
-    {
+    if (opt.type != INTEGER || index >= opt.value_count) {
+        // Invalid index.
         value = def_value;
+    }
+    else if (opt.value_count == opt.values.size()) {
+        // No range, one integer per option, direct lookup.
+        assert(index < opt.values.size());
+        value = opt.values[index].int_count == 0 ? def_value : static_cast<INT>(opt.values[index].int_base);
+    }
+    else {
+        // There is at least one range, iterate.
+        bool found = false;
+        for (size_t i = 0; !found && i < opt.values.size(); ++i) {
+            if (index > 0 && index >= opt.values[i].int_count) {
+                // Not in this range.
+                index -= opt.values[i].int_count == 0 ? 1 : opt.values[i].int_count;
+            }
+            else {
+                found = true;
+                value = opt.values[i].int_count == 0 ? def_value : static_cast<INT>(opt.values[i].int_base + index);
+            }
+        }
+        assert(found);
     }
 }
 
@@ -62,25 +97,13 @@ INT ts::Args::intValue(const UChar* name, const INT& def_value, size_t index) co
 template <typename ENUM>
 void ts::Args::getEnumValue(ENUM& value, const UChar* name, ENUM def_value, size_t index) const
 {
-    const IOption& opt(getIOption(name));
-    int iValue = 0;
-    if (index >= opt.values.size() ||
-        !opt.values[index].set() ||
-        !opt.values[index].value().toInteger(iValue, THOUSANDS_SEPARATORS))
-    {
-        value = def_value;
-    }
-    else {
-        value = static_cast<ENUM>(iValue);
-    }
+    value = static_cast<ENUM>(intValue<int64_t>(name, static_cast<int64_t>(def_value), index));
 }
 
 template <typename ENUM>
 ENUM ts::Args::enumValue(const UChar* name, ENUM def_value, size_t index) const
 {
-    ENUM value = def_value;
-    getEnumValue(value, name, def_value, index);
-    return value;
+    return static_cast<ENUM>(intValue<int64_t>(name, static_cast<int64_t>(def_value), index));
 }
 
 
@@ -91,15 +114,14 @@ ENUM ts::Args::enumValue(const UChar* name, ENUM def_value, size_t index) const
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 {
-    INT value;
     const IOption& opt(getIOption(name));
-
     values.clear();
-    values.reserve(opt.values.size());
-
-    for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-        if (it->set() && it->value().toInteger<INT>(value, THOUSANDS_SEPARATORS)) {
-            values.push_back(value);
+    values.reserve(opt.value_count);
+    for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
+        for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+            if (opt.inRange<int64_t>(v)) {
+                values.push_back(static_cast<INT>(v));
+            }
         }
     }
 }
@@ -112,14 +134,13 @@ void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 {
-    INT value;
     const IOption& opt(getIOption(name));
-
     values.clear();
-
-    for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-        if (it->set() && it->value().toInteger<INT>(value, THOUSANDS_SEPARATORS)) {
-            values.insert(value);
+    for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
+        for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+            if (opt.inRange<int64_t>(v)) {
+                values.insert(static_cast<INT>(v));
+            }
         }
     }
 }
@@ -133,13 +154,13 @@ template <std::size_t N>
 void ts::Args::getIntValues(std::bitset<N>& values, const UChar* name, bool defValue) const
 {
     const IOption& opt(getIOption(name));
-
-    if (!opt.values.empty()) {
+    if (opt.value_count > 0) {
         values.reset();
         for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
-            size_t x = 0;
-            if (it->set() && it->value().toInteger(x, THOUSANDS_SEPARATORS) && x < values.size()) {
-                values.set(x);
+            for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+                if (v >= 0 && size_t(v) < values.size()) {
+                    values.set(size_t(v));
+                }
             }
         }
     }
@@ -160,18 +181,17 @@ template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::t
 void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_value) const
 {
     const IOption& opt(getIOption(name));
-    if (opt.values.empty()) {
+    if (opt.value_count == 0) {
         value = def_value;
     }
     else {
         value = static_cast<INT>(0);
-        for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-            INT mask = static_cast<INT>(0);
-            if (!it->set() || !it->value().toInteger(mask, THOUSANDS_SEPARATORS)) {
-                value = def_value;
-                return;
+        for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
+            for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+                if (opt.inRange<int64_t>(v)) {
+                    value |= static_cast<INT>(v);
+                }
             }
-            value |= mask;
         }
     }
 }

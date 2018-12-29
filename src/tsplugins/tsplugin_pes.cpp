@@ -194,8 +194,8 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     help(u"payload", u"Dump PES packet payload.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
-         u"PID filter: select packets with this PID value (default: all PID's "
+    help(u"pid", u"pid1[-pid2]",
+         u"PID filter: select packets with these PID values (default: all PID's "
          u"containing PES packets). Several -p or --pid options may be specified.");
 
     option(u"sei-avc");

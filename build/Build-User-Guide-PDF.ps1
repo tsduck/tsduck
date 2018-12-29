@@ -89,11 +89,21 @@ $BindingFlags = "System.Reflection.BindingFlags" -as [Type]
 function Set-CustomDocumentProperties($doc, $name, $value)
 {
     $properties = $doc.CustomDocumentProperties
-    $propertiesType = $properties.GetType()
-    $prop = $propertiesType.InvokeMember("Item", $BindingFlags::GetProperty, $null, $properties, @($name))
+    try {
+        $propertiesType = $properties.GetType()
+        $prop = $propertiesType.InvokeMember("Item", $BindingFlags::GetProperty, $null, $properties, @($name))
+    }
+    catch {
+        $prop = [System.__ComObject].InvokeMember("Item", $BindingFlags::GetProperty, $null, $properties, @($name))        
+    }
     if ($prop -ne $null) {
-        $propType = $prop.GetType()
-        $propType.InvokeMember("Value", $BindingFlags::SetProperty, $null, $prop, @($value))
+        try {
+            $propType = $prop.GetType()
+            $propType.InvokeMember("Value", $BindingFlags::SetProperty, $null, $prop, @($value))
+        }
+        catch {
+            [System.__ComObject].InvokeMember("Value", $BindingFlags::SetProperty, $null, $prop, @($value))
+        }
     }
 }
 

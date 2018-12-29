@@ -181,7 +181,7 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
          u"parameter.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"pid",
+    help(u"pid", u"pid1[-pid2]",
          u"Specifies a PID to scramble. Can be used instead of specifying a service. "
          u"Several -p or --pid options may be specified.");
 }

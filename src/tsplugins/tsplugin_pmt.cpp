@@ -229,11 +229,11 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
          u"descriptors. See also option --pds.");
 
     option(u"remove-pid", 'r', PIDVAL, 0, UNLIMITED_COUNT);
-    help(u"remove-pid",
-         u"Remove the component with the specified PID from the PMT. Several "
+    help(u"remove-pid", u"pid1[-pid2]",
+         u"Remove the component with the specified PID's from the PMT. Several "
          u"--remove-pid options may be specified to remove several components.");
 
-    option(u"remove-stream-type", 0, STRING, 0, UNLIMITED_COUNT);
+    option(u"remove-stream-type", 0, UINT8, 0, UNLIMITED_COUNT);
     help(u"remove-stream-type", u"value[-value]",
          u"Remove all components with a stream type matching the specified value (or in the specified range of values). "
          u"Several --remove-stream-type options may be specified.");
@@ -381,6 +381,7 @@ bool ts::PMTPlugin::start()
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     getIntValues(_removed_pid, u"remove-pid");
     getIntValues(_removed_desc, u"remove-descriptor");
+    getIntValues(_removed_stream, u"remove-stream-type");
 
     // Get list of components to add
     size_t opt_count = count(u"add-pid");
@@ -391,28 +392,6 @@ bool ts::PMTPlugin::start()
             _added_pid.push_back(NewPID(pid, stype));
         }
         else {
-            return false;
-        }
-    }
-
-    // Get list of stream types to remove.
-    opt_count = count(u"remove-stream-type");
-    for (size_t n = 0; n < opt_count; n++) {
-        const UString opt(value(u"remove-stream-type", u"", n));
-        uint8_t s1 = 0, s2 = 0;
-        if (opt.scan(u"%d", {&s1})) {
-            _removed_stream.push_back(s1);
-        }
-        else if (opt.scan(u"%d-%d", {&s1, &s2}) && s1 <= s2) {
-            for (uint8_t s = s1; s <= s2; ++s) {
-                _removed_stream.push_back(s);
-                if (s == 0xFF) {
-                    break; // avoid overflow and infinite loop when s2 == 0xFF
-                }
-            }
-        }
-        else {
-            tsp->error(u"invalid integer or integer range \"%s\" for --remove-stream-type", {opt});
             return false;
         }
     }

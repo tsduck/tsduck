@@ -47,6 +47,9 @@ struct Options: public ts::Args
 
     uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
     bool              raw_file;    // Raw dump of file, not TS packets
+    bool              log;         // Option --log
+    size_t            log_size;    // Size to display with --log
+    ts::PIDSet        pids;        // PID values to dump.
     ts::PacketCounter max_packets; // Maximum number of packets to dump per file
     ts::UStringVector infiles;     // Input file names
 };
@@ -55,6 +58,9 @@ Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]"),
     dump_flags(0),
     raw_file(false),
+    log(false),
+    log_size(0),
+    pids(),
     max_packets(0),
     infiles()
 {
@@ -73,17 +79,34 @@ Options::Options(int argc, char *argv[]) :
     option(u"headers-only", 'h');
     help(u"headers-only", u"Dump packet headers only, not payload.");
 
+    option(u"log", 'l');
+    help(u"log", u"Display a short one-line log of each packet instead of full dump.");
+
+    option(u"log-size", 0, UNSIGNED);
+    help(u"log-size",
+         u"With option --log, specify how many bytes are displayed in each packet. "
+         u"The default is 188 bytes (complete packet).");
+
     option(u"max-packets", 'm', UNSIGNED);
     help(u"max-packets", u"Maximum number of packets to dump per file.");
 
     option(u"nibble", 'n');
     help(u"nibble", u"Same as --binary but add separator between 4-bit nibbles.");
 
+    option(u"no-headers");
+    help(u"no-headers", u"Do not display header information.");
+
     option(u"offset", 'o');
     help(u"offset", u"Include offset from start of packet with hexadecimal dump.");
 
-    option(u"payload", 'p');
+    option(u"payload");
     help(u"payload", u"Hexadecimal dump of TS payload only, skip TS header.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid", u"pid1[-pid2]",
+         u"Dump only packets with these PID values. "
+         u"Several --pid options may be specified. "
+         u"By default, all packets are displayed.");
 
     option(u"raw-file", 'r');
     help(u"raw-file", u"Raw dump of file, do not interpret as TS packets.");
@@ -92,7 +115,10 @@ Options::Options(int argc, char *argv[]) :
 
     getValues(infiles);
     raw_file = present(u"raw-file");
+    log = present(u"log");
     max_packets = intValue<ts::PacketCounter>(u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
+    log_size = intValue<size_t>(u"log-size", ts::PKT_SIZE);
+    getIntValues(pids, u"pid", true);
 
     dump_flags =
         ts::TSPacket::DUMP_TS_HEADER |    // Format TS headers
@@ -110,8 +136,14 @@ Options::Options(int argc, char *argv[]) :
         dump_flags |= ts::UString::C_STYLE;
         raw_file = true;
     }
+    if (log) {
+        dump_flags |= ts::UString::SINGLE_LINE;
+    }
     if (present(u"headers-only")) {
         dump_flags &= ~ts::TSPacket::DUMP_RAW;
+    }
+    if (present(u"no-headers")) {
+        dump_flags &= ~ts::TSPacket::DUMP_TS_HEADER;
     }
     if (present(u"nibble")) {
         dump_flags |= ts::UString::BIN_NIBBLE | ts::UString::BINARY;
@@ -121,7 +153,12 @@ Options::Options(int argc, char *argv[]) :
     }
     if (present(u"payload")) {
         dump_flags &= ~ts::TSPacket::DUMP_RAW;
-        dump_flags |= ~ts::TSPacket::DUMP_PAYLOAD;
+        dump_flags |= ts::TSPacket::DUMP_PAYLOAD;
+    }
+
+    // Filter TS-specific options when used with --raw-file.
+    if (raw_file && (log || present(u"max-packets") || present(u"pid") || present(u"headers-only") || present(u"no-headers") || present(u"payload"))) {
+        error(u"--raw-file is incompatible with TS-specific options --pid --log --max-packets --headers-only --no-header --payload");
     }
 
     exitOnError();
@@ -155,10 +192,16 @@ void DumpFile(Options& opt, std::istream& stream)
         // Read all packets in the file
         ts::TSPacket pkt;
         for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && pkt.read(stream, true, opt); packet_index++) {
-            std::cout << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
-            pkt.display (std::cout, opt.dump_flags, 2);
+            if (opt.pids.test(pkt.getPID())) {
+                if (!opt.log) {
+                    std::cout << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
+                }
+                pkt.display(std::cout, opt.dump_flags, opt.log ? 0 : 2, opt.log_size);
+            }
         }
-        std::cout << std::endl;
+        if (!opt.log) {
+            std::cout << std::endl;
+        }
     }
 }
 
@@ -184,7 +227,7 @@ int MainCode(int argc, char *argv[])
             // Open the file in binary mode.
             std::ifstream file(opt.infiles[i].toUTF8().c_str(), std::ios::binary);
             if (file) {
-                if (opt.infiles.size() > 1 && !opt.raw_file) {
+                if (opt.infiles.size() > 1 && !opt.raw_file && !opt.log) {
                     std::cout << "* File " << opt.infiles[i] << std::endl;
                 }
                 DumpFile(opt, file);

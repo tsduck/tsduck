@@ -54,13 +54,15 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        bool                _ignoreErrors;  // Ignore encapsulation errors.
-        bool                _pack;          // Outer packet packing option.
-        size_t              _maxBuffered;   // Max buffered packets.
-        PID                 _pidOutput;     // Output PID.
-        PID                 _pidPCR;        // PCR reference PID.
-        PIDSet              _pidsInput;     // Input PID's.
-        PacketEncapsulation _encap;         // Encapsulation engine.
+        bool                         _ignoreErrors;  // Ignore encapsulation errors.
+        bool                         _pack;          // Outer packet packing option.
+        size_t                       _packLimit;     // Max limit distance.
+        size_t                       _maxBuffered;   // Max buffered packets.
+        PID                          _pidOutput;     // Output PID.
+        PID                          _pidPCR;        // PCR reference PID.
+        PIDSet                       _pidsInput;     // Input PID's.
+        PacketEncapsulation::PESMode _pesMode;       // Enable PES mode and select type.
+        PacketEncapsulation          _encap;         // Encapsulation engine.
 
         // Inaccessible operations
         EncapPlugin() = delete;
@@ -81,10 +83,12 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Encapsulate packets from several PID's into one single PID", u"[options]"),
     _ignoreErrors(false),
     _pack(false),
+    _packLimit(0),
     _maxBuffered(0),
     _pidOutput(PID_NULL),
     _pidPCR(PID_NULL),
     _pidsInput(),
+    _pesMode(PacketEncapsulation::DISABLED),
     _encap()
 {
     option(u"ignore-errors", 'i');
@@ -112,18 +116,28 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"Specify a reference PID containing PCR's. The output PID will contain PCR's, "
          u"based on the same clock. By default, the output PID does not contain any PCR.");
 
-    option(u"pack");
+    option(u"pack", 0, INTEGER, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"pack",
          u"Emit outer packets when they are full only. By default, emit outer packets "
          u"as soon as possible, when null packets are available on input. With the default "
          u"behavior, inner packets are decapsulated with a better time accuracy, at the expense "
-         u"of a higher bitrate of the outer PID when there are many null packets in input.");
+         u"of a higher bitrate of the outer PID when there are many null packets in input. "
+         u"You can limit the distance between packets adding a positive value. "
+         u"With a 0 value the distance is disabled (=unlimited). "
+         u"The value 1 is equivalent to not use the pack mode.");
 
-    option(u"pid", 'p', STRING, 1, UNLIMITED_COUNT);
+    option(u"pid", 'p', INTEGER, 1, UNLIMITED_COUNT, 0, PID_NULL - 1);
     help(u"pid", u"pid1[-pid2]",
          u"Specify an input PID or range of PID's to encapsulate. "
          u"Several --pid options can be specified. "
          u"The null PID 0x1FFF cannot be encapsulated.");
+
+    option(u"pes-mode", 0, Enumeration({
+        {u"disabled", PacketEncapsulation::DISABLED},
+        {u"fixed",    PacketEncapsulation::FIXED},
+        {u"variable", PacketEncapsulation::VARIABLE},
+    }));
+    help(u"pes-mode", u"mode", u"Enable PES mode encapsulation.");
 }
 
 
@@ -135,35 +149,12 @@ bool ts::EncapPlugin::getOptions()
 {
     _ignoreErrors = present(u"ignore-errors");
     _pack = present(u"pack");
+    _packLimit = intValue<size_t>(u"pack", 0);
     _maxBuffered = intValue<size_t>(u"max-buffered-packets", PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS);
     _pidOutput = intValue<PID>(u"output-pid", PID_NULL);
     _pidPCR = intValue<PID>(u"pcr-pid", PID_NULL);
-
-    // Get all PID ranges.
-    _pidsInput.reset();
-    for (size_t i = 0; i < count(u"pid"); ++i) {
-        const UString val(value(u"pid", u"", i));
-        PID pid1 = 0;
-        PID pid2 = 0;
-        size_t count = 0;
-        size_t last = 0;
-        // Correct value if we either extract one value or the complete format is matched.
-        bool ok = (val.scan(count, last, u"%d-%d", {&pid1, &pid2}) || count == 1) &&
-            // And then the values must be in range
-            ((count == 1 && pid1 < PID_NULL) || (count == 2 && pid2 < PID_NULL && pid1 <= pid2));
-        if (!ok) {
-            tsp->error(u"invalid PID range: %s", {val});
-            return false;
-        }
-        if (count == 1) {
-            _pidsInput.set(pid1);
-        }
-        else {
-            while (pid1 <= pid2) {
-                _pidsInput.set(pid1++);
-            }
-        }
-    }
+    _pesMode = enumValue<PacketEncapsulation::PESMode>(u"pes-mode", PacketEncapsulation::DISABLED);
+    getIntValues(_pidsInput, u"pid");
 
     return true;
 }
@@ -176,7 +167,8 @@ bool ts::EncapPlugin::getOptions()
 bool ts::EncapPlugin::start()
 {
     _encap.reset(_pidOutput, _pidsInput, _pidPCR);
-    _encap.setPacking(_pack);
+    _encap.setPacking(_pack, _packLimit);
+    _encap.setPES(_pesMode);
     _encap.setMaxBufferedPackets(_maxBuffered);
     return true;
 }

@@ -95,13 +95,13 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
          u"Remove all private descriptors without preceding private_data_specifier descriptor.");
 
     option(u"remove-casid", 'r', UINT16, 0, UNLIMITED_COUNT);
-    help(u"remove-casid",
-         u"Remove all CA_descriptors with the specified CA System Id. "
+    help(u"remove-casid", u"casid1[-casid2]",
+         u"Remove all CA_descriptors with the specified CA System Id or range of ids. "
          u"Several --remove-casid options may be specified.");
 
     option(u"remove-pid", 0, UINT16, 0, UNLIMITED_COUNT);
-    help(u"remove-pid",
-         u"Remove all CA_descriptors with the specified EMM PID value. "
+    help(u"remove-pid", u"pid1[-pid2]",
+         u"Remove all CA_descriptors with the specified EMM PID value or range of values. "
          u"Several --remove-pid options may be specified.");
 }
 

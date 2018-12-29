@@ -54,7 +54,19 @@ const ts::Enumeration ts::Args::HelpFormatEnum({
 
 
 //----------------------------------------------------------------------------
-// Constructor for IOption
+// Constructors for ArgValue
+//----------------------------------------------------------------------------
+
+ts::Args::ArgValue::ArgValue() :
+    string(),
+    int_base(0),
+    int_count(0)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Constructors for IOption
 //----------------------------------------------------------------------------
 
 ts::Args::IOption::IOption(const UChar* name_,
@@ -77,7 +89,8 @@ ts::Args::IOption::IOption(const UChar* name_,
     enumeration(),
     syntax(),
     help(),
-    values()
+    values(),
+    value_count(0)
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -154,11 +167,6 @@ ts::Args::IOption::IOption(const UChar* name_,
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor for IOption
-//----------------------------------------------------------------------------
-
 ts::Args::IOption::IOption(const UChar*       name_,
                            UChar              short_name_,
                            const Enumeration& enumeration_,
@@ -177,7 +185,8 @@ ts::Args::IOption::IOption(const UChar*       name_,
     enumeration(enumeration_),
     syntax(),
     help(),
-    values()
+    values(),
+    value_count(0)
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -390,11 +399,6 @@ ts::Args& ts::Args::option(const UChar* name,
     return *this;
 }
 
-
-//----------------------------------------------------------------------------
-// Add an option definition
-//----------------------------------------------------------------------------
-
 ts::Args& ts::Args::option(const UChar*       name,
                            UChar              short_name,
                            const Enumeration& enumeration,
@@ -595,7 +599,6 @@ ts::Args::IOption& ts::Args::getIOption(const UChar* name)
     else {
         throw ArgsError(_app_name + u": application internal error, option --" + name1 + u" undefined");
     }
-
 }
 
 const ts::Args::IOption& ts::Args::getIOption(const UChar* name) const
@@ -622,7 +625,7 @@ bool ts::Args::present(const UChar* name) const
 
 size_t ts::Args::count(const UChar* name) const
 {
-    return getIOption(name).values.size();
+    return getIOption(name).value_count;
 }
 
 
@@ -635,7 +638,10 @@ size_t ts::Args::count(const UChar* name) const
 ts::UString ts::Args::value(const UChar* name, const UChar* defValue, size_t index) const
 {
     const IOption& opt(getIOption(name));
-    return index >= opt.values.size() || !opt.values[index].set() ? defValue : opt.values[index].value();
+    if (opt.type == INTEGER) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
+    }
+    return index >= opt.values.size() || !opt.values[index].string.set() ? defValue : opt.values[index].string.value();
 }
 
 void ts::Args::getValue(UString& value_, const UChar* name, const UChar* defValue, size_t index) const
@@ -655,9 +661,9 @@ void ts::Args::getValues(UStringVector& values, const UChar* name) const
     values.clear();
     values.reserve(opt.values.size());
 
-    for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-        if (it->set()) {
-            values.push_back(it->value());
+    for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
+        if (it->string.set()) {
+            values.push_back(it->string.value());
         }
     }
 }
@@ -671,15 +677,18 @@ void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index
 {
     const IOption& opt(getIOption(name));
 
+    if (opt.type == INTEGER) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as tristate");
+    }
     if (index >= opt.values.size()) {
         // Option not present, meaning unspecified.
         value = MAYBE;
     }
-    else if (!opt.values[index].set()) {
+    else if (!opt.values[index].string.set()) {
         // Option present without value, meaning true.
         value = TRUE;
     }
-    else if (!opt.values[index].value().toTristate(value)) {
+    else if (!opt.values[index].string.value().toTristate(value)) {
         // Value present but not a valid tristate value. Should not occur if the
         // option was declared using TRISTATE type. So, this must be some string
         // option and we cannot decide the Tristate value.
@@ -728,7 +737,8 @@ bool ts::Args::analyze(bool processRedirections)
     // Clear previous values
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
         it->second.values.clear();
-    }
+        it->second.value_count = 0;
+   }
 
     // Process default arguments from configuration file.
     if ((_flags & NO_CONFIG_FILE) == 0) {
@@ -750,20 +760,19 @@ bool ts::Args::analyze(bool processRedirections)
     _is_valid = !processRedirections || processArgsRedirection(_args);
 
     // Process argument list
-    size_t next_arg = 0;                     // Index of next arg to process
+    size_t next_arg = 0;            // Index of next arg to process
     size_t short_opt_arg = NPOS;    // Index of arg containing short options
     size_t short_opt_index = NPOS;  // Short option index in _args[short_opt_arg]
-    bool force_parameters = false;           // Force all items to be parameters
+    bool force_parameters = false;  // Force all items to be parameters
 
     while (_is_valid && (short_opt_arg != NPOS || next_arg < _args.size())) {
 
         IOption* opt = nullptr;
-        ArgValue val;
+        Variable<UString> val;
 
         // Locate option name and value
-
         if (short_opt_arg != NPOS) {
-            // Analysing several short options in a string
+            // Analyzing several short options in a string
             opt = search(_args[short_opt_arg][short_opt_index++]);
             if (short_opt_index >= _args[short_opt_arg].length()) {
                 // Reached end of short option string
@@ -810,79 +819,25 @@ bool ts::Args::analyze(bool processRedirections)
             ++next_arg;
         }
 
-        // If IOption not found, error already reported
-        if (opt == nullptr) {
-            continue;
-        }
-
-        // If no value required, simply add an empty string
-        if (opt->type == NONE) {
-            if (val.set()) {
-                // In the case --option=value
-                error(u"no value allowed for " + opt->display());
+        // If IOption found...
+        if (opt != nullptr) {
+            // Get the value string from short option, if present
+            if (short_opt_arg != NPOS && opt->type != NONE) {
+                assert(!val.set());
+                // Get the value from the rest of the short option string
+                val = _args[short_opt_arg].substr(short_opt_index);
+                short_opt_arg = NPOS;
+                short_opt_index = NPOS;
             }
-            opt->values.push_back(val);
-            continue;
-        }
 
-        // Get the value string from short option, if present
-        if (short_opt_arg != NPOS) {
-            assert(!val.set());
-            // Get the value from the rest of the short option string
-            val = _args[short_opt_arg].substr(short_opt_index);
-            short_opt_arg = NPOS;
-            short_opt_index = NPOS;
-        }
-
-        // Check presence of mandatory values in next arg if not already found
-        if (!val.set() && (opt->flags & IOPT_OPTVALUE) == 0) {
-            if (next_arg >= _args.size()) {
-                error(u"missing value for " + opt->display());
-                continue;
-            }
-            else {
+            // Check presence of mandatory values in next arg if not already found
+            if (!val.set() && opt->type != NONE && (opt->flags & IOPT_OPTVALUE) == 0 && next_arg < _args.size()) {
                 val = _args[next_arg++];
             }
-        }
 
-        // Validate values
-        if (val.set()) {
-            if (opt->type == INTEGER) {
-                int64_t ival = 0;
-                if (!opt->enumeration.empty()) {
-                    // Enumeration value expected, get corresponding integer value (not case sensitive)
-                    int i = opt->enumeration.value(val.value(), false);
-                    if (i == Enumeration::UNKNOWN) {
-                        error(u"invalid value %s for %s, use one of %s", {val.value(), opt->display(), optionNames(opt->name.c_str())});
-                        continue;
-                    }
-                    // Replace with actual integer value.
-                    val = UString::Decimal(i, 0, true, UString());
-                }
-                else if (!val.value().toInteger(ival, THOUSANDS_SEPARATORS)) {
-                    error(u"invalid integer value %s for %s", {val.value(), opt->display()});
-                    continue;
-                }
-                else if (ival < opt->min_value) {
-                    error(u"value for %s must be >= %'d", {opt->display(), opt->min_value});
-                    continue;
-                }
-                else if (ival > opt->max_value) {
-                    error(u"value for %s must be <= %'d", {opt->display(), opt->max_value});
-                    continue;
-                }
-            }
-            else if (opt->type == TRISTATE) {
-                Tristate t;
-                if (!val.value().toTristate(t)) {
-                    error(u"invalid value %s for %s, use one of %s", {val.value(), opt->display(), UString::TristateNamesList()});
-                    continue;
-                }
-            }
+            // Validate option value.
+            validateParameter(*opt, val);
         }
-
-        // Push value. For optional parameters without value, an unset variable is pushed.
-        opt->values.push_back(val);
     }
 
     // Process --verbose predefined option
@@ -910,12 +865,12 @@ bool ts::Args::analyze(bool processRedirections)
     // Look for parameters/options number of occurences.
     // Don't do that if command already proven wrong
     if (_is_valid) {
-        for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
+        for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
             const IOption& op(it->second);
-            if (op.values.size() < op.min_occur) {
+            if (op.value_count < op.min_occur) {
                 error(u"missing " + op.display() + (op.min_occur < 2 ? u"" : UString::Format(u", %d required", {op.min_occur})));
             }
-            else if (op.values.size() > op.max_occur) {
+            else if (op.value_count > op.max_occur) {
                 error(u"too many " + op.display() + (op.max_occur < 2 ? u"" : UString::Format(u", %d maximum", {op.max_occur})));
             }
         }
@@ -925,6 +880,102 @@ bool ts::Args::analyze(bool processRedirections)
     exitOnError();
 
     return _is_valid;
+}
+
+
+//----------------------------------------------------------------------------
+// Validate the content of an option, add the value.
+//----------------------------------------------------------------------------
+
+bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
+{
+    int64_t last = 0;
+
+    // Build the argument value.
+    ArgValue arg;
+    arg.string = val;
+
+    if (opt.type == NONE) {
+        // There should be no value, this is a flag without value.
+        if (val.set()) {
+            // In the case --option=value
+            error(u"no value allowed for %s", {opt.display()});
+            return false;
+        }
+    }
+    else if (!val.set()) {
+        // No value set, must be an optional value.
+        if ((opt.flags & IOPT_OPTVALUE) == 0) {
+            error(u"missing value for %s", {opt.display()});
+            return false;
+        }
+    }
+    else if (opt.type == TRISTATE) {
+        Tristate t;
+        if (!val.value().toTristate(t)) {
+            error(u"invalid value %s for %s, use one of %s", {val.value(), opt.display(), UString::TristateNamesList()});
+            return false;
+        }
+    }
+    else if (opt.type != INTEGER) {
+        // These cases must have been previously eliminated.
+        assert(opt.type != UNSIGNED);
+        assert(opt.type != POSITIVE);
+        assert(opt.type != UINT8);
+        assert(opt.type != UINT16);
+        assert(opt.type != UINT32);
+        assert(opt.type != PIDVAL);
+        assert(opt.type != INT8);
+        assert(opt.type != INT16);
+        assert(opt.type != INT32);
+    }
+    else if (!opt.enumeration.empty()) {
+        // Enumeration value expected, get corresponding integer value (not case sensitive)
+        int i = opt.enumeration.value(val.value(), false);
+        if (i == Enumeration::UNKNOWN) {
+            error(u"invalid value %s for %s, use one of %s", {val.value(), opt.display(), optionNames(opt.name.c_str())});
+            return false;
+        }
+        // Replace with actual integer value.
+        arg.int_base = i;
+        arg.int_count = 1;
+    }
+    else if (val.value().toInteger(arg.int_base, THOUSANDS_SEPARATORS)) {
+        // Found exactly one integer value.
+        arg.int_count = 1;
+    }
+    else if (val.value().scan(u"%'d-%'d", {&arg.int_base, &last})) {
+        // Found one range of integer values.
+        if (last < arg.int_base) {
+            error(u"invalid range of integer values \"%s\" for %s", {val.value(), opt.display()});
+            return false;
+        }
+        arg.int_count = size_t(last + 1 - arg.int_base);
+    }
+    else {
+        error(u"invalid integer value %s for %s", {val.value(), opt.display()});
+        return false;
+    }
+
+    // Check validity of integer values.
+    if (opt.type == INTEGER && arg.int_count > 0) {
+        if (arg.int_base < opt.min_value) {
+            error(u"value for %s must be >= %'d", {opt.display(), opt.min_value});
+            return false;
+        }
+        else if (arg.int_base + int64_t(arg.int_count) - 1 > opt.max_value) {
+            error(u"value for %s must be <= %'d", {opt.display(), opt.max_value});
+            return false;
+        }
+    }
+
+    // Push value. For optional parameters without value, an unset variable is pushed.
+    opt.values.push_back(arg);
+
+    // Add the number of occurences. Can be more than one in case of integer range.
+    opt.value_count += opt.type == INTEGER && arg.int_count > 0 ? arg.int_count : 1;
+
+    return true;
 }
 
 

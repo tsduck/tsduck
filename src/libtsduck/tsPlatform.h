@@ -296,6 +296,10 @@
     //!
     #define TS_ARM
     //!
+    //! Defined when the target processor architecture is ARM64.
+    //!
+    #define TS_ARM64
+    //!
     //! Defined when the target processor architecture is STxP70.
     //!
     #define TS_STXP70
@@ -319,6 +323,10 @@
     //! Defined when the target processor architecture is Sun SPARC architecture.
     //!
     #define TS_SPARC
+    //!
+    //! Defined when the target processor architecture is MIPS architecture.
+    //!
+    #define TS_MIPS
 
 #elif defined(__i386__) || defined(TS_I386) || defined(_M_IX86)
     #if !defined(TS_I386)
@@ -346,8 +354,14 @@
         #define TS_ARM 1
     #endif
     #if !defined(TS_ADDRESS_BITS)
-        // To be fixed for ARM 64
         #define TS_ADDRESS_BITS 32
+    #endif
+#elif defined(__aarch64__)
+    #if !defined(TS_ARM64)
+        #define TS_ARM64 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__stxp70__) || defined(__STxP70__)
     #if !defined(TS_STXP70)
@@ -361,7 +375,7 @@
         #define TS_ALPHA 1
     #endif
     #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
+        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__sparc__)
     #if !defined(TS_SPARC)
@@ -381,6 +395,13 @@
 #elif defined(__powerpc__)
     #if !defined(TS_POWERPC)
         #define TS_POWERPC 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
+    #endif
+#elif defined(__mips__)
+    #if !defined(TS_MIPS)
+        #define TS_MIPS 1
     #endif
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
@@ -409,7 +430,7 @@
     #define TS_BIG_ENDIAN 1
 #endif
 
-#if defined (TS_ARM)
+#if defined(TS_ARM) || defined(TS_ARM64) || defined(TS_MIPS)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -2588,7 +2609,7 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// Cross-plaftorms portable definitions for memory barrier.
+// Cross-platforms portable definitions for memory barrier.
 //----------------------------------------------------------------------------
 
 #if defined(TS_MSC)
@@ -2632,6 +2653,14 @@ namespace ts {
         // For later reference, not sure this is valid.
         unsigned dest = 0;
         __asm__ __volatile__ ("@MemoryBarrier\n mcr p15,0,%0,c7,c10,5\n" : "=&r"(dest) : :  "memory");
+
+#elif defined(TS_GCC) && defined(TS_ARM64)
+
+        __asm__ __volatile__ ("dmb sy" : : : "memory");
+
+#elif defined(TS_GCC) && defined(TS_MIPS)
+
+       __asm__ __volatile__ ("sync" : : :"memory");
 
 #elif defined(TS_MSC)
 
@@ -3056,43 +3085,43 @@ namespace ts {
     //! This constant shall be used by convention to express an infinite
     //! number of sub-quantities of seconds.
     //!
-    const SubSecond Infinite = TS_CONST64 (0x7FFFFFFFFFFFFFFF);
+    constexpr SubSecond Infinite = TS_CONST64 (0x7FFFFFFFFFFFFFFF);
     //!
     //! Number of nanoseconds per second
     //!
-    const NanoSecond NanoSecPerSec = 1000000000;
+    constexpr NanoSecond NanoSecPerSec = 1000000000;
     //!
     //! Number of nanoseconds per millisecond
     //!
-    const NanoSecond NanoSecPerMilliSec = 1000000;
+    constexpr NanoSecond NanoSecPerMilliSec = 1000000;
     //!
     //! Number of nanoseconds per microsecond
     //!
-    const NanoSecond NanoSecPerMicroSec = 1000;
+    constexpr NanoSecond NanoSecPerMicroSec = 1000;
     //!
     //! Number of microseconds per second
     //!
-    const MicroSecond MicroSecPerSec = 1000000;
+    constexpr MicroSecond MicroSecPerSec = 1000000;
     //!
     //! Number of microseconds per millisecond
     //!
-    const MicroSecond MicroSecPerMilliSec = 1000;
+    constexpr MicroSecond MicroSecPerMilliSec = 1000;
     //!
     //! Number of milliseconds per second
     //!
-    const MilliSecond MilliSecPerSec = 1000;
+    constexpr MilliSecond MilliSecPerSec = 1000;
     //!
     //! Number of milliseconds per minute
     //!
-    const MilliSecond MilliSecPerMin = 1000 * 60;
+    constexpr MilliSecond MilliSecPerMin = 1000 * 60;
     //!
     //! Number of milliseconds per hour
     //!
-    const MilliSecond MilliSecPerHour = 1000 * 60 * 60;
+    constexpr MilliSecond MilliSecPerHour = 1000 * 60 * 60;
     //!
     //! Number of milliseconds per day
     //!
-    const MilliSecond MilliSecPerDay = 1000 * 60 * 60 * 24;
+    constexpr MilliSecond MilliSecPerDay = 1000 * 60 * 60 * 24;
 }
 
 

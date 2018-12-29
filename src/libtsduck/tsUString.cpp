@@ -2002,7 +2002,7 @@ void ts::UString::ArgMixInContext::getFormatSize(size_t& size)
 
 
 //----------------------------------------------------------------------------
-// Analysis context of a Scan string.
+// Analysis context of a scan string.
 //----------------------------------------------------------------------------
 
 ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, const std::initializer_list<ArgMixOut>& args) :
@@ -2068,9 +2068,16 @@ bool ts::UString::ArgMixOutContext::processField()
     // - %X : Same as %x.
     // - %c : Matches the next non-space character. The Unicode code point is returned.
     // - %% : Matches a literal % (already done).
+    // The allowed options, between the '%' and the letter are:
+    //    ' : For decimal integer conversions, skip separators for groups of thousands.
 
     // Extract the command and set fmt to its final value, after the '%' sequence.
-    const UChar cmd = *++_fmt;
+    bool skipSeparator = false;
+    UChar cmd = *++_fmt;
+    if (cmd == u'\'') {
+        skipSeparator = true;
+        cmd = *++_fmt;
+    }
     if (cmd != CHAR_NULL) {
         ++_fmt;
     }
@@ -2130,7 +2137,7 @@ bool ts::UString::ArgMixOutContext::processField()
         if (_input[0] == u'-' && IsDigit(_input[1])) {
             _input += 2;
         }
-        while (IsDigit(*_input)) {
+        while (IsDigit(*_input) || (skipSeparator && *_input == u',')) {
             _input++;
         }
     }
@@ -2143,16 +2150,19 @@ bool ts::UString::ArgMixOutContext::processField()
 
     // Build the string to decode, preserve optional prefix we added.
     value.append(start, _input - start);
+    if (skipSeparator) {
+        value.remove(u',');
+    }
 
     // Decode signed or usigned value. Use 64 bits in all cases.
     // Note the decoding should not fail since we already checked the syntax.
     if (_arg->isSigned()) {
-        int64_t i;
+        int64_t i = 0;
         value.toInteger(i);
         _arg->storeInteger(i);
     }
     else {
-        uint64_t i;
+        uint64_t i = 0;
         value.toInteger(i);
         _arg->storeInteger(i);
     }

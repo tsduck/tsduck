@@ -93,6 +93,16 @@ namespace ts {
         }
 
         //!
+        //! Initialize a TS packet.
+        //! This method should be used when initializing with NullPacket or EmptyPacket is not appropriate.
+        //! The packet payload is 184 bytes long and filled with the @a data byte.
+        //! @param [in] pid PID value.
+        //! @param [in] cc Continuity counter.
+        //! @param [in] data Byte value to fill the payload with.
+        //!
+        void init(PID pid = PID_NULL, uint8_t cc = 0, uint8_t data = 0xFF);
+
+        //!
         //! Check if the sync byte is valid.
         //! @return True if the sync byte of the packet is valid.
         //!
@@ -268,6 +278,12 @@ namespace ts {
         }
 
         //!
+        //! Compute the size of the stuffing part in the adaptation_field.
+        //! @return Size in bytes of the stuffing part in the adaptation_field.
+        //!
+        size_t getAFStuffingSize() const;
+
+        //!
         //! Compute the size of the TS header.
         //! @return Size in bytes of the TS header.
         //! This is also the index of the TS payload.
@@ -312,6 +328,18 @@ namespace ts {
         {
             return hasPayload() ? PKT_SIZE - getHeaderSize() : 0;
         }
+
+        //!
+        //! Set the payload size.
+        //! If the payload shall be shrunk, the adaptation field is enlarged
+        //! with stuffing. If the payload shall be enlarged, reduce the amount
+        //! of stuffing in the adaptation field.
+        //! This method should be used only when creating a packet from scratch,
+        //! before filling the payload.
+        //! @param [in] size The requested payload size.
+        //! @return True on success, false when the requested size is too large.
+        //!
+        bool setPayloadSize(size_t size);
 
         //!
         //! Check if packet has a discontinuity_indicator set - 1 bit
@@ -385,13 +413,22 @@ namespace ts {
         //!
         int8_t getSpliceCountdown() const;
 
-
         //!
         //! Replace the PCR value - 42 bits
         //! @param [in] pcr The new PCR value.
         //! @throw AdaptationFieldError if no PCR is present.
         //!
         void setPCR(const uint64_t& pcr);
+
+        //!
+        //! Create or replace the PCR value - 42 bits.
+        //! If there is no PCR, the adaptation field is created or enlarged.
+        //! In this case, the start of the packet payload is overwritten.
+        //! This method should be used only when creating a packet from scratch,
+        //! before filling the payload.
+        //! @param [in] pcr The new PCR value.
+        //!
+        void createPCR(const uint64_t& pcr);
 
         //!
         //! Replace the OPCR value - 42 bits
@@ -500,9 +537,10 @@ namespace ts {
         //! @param [in] flags Indicate which part must be dumped. If DUMP_RAW or
         //! DUMP_PAYLOAD is specified, flags from ts::UString::HexaFlags may also be used.
         //! @param [in] indent Indicates the base indentation of lines.
+        //! @param [in] size Maximum size to display in the packet.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& display(std::ostream& strm, uint32_t flags = 0, int indent = 0) const;
+        std::ostream& display(std::ostream& strm, uint32_t flags = 0, size_t indent = 0, size_t size = PKT_SIZE) const;
 
         //!
         //! Init packet from a memory area.

@@ -49,9 +49,6 @@ CONFIG(debug, debug|release):DEFINES += DEBUG
 PROJROOT = $$_PRO_FILE_PWD_/../../..
 SRCROOT  = $$PROJROOT/src
 
-# Currently do not use DTAPI with Qt Creator.
-DEFINES += TS_NO_DTAPI=1
-
 # Enforce compilation warnings.
 CONFIG -= warn_off
 CONFIG *= warn_on
@@ -77,9 +74,9 @@ linux|mingw {
     QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel
 }
 linux {
-    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC
+    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
     INCLUDEPATH += $$SRCROOT/libtsduck/linux
-    LIBS += -lrt -ldl
+    LIBS += -lrt -ldl $$PROJROOT/dektec/LinuxSDK/DTAPI/Lib/GCC4.4/DTAPI64.o
 }
 mac {
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
@@ -87,6 +84,7 @@ mac {
     INCLUDEPATH += $$SRCROOT/libtsduck/mac
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib
     QMAKE_EXTENSION_SHLIB = so
+    DEFINES += TS_NO_DTAPI=1
 }
 win32|win64 {
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/windows

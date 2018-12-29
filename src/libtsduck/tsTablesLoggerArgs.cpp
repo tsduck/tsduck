@@ -75,6 +75,7 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     no_duplicate(false),
     pack_all_sections(false),
     pack_and_flush(false),
+    fill_eit(false),
     tid(),
     tidext(),
     use_current(true),
@@ -115,6 +116,12 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"section payloads containing the same byte value (all 0x00 or all 0xFF "
               u"for instance) are ignored. Typically, such sections are stuffing and "
               u"can be ignored that way.");
+
+    args.option(u"fill-eit");
+    args.help(u"fill-eit",
+              u"Before exiting, add missing empty sections in EIT's and flush them. "
+              u"This can be useful with segmented EIT schedule where empty sections "
+              u"at end of segments are usually not transmitted.");
 
     args.option(u"flush", 'f');
     args.help(u"flush", u"Flush output after each display.");
@@ -206,7 +213,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"valid complete table. Its section_number and last_section_number are forced "
               u"to zero. Use with care because this may create inconsistent tables. This "
               u"option can be useful with tables with sparse sections such as EIT's to save "
-              u"them in XML format.");
+              u"them in XML format (as an alternative, see also --fill-eit).");
 
     args.option(u"pack-and-flush");
     args.help(u"pack-and-flush",
@@ -221,8 +228,8 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
               u"section or table.");
 
     args.option(u"pid", 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
-    args.help(u"pid",
-              u"PID filter: select packets with this PID value, "
+    args.help(u"pid", u"pid1[-pid2]",
+              u"PID filter: select packets with this PID value or range of PID values. "
               u"Several -p or --pid options may be specified. "
               u"Without -p or --pid option, all PID's are used (this can be a "
               u"dangerous option on complete transport streams since PID's not "
@@ -248,15 +255,15 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.help(u"text-output", u"A synonym for --output-file.");
 
     args.option(u"tid", 't', Args::UINT8, 0, Args::UNLIMITED_COUNT);
-    args.help(u"tid",
-              u"TID filter: select sections with this TID (table id) value. "
+    args.help(u"tid", u"tid1[-tid2]",
+              u"TID filter: select sections with this TID (table id) value or range of TID values. "
               u"Several -t or --tid options may be specified. "
               u"Without -t or --tid option, all tables are saved.");
 
     args.option(u"tid-ext", 'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
-    args.help(u"tid-ext",
+    args.help(u"tid-ext", u"ext1[-ext2]",
               u"TID extension filter: select sections with this table id "
-              u"extension value (apply to long sections only). "
+              u"extension value or range of values (apply to long sections only). "
               u"Several -e or --tid-ext options may be specified. "
               u"Without -e or --tid-ext option, all tables are saved.");
 
@@ -318,6 +325,7 @@ bool ts::TablesLoggerArgs::load(Args& args)
     udp_ttl = args.intValue(u"ttl", 0);
     pack_all_sections = args.present(u"pack-all-sections");
     pack_and_flush = args.present(u"pack-and-flush");
+    fill_eit = args.present(u"fill-eit");
     all_once = args.present(u"all-once");
     all_sections = all_once || pack_all_sections || args.present(u"all-sections");
     max_tables = args.intValue<uint32_t>(u"max-tables", 0);

@@ -50,33 +50,33 @@ namespace ts {
     //!
     //! MPEG TS packet size in bytes.
     //!
-    const size_t PKT_SIZE = 188;
+    constexpr size_t PKT_SIZE = 188;
 
     //!
     //! MPEG TS packet size in bits.
     //!
-    const size_t PKT_SIZE_BITS = 8 * PKT_SIZE;
+    constexpr size_t PKT_SIZE_BITS = 8 * PKT_SIZE;
 
     //!
     //! Size in bytes of a Reed-Solomon outer FEC.
     //!
-    const size_t RS_SIZE = 16;
+    constexpr size_t RS_SIZE = 16;
 
     //!
     //! Size in bytes of a TS packet with trailing Reed-Solomon outer FEC.
     //!
-    const size_t PKT_RS_SIZE = PKT_SIZE + RS_SIZE;
+    constexpr size_t PKT_RS_SIZE = PKT_SIZE + RS_SIZE;
 
     //!
     //! Size in bytes of a timestamp preceeding a TS packet in M2TS files (Blu-ray disc).
     //!
-    const size_t M2TS_HEADER_SIZE = 4;
+    constexpr size_t M2TS_HEADER_SIZE = 4;
 
     //!
     //! Size in bytes of an TS packet in M2TS files (Blu-ray disc).
     //! There is a leading 4-byte timestamp before the TS packet.
     //!
-    const size_t PKT_M2TS_SIZE = M2TS_HEADER_SIZE + PKT_SIZE;
+    constexpr size_t PKT_M2TS_SIZE = M2TS_HEADER_SIZE + PKT_SIZE;
 
     //!
     //! Number of Transport Stream packets.
@@ -93,7 +93,7 @@ namespace ts {
     //!
     //! A impossible value for PacketCounter, meaning "undefined".
     //!
-    const PacketCounter INVALID_PACKET_COUNTER = std::numeric_limits<PacketCounter>::max();
+    constexpr PacketCounter INVALID_PACKET_COUNTER = std::numeric_limits<PacketCounter>::max();
 
     //!
     //! Number of sections.
@@ -170,22 +170,22 @@ namespace ts {
     //!
     //! Value of a sync byte (first byte in a TS packet).
     //!
-    const uint8_t SYNC_BYTE = 0x47;
+    constexpr uint8_t SYNC_BYTE = 0x47;
 
     //!
     //! PES packet start code prefix (24 bits).
     //!
-    const uint32_t PES_START = 0x000001;
+    constexpr uint32_t PES_START = 0x000001;
 
     //!
     //! Size (in bits) of a PID field.
     //!
-    const size_t PID_BITS = 13;
+    constexpr size_t PID_BITS = 13;
 
     //!
     //! Maximum number of PID's (8192).
     //!
-    const PID PID_MAX = 1 << PID_BITS;
+    constexpr PID PID_MAX = 1 << PID_BITS;
 
     //!
     //! A bit mask for PID values.
@@ -206,34 +206,34 @@ namespace ts {
     //!
     //! Size (in bits) of a Continuity Counter (CC) field.
     //!
-    const size_t CC_BITS = 4;
+    constexpr size_t CC_BITS = 4;
 
     //!
     //! Mask to wrap a Continuity Counter (CC) value.
     //! CC values wrap at 16.
     //!
-    const uint8_t CC_MASK = 0x0F;
+    constexpr uint8_t CC_MASK = 0x0F;
 
     //!
     //! Maximum value of a Continuity Counter (CC).
     //!
-    const uint8_t CC_MAX = 1 << CC_BITS;
+    constexpr uint8_t CC_MAX = 1 << CC_BITS;
 
     //!
     //! Size (in bits) of a section version field.
     //!
-    const size_t SVERSION_BITS = 5;
+    constexpr size_t SVERSION_BITS = 5;
 
     //!
     //! Mask to wrap a section version value.
     //! Section version values wrap at 32.
     //!
-    const uint8_t SVERSION_MASK = 0x1F;
+    constexpr uint8_t SVERSION_MASK = 0x1F;
 
     //!
     //! Maximum value of a section version.
     //!
-    const uint8_t SVERSION_MAX = 1 << SVERSION_BITS;
+    constexpr uint8_t SVERSION_MAX = 1 << SVERSION_BITS;
 
     //!
     //! Scrambling_control values (used in TS and PES packets headers)
@@ -250,7 +250,7 @@ namespace ts {
     //! The origin of MJD is 17 Nov 1858 00:00:00.
     //! The UNIX epoch (1 Jan 1970) is 40587 days from julian time origin.
     //!
-    const uint32_t MJD_EPOCH = 40587;
+    constexpr uint32_t MJD_EPOCH = 40587;
 
     //!
     //! Video macroblock width in pixels.
@@ -259,13 +259,13 @@ namespace ts {
     //! - ISO 13818-2 (MPEG-2 video)
     //! - ISO 14496-10 (MPEG-4 Advanced Video Coding, AVC, ITU H.264)
     //!
-    const size_t MACROBLOCK_WIDTH = 16;
+    constexpr size_t MACROBLOCK_WIDTH = 16;
 
     //!
     //! Video macroblock height in pixels.
     //! @see MACROBLOCK_WIDTH
     //!
-    const size_t MACROBLOCK_HEIGHT = 16;
+    constexpr size_t MACROBLOCK_HEIGHT = 16;
 
     //---------------------------------------------------------------------
     //! Predefined PID values
@@ -309,62 +309,62 @@ namespace ts {
     //!
     //! MPEG-2 System Clock frequency in Hz, used by PCR (27 Mb/s).
     //!
-    const uint32_t SYSTEM_CLOCK_FREQ = 27000000;
+    constexpr uint32_t SYSTEM_CLOCK_FREQ = 27000000;
 
     //!
     //! Subfactor of MPEG-2 System Clock subfrequency, used by PTS and DTS.
     //!
-    const uint32_t SYSTEM_CLOCK_SUBFACTOR = 300;
+    constexpr uint32_t SYSTEM_CLOCK_SUBFACTOR = 300;
 
     //!
     //! MPEG-2 System Clock subfrequency in Hz, used by PTS and DTS (90 Kb/s).
     //!
-    const uint32_t SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR;
+    constexpr uint32_t SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR;
 
     //!
     //! Size in bits of a PCR (Program Clock Reference).
     //!
-    const size_t PCR_BIT_SIZE = 42;
+    constexpr size_t PCR_BIT_SIZE = 42;
 
     //!
     //! Size in bits of a PTS (Presentation Time Stamp) or DTS (Decoding Time Stamp).
     //!
-    const size_t PTS_DTS_BIT_SIZE = 33;
+    constexpr size_t PTS_DTS_BIT_SIZE = 33;
 
     //!
     //! Mask for PCR values (wrap up at 2**42).
     //!
-    const uint64_t PCR_MASK = TS_UCONST64(0x000003FFFFFFFFFF);
+    constexpr uint64_t PCR_MASK = TS_UCONST64(0x000003FFFFFFFFFF);
 
     //!
     //! Scale factor for PCR values (wrap up at 2**42).
     //!
-    const uint64_t PCR_SCALE = TS_UCONST64(0x0000040000000000);
+    constexpr uint64_t PCR_SCALE = TS_UCONST64(0x0000040000000000);
 
     //!
     //! Mask for PTS and DTS values (wrap up at 2**33).
     //!
-    const uint64_t PTS_DTS_MASK = TS_UCONST64(0x00000001FFFFFFFF);
+    constexpr uint64_t PTS_DTS_MASK = TS_UCONST64(0x00000001FFFFFFFF);
 
     //!
     //! Scale factor for PTS and DTS values (wrap up at 2**33).
     //!
-    const uint64_t PTS_DTS_SCALE = TS_UCONST64(0x0000000200000000);
+    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(0x0000000200000000);
 
     //!
     //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
     //!
-    const uint64_t INVALID_PCR = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    constexpr uint64_t INVALID_PCR = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
 
     //!
     //! An invalid PTS value, can be used as a marker.
     //!
-    const uint64_t INVALID_PTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    constexpr uint64_t INVALID_PTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
 
     //!
     //! An invalid DTS value, can be used as a marker.
     //!
-    const uint64_t INVALID_DTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    constexpr uint64_t INVALID_DTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
 
     //!
     //! Check if PCR2 follows PCR1 after wrap up.
@@ -588,7 +588,7 @@ namespace ts {
     };
 
     //! Size in bytes of a UUID in AVC SEI's.
-    const size_t AVC_SEI_UUID_SIZE = 16;
+    constexpr size_t AVC_SEI_UUID_SIZE = 16;
 
     //---------------------------------------------------------------------
     //! Stream type values, as used in the PMT.
@@ -664,40 +664,40 @@ namespace ts {
     //---------------------------------------------------------------------
 
     //! Maximum size of a descriptor (255 + 2-byte header).
-    const size_t MAX_DESCRIPTOR_SIZE = 257;
+    constexpr size_t MAX_DESCRIPTOR_SIZE = 257;
 
     //! Header size of a short section.
-    const size_t SHORT_SECTION_HEADER_SIZE = 3;
+    constexpr size_t SHORT_SECTION_HEADER_SIZE = 3;
 
     //! Header size of a long section.
-    const size_t LONG_SECTION_HEADER_SIZE = 8;
+    constexpr size_t LONG_SECTION_HEADER_SIZE = 8;
 
     //! Size of the CRC32 field in a long section.
-    const size_t SECTION_CRC32_SIZE = 4;
+    constexpr size_t SECTION_CRC32_SIZE = 4;
 
     //! Maximum size of a PSI section (MPEG-defined).
-    const size_t MAX_PSI_SECTION_SIZE = 1024;
+    constexpr size_t MAX_PSI_SECTION_SIZE = 1024;
 
     //! Maximum size of a private section (including DVB-defined sections).
-    const size_t MAX_PRIVATE_SECTION_SIZE  = 4096;
+    constexpr size_t MAX_PRIVATE_SECTION_SIZE  = 4096;
 
     //! Minimum size of a short section.
-    const size_t MIN_SHORT_SECTION_SIZE = SHORT_SECTION_HEADER_SIZE;
+    constexpr size_t MIN_SHORT_SECTION_SIZE = SHORT_SECTION_HEADER_SIZE;
 
     //! Minimum size of a long section.
-    const size_t MIN_LONG_SECTION_SIZE = LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE;
+    constexpr size_t MIN_LONG_SECTION_SIZE = LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE;
 
     //! Maximum size of the payload of a short section.
-    const size_t MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
+    constexpr size_t MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE = MAX_PSI_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
 
     //! Maximum size of the payload of a PSI long section.
-    const size_t MAX_PSI_LONG_SECTION_PAYLOAD_SIZE  = MAX_PSI_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
+    constexpr size_t MAX_PSI_LONG_SECTION_PAYLOAD_SIZE  = MAX_PSI_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //! Maximum size of the payload of a private short section.
-    const size_t MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
+    constexpr size_t MAX_PRIVATE_SHORT_SECTION_PAYLOAD_SIZE = MAX_PRIVATE_SECTION_SIZE - SHORT_SECTION_HEADER_SIZE;
 
     //! Maximum size of the payload of a private long section.
-    const size_t MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE  = MAX_PRIVATE_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
+    constexpr size_t MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE  = MAX_PRIVATE_SECTION_SIZE - LONG_SECTION_HEADER_SIZE - SECTION_CRC32_SIZE;
 
     //---------------------------------------------------------------------
     //! Table identification (TID) values
@@ -808,7 +808,7 @@ namespace ts {
         TID_SCTE35_SIT    = 0xFC, //!< Table id for SCTE 35 Splice Information Table
     };
 
-    const size_t TID_MAX = 0x100; //!< Maximum number of TID values.
+    constexpr size_t TID_MAX = 0x100; //!< Maximum number of TID values.
 
     //---------------------------------------------------------------------
     //! Private data specifier (PDS) values
@@ -1218,6 +1218,19 @@ namespace ts {
     };
 
     //---------------------------------------------------------------------
+    //! Running status values (in RST, EIT, etc.)
+    //---------------------------------------------------------------------
+
+    enum : uint8_t {
+        RS_UNDEFINED   = 0x00, //!< Undefined
+        RS_NOT_RUNNING = 0x01, //!< Not running
+        RS_STARTING    = 0x02, //!< Starts in a few seconds (e.g. for video recording)
+        RS_PAUSING     = 0x03, //!< Pausing
+        RS_RUNNING     = 0x04, //!< Running
+        RS_OFF_AIR     = 0x05, //!< Service off-air
+    };
+
+    //---------------------------------------------------------------------
     //! Scrambling mode values (in scrambling_descriptor)
     //---------------------------------------------------------------------
 
@@ -1354,7 +1367,7 @@ namespace ts {
     //!
     //! Size in bytes of a T2-MI packet header.
     //!
-    const size_t T2MI_HEADER_SIZE = 6;
+    constexpr size_t T2MI_HEADER_SIZE = 6;
 
     //!
     //! T2-MI packet types.
@@ -1380,7 +1393,7 @@ namespace ts {
     //! Size in bytes of a DVB-T2 Base Band Header.
     //! See ETSI EN 302 765, section 5.1.7.
     //!
-    const size_t T2_BBHEADER_SIZE = 10;
+    constexpr size_t T2_BBHEADER_SIZE = 10;
 
     //---------------------------------------------------------------------
     // Teletext PES packets.
@@ -1391,10 +1404,10 @@ namespace ts {
     //!
     //! Size in bytes of a Teletext packet.
     //!
-    const size_t TELETEXT_PACKET_SIZE = 44;
+    constexpr size_t TELETEXT_PACKET_SIZE = 44;
 
-    const uint8_t TELETEXT_PES_FIRST_EBU_DATA_ID = 0x10;  //!< First EBU data_identifier value in PES packets conveying Teletext.
-    const uint8_t TELETEXT_PES_LAST_EBU_DATA_ID  = 0x1F;  //!< Last EBU data_identifier value in PES packets conveying Teletext.
+    constexpr uint8_t TELETEXT_PES_FIRST_EBU_DATA_ID = 0x10;  //!< First EBU data_identifier value in PES packets conveying Teletext.
+    constexpr uint8_t TELETEXT_PES_LAST_EBU_DATA_ID  = 0x1F;  //!< Last EBU data_identifier value in PES packets conveying Teletext.
 
     //!
     //! Teletext data unit ids.
