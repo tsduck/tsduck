@@ -69,19 +69,22 @@ namespace ts {
         bool              _ignore_bat;     // Do not modify the BAT
         bool              _ignore_eit;     // Do not modify the EIT's
         bool              _ignore_nit;     // Do not modify the NIT
+        bool              _remove_strms;   // Remove existing streams from new service ID
         SectionDemux      _demux;          // Section demux
         CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
         CyclingPacketizer _pzer_pmt;       // Packetizer for modified PMT
         CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
         CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
         EITProcessor      _eit_process;    // Modify EIT's
+        bool              _rename_into_existing; // Rename into existing program
+        std::set<PID>     _pids_to_drop;   // PIDs from which to drop all packets
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables and descriptors
         void processPAT(PAT&);
-        void processPMT(PMT&);
+        void processPMT(PMT&, bool remove_program, PID pmt_pid);
         void processSDT(SDT&);
         void processNITBAT(AbstractTransportListTable&);
         void processNITBATDescriptorList(DescriptorList&);
@@ -111,12 +114,14 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
     _ignore_bat(false),
     _ignore_eit(false),
     _ignore_nit(false),
+    _remove_strms(false),
     _demux(this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
-    _eit_process(PID_EIT, tsp_)
+    _eit_process(PID_EIT, tsp_),
+    _rename_into_existing(false)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -154,6 +159,10 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
 
     option(u"type", 't', UINT8);
     help(u"type", u"Specify a new service type.");
+
+    option(u"remove-existing-from-new");
+    help(u"remove-existing-from-new",
+         u"If new service id specified and already exists, remove any existing streams from the service.");
 }
 
 
@@ -168,6 +177,7 @@ bool ts::SVRenamePlugin::start()
     _ignore_bat = present(u"ignore-bat");
     _ignore_eit = present(u"ignore-eit");
     _ignore_nit = present(u"ignore-nit");
+    _remove_strms = present(u"remove-existing-from-new");
 
     _new_service.clear();
     if (present(u"name")) {
@@ -256,8 +266,16 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_PMT: {
             PMT pmt(table);
-            if (pmt.isValid() && _old_service.hasId(pmt.service_id)) {
-                processPMT(pmt);
+            if (pmt.isValid()) {
+                if (_old_service.hasId(pmt.service_id)) {
+                    processPMT(pmt, false, table.sourcePID());
+                }
+                else if (_rename_into_existing && _new_service.hasId(pmt.service_id)) {
+                    // need to pass the PID for the PMT into processPMT()
+                    // because, in this case, want to remove any packets
+                    // for this PID as well.
+                    processPMT(pmt, true, table.sourcePID());
+                }
             }
             break;
         }
@@ -438,6 +456,18 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
         _demux.addPID(it->second);
         _pzer_pmt.setPID(it->second);
 
+        if (_remove_strms && _new_service.hasId() && !_new_service.hasId(it->first)) {
+            // see if a service already exists with the new ID
+            PAT::ServiceMap::iterator it2 = pat.pmts.find(_new_service.getId());
+            if (it2 != pat.pmts.end()) {
+                // then we need to process the PMT associated with this service in order
+                // to know which PIDs to drop from the already existing service with the same
+                // ID
+                _demux.addPID(it2->second);
+                _rename_into_existing = true;
+            }
+        }
+
         tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_old_service.getId(), _old_service.getPMTPID()});
 
         // Modify the PAT
@@ -470,17 +500,37 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::SVRenamePlugin::processPMT(PMT& pmt)
+void ts::SVRenamePlugin::processPMT(PMT& pmt, bool remove_program, PID pmt_pid)
 {
-    // Change the service id in the PMT
-    if (_new_service.hasId()) {
-        pmt.service_id = _new_service.getId();
-    }
+    if (!remove_program) {
+        // Change the service id in the PMT
+        if (_new_service.hasId()) {
+            pmt.service_id = _new_service.getId();
+        }
 
-    // Replace the PMT.in the PID
-    _pzer_pmt.removeSections(TID_PMT, _old_service.getId());
-    _pzer_pmt.removeSections(TID_PMT, _new_service.getId());
-    _pzer_pmt.addTable(pmt);
+        // Replace the PMT.in the PID
+        _pzer_pmt.removeSections(TID_PMT, _old_service.getId());
+        _pzer_pmt.removeSections(TID_PMT, _new_service.getId());
+        _pzer_pmt.addTable(pmt);
+    }
+    else {
+        // Add PID for this PMT to list of PIDs for which to drop packets
+        _pids_to_drop.insert(pmt_pid);
+
+        // iterate through all streams in this program--this doesn't include the PID for the PMT itself
+        std::vector<PID> pids;
+        pids.reserve(pmt.streams.size());
+        for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+            pids.push_back(it->first);
+        }
+
+        // add these PIDs to list of PIDs for which to drop packets and also remove from this PMT
+        for (size_t i = 0; i < pids.size(); ++i) {
+            const PID pid = pids[i];
+            _pids_to_drop.insert(pid);
+            pmt.streams.erase(pid);
+        }
+    }
 }
 
 
@@ -590,6 +640,9 @@ ts::ProcessorPlugin::Status ts::SVRenamePlugin::processPacket(TSPacket& pkt, boo
     }
     else if (!_ignore_eit && pid == PID_EIT) {
         _eit_process.processPacket(pkt);
+    }
+    else if (_rename_into_existing && (_pids_to_drop.find(pid) != _pids_to_drop.end())) {
+        return TSP_DROP;
     }
 
     return TSP_OK;
