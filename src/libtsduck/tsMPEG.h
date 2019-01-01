@@ -1192,6 +1192,10 @@ namespace ts {
         EDID_CI_ANCILLARY_DATA  = 0x14, //!< Ext.DID for CI_ancillary_data_descriptor
         EDID_AC4                = 0x15, //!< Ext.DID for AC4_descriptor
         EDID_C2_BUNDLE_DELIVERY = 0x16, //!< Ext.DID for C2_bundle_system_delivery_descriptor
+        EDID_S2X_DELIVERY       = 0x17, //!< Ext.DID for S2X_satellite_delivery_system_descriptor
+        EDID_PROTECTION_MSG     = 0x18, //!< Ext.DID for protection_message_descriptor
+        EDID_AUDIO_PRESELECT    = 0x19, //!< Ext.DID for audio_preselection_descriptor
+        EDID_TTML_SUBTITLING    = 0x20, //!< Ext.DID for TTML_subtitling_descriptor (could become 0x1A, value in A038 seems weird)
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 

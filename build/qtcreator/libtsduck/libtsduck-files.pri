@@ -45,6 +45,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAsyncReport.h \
     ../../../src/libtsduck/tsAudioAttributes.h \
     ../../../src/libtsduck/tsAudioLanguageOptions.h \
+    ../../../src/libtsduck/tsAudioPreselectionDescriptor.h \
     ../../../src/libtsduck/tsAudioStreamDescriptor.h \
     ../../../src/libtsduck/tsAVCAttributes.h \
     ../../../src/libtsduck/tsAVCHRDParameters.h \
@@ -505,6 +506,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAsyncReport.cpp \
     ../../../src/libtsduck/tsAudioAttributes.cpp \
     ../../../src/libtsduck/tsAudioLanguageOptions.cpp \
+    ../../../src/libtsduck/tsAudioPreselectionDescriptor.cpp \
     ../../../src/libtsduck/tsAudioStreamDescriptor.cpp \
     ../../../src/libtsduck/tsAVCAttributes.cpp \
     ../../../src/libtsduck/tsAVCHRDParameters.cpp \

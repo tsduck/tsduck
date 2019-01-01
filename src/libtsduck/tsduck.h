@@ -70,6 +70,7 @@
 #include "tsAsyncReport.h"
 #include "tsAudioAttributes.h"
 #include "tsAudioLanguageOptions.h"
+#include "tsAudioPreselectionDescriptor.h"
 #include "tsAudioStreamDescriptor.h"
 #include "tsAVCAttributes.h"
 #include "tsAVCHRDParameters.h"

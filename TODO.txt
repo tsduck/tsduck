@@ -44,6 +44,10 @@ TSDuck - List of features to be implemented or fixed
   - 6.4.15   video_depth_range_descriptor
   - G.3.1    DTS-HD_audio_stream_descriptor
 
+  A038 (DVB SI)
+  - 6.4.1    Audio preselection descriptor
+  - 6.4.6.5  S2X satellite delivery system descriptor
+
   ETSI TS 102 006 (System Software Update)
   - 9.5.2.6   update_descriptor
   - 9.5.2.7   SSU_location_descriptor
