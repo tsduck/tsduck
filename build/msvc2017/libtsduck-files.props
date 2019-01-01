@@ -47,6 +47,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioLanguageOptions.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCHRDParameters.h" />
@@ -517,6 +518,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioLanguageOptions.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCHRDParameters.cpp" />

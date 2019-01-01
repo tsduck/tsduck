@@ -29,6 +29,7 @@
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
     REF_TYPE(AssociationTagDescriptor);
+    REF_TYPE(AudioPreselectionDescriptor);
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
     REF_TYPE(AVCVideoDescriptor);

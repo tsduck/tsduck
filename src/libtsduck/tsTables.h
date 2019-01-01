@@ -63,6 +63,7 @@
 #include "tsApplicationStorageDescriptor.h"
 #include "tsApplicationUsageDescriptor.h"
 #include "tsAssociationTagDescriptor.h"
+#include "tsAudioPreselectionDescriptor.h"
 #include "tsAudioStreamDescriptor.h"
 #include "tsAVCTimingAndHRDDescriptor.h"
 #include "tsAVCVideoDescriptor.h"

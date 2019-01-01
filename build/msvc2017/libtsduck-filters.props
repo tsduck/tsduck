@@ -139,6 +139,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsAudioLanguageOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAudioStreamDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1543,6 +1546,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAudioLanguageOptions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAudioStreamDescriptor.cpp">
