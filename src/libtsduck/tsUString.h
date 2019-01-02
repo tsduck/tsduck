@@ -682,7 +682,7 @@ namespace ts {
             return data() + size();
         }
 
-#if defined(TS_CXX17)
+#if defined(TS_CXX17) || defined(DOXYGEN)
         //!
         //! Get the address after the last character in the string (C++17).
         //! @return The address after the last character in the string.
@@ -785,12 +785,27 @@ namespace ts {
         void substitute(const UString& value, const UString& replacement);
 
         //!
+        //! Substitute all occurences of a character with another one.
+        //! @param [in] value Value to search.
+        //! @param [in] replacement Replacement for @a value.
+        //!
+        void substitute(UChar value, UChar replacement);
+
+        //!
         //! Return a copy of the string where all occurences of a string are substituted with another one.
         //! @param [in] value Value to search.
         //! @param [in] replacement Replacement string for @a value.
         //! @return A copy to this string where all occurences of @a value have been replaced by @a replace.
         //!
         UString toSubstituted(const UString& value, const UString& replacement) const;
+
+        //!
+        //! Return a copy of the string where all occurences of a character are substituted with another one.
+        //! @param [in] value Value to search.
+        //! @param [in] replacement Replacement for @a value.
+        //! @return A copy to this string where all occurences of @a value have been replaced by @a replace.
+        //!
+        UString toSubstituted(UChar value, UChar replacement) const;
 
         //!
         //! Remove a prefix in string.
@@ -845,6 +860,22 @@ namespace ts {
         //! @return True if this string ends with @a suffix, false otherwise.
         //!
         bool endWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
+
+        //!
+        //! Compute the number of similar leading characters in two strings.
+        //! @param [in] str A string to compare with @a this string.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return The number of identical leading characters in @a str and @a this string.
+        //!
+        size_t commonPrefixSize(const UString& str, CaseSensitivity cs = CASE_SENSITIVE) const;
+
+        //!
+        //! Compute the number of similar trailing characters in two strings.
+        //! @param [in] str A string to compare with @a this string.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return The number of identical trailing characters in @a str and @a this string.
+        //!
+        size_t commonSuffixSize(const UString& str, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Split the string into segments based on a separator character (comma by default).

@@ -81,6 +81,7 @@ public:
     void testIsAbsoluteFilePath();
     void testAbsoluteFilePath();
     void testCleanupFilePath();
+    void testRelativeFilePath();
 
     CPPUNIT_TEST_SUITE(SysUtilsTest);
     CPPUNIT_TEST(testCurrentProcessId);
@@ -107,6 +108,7 @@ public:
     CPPUNIT_TEST(testIsAbsoluteFilePath);
     CPPUNIT_TEST(testAbsoluteFilePath);
     CPPUNIT_TEST(testCleanupFilePath);
+    CPPUNIT_TEST(testRelativeFilePath);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -777,5 +779,24 @@ void SysUtilsTest::testCleanupFilePath()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab/cd", ts::CleanupFilePath(u"ab/zer/../cd"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cd/ef", ts::CleanupFilePath(u"ab/../cd/ef"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"/cd/ef", ts::CleanupFilePath(u"/../cd/ef"));
+#endif
+}
+
+
+void SysUtilsTest::testRelativeFilePath()
+{
+#if defined(TS_WINDOWS)
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"C:\\ab\\cd\\"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"C:\\aB\\CD\\"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C:\\ab\\cd\\ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"D:\\ab\\cd\\"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cd\\ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"C:\\AB"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"..\\ab\\cd\\ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"C:\\AB", ts::CASE_SENSITIVE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"../ab/cd/ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"C:\\AB", ts::CASE_SENSITIVE, true));
+#else
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/ab/cd/"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/ab"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"../../cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/ab/xy/kl/"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"../ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/xy"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/"));
 #endif
 }

@@ -95,6 +95,8 @@ public:
     void testArgMixOut();
     void testFormat();
     void testScan();
+    void testCommonPrefix();
+    void testCommonSuffix();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -141,6 +143,8 @@ public:
     CPPUNIT_TEST(testArgMixOut);
     CPPUNIT_TEST(testFormat);
     CPPUNIT_TEST(testScan);
+    CPPUNIT_TEST(testCommonPrefix);
+    CPPUNIT_TEST(testCommonSuffix);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -618,6 +622,10 @@ void UStringTest::testSubstitute()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdxyzabcdxyz", ts::UString(u"abcdefabcdef").toSubstituted(u"ef", u"xyz"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abbcdbba", ts::UString(u"abcdba").toSubstituted(u"b", u"bb"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdabcd", ts::UString(u"abcdefabcdef").toSubstituted(u"ef", u""));
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString(u"").toSubstituted(u'a', u'b'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bqcrtybdfr", ts::UString(u"aqcrtyadfr").toSubstituted(u'a', u'b'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aqcrtyadfr", ts::UString(u"aqcrtyadfr").toSubstituted(u'a', u'a'));
 }
 
 void UStringTest::testSplit()
@@ -1972,4 +1980,24 @@ void UStringTest::testScan()
 
     CPPUNIT_ASSERT(ts::UString(u"67,654").scan(u"%'d", {&i}));
     CPPUNIT_ASSERT_EQUAL(67654, i);
+}
+
+void UStringTest::testCommonPrefix()
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString(u"").commonPrefixSize(u""));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString(u"abc").commonPrefixSize(u"def"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), ts::UString(u"abc").commonPrefixSize(u"a"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), ts::UString(u"abc").commonPrefixSize(u"axyz"));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ts::UString(u"abcd").commonPrefixSize(u"abCXYZ"));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), ts::UString(u"abcd").commonPrefixSize(u"abCXYZ", ts::CASE_INSENSITIVE));
+}
+
+void UStringTest::testCommonSuffix()
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString(u"").commonSuffixSize(u""));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString(u"abc").commonSuffixSize(u"def"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), ts::UString(u"abc").commonSuffixSize(u"c"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), ts::UString(u"abc").commonSuffixSize(u"xyc"));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ts::UString(u"abcd").commonSuffixSize(u"QSZBcd"));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), ts::UString(u"abcd").commonSuffixSize(u"QSZBcd", ts::CASE_INSENSITIVE));
 }
