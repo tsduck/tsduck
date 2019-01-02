@@ -616,7 +616,25 @@ void ts::UString::substitute(const UString& value, const UString& replacement)
     }
 }
 
+void ts::UString::substitute(UChar value, UChar replacement)
+{
+    if (value != replacement) {
+        for (size_t i = 0; i < length(); ++i) {
+            if ((*this)[i] == value) {
+                (*this)[i] = replacement;
+            }
+        }
+    }
+}
+
 ts::UString ts::UString::toSubstituted(const UString& value, const UString& replacement) const
+{
+    UString result(*this);
+    result.substitute(value, replacement);
+    return result;
+}
+
+ts::UString ts::UString::toSubstituted(UChar value, UChar replacement) const
 {
     UString result(*this);
     result.substitute(value, replacement);
@@ -729,6 +747,49 @@ bool ts::UString::contain(const UString& substring, CaseSensitivity cs) const
             return false;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the number of similar leading/trailing characters in two strings.
+//----------------------------------------------------------------------------
+
+size_t ts::UString::commonPrefixSize(const ts::UString &str, ts::CaseSensitivity cs) const
+{
+    const size_t len = std::min(length(), str.length());
+    for (size_t i = 0; i < len; ++i) {
+        if (cs == CASE_SENSITIVE) {
+            if (at(i) != str.at(i)) {
+                return i;
+            }
+        }
+        else {
+            if (ToLower(at(i)) != ToLower(str.at(i))) {
+                return i;
+            }
+        }
+    }
+    return len;
+}
+
+size_t ts::UString::commonSuffixSize(const ts::UString &str, ts::CaseSensitivity cs) const
+{
+    const size_t len1 = length();
+    const size_t len2 = str.length();
+    const size_t len = std::min(len1, len2);
+    for (size_t i = 0; i < len; ++i) {
+        if (cs == CASE_SENSITIVE) {
+            if (at(len1 - i - 1) != str.at(len2 - i - 1)) {
+                return i;
+            }
+        }
+        else {
+            if (ToLower(at(len1 - i - 1)) != ToLower(str.at(len2 - i - 1))) {
+                return i;
+            }
+        }
+    }
+    return len;
 }
 
 
