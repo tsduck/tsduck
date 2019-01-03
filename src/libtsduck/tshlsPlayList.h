@@ -61,6 +61,17 @@ namespace ts {
             void clear();
 
             //!
+            //! Reset the content of a playlist.
+            //! Should be used before rebuilding a new playlist.
+            //! @param [in] type Playlist type.
+            //! @param [in] filename File path where the playlist will be saved.
+            //! This required to build relative paths for sub-playlists or media segments.
+            //! @param [in] version Playlist format version. The default is 3, the minimum
+            //! level which is required for playlists which are supported here.
+            //!
+            void reset(PlayListType type, const UString& filename, int version = 3);
+
+            //!
             //! Load the playlist from a URL.
             //! @param [in] url URL from which to load the playlist.
             //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
@@ -110,6 +121,21 @@ namespace ts {
             bool isValid() const { return _valid; }
 
             //!
+            //! Save the playlist to a text file.
+            //! @param [in] filename File where to save the playlist. By default, use the same file from loadFile() or reset().
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool saveFile(const UString& filename = UString(), Report& report = CERR) const;
+
+            //!
+            //! Build the text content of the playlist.
+            //! @param [in,out] report Where to report errors.
+            //! @return The text content on success, an empty string on error.
+            //!
+            UString textContent(Report& report = CERR) const;
+
+            //!
             //! Get the original URL.
             //! @return The original URL.
             //!
@@ -141,10 +167,26 @@ namespace ts {
             Second targetDuration() const { return _targetDuration; }
 
             //!
+            //! Set the segment target duration in a media playlist.
+            //! @param [in] duration The segment target duration in seconds.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool setTargetDuration(Second duration, Report& report = CERR);
+
+            //!
             //! Get the sequence number of first segment (in media playlist).
             //! @return The sequence number of first segment.
             //!
             size_t mediaSequence() const { return _mediaSequence; }
+
+            //!
+            //! Set the sequence number of first segment in a media playlist.
+            //! @param [in] seq The sequence number of first segment.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool setMediaSequence(size_t seq, Report& report = CERR);
 
             //!
             //! Get the end of list indicator (in media playlist).
@@ -152,6 +194,14 @@ namespace ts {
             //! the playlist, there will not be any new segment.
             //!
             bool endList() const { return _endList; }
+
+            //!
+            //! Set the end of list indicator in a media playlist.
+            //! @param [in] end The end of list indicator.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool setEndList(bool end, Report& report = CERR);
 
             //!
             //! Check if the playlist can be updated (and must be reloaded later).
@@ -164,6 +214,14 @@ namespace ts {
             //! @return The media playlist type.
             //!
             UString playlistType() const { return _playlistType; }
+
+            //!
+            //! Set the media playlist type in a media playlist.
+            //! @param [in] mt The media playlist type, typically "EVENT" or "VOD".
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool setPlaylistType(const UString& mt, Report& report = CERR);
 
             //!
             //! Get the number of media segments (in media playlist).
@@ -192,6 +250,15 @@ namespace ts {
             bool popFirstSegment(MediaSegment& seg);
 
             //!
+            //! Add a segment in a media playlist.
+            //! @param [in] seg The new media segment to append. If the playlist's URI is a file
+            //! name, the URI of the segment is transformed into a relative URI from the playlist's path.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool addSegment(const MediaSegment& seg, Report& report = CERR);
+
+            //!
             //! Get the download UTC time of the playlist.
             //! @return The download UTC time of the playlist.
             //!
@@ -199,7 +266,8 @@ namespace ts {
 
             //!
             //! Get the playout estimated termination UTC time of the playlist (in media playlist).
-            //! @return The estimated playout UTC time of the playlist.
+            //! @return The estimated playout UTC time of the playlist. This is the download time
+            //! of the playlist plus the sum of all segment durations.
             //!
             Time terminationUTC() const { return _utcTermination; }
 
@@ -209,6 +277,16 @@ namespace ts {
             //! @return A constant reference to the media playlist description at @a index.
             //!
             const MediaPlayList& playList(size_t index) const;
+
+            //!
+            //! Add a media playlist in a master playlist.
+            //! @param [in] pl The new media playlist to append. If the master playlist's URI is a file
+            //! name, the URI of the media playlist is transformed into a relative URI from the master
+            //! playlist's path.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool addPlayList(const MediaPlayList& pl, Report& report = CERR);
 
             //!
             //! Select the first media playlist with specific constraints.
@@ -276,8 +354,8 @@ namespace ts {
             MediaPlayListQueue _playlists;       // List of media playlists (master playlist).
 
             // Empty data to return.
-            static const MediaSegment emptySegment;
-            static const MediaPlayList emptyPlayList;
+            static const MediaSegment EmptySegment;
+            static const MediaPlayList EmptyPlayList;
 
             // Load from the text content.
             bool parse(const UString& text, bool strict, Report& report);
@@ -289,6 +367,19 @@ namespace ts {
 
             // Set the playlist type, return true on success, false on error.
             bool setType(PlayListType type, Report& report);
+
+            // Set a member with a given playlist type.
+            template <typename T>
+            bool setMember(PlayListType requiredType, T PlayList::* member, const T& value, Report& report)
+            {
+                if (setType(requiredType, report)) {
+                    this->*member = value;
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
         };
     }
 }
