@@ -42,7 +42,8 @@ TSDUCK_SOURCE;
 
 #define DEFAULT_THRESHOLD1 10
 #define DEFAULT_THRESHOLD2 100
-#define DEFAULT_THRESHOLD3 1000
+#define DEFAULT_THRESHOLD3 500
+#define DEFAULT_THRESHOLD4 1000
 
 
 //----------------------------------------------------------------------------
@@ -72,6 +73,7 @@ namespace ts {
         PacketCounter _threshold1;
         PacketCounter _threshold2;
         PacketCounter _threshold3;
+        PacketCounter _threshold4;
         PacketCounter _thresholdAV;   // Threshold for audio/video packets.
         BitRate       _curBitrate;    // Instant bitrate (between to consecutive PCR).
         PacketCounter _currentPacket; // Total number of packets so far in the TS.
@@ -131,6 +133,7 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
     _threshold1(0),
     _threshold2(0),
     _threshold3(0),
+    _threshold4(0),
     _thresholdAV(0),
     _curBitrate(0),
     _currentPacket(0),
@@ -153,11 +156,14 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
              u"to drop depends on the number of packets in excess. There are several "
              u"thresholds which are specified by the corresponding options:\n\n"
              u"- Below --threshold1, only null packets are dropped.\n"
-             u"- Below --threshold2, if --pid options are specified, packets from "
+             u"- Below --threshold2, if --pid options are specified, video packets from "
              u"the specified PID's are dropped (except packets containing a PUSI or a PCR).\n"
-             u"- Below --threshold3, packets from any video or audio PID are dropped "
+             u"- Below --threshold3, if --pid options are specified, packets from "
+             u"the specified PID's are dropped (except packets containing a PUSI or a PCR).\n"
+             u"- Below --threshold4, packets from any video or audio PID are dropped "
              u"(except packets containing a PUSI or a PCR).\n"
-             u"- Above the last threshold, any packet can be dropped.\n");
+             u"- Above the last threshold, any packet can be dropped.\n\n"
+             u"Note: All thresholds, except the last one, can be disabled using a 0 value.\n");
 
     option(u"bitrate", 'b', INTEGER, 1, 1, 100, UNLIMITED_VALUE);
     help(u"bitrate",
@@ -184,6 +190,11 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
          u"Specify the third threshold for the number of packets in excess. "
          u"The default is " TS_STRINGIFY(DEFAULT_THRESHOLD3) u" packets.");
 
+    option(u"threshold4", '4', UINT32);
+    help(u"threshold4",
+         u"Specify the fourth threshold for the number of packets in excess. "
+         u"The default is " TS_STRINGIFY(DEFAULT_THRESHOLD4) u" packets.");
+
     option(u"wall-clock", 'w');
     help(u"wall-clock",
          u"Compute bitrates based on real wall-clock time. The option is meaningful "
@@ -203,13 +214,30 @@ bool ts::LimitPlugin::start()
     _threshold1 = intValue<PacketCounter>(u"threshold1", DEFAULT_THRESHOLD1);
     _threshold2 = intValue<PacketCounter>(u"threshold2", DEFAULT_THRESHOLD2);
     _threshold3 = intValue<PacketCounter>(u"threshold3", DEFAULT_THRESHOLD3);
+    _threshold4 = intValue<PacketCounter>(u"threshold4", DEFAULT_THRESHOLD4);
     getIntValues(_pids1, u"pid");
 
-    // Threshold for audio/video packets. If a list of --pid is specified, we start
-    // dropping a/v at --threshold2 only. But, without any --pid, we start at --threshold1.
-    _thresholdAV = _pids1.any() ? _threshold3 : _threshold2;
+    if (_threshold4 < 1) {
+        tsp->error(u"the last threshold can't be disabled");
+        return false;
+    }
+    if (_threshold4 < _threshold1 ||
+        (_threshold4 < _threshold3 && _pids1.any()) ||
+        (_threshold4 < _threshold2 && _pids1.any()))
+    {
+        tsp->error(u"the last threshold can't be less than others");
+        return false;
+    }
+    if (_threshold2 > _threshold3) {
+        tsp->error(u"the threshold3 (audio) can't be less than threshold2 (video)");
+        return false;
+    }
 
-    tsp->debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, audio/video threshold: %'d", {_threshold1, _threshold2, _threshold3, _thresholdAV});
+    // Threshold for audio/video packets. If a list of --pid is specified, we start
+    // dropping other a/v at --threshold3 only. But, without any --pid, we start at --threshold1.
+    _thresholdAV = _pids1.any() ? _threshold3 : _threshold1;
+
+    tsp->debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", {_threshold1, _threshold2, _threshold3, _threshold4, _thresholdAV});
 
     // Reset plugin state.
     _currentPacket = 0;
@@ -419,14 +447,16 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, bool& 
 
         // Check all threshold to determine if the packet should be dropped.
         const bool drop =
-            // Drop any packet above --threshold3.
-            (_excessPackets >= _threshold3) ||
-            // Drop non-precious audio/video packets above --threshold2 (or --threshold1 if there is no --pid).
-            (_excessPackets >= _thresholdAV && !precious && (pc->audio || pc->video)) ||
-            // Drop any --pid packet above --threshold1.
-            (_excessPackets >= _threshold1 && !precious && _pids1.test(pid)) ||
-            // Drop any null packet in all cases.
-            (pid == PID_NULL);
+            // Drop any packet above --threshold4.
+            (_excessPackets >= _threshold4) ||
+            // Drop non-precious audio/video packets above --threshold4 (or --threshold1 if there is no --pid).
+            (_thresholdAV > 0 && _excessPackets >= _thresholdAV && !precious && (pc->audio || pc->video)) ||
+            // Drop non-precious audio packets of the pid list above --threshold2.
+            (_threshold3 > 0 && _excessPackets >= _threshold2 && !precious && _pids1.test(pid)) ||
+            // Drop non-precious video packets of the pid list above --threshold1.
+            (_threshold2 > 0 && _excessPackets >= _threshold1 && !precious && pc->video && _pids1.test(pid)) ||
+            // Drop any null packet (if the threshold is not disabled).
+            (_threshold1 > 0 && pid == PID_NULL);
 
         if (drop) {
             if (pc->dropCount++ == 0) {
