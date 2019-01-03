@@ -50,10 +50,14 @@ public:
 
     void testMasterPlaylist();
     void testMediaPlaylist();
+    void testBuildMasterPlaylist();
+    void testBuildMediaPlaylist();
 
     CPPUNIT_TEST_SUITE(HLSTest);
     CPPUNIT_TEST(testMasterPlaylist);
     CPPUNIT_TEST(testMediaPlaylist);
+    CPPUNIT_TEST(testBuildMasterPlaylist);
+    CPPUNIT_TEST(testBuildMediaPlaylist);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -192,4 +196,134 @@ void HLSTest::testMediaPlaylist()
     CPPUNIT_ASSERT_EQUAL(ts::BitRate(2060 * 1024), seg.bitrate);
     CPPUNIT_ASSERT_EQUAL(ts::MilliSecond(6000), seg.duration);
     CPPUNIT_ASSERT(!seg.gap);
+}
+
+void HLSTest::testBuildMasterPlaylist()
+{
+    ts::hls::PlayList pl;
+    pl.reset(ts::hls::MASTER_PLAYLIST, u"/c/test/path/master/test.m3u8");
+
+    CPPUNIT_ASSERT(pl.isValid());
+    CPPUNIT_ASSERT_EQUAL(ts::hls::MASTER_PLAYLIST, pl.type());
+    CPPUNIT_ASSERT_EQUAL(3, pl.version());
+
+    ts::hls::MediaPlayList mpl1;
+    mpl1.uri = u"/c/test/path/playlists/pl1.m3u8";
+    mpl1.bandwidth = 1234567;
+    mpl1.averageBandwidth = 1200000;
+    mpl1.width = 720;
+    mpl1.height = 576;
+    mpl1.frameRate = 30123;
+    mpl1.codecs = u"cot,cot";
+    mpl1.hdcp = u"NONE";
+    mpl1.videoRange = u"SDR";
+    mpl1.video = u"vid1";
+    mpl1.audio = u"aud3";
+    mpl1.subtitles = u"sub1";
+    mpl1.closedCaptions = u"cc1";
+
+    CPPUNIT_ASSERT(pl.addPlayList(mpl1));
+
+    ts::hls::MediaPlayList mpl2;
+    mpl2.uri = u"/c/test/path/playlists/pl2.m3u8";
+    mpl2.bandwidth = 3456789;
+    mpl2.averageBandwidth = 3400000;
+    mpl2.width = 1920;
+    mpl2.height = 1080;
+    mpl2.frameRate = 60567;
+
+    CPPUNIT_ASSERT(pl.addPlayList(mpl2));
+
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pl.segmentCount());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), pl.playListCount());
+
+    static const ts::UChar* const refContent =
+        u"#EXTM3U\n"
+        u"#EXT-X-VERSION:3\n"
+        u"#EXT-X-STREAM-INF:BANDWIDTH=1234567,AVERAGE-BANDWIDTH=1200000,FRAME-RATE=30.123,RESOLUTION=720x576,"
+        u"CODECS=\"cot,cot\",HDCP-LEVEL=NONE,VIDEO-RANGE=SDR,VIDEO=\"vid1\",AUDIO=\"aud3\",SUBTITLES=\"sub1\",CLOSED-CAPTIONS=\"cc1\"\n"
+        u"../playlists/pl1.m3u8\n"
+        u"#EXT-X-STREAM-INF:BANDWIDTH=3456789,AVERAGE-BANDWIDTH=3400000,FRAME-RATE=60.567,RESOLUTION=1920x1080\n"
+        u"../playlists/pl2.m3u8\n";
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(refContent, pl.textContent());
+}
+
+void HLSTest::testBuildMediaPlaylist()
+{
+    ts::hls::PlayList pl;
+    pl.reset(ts::hls::MEDIA_PLAYLIST, u"/c/test/path/master/test.m3u8");
+
+    CPPUNIT_ASSERT(pl.isValid());
+    CPPUNIT_ASSERT_EQUAL(ts::hls::MEDIA_PLAYLIST, pl.type());
+    CPPUNIT_ASSERT_EQUAL(3, pl.version());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pl.segmentCount());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pl.playListCount());
+
+    CPPUNIT_ASSERT(pl.setMediaSequence(7));
+    CPPUNIT_ASSERT(pl.setTargetDuration(5));
+    CPPUNIT_ASSERT(!pl.endList());
+    CPPUNIT_ASSERT(pl.setEndList(true));
+    CPPUNIT_ASSERT(pl.endList());
+    CPPUNIT_ASSERT(pl.setPlaylistType(u"VOD"));
+
+    ts::hls::MediaSegment seg1;
+    seg1.uri = u"/c/test/path/segments/seg-0001.ts";
+    seg1.title = u"Segment1";
+    seg1.duration = 4920;
+    seg1.bitrate = 1234567;
+    CPPUNIT_ASSERT(pl.addSegment(seg1));
+
+    ts::hls::MediaSegment seg2;
+    seg2.uri = u"/c/test/path/segments/seg-0002.ts";
+    seg2.duration = 4971;
+    seg2.bitrate = 1654321;
+    CPPUNIT_ASSERT(pl.addSegment(seg2));
+
+    CPPUNIT_ASSERT_EQUAL(size_t(2), pl.segmentCount());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pl.playListCount());
+
+    static const ts::UChar* const refContent1 =
+        u"#EXTM3U\n"
+        u"#EXT-X-VERSION:3\n"
+        u"#EXT-X-TARGETDURATION:5\n"
+        u"#EXT-X-MEDIA-SEQUENCE:7\n"
+        u"#EXT-X-PLAYLIST-TYPE:VOD\n"
+        u"#EXTINF:4.920,Segment1\n"
+        u"#EXT-X-BITRATE:1205\n"
+        u"../segments/seg-0001.ts\n"
+        u"#EXTINF:4.971,\n"
+        u"#EXT-X-BITRATE:1615\n"
+        u"../segments/seg-0002.ts\n"
+        u"#EXT-X-ENDLIST\n";
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(refContent1, pl.textContent());
+
+    ts::hls::MediaSegment seg3;
+    seg3.uri = u"/c/test/path/segments/seg-0003.ts";
+    seg3.duration = 4984;
+    seg3.bitrate = 1654321;
+    CPPUNIT_ASSERT(pl.addSegment(seg3));
+
+    CPPUNIT_ASSERT_EQUAL(size_t(3), pl.segmentCount());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), pl.playListCount());
+
+    CPPUNIT_ASSERT(pl.popFirstSegment(seg3));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), pl.segmentCount());
+
+    static const ts::UChar* const refContent2 =
+        u"#EXTM3U\n"
+        u"#EXT-X-VERSION:3\n"
+        u"#EXT-X-TARGETDURATION:5\n"
+        u"#EXT-X-MEDIA-SEQUENCE:8\n"
+        u"#EXT-X-PLAYLIST-TYPE:VOD\n"
+        u"#EXTINF:4.971,\n"
+        u"#EXT-X-BITRATE:1615\n"
+        u"../segments/seg-0002.ts\n"
+        u"#EXTINF:4.984,\n"
+        u"#EXT-X-BITRATE:1615\n"
+        u"../segments/seg-0003.ts\n"
+        u"#EXT-X-ENDLIST\n";
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(refContent2, pl.textContent());
 }
