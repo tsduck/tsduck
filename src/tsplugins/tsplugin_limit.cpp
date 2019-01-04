@@ -158,12 +158,12 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
              u"- Below --threshold1, only null packets are dropped.\n"
              u"- Below --threshold2, if --pid options are specified, video packets from "
              u"the specified PID's are dropped (except packets containing a PUSI or a PCR).\n"
-             u"- Below --threshold3, if --pid options are specified, audio packets from "
+             u"- Below --threshold3, if --pid options are specified, packets from "
              u"the specified PID's are dropped (except packets containing a PUSI or a PCR).\n"
              u"- Below --threshold4, packets from any video or audio PID are dropped "
              u"(except packets containing a PUSI or a PCR).\n"
              u"- Above the last threshold, any packet can be dropped.\n\n"
-             u"Note: All thresholds, except the last, can be disabled with a 0 value.\n");
+             u"Note: All thresholds, except the last one, can be disabled using a 0 value.\n");
 
     option(u"bitrate", 'b', INTEGER, 1, 1, 100, UNLIMITED_VALUE);
     help(u"bitrate",
@@ -221,9 +221,10 @@ bool ts::LimitPlugin::start()
         tsp->error(u"the last threshold can't be disabled");
         return false;
     }
-    if ( _threshold4 < _threshold1 ||
+    if (_threshold4 < _threshold1 ||
         (_threshold4 < _threshold3 && _pids1.any()) ||
-        (_threshold4 < _threshold2 && _pids1.any()) ) {
+        (_threshold4 < _threshold2 && _pids1.any()))
+    {
         tsp->error(u"the last threshold can't be less than others");
         return false;
     }
@@ -448,10 +449,10 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, bool& 
         const bool drop =
             // Drop any packet above --threshold4.
             (_excessPackets >= _threshold4) ||
-            // Drop non-precious audio/video packets above --threshold3 (or --threshold1 if there is no --pid).
+            // Drop non-precious audio/video packets above --threshold4 (or --threshold1 if there is no --pid).
             (_thresholdAV > 0 && _excessPackets >= _thresholdAV && !precious && (pc->audio || pc->video)) ||
             // Drop non-precious audio packets of the pid list above --threshold2.
-            (_threshold3 > 0 && _excessPackets >= _threshold2 && !precious && pc->audio && _pids1.test(pid)) ||
+            (_threshold3 > 0 && _excessPackets >= _threshold2 && !precious && _pids1.test(pid)) ||
             // Drop non-precious video packets of the pid list above --threshold1.
             (_threshold2 > 0 && _excessPackets >= _threshold1 && !precious && pc->video && _pids1.test(pid)) ||
             // Drop any null packet (if the threshold is not disabled).
