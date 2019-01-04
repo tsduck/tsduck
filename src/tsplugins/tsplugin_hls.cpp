@@ -28,7 +28,15 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  HLS stream input
+//  HLS stream input / output
+//
+//  The input plugin can read HLS playlists and media segments from local
+//  files or receive them in real time using HTTP or HTTPS.
+//
+//  The output plugin generates playlists and media segments on local files
+//  only. It can also purge obsolete media segments and regenerate live
+//  playlists. To setup a complete HLS server, it is necessary to setup an
+//  external HTTP server such as Apache which simply serves these files.
 //
 //----------------------------------------------------------------------------
 
@@ -41,6 +49,8 @@
 TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000    // Default size in packet of the inter-thread queue.
+#define DEFAULT_OUT_DURATION          10    // Default segment target duration for output streams.
+#define DEFAULT_OUT_LIVE_DURATION      5    // Default segment target duration for output live streams.
 
 
 //----------------------------------------------------------------------------
@@ -48,6 +58,8 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
+
+    // Input plugin
     class HlsInput: public AbstractHTTPInputPlugin
     {
     public:
@@ -55,6 +67,7 @@ namespace ts {
         HlsInput(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
+        virtual bool isRealTime() override {return true;}
         virtual void processInput() override;
 
     private:
@@ -79,14 +92,35 @@ namespace ts {
         HlsInput(const HlsInput&) = delete;
         HlsInput& operator=(const HlsInput&) = delete;
     };
+
+    // Output plugin
+    class HlsOutput: public OutputPlugin
+    {
+    public:
+        // Implementation of plugin API
+        HlsOutput(TSP*);
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool isRealTime() override {return true;}
+        virtual bool send(const TSPacket*, size_t) override;
+
+    private:
+
+        // Inaccessible operations
+        HlsOutput() = delete;
+        HlsOutput(const HlsOutput&) = delete;
+        HlsOutput& operator=(const HlsOutput&) = delete;
+     };
 }
 
 TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_INPUT(hls, ts::HlsInput)
+TSPLUGIN_DECLARE_OUTPUT(hls, ts::HlsOutput)
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Input constructor
 //----------------------------------------------------------------------------
 
 ts::HlsInput::HlsInput(TSP* tsp_) :
@@ -153,18 +187,59 @@ ts::HlsInput::HlsInput(TSP* tsp_) :
 
     option(u"max-queue", 0, POSITIVE);
     help(u"max-queue",
-        u"Specify the maximum number of queued TS packets before their insertion into the stream. "
-        u"The default is " + UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
+         u"Specify the maximum number of queued TS packets before their insertion into the stream. "
+         u"The default is " + UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
 
     option(u"segment-count", 's', POSITIVE);
     help(u"segment-count",
-        u"Stop receiving the HLS stream after receiving the specified number of media segments. "
-        u"By default, receive the complete content.");
+         u"Stop receiving the HLS stream after receiving the specified number of media segments. "
+         u"By default, receive the complete content.");
 }
 
 
 //----------------------------------------------------------------------------
-// Command line options method
+// Output constructor
+//----------------------------------------------------------------------------
+
+ts::HlsOutput::HlsOutput(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename")
+{
+    option(u"", 0, STRING, 1, 1);
+    help(u"",
+         u"Specify the name template of the output media segment files. "
+         u"A number is automatically added to the name part so that successive segment "
+         u"files receive distinct names. Example: if the specified file name is foo-.ts, "
+         u"the various segment files are named foo-000000.ts, foo-000001.ts, etc.\n\n"
+         u"If the specified template already contains trailing digits, this unmodified "
+         u"name is used for the first segment. Then, the integer part is incremented. "
+         u"Example: if the specified file name is foo-027.ts, the various segment files "
+         u"are named foo-027.ts, foo-028.ts, etc.");
+
+    option(u"duration", 'd', POSITIVE);
+    help(u"duration",
+         u"Specify the target duration in seconds of media segments. "
+         u"The default is " TS_STRINGIFY(DEFAULT_OUT_DURATION) u" seconds for VoD streams "
+         u"and " TS_STRINGIFY(DEFAULT_OUT_LIVE_DURATION) u" seconds for live streams.");
+
+    option(u"live", 'l', POSITIVE);
+    help(u"live",
+         u"Specify that the output is a live stream. The specified value indicates the "
+         u"number of simultaneously available media segments. Obsolete media segment files "
+         u"are automatically deleted. By default, the output stream is considered as VoD "
+         u"and all created media segments are preserved.");
+
+    option(u"playlist", 'p', STRING);
+    help(u"playlist", u"filename",
+         u"Specify the name of the playlist file. "
+         u"The playlist file is rewritten each time a new segment file is completed or an obsolete one is deleted. "
+         u"The playlist and the segment files can be written to distinct directories but, in all cases, "
+         u"the URI of the segment files in the playlist are always relative to the playlist location. "
+         u"By default, no playlist file is created (media segments only).");
+}
+
+
+//----------------------------------------------------------------------------
+// Input command line options method
 //----------------------------------------------------------------------------
 
 bool ts::HlsInput::getOptions()
@@ -205,7 +280,7 @@ bool ts::HlsInput::getOptions()
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Input start method
 //----------------------------------------------------------------------------
 
 bool ts::HlsInput::start()
@@ -320,4 +395,44 @@ void ts::HlsInput::processInput()
         }
     }
     tsp->verbose(u"HLS playlist completed");
+}
+
+
+//----------------------------------------------------------------------------
+// Output command line options method
+//----------------------------------------------------------------------------
+
+bool ts::HlsOutput::getOptions()
+{
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Output start method
+//----------------------------------------------------------------------------
+
+bool ts::HlsOutput::start()
+{
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Output stop method
+//----------------------------------------------------------------------------
+
+bool ts::HlsOutput::stop()
+{
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Output method
+//----------------------------------------------------------------------------
+
+bool ts::HlsOutput::send(const TSPacket* pkt, size_t packet_count)
+{
+    return true;
 }
