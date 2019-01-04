@@ -451,9 +451,9 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, bool& 
             // Drop non-precious audio/video packets above --threshold3 (or --threshold1 if there is no --pid).
             (_thresholdAV > 0 && _excessPackets >= _thresholdAV && !precious && (pc->audio || pc->video)) ||
             // Drop non-precious audio packets of the pid list above --threshold2.
-            (_threshold3 > 0 &&_excessPackets >= _threshold2 && !precious && pc->audio && _pids1.test(pid)) ||
+            (_threshold3 > 0 && _excessPackets >= _threshold2 && !precious && pc->audio && _pids1.test(pid)) ||
             // Drop non-precious video packets of the pid list above --threshold1.
-            (_threshold2 > 0 &&_excessPackets >= _threshold1 && !precious && pc->video && _pids1.test(pid)) ||
+            (_threshold2 > 0 && _excessPackets >= _threshold1 && !precious && pc->video && _pids1.test(pid)) ||
             // Drop any null packet (if the threshold is not disabled).
             (_threshold1 > 0 && pid == PID_NULL);
 
