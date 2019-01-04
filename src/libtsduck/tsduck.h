@@ -277,6 +277,7 @@
 #include "tsPrefetchDescriptor.h"
 #include "tsPrivateDataIndicatorDescriptor.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsProtectionMessageDescriptor.h"
 #include "tsPSILogger.h"
 #include "tsPSILoggerArgs.h"
 #include "tsPushInputPlugin.h"

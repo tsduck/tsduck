@@ -135,6 +135,7 @@
 #include "tsPrefetchDescriptor.h"
 #include "tsPrivateDataIndicatorDescriptor.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsProtectionMessageDescriptor.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"

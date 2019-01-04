@@ -269,6 +269,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPrefetchDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsProtectionMessageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPushInputPlugin.h" />
@@ -698,6 +699,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPrefetchDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsProtectionMessageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPushInputPlugin.cpp" />

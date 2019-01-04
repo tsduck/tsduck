@@ -45,7 +45,6 @@ TSDuck - List of features to be implemented or fixed
   - G.3.1    DTS-HD_audio_stream_descriptor
 
   A038 (DVB SI)
-  - 6.4.1    Audio preselection descriptor
   - 6.4.6.5  S2X satellite delivery system descriptor
 
   ETSI TS 102 006 (System Software Update)
@@ -57,3 +56,6 @@ TSDuck - List of features to be implemented or fixed
   - 9.5.2.12  message_descriptor (not the same as ETSI EN 300 468, name it SSUMessageDescriptor)
   - 9.5.2.14  enhanced_message_descriptor (name it SSUEnhancedMessageDescriptor for consistency)
   - 9.5.2.15  ssu_uri_descriptor
+
+  ETSI EN 303 560 (TTML subtitling systems)
+  - 5.2.1.1  TTML subtitling descriptor

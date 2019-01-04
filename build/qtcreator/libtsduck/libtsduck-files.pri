@@ -267,6 +267,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPrefetchDescriptor.h \
     ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
+    ../../../src/libtsduck/tsProtectionMessageDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
     ../../../src/libtsduck/tsPSILoggerArgs.h \
     ../../../src/libtsduck/tsPushInputPlugin.h \
@@ -686,6 +687,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPrefetchDescriptor.cpp \
     ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
+    ../../../src/libtsduck/tsProtectionMessageDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
     ../../../src/libtsduck/tsPSILoggerArgs.cpp \
     ../../../src/libtsduck/tsPushInputPlugin.cpp \
