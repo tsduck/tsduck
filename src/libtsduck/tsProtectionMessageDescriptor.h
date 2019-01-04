@@ -28,20 +28,43 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of a protection_message_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 16
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1091
+#include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
+
+namespace ts {
+    //!
+    //! Representation of a protection_message_descriptor.
+    //! @see ETSI TS 102 809, 9.3.3
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ProtectionMessageDescriptor : public AbstractDescriptor
+    {
+    public:
+        // ProtectionMessageDescriptor public members:
+        ByteBlock component_tags;   //!< List of component tags.
+
+        //!
+        //! Default constructor.
+        //!
+        ProtectionMessageDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ProtectionMessageDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+        DeclareDisplayDescriptor();
+    };
+}

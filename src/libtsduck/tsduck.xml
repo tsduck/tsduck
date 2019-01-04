@@ -924,6 +924,11 @@
 
     <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
 
+    <protection_message_descriptor>
+      <!-- One per component, up to 15 components -->
+      <component tag="uint8, required"/>
+    </protection_message_descriptor>
+
     <registration_descriptor format_identifier="uint32, required">
       <additional_identification_info>
         Hexadecimal content (optional element)
