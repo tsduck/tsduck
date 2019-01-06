@@ -367,7 +367,7 @@ size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t 
 // specified index.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::search (DID tag, size_t start_index, PDS pds) const
+size_t ts::DescriptorList::search(DID tag, size_t start_index, PDS pds) const
 {
     bool check_pds = pds != 0 && tag >= 0x80;
     size_t index = start_index;
@@ -376,6 +376,29 @@ size_t ts::DescriptorList::search (DID tag, size_t start_index, PDS pds) const
         index++;
     }
 
+    return index;
+}
+
+
+//----------------------------------------------------------------------------
+// Search a descriptor with the specified extended tag.
+//----------------------------------------------------------------------------
+
+size_t ts::DescriptorList::search(const ts::EDID& edid, size_t start_index) const
+{
+    // If the EDID is table-specific, check that we are in the same table.
+    // In the case the table of the descriptor list is unknown, assume that the table matches.
+    const TID tid = edid.tableId();
+    if (edid.isTableSpecific() && _table != nullptr && _table->tableId() != tid) {
+        // No the same table, cannot match.
+        return _list.size();
+    }
+
+    // Now search in the list.
+    size_t index = start_index;
+    while (index < _list.size() && _list[index].desc->edid(_list[index].pds, tid) != edid) {
+        index++;
+    }
     return index;
 }
 

@@ -113,13 +113,17 @@ ts::Descriptor::Descriptor(const Descriptor& desc, CopyShare mode) :
 // Get the extended descriptor id.
 //----------------------------------------------------------------------------
 
-ts::EDID ts::Descriptor::edid(PDS pds) const
+ts::EDID ts::Descriptor::edid(PDS pds, TID tid) const
 {
     if (!isValid()) {
         return EDID();  // invalid value.
     }
     const DID did = tag();
-    if (did >= 0x80) {
+    if (tid != TID_NULL) {
+        // Table-specific descriptor.
+        return EDID::TableSpecific(did, tid);
+    }
+    else if (did >= 0x80) {
         // Private descriptor.
         return EDID::Private(did, pds);
     }

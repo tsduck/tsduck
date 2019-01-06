@@ -176,8 +176,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsHiDesDeviceInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHierarchyDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tshls.h" />
+    <ClInclude Include="..\..\src\libtsduck\tshlsInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tshlsMediaPlayList.h" />
     <ClInclude Include="..\..\src\libtsduck\tshlsMediaSegment.h" />
+    <ClInclude Include="..\..\src\libtsduck\tshlsOutputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tshlsPlayList.h" />
     <ClInclude Include="..\..\src\libtsduck\tshlsTagAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIBPDescriptor.h" />
@@ -620,8 +622,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsHiDesDeviceInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHierarchyDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tshls.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tshlsInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tshlsMediaPlayList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tshlsMediaSegment.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tshlsOutputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tshlsPlayList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tshlsTagAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIBPDescriptor.cpp" />
