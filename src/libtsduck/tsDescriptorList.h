@@ -250,6 +250,14 @@ namespace ts {
         size_t search(DID tag, size_t start_index = 0, PDS pds = 0) const;
 
         //!
+        //! Search a descriptor with the specified extended tag.
+        //! @param [in] edid Extended tag of descriptor to search.
+        //! @param [in] start_index Start searching at this index.
+        //! @return The index of the descriptor in the list or count() if no such descriptor is found.
+        //!
+        size_t search(const EDID& edid, size_t start_index = 0) const;
+
+        //!
         //! Search a language descriptor for the specified language.
         //! @param [in] language The 3-character language name to search.
         //! @param [in] start_index Start searching at this index.

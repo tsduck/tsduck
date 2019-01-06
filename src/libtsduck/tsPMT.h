@@ -141,9 +141,15 @@ namespace ts {
         //!
         //! Search the component PID for a given component tag.
         //! @param [in] tag Component tag to search.
-        //! @return The PID of the corresponding component of PID_NULL if not found.
+        //! @return The PID of the corresponding component or PID_NULL if not found.
         //!
         PID componentTagToPID(uint8_t tag) const;
+
+        //!
+        //! Search the first video PID in the service.
+        //! @return The first video PID or PID_NULL if none is found.
+        //!
+        PID firstVideoPID() const;
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;

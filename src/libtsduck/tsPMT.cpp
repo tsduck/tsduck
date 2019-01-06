@@ -228,19 +228,22 @@ void ts::PMT::serialize(BinaryTable& table, const DVBCharset* charset) const
 
 bool ts::PMT::Stream::isVideo() const
 {
-    return IsVideoST(stream_type);
+    return IsVideoST(stream_type) || descs.search(DID_HEVC_VIDEO) < descs.count();
 }
 
 bool ts::PMT::Stream::isAudio() const
 {
     // AC-3 or HE-AAC components may have "PES private data" stream type
-    // but are identifier by specific descriptors.
+    // but are identified by specific descriptors.
 
     return IsAudioST(stream_type) ||
         descs.search(DID_DTS) < descs.count() ||
         descs.search(DID_AC3) < descs.count() ||
         descs.search(DID_ENHANCED_AC3) < descs.count() ||
-        descs.search(DID_AAC) < descs.count();
+        descs.search(DID_AAC) < descs.count() ||
+        descs.search(EDID::ExtensionDVB(EDID_AC4)) < descs.count() ||
+        descs.search(EDID::ExtensionDVB(EDID_DTS_NEURAL)) < descs.count() ||
+        descs.search(EDID::ExtensionDVB(EDID_DTS_HD_AUDIO)) < descs.count();
 }
 
 bool ts::PMT::Stream::isSubtitles() const
@@ -294,7 +297,7 @@ bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
 ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
 {
     // Loop on all components of the service.
-    for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
+    for (auto it = streams.begin(); it != streams.end(); ++it) {
         const PID pid = it->first;
         const PMT::Stream& stream(it->second);
         // Loop on all stream_identifier_descriptors.
@@ -303,6 +306,21 @@ ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
             if (sid.isValid() && sid.component_tag == tag) {
                 return pid;
             }
+        }
+    }
+    return PID_NULL; // not found
+}
+
+
+//----------------------------------------------------------------------------
+// Search the first video PID in the service.
+//----------------------------------------------------------------------------
+
+ts::PID ts::PMT::firstVideoPID() const
+{
+    for (auto it = streams.begin(); it != streams.end(); ++it) {
+        if (it->second.isVideo()) {
+            return it->first;
         }
     }
     return PID_NULL; // not found

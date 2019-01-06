@@ -155,9 +155,10 @@ namespace ts {
         //!
         //! Get the extended descriptor id.
         //! @param [in] pds Associated private data specifier.
+        //! @param [in] tid If not TID_NULL, consider that the descriptor is table-specific.
         //! @return The extended descriptor id.
         //!
-        EDID edid(PDS pds = 0) const;
+        EDID edid(PDS pds = 0, TID tid = TID_NULL) const;
 
         //!
         //! Access to the full binary content of the descriptor.
