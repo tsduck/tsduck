@@ -42,14 +42,67 @@ const int tsduckLibraryVersionCommit = TS_COMMIT;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionFormatEnum({
-    {u"short",   ts::VERSION_SHORT},
-    {u"long",    ts::VERSION_LONG},
-    {u"integer", ts::VERSION_INTEGER},
-    {u"date",    ts::VERSION_DATE},
-    {u"nsis",    ts::VERSION_NSIS},
-    {u"dektec",  ts::VERSION_DEKTEC},
-    {u"http",    ts::VERSION_HTTP},
+    {u"short",    ts::VERSION_SHORT},
+    {u"long",     ts::VERSION_LONG},
+    {u"integer",  ts::VERSION_INTEGER},
+    {u"date",     ts::VERSION_DATE},
+    {u"nsis",     ts::VERSION_NSIS},
+    {u"dektec",   ts::VERSION_DEKTEC},
+    {u"http",     ts::VERSION_HTTP},
+    {u"compiler", ts::VERSION_COMPILER},
 });
+
+
+//----------------------------------------------------------------------------
+// Build a string representing the compiler version.
+//----------------------------------------------------------------------------
+
+namespace {
+    ts::UString CompilerVersion()
+    {
+        ts::UString version;
+
+        // Add compiler type and version.
+#if defined(_MSC_FULL_VER)
+        version.append(ts::UString::Format(u"MSVC %02d.%02d.%05d", {_MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000}));
+        #if defined(_MSC_BUILD)
+            version.append(ts::UString::Format(u".%02d", {_MSC_BUILD}));
+        #endif
+#elif defined(_MSC_VER)
+        version.append(ts::UString::Format(u"MSVC %02d.%02d", {_MSC_VER / 100, _MSC_VER % 100}));
+        #if defined(_MSC_BUILD)
+            version.append(ts::UString::Format(u".%02d", {_MSC_BUILD}));
+        #endif
+#elif defined(__GNUC__)
+        version.append(ts::UString::Format(u"GCC %d", {__GNUC__}));
+        #if defined(__GNUC_MINOR__)
+            version.append(ts::UString::Format(u".%d", {__GNUC_MINOR__}));
+        #endif
+        #if defined(__GNUC_PATCHLEVEL__)
+            version.append(ts::UString::Format(u".%d", {__GNUC_PATCHLEVEL__}));
+        #endif
+#elif defined(__llvm__) || defined(__clang__) || defined(__clang_major__)
+        version.append(u"Clang ");
+        #if defined(__clang_major__)
+            version.append(ts::UString::Format(u"%d", {__clang_major__}));
+        #endif
+        #if defined(__clang_minor__)
+            version.append(ts::UString::Format(u".%d", {__clang_minor__}));
+        #endif
+        #if defined(__clang_patchlevel__)
+            version.append(ts::UString::Format(u".%d", {__clang_patchlevel__}));
+        #endif
+#else
+        version.append(u"unknown compiler");
+#endif
+
+        // Add C++ revision level.
+#if defined(__cplusplus)
+        version.append(ts::UString::Format(u", C++ std %04d.%02d", {__cplusplus / 100, __cplusplus % 100}));
+#endif
+        return version;
+    }
+}
 
 
 //----------------------------------------------------------------------------
@@ -93,6 +146,9 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         case VERSION_HTTP: {
             // The version of the HTTP library.
             return WebRequest::GetLibraryVersion();
+        }
+        case VERSION_COMPILER: {
+            return CompilerVersion();
         }
         default: {
             // Undefined type, return an empty string.
