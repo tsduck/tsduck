@@ -64,25 +64,19 @@ namespace {
 
         // Add compiler type and version.
 #if defined(_MSC_FULL_VER)
-        version.append(ts::UString::Format(u"MSVC %02d.%02d.%05d", {_MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000}));
+        version.format(u"MSVC %02d.%02d.%05d", {_MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000});
         #if defined(_MSC_BUILD)
             version.append(ts::UString::Format(u".%02d", {_MSC_BUILD}));
         #endif
 #elif defined(_MSC_VER)
-        version.append(ts::UString::Format(u"MSVC %02d.%02d", {_MSC_VER / 100, _MSC_VER % 100}));
+        version.format(u"MSVC %02d.%02d", {_MSC_VER / 100, _MSC_VER % 100});
         #if defined(_MSC_BUILD)
             version.append(ts::UString::Format(u".%02d", {_MSC_BUILD}));
         #endif
-#elif defined(__GNUC__)
-        version.append(ts::UString::Format(u"GCC %d", {__GNUC__}));
-        #if defined(__GNUC_MINOR__)
-            version.append(ts::UString::Format(u".%d", {__GNUC_MINOR__}));
-        #endif
-        #if defined(__GNUC_PATCHLEVEL__)
-            version.append(ts::UString::Format(u".%d", {__GNUC_PATCHLEVEL__}));
-        #endif
+#elif defined(__clang_version__)
+        version.format(u"Clang %s", {__clang_version__});
 #elif defined(__llvm__) || defined(__clang__) || defined(__clang_major__)
-        version.append(u"Clang ");
+        version.assign(u"Clang ");
         #if defined(__clang_major__)
             version.append(ts::UString::Format(u"%d", {__clang_major__}));
         #endif
@@ -92,8 +86,16 @@ namespace {
         #if defined(__clang_patchlevel__)
             version.append(ts::UString::Format(u".%d", {__clang_patchlevel__}));
         #endif
+#elif defined(__GNUC__)
+        version.format(u"GCC %d", {__GNUC__});
+        #if defined(__GNUC_MINOR__)
+            version.append(ts::UString::Format(u".%d", {__GNUC_MINOR__}));
+        #endif
+        #if defined(__GNUC_PATCHLEVEL__)
+            version.append(ts::UString::Format(u".%d", {__GNUC_PATCHLEVEL__}));
+        #endif
 #else
-        version.append(u"unknown compiler");
+        version.assign(u"unknown compiler");
 #endif
 
         // Add C++ revision level.
