@@ -76,7 +76,7 @@ namespace ts {
             bool           _lowestRes;
             bool           _highestRes;
             size_t         _maxSegmentCount;
-            WebRequestArgs _web_args;
+            WebRequestArgs _webArgs;
             hls::PlayList  _playlist;
 
             // Inaccessible operations

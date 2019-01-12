@@ -29,6 +29,7 @@
 
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tsWebRequest.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -39,7 +40,9 @@ TSDUCK_SOURCE;
 ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     PushInputPlugin(tsp_, description, syntax),
     _partial(),
-    _partial_size(0)
+    _partial_size(0),
+    _autoSaveDir(),
+    _outSave()
 {
 }
 
@@ -73,9 +76,49 @@ bool ts::AbstractHTTPInputPlugin::handleWebStart(const WebRequest& request, size
         tsp->warning(u"MIME type is %d, maybe not a valid transport stream", {mime});
     }
 
+    // Create the auto-save file when necessary.
+    const UString url(request.finalURL());
+    if (!_autoSaveDir.empty() && !url.empty()) {
+        const UString name(_autoSaveDir + PathSeparator + BaseName(url));
+        tsp->verbose(u"saving input TS to %s", {name});
+        // Display errors but do not fail, this is just auto save.
+        _outSave.open(name, false, false, *tsp);
+    }
+
     // Reinitialize partial packet if some bytes were left from a previous iteration.
     _partial_size = 0;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked at the end of the transfer.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractHTTPInputPlugin::handleWebStop(const WebRequest& request)
+{
+    // Close auto save file if one was open.
+    if (_outSave.isOpen()) {
+        _outSave.close(*tsp);
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Push packet to the tsp chain.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractHTTPInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
+{
+    // If an intermediate save file was specified, save the packets.
+    // Display errors but do not fail, this is just auto save.
+    if (_outSave.isOpen() && !_outSave.write(buffer, count, *tsp)) {
+        _outSave.close(*tsp);
+    }
+
+    // Invoke superclass to actually push the packets.
+    return PushInputPlugin::pushPackets(buffer, count);
 }
 
 
