@@ -99,7 +99,7 @@ namespace ts {
         //! @param [in] count Size of @a buffer in number of packets.
         //! @return True on success, false on error or requested termination.
         //!
-        bool pushPackets(const TSPacket* buffer, size_t count);
+        virtual bool pushPackets(const TSPacket* buffer, size_t count);
 
         //!
         //! Constructor.

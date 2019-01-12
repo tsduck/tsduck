@@ -115,6 +115,12 @@ namespace ts {
             bool reload(bool strict = false, const WebRequestArgs args = WebRequestArgs(), Report& report = CERR);
 
             //!
+            //! Set a directory name where all loaded files or URL are automatically saved.
+            //! @param [in] dir A directory name.
+            //!
+            void setAutoSaveDirectory(const UString dir) { _autoSaveDir = dir; }
+
+            //!
             //! Check if the playlist has been successfully loaded.
             //! @return True if the playlist has been successfully loaded.
             //!
@@ -134,6 +140,14 @@ namespace ts {
             //! @return The text content on success, an empty string on error.
             //!
             UString textContent(Report& report = CERR) const;
+
+            //!
+            //! Get the orginal loaded text content of the playlist.
+            //! This can be different from the current content of the playlist
+            //! if the object has been modified.
+            //! @return A constant reference to the original loaded text lines.
+            //!
+            const UStringList& originalLoadedContent() const { return _loadedContent; }
 
             //!
             //! Get the original URL.
@@ -352,6 +366,8 @@ namespace ts {
             Time               _utcTermination;  // UTC time of termination (download + all segment durations).
             MediaSegmentQueue  _segments;        // List of media segments (media playlist).
             MediaPlayListQueue _playlists;       // List of media playlists (master playlist).
+            UStringList        _loadedContent;   // Loaded text content (can be different from current content).
+            UString            _autoSaveDir;     // If not empty, automatically save loaded playlist to this directory.
 
             // Empty data to return.
             static const MediaSegment EmptySegment;
@@ -359,7 +375,7 @@ namespace ts {
 
             // Load from the text content.
             bool parse(const UString& text, bool strict, Report& report);
-            bool parse(const UStringList& lines, bool strict, Report& report);
+            bool parse(bool strict, Report& report);
 
             // Check if the line contains a valid tag or URI.
             bool getTag(const UString& line, Tag& tag, UString& params, bool strict, Report& report);
@@ -367,6 +383,9 @@ namespace ts {
 
             // Set the playlist type, return true on success, false on error.
             bool setType(PlayListType type, Report& report);
+
+            // Perform automatic save of the loaded playlist.
+            bool autoSave(Report& report);
 
             // Set a member with a given playlist type.
             template <typename T>

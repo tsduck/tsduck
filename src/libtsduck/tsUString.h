@@ -1240,6 +1240,16 @@ namespace ts {
         typename CONTAINER::const_iterator findSimilar(const CONTAINER& container) const;
 
         //!
+        //! Save this string into a file, in UTF-8 format.
+        //! @param [in] fileName The name of the text file where to save this string.
+        //! @param [in] append If true, append this string at the end of the file.
+        //! If false (the default), overwrite the file if it already existed.
+        //! @param [in] enforceLastLineFeed If true and this string does not end with a line feed, force a final line feed.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        bool save(const UString& fileName, bool append = false, bool enforceLastLineFeed = false) const;
+
+        //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
         //! The strings must be located in a container and are accessed through iterators.
         //! @tparam ITERATOR An iterator class over UString as defined by the C++ Standard Template Library (STL).

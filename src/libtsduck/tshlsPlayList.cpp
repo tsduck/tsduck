@@ -52,7 +52,9 @@ ts::hls::PlayList::PlayList() :
     _utcDownload(),
     _utcTermination(),
     _segments(),
-    _playlists()
+    _playlists(),
+    _loadedContent(),
+    _autoSaveDir()
 {
 }
 
@@ -63,21 +65,11 @@ ts::hls::PlayList::PlayList() :
 
 void ts::hls::PlayList::clear()
 {
-    *this = PlayList();
-}
-
-
-//----------------------------------------------------------------------------
-// Reset the content of a playlist.
-//----------------------------------------------------------------------------
-
-void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &filename, int version)
-{
-    _valid = true;
-    _version = version;
-    _type = type;
-    _url = AbsoluteFilePath(filename);
-    _urlBase = DirectoryName(_url) + PathSeparator;
+    _valid = false;
+    _version = 1;
+    _type = UNKNOWN_PLAYLIST;
+    _url.clear();
+    _urlBase.clear();
     _isURL = false;
     _targetDuration = 0;
     _mediaSequence = 0;
@@ -87,6 +79,23 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
     _utcTermination = Time::Epoch;
     _segments.clear();
     _playlists.clear();
+    _loadedContent.clear();
+    // Preserve _autoSaveDir
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the content of a playlist.
+//----------------------------------------------------------------------------
+
+void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &filename, int version)
+{
+    clear();
+    _valid = true;
+    _version = version;
+    _type = type;
+    _url = AbsoluteFilePath(filename);
+    _urlBase = DirectoryName(_url) + PathSeparator;
 }
 
 
@@ -323,7 +332,7 @@ bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebReques
     // Keep the URL.
     _url = url;
     _isURL = true;
-    const size_t slash = url.rfind(u"/");
+    size_t slash = _url.rfind(u"/");
     if (slash != NPOS) {
         // The URL base up the last "/" (inclusive).
         _urlBase = _url.substr(0, slash + 1);
@@ -339,6 +348,14 @@ bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebReques
     report.debug(u"downloading %s", {url});
     if (!web.downloadTextContent(text)) {
         return false;
+    }
+
+    // Save the final URL in case of redirections.
+    _url = web.finalURL();
+    slash = _url.rfind(u"/");
+    if (slash != NPOS) {
+        // The URL base up the last "/" (inclusive).
+        _urlBase = _url.substr(0, slash + 1);
     }
 
     // Check MIME type of the downloaded content.
@@ -358,8 +375,15 @@ bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebReques
         return false;
     }
 
+    // Split content lines.
+    text.remove(CARRIAGE_RETURN);
+    text.split(_loadedContent, LINE_FEED, false, false);
+
+    // Autosave if necessary, ignore errors.
+    autoSave(report);
+
     // Load from the text.
-    return parse(text, strict, report);
+    return parse(strict, report);
 }
 
 
@@ -384,9 +408,11 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
     }
 
     // Load the file.
-    UStringList lines;
-    if (UString::Load(lines, filename)) {
-        return parse(lines, strict, report);
+    if (UString::Load(_loadedContent, filename)) {
+        // Autosave if necessary, ignore errors.
+        autoSave(report);
+        // Load from the text.
+        return parse(strict, report);
     }
     else {
         report.error(u"error loading %s", {filename});
@@ -441,6 +467,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
     _endList = plNew._endList;
     _playlistType = plNew._playlistType;
     _utcTermination = plNew._utcTermination;
+    _loadedContent.swap(plNew._loadedContent);
 
     // Copy missing segments.
     if (_mediaSequence + _segments.size() < plNew._mediaSequence) {
@@ -457,6 +484,9 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
         }
     }
 
+    // Autosave if necessary, ignore errors.
+    autoSave(report);
+
     return true;
 }
 
@@ -467,9 +497,8 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
 
 bool ts::hls::PlayList::parse(const UString& text, bool strict, Report& report)
 {
-    UStringList lines;
-    text.toRemoved(CARRIAGE_RETURN).split(lines, LINE_FEED, false, false);
-    return parse(lines, strict, report);
+    text.toRemoved(CARRIAGE_RETURN).split(_loadedContent, LINE_FEED, false, false);
+    return parse(strict, report);
 }
 
 
@@ -477,7 +506,7 @@ bool ts::hls::PlayList::parse(const UString& text, bool strict, Report& report)
 // Load from the text content.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& report)
+bool ts::hls::PlayList::parse(bool strict, Report& report)
 {
     // Global media segment or playlist information.
     // Contains properties which are valid until next occurence of same property.
@@ -494,7 +523,7 @@ bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& rep
     UString tagParams;
 
     // The playlist must always start with #EXTM3U.
-    if (lines.empty() || !getTag(lines.front(), tag, tagParams, strict, report) || tag != EXTM3U) {
+    if (_loadedContent.empty() || !getTag(_loadedContent.front(), tag, tagParams, strict, report) || tag != EXTM3U) {
         report.error(u"invalid HLS playlist, does not start with #EXTM3U");
         return false;
     }
@@ -506,7 +535,7 @@ bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& rep
     _utcDownload = _utcTermination = Time::CurrentUTC();
 
     // Loop on all lines in file.
-    for (auto it = lines.begin(); it != lines.end(); ++it) {
+    for (auto it = _loadedContent.begin(); it != _loadedContent.end(); ++it) {
 
         // In non-strict mode, ignore leading and trailing spaces.
         UString line(*it);
@@ -548,7 +577,7 @@ bool ts::hls::PlayList::parse(const UStringList& lines, bool strict, Report& rep
             // The line contains a tag.
             switch (tag) {
                 case EXTM3U: {
-                    if (strict && it != lines.begin()) {
+                    if (strict && it != _loadedContent.begin()) {
                         report.error(u"misplaced: %s", {line});
                         _valid = false;
                     }
@@ -768,6 +797,28 @@ bool ts::hls::PlayList::setType(PlayListType type, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Perform automatic save of the loaded playlist.
+//----------------------------------------------------------------------------
+
+bool ts::hls::PlayList::autoSave(Report& report)
+{
+    if (_autoSaveDir.empty() || _url.empty()) {
+        // No need to save
+        return true;
+    }
+    else {
+        const UString name(_autoSaveDir + PathSeparator + BaseName(_url));
+        report.verbose(u"saving playlist to %s", {name});
+        const bool ok = UString::Save(_loadedContent, name);
+        if (!ok) {
+            report.warning(u"error saving playlist to %s", {name});
+        }
+        return ok;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Implementation of StringifyInterface
 //----------------------------------------------------------------------------
 
@@ -831,11 +882,7 @@ bool ts::hls::PlayList::saveFile(const ts::UString &filename, ts::Report &report
 
     // Save the file.
     const UString& name(filename.empty() ? _url : filename);
-    std::ofstream file(name.toUTF8().c_str(), std::ios::out);
-    file << text;
-    file.close();
-
-    if (file.fail()) {
+    if (!text.save(name, false, true)) {
         report.error(u"error saving HLS playlist in %s", {name});
         return false;
     }

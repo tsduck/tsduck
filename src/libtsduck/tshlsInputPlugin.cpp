@@ -53,10 +53,10 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     _lowestRes(false),
     _highestRes(false),
     _maxSegmentCount(0),
-    _web_args(),
+    _webArgs(),
     _playlist()
 {
-    _web_args.defineOptions(*this);
+    _webArgs.defineOptions(*this);
 
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -122,6 +122,12 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
          u"Specify the maximum number of queued TS packets before their insertion into the stream. "
          u"The default is " + UString::Decimal(DEFAULT_MAX_QUEUED_PACKETS) + u".");
 
+    option(u"save-files", 0, STRING);
+    help(u"save-files", u"directory-name",
+         u"Specify a directory where all downloaded files, media segments and playlists, are saved "
+         u"before being passed to the next plugin. "
+         u"This is typically a debug option to analyze the input HLS structure.");
+
     option(u"segment-count", 's', POSITIVE);
     help(u"segment-count",
          u"Stop receiving the HLS stream after receiving the specified number of media segments. "
@@ -136,8 +142,9 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
 bool ts::hls::InputPlugin::getOptions()
 {
     // Decode options.
-    _web_args.loadArgs(*this);
+    _webArgs.loadArgs(*this);
     getValue(_url, u"");
+    const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
     getIntValue(_minRate, u"min-bitrate");
     getIntValue(_maxRate, u"max-bitrate");
@@ -150,6 +157,11 @@ bool ts::hls::InputPlugin::getOptions()
     _lowestRes = present(u"lowest-resolution");
     _highestRes = present(u"highest-resolution");
     _listVariants = present(u"list-variants");
+
+    if (_url.empty()) {
+        tsp->error(u"empty URL");
+        return false;
+    }
 
     // Check consistency of selection options.
     const int singleSelect = _lowestRate + _highestRate + _lowestRes + _highestRes;
@@ -166,6 +178,10 @@ bool ts::hls::InputPlugin::getOptions()
     // Resize the inter-thread packet queue.
     setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));
 
+    // Automatically save media segments and playlists.
+    setAutoSaveDirectory(saveDirectory);
+    _playlist.setAutoSaveDirectory(saveDirectory);
+
     return true;
 }
 
@@ -178,7 +194,7 @@ bool ts::hls::InputPlugin::start()
 {
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url, false, _web_args, hls::UNKNOWN_PLAYLIST, *tsp)) {
+    if (!_playlist.loadURL(_url, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
         return false;
     }
 
@@ -216,11 +232,11 @@ bool ts::hls::InputPlugin::start()
         }
         assert(index < _playlist.playListCount());
         tsp->verbose(u"selected playlist: %s", {_playlist.playList(index)});
+        const UString nextURL(_playlist.buildURL(_playlist.playList(index).uri));
 
         // Download selected media playlist.
-        const UString nextURL(_playlist.buildURL(_playlist.playList(index).uri));
         _playlist.clear();
-        if (!_playlist.loadURL(nextURL, false, _web_args, hls::UNKNOWN_PLAYLIST, *tsp)) {
+        if (!_playlist.loadURL(nextURL, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
             return false;
         }
     }
@@ -248,7 +264,7 @@ bool ts::hls::InputPlugin::start()
 void ts::hls::InputPlugin::processInput()
 {
     // Loop on all segments in the media playlists.
-    for (size_t count = 0; _playlist.segmentCount() > 0 && (_maxSegmentCount == 0 || count < _maxSegmentCount) && !tsp->aborting(); ++count) {
+    for (size_t count = 0; _playlist.segmentCount() > 0 && (_maxSegmentCount == 0 || count < _maxSegmentCount) && !tsp->aborting() && !isInterrupted(); ++count) {
 
         // Remove first segment from the playlist.
         hls::MediaSegment seg;
@@ -258,7 +274,7 @@ void ts::hls::InputPlugin::processInput()
         WebRequest request(*tsp);
         request.setURL(_playlist.buildURL(seg.uri));
         request.setAutoRedirect(true);
-        request.setArgs(_web_args);
+        request.setArgs(_webArgs);
 
         // Perform the download of the current segment.
         // Ignore errors, continue to play next segments.
@@ -268,7 +284,7 @@ void ts::hls::InputPlugin::processInput()
         if (_playlist.segmentCount() < 2 && _playlist.updatable() && !tsp->aborting()) {
 
             // Ignore errors, continue to play next segments.
-            _playlist.reload(false, _web_args, *tsp);
+            _playlist.reload(false, _webArgs, *tsp);
 
             // If the playout is still empty, this means that we have read all segments before the server
             // could produce new segments. For live streams, this is possible because new segments
@@ -279,7 +295,7 @@ void ts::hls::InputPlugin::processInput()
                 // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
                 SleepThread(std::max<MilliSecond>(2000, (MilliSecPerSec * _playlist.targetDuration()) / 2));
                 // This time, we stop on error.
-                if (!_playlist.reload(false, _web_args, *tsp)) {
+                if (!_playlist.reload(false, _webArgs, *tsp)) {
                     break;
                 }
             }

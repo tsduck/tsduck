@@ -35,6 +35,7 @@
 #pragma once
 #include "tsPushInputPlugin.h"
 #include "tsWebRequestHandlerInterface.h"
+#include "tsTSFileOutput.h"
 
 namespace ts {
     //!
@@ -48,6 +49,15 @@ namespace ts {
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
         virtual bool start() override;
 
+        // Inherited from PushInputPluginÒ.
+        virtual bool pushPackets(const TSPacket* buffer, size_t count) override;
+
+        //!
+        //! Set a directory name where all loaded files are automatically saved.
+        //! @param [in] dir A directory name.
+        //!
+        void setAutoSaveDirectory(const UString dir) { _autoSaveDir = dir; }
+
     protected:
         //!
         //! Constructor for subclasses.
@@ -60,10 +70,13 @@ namespace ts {
         // Implementation of WebRequestHandlerInterface
         virtual bool handleWebStart(const WebRequest& request, size_t size) override;
         virtual bool handleWebData(const WebRequest& request, const void* data, size_t size) override;
+        virtual bool handleWebStop(const WebRequest& request) override;
 
     private:
-        TSPacket _partial;       // Buffer for incomplete packets.
-        size_t   _partial_size;  // Number of bytes in partial.
+        TSPacket     _partial;       // Buffer for incomplete packets.
+        size_t       _partial_size;  // Number of bytes in partial.
+        UString      _autoSaveDir;   // If not empty, automatically save loaded files to this directory.
+        TSFileOutput _outSave;       // TS file where to store the loaded file.
 
         // Inaccessible operations
         AbstractHTTPInputPlugin() = delete;
