@@ -53,6 +53,7 @@ namespace ts {
         VERSION_DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
         VERSION_HTTP,     //!< Version of HTTP library which is used.
         VERSION_COMPILER, //!< Version of the compiler which was used to build the code.
+        VERSION_ALL,      //!< Multi-line output with full details.
     };
 
     //!
