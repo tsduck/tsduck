@@ -156,7 +156,7 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         case VERSION_ALL: {
             return GetVersion(VERSION_LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(VERSION_DATE) + LINE_FEED +
-                u"By " + GetVersion(VERSION_COMPILER) + LINE_FEED +
+                u"Using " + GetVersion(VERSION_COMPILER) + LINE_FEED +
                 u"Web library: " + GetVersion(VERSION_HTTP) + LINE_FEED +
                 u"Dektec: " + GetVersion(VERSION_DEKTEC);
         }
