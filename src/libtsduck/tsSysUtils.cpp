@@ -260,20 +260,19 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
 namespace {
     ts::UString::size_type LastPathSeparator(const ts::UString& path)
     {
-        if (ts::PathSeparator == u'/') {
-            // Only one possibility.
-            return path.rfind(ts::PathSeparator);
-        }
-        else {
-            // Also accept slash as path separator.
-            ts::UString::size_type i = path.length();
-            while (i > 0) {
-                if (path[--i] == ts::PathSeparator || path[i] == u'/') {
-                    return i;
-                }
+#if defined(TS_WINDOWS)
+        // Also accept slash as path separator.
+        ts::UString::size_type i = path.length();
+        while (i > 0) {
+            if (path[--i] == u'\\' || path[i] == u'/') {
+                return i;
             }
-            return ts::NPOS;
         }
+        return ts::NPOS;
+#else
+        // Only one possibility.
+        return path.rfind(ts::PathSeparator);
+#endif
     }
 }
 
