@@ -37,10 +37,11 @@ TSDUCK_SOURCE;
 // Protected constructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init) :
+ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac) :
     DVBCharset(name, tableCode),
     _upperCodePoints(init),
-    _bytesMap()
+    _bytesMap(),
+    _reversedDiacritical()
 {
     // Check the size of the upper code point table.
     if (_upperCodePoints.size() != (0x100 - 0xA0)) {
@@ -62,6 +63,13 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tab
             _bytesMap.insert(std::make_pair(UChar(_upperCodePoints[i]), uint8_t(0xA0 + i)));
         }
     }
+
+    // Combining diacritical marks which precede their base letter (and must be reversed from Unicode).
+    for (auto it = revDiac.begin(); it != revDiac.end(); ++it) {
+        if (*it >= 0xA0) {
+            _reversedDiacritical.set(*it - 0xA0);
+        }
+    }
 }
 
 
@@ -74,6 +82,8 @@ bool ts::DVBCharsetSingleByte::decode(UString& str, const uint8_t* dvb, size_t d
     str.clear();
     str.reserve(dvbSize);
     bool status = true;
+    bool reverseNext = false;  // after decoding next character, it shall be swapped with previous one.
+    bool hasDiacritical = false;
 
     for (; dvb != nullptr && dvbSize > 0; --dvbSize) {
         // Get next byte
@@ -90,14 +100,31 @@ bool ts::DVBCharsetSingleByte::decode(UString& str, const uint8_t* dvb, size_t d
             cp = LINE_FEED;
         }
         // Add in result if no error.
-        if (cp != 0) {
-            str.push_back(UChar(cp));
-        }
-        else {
+        if (cp == 0) {
             // Untranslatable character.
             status = false;
         }
+        else if (reverseNext && !str.empty()) {
+            // Insert decoded character before the previous one.
+            // This is typically a letter coming after a reversable diacritical mark.
+            // In Unicode, the letter must preceed the diacritical mark.
+            str.insert(str.length() - 1, 1, UChar(cp));
+        }
+        else {
+            // Simply add the decoded character.
+            str.push_back(UChar(cp));
+        }
+        // Try the presence of diacritical, reversable or not.
+        hasDiacritical = hasDiacritical || IsCombiningDiacritical(UChar(cp));
+        // Shall we perform mark/letter swap next time?
+        reverseNext = b >= 0xA0 && _reversedDiacritical.test(b - 0xA0);
     }
+
+    // If some diacritical mark was found, try to combine them.
+    if (hasDiacritical) {
+        str.combineDiacritical();
+    }
+
     return status;
 }
 
@@ -125,16 +152,24 @@ bool ts::DVBCharsetSingleByte::canEncode(const UString& str, size_t start, size_
 
 size_t ts::DVBCharsetSingleByte::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
+    uint8_t* const base = buffer;
     size_t result = 0;
+
     // Serialize characters as long as there is free space.
     while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
         const UChar cp = str[start];
         const std::map<UChar, uint8_t>::const_iterator it = _bytesMap.find(cp);
         if (cp != ts::CARRIAGE_RETURN && it != _bytesMap.end()) {
             // Encode character.
-            *buffer++ = it->second;
+            *buffer = it->second;
             size--;
             result++;
+            // Reverse letter and diacritical mark when necessary.
+            if (buffer > base && *buffer >= 0xA0 && _reversedDiacritical.test(*buffer - 0xA0)) {
+                // Reverse order of letter/mark into mark/letter.
+                std::swap(buffer[-1], buffer[0]);
+            }
+            buffer++;
         }
         start++;
         count--;
@@ -160,6 +195,10 @@ const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_6937(u"ISO-6937", 0
     0x0141, 0x00D8, 0x0152, 0x00BA, 0x00DE, 0x0166, 0x014A, 0x0149,
     0x0138, 0x00E6, 0x0111, 0x00F0, 0x0127, 0x0131, 0x0133, 0x0140,
     0x0142, 0x00F8, 0x0153, 0x00DF, 0x00FE, 0x0167, 0x014B, 0x00AD
+},
+{
+    // Diacritical marks to reverse.
+    0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF
 });
 
 const ts::DVBCharsetSingleByte ts::DVBCharsetSingleByte::ISO_8859_1(u"ISO-8859-1", 0x100001, {

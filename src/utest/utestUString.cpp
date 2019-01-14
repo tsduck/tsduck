@@ -97,6 +97,8 @@ public:
     void testScan();
     void testCommonPrefix();
     void testCommonSuffix();
+    void testPrecombined();
+    void testDVB();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -145,6 +147,8 @@ public:
     CPPUNIT_TEST(testScan);
     CPPUNIT_TEST(testCommonPrefix);
     CPPUNIT_TEST(testCommonSuffix);
+    CPPUNIT_TEST(testPrecombined);
+    CPPUNIT_TEST(testDVB);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -2000,4 +2004,50 @@ void UStringTest::testCommonSuffix()
     CPPUNIT_ASSERT_EQUAL(size_t(1), ts::UString(u"abc").commonSuffixSize(u"xyc"));
     CPPUNIT_ASSERT_EQUAL(size_t(2), ts::UString(u"abcd").commonSuffixSize(u"QSZBcd"));
     CPPUNIT_ASSERT_EQUAL(size_t(3), ts::UString(u"abcd").commonSuffixSize(u"QSZBcd", ts::CASE_INSENSITIVE));
+}
+
+void UStringTest::testPrecombined()
+{
+    CPPUNIT_ASSERT_EQUAL(ts::LATIN_SMALL_LETTER_I_WITH_GRAVE, ts::Precombined(ts::LATIN_SMALL_LETTER_I, ts::COMBINING_GRAVE_ACCENT));
+    CPPUNIT_ASSERT_EQUAL(ts::LATIN_CAPITAL_LETTER_K_WITH_CEDILLA, ts::Precombined(ts::LATIN_CAPITAL_LETTER_K, ts::COMBINING_CEDILLA));
+    CPPUNIT_ASSERT_EQUAL(ts::CHAR_NULL, ts::Precombined(ts::LATIN_CAPITAL_LETTER_K, ts::COMBINING_GREEK_DIALYTIKA_TONOS));
+
+    ts::UChar letter = ts::CHAR_NULL;
+    ts::UChar mark = ts::CHAR_NULL;
+
+    CPPUNIT_ASSERT(!ts::DecomposePrecombined(ts::LATIN_CAPITAL_LETTER_A, letter, mark));
+
+    CPPUNIT_ASSERT(ts::DecomposePrecombined(ts::GREEK_CAPITAL_LETTER_IOTA_WITH_TONOS, letter, mark));
+    CPPUNIT_ASSERT_EQUAL(ts::GREEK_CAPITAL_LETTER_IOTA, letter);
+    CPPUNIT_ASSERT_EQUAL(ts::COMBINING_GREEK_DIALYTIKA_TONOS, mark);
+
+    CPPUNIT_ASSERT(ts::DecomposePrecombined(ts::LATIN_CAPITAL_LETTER_D_WITH_DOT_ABOVE, letter, mark));
+    CPPUNIT_ASSERT_EQUAL(ts::LATIN_CAPITAL_LETTER_D, letter);
+    CPPUNIT_ASSERT_EQUAL(ts::COMBINING_DOT_ABOVE, mark);
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().toCombinedDiacritical());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toCombinedDiacritical());
+
+    const ts::UString ref1{u'a', ts::LATIN_SMALL_LETTER_S_WITH_CIRCUMFLEX, ts::GREEK_CAPITAL_LETTER_IOTA_WITH_TONOS, u'z'};
+    const ts::UString str1{u'a', ts::LATIN_SMALL_LETTER_S, ts::COMBINING_CIRCUMFLEX_ACCENT, ts::GREEK_CAPITAL_LETTER_IOTA, ts::COMBINING_GREEK_DIALYTIKA_TONOS, u'z'};
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref1, str1.toCombinedDiacritical());
+
+    const ts::UString ref2{ts::LATIN_SMALL_LETTER_S_WITH_CIRCUMFLEX, u'a', ts::GREEK_CAPITAL_LETTER_IOTA_WITH_TONOS};
+    const ts::UString str2{ts::LATIN_SMALL_LETTER_S, ts::COMBINING_CIRCUMFLEX_ACCENT, u'a', ts::GREEK_CAPITAL_LETTER_IOTA, ts::COMBINING_GREEK_DIALYTIKA_TONOS};
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref2, str2.toCombinedDiacritical());
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().toDecomposedDiacritical());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toDecomposedDiacritical());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(str1, ref1.toDecomposedDiacritical());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(str2, ref2.toDecomposedDiacritical());
+}
+
+void UStringTest::testDVB()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abCD 89#()", ts::UString::FromDVB(std::string("abCD 89#()")));
+
+    static const uint8_t dvb1[] = {0x30, 0xC2, 0x65, 0xC3, 0x75};
+    const ts::UString str1{u'0', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE, ts::LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX};
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(str1, ts::UString::FromDVB(dvb1, sizeof(dvb1)));
+    CPPUNIT_ASSERT(ts::ByteBlock(dvb1, sizeof(dvb1)) == str1.toDecomposedDiacritical().toDVB());
 }
