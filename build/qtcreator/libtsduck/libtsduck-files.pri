@@ -189,10 +189,12 @@ HEADERS += \
     ../../../src/libtsduck/tsInterruptHandler.h \
     ../../../src/libtsduck/tsIPAddress.h \
     ../../../src/libtsduck/tsIPAddressMask.h \
+    ../../../src/libtsduck/tsIPInputPlugin.h \
     ../../../src/libtsduck/tsIPMACGenericStreamLocationDescriptor.h \
     ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.h \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.h \
+    ../../../src/libtsduck/tsIPOutputPlugin.h \
     ../../../src/libtsduck/tsIPSignallingDescriptor.h \
     ../../../src/libtsduck/tsIPUtils.h \
     ../../../src/libtsduck/tsIPv6Address.h \
@@ -623,10 +625,12 @@ SOURCES += \
     ../../../src/libtsduck/tsIntegerUtils.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
     ../../../src/libtsduck/tsIPAddressMask.cpp \
+    ../../../src/libtsduck/tsIPInputPlugin.cpp \
     ../../../src/libtsduck/tsIPMACGenericStreamLocationDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.cpp \
     ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.cpp \
+    ../../../src/libtsduck/tsIPOutputPlugin.cpp \
     ../../../src/libtsduck/tsIPSignallingDescriptor.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsIPv6Address.cpp \

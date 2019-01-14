@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1093
+VERSION 3.16-1100
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,7 @@ VERSION 3.16-1093
     added optional value in option --pack).
   * Added option --threshold4 in plugin "limit". The packet selection strategy
     was changed.
+  * Added option --enforce-burst in output plugin "ip".
   * Implement guidelines from ETSI TR 101 211 when compiling EIT's.
   * In XML descriptions of NIT and BAT, it is now possible to specify a
     preferred section index for each TS.
@@ -34,6 +35,8 @@ VERSION 3.16-1093
     PID's (including EIT's).
   * On Linux with BusyBox environment, the --help options (and other paged
     commands) no longer fail due to unsupported option for less.
+  * The order of combining diacritical characters was incorrectly handled in
+    DVB tables with the default character set.
 
 -------------------------------------------------------------------------------
 
