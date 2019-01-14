@@ -171,7 +171,19 @@ const ts::hls::MediaSegment& ts::hls::PlayList::segment(size_t index) const
     return index < _segments.size() ? _segments[index] : EmptySegment;
 }
 
-bool ts::hls::PlayList::popFirstSegment(ts::hls::MediaSegment& seg)
+bool ts::hls::PlayList::popFirstSegment()
+{
+    if (_segments.empty()) {
+        return false;
+    }
+    else {
+        _segments.pop_front();
+        _mediaSequence++;
+        return true;
+    }
+}
+
+bool ts::hls::PlayList::popFirstSegment(MediaSegment& seg)
 {
     if (_segments.empty()) {
         seg = EmptySegment;

@@ -70,6 +70,7 @@ namespace ts {
             size_t         _maxWidth;
             size_t         _minHeight;
             size_t         _maxHeight;
+            int            _startSegment;
             bool           _listVariants;
             bool           _lowestRate;
             bool           _highestRate;
