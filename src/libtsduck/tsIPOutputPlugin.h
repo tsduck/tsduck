@@ -28,20 +28,49 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  IP output plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 16
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1100
+#include "tsPlugin.h"
+#include "tsUDPSocket.h"
+
+namespace ts {
+    //!
+    //! IP output plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL IPOutputPlugin: public OutputPlugin
+    {
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        IPOutputPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool isRealTime() override {return true;}
+        virtual bool send(const TSPacket*, size_t) override;
+
+    private:
+        UString        _destination;    // Destination address/port.
+        UString        _local_addr;     // Local address.
+        int            _ttl;            // Time to live option.
+        int            _tos;            // Type of service option.
+        size_t         _pkt_burst;      // Number of TS packets per UDP message
+        bool           _enforce_burst;  // Option --enforce-burst
+        UDPSocket      _sock;           // Outgoing socket
+        size_t         _out_count;      // Number of packets in _out_buffer
+        TSPacketVector _out_buffer;     // Buffered packets for output with --enforce-burst
+
+        // Inaccessible operations
+        IPOutputPlugin() = delete;
+        IPOutputPlugin(const IPOutputPlugin&) = delete;
+        IPOutputPlugin& operator=(const IPOutputPlugin&) = delete;
+    };
+}
