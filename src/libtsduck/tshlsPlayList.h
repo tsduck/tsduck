@@ -264,6 +264,12 @@ namespace ts {
             bool popFirstSegment(MediaSegment& seg);
 
             //!
+            //! Remove the first media segment and do not even return it (in media playlist).
+            //! @return True of a segment was successfully removed, false otherwise.
+            //!
+            bool popFirstSegment();
+
+            //!
             //! Add a segment in a media playlist.
             //! @param [in] seg The new media segment to append. If the playlist's URI is a file
             //! name, the URI of the segment is transformed into a relative URI from the playlist's path.

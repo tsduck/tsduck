@@ -47,6 +47,7 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     _maxWidth(0),
     _minHeight(0),
     _maxHeight(0),
+    _startSegment(0),
     _listVariants(false),
     _lowestRate(false),
     _highestRate(false),
@@ -132,6 +133,21 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     help(u"segment-count",
          u"Stop receiving the HLS stream after receiving the specified number of media segments. "
          u"By default, receive the complete content.");
+
+    option(u"live");
+    help(u"live",
+         u"Specify that the input is a live stream and the playout shall start at the last segment in the playlist.\n"
+         u"This is an alias for --start-segment -1.");
+
+    option(u"start-segment", 0, INT32);
+    help(u"start-segment",
+         u"Start at the specified segment in the initial playlist. "
+         u"By default, start with the first media segment.\n\n"
+         u"The value can be positive or negative. "
+         u"Positive values are indexes from the start of the playlist: "
+         u"0 is the first segment (the default), +1 is the second segment, etc. "
+         u"Negative values are indexes from the end of the playlist: "
+         u"-1 is the last segment, -2 is the preceding segment, etc.");
 }
 
 
@@ -152,11 +168,21 @@ bool ts::hls::InputPlugin::getOptions()
     getIntValue(_maxWidth, u"max-width");
     getIntValue(_minHeight, u"min-height");
     getIntValue(_maxHeight, u"max-height");
+    getIntValue(_startSegment, u"start-segment");
     _lowestRate = present(u"lowest-bitrate");
     _highestRate = present(u"highest-bitrate");
     _lowestRes = present(u"lowest-resolution");
     _highestRes = present(u"highest-resolution");
     _listVariants = present(u"list-variants");
+
+    if (present(u"live")) {
+        // With live streams, start at the last segment.
+        if (_startSegment != 0) {
+            tsp->error(u"--live and --start-segment are mutually exclusive");
+            return false;
+        }
+        _startSegment = -1;
+    }
 
     if (_url.empty()) {
         tsp->error(u"empty URL");
@@ -246,11 +272,41 @@ bool ts::hls::InputPlugin::start()
         tsp->error(u"invalid HLS playlist type, expected a media playlist");
         return false;
     }
-    if (_playlist.segmentCount() == 0) {
+    tsp->verbose(u"downloaded %s", {_playlist});
+
+    // Manage the number of media segments and starting point.
+    size_t segCount = _playlist.segmentCount();
+    if (segCount == 0) {
         tsp->error(u"empty HLS media playlist");
         return false;
     }
-    tsp->verbose(u"downloaded %s", {_playlist});
+    else if (_startSegment > 0) {
+        // Start index from the start of playlist.
+        if (segCount + 1 < size_t(_startSegment)) {
+            tsp->warning(u"playlist has only %d segments, starting at last one", {segCount});
+            segCount = 1;
+        }
+        else {
+            // Remaining number of segments to play.
+            segCount = segCount - size_t(_startSegment);
+        }
+    }
+    else if (_startSegment < 0) {
+        // Start index from the end of playlist.
+        if (segCount < size_t(- _startSegment)) {
+            tsp->warning(u"playlist has only %d segments, starting at first one", {segCount});
+        }
+        else {
+            // Remaining number of segments to play.
+            segCount = size_t(- _startSegment);
+        }
+    }
+
+    // If the start point is not the first segment, then drop unused initial segments.
+    while (_playlist.segmentCount() > segCount) {
+        _playlist.popFirstSegment();
+        tsp->debug(u"dropping initial segment");
+    }
 
     // Invoke superclass.
     return AbstractHTTPInputPlugin::start();
