@@ -562,6 +562,75 @@ ts::UString ts::UString::toUpper() const
 
 
 //----------------------------------------------------------------------------
+// Convert between precombined characters and sequences of two characters.
+//----------------------------------------------------------------------------
+
+void ts::UString::combineDiacritical()
+{
+    size_type cur = 0;  // overwrite pointer
+    UChar precomb = 0;  // precombined replacement character
+
+    for (size_type old = 0; old < length(); ++old) {
+        if (old > 0 && IsCombiningDiacritical(at(old)) && (precomb = Precombined(at(old-1), at(old))) != CHAR_NULL) {
+            // This is a replaceable combination.
+            assert(cur > 0);
+            at(cur-1) = precomb;
+        }
+        else {
+            // This is a standard character.
+            at(cur++) = at(old);
+        }
+    }
+
+    // Truncate unused characters.
+    resize(cur);
+}
+
+ts::UString ts::UString::toCombinedDiacritical() const
+{
+    UString result(*this);
+    result.combineDiacritical();
+    return result;
+}
+
+void ts::UString::decomposeDiacritical()
+{
+    const size_type len = length();
+    UString rep;  // replacement for new string.
+    UChar letter = 0;
+    UChar mark = 0;
+
+    // Reserve memory for the result (at most 2 out characters for one in character).
+    rep.reserve(2 * len);
+
+    for (size_type i = 0; i < length(); ++i) {
+        if (DecomposePrecombined(at(i), letter, mark)) {
+            // This is a precombined character and we decomposed it.
+            rep.append(letter);
+            rep.append(mark);
+        }
+        else {
+            // Not a precombined character.
+            rep.append(at(i));
+        }
+    }
+
+    // If many case, the replacement is identical to the old string.
+    // When they are different, their sizes are different as well.
+    if (rep.length() != length()) {
+        swap(rep);
+    }
+}
+
+ts::UString ts::UString::toDecomposedDiacritical() const
+{
+    UString result(*this);
+    result.decomposeDiacritical();
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
 // Remove all occurences of a substring.
 //----------------------------------------------------------------------------
 

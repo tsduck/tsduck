@@ -79,14 +79,19 @@ namespace ts {
         //! @param [in] name charset name.
         //! @param [in] tableCode DVB table code.
         //! @param [in] init Initializer list. 96 code point values for 0xA0-0xFF range, zero means unused.
+        //! @param [in] revDiac Optional list of byte values in range 0xA0-0xFF of combining diacritical
+        //! marks which precede their base letter (and must be reversed from Unicode).
         //!
-        DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init);
+        DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac = std::initializer_list<uint8_t>());
 
     private:
         //! List of code points for byte values 0xA0-0xFF. Always contain 96 values.
         const std::vector<uint16_t> _upperCodePoints;
         //! Reverse mapping for complete character set (key = code point, value = byte rep).
         std::map<UChar, uint8_t> _bytesMap;
+        //! Bitmap of combining diacritical marks which precede their base letter (and must be reversed from Unicode).
+        //! This only applies to byte values 0xA0-0xFF (96 values).
+        std::bitset<96> _reversedDiacritical;
 
         // Inaccessible operations.
         DVBCharsetSingleByte() = delete;

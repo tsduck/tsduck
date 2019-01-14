@@ -752,6 +752,36 @@ namespace ts {
         UString toUpper() const;
 
         //!
+        //! Combine all possible diacritical marks.
+        //! All sequences of two characters, letter and non-spacing diacritical marks,
+        //! which can be grouped into once single precombined character are substituted
+        //! with this precombined character.
+        //!
+        void combineDiacritical();
+
+        //!
+        //! Return a string with all possible diacritical marks combined.
+        //! @return A string where all sequences of two characters, letter and non-spacing
+        //! diacritical marks, which can be grouped into once single precombined character
+        //! have been substituted with this precombined character.
+        //!
+        UString toCombinedDiacritical() const;
+
+        //!
+        //! Decompose all precombined characters.
+        //! All precombined characters are replaced by two characters, the base letter and
+        //! the non-spacing diacritical mark.
+        //!
+        void decomposeDiacritical();
+
+        //!
+        //! Return a string with all precombined characters decomposed.
+        //! @return A string where all precombined characters are replaced by two characters,
+        //! the base letter and the non-spacing diacritical mark.
+        //!
+        UString toDecomposedDiacritical() const;
+
+        //!
         //! Remove all occurences of a substring.
         //! @param [in] substr Substring to remove.
         //!

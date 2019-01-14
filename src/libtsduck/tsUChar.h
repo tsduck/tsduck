@@ -252,6 +252,24 @@ namespace ts {
     //!
     TSDUCKDLL UChar FromHTML(const UString& entity);
 
+    //!
+    //! Build a precombined character from its base letter and non-spacing diacritical mark.
+    //! @param [in] letter The base letter.
+    //! @param [in] mark The non-spacing diacritical mark.
+    //! @return The precombined character or CHAR_NULL if the sequence does not have a precombined equivalent.
+    //!
+    TSDUCKDLL UChar Precombined(UChar letter, UChar mark);
+
+    //!
+    //! Decompose a precombined character into its base letter and non-spacing diacritical mark.
+    //! @param [in] c A character.
+    //! @param [out] letter The base letter for @a c.
+    //! @param [out] mark The non-spacing diacritical mark for @a c.
+    //! @return True if @a c was successfully decomposed into @a letter and @a diac,
+    //! false if @a c is not a precombined character.
+    //!
+    TSDUCKDLL bool DecomposePrecombined(UChar c, UChar& letter, UChar& mark);
+
     //
     // The following constants define all characters which can be
     // represented in ISO 8859 character sets.
