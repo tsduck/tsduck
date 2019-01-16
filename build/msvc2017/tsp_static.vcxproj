@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_null.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pat.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pattern.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pcradjust.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrbitrate.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrextract.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrverify.cpp" />
