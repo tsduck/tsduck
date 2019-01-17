@@ -41,7 +41,7 @@ const ts::IPAddress ts::IPAddress::LocalHost(127, 0, 0, 1);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 ts::IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) :
@@ -65,6 +65,10 @@ ts::IPAddress::IPAddress(const ::sockaddr_in& s) :
     if (s.sin_family == AF_INET) {
         _addr = ntohl(s.sin_addr.s_addr);
     }
+}
+
+ts::IPAddress::~IPAddress()
+{
 }
 
 

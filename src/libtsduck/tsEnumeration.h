@@ -85,11 +85,6 @@ namespace ts {
         Enumeration(const std::initializer_list<NameValue> values);
 
         //!
-        //! Virtual destructor
-        //!
-        virtual ~Enumeration() {}
-
-        //!
         //! Equality operator.
         //!
         //! @param [in] other Another instance to compare with.

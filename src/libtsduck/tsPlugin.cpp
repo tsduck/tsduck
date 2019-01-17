@@ -32,7 +32,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TSP::TSP(int max_severity) :
@@ -86,3 +86,62 @@ const ts::Enumeration ts::PluginTypeNames({
     {u"packet processor", ts::PROCESSOR_PLUGIN},
 });
 
+
+//----------------------------------------------------------------------------
+// Default implementations of virtual methods.
+//----------------------------------------------------------------------------
+
+bool ts::TSP::aborting() const
+{
+    return _tsp_aborting;
+}
+
+size_t ts::Plugin::stackUsage() const
+{
+    return DEFAULT_STACK_USAGE;
+}
+
+bool ts::Plugin::getOptions()
+{
+    return true;
+}
+
+bool ts::Plugin::start()
+{
+    return true;
+}
+
+bool ts::Plugin::stop()
+{
+    return true;
+}
+
+ts::BitRate ts::Plugin::getBitrate()
+{
+    return 0;
+}
+
+bool ts::Plugin::isRealTime()
+{
+    return false;
+}
+
+bool ts::InputPlugin::abortInput()
+{
+    return false;
+}
+
+ts::PluginType ts::InputPlugin::type() const
+{
+    return INPUT_PLUGIN;
+}
+
+ts::PluginType ts::OutputPlugin::type() const
+{
+    return OUTPUT_PLUGIN;
+}
+
+ts::PluginType ts::ProcessorPlugin::type() const
+{
+    return PROCESSOR_PLUGIN;
+}

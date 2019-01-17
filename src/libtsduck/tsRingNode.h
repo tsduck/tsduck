@@ -54,20 +54,13 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        RingNode() :
-            _ring_previous(this),
-            _ring_next(this)
-        {
-        }
+        RingNode();
 
         //!
         //! Destructor.
         //!
-        virtual ~RingNode()
-        {
-            ringRemove();
-        }
-
+        virtual ~RingNode();
+    
         //!
         //! Check if the node is alone in its own ring.
         //! @return True if the node is alone in its own ring.

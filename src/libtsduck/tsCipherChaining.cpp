@@ -47,6 +47,21 @@ ts::CipherChaining::CipherChaining (BlockCipher* cipher, size_t iv_min_blocks, s
 
 
 //----------------------------------------------------------------------------
+// Default implementation of virtual methods.
+//----------------------------------------------------------------------------
+
+size_t ts::CipherChaining::minIVSize() const
+{
+    return iv_min_size;
+}
+
+size_t ts::CipherChaining::maxIVSize() const
+{
+    return iv_max_size;
+}
+
+
+//----------------------------------------------------------------------------
 // Implementation of BlockCipher interface:
 //----------------------------------------------------------------------------
 

@@ -77,7 +77,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractTable() {}
+        virtual ~AbstractTable();
 
         //!
         //! Base inner class for table entries with one or more descriptor lists.

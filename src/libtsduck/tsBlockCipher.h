@@ -180,6 +180,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~BlockCipher() {}
+        virtual ~BlockCipher();
     };
 }

@@ -282,6 +282,31 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
 
 
 //----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+void ts::Args::setDescription(const UString& description)
+{
+    _description = description;
+}
+
+void ts::Args::setSyntax(const UString& syntax)
+{
+    _syntax = syntax;
+}
+
+void ts::Args::setIntro(const UString& intro)
+{
+    _intro = intro;
+}
+
+void ts::Args::setFlags(int flags)
+{
+    _flags = flags;
+}
+
+
+//----------------------------------------------------------------------------
 // Format help lines from a long text.
 //----------------------------------------------------------------------------
 

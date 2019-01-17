@@ -57,7 +57,7 @@ namespace ts {
         //! a hint, not a guaranteed size. Zero if the content size is unknown.
         //! @return True to proceed, false to abort the transfer.
         //!
-        virtual bool handleWebStart(const WebRequest& request, size_t size) { return true; }
+        virtual bool handleWebStart(const WebRequest& request, size_t size);
 
         //!
         //! This hook is invoked when a data chunk is available.
@@ -73,11 +73,11 @@ namespace ts {
         //! @param [in] request The Web request.
         //! @return True to indicate success, false to indicate error.
         //!
-        virtual bool handleWebStop(const WebRequest& request) { return true; }
+        virtual bool handleWebStop(const WebRequest& request);
 
         //!
         //! Virtual destructor.
         //!
-        virtual ~WebRequestHandlerInterface() {}
+        virtual ~WebRequestHandlerInterface();
     };
 }

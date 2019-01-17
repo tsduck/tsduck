@@ -58,6 +58,19 @@ ts::AbstractMultilingualDescriptor::Entry::Entry(const UString& lang_, const USt
 
 
 //----------------------------------------------------------------------------
+// Default implementation of prolog serialization.
+//----------------------------------------------------------------------------
+
+void ts::AbstractMultilingualDescriptor::serializeProlog(const ByteBlockPtr& bbp, const DVBCharset* charset) const
+{
+}
+
+void ts::AbstractMultilingualDescriptor::deserializeProlog(const uint8_t*& data, size_t& size, const DVBCharset* charset)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 

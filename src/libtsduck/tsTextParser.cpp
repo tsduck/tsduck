@@ -62,6 +62,10 @@ ts::TextParser::Position::Position(const UStringList& textLines) :
 {
 }
 
+ts::TextParser::~TextParser()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Clear the document in the parser.

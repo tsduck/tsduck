@@ -50,12 +50,12 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        TSFileOutputResync() : TSFileOutput() {}
+        TSFileOutputResync();
 
         //!
         //! Destructor.
         //!
-        virtual ~TSFileOutputResync() {}
+        virtual ~TSFileOutputResync();
 
         // Overrides TSFileOutput methods
         virtual bool open(const UString& filename, bool append, bool keep, Report& report) override;

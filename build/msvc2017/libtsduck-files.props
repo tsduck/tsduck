@@ -81,6 +81,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChaining.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCipherChainingTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
     <ClInclude Include="..\..\src\libtsduck\tsComponentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCondition.h" />
@@ -203,6 +204,14 @@
     <ClInclude Include="..\..\src\libtsduck\tsISO639LanguageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsISPAccessModeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsjson.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonArray.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonFalse.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonNull.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonNumber.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonObject.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonString.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonTrue.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonValue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLinkageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLNB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.h" />
@@ -445,6 +454,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsUString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUStringTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVariable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsVariableTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVBIDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVBITeletextDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h" />
@@ -488,7 +498,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbortInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractAudioVideoAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCData.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDemux.cpp" />
@@ -577,6 +590,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDIILocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDisplayInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.cpp" />
@@ -597,6 +611,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClientArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsECMGClientHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGSCS.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMRepetitionRateDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEIT.cpp" />
@@ -618,6 +633,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuard.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuardCondition.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsHash.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCTimingAndHRDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
@@ -635,6 +651,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsINT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIntegerUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsInterruptHandler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPAddress.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPAddressMask.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPInputPlugin.cpp" />
@@ -649,6 +666,14 @@
     <ClCompile Include="..\..\src\libtsduck\tsISO639LanguageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsISPAccessModeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsjson.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonArray.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonFalse.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonNull.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonNumber.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonObject.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonString.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonTrue.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonValue.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLinkageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLNB.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.cpp" />
@@ -665,6 +690,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMPEG.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEG4AudioDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEG4VideoDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMPEHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualBouquetNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualComponentDescriptor.cpp" />
@@ -672,11 +698,13 @@
     <ClCompile Include="..\..\src\libtsduck\tsMultilingualServiceNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMultiplexBufferUtilizationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMutexInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNPTEndpointDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNPTReferenceDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNullMutex.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNullReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNVODReferenceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsObject.cpp" />
@@ -694,6 +722,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPCRRegulator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPCSC.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPESDemux.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPESHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPESPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPIDOperator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
@@ -702,8 +731,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsPluginSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginThread.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPMT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPMTHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPolledFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPollFiles.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPollFilesListener.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrefetchDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
@@ -715,6 +746,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsRegistrationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRegistry.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReport.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsReportHandler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReportWithPrefix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
@@ -722,10 +754,13 @@
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScramblingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSCTE35.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSCTE52.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSectionHandlerInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSectionProviderInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSelectionInformationTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceAvailabilityDescriptor.cpp" />
@@ -762,6 +797,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsStreamEventDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamModeDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsStringifyInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
@@ -773,7 +809,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsSysUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsT2MIHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIPacket.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTableHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesDisplayArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesFactory.cpp" />
@@ -799,6 +837,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTeletextDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTeletextDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTeletextFrame.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTeletextHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTelnetConnection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTerrestrialDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTextFormatter.cpp" />
@@ -814,6 +853,7 @@
     <ClCompile Include="..\..\src\libtsduck\tstlvLogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tstlvProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvSerializer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTLVSyntax.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTOT.cpp" />
@@ -853,8 +893,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsVideoStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoWindowDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsWatchDog.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsWatchDogHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsWebRequest.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsWebRequestArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsWebRequestHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlAttribute.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlComment.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlDeclaration.cpp" />

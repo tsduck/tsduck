@@ -56,6 +56,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~WatchDogHandlerInterface() {}
+        virtual ~WatchDogHandlerInterface();
     };
 }

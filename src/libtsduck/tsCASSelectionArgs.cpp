@@ -33,7 +33,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::CASSelectionArgs::CASSelectionArgs() :
@@ -43,6 +43,10 @@ ts::CASSelectionArgs::CASSelectionArgs() :
     max_cas_id(0),
     cas_family(CAS_OTHER),
     cas_oper(0)
+{
+}
+
+ts::CASSelectionArgs::~CASSelectionArgs()
 {
 }
 

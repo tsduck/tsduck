@@ -59,7 +59,6 @@ namespace ts {
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
         virtual bool start() override;
         virtual bool stop() override;
-        virtual BitRate getBitrate() override {return 0;}
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     protected:

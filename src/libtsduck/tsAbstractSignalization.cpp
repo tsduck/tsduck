@@ -33,7 +33,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors and assignments.
+// Constructors, assignments and destructors.
 //----------------------------------------------------------------------------
 
 ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name) :
@@ -54,6 +54,10 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
     return *this;
 }
 
+ts::AbstractSignalization::~AbstractSignalization()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Get the XMl node name representing this table.
@@ -62,6 +66,15 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
 ts::UString ts::AbstractSignalization::xmlName() const
 {
     return UString(_xml_name);
+}
+
+
+//----------------------------------------------------------------------------
+// Default helper method to convert this object to XML.
+//----------------------------------------------------------------------------
+
+void ts::AbstractSignalization::buildXML(xml::Element* root) const
+{
 }
 
 

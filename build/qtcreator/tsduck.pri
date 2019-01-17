@@ -79,7 +79,7 @@ linux {
     LIBS += -lrt -ldl $$PROJROOT/dektec/LinuxSDK/DTAPI/Lib/GCC4.4/DTAPI64.o
 }
 mac {
-    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument -Wweak-vtables
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/mac -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/mac
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib

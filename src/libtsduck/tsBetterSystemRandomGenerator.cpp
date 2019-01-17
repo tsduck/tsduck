@@ -83,6 +83,16 @@ ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
 
 
 //----------------------------------------------------------------------------
+// Implementation of RandomGenerator interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::BetterSystemRandomGenerator::name() const
+{
+    return u"BetterSystemRandomGenerator";
+}
+
+
+//----------------------------------------------------------------------------
 // Check if PRNG is ready. If not ready, must be seeded again.
 //----------------------------------------------------------------------------
 

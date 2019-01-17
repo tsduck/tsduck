@@ -51,6 +51,6 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~InterruptHandler() {}
+        virtual ~InterruptHandler();
     };
 }

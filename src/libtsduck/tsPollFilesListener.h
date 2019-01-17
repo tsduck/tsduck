@@ -61,14 +61,11 @@ namespace ts {
         //! poll notifications when a file is being written and his size modified at each poll.
         //! @return True to continue polling, false to exit polling.
         //!
-        virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay)
-        {
-            return true;
-        }
+        virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay);
 
         //!
         //! Virtual destructor.
         //!
-        virtual ~PollFilesListener() {}
+        virtual ~PollFilesListener();
     };
 }

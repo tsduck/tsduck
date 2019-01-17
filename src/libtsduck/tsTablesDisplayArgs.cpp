@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TablesDisplayArgs::TablesDisplayArgs() :
@@ -47,6 +47,10 @@ ts::TablesDisplayArgs::TablesDisplayArgs() :
     min_nested_tlv(0),
     default_pds(0),
     default_charset(nullptr)
+{
+}
+
+ts::TablesDisplayArgs::~TablesDisplayArgs()
 {
 }
 

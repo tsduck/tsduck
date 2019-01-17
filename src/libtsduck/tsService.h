@@ -71,7 +71,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~Service() {}
+        virtual ~Service();
 
         //!
         //! Reset using a string description.

@@ -80,7 +80,7 @@ namespace ts {
         virtual UString toPluginOptions(bool no_local = false) const override;
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const override;
         virtual bool fromZapFormat(const UString& zap) override;
-        virtual size_t zapFieldCount() const  override{return 4;}
+        virtual size_t zapFieldCount() const override;
         virtual void copy(const TunerParameters&) override;
         virtual bool convertToDektecModulation(int&, int&, int&, int&) const override;
     protected:

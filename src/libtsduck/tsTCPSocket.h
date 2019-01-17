@@ -152,14 +152,14 @@ namespace ts {
         //! All subclasses should explicitly invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleOpened(Report& report) {}
+        virtual void handleOpened(Report& report);
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of close.
         //! All subclasses should explicitly invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleClosed(Report& report) {}
+        virtual void handleClosed(Report& report);
 
         // Implementation of Socket interface.
         virtual void declareOpened(TS_SOCKET_T sock, Report& report) override;

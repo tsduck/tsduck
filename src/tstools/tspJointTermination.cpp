@@ -60,6 +60,20 @@ ts::tsp::JointTermination::JointTermination(Options* options, const PluginOption
 }
 
 
+//----------------------------------------------------------------------------
+// Implementation of "joint termination", inherited from TSP.
+//----------------------------------------------------------------------------
+
+bool ts::tsp::JointTermination::useJointTermination() const
+{
+    return _use_jt;
+}
+
+bool ts::tsp::JointTermination::thisJointTerminated() const
+{
+    return _jt_completed;
+}
+
 
 //----------------------------------------------------------------------------
 // This method activates "joint termination" for the calling plugin.

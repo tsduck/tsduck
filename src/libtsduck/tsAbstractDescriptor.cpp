@@ -37,13 +37,17 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Protected constructor for subclasses.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, PDS pds) :
     AbstractSignalization(xml_name),
     _tag(tag),
     _required_pds(pds)
+{
+}
+
+ts::AbstractDescriptor::~AbstractDescriptor()
 {
 }
 

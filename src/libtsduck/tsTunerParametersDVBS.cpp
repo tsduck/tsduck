@@ -118,6 +118,11 @@ namespace {
 //    satellite number, symrate = symbol rate in ksym/s.
 //----------------------------------------------------------------------------
 
+size_t ts::TunerParametersDVBS::zapFieldCount() const
+{
+    return 4;
+}
+
 ts::UString ts::TunerParametersDVBS::toZapFormat() const
 {
     return UString::Format(u"%d:%s:%d:%d",

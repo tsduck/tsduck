@@ -70,13 +70,13 @@ namespace ts {
         //! Get the minimum IV sizes in bytes.
         //! @return The minimum IV sizes in bytes.
         //!
-        virtual size_t minIVSize() const {return iv_min_size;}
+        virtual size_t minIVSize() const;
 
         //!
         //! Get the maximum IV sizes in bytes.
         //! @return The maximum IV sizes in bytes.
         //!
-        virtual size_t maxIVSize() const {return iv_max_size;}
+        virtual size_t maxIVSize() const;
 
         //!
         //! Get the minimum message size.
@@ -138,22 +138,15 @@ namespace ts {
         //! @param [in] iv_max_blocks Maximum IV size in multiples of cipher block size (default: 1).
         //! @param [in] work_blocks Temporary work buffer size in multiples of cipher block size (default: 1).
         //!
-        CipherChainingTemplate(size_t iv_min_blocks = 1, // min IV size in multiples of cipher block size
-                               size_t iv_max_blocks = 1, // max IV size in multiples of cipher block size
-                               size_t work_blocks = 1) : // temp work buffer size in multiples of cipher block size
-            CipherChaining(new CIPHER, iv_min_blocks, iv_max_blocks, work_blocks)
-        {
-        }
+        CipherChainingTemplate(size_t iv_min_blocks = 1,
+                               size_t iv_max_blocks = 1,
+                               size_t work_blocks = 1);
 
         //!
         //! Destructor.
         //!
-        virtual ~CipherChainingTemplate()
-        {
-            if (algo != nullptr) {
-                delete algo;
-                algo = nullptr;
-            }
-        }
+        virtual ~CipherChainingTemplate();
     };
 }
+
+#include "tsCipherChainingTemplate.h"

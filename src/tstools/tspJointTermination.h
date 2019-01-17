@@ -59,16 +59,11 @@ namespace ts {
                              const ThreadAttributes& attributes,
                              Mutex& global_mutex);
 
-            //!
-            //! Destructor
-            //!
-            virtual ~JointTermination() {}
-
             // Implementation of "joint termination", inherited from TSP.
             virtual void useJointTermination(bool on) override;
             virtual void jointTerminate() override;
-            virtual bool useJointTermination() const override {return _use_jt;}
-            virtual bool thisJointTerminated() const override {return _jt_completed;}
+            virtual bool useJointTermination() const override;
+            virtual bool thisJointTerminated() const override;
 
         protected:
             Mutex&         _global_mutex; //!< Reference to the TSP global mutex.

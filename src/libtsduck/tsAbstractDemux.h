@@ -85,20 +85,14 @@ namespace ts {
         //! Get the current number of PID's being filtered.
         //! @return The current number of PID's being filtered.
         //!
-        virtual size_t pidCount() const
-        {
-            return _pid_filter.count();
-        }
+        virtual size_t pidCount() const;
 
         //!
         //! Check if a PID is filtered.
         //! @param [in] pid The PID to test.
         //! @return Tue if @a pid is filtered.
         //!
-        virtual bool hasPID(PID pid) const
-        {
-            return pid < _pid_filter.size() && _pid_filter.test(pid);
-        }
+        virtual bool hasPID(PID pid) const;
 
         //!
         //! Reset the demux.

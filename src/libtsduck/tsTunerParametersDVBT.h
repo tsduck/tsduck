@@ -78,7 +78,7 @@ namespace ts {
         virtual UString toPluginOptions(bool no_local = false) const override;
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const override;
         virtual bool fromZapFormat(const UString& zap) override;
-        virtual size_t zapFieldCount() const override {return 9;}
+        virtual size_t zapFieldCount() const override;
         virtual void copy(const TunerParameters&) override;
     protected:
         virtual bool fromArgs(const TunerArgs&, Report&) override;

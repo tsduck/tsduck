@@ -124,7 +124,7 @@ namespace ts {
         //! aborting for some reason (user interrupt for instance).
         //! @return True if the tsp application is currently aborting.
         //!
-        virtual bool aborting() const override {return _tsp_aborting;}
+        virtual bool aborting() const override;
 
         //!
         //! Activates or deactivates "joint termination".
@@ -202,7 +202,7 @@ namespace ts {
         //! is @link DEFAULT_STACK_USAGE @endlink (128 kB).
         //! @return The maximum stack usage in bytes for the thread executing the plugin.
         //!
-        virtual size_t stackUsage() const {return DEFAULT_STACK_USAGE;}
+        virtual size_t stackUsage() const;
 
         //!
         //! The main application invokes getOptions() only once, at application startup.
@@ -212,21 +212,21 @@ namespace ts {
         //! line errors may be reported too late.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool getOptions() {return true;}
+        virtual bool getOptions();
 
         //!
         //! The main application invokes start() to start the plugin.
         //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool start() {return true;}
+        virtual bool start();
 
         //!
         //! The main application invokes stop() to terminate the plugin.
         //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool stop() {return true;}
+        virtual bool stop();
 
         //!
         //! Get the plugin bitrate.
@@ -247,7 +247,7 @@ namespace ts {
         //!
         //! @return Plugin bitrate in bits/second. Shall return 0 on error or unknown bitrate.
         //!
-        virtual BitRate getBitrate() {return 0;}
+        virtual BitRate getBitrate();
 
         //!
         //! Tell if the plugin is a real time one.
@@ -268,7 +268,7 @@ namespace ts {
         //!
         //! @return True if the plugin usually requires real-time responsiveness.
         //!
-        virtual bool isRealTime() {return false;}
+        virtual bool isRealTime();
 
         //!
         //! Get the plugin type.
@@ -284,11 +284,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         Plugin(TSP* to_tsp, const UString& description = UString(), const UString& syntax = UString());
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~Plugin() override {}
 
     protected:
         TSP* tsp; //!< The TSP callback structure can be directly accessed by subclasses.
@@ -342,7 +337,7 @@ namespace ts {
         //! @return True when the operation was properly handled. False in case
         //! of fatal error or if not supported by the plugin.
         //!
-        virtual bool abortInput() { return false; }
+        virtual bool abortInput();
 
         //!
         //! Constructor.
@@ -353,13 +348,8 @@ namespace ts {
         //!
         InputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~InputPlugin() override {}
-
         // Implementation of inherited interface.
-        virtual PluginType type() const override { return INPUT_PLUGIN; }
+        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations
@@ -413,13 +403,8 @@ namespace ts {
         //!
         OutputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~OutputPlugin() override {}
-
         // Implementation of inherited interface.
-        virtual PluginType type() const override { return OUTPUT_PLUGIN; }
+        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations
@@ -496,13 +481,8 @@ namespace ts {
         //!
         ProcessorPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~ProcessorPlugin() override {}
-
         // Implementation of inherited interface.
-        virtual PluginType type() const override { return PROCESSOR_PLUGIN; }
+        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations

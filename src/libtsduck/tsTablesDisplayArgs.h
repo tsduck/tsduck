@@ -79,7 +79,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TablesDisplayArgs() {}
+        virtual ~TablesDisplayArgs();
 
         //!
         //! Define command line options in an Args.

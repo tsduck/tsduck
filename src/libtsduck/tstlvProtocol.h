@@ -51,42 +51,26 @@ namespace ts {
             //!
             //! Constructor for a protocol without version number.
             //!
-            Protocol() :
-                _has_version(false),
-                _version(0),
-                _commands()
-            {
-            }
+            Protocol();
 
             //!
             //! Constructor for a protocol with version number.
             //! The message format is version + compound TLV.
             //! @param [in] v Expected protocol version.
             //!
-            Protocol(VERSION v) :
-                _has_version(true),
-                _version(v),
-                _commands()
-            {
-            }
+            Protocol(VERSION v);
 
             //!
             //! Check if the protocol has a protocol version number.
             //! @return True if the message has a protocol version number.
             //!
-            bool hasVersion() const
-            {
-                return _has_version;
-            }
+            bool hasVersion() const { return _has_version; }
 
             //!
             //! Get the protocol version number.
             //! @return The protocol version number.
             //!
-            VERSION version() const
-            {
-                return _version;
-            }
+            VERSION version() const { return _version; }
 
             //!
             //! Change the protocol version number.
@@ -115,13 +99,7 @@ namespace ts {
             //! @param [in] min_count Minimum number of occurences of this parameter in the command.
             //! @param [in] max_count Maximum number of occurences of this parameter in the command.
             //!
-            void add(TAG cmd_tag, TAG param_tag,
-                     size_t min_size, size_t max_size,
-                     size_t min_count, size_t max_count)
-            {
-                Parameter p = {nullptr, min_size, max_size, min_count, max_count};
-                _commands[cmd_tag].params[param_tag] = p;
-            }
+            void add(TAG cmd_tag, TAG param_tag, size_t min_size, size_t max_size, size_t min_count, size_t max_count);
 
             //!
             //! This method declares a command tag in the protocol and one of its parameters.
@@ -132,18 +110,12 @@ namespace ts {
             //! @param [in] min_count Minimum number of occurences of this parameter in the command.
             //! @param [in] max_count Maximum number of occurences of this parameter in the command.
             //!
-            void add(TAG cmd_tag, TAG param_tag,
-                     const Protocol* compound,
-                     size_t min_count, size_t max_count)
-            {
-                Parameter p = {compound, 0, 0, min_count, max_count};
-                _commands[cmd_tag].params[param_tag] = p;
-            }
+            void add(TAG cmd_tag, TAG param_tag, const Protocol* compound, size_t min_count, size_t max_count);
 
             //!
             //! Virtual destructor.
             //!
-            virtual ~Protocol() {}
+            virtual ~Protocol();
 
             //!
             //! Generic factory method.

@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructor and destructors.
 //----------------------------------------------------------------------------
 
 ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, Report& report) :
@@ -47,6 +47,10 @@ ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, Report& repor
     _report(report),
     _outfile(),
     _use_outfile(false)
+{
+}
+
+ts::TablesDisplay::~TablesDisplay()
 {
 }
 

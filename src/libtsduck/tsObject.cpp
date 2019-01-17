@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for objects which can be stored in a repository
-//
-//----------------------------------------------------------------------------
 
 #include "tsObject.h"
 TSDUCK_SOURCE;
@@ -37,6 +33,15 @@ TSDUCK_SOURCE;
 // Static thread-safe repository of Object
 std::map <ts::UString, ts::ObjectPtr> ts::Object::_repository;
 ts::Mutex ts::Object::_repository_mutex;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::Object::~Object()
+{
+}
 
 
 //----------------------------------------------------------------------------

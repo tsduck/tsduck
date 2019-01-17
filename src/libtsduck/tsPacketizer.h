@@ -57,7 +57,7 @@ namespace ts {
         //!
         //! Destructor
         //!
-        virtual ~Packetizer() {}
+        virtual ~Packetizer();
 
         //!
         //! Set the default PID for subsequent MPEG packets.

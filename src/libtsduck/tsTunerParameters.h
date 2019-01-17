@@ -83,10 +83,7 @@ namespace ts {
         //! @param [out] param2 Modulation-specific paramter 2.
         //! @return True on success, false on error (includes unsupported operation).
         //!
-        virtual bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
-        {
-            return false;
-        }
+        virtual bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const;
 
         //!
         //! Format a short description (frequency and essential parameters).
@@ -159,7 +156,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TunerParameters() {}
+        virtual ~TunerParameters();
 
         //!
         //! Allocate a TunerParameters of the appropriate subclass, based on a tuner type.
