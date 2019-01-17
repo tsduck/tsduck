@@ -58,14 +58,15 @@ namespace ts {
         TunerParametersATSC();
 
         // Implementation of TunerParameters API
-        virtual BitRate theoreticalBitrate() const override {return 0;} // unknown for ATSC/VSB
+        virtual BitRate theoreticalBitrate() const override;
         virtual UString shortDescription(int strength = -1, int quality = -1) const override;
-        virtual UString toZapFormat() const override {return UString();} //TODO: unimplemented
+        virtual UString toZapFormat() const override;
         virtual UString toPluginOptions(bool no_local = false) const override;
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const override;
-        virtual bool fromZapFormat(const UString& zap) override {return false;} //TODO: unimplemented
-        virtual size_t zapFieldCount() const override {return 0;} //TODO: unimplemented
+        virtual bool fromZapFormat(const UString& zap) override;
+        virtual size_t zapFieldCount() const override;
         virtual void copy(const TunerParameters&) override;
+
     protected:
         virtual bool fromArgs(const TunerArgs&, Report&) override;
     };

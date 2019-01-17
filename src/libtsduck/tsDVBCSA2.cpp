@@ -747,3 +747,66 @@ bool ts::DVBCSA2::decrypt(const void* cipher, size_t cipher_length, void* plain,
         return decryptInPlace(plain, cipher_length, plain_length);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of CipherChaining interface:
+//----------------------------------------------------------------------------
+
+bool ts::DVBCSA2::setIV(const void*, size_t) 
+{
+    return false;
+}
+size_t ts::DVBCSA2::minIVSize() const 
+{
+    return 0;
+}
+size_t ts::DVBCSA2::maxIVSize() const 
+{
+    return 0;
+}
+size_t ts::DVBCSA2::minMessageSize() const 
+{
+    return 0;
+}
+bool ts::DVBCSA2::residueAllowed() const 
+{
+    return true;
+}
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipher interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::DVBCSA2::name() const 
+{
+    return u"DVB-CSA2";
+}
+size_t ts::DVBCSA2::blockSize() const 
+{
+    return 8;
+}
+size_t ts::DVBCSA2::minKeySize() const 
+{
+    return KEY_SIZE;
+}
+size_t ts::DVBCSA2::maxKeySize() const 
+{
+    return KEY_SIZE;
+}
+bool ts::DVBCSA2::isValidKeySize(size_t size) const 
+{
+    return size == KEY_SIZE;
+}
+size_t ts::DVBCSA2::minRounds() const 
+{
+    return 8;
+}
+size_t ts::DVBCSA2::maxRounds() const 
+{
+    return 8;
+}
+size_t ts::DVBCSA2::defaultRounds() const 
+{
+    return 8;
+}

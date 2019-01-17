@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TablesDisplay() {}
+        virtual ~TablesDisplay();
 
         //!
         //! Display a table on the output stream.

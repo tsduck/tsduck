@@ -38,7 +38,7 @@
 #include "tsSafePtr.h"
 #include "tsUString.h"
 #include "tsCerrReport.h"
-#include "tsjson.h"
+#include "tsjsonValue.h"
 
 namespace ts {
 

@@ -92,6 +92,16 @@ void ts::AbstractDemux::removePID(PID pid)
     }
 }
 
+size_t ts::AbstractDemux::pidCount() const
+{
+    return _pid_filter.count();
+}
+
+bool ts::AbstractDemux::hasPID(PID pid) const
+{
+    return pid < _pid_filter.size() && _pid_filter.test(pid);
+}
+
 
 //----------------------------------------------------------------------------
 // Reset the demux. The base class does not do anything.

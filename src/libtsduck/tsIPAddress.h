@@ -112,7 +112,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~IPAddress() override {}
+        virtual ~IPAddress() override;
 
         //!
         //! Equality operator.

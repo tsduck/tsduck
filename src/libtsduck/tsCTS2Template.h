@@ -41,6 +41,29 @@
 
 
 //----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+size_t ts::CTS2<CIPHER>::minMessageSize() const
+{
+    return this->block_size;
+}
+
+template<class CIPHER>
+bool ts::CTS2<CIPHER>::residueAllowed() const
+{
+    return true;
+}
+
+template<class CIPHER>
+ts::UString ts::CTS2<CIPHER>::name() const
+{
+    return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS2";
+}
+
+
+//----------------------------------------------------------------------------
 // Encryption in CTS mode.
 //----------------------------------------------------------------------------
 

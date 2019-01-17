@@ -106,6 +106,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~Hash() {}
+        virtual ~Hash();
     };
 }

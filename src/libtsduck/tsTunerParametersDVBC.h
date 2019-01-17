@@ -62,13 +62,13 @@ namespace ts {
         TunerParametersDVBC();
 
         // Implementation of TunerParameters API
-        virtual BitRate theoreticalBitrate() const override {return TheoreticalBitrateForModulation(modulation, inner_fec, symbol_rate);}
+        virtual BitRate theoreticalBitrate() const override;
         virtual UString shortDescription(int strength = -1, int quality = -1) const override;
         virtual UString toZapFormat() const override;
         virtual UString toPluginOptions(bool no_local = false) const override;
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const override;
         virtual bool fromZapFormat(const UString& zap) override;
-        virtual size_t zapFieldCount() const override {return 5;}
+        virtual size_t zapFieldCount() const override;
         virtual void copy(const TunerParameters&) override;
     protected:
         virtual bool fromArgs(const TunerArgs&, Report&) override;

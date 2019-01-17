@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TablesLoggerArgs() {}
+        virtual ~TablesLoggerArgs();
 
         // Public fields, by options.
         bool     use_text;          //!< Produce formatted human-readable tables.

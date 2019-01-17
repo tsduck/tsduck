@@ -59,7 +59,7 @@ namespace ts {
             // Implementation of plugin API
             virtual bool getOptions() override;
             virtual bool start() override;
-            virtual bool isRealTime() override {return true;}
+            virtual bool isRealTime() override;
             virtual void processInput() override;
 
         private:

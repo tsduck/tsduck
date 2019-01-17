@@ -1434,3 +1434,41 @@ ts::AES::AES() :
     _Nr(0)
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipher interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::AES::name() const
+{
+    return u"AES";
+}
+size_t ts::AES::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+size_t ts::AES::minKeySize() const
+{
+    return MIN_KEY_SIZE;
+}
+size_t ts::AES::maxKeySize() const
+{
+    return MAX_KEY_SIZE;
+}
+bool ts::AES::isValidKeySize (size_t size) const
+{
+    return size == 16 || size == 24 || size == 32;
+}
+size_t ts::AES::minRounds() const
+{
+    return MIN_ROUNDS;
+}
+size_t ts::AES::maxRounds() const
+{
+    return MAX_ROUNDS;
+}
+size_t ts::AES::defaultRounds() const
+{
+    return DEFAULT_ROUNDS;
+}

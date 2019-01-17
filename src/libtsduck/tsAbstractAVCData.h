@@ -55,19 +55,19 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        AbstractAVCData() : valid (false) {}
+        AbstractAVCData();
 
         //!
         //! Destructor.
         //!
-        virtual ~AbstractAVCData() {}
+        virtual ~AbstractAVCData();
 
         //!
         //! Clear all values.
         //! Should be reimplemented by subclasses.
         //! The data are marked invalid.
         //!
-        virtual void clear() {valid = false;}
+        virtual void clear();
 
         //!
         //! Parse a memory area containing binary AVC data of the expected type.

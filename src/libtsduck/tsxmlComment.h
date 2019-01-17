@@ -61,7 +61,7 @@ namespace ts {
             Comment(Node* parent, const UString& text, bool last = true);
 
             // Inherited from xml::Node.
-            virtual UString typeName() const override { return u"Comment"; }
+            virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 
         protected:

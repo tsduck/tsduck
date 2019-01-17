@@ -68,7 +68,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~TextParser() {}
+        virtual ~TextParser();
 
         //!
         //! Clear the document in the parser.

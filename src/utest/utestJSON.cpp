@@ -32,6 +32,14 @@
 //----------------------------------------------------------------------------
 
 #include "tsjson.h"
+#include "tsjsonNull.h"
+#include "tsjsonTrue.h"
+#include "tsjsonFalse.h"
+#include "tsjsonValue.h"
+#include "tsjsonNumber.h"
+#include "tsjsonString.h"
+#include "tsjsonObject.h"
+#include "tsjsonArray.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 #include "utestCppUnitTest.h"

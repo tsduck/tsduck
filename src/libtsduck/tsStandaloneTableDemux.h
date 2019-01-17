@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~StandaloneTableDemux() {}
+        virtual ~StandaloneTableDemux();
 
         //!
         //! Get the number of demuxed tables so far.

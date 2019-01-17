@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TSAnalyzerOptions::TSAnalyzerOptions() :
@@ -60,6 +60,10 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     suspect_min_error_count(1),
     suspect_max_consecutive(1),
     default_charset(nullptr)
+{
+}
+
+ts::TSAnalyzerOptions::~TSAnalyzerOptions()
 {
 }
 

@@ -51,7 +51,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~PSILoggerArgs() {}
+        virtual ~PSILoggerArgs();
 
         // Public fields, by options.
         bool    all_versions;   //!< Display all versions of PSI tables.

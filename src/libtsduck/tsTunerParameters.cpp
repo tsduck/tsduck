@@ -42,6 +42,15 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::TunerParameters::~TunerParameters()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Allocate ("new") a TunerParameters of the appropriate subclass,
 // depending on the tuner type. The parameters have their default values.
 //----------------------------------------------------------------------------
@@ -108,4 +117,15 @@ ts::BitRate ts::TunerParameters::TheoreticalBitrateForModulation(Modulation modu
     // 188-bit packets.
 
     return fec_div == 0 ? 0 : BitRate((uint64_t(symbol_rate) * bitpersym * fec_mul * 188) / (fec_div * 204));
+}
+
+
+//----------------------------------------------------------------------------
+// Attempt to convert the tuning parameters in modulation parameters for
+// Dektec modulator cards. Unimplemented by default.
+//----------------------------------------------------------------------------
+
+bool ts::TunerParameters::convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
+{
+    return false;
 }

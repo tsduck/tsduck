@@ -517,7 +517,7 @@ namespace ts {
 
             // Inherited from xml::Node.
             virtual void clear() override;
-            virtual UString typeName() const override { return u"Element"; }
+            virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
             virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
 

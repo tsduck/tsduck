@@ -61,7 +61,7 @@ namespace ts {
 
         // Inherited methods
         virtual void clear() override;
-        virtual bool parse(const void* data, size_t size) override { return AbstractAVCStructure::parse(data, size); }
+        virtual bool parse(const void* data, size_t size) override;
         virtual bool parse(AVCParser&) override;
         virtual std::ostream& display(std::ostream& = std::cout, const UString& margin = UString()) const override;
 

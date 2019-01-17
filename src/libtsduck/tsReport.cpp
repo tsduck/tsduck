@@ -46,11 +46,15 @@ const int ts::Severity::Debug;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::Report::Report(int max_severity) :
     _max_severity(max_severity)
+{
+}
+
+ts::Report::~Report()
 {
 }
 

@@ -125,3 +125,26 @@ bool ts::CBC<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
 
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+size_t ts::CBC<CIPHER>::minMessageSize() const
+{
+    return this->block_size;
+}
+
+template<class CIPHER>
+bool ts::CBC<CIPHER>::residueAllowed() const
+{
+    return false;
+}
+
+template<class CIPHER>
+ts::UString ts::CBC<CIPHER>::name() const
+{
+    return this->algo == nullptr ? UString() : this->algo->name() + u"-CBC";
+}

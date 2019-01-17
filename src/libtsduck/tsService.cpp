@@ -32,7 +32,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::Service::Service() :
@@ -61,6 +61,10 @@ ts::Service::Service(const UString& desc) :
     Service()
 {
     set(desc);
+}
+
+ts::Service::~Service()
+{
 }
 
 

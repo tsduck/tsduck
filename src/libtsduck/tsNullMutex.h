@@ -53,12 +53,12 @@ namespace ts {
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex. Ignored.
         //! @return Always true.
         //!
-        virtual bool acquire(MilliSecond timeout = Infinite) override {return true;}
+        virtual bool acquire(MilliSecond timeout = Infinite) override;
 
         //!
         //! Release the mutex, does nothing but successfully!
         //! @return Always true.
         //!
-        virtual bool release() override {return true;}
+        virtual bool release() override;
     };
 }

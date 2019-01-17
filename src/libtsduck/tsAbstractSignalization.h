@@ -108,7 +108,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractSignalization() {}
+        virtual ~AbstractSignalization();
 
     protected:
         //!
@@ -155,7 +155,7 @@ namespace ts {
         //!
         //! @param [in,out] root The root node for the new XML tree.
         //!
-        virtual void buildXML(xml::Element* root) const {}
+        virtual void buildXML(xml::Element* root) const;
 
         //!
         //! Check that an XML element has the right name for this table.

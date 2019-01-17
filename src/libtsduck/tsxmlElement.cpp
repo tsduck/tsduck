@@ -51,6 +51,11 @@ ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity att
 {
 }
 
+ts::UString ts::xml::Element::typeName() const
+{
+    return u"Element";
+}
+
 
 //----------------------------------------------------------------------------
 // Clear the content of the node.

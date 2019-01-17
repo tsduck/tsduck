@@ -126,6 +126,11 @@ namespace {
 //    (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128, QAM_256, QAM_AUTO).
 //----------------------------------------------------------------------------
 
+size_t ts::TunerParametersDVBC::zapFieldCount() const
+{
+    return 5;
+}
+
 ts::UString ts::TunerParametersDVBC::toZapFormat() const
 {
     return UString::Format(u"%d:%s:%d:%s:%s",
@@ -246,4 +251,14 @@ bool ts::TunerParametersDVBC::fromArgs(const TunerArgs& tuner, Report& report)
     modulation = tuner.modulation.set() ? tuner.modulation.value() : DEFAULT_MODULATION;
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Standard computation of bitrate.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::TunerParametersDVBC::theoreticalBitrate() const
+{
+    return TheoreticalBitrateForModulation(modulation, inner_fec, symbol_rate);
 }

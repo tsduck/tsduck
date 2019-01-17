@@ -63,7 +63,7 @@ namespace ts {
             virtual bool getOptions() override;
             virtual bool start() override;
             virtual bool stop() override;
-            virtual bool isRealTime() override {return true;}
+            virtual bool isRealTime() override;
             virtual bool send(const TSPacket*, size_t) override;
 
         private:

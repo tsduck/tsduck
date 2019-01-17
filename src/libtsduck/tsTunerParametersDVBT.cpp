@@ -176,6 +176,11 @@ namespace {
 //    HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).
 //----------------------------------------------------------------------------
 
+size_t ts::TunerParametersDVBT::zapFieldCount() const
+{
+    return 9;
+}
+
 ts::UString ts::TunerParametersDVBT::toZapFormat() const
 {
     return UString::Decimal(frequency) + u":" +

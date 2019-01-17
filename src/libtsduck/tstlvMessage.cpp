@@ -26,13 +26,32 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for TLV messages
-//
-//----------------------------------------------------------------------------
 
 #include "tstlvMessage.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::tlv::Message::Message(TAG tag) :
+    _has_version(false),
+    _version(0),
+    _tag(tag)
+{
+}
+
+ts::tlv::Message::Message(VERSION protocol_version, TAG tag) :
+    _has_version(true),
+    _version(protocol_version),
+    _tag(tag)
+{
+}
+
+ts::tlv::Message::~Message()
+{
+}
 
 
 //----------------------------------------------------------------------------
