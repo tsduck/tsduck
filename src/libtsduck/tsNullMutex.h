@@ -45,7 +45,7 @@ namespace ts {
     //! required but no actual synchronization is necessary (non-threaded
     //! applications for instances).
     //!
-    class NullMutex: public MutexInterface
+    class TSDUCKDLL NullMutex: public MutexInterface
     {
     public:
         //!
