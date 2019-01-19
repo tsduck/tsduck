@@ -54,11 +54,7 @@ namespace ts {
             //! @param [in] ch_id Channel id.
             //! @param [in] st_id Stream id.
             //!
-            StreamMessage(TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0) :
-                ChannelMessage(tag, ch_id),
-                stream_id(st_id)
-            {
-            }
+            StreamMessage(TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0);
 
             //!
             //! Constructor.
@@ -67,11 +63,12 @@ namespace ts {
             //! @param [in] ch_id Channel id.
             //! @param [in] st_id Stream id.
             //!
-            StreamMessage(VERSION protocol_version, TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0) :
-                ChannelMessage(protocol_version, tag, ch_id),
-                stream_id(st_id)
-            {
-            }
+            StreamMessage(VERSION protocol_version, TAG tag, uint16_t ch_id = 0, uint16_t st_id = 0);
+
+            //!
+            //! Virtual destructor
+            //!
+            virtual ~StreamMessage();
         };
     }
 }

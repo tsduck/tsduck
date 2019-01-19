@@ -36,6 +36,20 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::OneShotPacketizer::OneShotPacketizer(PID pid, bool do_stuffing, BitRate bitrate) :
+    CyclingPacketizer(pid, do_stuffing ? ALWAYS : AT_END, bitrate)
+{
+}
+
+ts::OneShotPacketizer::~OneShotPacketizer()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Get complete cycle as one list of packets
 //----------------------------------------------------------------------------
 

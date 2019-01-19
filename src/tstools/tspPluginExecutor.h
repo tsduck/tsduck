@@ -140,6 +140,11 @@ namespace ts {
                            Mutex& global_mutex);
 
             //!
+            //! Virtual destructor.
+            //!
+            virtual ~PluginExecutor();
+
+            //!
             //! Set the initial state of the buffer for this plugin.
             //! Must be executed in synchronous environment, before starting all executor threads.
             //! @param [in] buffer Address of the packet buffer.

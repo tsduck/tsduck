@@ -55,5 +55,10 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         MultilingualBouquetNameDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~MultilingualBouquetNameDescriptor();
     };
 }

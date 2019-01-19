@@ -74,6 +74,11 @@ namespace ts {
             //!
             Options(int argc, char *argv[]);
 
+            //!
+            //! Virtual destructor.
+            //!
+            virtual ~Options();
+
         private:
             // Inaccessible operations.
             Options() = delete;

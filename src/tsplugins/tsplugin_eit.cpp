@@ -64,8 +64,9 @@ namespace ts {
         class ServiceDesc: public Service
         {
         public:
-            // Constructor
+            // Constructor, destructor.
             ServiceDesc();
+            virtual ~ServiceDesc();
 
             // Public fields
             SectionCounter eitpf_count;
@@ -143,6 +144,10 @@ ts::EITPlugin::ServiceDesc::ServiceDesc() :
     eitpf_count(0),
     eits_count(0),
     max_time(0)
+{
+}
+
+ts::EITPlugin::ServiceDesc::~ServiceDesc()
 {
 }
 

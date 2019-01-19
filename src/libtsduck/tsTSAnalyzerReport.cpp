@@ -62,6 +62,20 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::TSAnalyzerReport::TSAnalyzerReport(BitRate bitrate_hint) :
+    TSAnalyzer(bitrate_hint)
+{
+}
+
+ts::TSAnalyzerReport::~TSAnalyzerReport()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Set analysis options. Must be set before feeding the first packet.
 //----------------------------------------------------------------------------
 

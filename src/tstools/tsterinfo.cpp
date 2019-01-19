@@ -80,6 +80,7 @@ namespace {
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     uint64_t          frequency;     // Carrier frequency from which to get UHF channel
     int               uhf_channel;   // UHF channel from which to compute frequency
@@ -94,6 +95,10 @@ struct Options: public ts::Args
     bool              simple;        // Simple output
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),
     frequency(0),

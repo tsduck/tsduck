@@ -80,3 +80,12 @@ ts::PluginSharedLibrary::PluginSharedLibrary(const UString& filename, Report& re
     new_output = reinterpret_cast<NewOutputProfile>(getSymbol("tspNewOutput"));
     new_processor = reinterpret_cast<NewProcessorProfile>(getSymbol("tspNewProcessor"));
 }
+
+
+//----------------------------------------------------------------------------
+// Destructor.
+//----------------------------------------------------------------------------
+
+ts::PluginSharedLibrary::~PluginSharedLibrary()
+{
+}

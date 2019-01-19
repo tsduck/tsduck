@@ -51,9 +51,12 @@ public:
     uint64_t      frequency;   // Carrier frequency, in Hz.
     ts::BandWidth bandwidth;   // Bandwidth.
 
-    // Constructor:
     HiDesOptions(int argc, char *argv[]);
+    virtual ~HiDesOptions();
 };
+
+// Destructor.
+HiDesOptions::~HiDesOptions() {}
 
 // Constructor.
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :

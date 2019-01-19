@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     uint32_t    min_pcr;       // Min # of PCR per PID
     uint16_t    min_pid;       // Min # of PID
@@ -117,6 +118,10 @@ Options::Options(int argc, char *argv[]) :
     ignore_errors = present(u"ignore-errors");
 
     exitOnError();
+}
+
+Options::~Options()
+{
 }
 
 

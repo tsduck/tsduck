@@ -26,44 +26,27 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Representation of an application_name_descriptor (AIT specific).
-//!
+
+#include "tstlvStreamMessage.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsAbstractMultilingualDescriptor.h"
+ts::tlv::StreamMessage::StreamMessage(TAG tag, uint16_t ch_id, uint16_t st_id) :
+    ChannelMessage(tag, ch_id),
+    stream_id(st_id)
+{
+}
 
-namespace ts {
-    //!
-    //! Representation of an application_name_descriptor (AIT specific).
-    //!
-    //! This descriptor cannot be present in other tables than an AIT
-    //! because its tag reuses an MPEG-defined one.
-    //!
-    //! @see ETSI TS 101 812, 10.7.4.1.
-    //! @see ETSI TS 102 809, 5.3.5.6.1.
-    //! @ingroup descriptor
-    //!
-    class TSDUCKDLL ApplicationNameDescriptor : public AbstractMultilingualDescriptor
-    {
-    public:
-        //!
-        //! Default constructor.
-        //!
-        ApplicationNameDescriptor();
+ts::tlv::StreamMessage::StreamMessage(VERSION protocol_version, TAG tag, uint16_t ch_id, uint16_t st_id) :
+    ChannelMessage(protocol_version, tag, ch_id),
+    stream_id(st_id)
+{
+}
 
-        //!
-        //! Constructor from a binary descriptor
-        //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //!
-        ApplicationNameDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~ApplicationNameDescriptor();
-    };
+ts::tlv::StreamMessage::~StreamMessage()
+{
 }

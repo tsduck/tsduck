@@ -98,6 +98,11 @@ namespace ts {
         //!
         UString toString() const;
 
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~SpliceTime();
+
         // Inherited methods.
         //! @cond doxygen
         SpliceTime& operator=(const SpliceTime& other) { SuperClass::operator=(other); return *this; }

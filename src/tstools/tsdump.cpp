@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
     bool              raw_file;    // Raw dump of file, not TS packets
@@ -162,6 +163,10 @@ Options::Options(int argc, char *argv[]) :
     }
 
     exitOnError();
+}
+
+Options::~Options()
+{
 }
 
 

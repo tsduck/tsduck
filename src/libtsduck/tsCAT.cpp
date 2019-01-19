@@ -46,7 +46,7 @@ TS_ID_SECTION_DISPLAY(ts::CAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 ts::CAT::CAT(uint8_t vers, bool cur) :
@@ -61,5 +61,9 @@ ts::CAT::CAT(const BinaryTable& table, const DVBCharset* charset) :
 
 ts::CAT::CAT(const ts::CAT& other) :
     AbstractDescriptorsTable(other)
+{
+}
+
+ts::CAT::~CAT()
 {
 }

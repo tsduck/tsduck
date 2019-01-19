@@ -56,6 +56,7 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::UStringVector     infiles;           // Input file names
     ts::TablesDisplayArgs display;           // Options about displaying tables
@@ -65,6 +66,10 @@ struct Options: public ts::Args
     bool                  no_encapsulation;  // Raw sections in UDP messages.
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
     infiles(),

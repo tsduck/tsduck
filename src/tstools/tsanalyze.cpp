@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
     ts::UString           infile;    // Input file name
@@ -76,6 +77,10 @@ Options::Options(int argc, char *argv[]) :
     analysis.load(*this);
 
     exitOnError();
+}
+
+Options::~Options()
+{
 }
 
 

@@ -48,6 +48,7 @@ namespace ts {
     {
     public:
         GenECMOptions(int argc, char *argv[]);
+        virtual ~GenECMOptions();
 
         UString        outFile;    // Name of binary output file.
         ECMGClientArgs ecmg;       // ECMG parameters
@@ -57,6 +58,10 @@ namespace ts {
     };
 }
 
+// Destructor.
+ts::GenECMOptions::~GenECMOptions() {}
+
+// Constructor.
 ts::GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
     outFile(),

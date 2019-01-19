@@ -63,6 +63,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::TunerArgs   tuner;
     bool            uhf_scan;
@@ -82,6 +83,10 @@ struct Options: public ts::Args
     ts::MilliSecond psi_timeout;
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Scan a DVB network", u"[options]"),
     tuner(false, true),
