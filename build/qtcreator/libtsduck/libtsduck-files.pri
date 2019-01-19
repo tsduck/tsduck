@@ -497,6 +497,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
     ../../../src/libtsduck/tsAbstractHTTPInputPlugin.cpp \
+    ../../../src/libtsduck/tsAbstractLongTable.cpp \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractSignalization.cpp \
     ../../../src/libtsduck/tsAbstractTable.cpp \
@@ -579,6 +580,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDIILocationDescriptor.cpp \
     ../../../src/libtsduck/tsDiscontinuityInformationTable.cpp \
     ../../../src/libtsduck/tsDisplayInterface.cpp \
+    ../../../src/libtsduck/tsDoubleCheckLock.cpp \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
@@ -838,11 +840,13 @@ SOURCES += \
     ../../../src/libtsduck/tsTimeSliceFECIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsTimeTrackerDemux.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
+    ../../../src/libtsduck/tstlvChannelMessage.cpp \
     ../../../src/libtsduck/tstlvLogger.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvProtocol.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \
+    ../../../src/libtsduck/tstlvStreamMessage.cpp \
     ../../../src/libtsduck/tsTLVSyntax.cpp \
     ../../../src/libtsduck/tsTOT.cpp \
     ../../../src/libtsduck/tsTransportProtocolDescriptor.cpp \

@@ -42,7 +42,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationNameDescriptor::DisplayDescriptor, ts::E
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::ApplicationNameDescriptor::ApplicationNameDescriptor() :
@@ -51,13 +51,12 @@ ts::ApplicationNameDescriptor::ApplicationNameDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::ApplicationNameDescriptor::ApplicationNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     ApplicationNameDescriptor()
 {
     deserialize(desc, charset);
+}
+
+ts::ApplicationNameDescriptor::~ApplicationNameDescriptor()
+{
 }

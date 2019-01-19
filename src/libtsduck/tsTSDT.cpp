@@ -46,7 +46,7 @@ TS_ID_SECTION_DISPLAY(ts::TSDT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 ts::TSDT::TSDT(uint8_t vers, bool cur) :
@@ -61,5 +61,9 @@ ts::TSDT::TSDT(const BinaryTable& table, const DVBCharset* charset) :
 
 ts::TSDT::TSDT(const ts::TSDT& other) :
     AbstractDescriptorsTable(other)
+{
+}
+
+ts::TSDT::~TSDT()
 {
 }

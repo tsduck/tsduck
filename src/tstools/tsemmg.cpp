@@ -68,7 +68,8 @@ class EMMGOptions: public ts::Args
 {
 public:
     EMMGOptions(int argc, char *argv[]);
-
+    virtual ~EMMGOptions();
+    
     ts::tlv::Logger      logger;              // Message logger.
     ts::UStringVector    inputFiles;          // Input file names.
     ts::SectionPtrVector sections;            // Loaded sections from input files.
@@ -96,6 +97,9 @@ public:
     // Adjust the various rates and delays according to the allocated bandwidth.
     bool adjustBandwidth(uint16_t allocated);
 };
+
+// Destructor.
+EMMGOptions::~EMMGOptions() {}
 
 // Constructor.
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :

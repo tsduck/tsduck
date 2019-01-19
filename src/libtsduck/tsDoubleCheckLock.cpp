@@ -26,44 +26,39 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Representation of an application_name_descriptor (AIT specific).
-//!
+
+#include "tsDoubleCheckLock.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsAbstractMultilingualDescriptor.h"
+ts::DoubleCheckLock::DoubleCheckLock() :
+    _mutex(),
+    _changed(false)
+{
+}
 
-namespace ts {
-    //!
-    //! Representation of an application_name_descriptor (AIT specific).
-    //!
-    //! This descriptor cannot be present in other tables than an AIT
-    //! because its tag reuses an MPEG-defined one.
-    //!
-    //! @see ETSI TS 101 812, 10.7.4.1.
-    //! @see ETSI TS 102 809, 5.3.5.6.1.
-    //! @ingroup descriptor
-    //!
-    class TSDUCKDLL ApplicationNameDescriptor : public AbstractMultilingualDescriptor
-    {
-    public:
-        //!
-        //! Default constructor.
-        //!
-        ApplicationNameDescriptor();
+ts::DoubleCheckLock::Writer::Writer(DoubleCheckLock& lock) :
+    Guard(lock._mutex)
+{
+    assert(isLocked());
+    lock._changed = true;
+}
 
-        //!
-        //! Constructor from a binary descriptor
-        //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //!
-        ApplicationNameDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+ts::DoubleCheckLock::Writer::~Writer()
+{
+}
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~ApplicationNameDescriptor();
-    };
+ts::DoubleCheckLock::Reader::Reader(DoubleCheckLock& lock) :
+    Guard(lock._mutex)
+{
+    assert(isLocked());
+    lock._changed = false;
+}
+
+ts::DoubleCheckLock::Reader::~Reader()
+{
 }

@@ -41,7 +41,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualNetworkNameDescriptor::DisplayDescripto
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
@@ -50,13 +50,12 @@ ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     MultilingualNetworkNameDescriptor()
 {
     deserialize(desc, charset);
+}
+
+ts::MultilingualNetworkNameDescriptor::~MultilingualNetworkNameDescriptor()
+{
 }

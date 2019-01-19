@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     bool                      continuous; // Continuous packetization
     ts::CyclingPacketizer::StuffingPolicy stuffing_policy;
@@ -58,6 +59,10 @@ struct Options: public ts::Args
     ts::SectionFile::FileType inType;     // Input files type
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
     continuous(false),

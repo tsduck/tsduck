@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::tsp::PluginExecutor::PluginExecutor(Options* options,
@@ -54,6 +54,10 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
     _pkt_cnt(0),
     _input_end(false),
     _bitrate(0)
+{
+}
+
+ts::tsp::PluginExecutor::~PluginExecutor()
 {
 }
 

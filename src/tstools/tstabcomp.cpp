@@ -56,6 +56,7 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::UStringVector     infiles;         // Input file names.
     ts::UString           outfile;         // Output file path.
@@ -72,6 +73,10 @@ private:
     Options& operator=(const Options&) = delete;
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),
     infiles(),

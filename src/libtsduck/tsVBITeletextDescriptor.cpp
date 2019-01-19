@@ -45,7 +45,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID:
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::VBITeletextDescriptor::VBITeletextDescriptor() :
@@ -58,4 +58,8 @@ ts::VBITeletextDescriptor::VBITeletextDescriptor(const Descriptor& bin, const DV
     TeletextDescriptor(MY_DID, MY_XML_NAME)
 {
     deserialize(bin, charset);
+}
+
+ts::VBITeletextDescriptor::~VBITeletextDescriptor()
+{
 }

@@ -50,12 +50,17 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::UString           infile;   // Input file name
     ts::PSILoggerArgs     logger;   // Table logging options
     ts::TablesDisplayArgs display;  // Table formatting options.
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract all standard PSI from an MPEG transport stream", u"[options] [filename]"),
     infile(),

@@ -62,5 +62,10 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //!
         TSDT(const TSDT& other);
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~TSDT();
     };
 }

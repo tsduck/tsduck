@@ -50,6 +50,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::UString filename1;
     ts::UString filename2;
@@ -172,6 +173,10 @@ Options::Options(int argc, char *argv[]) :
         ts::UString::ASCII;               // ASCII dump (for TSPacket::DUMP_RAW)
 
     exitOnError();
+}
+
+Options::~Options()
+{
 }
 
 

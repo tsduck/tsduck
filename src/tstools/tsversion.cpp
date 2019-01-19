@@ -51,6 +51,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     bool        current;   // Display current version of TSDuck, this executable.
     bool        integer;   // Display current version of TSDuck as integer value.
@@ -71,6 +72,10 @@ private:
     Options& operator=(const Options&) = delete;
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Check version, download and upgrade TSDuck", u"[options]"),
     current(false),

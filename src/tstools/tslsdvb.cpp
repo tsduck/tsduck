@@ -50,6 +50,7 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
 #if defined(TS_WINDOWS)
     ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
@@ -58,6 +59,10 @@ struct Options: public ts::Args
     ts::TunerArgs tuner;  // Name of device to list (unspecified means all).
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"List DVB tuner devices", u"[options]"),
 #if defined(TS_WINDOWS)

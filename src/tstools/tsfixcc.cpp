@@ -44,7 +44,8 @@ class Options: public ts::Args
 {
 public:
     Options(int argc, char *argv[]);
-
+    virtual ~Options();
+    
     bool         test;      // Test mode
     bool         circular;  // Add empty packets to enforce circular continuity
     ts::UString  filename;  // File name
@@ -55,6 +56,10 @@ public:
     bool fileError(const ts::UChar* message);
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Fix continuity counters in a transport stream", u"[options] filename"),
     test(false),

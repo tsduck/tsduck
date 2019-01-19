@@ -52,10 +52,12 @@ namespace ts {
         //! packets. The bitrate hint is optional: if specified as zero, the
         //! analysis is based on the PCR values.
         //!
-        TSAnalyzerReport(BitRate bitrate_hint = 0) :
-            TSAnalyzer(bitrate_hint)
-        {
-        }
+        TSAnalyzerReport(BitRate bitrate_hint = 0);
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~TSAnalyzerReport();
 
         //!
         //! Set the analysis options.

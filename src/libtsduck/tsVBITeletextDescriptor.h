@@ -56,5 +56,10 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         VBITeletextDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~VBITeletextDescriptor();
     };
 }

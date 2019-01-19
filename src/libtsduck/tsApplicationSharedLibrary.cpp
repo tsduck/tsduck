@@ -95,6 +95,15 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
 
 
 //----------------------------------------------------------------------------
+// Destructor.
+//----------------------------------------------------------------------------
+
+ts::ApplicationSharedLibrary::~ApplicationSharedLibrary()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // The module name is derived from the file name
 //----------------------------------------------------------------------------
 

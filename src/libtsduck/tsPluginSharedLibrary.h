@@ -59,6 +59,11 @@ namespace ts {
         explicit PluginSharedLibrary(const UString& filename, Report& report = CERR);
 
         //!
+        //! Virtual destructor
+        //!
+        virtual ~PluginSharedLibrary();
+
+        //!
         //! Input plugin allocation function.
         //! If null, the plugin either does not provide input capability or is not a valid TSP plugin.
         //!

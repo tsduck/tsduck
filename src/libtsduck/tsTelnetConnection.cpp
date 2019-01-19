@@ -30,23 +30,19 @@
 #include "tsTelnetConnection.h"
 TSDUCK_SOURCE;
 
-
-//----------------------------------------------------------------------------
-//  Configuration & constants
-//----------------------------------------------------------------------------
-
-const std::string EOL = "\n";
-
-
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
+namespace {
+    const std::string EOL = "\n";
+}
 
 ts::TelnetConnection::TelnetConnection(const std::string prompt) :
     TCPConnection(),
     _received(0),
     _prompt(prompt),
     _mutex()
+{
+}
+
+ts::TelnetConnection::~TelnetConnection()
 {
 }
 

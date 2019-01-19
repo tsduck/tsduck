@@ -50,10 +50,12 @@ namespace ts {
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //! Useful only when using specific repetition rates for sections
         //!
-        OneShotPacketizer(PID pid = PID_NULL, bool do_stuffing = false, BitRate bitrate = 0) :
-            CyclingPacketizer(pid, do_stuffing ? ALWAYS : AT_END, bitrate)
-        {
-        }
+        OneShotPacketizer(PID pid = PID_NULL, bool do_stuffing = false, BitRate bitrate = 0);
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~OneShotPacketizer();
 
         //!
         //! Set the stuffing policy.

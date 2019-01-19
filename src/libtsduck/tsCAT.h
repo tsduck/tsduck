@@ -63,5 +63,10 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //!
         CAT(const CAT& other);
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~CAT();
     };
 }

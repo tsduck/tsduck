@@ -509,6 +509,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractLongTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractSignalization.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
@@ -591,6 +592,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDIILocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDiscontinuityInformationTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDisplayInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDoubleCheckLock.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.cpp" />
@@ -850,11 +852,13 @@
     <ClCompile Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tstlvChannelMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvLogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvSerializer.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tstlvStreamMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTLVSyntax.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTOT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTransportProtocolDescriptor.cpp" />
