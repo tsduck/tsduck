@@ -377,7 +377,7 @@ size_t ts::TSPacket::PTSOffset() const
     return pl + 9 - b;
 }
 
-size_t ts::TSPacket::DTSOffset () const
+size_t ts::TSPacket::DTSOffset() const
 {
     if (!startPES()) {
         return 0;
@@ -401,7 +401,7 @@ size_t ts::TSPacket::DTSOffset () const
 // Get PTS or DTS at specified offset. Return 0 if offset is zero.
 //----------------------------------------------------------------------------
 
-uint64_t ts::TSPacket::getPDTS (size_t offset) const
+uint64_t ts::TSPacket::getPDTS(size_t offset) const
 {
     if (offset == 0) {
         return 0;

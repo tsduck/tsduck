@@ -96,7 +96,7 @@ namespace ts {
     private:
         bool                   _pat_only;
         bool                   _completed;
-        ts::Report&   _report;
+        ts::Report&            _report;
         ts::SectionDemux       _demux;
         ts::TunerParametersPtr _tparams;
         ts::SafePtr<ts::PAT>   _pat;

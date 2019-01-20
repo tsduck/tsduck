@@ -78,14 +78,14 @@ namespace ts {
 // But exceptions are ... exceptions. There is no way to declare them easily in one macro in a
 // header file without weak virtual tables. So, with clang only, we disable this warning.
 //
-#if !defined(DOXYGEN)
-#if defined(TS_LLVM)
+#if defined(TS_LLVM) && !defined(DOXYGEN)
 #define TS_DECLARE_EXCEPTION_BEGIN _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wweak-vtables\"")
 #define TS_DECLARE_EXCEPTION_END   _Pragma("clang diagnostic pop")
 #else
+//! Internal macro for exception declaration, do not use.
 #define TS_DECLARE_EXCEPTION_BEGIN
+//! Internal macro for exception declaration, do not use.
 #define TS_DECLARE_EXCEPTION_END
-#endif
 #endif
 
 //!

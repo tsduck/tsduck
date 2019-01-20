@@ -2,12 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1100
+VERSION 3.16-1107
 
 [NEW] New commands and plugins:
 
   * Added input plugin "hls" to receive HTTP Live Streaming (HLS).
   * Added output plugin "hls" to generate HLS media segments and playlists.
+  * Added plugin "pcradjust" to adjust PCR's according to a constant bitrate.
 
 [IMP] Improvements on existing commands and plugins:
 

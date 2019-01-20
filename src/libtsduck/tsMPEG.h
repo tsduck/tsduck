@@ -323,6 +323,8 @@ namespace ts {
 
     //!
     //! Size in bits of a PCR (Program Clock Reference).
+    //! Warning: A PCR value is not a linear value mod 2^42.
+    //! It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).
     //!
     constexpr size_t PCR_BIT_SIZE = 42;
 
@@ -332,24 +334,22 @@ namespace ts {
     constexpr size_t PTS_DTS_BIT_SIZE = 33;
 
     //!
-    //! Mask for PCR values (wrap up at 2**42).
+    //! Scale factor for PTS and DTS values (wrap up at 2**33).
     //!
-    constexpr uint64_t PCR_MASK = TS_UCONST64(0x000003FFFFFFFFFF);
-
-    //!
-    //! Scale factor for PCR values (wrap up at 2**42).
-    //!
-    constexpr uint64_t PCR_SCALE = TS_UCONST64(0x0000040000000000);
+    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(1) << PTS_DTS_BIT_SIZE;
 
     //!
     //! Mask for PTS and DTS values (wrap up at 2**33).
     //!
-    constexpr uint64_t PTS_DTS_MASK = TS_UCONST64(0x00000001FFFFFFFF);
+    constexpr uint64_t PTS_DTS_MASK = PTS_DTS_SCALE - 1;
 
     //!
-    //! Scale factor for PTS and DTS values (wrap up at 2**33).
+    //! Scale factor for PCR values.
+    //! This is not a power of 2, it does not wrap up at a number of bits.
+    //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
+    //! The PCR_ext part is a mod 300 value.
     //!
-    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(0x0000000200000000);
+    constexpr uint64_t PCR_SCALE = PTS_DTS_SCALE * SYSTEM_CLOCK_SUBFACTOR;
 
     //!
     //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
@@ -370,11 +370,24 @@ namespace ts {
     //! Check if PCR2 follows PCR1 after wrap up.
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
-    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up at 2**42.
+    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up.
     //!
     TSDUCKDLL inline bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
     {
-        return pcr2 < pcr1 && (pcr1 - pcr2) > TS_UCONST64(0x000003F000000000);
+        return pcr2 < pcr1 && (pcr1 - pcr2) > ((4 * PCR_SCALE) / 5);
+    }
+
+    //!
+    //! Compute the PCR of a packet, based on the PCR of a previous packet.
+    //! @param [in] last_pcr PCR in a previous packet.
+    //! @param [in] distance Number of TS packets since the packet with @a last_pcr.
+    //! @param [in] bitrate Constant bitrate of the stream in bits per second.
+    //! @return The PCR of the packet which is at the specified @a distance from the packet with @a last_pcr
+    //! or INVALID_PCR if a parameter is incorrect.
+    //!
+    TSDUCKDLL inline uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
+    {
+        return (last_pcr == INVALID_PCR || bitrate == 0) ? INVALID_PCR : last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
     }
 
     //!
