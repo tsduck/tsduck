@@ -287,12 +287,11 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
             // Insert a PCR if requested.
             if (addPCR) {
 
-                // Compute the PCR of this packet.
+                // Compute the PCR of this packet, from last PCR.
                 const uint64_t pcrDistance = (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
-                const uint64_t pcr = (_pcrLastValue + pcrDistance) & PCR_MASK;
 
                 // Set the PCR in the adaptation field.
-                pkt.createPCR(pcr);
+                pkt.createPCR(_pcrLastValue + pcrDistance);
 
                 // Don't insert another PCR in output PID until a PCR is found in reference PID.
                 _insertPCR = false;

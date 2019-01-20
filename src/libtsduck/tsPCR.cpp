@@ -40,13 +40,13 @@ TSDUCK_SOURCE;
 // Use 6 bytes at address b. Return a 42-bit value.
 //----------------------------------------------------------------------------
 
-uint64_t ts::GetPCR (const uint8_t* b)
+uint64_t ts::GetPCR(const uint8_t* b)
 {
-    uint32_t v32 = GetUInt32 (b);
-    uint16_t v16 = GetUInt16 (b + 4);
-    uint64_t pcr_base = (uint64_t (v32) << 1) | uint64_t (v16 >> 15);
-    uint64_t pcr_ext = uint64_t (v16 & 0x01FF);
-    return pcr_base * 300 + pcr_ext;
+    const uint32_t v32 = GetUInt32(b);
+    const uint16_t v16 = GetUInt16(b + 4);
+    const uint64_t pcr_base = (uint64_t(v32) << 1) | uint64_t(v16 >> 15);
+    const uint64_t pcr_ext = uint64_t(v16 & 0x01FF);
+    return pcr_base * SYSTEM_CLOCK_SUBFACTOR + pcr_ext;
 }
 
 //----------------------------------------------------------------------------
@@ -56,8 +56,8 @@ uint64_t ts::GetPCR (const uint8_t* b)
 
 void ts::PutPCR(uint8_t* b, const uint64_t& pcr)
 {
-    uint64_t pcr_base = pcr / 300;
-    uint64_t pcr_ext = pcr % 300;
+    const uint64_t pcr_base = pcr / SYSTEM_CLOCK_SUBFACTOR;
+    const uint64_t pcr_ext = pcr % SYSTEM_CLOCK_SUBFACTOR;
     PutUInt32(b, uint32_t(pcr_base >> 1));
     PutUInt16(b + 4, uint16_t(uint32_t((pcr_base << 15) | 0x7E00 | pcr_ext)));
 }
