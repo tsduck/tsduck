@@ -433,6 +433,8 @@ bool ts::ScramblerPlugin::start()
     _partial_clear = 0;
     _update_pmt = false;
     _delay_start = 0;
+    _current_cw = 0;
+    _current_ecm = 0;
 
     // Initialize ECMG.
     if (_need_ecm) {
@@ -460,8 +462,6 @@ bool ts::ScramblerPlugin::start()
             tsp->debug(u"crypto-period duration: %'d ms, delay start: %'d ms", {_ecmg_args.cp_duration, _delay_start});
 
             // Create first and second crypto-periods
-            _current_cw = 0;
-            _current_ecm = 0;
             _cp[0].initCycle(this, 0);
             if (!_cp[0].initScramblerKey()) {
                 return false;
@@ -680,8 +680,17 @@ bool ts::ScramblerPlugin::tryExitDegradedMode()
 
 bool ts::ScramblerPlugin::changeCW()
 {
-    // Allowed to change CW only if not in degraded mode
-    if (!inDegradedMode()) {
+    if (_scrambling.hasFixedCW()) {
+        // A list of fixed CW was loaded from a file.
+        // Point to next crypto-period
+        _current_cw = (_current_cw + 1) & 0x01;
+
+        // Set next crypto-period key.
+        return _scrambling.setEncryptParity(int(_current_cw));
+    }
+    else if (!inDegradedMode()) {
+        // Random CW and ECM generation at each crypto-period.
+        // Allowed to change CW only if not in degraded mode.
 
         // Point to next crypto-period
         _current_cw = (_current_cw + 1) & 0x01;
@@ -915,11 +924,12 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
         // Synchronous ECM generation
         ecmgscs::ECMResponse response;
         if (!_plugin->_ecmg.generateECM(_cp_number,
-                                           _cw_current,
-                                           _cw_next,
-                                           _plugin->_ecmg_args.access_criteria,
-                                           uint16_t(_plugin->_ecmg_args.cp_duration / 100),
-                                           response)) {
+                                        _cw_current,
+                                        _cw_next,
+                                        _plugin->_ecmg_args.access_criteria,
+                                        uint16_t(_plugin->_ecmg_args.cp_duration / 100),
+                                        response))
+        {
             // Error, message already reported
             _plugin->_abort = true;
         }
@@ -930,11 +940,12 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
     else {
         // Asynchronous ECM generation
         if (!_plugin->_ecmg.submitECM(_cp_number,
-                                         _cw_current,
-                                         _cw_next,
-                                         _plugin->_ecmg_args.access_criteria,
-                                         uint16_t(_plugin->_ecmg_args.cp_duration / 100),
-                                         this)) {
+                                      _cw_current,
+                                      _cw_next,
+                                      _plugin->_ecmg_args.access_criteria,
+                                      uint16_t(_plugin->_ecmg_args.cp_duration / 100),
+                                      this))
+        {
             // Error, message already reported
             _plugin->_abort = true;
         }
@@ -987,7 +998,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
 // Get next ECM packet
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket (TSPacket& pkt)
+void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket(TSPacket& pkt)
 {
     if (!_ecm_ok || _ecm.size() == 0) {
         // No ECM, return a null packet

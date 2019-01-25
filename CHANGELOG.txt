@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1107
+VERSION 3.16-1108
 
 [NEW] New commands and plugins:
 
@@ -38,6 +38,8 @@ VERSION 3.16-1107
     commands) no longer fail due to unsupported option for less.
   * The order of combining diacritical characters was incorrectly handled in
     DVB tables with the default character set.
+  * In plugin "scrambler" with option --cw-file, there was a crash at the end
+    of the first crypto-period. This was a regression.
 
 -------------------------------------------------------------------------------
 
