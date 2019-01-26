@@ -92,6 +92,10 @@ ts::OutputPager::OutputPager(const UString& envName) :
                     #if defined(TS_LINUX)
                         useParameters = !ResolveSymbolicLinks(exe).contain(u"busybox", CASE_INSENSITIVE);
                     #endif
+                    // Same thing with UnxUtils (sometimes spelled UnixUtils) on Windows.
+                    #if defined(TS_WINDOWS)
+                        useParameters = !exe.contain(u"unxutils", CASE_INSENSITIVE) && !exe.contain(u"unixutils", CASE_INSENSITIVE);
+                    #endif
                     // Build the command line.
                     _pagerCommand = u'"' + exe + u"\" " + (useParameters ? itPager->parameters : UString());
                 }
