@@ -15,7 +15,6 @@ error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Directories.
 ROOTDIR=$(cd $SCRIPTDIR/..; pwd)
-INSTALLDIR=$ROOTDIR/installers
 
 # Get most recent git tag.
 TAG=$(cd $ROOTDIR; git tag --sort=-creatordate | head -1)
@@ -54,9 +53,7 @@ UB64DEV=$(getlink '/tsduck-dev_[0-9].*_amd64\.deb$')
 ARMDEV=$(getlink '/tsduck-dev_[0-9].*_armhf\.deb$')
 
 # Now create the markdown file.
-MDFILE=$INSTALLDIR/github-release-$TAG.md
-info "creating $MDFILE ..."
-cat >$MDFILE <<EOF
+cat <<EOF
 Binaries for command-line tools and plugins:
 * Windows 32 bits: $WIN32
 * Windows 64 bits: $WIN64
