@@ -67,6 +67,12 @@ namespace ts {
         //!
         DSMCCStreamDescriptorsTable(const DSMCCStreamDescriptorsTable& other);
 
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //!
+        DSMCCStreamDescriptorsTable& operator=(const DSMCCStreamDescriptorsTable& other);
+
         // Inherited methods
         virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;

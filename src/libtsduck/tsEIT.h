@@ -148,6 +148,12 @@ namespace ts {
         EIT(const EIT& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //!
+        EIT& operator=(const EIT& other) = default;
+
+        //!
         //! Check if this is an "actual" EIT.
         //! @return True for EIT Actual TS, false for EIT Other TS.
         //!
