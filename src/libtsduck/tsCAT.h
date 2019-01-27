@@ -65,6 +65,12 @@ namespace ts {
         CAT(const CAT& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //!
+        CAT& operator=(const CAT& other) = default;
+
+        //!
         //! Virtual destructor.
         //!
         virtual ~CAT();
