@@ -54,7 +54,6 @@ namespace ts {
     private:
         bool           _exclude_last;     // Exclude packet which triggers the condition
         PacketCounter  _pack_max;         // Stop at Nth packet
-        PacketCounter  _pack_cnt;         // Packet counter
         PacketCounter  _unit_start_max;   // Stop at Nth packet with payload unit start
         PacketCounter  _unit_start_cnt;   // Payload unit start counter
         PacketCounter  _null_seq_max;     // Stop at Nth sequence of null packets
@@ -85,7 +84,6 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Copy packets until one of the specified conditions is met", u"[options]"),
     _exclude_last(false),
     _pack_max(0),
-    _pack_cnt(0),
     _unit_start_max(0),
     _unit_start_cnt(0),
     _null_seq_max(0),
@@ -143,7 +141,6 @@ bool ts::UntilPlugin::start()
     _msec_max = intValue<MilliSecond>(u"milli-seconds", intValue<MilliSecond>(u"seconds") * MilliSecPerSec);
     tsp->useJointTermination (present(u"joint-termination"));
 
-    _pack_cnt = 0;
     _unit_start_cnt = 0;
     _null_seq_cnt = 0;
     _previous_pid = PID_MAX; // Invalid value
@@ -186,8 +183,6 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket (TSPacket& pkt, bool&
 
     // Update context information
 
-    _pack_cnt++;
-
     if (pkt.getPID() == PID_NULL && _previous_pid != PID_NULL) {
         _null_seq_cnt++;
     }
@@ -197,7 +192,7 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket (TSPacket& pkt, bool&
 
     // Check if the packet matches one of the selected conditions
     _terminated =
-        (_pack_max > 0 && _pack_cnt >= _pack_max) ||
+        (_pack_max > 0 && tsp->pluginPackets() + 1 >= _pack_max) ||
         (_null_seq_max > 0 && _null_seq_cnt >= _null_seq_max) ||
         (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max) ||
         (_msec_max && Time::CurrentUTC() - _start_time >= _msec_max);

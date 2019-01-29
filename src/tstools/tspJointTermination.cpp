@@ -53,7 +53,6 @@ ts::tsp::JointTermination::JointTermination(Options* options, const PluginOption
     PluginThread(options, options->appName(), *pl_options, attributes),
     _global_mutex(global_mutex),
     _options(options),
-    _total_packets(0),
     _use_jt(false),
     _jt_completed(false)
 {
@@ -114,8 +113,8 @@ void ts::tsp::JointTermination::jointTerminate()
         Guard lock(_global_mutex);
         _jt_remaining--;
         assert(_jt_remaining >= 0);
-        if (_total_packets > _jt_hightest_pkt) {
-            _jt_hightest_pkt = _total_packets;
+        if (totalPacketsInThread() > _jt_hightest_pkt) {
+            _jt_hightest_pkt = totalPacketsInThread();
         }
         debug(u"completed for \"joint termination\", %d plugins remaining, current pkt limit: %'d", {_jt_remaining, _jt_hightest_pkt});
     }

@@ -79,8 +79,8 @@ void ts::tsp::OutputExecutor::main()
 
         // Check if "joint termination" agreed on a last packet to output
         const PacketCounter jt_limit = totalPacketsBeforeJointTermination();
-        if (totalPackets() + pkt_cnt > jt_limit) {
-            pkt_cnt = totalPackets() > jt_limit ? 0 : size_t (jt_limit - totalPackets());
+        if (totalPacketsInThread() + pkt_cnt > jt_limit) {
+            pkt_cnt = totalPacketsInThread() > jt_limit ? 0 : size_t (jt_limit - totalPacketsInThread());
             aborted = true;
         }
 
@@ -98,7 +98,7 @@ void ts::tsp::OutputExecutor::main()
 
             pkt += drop_cnt;
             pkt_remain -= drop_cnt;
-            addTotalPackets(drop_cnt);
+            addNonPluginPackets(drop_cnt);
 
             // Find last non-dropped packet
             size_t out_cnt;
@@ -113,7 +113,7 @@ void ts::tsp::OutputExecutor::main()
                 pkt += out_cnt;
                 pkt_remain -= out_cnt;
                 output_packets += out_cnt;
-                addTotalPackets(out_cnt);
+                addPluginPackets(out_cnt);
             }
         }
 
@@ -126,5 +126,5 @@ void ts::tsp::OutputExecutor::main()
     // Close the output processor
     _output->stop();
 
-    debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPackets(), output_packets});
+    debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPacketsInThread(), output_packets});
 }
