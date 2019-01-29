@@ -238,8 +238,8 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
     }
 
     // Set global scrambling type from scrambling descriptor, if not specified on the command line.
-    tsp->verbose(u"using scrambling mode: %s", {DVBNameFromSection(u"ScramblingMode", scrambling_type)});
     _scrambling.setScramblingType(scrambling_type, false);
+    tsp->verbose(u"using scrambling mode: %s", {DVBNameFromSection(u"ScramblingMode", _scrambling.scramblingType())});
     for (ECMStreamMap::iterator it = _ecm_streams.begin(); it != _ecm_streams.end(); ++it) {
         it->second->scrambling.setScramblingType(scrambling_type, false);
     }
