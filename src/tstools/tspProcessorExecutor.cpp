@@ -109,13 +109,15 @@ void ts::tsp::ProcessorExecutor::main()
             pkt_done++;
             pkt_flush++;
 
-            // If the packet has not already been dropped by a previous
-            // packet processor, apply the processing routine to the packet
-
-            if (pkt->b[0] != 0) {
-
+            if (pkt->b[0] == 0) {
+                // The packet has already been dropped by a previous packet processor.
+                addNonPluginPackets(1);
+            }
+            else {
+                // Apply the processing routine to the packet
                 bool bitrate_changed = false;
                 ProcessorPlugin::Status status = _processor->processPacket(*pkt, flush_request, bitrate_changed);
+                addPluginPackets(1);
 
                 // Use the returned status
                 switch (status) {
@@ -157,8 +159,6 @@ void ts::tsp::ProcessorExecutor::main()
                 }
             }
 
-            addTotalPackets(1);
-
             // Do not wait to process pkt_cnt packets before notifying
             // the next processor. Perform periodic flush to avoid waiting
             // too long before two output operations.
@@ -175,5 +175,5 @@ void ts::tsp::ProcessorExecutor::main()
     _processor->stop();
 
     debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
-          {aborted ? u"aborted" : u"terminated", totalPackets(), passed_packets, dropped_packets, nullified_packets});
+          {aborted ? u"aborted" : u"terminated", pluginPackets(), passed_packets, dropped_packets, nullified_packets});
 }

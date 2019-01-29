@@ -70,19 +70,6 @@ namespace ts {
             const Options* _options;      //!< TSP options.
 
             //!
-            //! Account for more processed packets in this plugin.
-            //! @param [in] incr Add this number of processed packets.
-            //! @return New total number of processed packets.
-            //!
-            PacketCounter addTotalPackets(size_t incr) {return _total_packets += incr;}
-
-            //!
-            //! Get total number of processed packets.
-            //! @return The total number of processed packets in this plugin.
-            //!
-            PacketCounter totalPackets() const {return _total_packets;}
-
-            //!
             //! Get the packet number after which the "joint termination" must be applied.
             //! @return The packet number after which the "joint termination" must be applied.
             //! If no "joint termination" applies, return the maximum int value.
@@ -90,7 +77,6 @@ namespace ts {
             PacketCounter totalPacketsBeforeJointTermination() const;
 
         private:
-            PacketCounter _total_packets;   // Total processed packets
             bool          _use_jt;          // Use "joint termination"
             bool          _jt_completed;    // Completed, for "joint termination"
 
