@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.17-1113
+
+[BUG] Bug fixes:
+
+  * In plugin "scrambler", fixed a crypto-period issue with option --cw-file
+    and more than one CW.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.16-1108
 
 [NEW] New commands and plugins:
