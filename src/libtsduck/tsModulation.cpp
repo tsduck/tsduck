@@ -157,18 +157,26 @@ const ts::Enumeration ts::BandWidthEnum({
 });
 
 const ts::Enumeration ts::TransmissionModeEnum({
-    {u"auto", ts::TM_AUTO},
-    {u"2K",   ts::TM_2K},
-    {u"4K",   ts::TM_4K},
-    {u"8K",   ts::TM_8K},
+    {u"auto",           ts::TM_AUTO},
+    {u"2K",             ts::TM_2K},
+    {u"4K",             ts::TM_4K},
+    {u"8K",             ts::TM_8K},
+    {u"2K-interleaved", ts::TM_2KI},
+    {u"4K-interleaved", ts::TM_4KI},
+    {u"1K",             ts::TM_1K},
+    {u"16K",            ts::TM_16K},
+    {u"32K",            ts::TM_32K},
 });
 
 const ts::Enumeration ts::GuardIntervalEnum({
-    {u"auto", ts::GUARD_AUTO},
-    {u"1/32", ts::GUARD_1_32},
-    {u"1/16", ts::GUARD_1_16},
-    {u"1/8",  ts::GUARD_1_8},
-    {u"1/4",  ts::GUARD_1_4},
+    {u"auto",    ts::GUARD_AUTO},
+    {u"1/32",    ts::GUARD_1_32},
+    {u"1/16",    ts::GUARD_1_16},
+    {u"1/8",     ts::GUARD_1_8},
+    {u"1/4",     ts::GUARD_1_4},
+    {u"1/128",   ts::GUARD_1_128},
+    {u"19/128",  ts::GUARD_19_128},
+    {u"19/256",  ts::GUARD_19_256},
 });
 
 const ts::Enumeration ts::HierarchyEnum({
