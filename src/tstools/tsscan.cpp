@@ -136,17 +136,22 @@ Options::Options(int argc, char *argv[]) :
          u"on each channel.");
 
     option(u"global-service-list", 'g');
-    help(u"global-service-list", u"");
-
-    option(u"last-uhf-channel", 0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    help(u"last-uhf-channel",
+    help(u"global-service-list",
          u"Same as --service-list but display a global list of services at the end "
          u"of scanning instead of per transport stream.");
 
-    option(u"last-offset", 0, INTEGER, 0, 1, -40, +40);
-    help(u"last-offset",
+    option(u"last-uhf-channel", 0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    help(u"last-uhf-channel",
          u"For UHF-band scanning, specify the last channel to scan (default: " +
          ts::UString::Decimal(ts::UHF::LAST_CHANNEL) + u").");
+
+    option(u"last-offset", 0, INTEGER, 0, 1, -40, +40);
+    help(u"last-offset",
+         u"For UHF-band scanning, specify the last offset to scan on each channel (default: " +
+         ts::UString::Decimal(DEFAULT_LAST_OFFSET, 0, true, u",", true) + u"). "
+         u"Note that tsscan may scan higher offsets. As long as some signal is found at a "
+         u"specified offset, tsscan continues to check up to 3 higher offsets above the \"last\" one. "
+         u"This means that if a signal is found at offset +2, offset +3 will be checked anyway, etc. up to offset +5.");
 
     option(u"min-quality", 0, INTEGER, 0, 1, 0, 100);
     help(u"min-quality",
