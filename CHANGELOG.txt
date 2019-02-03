@@ -2,7 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1113
+VERSION 3.17-1116
+
+[IMP] Improvements on existing commands and plugins:
+
+  * In plugin "dvb" and command "tsscan", added --guard-interval values
+    "1/128", "19/128", "19/256" and --transmission-mode values "1K",
+    "2K-interleaved", "4K-interleaved", "16K", "32K".
 
 [BUG] Bug fixes:
 
