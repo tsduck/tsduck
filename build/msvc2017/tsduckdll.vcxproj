@@ -9,6 +9,7 @@
   <!-- Other data files -->
   <ItemGroup>
     <Xml Include="..\..\src\libtsduck\tsduck.xml" />
+    <Xml Include="..\..\src\libtsduck\tsduck.channels.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\libtsduck\tsduck.dvb.names" />
@@ -41,6 +42,7 @@
   </ImportGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.channels.xml" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="..\..\src\libtsduck\tsduck.dvb.names" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="..\..\src\libtsduck\tsduck.oui.names" DestinationFolder="$(OutDir)" />
   </Target>

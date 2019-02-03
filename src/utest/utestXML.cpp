@@ -61,6 +61,7 @@ public:
     void testKeepOpen();
     void testEscape();
     void testTweaks();
+    void testChannels();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
@@ -71,6 +72,7 @@ public:
     CPPUNIT_TEST(testKeepOpen);
     CPPUNIT_TEST(testEscape);
     CPPUNIT_TEST(testTweaks);
+    CPPUNIT_TEST(testChannels);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -472,4 +474,10 @@ void XMLTest::testTweaks()
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<root a1=\"foo\" a2=\"ab&amp;<>'&quot;cd\" a3='ef\"gh' a4=\"ij'kl\">text&lt;&amp;'\"&gt;text</root>\n",
         doc.toString());
+}
+
+void XMLTest::testChannels()
+{
+    ts::xml::Document model(report());
+    CPPUNIT_ASSERT(model.load(u"tsduck.channels.xml"));
 }

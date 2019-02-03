@@ -150,6 +150,7 @@ namespace ts {
         //!
         //! Assignment operator.
         //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
         //!
         EIT& operator=(const EIT& other) = default;
 

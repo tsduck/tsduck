@@ -230,8 +230,9 @@ namespace ts {
             //! Set an attribute.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
+            //! @param [in] onlyIfNotEmpty When true, do not insert the attribute if @a value is empty.
             //!
-            void setAttribute(const UString& name, const UString& value);
+            void setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty = false);
 
             //!
             //! Set a bool attribute to a node.

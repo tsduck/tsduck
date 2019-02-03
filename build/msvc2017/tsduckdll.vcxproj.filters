@@ -11,6 +11,9 @@
     <Xml Include="..\..\src\libtsduck\tsduck.xml">
       <Filter>Configuration Files</Filter>
     </Xml>
+    <Xml Include="..\..\src\libtsduck\tsduck.channels.xml">
+      <Filter>Configuration Files</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\libtsduck\tsduck.dvb.names">

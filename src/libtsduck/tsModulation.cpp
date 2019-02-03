@@ -103,6 +103,8 @@ const ts::Enumeration ts::ModulationEnum({
     {u"256-QAM", ts::QAM_256},
     {u"8-VSB",   ts::VSB_8},
     {u"16-VSB",  ts::VSB_16},
+    {u"16-APSK", ts::APSK_16},
+    {u"32-APSK", ts::APSK_32},
 });
 
 const ts::Enumeration ts::InnerFECEnum({
@@ -272,11 +274,14 @@ uint32_t ts::FECDivider(InnerFEC fec)
 uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
 {
     switch (guard) {
-        case GUARD_1_4:  return 1;
-        case GUARD_1_8:  return 1;
-        case GUARD_1_16: return 1;
-        case GUARD_1_32: return 1;
-        default:         return 0; // unknown
+        case GUARD_1_4:    return 1;
+        case GUARD_1_8:    return 1;
+        case GUARD_1_16:   return 1;
+        case GUARD_1_32:   return 1;
+        case GUARD_1_128:  return 1;
+        case GUARD_19_128: return 19;
+        case GUARD_19_256: return 19;
+        default:           return 0; // unknown
     }
 }
 
@@ -284,11 +289,14 @@ uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
 uint32_t ts::GuardIntervalDivider(GuardInterval guard)
 {
     switch (guard) {
-        case GUARD_1_4:  return 4;
-        case GUARD_1_8:  return 8;
-        case GUARD_1_16: return 16;
-        case GUARD_1_32: return 32;
-        default:         return 0; // unknown
+        case GUARD_1_4:    return 4;
+        case GUARD_1_8:    return 8;
+        case GUARD_1_16:   return 16;
+        case GUARD_1_32:   return 32;
+        case GUARD_1_128:  return 128;
+        case GUARD_19_128: return 128;
+        case GUARD_19_256: return 256;
+        default:           return 0; // unknown
     }
 }
 
