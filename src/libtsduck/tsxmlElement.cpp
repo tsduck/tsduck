@@ -315,9 +315,11 @@ ts::xml::Element::AttributeMap::const_iterator ts::xml::Element::findAttribute(c
     return _attributes.find(attributeKey(attributeName));
 }
 
-void ts::xml::Element::setAttribute(const UString& name, const UString& value)
+void ts::xml::Element::setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty)
 {
-    _attributes[attributeKey(name)] = Attribute(name, value);
+    if (!onlyIfNotEmpty || !value.empty()) {
+        _attributes[attributeKey(name)] = Attribute(name, value);
+    }
 }
 
 bool ts::xml::Element::hasAttribute(const UString& name) const

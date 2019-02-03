@@ -55,7 +55,7 @@ namespace ts {
     //! and return false.
     //!
     //! @param [in] value The @c int value of an enumeration value from on the
-    //! enumeration types in file @link tsModulation.h@endlink.
+    //! enumeration types in file @link tsModulation.h @endlink.
     //! @param [in] name The name of the feature or enumeration type (eg.
     //! "FEC", "guard interval", etc.) Used to report errors.
     //! @param [in] conv The ts::Enumeration instance for the enumeration type.
@@ -145,6 +145,8 @@ namespace ts {
         QAM_256  = ::QAM_256,
         VSB_8    = ::VSB_8,
         VSB_16   = ::VSB_16,
+        APSK_16  = ::APSK_16,
+        APSK_32  = ::APSK_32,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         QPSK     = ::BDA_MOD_QPSK,
         PSK_8    = ::BDA_MOD_8PSK,
@@ -156,6 +158,8 @@ namespace ts {
         QAM_256  = ::BDA_MOD_256QAM,
         VSB_8    = ::BDA_MOD_8VSB,
         VSB_16   = ::BDA_MOD_16VSB,
+        APSK_16  = ::BDA_MOD_16APSK,
+        APSK_32  = ::BDA_MOD_32APSK,
 #else
         QPSK,       //!< QPSK (4-PSK, DVB-S).
         PSK_8,      //!< 8-PSK (DVB-S2).
@@ -167,6 +171,8 @@ namespace ts {
         QAM_256,    //!< QAM-256.
         VSB_8,      //!< VSB-8.
         VSB_16,     //!< VSB-16.
+        APSK_16,    //!< 16-APSK (DVB-S2).
+        APSK_32,    //!< 32-APSK (DVB-S2).
 #endif
     };
 

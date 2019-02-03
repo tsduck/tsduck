@@ -70,6 +70,7 @@ namespace ts {
         //!
         //! Assignment operator.
         //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
         //!
         DSMCCStreamDescriptorsTable& operator=(const DSMCCStreamDescriptorsTable& other);
 

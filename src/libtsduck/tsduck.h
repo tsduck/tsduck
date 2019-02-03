@@ -136,6 +136,7 @@
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsDTSDescriptor.h"
 #include "tsDTSNeuralDescriptor.h"
+#include "tsDuckChannels.h"
 #include "tsDuckConfigFile.h"
 #include "tsDuckProtocol.h"
 #include "tsDVBCharset.h"

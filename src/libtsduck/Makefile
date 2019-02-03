@@ -130,7 +130,8 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(
 .PHONY: install install-devel
 install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml $(wildcard tsduck.*.names) $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml tsduck.channels.xml $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) $(wildcard tsduck.*.names) $(SYSROOT)$(SYSPREFIX)/bin
 install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
