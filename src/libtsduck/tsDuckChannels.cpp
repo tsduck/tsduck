@@ -101,7 +101,7 @@ ts::UString ts::DuckChannels::DefaultFileName()
 
 
 //----------------------------------------------------------------------------
-// Load / parse an XML file.
+// Load an XML file or text.
 //----------------------------------------------------------------------------
 
 bool ts::DuckChannels::load(const UString& fileName, Report& report)
@@ -128,6 +128,11 @@ bool ts::DuckChannels::parse(const UString& text, Report& report)
     return doc.parse(text) && parseDocument(doc);
 }
 
+
+//----------------------------------------------------------------------------
+// Parse an XML document.
+//----------------------------------------------------------------------------
+
 bool ts::DuckChannels::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
@@ -147,8 +152,86 @@ bool ts::DuckChannels::parseDocument(const xml::Document& doc)
     bool success = true;
 
     // Analyze all networks in the document.
-    for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
-        // @@@@@
+    assert(root != nullptr);
+    xml::ElementVector xnets;
+    root->getChildren(xnets, u"network");
+    for (auto itnet = xnets.begin(); itnet != xnets.end(); ++itnet) {
+        
+        // Build a new Network object at end of our list of networks.
+        const NetworkPtr net(new Network);
+        CheckNonNull(net.pointer());
+        networks.push_back(net);
+
+        // Get network properties.
+        xml::ElementVector xts;
+        success =
+            (*itnet)->getIntAttribute<uint16_t>(net->id, u"id", true) &&
+            (*itnet)->getIntEnumAttribute(net->type, TunerTypeEnum, u"type", true) &&
+            (*itnet)->getChildren(xts, u"ts") &&
+            success;
+
+        // Get all TS in the network.
+        for (auto itts = xts.begin(); itts != xts.end(); ++itts) {
+
+            // Build a new TransportStream object at end of TS for the current network.
+            const TransportStreamPtr ts(new TransportStream);
+            CheckNonNull(ts.pointer());
+            net->ts.push_back(ts);
+
+            // Get transport stream properties.
+            xml::ElementVector xservices;
+            xml::ElementVector xatsc;
+            xml::ElementVector xdvbc;
+            xml::ElementVector xdvbs;
+            xml::ElementVector xdvbt;
+            success =
+                (*itts)->getIntAttribute<uint16_t>(ts->id, u"id", true) &&
+                (*itts)->getIntAttribute<uint16_t>(ts->onid, u"onid", true) &&
+                (*itts)->getChildren(xatsc, u"atsc", 0, 1) &&
+                (*itts)->getChildren(xdvbc, u"dvbc", 0, 1) &&
+                (*itts)->getChildren(xdvbs, u"dvbs", 0, 1) &&
+                (*itts)->getChildren(xdvbt, u"dvbt", 0, 1) &&
+                (*itts)->getChildren(xservices, u"service") &&
+                success;
+
+            // Get tuner parameters (at most one structure is allowed).
+            if (xatsc.size() + xdvbc.size() + xdvbs.size() + xdvbt.size() > 1) {
+                doc.report().error(u"At most one of <atsc>, <dvbc>, <dvbs>, <dvbt> is allowed in <ts> at line %d", {(*itts)->lineNumber()});
+                success = false;
+            }
+            else if (!xatsc.empty()) {
+                success = XmlToATCS(ts->tune, xatsc.front()) && success;
+            }
+            else if (!xdvbc.empty()) {
+                success = XmlToDVBC(ts->tune, xdvbc.front()) && success;
+            }
+            else if (!xdvbs.empty()) {
+                success = XmlToDVBS(ts->tune, xdvbs.front()) && success;
+            }
+            else if (!xdvbt.empty()) {
+                success = XmlToDVBT(ts->tune, xdvbt.front()) && success;
+            }
+
+            // Get all services in the transport stream.
+            for (auto itsrv = xservices.begin(); itsrv != xservices.end(); ++itsrv) {
+
+                // Build a new Service object at end of the current transport stream.
+                const ServicePtr srv(new Service);
+                CheckNonNull(srv.pointer());
+                ts->services.push_back(srv);
+
+                // Get service properties.
+                success =
+                    (*itsrv)->getIntAttribute<uint16_t>(srv->id, u"id", true) &&
+                    (*itsrv)->getAttribute(srv->name, u"name", false) &&
+                    (*itsrv)->getAttribute(srv->provider, u"provider", false) &&
+                    (*itsrv)->getOptionalIntAttribute(srv->lcn, u"LCN") &&
+                    (*itsrv)->getOptionalIntAttribute(srv->pmtPID, u"PMTPID", PID(0), PID(PID_NULL)) &&
+                    (*itsrv)->getOptionalIntAttribute(srv->type, u"type") &&
+                    (*itsrv)->getOptionalBoolAttribute(srv->cas, u"cas") &&
+                    success;
+            }
+        }
     }
     return success;
 }
@@ -206,11 +289,11 @@ bool ts::DuckChannels::generateDocument(xml::Document& doc) const
                     xts->setIntAttribute(u"onid", ts->onid, true);
 
                     // Set tuner parameters. Try various options in sequence.
-                    TS_UNUSED const bool done = 
-                        TunerToXML(xts, dynamic_cast<const TunerParametersDVBT*>(ts->tune.pointer())) != nullptr ||
-                        TunerToXML(xts, dynamic_cast<const TunerParametersDVBS*>(ts->tune.pointer())) != nullptr ||
-                        TunerToXML(xts, dynamic_cast<const TunerParametersDVBC*>(ts->tune.pointer())) != nullptr ||
-                        TunerToXML(xts, dynamic_cast<const TunerParametersATSC*>(ts->tune.pointer())) != nullptr;
+                    // Typically, only one succeeds. No error if none works (this is just an incomplete description).
+                    TunerToXml(xts, dynamic_cast<const TunerParametersDVBT*>(ts->tune.pointer()));
+                    TunerToXml(xts, dynamic_cast<const TunerParametersDVBS*>(ts->tune.pointer()));
+                    TunerToXml(xts, dynamic_cast<const TunerParametersDVBC*>(ts->tune.pointer()));
+                    TunerToXml(xts, dynamic_cast<const TunerParametersATSC*>(ts->tune.pointer()));
 
                     // Format all services.
                     for (auto itsrv = ts->services.begin(); itsrv != ts->services.end(); ++itsrv) {
@@ -222,7 +305,7 @@ bool ts::DuckChannels::generateDocument(xml::Document& doc) const
                             xsrv->setIntAttribute(u"id", srv->id, true);
                             xsrv->setAttribute(u"name", srv->name, true);
                             xsrv->setAttribute(u"provider", srv->provider, true);
-                            xsrv->setOptionalIntAttribute(u"LCN", srv->lcn, true);
+                            xsrv->setOptionalIntAttribute(u"LCN", srv->lcn, false);
                             xsrv->setOptionalIntAttribute(u"PMTPID", srv->pmtPID, true);
                             xsrv->setOptionalIntAttribute(u"type", srv->type, true);
                             xsrv->setOptionalBoolAttribute(u"cas", srv->cas);
@@ -235,63 +318,60 @@ bool ts::DuckChannels::generateDocument(xml::Document& doc) const
     return true;
 }
 
+
 //----------------------------------------------------------------------------
 // Generate an XML element from a set of tuner parameters.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::DuckChannels::TunerToXML(xml::Element* parent, const TunerParametersATSC* params)
+void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersATSC* params)
 {
-    if (params == nullptr || parent == nullptr) {
-        return nullptr;
-    }
-    else {
+    if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"atsc");
         e->setIntAttribute(u"frequency", params->frequency, false);
         e->setEnumAttribute(ModulationEnum, u"modulation", params->modulation);
         if (params->inversion != SPINV_AUTO) {
             e->setEnumAttribute(SpectralInversionEnum, u"inversion", params->inversion);
         }
-        return e;
     }
 }
 
-ts::xml::Element* ts::DuckChannels::TunerToXML(xml::Element* parent, const TunerParametersDVBC* params)
+void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVBC* params)
 {
-    if (params == nullptr || parent == nullptr) {
-        return nullptr;
-    }
-    else {
+    if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"dvbc");
         e->setIntAttribute(u"frequency", params->frequency, false);
         e->setIntAttribute(u"symbolrate", params->symbol_rate, false);
         e->setEnumAttribute(ModulationEnum, u"modulation", params->modulation);
-        e->setEnumAttribute(InnerFECEnum, u"FEC", params->inner_fec);
+        if (params->inner_fec != FEC_AUTO) {
+            e->setEnumAttribute(InnerFECEnum, u"FEC", params->inner_fec);
+        }
         if (params->inversion != SPINV_AUTO) {
             e->setEnumAttribute(SpectralInversionEnum, u"inversion", params->inversion);
         }
-        return e;
     }
 }
 
-ts::xml::Element* ts::DuckChannels::TunerToXML(xml::Element* parent, const TunerParametersDVBS* params)
+void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVBS* params)
 {
-    if (params == nullptr || parent == nullptr) {
-        return nullptr;
-    }
-    else {
+    if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"dvbs");
         if (params->satellite_number != 0) {
             e->setIntAttribute(u"satellite", params->satellite_number, false);
         }
         e->setIntAttribute(u"frequency", params->frequency, false);
+        e->setIntAttribute(u"symbolrate", params->symbol_rate, false);
+        e->setEnumAttribute(ModulationEnum, u"modulation", params->modulation);
+        if (params->delivery_system != DS_DVB_S) {
+            e->setEnumAttribute(DeliverySystemEnum, u"system", params->delivery_system);
+        }
         if (params->polarity != POL_AUTO) {
             e->setEnumAttribute(PolarizationEnum, u"polarity", params->polarity);
         }
-        e->setIntAttribute(u"symbolrate", params->symbol_rate, false);
-        e->setEnumAttribute(InnerFECEnum, u"FEC", params->inner_fec);
-        e->setEnumAttribute(DeliverySystemEnum, u"system", params->delivery_system);
-        if (params->delivery_system != DS_DVB_S) {
-            e->setEnumAttribute(ModulationEnum, u"modulation", params->modulation);
+        if (params->inversion != SPINV_AUTO) {
+            e->setEnumAttribute(SpectralInversionEnum, u"inversion", params->inversion);
+        }
+        if (params->inner_fec != FEC_AUTO) {
+            e->setEnumAttribute(InnerFECEnum, u"FEC", params->inner_fec);
         }
         if (params->delivery_system == DS_DVB_S2 && params->pilots != PILOT_AUTO) {
             e->setEnumAttribute(PilotEnum, u"pilots", params->pilots);
@@ -299,45 +379,99 @@ ts::xml::Element* ts::DuckChannels::TunerToXML(xml::Element* parent, const Tuner
         if (params->delivery_system == DS_DVB_S2 && params->roll_off != ROLLOFF_AUTO) {
             e->setEnumAttribute(RollOffEnum, u"rolloff", params->roll_off);
         }
-        if (params->inversion != SPINV_AUTO) {
-            e->setEnumAttribute(SpectralInversionEnum, u"inversion", params->inversion);
-        }
-        return e;
     }
 }
 
-ts::xml::Element* ts::DuckChannels::TunerToXML(xml::Element* parent, const TunerParametersDVBT* params)
+void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVBT* params)
 {
-    if (params == nullptr || parent == nullptr) {
-        return nullptr;
-    }
-    else {
+    if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"dvbt");
         e->setIntAttribute(u"frequency", params->frequency, false);
         e->setEnumAttribute(ModulationEnum, u"modulation", params->modulation);
-        /*@@@@@
-        modulation="QPSK|16-QAM|64-QAM|256-QAM, default=64-QAM"
-        HPFEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none, default=auto"
-        LPFEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none, default=auto"
-        bandwidth="1.712-MHz|5-MHz|6-MHz|7-MHz|8-MHz|10-MHz|auto, default=auto"
-        transmission="1K|2K|4K|8K|16K|32K|auto, default=auto"
-        guard="1/4|1/8|1/16|1/32|1/128|19/128|19/256|auto, default=auto"
-        hierarchy="1|2|4|auto|none, default=none"
-
-        BandWidth         bandwidth;          //!< Bandwidth.
-        InnerFEC          fec_hp;             //!< High priority stream code rate.
-        InnerFEC          fec_lp;             //!< Low priority stream code rate.
-        Modulation        modulation;         //!< Constellation (modulation type).
-        TransmissionMode  transmission_mode;  //!< Transmission mode.
-        GuardInterval     guard_interval;     //!< Guard interval.
-        Hierarchy         hierarchy;          //!< Hierarchy.
-        */
+        if (params->fec_hp != FEC_AUTO) {
+            e->setEnumAttribute(InnerFECEnum, u"HPFEC", params->fec_hp);
+        }
+        if (params->fec_lp != FEC_AUTO) {
+            e->setEnumAttribute(InnerFECEnum, u"LPFEC", params->fec_lp);
+        }
+        if (params->bandwidth != BW_AUTO) {
+            e->setEnumAttribute(BandWidthEnum, u"bandwidth", params->bandwidth);
+        }
+        if (params->transmission_mode != TM_AUTO) {
+            e->setEnumAttribute(TransmissionModeEnum, u"transmission", params->transmission_mode);
+        }
+        if (params->guard_interval != GUARD_AUTO) {
+            e->setEnumAttribute(GuardIntervalEnum, u"guard", params->guard_interval);
+        }
+        if (params->hierarchy != HIERARCHY_NONE) {
+            e->setEnumAttribute(HierarchyEnum, u"hierarchy", params->hierarchy);
+        }
         if (params->plp != PLP_DISABLE) {
             e->setIntAttribute(u"PLP", uint8_t(params->plp), false);
         }
         if (params->inversion != SPINV_AUTO) {
             e->setEnumAttribute(SpectralInversionEnum, u"inversion", params->inversion);
         }
-        return e;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Parse an XML element into a set of tuner parameters.
+//----------------------------------------------------------------------------
+
+bool ts::DuckChannels::XmlToATCS(TunerParametersPtr& params, const xml::Element* elem)
+{
+    TunerParametersATSC* p = new TunerParametersATSC;
+    params = p;
+    return p != nullptr && elem != nullptr &&
+        elem->getIntAttribute<uint64_t>(p->frequency, u"frequency", true) &&
+        elem->getIntEnumAttribute(p->modulation, ModulationEnum, u"modulation", false, VSB_8) &&
+        elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
+}
+
+bool ts::DuckChannels::XmlToDVBC(TunerParametersPtr& params, const xml::Element* elem)
+{
+    TunerParametersDVBC* p = new TunerParametersDVBC;
+    params = p;
+    return p != nullptr && elem != nullptr &&
+        elem->getIntAttribute<uint64_t>(p->frequency, u"frequency", true) &&
+        elem->getIntAttribute<uint32_t>(p->symbol_rate, u"symbolrate", false, 6900000) &&
+        elem->getIntEnumAttribute(p->modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+        elem->getIntEnumAttribute(p->inner_fec, InnerFECEnum, u"FEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
+}
+
+bool ts::DuckChannels::XmlToDVBS(TunerParametersPtr& params, const xml::Element* elem)
+{
+    TunerParametersDVBS* p = new TunerParametersDVBS;
+    params = p;
+    return p != nullptr && elem != nullptr &&
+        elem->getIntAttribute<size_t>(p->satellite_number, u"satellite", false, 0, 0, 3) &&
+        elem->getIntAttribute<uint64_t>(p->frequency, u"frequency", true) &&
+        elem->getIntAttribute<uint32_t>(p->symbol_rate, u"symbolrate", false, 27500000) &&
+        elem->getIntEnumAttribute(p->modulation, ModulationEnum, u"modulation", false, QPSK) &&
+        elem->getIntEnumAttribute(p->delivery_system, DeliverySystemEnum, u"system", false, DS_DVB_S) &&
+        elem->getIntEnumAttribute(p->inner_fec, InnerFECEnum, u"FEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
+        elem->getIntEnumAttribute(p->polarity, PolarizationEnum, u"polarity", false, POL_AUTO) &&
+        (p->delivery_system == DS_DVB_S || elem->getIntEnumAttribute(p->pilots, PilotEnum, u"pilots", false, PILOT_AUTO)) &&
+        (p->delivery_system == DS_DVB_S || elem->getIntEnumAttribute(p->roll_off, RollOffEnum, u"rolloff", false, ROLLOFF_AUTO));
+}
+
+bool ts::DuckChannels::XmlToDVBT(TunerParametersPtr& params, const xml::Element* elem)
+{
+    TunerParametersDVBT* p = new TunerParametersDVBT;
+    params = p;
+    return p != nullptr && elem != nullptr &&
+        elem->getIntAttribute<uint64_t>(p->frequency, u"frequency", true) &&
+        elem->getIntEnumAttribute(p->modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+        elem->getIntEnumAttribute(p->bandwidth, BandWidthEnum, u"bandwidth", false, BW_AUTO) &&
+        elem->getIntEnumAttribute(p->transmission_mode, TransmissionModeEnum, u"transmission", false, TM_AUTO) &&
+        elem->getIntEnumAttribute(p->guard_interval, GuardIntervalEnum, u"guard", false, GUARD_AUTO) &&
+        elem->getIntEnumAttribute(p->fec_hp, InnerFECEnum, u"HPFEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(p->fec_lp, InnerFECEnum, u"LPFEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
+        elem->getIntEnumAttribute(p->hierarchy, HierarchyEnum, u"hierarchy", false, HIERARCHY_NONE) &&
+        elem->getIntAttribute<PLP>(p->plp, u"PLP", false, PLP_DISABLE, 0, 255);
 }

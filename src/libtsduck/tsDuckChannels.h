@@ -183,10 +183,16 @@ namespace ts {
         // Generate an XML document from the content of this object.
         bool generateDocument(xml::Document& doc) const;
 
-        // Generate an XML element from a set of tuner parameters. Return nullptr on error.
-        static xml::Element* TunerToXML(xml::Element* parent, const TunerParametersATSC* params);
-        static xml::Element* TunerToXML(xml::Element* parent, const TunerParametersDVBC* params);
-        static xml::Element* TunerToXML(xml::Element* parent, const TunerParametersDVBS* params);
-        static xml::Element* TunerToXML(xml::Element* parent, const TunerParametersDVBT* params);
+        // Generate an XML element from a set of tuner parameters.
+        static void TunerToXml(xml::Element* parent, const TunerParametersATSC* params);
+        static void TunerToXml(xml::Element* parent, const TunerParametersDVBC* params);
+        static void TunerToXml(xml::Element* parent, const TunerParametersDVBS* params);
+        static void TunerToXml(xml::Element* parent, const TunerParametersDVBT* params);
+
+        // Parse an XML element into a set of tuner parameters.
+        static bool XmlToATCS(TunerParametersPtr& params, const xml::Element* elem);
+        static bool XmlToDVBC(TunerParametersPtr& params, const xml::Element* elem);
+        static bool XmlToDVBS(TunerParametersPtr& params, const xml::Element* elem);
+        static bool XmlToDVBT(TunerParametersPtr& params, const xml::Element* elem);
     };
 }
