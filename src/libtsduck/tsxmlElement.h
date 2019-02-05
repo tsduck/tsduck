@@ -423,7 +423,7 @@ namespace ts {
             //! @param [in] maxValue Maximum allowed value for the attribute.
             //! @return True on success, false on error.
             //!
-            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr, typename INT = std::underlying_type<ENUM>::type>
+            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr, typename INT = typename std::underlying_type<ENUM>::type>
             bool getIntAttribute(ENUM& value,
                                  const UString& name,
                                  bool required = false,
