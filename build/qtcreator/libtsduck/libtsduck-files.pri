@@ -77,6 +77,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCBC.h \
     ../../../src/libtsduck/tsCBCTemplate.h \
     ../../../src/libtsduck/tsCerrReport.h \
+    ../../../src/libtsduck/tsChannelFile.h \
     ../../../src/libtsduck/tsCIAncillaryDataDescriptor.h \
     ../../../src/libtsduck/tsCipherChaining.h \
     ../../../src/libtsduck/tsCipherChainingTemplate.h \
@@ -122,7 +123,6 @@ HEADERS += \
     ../../../src/libtsduck/tsDTSDescriptor.h \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.h \
     ../../../src/libtsduck/tsduck.h \
-    ../../../src/libtsduck/tsDuckChannels.h \
     ../../../src/libtsduck/tsDuckConfigFile.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
     ../../../src/libtsduck/tsDVBCharset.h \
@@ -552,6 +552,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCASSelectionArgs.cpp \
     ../../../src/libtsduck/tsCAT.cpp \
     ../../../src/libtsduck/tsCerrReport.cpp \
+    ../../../src/libtsduck/tsChannelFile.cpp \
     ../../../src/libtsduck/tsCIAncillaryDataDescriptor.cpp \
     ../../../src/libtsduck/tsCipherChaining.cpp \
     ../../../src/libtsduck/tsCOM.cpp \
@@ -585,7 +586,6 @@ SOURCES += \
     ../../../src/libtsduck/tsDSMCCStreamDescriptorsTable.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
-    ../../../src/libtsduck/tsDuckChannels.cpp \
     ../../../src/libtsduck/tsDuckConfigFile.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \

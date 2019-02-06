@@ -37,12 +37,17 @@
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT defValue, INT minValue, INT maxValue) const
 {
-    INT val;
-    UString str;
-    if (!getAttribute(str, name, required, UString::Decimal(defValue))) {
-        return false;
+    const Attribute& attr(attribute(name, !required));
+    if (!attr.isValid()) {
+        // Attribute not present.
+        value = defValue;
+        return !required;
     }
-    else if (!str.toInteger(val, u",")) {
+
+    // Attribute found, get its value.
+    UString str(attr.value());
+    INT val;
+    if (!str.toInteger(val, u",")) {
         _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
     }

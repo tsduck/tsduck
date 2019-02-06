@@ -79,6 +79,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCBC.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsChannelFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChaining.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChainingTemplate.h" />
@@ -124,7 +125,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsDuckChannels.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckConfigFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h" />
@@ -564,6 +564,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsChannelFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
@@ -597,7 +598,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsDSMCCStreamDescriptorsTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsDuckChannels.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckConfigFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
