@@ -84,7 +84,7 @@
             bandwidth="1.712-MHz|5-MHz|6-MHz|7-MHz|8-MHz|10-MHz|auto, default=auto"
             transmission="1K|2K|4K|8K|16K|32K|auto, default=auto"
             guard="1/4|1/8|1/16|1/32|1/128|19/128|19/256|auto, default=auto"
-            hierarchy="1|2|4|auto|none, default=none"
+            hierarchy="1|2|4|auto|none, default=auto"
             PLP="uint8, optional"/>
 
       <!-- Description of one service in the TS -->

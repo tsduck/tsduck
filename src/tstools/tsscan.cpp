@@ -41,10 +41,12 @@
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersATSC.h"
 #include "tsTSScanner.h"
+#include "tsChannelFile.h"
 #include "tsNIT.h"
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
 #include "tsTime.h"
+#include "tsSysUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
@@ -57,15 +59,16 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class ScanOptions: public ts::Args
 {
-    Options(int argc, char *argv[]);
-    virtual ~Options();
+public:
+    ScanOptions(int argc, char *argv[]);
+    virtual ~ScanOptions();
 
-    ts::TunerArgs   tuner;
+    ts::TunerArgs   tuner_args;
     bool            uhf_scan;
     bool            nit_scan;
     bool            no_offset;
@@ -81,15 +84,18 @@ struct Options: public ts::Args
     bool            list_services;
     bool            global_services;
     ts::MilliSecond psi_timeout;
+    ts::UString     channel_file;
+    bool            update_channel_file;
+    bool            default_channel_file;
 };
 
 // Destructor.
-Options::~Options() {}
+ScanOptions::~ScanOptions() {}
 
 // Constructor.
-Options::Options(int argc, char *argv[]) :
+ScanOptions::ScanOptions(int argc, char *argv[]) :
     Args(u"Scan a DVB network", u"[options]"),
-    tuner(false, true),
+    tuner_args(false, true),
     uhf_scan(false),
     nit_scan(false),
     no_offset(false),
@@ -104,11 +110,14 @@ Options::Options(int argc, char *argv[]) :
     show_modulation(false),
     list_services(false),
     global_services(false),
-    psi_timeout(0)
+    psi_timeout(0),
+    channel_file(),
+    update_channel_file(false),
+    default_channel_file(false)
 {
     // Warning, the following short options are already defined in TunerArgs:
     // 'a', 'c', 'd', 'f', 'm', 's', 'z'
-    tuner.defineOptions(*this);
+    tuner_args.defineOptions(*this);
 
     option(u"best-quality");
     help(u"best-quality",
@@ -189,11 +198,27 @@ Options::Options(int argc, char *argv[]) :
          u"read on the specified frequency and a full scan of the corresponding network is "
          u"performed. By default, without specific frequency, an UHF-band scanning is performed.");
 
+    option(u"save-channels", 0, STRING);
+    help(u"save-channels", u"filename",
+         u"Save the description of all channels in the specified XML file. "
+         u"If the file name is \"-\", use the default channel file name: " +
+         ts::ChannelFile::DefaultFileName() + "\n"
+         u"See also option --update-channels.");
+
+    option(u"update-channels", 0, STRING);
+    help(u"update-channels", u"filename",
+         u"Update the description of all channels in the specified XML file. "
+         u"The content of each scanned transport stream is replaced in the file. "
+         u"If the file does not exist, it is created. "
+         u"If the file name is \"-\", use the default channel file name: " +
+         ts::ChannelFile::DefaultFileName() + "\n"
+         u"See also option --save-channels.");
+
     analyze(argc, argv);
-    tuner.load(*this);
+    tuner_args.load(*this);
 
     uhf_scan          = present(u"uhf-band");
-    nit_scan          = tuner.hasTuningInfo();
+    nit_scan          = tuner_args.hasTuningInfo();
     use_best_quality  = present(u"best-quality");
     use_best_strength = present(u"best-strength");
     first_uhf_channel = intValue(u"first-uhf-channel", ts::UHF::FIRST_CHANNEL);
@@ -207,6 +232,11 @@ Options::Options(int argc, char *argv[]) :
     list_services     = present(u"service-list");
     global_services   = present(u"global-service-list");
     psi_timeout       = intValue<ts::MilliSecond>(u"psi-timeout", DEFAULT_PSI_TIMEOUT);
+    
+    const bool save_channel_file = present(u"save-channels");
+    update_channel_file = present(u"update-channels");
+    channel_file = update_channel_file ? value(u"update-channels") : value(u"save-channels");
+    default_channel_file = (save_channel_file || update_channel_file) && (channel_file.empty() || channel_file == u"-");
 
     if (nit_scan && uhf_scan) {
         error(u"do not specify tuning parameters with --uhf-band");
@@ -215,108 +245,66 @@ Options::Options(int argc, char *argv[]) :
         // Default is UHF scan.
         uhf_scan = true;
     }
+    if (save_channel_file && update_channel_file) {
+        error(u"--save-channels and --update-channels are mutually exclusive");
+    }
+    else if (default_channel_file) {
+        // Use default channel file.
+        channel_file = ts::ChannelFile::DefaultFileName();
+    }
 
     exitOnError();
 }
 
 
 //----------------------------------------------------------------------------
-//  Analyze and display relevant TS info
-//----------------------------------------------------------------------------
-
-namespace {
-    void DisplayTS(std::ostream& strm,
-                   const ts::UString& margin,
-                   Options& opt,
-                   ts::Tuner& tuner,
-                   ts::TunerParametersPtr tparams,
-                   ts::ServiceList& global_services)
-    {
-        const bool get_services = opt.list_services || opt.global_services;
-
-        // Collect info
-        ts::TSScanner info(tuner, opt.psi_timeout, !get_services, opt);
-
-        // Display TS Id
-        ts::SafePtr<ts::PAT> pat;
-        info.getPAT(pat);
-        if (!pat.isNull()) {
-            strm << margin
-                 << ts::UString::Format(u"Transport stream id: %d, 0x%X", {pat->ts_id, pat->ts_id})
-                 << std::endl;
-        }
-
-        // Display modulation parameters
-        if (opt.show_modulation) {
-            if (tparams.isNull()) {
-                info.getTunerParameters(tparams);
-            }
-            if (!tparams.isNull()) {
-                tparams->displayParameters(strm, margin);
-            }
-        }
-
-        // Display services
-        if (get_services) {
-            ts::ServiceList services;
-            if (info.getServices(services)) {
-                if (opt.list_services) {
-                    // Display services for this TS
-                    services.sort(ts::Service::Sort1);
-                    strm << std::endl;
-                    ts::Service::Display(strm, margin, services);
-                    strm << std::endl;
-                }
-                if (opt.global_services) {
-                    // Add collected services in global service list
-                    global_services.insert(global_services.end(), services.begin(), services.end());
-                }
-            }
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  UHF-band offset scanner: Scan offsets around a specific UHF channel and
-//  determine offset with the best signal.
+// UHF-band offset scanner: Scan offsets around a specific UHF channel and
+// determine offset with the best signal.
 //----------------------------------------------------------------------------
 
 class OffsetScanner
 {
 public:
-    // Constructor
-    // Perform scanning. Keep signal tuned on best offset
-    OffsetScanner(Options& opt, ts::Tuner& tuner, int channel);
+    // Constructor: Perform scanning. Keep signal tuned on best offset.
+    OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel);
 
     // Check if signal found and which offset is the best one.
     bool signalFound() const {return _signal_found;}
     int channel() const {return _channel;}
     int bestOffset() const {return _best_offset;}
+    ts::TunerParametersPtr tunerParameters() const {return _best_params;}
 
 private:
-    Options&   _opt;
+    ScanOptions& _opt;
     ts::Tuner& _tuner;
-    const int  _channel;
-    bool       _signal_found;
-    int        _best_offset;
-    int        _lowest_offset;
-    int        _highest_offset;
-    int        _best_quality;
-    int        _best_quality_offset;
-    int        _best_strength;
-    int        _best_strength_offset;
+    const int _channel;
+    bool _signal_found;
+    int _best_offset;
+    int _lowest_offset;
+    int _highest_offset;
+    int _best_quality;
+    int _best_quality_offset;
+    int _best_strength;
+    int _best_strength_offset;
+    ts::TunerParametersPtr _best_params;
+
+    // Build tuning parameters for a channel.
+    ts::TunerParametersPtr tuningParameters(int offset);
 
     // Tune to specified offset. Return false on error.
-    bool tune(int offset);
+    bool tune(int offset, ts::TunerParametersPtr& params);
 
     // Test the signal at one specific offset. Return true if signal is found.
     bool tryOffset(int offset);
 };
 
 
-// Constructor. Perform scanning. Keep signal tuned on best offset
-OffsetScanner::OffsetScanner(Options& opt, ts::Tuner& tuner, int channel) :
+//----------------------------------------------------------------------------
+// UHF-band offset scanner constructor.
+// Perform scanning. Keep signal tuned on best offset
+//----------------------------------------------------------------------------
+
+OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel) :
     _opt(opt),
     _tuner(tuner),
     _channel(channel),
@@ -327,7 +315,8 @@ OffsetScanner::OffsetScanner(Options& opt, ts::Tuner& tuner, int channel) :
     _best_quality(0),
     _best_quality_offset(0),
     _best_strength(0),
-    _best_strength_offset(0)
+    _best_strength_offset(0),
+    _best_params()
 {
     _opt.verbose(u"scanning channel %'d, %'d Hz", {_channel, ts::UHF::Frequency(_channel)});
 
@@ -373,30 +362,48 @@ OffsetScanner::OffsetScanner(Options& opt, ts::Tuner& tuner, int channel) :
         }
 
         // Finally, tune back to best offset
-        _signal_found = tune(_best_offset);
+        _signal_found = tune(_best_offset, _best_params) && _tuner.getCurrentTuning(*_best_params, false, _opt);
     }
 }
 
 
-// Tune to specified offset. Return false on error.
-bool OffsetScanner::tune(int offset)
+//----------------------------------------------------------------------------
+// Build tuning parameters for a channel.
+//----------------------------------------------------------------------------
+
+ts::TunerParametersPtr OffsetScanner::tuningParameters(int offset)
 {
     // Force frequency in tuning parameters.
     // Other tuning parameters from command line (or default values).
-    _opt.tuner.frequency = ts::UHF::Frequency(_channel, offset);
-    ts::TunerParametersDVBT tparams;
-    return tparams.fromTunerArgs(_opt.tuner, _opt) && _tuner.tune(tparams, _opt);
+    _opt.tuner_args.frequency = ts::UHF::Frequency(_channel, offset);
+    ts::TunerParametersPtr params(new ts::TunerParametersDVBT);
+    return params->fromTunerArgs(_opt.tuner_args, _opt) ? params : ts::TunerParametersPtr();
 }
 
 
-// Test the signal at one specific offset
+//----------------------------------------------------------------------------
+// UHF-band offset scanner: Tune to specified offset. Return false on error.
+//----------------------------------------------------------------------------
+
+bool OffsetScanner::tune(int offset, ts::TunerParametersPtr& params)
+{
+    params = tuningParameters(offset);
+    return !params.isNull() && _tuner.tune(*params, _opt);
+}
+
+
+//----------------------------------------------------------------------------
+// UHF-band offset scanner: Test the signal at one specific offset.
+//----------------------------------------------------------------------------
+
 bool OffsetScanner::tryOffset(int offset)
 {
     _opt.debug(u"trying offset %d", {offset});
 
     // Tune to transponder and start signal acquisition.
     // Signal locking timeout is applied in start().
-    if (!tune(offset) || !_tuner.start(_opt)) {
+    ts::TunerParametersPtr params;
+    if (!tune(offset, params) || !_tuner.start(_opt)) {
         return false;
     }
 
@@ -427,6 +434,7 @@ bool OffsetScanner::tryOffset(int offset)
             // Best offset so far for signal strength
             _best_strength = strength;
             _best_strength_offset = offset;
+            _tuner.getCurrentTuning(*params, false, _opt);
         }
 
         if (quality >= 0 && quality <= _opt.min_quality) {
@@ -437,6 +445,7 @@ bool OffsetScanner::tryOffset(int offset)
             // Best offset so far for signal quality
             _best_quality = quality;
             _best_quality_offset = offset;
+            _tuner.getCurrentTuning(*params, false, _opt);
         }
     }
 
@@ -462,32 +471,117 @@ bool OffsetScanner::tryOffset(int offset)
 
 
 //----------------------------------------------------------------------------
-//  UHF-band scanning
+// Scanning context.
 //----------------------------------------------------------------------------
 
-namespace {
-    void UHFScan(Options& opt, ts::Tuner& tuner, ts::ServiceList& all_services)
-    {
-        // UHF means DVB-T
-        if (tuner.tunerType() != ts::DVB_T) {
-            opt.error(u"UHF scanning needs DVB-T, tuner %s is %s", {tuner.deviceName(), ts::TunerTypeEnum.name(tuner.tunerType())});
-            return;
-        }
+class ScanContext
+{
+public:
+    // Contructor.
+    ScanContext(ScanOptions&);
 
-        // Loop on all selected UHF channels
-        for (int chan = opt.first_uhf_channel; chan <= opt.last_uhf_channel; ++chan) {
+    // tsscan main code.
+    void main();
 
-            // Scan all offsets surrounding the channel
-            OffsetScanner offscan(opt, tuner, chan);
-            if (offscan.signalFound()) {
+private:
+    ScanOptions&    _opt;
+    ts::Tuner       _tuner;
+    ts::ServiceList _services;
+    ts::ChannelFile _channels;
 
-                // Report channel characteristics
-                std::cout << "* UHF "
-                          << ts::UHF::Description(chan, offscan.bestOffset(), tuner.signalStrength(opt), tuner.signalQuality(opt))
-                          << std::endl;
+    // Analyze a TS and generate relevant info.
+    void scanTS(std::ostream& strm, const ts::UString& margin, ts::TunerParametersPtr tparams);
 
-                // Analyze PSI/SI if required
-                DisplayTS(std::cout, u"  ", opt, tuner, ts::TunerParametersPtr(), all_services);
+    // UHF-band scanning
+    void uhfScan();
+
+    // NIT-based scanning
+    void nitScan();
+
+    // Inaccessible methods.
+    ScanContext() = delete;
+    ScanContext(const ScanContext&) = delete;
+    ScanContext& operator=(const ScanContext&) = delete;
+};
+
+// Contructor.
+ScanContext::ScanContext(ScanOptions& opt) :
+    _opt(opt),
+    _tuner(),
+    _services(),
+    _channels()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze a TS and generate relevant info.
+//----------------------------------------------------------------------------
+
+void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::TunerParametersPtr tparams)
+{
+    const bool get_services = _opt.list_services || _opt.global_services;
+
+    // Collect info from the TS.
+    // Use "PAT only" when we do not need the services or channels file.
+    ts::TSScanner info(_tuner, _opt.psi_timeout, !get_services && _opt.channel_file.empty(), _opt);
+
+    if (tparams.isNull()) {
+        info.getTunerParameters(tparams);
+    }
+
+    ts::SafePtr<ts::PAT> pat;
+    ts::SafePtr<ts::SDT> sdt;
+    ts::SafePtr<ts::NIT> nit;
+
+    info.getPAT(pat);
+    info.getSDT(sdt);
+    info.getNIT(nit);
+
+    // Get network and TS Id.
+    uint16_t ts_id = 0;
+    uint16_t net_id = 0;
+    if (!pat.isNull()) {
+        ts_id = pat->ts_id;
+        strm << margin << ts::UString::Format(u"Transport stream id: %d, 0x%X", {ts_id, ts_id}) << std::endl;
+    }
+    if (!nit.isNull()) {
+        net_id = nit->network_id;
+    }
+
+    // Reset TS description in channels file.
+    ts::ChannelFile::TransportStreamPtr ts_info;
+    if (!_opt.channel_file.empty()) {
+        ts::ChannelFile::NetworkPtr net_info(_channels.networkGetOrCreate(net_id, _tuner.tunerType()));
+        ts_info = net_info->tsGetOrCreate(ts_id);
+        ts_info->clear(); // reset all services in TS.
+        ts_info->onid = sdt.isNull() ? 0 : sdt->onetw_id;
+        ts_info->tune = tparams;
+    }
+
+    // Display modulation parameters
+    if (_opt.show_modulation && !tparams.isNull()) {
+        tparams->displayParameters(strm, margin);
+    }
+
+    // Display or collect services
+    if (get_services || !ts_info.isNull()) {
+        ts::ServiceList srvlist;
+        if (info.getServices(srvlist)) {
+            if (!ts_info.isNull()) {
+                // Add all services in the channels info.
+                ts_info->addServices(srvlist);
+            }
+            if (_opt.list_services) {
+                // Display services for this TS
+                srvlist.sort(ts::Service::Sort1);
+                strm << std::endl;
+                ts::Service::Display(strm, margin, srvlist);
+                strm << std::endl;
+            }
+            if (_opt.global_services) {
+                // Add collected services in global service list
+                _services.insert(_services.end(), srvlist.begin(), srvlist.end());
             }
         }
     }
@@ -495,49 +589,78 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-//  NIT-based scanning
+// UHF-band scanning
 //----------------------------------------------------------------------------
 
-namespace {
-    void NITScan(Options& opt, ts::Tuner& tuner, ts::ServiceList& all_services)
-    {
-        // Tune to the reference transponder.
-        ts::TunerParametersPtr params;
-        if (!opt.tuner.tune(tuner, params, opt)) {
-            return;
+void ScanContext::uhfScan()
+{
+    // UHF means DVB-T
+    if (_tuner.tunerType() != ts::DVB_T) {
+        _opt.error(u"UHF scanning needs DVB-T, tuner %s is %s", {_tuner.deviceName(), ts::TunerTypeEnum.name(_tuner.tunerType())});
+        return;
+    }
+
+    // Loop on all selected UHF channels
+    for (int chan = _opt.first_uhf_channel; chan <= _opt.last_uhf_channel; ++chan) {
+
+        // Scan all offsets surrounding the channel
+        OffsetScanner offscan(_opt, _tuner, chan);
+        if (offscan.signalFound()) {
+
+            // Report channel characteristics
+            std::cout << "* UHF "
+                        << ts::UHF::Description(chan, offscan.bestOffset(), _tuner.signalStrength(_opt), _tuner.signalQuality(_opt))
+                        << std::endl;
+
+            // Analyze PSI/SI if required
+            scanTS(std::cout, u"  ", offscan.tunerParameters());
         }
+    }
+}
 
-        // Collect info on reference transponder.
-        ts::TSScanner info(tuner, opt.psi_timeout, false, opt);
 
-        // Get the collected NIT
-        ts::SafePtr<ts::NIT> nit;
-        info.getNIT(nit);
-        if (nit.isNull()) {
-            opt.error(u"cannot scan network, no NIT found on specified transponder");
-            return;
-        }
+//----------------------------------------------------------------------------
+// NIT-based scanning
+//----------------------------------------------------------------------------
 
-        // Process each TS descriptor list in the NIT.
-        for (ts::NIT::TransportMap::const_iterator it = nit->transports.begin(); it != nit->transports.end(); ++it) {
-            const ts::DescriptorList& dlist(it->second.descs);
+void ScanContext::nitScan()
+{
+    // Tune to the reference transponder.
+    ts::TunerParametersPtr params;
+    if (!_opt.tuner_args.tune(_tuner, params, _opt)) {
+        return;
+    }
 
-            // Loop on all descriptors for the current TS.
-            for (size_t i = 0; i < dlist.count(); ++i) {
-                // Try to get delivery system information from current descriptor
-                ts::TunerParametersPtr tp(ts::DecodeDeliveryDescriptor(*dlist[i]));
-                if (!tp.isNull()) {
-                    // Got a delivery descriptor, this is the description of one transponder.
-                    // Tune to this transponder.
-                    opt.debug(u"* tuning to " + tp->toPluginOptions(true));
-                    if (tuner.tune(*tp, opt)) {
+    // Collect info on reference transponder.
+    ts::TSScanner info(_tuner, _opt.psi_timeout, false, _opt);
 
-                        // Report channel characteristics
-                        std::cout << "* Frequency: " << tp->shortDescription(tuner.signalStrength(opt), tuner.signalQuality(opt)) << std::endl;
+    // Get the collected NIT
+    ts::SafePtr<ts::NIT> nit;
+    info.getNIT(nit);
+    if (nit.isNull()) {
+        _opt.error(u"cannot scan network, no NIT found on specified transponder");
+        return;
+    }
 
-                        // Analyze PSI/SI if required
-                        DisplayTS(std::cout, u"  ", opt, tuner, tp, all_services);
-                    }
+    // Process each TS descriptor list in the NIT.
+    for (ts::NIT::TransportMap::const_iterator it = nit->transports.begin(); it != nit->transports.end(); ++it) {
+        const ts::DescriptorList& dlist(it->second.descs);
+
+        // Loop on all descriptors for the current TS.
+        for (size_t i = 0; i < dlist.count(); ++i) {
+            // Try to get delivery system information from current descriptor
+            ts::TunerParametersPtr tp(ts::DecodeDeliveryDescriptor(*dlist[i]));
+            if (!tp.isNull()) {
+                // Got a delivery descriptor, this is the description of one transponder.
+                // Tune to this transponder.
+                _opt.debug(u"* tuning to " + tp->toPluginOptions(true));
+                if (_tuner.tune(*tp, _opt)) {
+
+                    // Report channel characteristics
+                    std::cout << "* Frequency: " << tp->shortDescription(_tuner.signalStrength(_opt), _tuner.signalQuality(_opt)) << std::endl;
+
+                    // Analyze PSI/SI if required
+                    scanTS(std::cout, u"  ", tp);
                 }
             }
         }
@@ -546,57 +669,63 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-//  Main code. Isolated from main() to ensure that destructors are invoked
-//  before COM uninitialize.
+// Main code from scan context.
 //----------------------------------------------------------------------------
 
-namespace {
-    void MainCode(Options& opt)
-    {
-        ts::ServiceList all_services;
+void ScanContext::main()
+{
+    // Initialize tuner.
+    _tuner.setSignalTimeoutSilent(true);
+    if (!_opt.tuner_args.configureTuner(_tuner, _opt)) {
+        return;
+    }
 
-        // Initialize tuner.
-        ts::Tuner tuner;
-        tuner.setSignalTimeoutSilent(true);
-        if (!opt.tuner.configureTuner(tuner, opt)) {
-            return;
-        }
+    // Pre-load the existing channel file.
+    if (_opt.update_channel_file && !_opt.channel_file.empty() && ts::FileExists(_opt.channel_file) && !_channels.load(_opt.channel_file, _opt)) {
+        return;
+    }
 
-        if (opt.uhf_scan) {
-            UHFScan(opt, tuner, all_services);
-        }
-        else if (opt.nit_scan) {
-            NITScan(opt, tuner, all_services);
-        }
-        else {
-            opt.fatal(u"inconsistent options, internal error");
-        }
+    // Main processing depends on scanning method.
+    if (_opt.uhf_scan) {
+        uhfScan();
+    }
+    else if (_opt.nit_scan) {
+        nitScan();
+    }
+    else {
+        _opt.fatal(u"inconsistent options, internal error");
+    }
 
-        // Report global list of services if required
-        if (opt.global_services) {
-            all_services.sort(ts::Service::Sort1);
-            std::cout << std::endl;
-            ts::Service::Display(std::cout, u"", all_services);
-        }
+    // Report global list of services if required
+    if (_opt.global_services) {
+        _services.sort(ts::Service::Sort1);
+        std::cout << std::endl;
+        ts::Service::Display(std::cout, u"", _services);
+    }
+
+    // Save channel file. Create intermediate directories when it is the default file.
+    if (!_opt.channel_file.empty()) {
+        _opt.verbose(u"saving %s", {_opt.channel_file});
+        _channels.save(_opt.channel_file, _opt.default_channel_file, _opt);
     }
 }
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
 {
-    Options opt(argc, argv);
+    ScanOptions opt(argc, argv);
     ts::COM com(opt);
 
     if (com.isInitialized()) {
-        MainCode(opt);
+        ScanContext ctx(opt);
+        ctx.main();
     }
 
-    opt.exitOnError();
-    return EXIT_SUCCESS;
+    return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 TS_MAIN(MainCode)

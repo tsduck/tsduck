@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDuckChannels.h"
+#include "tsChannelFile.h"
 #include "tsModulation.h"
 #include "tsxmlElement.h"
 #include "tsSysUtils.h"
@@ -38,14 +38,14 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::DuckChannels::DuckChannels() :
-    networks(),
+ts::ChannelFile::ChannelFile() :
+    _networks(),
     _xmlTweaks()
 {
 }
 
-ts::DuckChannels::Service::Service() :
-    id(0),
+ts::ChannelFile::Service::Service(uint16_t id_) :
+    id(id_),
     name(),
     provider(),
     lcn(),
@@ -55,29 +55,234 @@ ts::DuckChannels::Service::Service() :
 {
 }
 
-ts::DuckChannels::TransportStream::TransportStream() :
-    id(0),
-    onid(0),
-    tune(),
-    services()
+ts::ChannelFile::TransportStream::TransportStream(uint16_t id_, uint16_t onid_, const TunerParametersPtr& tune_) :
+    id(id_),
+    onid(onid_),
+    tune(tune_),
+    _services()
 {
 }
 
-ts::DuckChannels::Network::Network() :
-    id(0),
-    type(DVB_S),
-    ts()
+ts::ChannelFile::Network::Network(uint16_t id_, TunerType type_) :
+    id(id_),
+    type(type_),
+    _ts()
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Clear the loaded content.
+// Transport stream accessors.
 //----------------------------------------------------------------------------
 
-void ts::DuckChannels::clear()
+ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByIndex(size_t index) const
+{ 
+    return index < _services.size() ? _services[index] : ServicePtr();
+}
+
+ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceById(uint16_t id_) const
 {
-    networks.clear();
+    for (size_t i = 0; i < _services.size(); ++i) {
+        const ServicePtr& srv(_services[i]);
+        assert(!srv.isNull());
+        if (srv->id == id_) {
+            return srv;
+        }
+    }
+    return ServicePtr(); // not found, null pointer.
+}
+
+ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceGetOrCreate(uint16_t id_)
+{
+    // Try to get an existing service.
+    ServicePtr srv(serviceById(id_));
+    if (srv.isNull()) {
+        // Not found, create a new service.
+        srv = new Service(id_);
+        CheckNonNull(srv.pointer());
+        _services.push_back(srv);
+    }
+    return srv;
+}
+
+ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByName(const UString& name, bool strict) const
+{
+    for (size_t i = 0; i < _services.size(); ++i) {
+        const ServicePtr& srv(_services[i]);
+        assert(!srv.isNull());
+        if ((strict && srv->name == name) || (!strict && name.similar(srv->name))) {
+            return srv;
+        }
+    }
+    return ServicePtr(); // not found, null pointer.
+}
+
+
+//----------------------------------------------------------------------------
+// Add a service in a transport stream.
+//----------------------------------------------------------------------------
+
+bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, CopyShare copy, bool replace)
+{
+    // Filter out null pointer.
+    if (srv.isNull()) {
+        return false;
+    }
+
+    // Look for a service with same id.
+    for (size_t i = 0; i < _services.size(); ++i) {
+        assert(!_services[i].isNull());
+        if (_services[i]->id == srv->id) {
+            if (replace) {
+                _services[i] = copy == SHARE ? srv : new Service(*srv);
+                CheckNonNull(_services[i].pointer());
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
+    // Add new service.
+    _services.push_back(copy == SHARE ? srv : new Service(*srv));
+    CheckNonNull(_services.back().pointer());
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Add a list of services in the transport stream.
+//----------------------------------------------------------------------------
+
+void ts::ChannelFile::TransportStream::addServices(const ServiceList& list)
+{
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        if (it->hasId()) {
+            ServicePtr srv(serviceGetOrCreate(it->getId()));
+            if (it->hasName()) {
+                srv->name = it->getName();
+            }
+            if (it->hasProvider()) {
+                srv->provider = it->getProvider();
+            }
+            if (it->hasLCN()) {
+                srv->lcn = it->getLCN();
+            }
+            if (it->hasPMTPID()) {
+                srv->pmtPID = it->getPMTPID();
+            }
+            if (it->hasType()) {
+                srv->type = it->getType();
+            }
+            if (it->hasCAControlled()) {
+                srv->cas = it->getCAControlled();
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Network accessors.
+//----------------------------------------------------------------------------
+
+ts::ChannelFile::TransportStreamPtr ts::ChannelFile::Network::tsByIndex(size_t index) const
+{ 
+    return index < _ts.size() ? _ts[index] : TransportStreamPtr();
+}
+
+ts::ChannelFile::TransportStreamPtr ts::ChannelFile::Network::tsById(uint16_t id_) const
+{
+    for (size_t i = 0; i < _ts.size(); ++i) {
+        const TransportStreamPtr& ts(_ts[i]);
+        assert(!ts.isNull());
+        if (ts->id == id_) {
+            return ts;
+        }
+    }
+    return TransportStreamPtr(); // not found, null pointer.
+}
+
+ts::ChannelFile::TransportStreamPtr ts::ChannelFile::Network::tsGetOrCreate(uint16_t id_)
+{
+    // Try to get an existing transport stream.
+    TransportStreamPtr ts(tsById(id_));
+    if (ts.isNull()) {
+        // Not found, create a new TS.
+        ts = new TransportStream(id_);
+        CheckNonNull(ts.pointer());
+        _ts.push_back(ts);
+    }
+    return ts;
+}
+
+
+//----------------------------------------------------------------------------
+// Network lookup.
+//----------------------------------------------------------------------------
+
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkByIndex(size_t index) const
+{ 
+    return index < _networks.size() ? _networks[index] : NetworkPtr();
+}
+
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkById(uint16_t id, TunerType type) const
+{
+    for (size_t i = 0; i < _networks.size(); ++i) {
+        const NetworkPtr& net(_networks[i]);
+        assert(!net.isNull());
+        if (net->id == id && net->type == type) {
+            return net;
+        }
+    }
+    return NetworkPtr(); // not found, null pointer.
+}
+
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id, TunerType type)
+{
+    // Try to get an existing transport stream.
+    NetworkPtr net(networkById(id, type));
+    if (net.isNull()) {
+        // Not found, create a new network.
+        net = new Network(id, type);
+        CheckNonNull(net.pointer());
+        _networks.push_back(net);
+    }
+    return net;
+}
+
+
+//----------------------------------------------------------------------------
+// Search a service by name in any network of a given type of the file.
+//----------------------------------------------------------------------------
+
+bool ts::ChannelFile::searchServiceInternal(NetworkPtr& net, TransportStreamPtr& ts, ServicePtr& srv, TunerType type, const UString& name, bool strict, bool useTunerType) const
+{
+    // Clear output parameters.
+    net.clear();
+    ts.clear();
+    srv.clear();
+
+    // Loop through all networks.
+    for (size_t inet = 0; inet < _networks.size(); ++inet) {
+        const NetworkPtr& pnet(_networks[inet]);
+        assert(!pnet.isNull());
+        if (!useTunerType || pnet->type == type) {
+            // Inspect this network, loop through all transport stream.
+            for (size_t its = 0; its < pnet->tsCount(); ++its) {
+                const TransportStreamPtr& pts(pnet->tsByIndex(its));
+                assert(!pts.isNull());
+                srv = pts->serviceByName(name, strict);
+                if (!srv.isNull()) {
+                    net = pnet;
+                    ts = pts;
+                    return true;
+                }
+            }
+        }
+    }
+    return false; // not found
 }
 
 
@@ -85,7 +290,7 @@ void ts::DuckChannels::clear()
 // Default XML channel file name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::DuckChannels::DefaultFileName()
+ts::UString ts::ChannelFile::DefaultFileName()
 {
 #if defined(TS_WINDOWS)
     static const UChar env[] = u"APPDATA";
@@ -104,7 +309,7 @@ ts::UString ts::DuckChannels::DefaultFileName()
 // Load an XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::DuckChannels::load(const UString& fileName, Report& report)
+bool ts::ChannelFile::load(const UString& fileName, Report& report)
 {
     clear();
     xml::Document doc(report);
@@ -112,7 +317,7 @@ bool ts::DuckChannels::load(const UString& fileName, Report& report)
     return doc.load(fileName, false) && parseDocument(doc);
 }
 
-bool ts::DuckChannels::load(std::istream& strm, Report& report)
+bool ts::ChannelFile::load(std::istream& strm, Report& report)
 {
     clear();
     xml::Document doc(report);
@@ -120,7 +325,7 @@ bool ts::DuckChannels::load(std::istream& strm, Report& report)
     return doc.load(strm) && parseDocument(doc);
 }
 
-bool ts::DuckChannels::parse(const UString& text, Report& report)
+bool ts::ChannelFile::parse(const UString& text, Report& report)
 {
     clear();
     xml::Document doc(report);
@@ -133,7 +338,7 @@ bool ts::DuckChannels::parse(const UString& text, Report& report)
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::DuckChannels::parseDocument(const xml::Document& doc)
+bool ts::ChannelFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     xml::Document model(doc.report());
@@ -160,7 +365,7 @@ bool ts::DuckChannels::parseDocument(const xml::Document& doc)
         // Build a new Network object at end of our list of networks.
         const NetworkPtr net(new Network);
         CheckNonNull(net.pointer());
-        networks.push_back(net);
+        _networks.push_back(net);
 
         // Get network properties.
         xml::ElementVector xts;
@@ -173,63 +378,71 @@ bool ts::DuckChannels::parseDocument(const xml::Document& doc)
         // Get all TS in the network.
         for (auto itts = xts.begin(); itts != xts.end(); ++itts) {
 
-            // Build a new TransportStream object at end of TS for the current network.
-            const TransportStreamPtr ts(new TransportStream);
-            CheckNonNull(ts.pointer());
-            net->ts.push_back(ts);
-
             // Get transport stream properties.
+            uint16_t tsid = 0;
+            uint16_t onid = 0;
             xml::ElementVector xservices;
             xml::ElementVector xatsc;
             xml::ElementVector xdvbc;
             xml::ElementVector xdvbs;
             xml::ElementVector xdvbt;
-            success =
-                (*itts)->getIntAttribute<uint16_t>(ts->id, u"id", true) &&
-                (*itts)->getIntAttribute<uint16_t>(ts->onid, u"onid", true) &&
+            bool tsOk =
+                (*itts)->getIntAttribute<uint16_t>(tsid, u"id", true) &&
+                (*itts)->getIntAttribute<uint16_t>(onid, u"onid", true) &&
                 (*itts)->getChildren(xatsc, u"atsc", 0, 1) &&
                 (*itts)->getChildren(xdvbc, u"dvbc", 0, 1) &&
                 (*itts)->getChildren(xdvbs, u"dvbs", 0, 1) &&
                 (*itts)->getChildren(xdvbt, u"dvbt", 0, 1) &&
-                (*itts)->getChildren(xservices, u"service") &&
-                success;
+                (*itts)->getChildren(xservices, u"service");
 
             // Get tuner parameters (at most one structure is allowed).
             if (xatsc.size() + xdvbc.size() + xdvbs.size() + xdvbt.size() > 1) {
                 doc.report().error(u"At most one of <atsc>, <dvbc>, <dvbs>, <dvbt> is allowed in <ts> at line %d", {(*itts)->lineNumber()});
-                success = false;
-            }
-            else if (!xatsc.empty()) {
-                success = XmlToATCS(ts->tune, xatsc.front()) && success;
-            }
-            else if (!xdvbc.empty()) {
-                success = XmlToDVBC(ts->tune, xdvbc.front()) && success;
-            }
-            else if (!xdvbs.empty()) {
-                success = XmlToDVBS(ts->tune, xdvbs.front()) && success;
-            }
-            else if (!xdvbt.empty()) {
-                success = XmlToDVBT(ts->tune, xdvbt.front()) && success;
+                tsOk = false;
             }
 
-            // Get all services in the transport stream.
-            for (auto itsrv = xservices.begin(); itsrv != xservices.end(); ++itsrv) {
+            success = tsOk && success;
 
-                // Build a new Service object at end of the current transport stream.
-                const ServicePtr srv(new Service);
-                CheckNonNull(srv.pointer());
-                ts->services.push_back(srv);
+            if (tsOk) {
+                // Build a new TransportStream object.
+                const TransportStreamPtr ts(net->tsGetOrCreate(tsid));
+                assert(!ts.isNull());
+                ts->onid = onid;
 
-                // Get service properties.
-                success =
-                    (*itsrv)->getIntAttribute<uint16_t>(srv->id, u"id", true) &&
-                    (*itsrv)->getAttribute(srv->name, u"name", false) &&
-                    (*itsrv)->getAttribute(srv->provider, u"provider", false) &&
-                    (*itsrv)->getOptionalIntAttribute(srv->lcn, u"LCN") &&
-                    (*itsrv)->getOptionalIntAttribute(srv->pmtPID, u"PMTPID", PID(0), PID(PID_NULL)) &&
-                    (*itsrv)->getOptionalIntAttribute(srv->type, u"type") &&
-                    (*itsrv)->getOptionalBoolAttribute(srv->cas, u"cas") &&
-                    success;
+                if (!xatsc.empty()) {
+                    success = XmlToATCS(ts->tune, xatsc.front()) && success;
+                }
+                else if (!xdvbc.empty()) {
+                    success = XmlToDVBC(ts->tune, xdvbc.front()) && success;
+                }
+                else if (!xdvbs.empty()) {
+                    success = XmlToDVBS(ts->tune, xdvbs.front()) && success;
+                }
+                else if (!xdvbt.empty()) {
+                    success = XmlToDVBT(ts->tune, xdvbt.front()) && success;
+                }
+
+                // Get all services in the transport stream.
+                for (auto itsrv = xservices.begin(); itsrv != xservices.end(); ++itsrv) {
+
+                    // Build a new Service object.
+                    const ServicePtr srv(new Service);
+                    CheckNonNull(srv.pointer());
+
+                    // Get service properties.
+                    success =
+                        (*itsrv)->getIntAttribute<uint16_t>(srv->id, u"id", true) &&
+                        (*itsrv)->getAttribute(srv->name, u"name", false) &&
+                        (*itsrv)->getAttribute(srv->provider, u"provider", false) &&
+                        (*itsrv)->getOptionalIntAttribute(srv->lcn, u"LCN") &&
+                        (*itsrv)->getOptionalIntAttribute(srv->pmtPID, u"PMTPID", PID(0), PID(PID_NULL)) &&
+                        (*itsrv)->getOptionalIntAttribute(srv->type, u"type") &&
+                        (*itsrv)->getOptionalBoolAttribute(srv->cas, u"cas") &&
+                        success;
+
+                    // Add the service in the transport stream.
+                    ts->addService(srv, SHARE, true);
+                }
             }
         }
     }
@@ -241,14 +454,24 @@ bool ts::DuckChannels::parseDocument(const xml::Document& doc)
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::DuckChannels::save(const UString& fileName, Report& report) const
+bool ts::ChannelFile::save(const UString& fileName, bool createDirectories, Report& report) const
 {
+    if (createDirectories) {
+        const UString dir(DirectoryName(fileName));
+        if (!IsDirectory(dir)) {
+            const ErrorCode err = CreateDirectory(dir, true);
+            if (err != SYS_SUCCESS) {
+                report.error(u"error creating directory %s: %s", {dir, ErrorCodeMessage(err)});
+            }
+        }
+    }
+
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
     return generateDocument(doc) && doc.save(fileName);
 }
 
-ts::UString ts::DuckChannels::toXML(Report& report) const
+ts::UString ts::ChannelFile::toXML(Report& report) const
 {
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
@@ -260,7 +483,7 @@ ts::UString ts::DuckChannels::toXML(Report& report) const
 // Generate an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::DuckChannels::generateDocument(xml::Document& doc) const
+bool ts::ChannelFile::generateDocument(xml::Document& doc) const
 {
     // Initialize the document structure.
     xml::Element* root = doc.initialize(u"tsduck");
@@ -269,49 +492,46 @@ bool ts::DuckChannels::generateDocument(xml::Document& doc) const
     }
 
     // Format all networks.
-    for (auto itnet = networks.begin(); itnet != networks.end(); ++itnet) {
+    for (auto itnet = _networks.begin(); itnet != _networks.end(); ++itnet) {
         const NetworkPtr& net(*itnet);
-        if (!net.isNull()) {
+        assert(!net.isNull());
 
-            // Create one network element.
-            xml::Element* xnet = root->addElement(u"network");
-            xnet->setIntAttribute(u"id", net->id, true);
-            xnet->setEnumAttribute(TunerTypeEnum, u"type", net->type);
+        // Create one network element.
+        xml::Element* xnet = root->addElement(u"network");
+        xnet->setIntAttribute(u"id", net->id, true);
+        xnet->setEnumAttribute(TunerTypeEnum, u"type", net->type);
 
-            // Format all transport streams.
-            for (auto itts = net->ts.begin(); itts != net->ts.end(); ++itts) {
-                const TransportStreamPtr& ts(*itts);
-                if (!ts.isNull()) {
+        // Format all transport streams.
+        for (size_t its = 0; its < net->tsCount(); ++its) {
+            const TransportStreamPtr& ts(net->tsByIndex(its));
+            assert(!ts.isNull());
 
-                    // Create one transport stream element.
-                    xml::Element* xts = xnet->addElement(u"ts");
-                    xts->setIntAttribute(u"id", ts->id, true);
-                    xts->setIntAttribute(u"onid", ts->onid, true);
+            // Create one transport stream element.
+            xml::Element* xts = xnet->addElement(u"ts");
+            xts->setIntAttribute(u"id", ts->id, true);
+            xts->setIntAttribute(u"onid", ts->onid, true);
 
-                    // Set tuner parameters. Try various options in sequence.
-                    // Typically, only one succeeds. No error if none works (this is just an incomplete description).
-                    TunerToXml(xts, dynamic_cast<const TunerParametersDVBT*>(ts->tune.pointer()));
-                    TunerToXml(xts, dynamic_cast<const TunerParametersDVBS*>(ts->tune.pointer()));
-                    TunerToXml(xts, dynamic_cast<const TunerParametersDVBC*>(ts->tune.pointer()));
-                    TunerToXml(xts, dynamic_cast<const TunerParametersATSC*>(ts->tune.pointer()));
+            // Set tuner parameters. Try various options in sequence.
+            // Typically, only one succeeds. No error if none works (this is just an incomplete description).
+            TunerToXml(xts, dynamic_cast<const TunerParametersDVBT*>(ts->tune.pointer()));
+            TunerToXml(xts, dynamic_cast<const TunerParametersDVBS*>(ts->tune.pointer()));
+            TunerToXml(xts, dynamic_cast<const TunerParametersDVBC*>(ts->tune.pointer()));
+            TunerToXml(xts, dynamic_cast<const TunerParametersATSC*>(ts->tune.pointer()));
 
-                    // Format all services.
-                    for (auto itsrv = ts->services.begin(); itsrv != ts->services.end(); ++itsrv) {
-                        const ServicePtr& srv(*itsrv);
-                        if (!srv.isNull()) {
+            // Format all services.
+            for (size_t isrv = 0; isrv < ts->serviceCount(); ++isrv) {
+                const ServicePtr& srv(ts->serviceByIndex(isrv));
+                assert(!srv.isNull());
 
-                            // Create one service element.
-                            xml::Element* xsrv = xts->addElement(u"service");
-                            xsrv->setIntAttribute(u"id", srv->id, true);
-                            xsrv->setAttribute(u"name", srv->name, true);
-                            xsrv->setAttribute(u"provider", srv->provider, true);
-                            xsrv->setOptionalIntAttribute(u"LCN", srv->lcn, false);
-                            xsrv->setOptionalIntAttribute(u"PMTPID", srv->pmtPID, true);
-                            xsrv->setOptionalIntAttribute(u"type", srv->type, true);
-                            xsrv->setOptionalBoolAttribute(u"cas", srv->cas);
-                        }
-                    }
-                }
+                // Create one service element.
+                xml::Element* xsrv = xts->addElement(u"service");
+                xsrv->setIntAttribute(u"id", srv->id, true);
+                xsrv->setAttribute(u"name", srv->name, true);
+                xsrv->setAttribute(u"provider", srv->provider, true);
+                xsrv->setOptionalIntAttribute(u"LCN", srv->lcn, false);
+                xsrv->setOptionalIntAttribute(u"PMTPID", srv->pmtPID, true);
+                xsrv->setOptionalIntAttribute(u"type", srv->type, true);
+                xsrv->setOptionalBoolAttribute(u"cas", srv->cas);
             }
         }
     }
@@ -323,7 +543,7 @@ bool ts::DuckChannels::generateDocument(xml::Document& doc) const
 // Generate an XML element from a set of tuner parameters.
 //----------------------------------------------------------------------------
 
-void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersATSC* params)
+void ts::ChannelFile::TunerToXml(xml::Element* parent, const TunerParametersATSC* params)
 {
     if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"atsc");
@@ -335,7 +555,7 @@ void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersATS
     }
 }
 
-void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVBC* params)
+void ts::ChannelFile::TunerToXml(xml::Element* parent, const TunerParametersDVBC* params)
 {
     if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"dvbc");
@@ -351,7 +571,7 @@ void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVB
     }
 }
 
-void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVBS* params)
+void ts::ChannelFile::TunerToXml(xml::Element* parent, const TunerParametersDVBS* params)
 {
     if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"dvbs");
@@ -382,7 +602,7 @@ void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVB
     }
 }
 
-void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVBT* params)
+void ts::ChannelFile::TunerToXml(xml::Element* parent, const TunerParametersDVBT* params)
 {
     if (params != nullptr && parent != nullptr) {
         xml::Element* e = parent->addElement(u"dvbt");
@@ -403,7 +623,7 @@ void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVB
         if (params->guard_interval != GUARD_AUTO) {
             e->setEnumAttribute(GuardIntervalEnum, u"guard", params->guard_interval);
         }
-        if (params->hierarchy != HIERARCHY_NONE) {
+        if (params->hierarchy != HIERARCHY_AUTO) {
             e->setEnumAttribute(HierarchyEnum, u"hierarchy", params->hierarchy);
         }
         if (params->plp != PLP_DISABLE) {
@@ -420,7 +640,7 @@ void ts::DuckChannels::TunerToXml(xml::Element* parent, const TunerParametersDVB
 // Parse an XML element into a set of tuner parameters.
 //----------------------------------------------------------------------------
 
-bool ts::DuckChannels::XmlToATCS(TunerParametersPtr& params, const xml::Element* elem)
+bool ts::ChannelFile::XmlToATCS(TunerParametersPtr& params, const xml::Element* elem)
 {
     TunerParametersATSC* p = new TunerParametersATSC;
     params = p;
@@ -430,7 +650,7 @@ bool ts::DuckChannels::XmlToATCS(TunerParametersPtr& params, const xml::Element*
         elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
 }
 
-bool ts::DuckChannels::XmlToDVBC(TunerParametersPtr& params, const xml::Element* elem)
+bool ts::ChannelFile::XmlToDVBC(TunerParametersPtr& params, const xml::Element* elem)
 {
     TunerParametersDVBC* p = new TunerParametersDVBC;
     params = p;
@@ -442,7 +662,7 @@ bool ts::DuckChannels::XmlToDVBC(TunerParametersPtr& params, const xml::Element*
         elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
 }
 
-bool ts::DuckChannels::XmlToDVBS(TunerParametersPtr& params, const xml::Element* elem)
+bool ts::ChannelFile::XmlToDVBS(TunerParametersPtr& params, const xml::Element* elem)
 {
     TunerParametersDVBS* p = new TunerParametersDVBS;
     params = p;
@@ -459,7 +679,7 @@ bool ts::DuckChannels::XmlToDVBS(TunerParametersPtr& params, const xml::Element*
         (p->delivery_system == DS_DVB_S || elem->getIntEnumAttribute(p->roll_off, RollOffEnum, u"rolloff", false, ROLLOFF_AUTO));
 }
 
-bool ts::DuckChannels::XmlToDVBT(TunerParametersPtr& params, const xml::Element* elem)
+bool ts::ChannelFile::XmlToDVBT(TunerParametersPtr& params, const xml::Element* elem)
 {
     TunerParametersDVBT* p = new TunerParametersDVBT;
     params = p;
@@ -472,6 +692,6 @@ bool ts::DuckChannels::XmlToDVBT(TunerParametersPtr& params, const xml::Element*
         elem->getIntEnumAttribute(p->fec_hp, InnerFECEnum, u"HPFEC", false, FEC_AUTO) &&
         elem->getIntEnumAttribute(p->fec_lp, InnerFECEnum, u"LPFEC", false, FEC_AUTO) &&
         elem->getIntEnumAttribute(p->inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
-        elem->getIntEnumAttribute(p->hierarchy, HierarchyEnum, u"hierarchy", false, HIERARCHY_NONE) &&
+        elem->getIntEnumAttribute(p->hierarchy, HierarchyEnum, u"hierarchy", false, HIERARCHY_AUTO) &&
         elem->getIntAttribute<PLP>(p->plp, u"PLP", false, PLP_DISABLE, 0, 255);
 }

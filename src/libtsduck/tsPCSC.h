@@ -48,11 +48,6 @@
 
 #else // PC/SC support available
 
-#include <winscard.h>
-#if defined(TS_LINUX)
-#include <PCSC/reader.h>
-#endif
-
 namespace ts {
     //!
     //! PC/SC smartcard API utilities

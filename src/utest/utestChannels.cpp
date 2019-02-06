@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDuckChannels.h"
+#include "tsChannelFile.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -102,7 +102,7 @@ void ChannelsTest::testText()
         u"  <network id=\"0x8753\" type=\"DVB-S\">\n"
         u"    <ts id=\"0x8793\" onid=\"0x5896\">\n"
         u"      <dvbs frequency=\"8,523,698\" symbolrate=\"1,237,418\" modulation=\"8-PSK\" system=\"DVB-S2\" polarity=\"horizontal\" FEC=\"7/8\" pilots=\"on\" rolloff=\"0.35\"/>\n"
-        u"      <service id=\"0x4591\"/>\n"
+        u"      <service id=\"0x4591\" name=\"Foo Channel\"/>\n"
         u"    </ts>\n"
         u"  </network>\n"
         u"  <network id=\"0x5934\" type=\"DVB-T\">\n"
@@ -114,9 +114,76 @@ void ChannelsTest::testText()
         u"</tsduck>\n"
         u"";
 
-    ts::DuckChannels channels;
+    ts::ChannelFile channels;
     CPPUNIT_ASSERT(channels.parse(document));
+    CPPUNIT_ASSERT_EQUAL(size_t(4), channels.networkCount());
 
+    ts::ChannelFile::NetworkPtr net;
+    ts::ChannelFile::TransportStreamPtr ts;
+    ts::ChannelFile::ServicePtr srv;
+
+    CPPUNIT_ASSERT(channels.searchService(net, ts, srv, u"foochannel", false));
+
+    CPPUNIT_ASSERT(!net.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), net->id);
+    CPPUNIT_ASSERT_EQUAL(ts::ATSC, net->type);
+
+    CPPUNIT_ASSERT(!ts.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x5678), ts->id);
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x9ABC), ts->onid);
+    CPPUNIT_ASSERT(!ts->tune.isNull());
+    const ts::TunerParametersATSC* atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
+    CPPUNIT_ASSERT(atsc != nullptr);
+    CPPUNIT_ASSERT_EQUAL(uint64_t(123456), atsc->frequency);
+    CPPUNIT_ASSERT_EQUAL(ts::VSB_16, atsc->modulation);
+
+    CPPUNIT_ASSERT(!srv.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(2), srv->id);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Channel", srv->name);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Provider", srv->provider);
+    CPPUNIT_ASSERT(srv->lcn.set());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(23), srv->lcn.value());
+    CPPUNIT_ASSERT(srv->pmtPID.set());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
+    CPPUNIT_ASSERT(srv->type.set());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(0x12), srv->type.value());
+    CPPUNIT_ASSERT(srv->cas.set());
+    CPPUNIT_ASSERT(srv->cas.value());
+
+    CPPUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DVB_S, u"foochannel", false));
+
+    CPPUNIT_ASSERT(!net.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x8753), net->id);
+    CPPUNIT_ASSERT_EQUAL(ts::DVB_S, net->type);
+
+    CPPUNIT_ASSERT(!ts.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x8793), ts->id);
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x5896), ts->onid);
+    CPPUNIT_ASSERT(!ts->tune.isNull());
+    const ts::TunerParametersDVBS* dvbs = dynamic_cast<const ts::TunerParametersDVBS*>(ts->tune.pointer());
+    CPPUNIT_ASSERT(dvbs != nullptr);
+    CPPUNIT_ASSERT_EQUAL(uint64_t(8523698), dvbs->frequency);
+    CPPUNIT_ASSERT_EQUAL(uint32_t(1237418), dvbs->symbol_rate);
+    CPPUNIT_ASSERT_EQUAL(ts::PSK_8, dvbs->modulation);
+    CPPUNIT_ASSERT_EQUAL(ts::DS_DVB_S2, dvbs->delivery_system);
+    CPPUNIT_ASSERT_EQUAL(ts::POL_HORIZONTAL, dvbs->polarity);
+    CPPUNIT_ASSERT_EQUAL(ts::FEC_7_8, dvbs->inner_fec);
+    CPPUNIT_ASSERT_EQUAL(ts::PILOT_ON, dvbs->pilots);
+    CPPUNIT_ASSERT_EQUAL(ts::ROLLOFF_35, dvbs->roll_off);
+
+    CPPUNIT_ASSERT(!srv.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x4591), srv->id);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Channel", srv->name);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", srv->provider);
+    CPPUNIT_ASSERT(!srv->lcn.set());
+    CPPUNIT_ASSERT(!srv->pmtPID.set());
+    CPPUNIT_ASSERT(!srv->type.set());
+    CPPUNIT_ASSERT(!srv->cas.set());
+
+    CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false));
+    CPPUNIT_ASSERT(net.isNull());
+    CPPUNIT_ASSERT(ts.isNull());
+    CPPUNIT_ASSERT(srv.isNull());
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(document, channels.toXML());
 }
