@@ -40,7 +40,8 @@ TSDUCK_SOURCE;
 
 ts::ChannelFile::ChannelFile() :
     _networks(),
-    _xmlTweaks()
+    _xmlTweaks(),
+    _fileName()
 {
 }
 
@@ -257,7 +258,22 @@ ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id, Tun
 // Search a service by name in any network of a given type of the file.
 //----------------------------------------------------------------------------
 
-bool ts::ChannelFile::searchServiceInternal(NetworkPtr& net, TransportStreamPtr& ts, ServicePtr& srv, TunerType type, const UString& name, bool strict, bool useTunerType) const
+ts::TunerParametersPtr ts::ChannelFile::serviceToTuningInternal(TunerType type, const UString& name, bool strict, bool useTunerType, Report& report) const
+{
+    NetworkPtr net;
+    TransportStreamPtr ts;
+    ServicePtr srv;
+    return searchServiceInternal(net, ts, srv, type, name, strict, useTunerType, report) ? ts->tune : TunerParametersPtr();
+}
+
+bool ts::ChannelFile::searchServiceInternal(NetworkPtr& net,
+                                            TransportStreamPtr& ts,
+                                            ServicePtr& srv,
+                                            TunerType type,
+                                            const UString& name,
+                                            bool strict,
+                                            bool useTunerType,
+                                            Report& report) const
 {
     // Clear output parameters.
     net.clear();
@@ -282,7 +298,15 @@ bool ts::ChannelFile::searchServiceInternal(NetworkPtr& net, TransportStreamPtr&
             }
         }
     }
-    return false; // not found
+
+    // Channel not found.
+    if (_fileName.empty()) {
+        report.error(u"channel \"%s\" not found in channel database", {name});
+    }
+    else {
+        report.error(u"channel \"%s\" not found in file %s", {name, _fileName});
+    }
+    return false;
 }
 
 
@@ -312,6 +336,7 @@ ts::UString ts::ChannelFile::DefaultFileName()
 bool ts::ChannelFile::load(const UString& fileName, Report& report)
 {
     clear();
+    _fileName = fileName;
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
     return doc.load(fileName, false) && parseDocument(doc);
@@ -320,6 +345,7 @@ bool ts::ChannelFile::load(const UString& fileName, Report& report)
 bool ts::ChannelFile::load(std::istream& strm, Report& report)
 {
     clear();
+    _fileName.clear();
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
     return doc.load(strm) && parseDocument(doc);
@@ -328,6 +354,7 @@ bool ts::ChannelFile::load(std::istream& strm, Report& report)
 bool ts::ChannelFile::parse(const UString& text, Report& report)
 {
     clear();
+    _fileName.clear();
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
     return doc.parse(text) && parseDocument(doc);

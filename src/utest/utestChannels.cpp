@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsChannelFile.h"
+#include "tsNullReport.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -180,7 +181,7 @@ void ChannelsTest::testText()
     CPPUNIT_ASSERT(!srv->type.set());
     CPPUNIT_ASSERT(!srv->cas.set());
 
-    CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false));
+    CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false, NULLREP));
     CPPUNIT_ASSERT(net.isNull());
     CPPUNIT_ASSERT(ts.isNull());
     CPPUNIT_ASSERT(srv.isNull());

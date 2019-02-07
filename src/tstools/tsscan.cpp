@@ -40,6 +40,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersATSC.h"
+#include "tsModulation.h"
 #include "tsTSScanner.h"
 #include "tsChannelFile.h"
 #include "tsNIT.h"
@@ -201,8 +202,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     option(u"save-channels", 0, STRING);
     help(u"save-channels", u"filename",
          u"Save the description of all channels in the specified XML file. "
-         u"If the file name is \"-\", use the default channel file name: " +
-         ts::ChannelFile::DefaultFileName() + "\n"
+         u"If the file name is \"-\", use the default tuning configuration file. "
          u"See also option --update-channels.");
 
     option(u"update-channels", 0, STRING);
@@ -210,8 +210,13 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"Update the description of all channels in the specified XML file. "
          u"The content of each scanned transport stream is replaced in the file. "
          u"If the file does not exist, it is created. "
-         u"If the file name is \"-\", use the default channel file name: " +
-         ts::ChannelFile::DefaultFileName() + "\n"
+         u"If the file name is \"-\", use the default tuning configuration file. "
+         u"The location of the default tuning configuration file depends on the system. "
+#if defined(TS_LINUX)
+         u"On Linux, the default file is $HOME/.tsduck.channels.xml. "
+#elif defined(TS_WINDOWS)
+         u"On Windows, the default file is %APPDATA%\\tsduck\\channels.xml. "
+#endif
          u"See also option --save-channels.");
 
     analyze(argc, argv);
@@ -376,8 +381,7 @@ ts::TunerParametersPtr OffsetScanner::tuningParameters(int offset)
     // Force frequency in tuning parameters.
     // Other tuning parameters from command line (or default values).
     _opt.tuner_args.frequency = ts::UHF::Frequency(_channel, offset);
-    ts::TunerParametersPtr params(new ts::TunerParametersDVBT);
-    return params->fromTunerArgs(_opt.tuner_args, _opt) ? params : ts::TunerParametersPtr();
+    return ts::TunerParameters::FromTunerArgs(ts::DVB_T, _opt.tuner_args, _opt);
 }
 
 
