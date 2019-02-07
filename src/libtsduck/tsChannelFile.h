@@ -321,11 +321,17 @@ namespace ts {
         //! @param [out] srv Returned service.
         //! @param [in] name Service name.
         //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
-        //! @return A safe pointer to the service description or a null pointer if the specified service does not exist.
+        //! @param [in,out] report Where to report errors.
+        //! @return True if the service is found, false if the specified service does not exist.
         //!
-        bool searchService(NetworkPtr& net, TransportStreamPtr& ts, ServicePtr& srv, const UString& name, bool strict = true) const
+        bool searchService(NetworkPtr& net,
+                           TransportStreamPtr& ts,
+                           ServicePtr& srv,
+                           const UString& name,
+                           bool strict = true,
+                           Report& report = CERR) const
         {
-            return searchServiceInternal(net, ts, srv, DVB_S, name, strict, false);
+            return searchServiceInternal(net, ts, srv, DVB_S, name, strict, false, report);
         }
 
         //!
@@ -336,16 +342,49 @@ namespace ts {
         //! @param [in] type Search only these tuner types.
         //! @param [in] name Service name.
         //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
-        //! @return A safe pointer to the service description or a null pointer if the specified service does not exist.
+        //! @param [in,out] report Where to report errors.
+        //! @return True if the service is found, false if the specified service does not exist.
         //!
-        bool searchService(NetworkPtr& net, TransportStreamPtr& ts, ServicePtr& srv, TunerType type, const UString& name, bool strict = true) const
+        bool searchService(NetworkPtr& net,
+                           TransportStreamPtr& ts,
+                           ServicePtr& srv,
+                           TunerType type,
+                           const UString& name,
+                           bool strict = true,
+                           Report& report = CERR) const
         {
-            return searchServiceInternal(net, ts, srv, type, name, strict, true);
+            return searchServiceInternal(net, ts, srv, type, name, strict, true, report);
+        }
+
+        //!
+        //! Get tuner parameters from a service name in any network of the file.
+        //! @param [in] name Service name.
+        //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+        //! @param [in,out] report Where to report errors.
+        //! @return A safe pointer to the tuner parameters or a null pointer if the specified service does not exist.
+        //!
+        TunerParametersPtr serviceToTuning(const UString& name, bool strict = true, Report& report = CERR) const
+        {
+            return serviceToTuningInternal(DVB_S, name, strict, false, report);
+        }
+
+        //!
+        //! Get tuner parameters from a service name in any network of a given type of the file.
+        //! @param [in] type Search only these tuner types.
+        //! @param [in] name Service name.
+        //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+        //! @param [in,out] report Where to report errors.
+        //! @return A safe pointer to the tuner parameters or a null pointer if the specified service does not exist.
+        //!
+        TunerParametersPtr serviceToTuning(TunerType type, const UString& name, bool strict = true, Report& report = CERR) const
+        {
+            return serviceToTuningInternal(type, name, strict, false, report);
         }
 
     private:
         NetworkVector _networks;    // List of networks in the configuration.
         xml::Tweaks   _xmlTweaks;   // XML formatting and parsing tweaks.
+        UString       _fileName;    // Name of loaded file.
 
         // Parse an XML document and load the content into this object.
         bool parseDocument(const xml::Document& doc);
@@ -366,6 +405,14 @@ namespace ts {
         static bool XmlToDVBT(TunerParametersPtr& params, const xml::Element* elem);
 
         // Common code for searchService
-        bool searchServiceInternal(NetworkPtr& net, TransportStreamPtr& ts, ServicePtr& srv, TunerType type, const UString& name, bool strict, bool useTunerType) const;
+        TunerParametersPtr serviceToTuningInternal(TunerType type, const UString& name, bool strict, bool useTunerType, Report& report) const;
+        bool searchServiceInternal(NetworkPtr& net,
+                                   TransportStreamPtr& ts,
+                                   ServicePtr& srv,
+                                   TunerType type,
+                                   const UString& name,
+                                   bool strict,
+                                   bool useTunerType,
+                                   Report& report) const;
     };
 }

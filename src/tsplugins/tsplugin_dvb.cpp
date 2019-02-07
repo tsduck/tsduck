@@ -194,9 +194,9 @@ ts::BitRate ts::DVBInput::getBitrate()
     // When bitrate changes, the modulation parameters have changed
     if (bitrate != _previous_bitrate && tsp->verbose()) {
         // Store the new parameters in a global repository (may be used by other plugins)
-        TunerParameters* new_params(TunerParameters::Factory(_tuner_params->tunerType()));
+        TunerParametersPtr new_params(TunerParameters::Factory(_tuner_params->tunerType()));
         new_params->copy(*_tuner_params);
-        Object::StoreInRepository(u"tsp.dvb.params", ObjectPtr(new_params));
+        Object::StoreInRepository(u"tsp.dvb.params", new_params.upcast<Object>());
         // Display new tuning info
         tsp->verbose(u"actual tuning options: " + new_params->toPluginOptions());
     }

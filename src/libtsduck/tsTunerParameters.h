@@ -132,16 +132,6 @@ namespace ts {
         virtual size_t zapFieldCount() const = 0;
 
         //!
-        //! Extract options from a TunerArgs, applying defaults when necessary.
-        //! Parameters with irrelevant values (auto, none, etc) are not displayed.
-        //! @param [in] args Tuner arguments.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error (missing mandatory parameter,
-        //! inconsistent values, etc.).
-        //!
-        bool fromTunerArgs(const TunerArgs& args, Report& report);
-
-        //!
         //! Exception thrown when assigning incompatible parameter types.
         //!
         TS_DECLARE_EXCEPTION(IncompatibleTunerParametersError);
@@ -161,11 +151,22 @@ namespace ts {
         //!
         //! Allocate a TunerParameters of the appropriate subclass, based on a tuner type.
         //! @param [in] type Tuner type.
-        //! @return A newly allocated instance of a subclass of TunerParameters.
-        //! The parameters have their default values. Return zero if there is no
+        //! @return A safe pointer to a newly allocated instance of a subclass of TunerParameters.
+        //! The parameters have their default values. Return a null pointer if there is no
         //! implementation of the parameters for the given tuner type.
         //!
-        static TunerParameters* Factory(TunerType type);
+        static TunerParametersPtr Factory(TunerType type);
+
+        //!
+        //! Extract options from a TunerArgs, applying defaults when necessary.
+        //! Parameters with irrelevant values (auto, none, etc) are not displayed.
+        //! @param [in] type Tuner type.
+        //! @param [in] args Tuner arguments.
+        //! @param [in,out] report Where to report errors.
+        //! @return A safe pointer to tuning parameters or a null pointer on error
+        //! (missing mandatory parameter, inconsistent values, etc.).
+        //!
+        static TunerParametersPtr FromTunerArgs(TunerType type, const TunerArgs& args, Report& report);
 
     protected:
         //!
