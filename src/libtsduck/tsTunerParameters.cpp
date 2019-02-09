@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for DVB tuners parameters
-//
-//----------------------------------------------------------------------------
 
 #include "tsTunerParameters.h"
 #include "tsTunerParametersDVBS.h"
@@ -38,6 +34,7 @@
 #include "tsTunerParametersATSC.h"
 #include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
+#include "tsChannelFile.h"
 TSDUCK_SOURCE;
 
 
@@ -55,15 +52,18 @@ ts::TunerParameters::~TunerParameters()
 // depending on the tuner type. The parameters have their default values.
 //----------------------------------------------------------------------------
 
-ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
+ts::TunerParametersPtr ts::TunerParameters::Factory(TunerType tuner_type)
 {
+    TunerParameters* ptr = nullptr;
     switch (tuner_type) {
-        case DVB_S: return new TunerParametersDVBS();
-        case DVB_C: return new TunerParametersDVBC();
-        case DVB_T: return new TunerParametersDVBT();
-        case ATSC:  return new TunerParametersATSC();
-        default:    assert(false); return nullptr;
+        case DVB_S: ptr = new TunerParametersDVBS(); break;
+        case DVB_C: ptr = new TunerParametersDVBC(); break;
+        case DVB_T: ptr = new TunerParametersDVBT(); break;
+        case ATSC:  ptr = new TunerParametersATSC(); break;
+        default:    assert(false); break;
     }
+    CheckNonNull(ptr);
+    return TunerParametersPtr(ptr);
 }
 
 
@@ -71,32 +71,35 @@ ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, Report& report)
+ts::TunerParametersPtr ts::TunerParameters::FromTunerArgs(TunerType type, const TunerArgs& args, Report& report)
 {
-    if (tuner.channel_name.set()) {
+    if (args.channel_name.set()) {
         // Use --channel-transponder option
-        // Get szap/czap/tzap configuration file name.
+
+        // Get tuning file name.
         UString file;
-        if (tuner.zap_file_name.set()) {
-            file = tuner.zap_file_name.value();
+        if (args.tuning_file_name.set()) {
+            file = args.tuning_file_name.value();
         }
-        else if ((file = TunerArgs::DefaultZapFile(_tuner_type)).empty()) {
-            report.error(u"--channel-transponder unsupported for frontend type " + TunerTypeEnum.name(_tuner_type));
-            return false;
+        if (file.empty() || file == u"-") {
+            file = ChannelFile::DefaultFileName();
         }
-        // Read tuning info from zap file
-        return GetTunerFromZapFile(tuner.channel_name.value(), file, *this, report);
-    }
-    else if (!tuner.zap_specification.set()) {
-        // No --tune specified, invoke subclass for individual tuning options
-        return fromArgs(tuner, report);
-    }
-    else if (fromZapFormat(tuner.zap_specification.value())) {
-        return true;
+
+        // Load channels file.
+        ChannelFile channels;
+        if (!channels.load(file, report)) {
+            return TunerParametersPtr();
+        }
+
+        // Retrieve tuning options.
+        return channels.serviceToTuning(args.channel_name.value(), false, report);
     }
     else {
-        report.error(u"invalid --tune specification");
-        return false;
+        // Allocate tuning parameters of the appropriate type
+        TunerParametersPtr params(TunerParameters::Factory(type));
+
+        // Invoke subclass for individual tuning options.
+        return params->fromArgs(args, report) ? params : TunerParametersPtr();
     }
 }
 

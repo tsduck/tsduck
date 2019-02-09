@@ -1421,14 +1421,14 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     getFrontendStatus(status, report);
 
     // Read current tuning parameters
-    TunerParameters* params = TunerParameters::Factory(_tuner_type);
-    if (params != nullptr && !getCurrentTuning(*params, false, report)) {
-        params = nullptr;
+    TunerParametersPtr params(TunerParameters::Factory(_tuner_type));
+    if (!params.isNull() && !getCurrentTuning(*params, false, report)) {
+        params.clear();
     }
-    const TunerParametersDVBS* params_dvbs = dynamic_cast <const TunerParametersDVBS*>(params);
-    const TunerParametersDVBC* params_dvbc = dynamic_cast <const TunerParametersDVBC*>(params);
-    const TunerParametersDVBT* params_dvbt = dynamic_cast <const TunerParametersDVBT*>(params);
-    const TunerParametersATSC* params_atsc = dynamic_cast <const TunerParametersATSC*>(params);
+    const TunerParametersDVBS* params_dvbs = dynamic_cast <const TunerParametersDVBS*>(params.pointer());
+    const TunerParametersDVBC* params_dvbc = dynamic_cast <const TunerParametersDVBC*>(params.pointer());
+    const TunerParametersDVBT* params_dvbt = dynamic_cast <const TunerParametersDVBT*>(params.pointer());
+    const TunerParametersATSC* params_atsc = dynamic_cast <const TunerParametersATSC*>(params.pointer());
 
     // Read Bit Error Rate
     uint32_t ber = 0;

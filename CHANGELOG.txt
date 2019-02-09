@@ -2,6 +2,22 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.17-1117
+
+[IMP] Improvements on existing commands and plugins:
+
+  * In plugin "dvb" and command "tsscan": Added --guard-interval values
+    "1/128", "19/128", "19/256". Added --transmission-mode values "1K",
+    "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation
+    values "16-APSK", "32-APSK" (DVB-S2).
+
+[BUG] Bug fixes:
+
+  * In plugin "scrambler", fixed a crypto-period issue with option --cw-file
+    and more than one CW.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.16-1108
 
 [NEW] New commands and plugins:

@@ -62,6 +62,17 @@ namespace ts {
         TS_DECLARE_EXCEPTION(AdaptationFieldError);
 
         //!
+        //! Default constructor.
+        //!
+        TSPacket() = default;
+
+        //!
+        //! Copy constructor.
+        //! @param [in] p Other packet to copy.
+        //!
+        TSPacket(const TSPacket& p) = default;
+
+        //!
         //! Assigment operator.
         //! @param [in] p Other packet to copy.
         //! @return A reference to this object.

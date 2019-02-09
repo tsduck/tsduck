@@ -202,6 +202,13 @@ namespace ts {
         SDT(const SDT& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        SDT& operator=(const SDT& other) = default;
+
+        //!
         //! Check if this is an "actual" SDT.
         //! @return True for SDT Actual TS, false for SDT Other TS.
         //!

@@ -63,9 +63,8 @@ namespace ts {
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         size_t                      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
 #endif
-        Variable<UString>           zap_specification;  //!< Linux DVB zap format.
         Variable<UString>           channel_name;       //!< Use transponder containing this channel.
-        Variable<UString>           zap_file_name;      //!< Where channel_name is located.
+        Variable<UString>           tuning_file_name;   //!< Where channel_name is located.
         Variable<uint64_t>          frequency;          //!< Frequency in Hz.
         Variable<Polarization>      polarity;           //!< Polarity.
         Variable<LNB>               lnb;                //!< Local dish LNB for frequency adjustment.
@@ -98,7 +97,7 @@ namespace ts {
         //!
         bool hasTuningInfo() const
         {
-            return frequency.set() || zap_specification.set() || channel_name.set();
+            return frequency.set() || channel_name.set();
         }
 
         //!
@@ -135,13 +134,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const;
-
-        //!
-        //! Default zap file name for a given tuner type.
-        //! @param [in] type Tuner type.
-        //! @return The default zap file or an empty string if there is no default.
-        //!
-        static UString DefaultZapFile(TunerType type);
 
     private:
         const bool _info_only;

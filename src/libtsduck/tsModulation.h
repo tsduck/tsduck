@@ -55,7 +55,7 @@ namespace ts {
     //! and return false.
     //!
     //! @param [in] value The @c int value of an enumeration value from on the
-    //! enumeration types in file @link tsModulation.h@endlink.
+    //! enumeration types in file @link tsModulation.h @endlink.
     //! @param [in] name The name of the feature or enumeration type (eg.
     //! "FEC", "guard interval", etc.) Used to report errors.
     //! @param [in] conv The ts::Enumeration instance for the enumeration type.
@@ -145,6 +145,8 @@ namespace ts {
         QAM_256  = ::QAM_256,
         VSB_8    = ::VSB_8,
         VSB_16   = ::VSB_16,
+        APSK_16  = ::APSK_16,
+        APSK_32  = ::APSK_32,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         QPSK     = ::BDA_MOD_QPSK,
         PSK_8    = ::BDA_MOD_8PSK,
@@ -156,6 +158,8 @@ namespace ts {
         QAM_256  = ::BDA_MOD_256QAM,
         VSB_8    = ::BDA_MOD_8VSB,
         VSB_16   = ::BDA_MOD_16VSB,
+        APSK_16  = ::BDA_MOD_16APSK,
+        APSK_32  = ::BDA_MOD_32APSK,
 #else
         QPSK,       //!< QPSK (4-PSK, DVB-S).
         PSK_8,      //!< 8-PSK (DVB-S2).
@@ -167,6 +171,8 @@ namespace ts {
         QAM_256,    //!< QAM-256.
         VSB_8,      //!< VSB-8.
         VSB_16,     //!< VSB-16.
+        APSK_16,    //!< 16-APSK (DVB-S2).
+        APSK_32,    //!< 32-APSK (DVB-S2).
 #endif
     };
 
@@ -417,18 +423,33 @@ namespace ts {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
         TM_AUTO = ::TRANSMISSION_MODE_AUTO,
         TM_2K   = ::TRANSMISSION_MODE_2K,
-        TM_4K   = -10,
+        TM_4K   = ::TRANSMISSION_MODE_4K,
         TM_8K   = ::TRANSMISSION_MODE_8K,
+        TM_2KI  = -10,
+        TM_4KI  = -11,
+        TM_1K   = ::TRANSMISSION_MODE_1K,
+        TM_16K  = ::TRANSMISSION_MODE_16K,
+        TM_32K  = ::TRANSMISSION_MODE_32K,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         TM_AUTO = ::BDA_XMIT_MODE_NOT_DEFINED,
         TM_2K   = ::BDA_XMIT_MODE_2K,
         TM_4K   = ::BDA_XMIT_MODE_4K,
         TM_8K   = ::BDA_XMIT_MODE_8K,
+        TM_2KI  = ::BDA_XMIT_MODE_2K_INTERLEAVED,
+        TM_4KI  = ::BDA_XMIT_MODE_4K_INTERLEAVED,
+        TM_1K   = ::BDA_XMIT_MODE_1K,
+        TM_16K  = ::BDA_XMIT_MODE_16K,
+        TM_32K  = ::BDA_XMIT_MODE_32K,
 #else
         TM_AUTO,  //!< Transmission mode automatically set.
         TM_2K,    //!< 2K transmission mode.
         TM_4K,    //!< 4K transmission mode.
         TM_8K,    //!< 8K transmission mode.
+        TM_2KI,   //!< 2K-interleaved transmission mode.
+        TM_4KI,   //!< 4K-interleaved transmission mode.
+        TM_1K,    //!< 1K transmission mode, DVB-T2 (use 1K FFT).
+        TM_16K,   //!< 16K transmission mode, DVB-T2 (use 16K FFT).
+        TM_32K,   //!< 32K transmission mode, DVB-T2 (use 32K FFT).
 #endif
     };
 
@@ -442,23 +463,32 @@ namespace ts {
     //!
     enum GuardInterval {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
-        GUARD_AUTO = ::GUARD_INTERVAL_AUTO,
-        GUARD_1_32 = ::GUARD_INTERVAL_1_32,
-        GUARD_1_16 = ::GUARD_INTERVAL_1_16,
-        GUARD_1_8  = ::GUARD_INTERVAL_1_8,
-        GUARD_1_4  = ::GUARD_INTERVAL_1_4,
+        GUARD_AUTO   = ::GUARD_INTERVAL_AUTO,
+        GUARD_1_32   = ::GUARD_INTERVAL_1_32,
+        GUARD_1_16   = ::GUARD_INTERVAL_1_16,
+        GUARD_1_8    = ::GUARD_INTERVAL_1_8,
+        GUARD_1_4    = ::GUARD_INTERVAL_1_4,
+        GUARD_1_128  = ::GUARD_INTERVAL_1_128,
+        GUARD_19_128 = ::GUARD_INTERVAL_19_128,
+        GUARD_19_256 = ::GUARD_INTERVAL_19_256,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        GUARD_AUTO = ::BDA_GUARD_NOT_DEFINED,
-        GUARD_1_32 = ::BDA_GUARD_1_32,
-        GUARD_1_16 = ::BDA_GUARD_1_16,
-        GUARD_1_8  = ::BDA_GUARD_1_8,
-        GUARD_1_4  = ::BDA_GUARD_1_4,
+        GUARD_AUTO   = ::BDA_GUARD_NOT_DEFINED,
+        GUARD_1_32   = ::BDA_GUARD_1_32,
+        GUARD_1_16   = ::BDA_GUARD_1_16,
+        GUARD_1_8    = ::BDA_GUARD_1_8,
+        GUARD_1_4    = ::BDA_GUARD_1_4,
+        GUARD_1_128  = ::BDA_GUARD_1_128,
+        GUARD_19_128 = ::BDA_GUARD_19_128,
+        GUARD_19_256 = ::BDA_GUARD_19_256,
 #else
-        GUARD_AUTO,  //!< Guard interval automatically set.
-        GUARD_1_32,  //!< Guard interval 1/32.
-        GUARD_1_16,  //!< Guard interval 1/16.
-        GUARD_1_8,   //!< Guard interval 1/8.
-        GUARD_1_4,   //!< Guard interval 1/4.
+        GUARD_AUTO,    //!< Guard interval automatically set.
+        GUARD_1_32,    //!< Guard interval 1/32.
+        GUARD_1_16,    //!< Guard interval 1/16.
+        GUARD_1_8,     //!< Guard interval 1/8.
+        GUARD_1_4,     //!< Guard interval 1/4.
+        GUARD_1_128,   //!< Guard interval 1/128 (DVB-T2).
+        GUARD_19_128,  //!< Guard interval 19/128 (DVB-T2).
+        GUARD_19_256,  //!< Guard interval 19/256 (DVB-T2).
 #endif
     };
 

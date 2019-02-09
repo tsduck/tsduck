@@ -48,7 +48,6 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     _default_bitrate(default_bitrate),
     _pid(pid),
     _found(false),
-    _pkt_current(0),
     _pkt_create(0),
     _pkt_insert(0),
     _create_after_ms(0),
@@ -138,9 +137,7 @@ bool ts::AbstractTablePlugin::start()
 
     // Reset other states
     _found = false;
-    _pkt_current = 0;
-    _pkt_create = 0;
-    _pkt_insert = 0;
+    _pkt_create = _pkt_insert = tsp->pluginPackets();
 
     return true;
 }
@@ -200,9 +197,6 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
 {
     const PID pid = pkt.getPID();
 
-    // Count packets
-    _pkt_current++;
-
     // Filter incoming sections
     _demux.feedPacket(pkt);
 
@@ -214,18 +208,18 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
     }
 
     // Create a new table when necessary.
-    if (!_found && _pkt_create > 0 && _pkt_current >= _pkt_create) {
+    if (!_found && _pkt_create > 0 && tsp->pluginPackets() >= _pkt_create) {
         // Let the subclass create a new empty table.
         BinaryTable table;
         createNewTable(table);
         // Process it as if it comes from the TS.
         handleTable(_demux, table);
         // Insert first packet as soon as possible
-        _pkt_insert = _pkt_current;
+        _pkt_insert = tsp->pluginPackets();
     }
 
     // Insertion of packets from the input PID.
-    if (pid == PID_NULL && _pkt_insert > 0 && _pkt_current >= _pkt_insert) {
+    if (pid == PID_NULL && _pkt_insert > 0 && tsp->pluginPackets() >= _pkt_insert) {
         // It is time to replace stuffing by a created table packet.
         _pzer.getNextPacket(pkt);
         // Next insertion point.

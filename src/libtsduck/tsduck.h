@@ -99,6 +99,7 @@
 #include "tsCAT.h"
 #include "tsCBC.h"
 #include "tsCerrReport.h"
+#include "tsChannelFile.h"
 #include "tsCIAncillaryDataDescriptor.h"
 #include "tsCipherChaining.h"
 #include "tsCOM.h"

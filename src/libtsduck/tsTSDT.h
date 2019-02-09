@@ -64,6 +64,13 @@ namespace ts {
         TSDT(const TSDT& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        TSDT& operator=(const TSDT& other) = default;
+
+        //!
         //! Virtual destructor
         //!
         virtual ~TSDT();

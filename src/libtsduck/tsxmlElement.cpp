@@ -315,9 +315,11 @@ ts::xml::Element::AttributeMap::const_iterator ts::xml::Element::findAttribute(c
     return _attributes.find(attributeKey(attributeName));
 }
 
-void ts::xml::Element::setAttribute(const UString& name, const UString& value)
+void ts::xml::Element::setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty)
 {
-    _attributes[attributeKey(name)] = Attribute(name, value);
+    if (!onlyIfNotEmpty || !value.empty()) {
+        _attributes[attributeKey(name)] = Attribute(name, value);
+    }
 }
 
 bool ts::xml::Element::hasAttribute(const UString& name) const
@@ -444,18 +446,24 @@ bool ts::xml::Element::getOptionalBoolAttribute(Variable<bool>& value, const USt
 
 bool ts::xml::Element::getEnumAttribute(int& value, const Enumeration& definition, const UString& name, bool required, int defValue) const
 {
-    UString str;
-    if (!getAttribute(str, name, required, UString::Decimal(defValue))) {
-        return false;
-    }
-    const int val = definition.value(str, false);
-    if (val == Enumeration::UNKNOWN) {
-        _report.error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
-        return false;
+    const Attribute& attr(attribute(name, !required));
+    if (!attr.isValid()) {
+        // Attribute not present.
+        value = defValue;
+        return !required;
     }
     else {
-        value = val;
-        return true;
+        // Attribute found, get its value.
+        const UString str(attr.value());
+        const int val = definition.value(str, false);
+        if (val == Enumeration::UNKNOWN) {
+            _report.error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+            return false;
+        }
+        else {
+            value = val;
+            return true;
+        }
     }
 }
 

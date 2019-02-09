@@ -51,7 +51,6 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
     _synchronous(false),
     _scrambling(*tsp),
     _pids(),
-    _packet_count(0),
     _service(this, *tsp),
     _stack_usage(stack_usage),
     _demux(nullptr, this),
@@ -238,8 +237,8 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt)
     }
 
     // Set global scrambling type from scrambling descriptor, if not specified on the command line.
-    tsp->verbose(u"using scrambling mode: %s", {DVBNameFromSection(u"ScramblingMode", scrambling_type)});
     _scrambling.setScramblingType(scrambling_type, false);
+    tsp->verbose(u"using scrambling mode: %s", {DVBNameFromSection(u"ScramblingMode", _scrambling.scramblingType())});
     for (ECMStreamMap::iterator it = _ecm_streams.begin(); it != _ecm_streams.end(); ++it) {
         it->second->scrambling.setScramblingType(scrambling_type, false);
     }
@@ -370,7 +369,7 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
     // Here, we have an ECM to decipher.
     const size_t dumpSize = std::min<size_t>(8, ecm.payloadSize());
     tsp->debug(u"packet %d, decipher ECM, %d bytes: %s%s", {
-               _packet_count - 1,
+               tsp->pluginPackets(),
                ecm.payloadSize(),
                UString::Dump(ecm.payload(), dumpSize, UString::SINGLE_LINE),
                dumpSize < ecm.payloadSize() ? u" ..." : u""});
@@ -478,9 +477,6 @@ void ts::AbstractDescrambler::ECMThread::main()
 ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
-
-    // Count packets
-    _packet_count++;
 
     // Descramble packets from fixed PID's using fixed control words.
     // If there is a user-specified list of PID's, we don't manage a service

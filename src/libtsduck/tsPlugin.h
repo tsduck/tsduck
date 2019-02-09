@@ -79,7 +79,7 @@ namespace ts {
     //! ---------------------------
     //!
     //! A plugin can decide to terminate tsp on its own (returning end of
-    //! input, output error or @link ts::ProcessorPlugin::TSP_END@endlink). The termination is unconditional,
+    //! input, output error or @link ts::ProcessorPlugin::TSP_END @endlink). The termination is unconditional,
     //! regardless of the state of the other plugins.
     //!
     //! The idea behind "joint termination" is to terminate tsp when several
@@ -103,13 +103,30 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 8;
+        static const int API_VERSION = 9;
 
         //!
         //! Get the current input bitrate in bits/seconds.
         //! @return The current input bitrate in bits/seconds or zero if unknown.
         //!
         BitRate bitrate() const {return _tsp_bitrate;}
+
+        //!
+        //! Get total number of packets previously processed in the plugin object.
+        //! For input and output plugins, this is the number of successfully read or written packets.
+        //! For processor plugins, this is the number of packets which were submitted to the plugin
+        //! object (ie. excluding previously dropped packets but including packets which were dropped
+        //! by the current plugin).
+        //! @return The total number of packets in this plugin object.
+        //!
+        PacketCounter pluginPackets() const {return _plugin_packets;}
+
+        //!
+        //! Get total number of packets in the execution of the plugin thread.
+        //! This includes the number of extra stuffing or dropped packets.
+        //! @return The total number of packets in this plugin thread.
+        //!
+        PacketCounter totalPacketsInThread() const {return _total_packets;}
 
         //!
         //! Check if the current plugin environment should use defaults for real-time.
@@ -168,7 +185,22 @@ namespace ts {
         //!
         TSP(int max_severity);
 
+        //!
+        //! Account for more processed packets in this plugin object.
+        //! @param [in] incr Add this number of processed packets in the plugin object.
+        //!
+        void addPluginPackets(size_t incr) {_plugin_packets += incr; _total_packets += incr;}
+
+        //!
+        //! Account for more processed packets in this plugin thread, but excluded from plugin object.
+        //! @param [in] incr Add this number of processed packets in the plugin thread.
+        //!
+        void addNonPluginPackets(size_t incr) {_total_packets += incr;}
+
     private:
+        PacketCounter _total_packets;   // Total processed packets in the plugin thread.
+        PacketCounter _plugin_packets;  // Total processed packets in the plugin object.
+
         // Inaccessible operations
         TSP() = delete;
         TSP(const TSP&) = delete;
