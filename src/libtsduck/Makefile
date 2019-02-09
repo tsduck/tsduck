@@ -44,7 +44,7 @@ CXXVPATH = $(OSDIR) unix private
 # DTAPI is not available for MacOS and is not downloaded, not present.
 # Similarly, it cross-compilation is required, skip DTAPI.
 
-ifeq ($(MACOS)$(NODTAPI)$(CROSS)$(CROSS_TARGET),)
+ifeq ($(NODTAPI)$(CROSS)$(CROSS_TARGET),)
     DTAPI_OBJECT := $(shell ../../dektec/dtapi-config.sh --object)
     DTAPI_HEADER := $(shell ../../dektec/dtapi-config.sh --header)
 endif
