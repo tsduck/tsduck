@@ -33,8 +33,10 @@
 #
 #-----------------------------------------------------------------------------
 
-ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
 SCRIPT=$(basename $BASH_SOURCE)
+ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
+DTAPIDIR="$ROOTDIR/LinuxSDK/DTAPI"
+
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Compute an integer version from a x.y.z version string.
@@ -50,13 +52,19 @@ int-version()
 # Get DTAPI header file.
 get-header()
 {
-    local HEADER="$ROOTDIR/LinuxSDK/DTAPI/Include/DTAPI.h"
+    # Unsupported outside Linux.
+    [[ $(uname -s) == Linux ]] || return
+    
+    local HEADER="$DTAPIDIR/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
 }
 
 # Get DTAPI object file.
 get-object()
 {
+    # Unsupported outside Linux.
+    [[ $(uname -s) == Linux ]] || return
+    
     # Get GCC version as an integer.
     if [[ -z "$GCCVERSION" ]]; then
         local GCC=$(which gcc 2>/dev/null)
@@ -76,7 +84,7 @@ get-object()
     # Find the DTAPI object with highest version, lower than or equal to GCC version.
     local OBJFILE=
     local OBJVERS=0
-    for obj in $(find "$ROOTDIR/LinuxSDK/DTAPI/Lib" -path "*/GCC*/$OBJNAME"); do
+    for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
         DIRVERS=$(basename $(dirname "$obj"))
         DIRVERS=$(int-version ${DIRVERS#GCC})
         if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
