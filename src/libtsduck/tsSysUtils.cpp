@@ -511,8 +511,22 @@ bool ts::IsPrivilegedUser()
 // Create a directory
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::CreateDirectory(const UString& path)
+ts::ErrorCode ts::CreateDirectory(const UString& path, bool intermediate)
 {
+    // Create intermediate directories.
+    if (intermediate) {
+        const UString dir(DirectoryName(path));
+        // Create only if does not exist or is identical to path (meaning root).
+        if (dir != path && !IsDirectory(dir)) {
+            // Create recursively.
+            const ErrorCode err = CreateDirectory(dir, true);
+            if (err != SYS_SUCCESS) {
+                return err;
+            }
+        }
+    }
+
+    // Create the final directory.
 #if defined(TS_WINDOWS)
     return ::CreateDirectoryW(path.wc_str(), nullptr) == 0 ? ::GetLastError() : SYS_SUCCESS;
 #else

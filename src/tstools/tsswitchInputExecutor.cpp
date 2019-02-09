@@ -265,6 +265,7 @@ void ts::tsswitch::InputExecutor::main()
                 debug(u"received end of input from plugin");
                 break;
             }
+            addPluginPackets(inCount);
 
             // Signal the presence of received packets.
             {

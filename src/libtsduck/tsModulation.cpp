@@ -103,6 +103,8 @@ const ts::Enumeration ts::ModulationEnum({
     {u"256-QAM", ts::QAM_256},
     {u"8-VSB",   ts::VSB_8},
     {u"16-VSB",  ts::VSB_16},
+    {u"16-APSK", ts::APSK_16},
+    {u"32-APSK", ts::APSK_32},
 });
 
 const ts::Enumeration ts::InnerFECEnum({
@@ -157,18 +159,26 @@ const ts::Enumeration ts::BandWidthEnum({
 });
 
 const ts::Enumeration ts::TransmissionModeEnum({
-    {u"auto", ts::TM_AUTO},
-    {u"2K",   ts::TM_2K},
-    {u"4K",   ts::TM_4K},
-    {u"8K",   ts::TM_8K},
+    {u"auto",           ts::TM_AUTO},
+    {u"2K",             ts::TM_2K},
+    {u"4K",             ts::TM_4K},
+    {u"8K",             ts::TM_8K},
+    {u"2K-interleaved", ts::TM_2KI},
+    {u"4K-interleaved", ts::TM_4KI},
+    {u"1K",             ts::TM_1K},
+    {u"16K",            ts::TM_16K},
+    {u"32K",            ts::TM_32K},
 });
 
 const ts::Enumeration ts::GuardIntervalEnum({
-    {u"auto", ts::GUARD_AUTO},
-    {u"1/32", ts::GUARD_1_32},
-    {u"1/16", ts::GUARD_1_16},
-    {u"1/8",  ts::GUARD_1_8},
-    {u"1/4",  ts::GUARD_1_4},
+    {u"auto",    ts::GUARD_AUTO},
+    {u"1/32",    ts::GUARD_1_32},
+    {u"1/16",    ts::GUARD_1_16},
+    {u"1/8",     ts::GUARD_1_8},
+    {u"1/4",     ts::GUARD_1_4},
+    {u"1/128",   ts::GUARD_1_128},
+    {u"19/128",  ts::GUARD_19_128},
+    {u"19/256",  ts::GUARD_19_256},
 });
 
 const ts::Enumeration ts::HierarchyEnum({
@@ -264,11 +274,14 @@ uint32_t ts::FECDivider(InnerFEC fec)
 uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
 {
     switch (guard) {
-        case GUARD_1_4:  return 1;
-        case GUARD_1_8:  return 1;
-        case GUARD_1_16: return 1;
-        case GUARD_1_32: return 1;
-        default:         return 0; // unknown
+        case GUARD_1_4:    return 1;
+        case GUARD_1_8:    return 1;
+        case GUARD_1_16:   return 1;
+        case GUARD_1_32:   return 1;
+        case GUARD_1_128:  return 1;
+        case GUARD_19_128: return 19;
+        case GUARD_19_256: return 19;
+        default:           return 0; // unknown
     }
 }
 
@@ -276,11 +289,14 @@ uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
 uint32_t ts::GuardIntervalDivider(GuardInterval guard)
 {
     switch (guard) {
-        case GUARD_1_4:  return 4;
-        case GUARD_1_8:  return 8;
-        case GUARD_1_16: return 16;
-        case GUARD_1_32: return 32;
-        default:         return 0; // unknown
+        case GUARD_1_4:    return 4;
+        case GUARD_1_8:    return 8;
+        case GUARD_1_16:   return 16;
+        case GUARD_1_32:   return 32;
+        case GUARD_1_128:  return 128;
+        case GUARD_19_128: return 128;
+        case GUARD_19_256: return 256;
+        default:           return 0; // unknown
     }
 }
 

@@ -95,6 +95,13 @@ namespace ts {
         AbstractTransportListTable(const AbstractTransportListTable& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractTransportListTable& operator=(const AbstractTransportListTable& other) = default;
+
+        //!
         //! Clear preferred section in all transport.
         //!
         void clearPreferredSections();

@@ -682,8 +682,14 @@ bool ts::ScramblerPlugin::changeCW()
 {
     if (_scrambling.hasFixedCW()) {
         // A list of fixed CW was loaded from a file.
+
         // Point to next crypto-period
         _current_cw = (_current_cw + 1) & 0x01;
+
+        // Determine new transition point.
+        if (_need_cp) {
+            _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
+        }
 
         // Set next crypto-period key.
         return _scrambling.setEncryptParity(int(_current_cw));

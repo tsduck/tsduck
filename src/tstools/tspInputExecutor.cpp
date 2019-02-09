@@ -48,7 +48,6 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
-    _total_in_packets(0),
     _in_sync_lost(false),
     _instuff_start_remain(options->instuff_start),
     _instuff_stop_remain(options->instuff_stop),
@@ -168,11 +167,11 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_p
     for (size_t n = 0; n < count; ++n) {
         if (buffer[n].hasValidSync()) {
             // Count good packets from plugin
-            _total_in_packets++;
+            addPluginPackets(1);
         }
         else {
             // Report error
-            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {_total_in_packets, buffer[n].b[0], SYNC_BYTE});
+            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {pluginPackets(), buffer[n].b[0], SYNC_BYTE});
             // In debug mode, partial dump of input
             // (one packet before lost of sync and 3 packets starting at lost of sync).
             if (maxSeverity() >= 1) {
@@ -211,6 +210,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
         _instuff_start_remain--;
         pkt_remain--;
         pkt_done++;
+        addNonPluginPackets(1);
     }
 
     // Now read real packets.
@@ -218,6 +218,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
         // There is no --add-input-stuffing option, simply call the plugin
         pkt_from_input = receiveAndValidate(buffer, pkt_remain);
         pkt_done += pkt_from_input;
+        addPluginPackets(pkt_from_input);
     }
     else {
         // Otherwise, we have to alternate input packets and null packets.
@@ -230,6 +231,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
                 _instuff_nullpkt_remain--;
                 pkt_remain--;
                 pkt_done++;
+                addNonPluginPackets(1);
             }
 
             if (pkt_remain == 0) {
@@ -269,7 +271,6 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
         }
     }
 
-    addTotalPackets(pkt_done);
     return pkt_done;
 }
 
@@ -351,5 +352,5 @@ void ts::tsp::InputExecutor::main()
     // Close the input processor
     _input->stop();
 
-    debug(u"input thread %s after %'d packets", {aborted ? u"aborted" : u"terminated", totalPackets()});
+    debug(u"input thread %s after %'d packets", {aborted ? u"aborted" : u"terminated", totalPacketsInThread()});
 }

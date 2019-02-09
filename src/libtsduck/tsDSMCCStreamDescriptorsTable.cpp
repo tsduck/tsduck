@@ -43,7 +43,7 @@ TS_ID_SECTION_DISPLAY(ts::DSMCCStreamDescriptorsTable::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and assignment.
 //----------------------------------------------------------------------------
 
 ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(uint8_t vers, bool cur, uint16_t tid_ext) :
@@ -64,6 +64,14 @@ ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(const ts::DSMCCStre
 {
 }
 
+ts::DSMCCStreamDescriptorsTable& ts::DSMCCStreamDescriptorsTable::operator=(const DSMCCStreamDescriptorsTable& other)
+{
+    if (&other != this) {
+        // Assign super class but leave uint16_t& table_id_extension unchanged.
+        AbstractDescriptorsTable::operator=(other);
+    }
+    return *this;
+}
 
 //----------------------------------------------------------------------------
 // A static method to display a section.

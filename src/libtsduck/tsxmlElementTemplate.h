@@ -37,12 +37,17 @@
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT defValue, INT minValue, INT maxValue) const
 {
-    INT val;
-    UString str;
-    if (!getAttribute(str, name, required, UString::Decimal(defValue))) {
-        return false;
+    const Attribute& attr(attribute(name, !required));
+    if (!attr.isValid()) {
+        // Attribute not present.
+        value = defValue;
+        return !required;
     }
-    else if (!str.toInteger(val, u",")) {
+
+    // Attribute found, get its value.
+    UString str(attr.value());
+    INT val;
+    if (!str.toInteger(val, u",")) {
         _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
     }
@@ -54,6 +59,17 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
         value = val;
         return true;
     }
+}
+
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
+bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT minValue, INT maxValue) const
+{
+    INT val = 0;
+    const bool ok = getIntAttribute<INT>(val, name, required, defValue, minValue, maxValue);
+    if (ok) {
+        value = ENUM(val);
+    }
+    return ok;
 }
 
 
@@ -93,5 +109,14 @@ bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& defini
     int v = 0;
     const bool ok = getEnumAttribute(v, definition, name, required, int(defValue));
     value = ok ? INT(v) : defValue;
+    return ok;
+}
+
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*>
+bool ts::xml::Element::getIntEnumAttribute(ENUM& value, const Enumeration& definition, const UString& name, bool required, ENUM defValue) const
+{
+    int v = 0;
+    const bool ok = getEnumAttribute(v, definition, name, required, int(defValue));
+    value = ok ? ENUM(v) : defValue;
     return ok;
 }

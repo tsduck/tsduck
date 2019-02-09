@@ -33,8 +33,6 @@
 #include "tsRegistry.h"
 #include "tsMemoryUtils.h"
 #include "tsFatal.h"
-#include <WinInet.h>
-#include <Shellapi.h>
 TSDUCK_SOURCE;
 
 

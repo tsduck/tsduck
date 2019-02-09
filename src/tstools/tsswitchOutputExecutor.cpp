@@ -99,7 +99,10 @@ void ts::tsswitch::OutputExecutor::main()
             _core.outputSent(pluginIndex, count);
 
             // Abort the whole process in case of output error.
-            if (!success) {
+            if (success) {
+                addPluginPackets(count);
+            }
+            else {
                 debug(u"stopping output plugin");
                 _core.stop(false);
                 _terminate = true;

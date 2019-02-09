@@ -77,6 +77,13 @@ namespace ts {
         AbstractDescriptorsTable(const AbstractDescriptorsTable& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractDescriptorsTable& operator=(const AbstractDescriptorsTable& other) = default;
+
+        //!
         //! Constructor from a binary table.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.

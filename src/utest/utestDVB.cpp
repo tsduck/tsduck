@@ -52,14 +52,12 @@ public:
     virtual void tearDown() override;
 
     void testTunerArgs();
-    void testZapFiles();
     void testTunerParams();
     void testLNB();
     void testUHF();
 
     CPPUNIT_TEST_SUITE(DVBTest);
     CPPUNIT_TEST(testTunerArgs);
-    CPPUNIT_TEST(testZapFiles);
     CPPUNIT_TEST(testTunerParams);
     CPPUNIT_TEST(testLNB);
     CPPUNIT_TEST(testUHF);
@@ -100,14 +98,6 @@ void DVBTest::testTunerArgs()
     utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
-void DVBTest::testZapFiles()
-{
-    utest::Out() << "DVBTest: DefaultZapFile(DVB_S): " << ts::TunerArgs::DefaultZapFile(ts::DVB_S) << std::endl
-                 << "DVBTest: DefaultZapFile(DVB_C): " << ts::TunerArgs::DefaultZapFile(ts::DVB_C) << std::endl
-                 << "DVBTest: DefaultZapFile(DVB_T): " << ts::TunerArgs::DefaultZapFile(ts::DVB_T) << std::endl
-                 << "DVBTest: DefaultZapFile(ATSC):  " << ts::TunerArgs::DefaultZapFile(ts::ATSC)  << std::endl;
-}
-
 void DVBTest::testParameters(const ts::TunerParameters& params)
 {
     utest::Out() << "DVBTest: Default TunerParameters, type: " << ts::TunerTypeEnum.name(params.tunerType()) << std::endl;
@@ -134,10 +124,9 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
 
     ts::TunerArgs tuner;
     tuner.load(args);
-    ptr = ts::TunerParameters::Factory(params.tunerType());
+    ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
+    CPPUNIT_ASSERT(!ptr.isNull());
     CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
-    CPPUNIT_ASSERT(ptr->fromTunerArgs(tuner, args));
-    CPPUNIT_ASSERT(ptr->toZapFormat() == zap);
     CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
 }
 

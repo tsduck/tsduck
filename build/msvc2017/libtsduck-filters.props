@@ -235,6 +235,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsChannelFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1681,6 +1684,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsChannelFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCIAncillaryDataDescriptor.cpp">
