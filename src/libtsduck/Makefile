@@ -34,8 +34,8 @@
 
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
-OSDIR    := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
-CXXVPATH  = $(OSDIR) unix private
+OSDIR := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
+CXXVPATH = $(OSDIR) unix private
 
 # Detect the presence of the Dektec DTAPI.
 # DTAPI shall be separately downloaded using "make dtapi".
@@ -45,24 +45,15 @@ CXXVPATH  = $(OSDIR) unix private
 # Similarly, it cross-compilation is required, skip DTAPI.
 
 ifeq ($(MACOS)$(NODTAPI)$(CROSS)$(CROSS_TARGET),)
-    DTAPI_ROOT := ../../dektec/LinuxSDK/DTAPI
-    ifeq ($(DTAPI_OBJECT),)
-        # No DTAPI was preset by user. Try to find one.
-        ifeq ($(shell uname -m)$(M32),x86_64)
-            DTAPI_OBJECT_NAME := DTAPI64.o
-        else
-            DTAPI_OBJECT_NAME := DTAPI.o
-        endif
-        DTAPI_OBJECT := $(lastword $(wildcard $(DTAPI_ROOT)/Lib/*/$(DTAPI_OBJECT_NAME)))
-        DTAPI_HEADER := $(wildcard $(DTAPI_ROOT)/Include/DTAPI.h)
-    endif
+    DTAPI_OBJECT := $(shell ../../dektec/dtapi-config.sh --object)
+    DTAPI_HEADER := $(shell ../../dektec/dtapi-config.sh --header)
 endif
 
 ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
     NODTAPI := true
     CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 else
-    CXXFLAGS_INCLUDES += -isystem $(DTAPI_ROOT)/Include
+    CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
 endif
 
 # With static link, we compile in a specific directory.
