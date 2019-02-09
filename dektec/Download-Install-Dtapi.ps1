@@ -74,6 +74,9 @@ function Exit-Script([string]$Message = "")
     exit $Code
 }
 
+# Without this, Invoke-WebRequest is awfully slow.
+$ProgressPreference = 'SilentlyContinue'
+
 # Get the HTML page for Dektec SDK downloads.
 $status = 0
 $message = ""
