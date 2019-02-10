@@ -46,6 +46,21 @@ ts::ConfigFile::ConfigFile(const UString& filename, Report& report) :
     }
 }
 
+ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report) :
+    _filename(),
+    _sections(),
+    _empty()
+{
+    // Try to load first file.
+    if (!filename1.empty()) {
+        load(filename1, report);
+    }
+    // If nothing was loaded from first file, try second file.
+    if (!filename2.empty() && _sections.empty()) {
+        load(filename2, report);
+    }
+}
+
 ts::ConfigFile::ConfigFile(std::istream& strm) :
     _filename(),
     _sections(),

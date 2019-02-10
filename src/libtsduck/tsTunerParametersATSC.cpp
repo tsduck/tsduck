@@ -137,25 +137,21 @@ bool ts::TunerParametersATSC::fromArgs(const TunerArgs& tuner, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Implementation of TunerParameters API (unimplemented)
+// Extract tuning information from a delivery descriptor.
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::TunerParametersATSC::theoreticalBitrate() const 
+bool ts::TunerParametersATSC::fromDeliveryDescriptor(const Descriptor& desc)
+{
+    // No know delivery descriptor for ATSC.
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Theoretical useful bitrate for QPSK or QAM modulation.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::TunerParametersATSC::theoreticalBitrate() const
 {
     return 0; // unknown for ATSC/VSB
-}
-
-ts::UString ts::TunerParametersATSC::toZapFormat() const 
-{
-    return UString(); //TODO: unimplemented
-}
-
-bool ts::TunerParametersATSC::fromZapFormat(const UString& zap) 
-{
-    return false; //TODO: unimplemented
-}
-
-size_t ts::TunerParametersATSC::zapFieldCount() const 
-{
-    return 0; //TODO: unimplemented
 }

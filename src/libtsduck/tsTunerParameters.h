@@ -38,6 +38,7 @@
 #include "tsModulation.h"
 #include "tsSafePtr.h"
 #include "tsException.h"
+#include "tsDescriptor.h"
 
 namespace ts {
 
@@ -94,12 +95,6 @@ namespace ts {
         virtual UString shortDescription(int strength = -1, int quality = -1) const = 0;
 
         //!
-        //! Format the tuner parameters according to the Linux DVB "zap" format.
-        //! @return A string in Linux DVB "zap" format.
-        //!
-        virtual UString toZapFormat() const = 0;
-
-        //!
         //! Format the tuner parameters as a list of options for the "dvb" tsp plugin.
         //! @param [in] no_local When true, the "local" options are not included.
         //! The local options are related to the local equipment (--lnb for instance)
@@ -116,20 +111,6 @@ namespace ts {
         //! When true, display all parameters.
         //!
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const = 0;
-
-        //!
-        //! Decode a Linux DVB "zap" specification.
-        //! And set the corresponding values in the tuner parameters.
-        //! @param [in] zap A line of a Linux DVB "zap" file.
-        //! @return True on success, false on unsupported format.
-        //!
-        virtual bool fromZapFormat(const UString& zap) = 0;
-
-        //!
-        //! Expected number of fields (separated by ':') in a Linux DVB "zap" specification.
-        //! @return Expected number of fields in a Linux DVB "zap" specification.
-        //!
-        virtual size_t zapFieldCount() const = 0;
 
         //!
         //! Exception thrown when assigning incompatible parameter types.
@@ -168,6 +149,15 @@ namespace ts {
         //!
         static TunerParametersPtr FromTunerArgs(TunerType type, const TunerArgs& args, Report& report);
 
+        //!
+        //! Allocate a TunerParameters of the appropriate subclass from a delivery system descriptor.
+        //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+        //! @return A safe pointer to a newly allocated tuner parameters object of the appropriate class.
+        //! Return a null pointer if the descriptor was not correctly analyzed or is not
+        //! a delivery system descriptor.
+        //!
+        static TunerParametersPtr FromDeliveryDescriptor(const Descriptor& desc);
+
     protected:
         //!
         //! The tuner type is set by subclasses.
@@ -191,6 +181,13 @@ namespace ts {
         //! inconsistent values, etc.).
         //!
         virtual bool fromArgs(const TunerArgs& args, Report& report) = 0;
+
+        //!
+        //! Subclass-specific part of FromDeliveryDescriptor().
+        //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+        //! @return True on success, false on error.
+        //!
+        virtual bool fromDeliveryDescriptor(const Descriptor& desc) = 0;
 
         //!
         //! Theoretical useful bitrate for QPSK or QAM modulation.
