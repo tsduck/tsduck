@@ -340,7 +340,7 @@ ts::xml::Element* ts::TunerParametersDVBS::toXML(xml::Element* parent) const
 bool ts::TunerParametersDVBS::fromXML(const xml::Element* elem)
 {
     return elem != nullptr &&
-        elem->name() == u"dvbs" &&
+        elem->name().similar(u"dvbs") &&
         elem->getIntAttribute<size_t>(satellite_number, u"satellite", false, 0, 0, 3) &&
         elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         elem->getIntAttribute<uint32_t>(symbol_rate, u"symbolrate", false, 27500000) &&

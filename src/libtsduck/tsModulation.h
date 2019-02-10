@@ -379,7 +379,7 @@ namespace ts {
         BW_8_MHZ     =  8000000,
         BW_10_MHZ    = 10000000,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        BW_AUTO      = -10,
+        BW_AUTO      = ::BDA_CHAN_BANDWITH_NOT_DEFINED,
         BW_1_712_MHZ = -11,
         BW_5_MHZ     =   5,  // values in MHz, not enum
         BW_6_MHZ     =   6,
