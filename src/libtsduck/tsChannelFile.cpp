@@ -421,7 +421,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
 
                 // Loop on all children elements. Exactly one should be tuner parameters, others must be <service>.
                 for (const xml::Element* e = (*itts)->firstChildElement(); e != nullptr; e = e->nextSiblingElement()) {
-                    if (e->name() == u"service") {
+                    if (e->name().similar(u"service")) {
                         // Get a service description.
                         const ServicePtr srv(new Service);
                         CheckNonNull(srv.pointer());

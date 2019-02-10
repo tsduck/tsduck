@@ -221,7 +221,7 @@ ts::xml::Element* ts::TunerParametersDVBC::toXML(xml::Element* parent) const
 bool ts::TunerParametersDVBC::fromXML(const xml::Element* elem)
 {
     return elem != nullptr &&
-        elem->name() == u"dvbc" &&
+        elem->name().similar(u"dvbc") &&
         elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         elem->getIntAttribute<uint32_t>(symbol_rate, u"symbolrate", false, 6900000) &&
         elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QAM_64) &&

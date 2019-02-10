@@ -98,16 +98,16 @@ ts::TunerParametersPtr ts::TunerParameters::FromXML(const xml::Element* elem)
         return TunerParametersPtr();
     }
     TunerParametersPtr ptr;
-    if (elem->name() == u"atsc") {
+    if (elem->name().similar(u"atsc")) {
         ptr = new TunerParametersATSC();
     }
-    else if (elem->name() == u"dvbc") {
+    else if (elem->name().similar(u"dvbc")) {
         ptr = new TunerParametersDVBC();
     }
-    else if (elem->name() == u"dvbs") {
+    else if (elem->name().similar(u"dvbs")) {
         ptr = new TunerParametersDVBS();
     }
-    else if (elem->name() == u"dvbt") {
+    else if (elem->name().similar(u"dvbt")) {
         ptr = new TunerParametersDVBT();
     }
     else {

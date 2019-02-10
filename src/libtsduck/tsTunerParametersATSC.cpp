@@ -166,7 +166,7 @@ ts::xml::Element* ts::TunerParametersATSC::toXML(xml::Element* parent) const
 bool ts::TunerParametersATSC::fromXML(const xml::Element* elem)
 {
     return elem != nullptr &&
-        elem->name() == u"atsc" &&
+        elem->name().similar(u"atsc") &&
         elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, VSB_8) &&
         elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);

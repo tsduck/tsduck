@@ -320,7 +320,9 @@ ts::xml::Element* ts::TunerParametersDVBT::toXML(xml::Element* parent) const
 {
     xml::Element* e = parent->addElement(u"dvbt");
     e->setIntAttribute(u"frequency", frequency, false);
-    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (modulation != QAM_AUTO) {
+        e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    }
     if (fec_hp != FEC_AUTO) {
         e->setEnumAttribute(InnerFECEnum, u"HPFEC", fec_hp);
     }
@@ -351,7 +353,7 @@ ts::xml::Element* ts::TunerParametersDVBT::toXML(xml::Element* parent) const
 bool ts::TunerParametersDVBT::fromXML(const xml::Element* elem)
 {
     return elem != nullptr &&
-        elem->name() == u"dvbt" &&
+        elem->name().similar(u"dvbt") &&
         elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
         elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QAM_64) &&
         elem->getIntEnumAttribute(bandwidth, BandWidthEnum, u"bandwidth", false, BW_AUTO) &&
