@@ -33,6 +33,7 @@
 
 #include "tsTunerParametersATSC.h"
 #include "tsTunerArgs.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -144,6 +145,31 @@ bool ts::TunerParametersATSC::fromDeliveryDescriptor(const Descriptor& desc)
 {
     // No know delivery descriptor for ATSC.
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersATSC::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"atsc");
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    return e;
+}
+
+bool ts::TunerParametersATSC::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name() == u"atsc" &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, VSB_8) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
 }
 
 

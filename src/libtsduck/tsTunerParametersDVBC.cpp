@@ -34,6 +34,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerArgs.h"
 #include "tsEnumeration.h"
+#include "tsxmlElement.h"
 #include "tsBCD.h"
 TSDUCK_SOURCE;
 
@@ -195,6 +196,37 @@ bool ts::TunerParametersDVBC::fromDeliveryDescriptor(const Descriptor& desc)
     }
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersDVBC::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"dvbc");
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setIntAttribute(u"symbolrate", symbol_rate, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (inner_fec != FEC_AUTO) {
+        e->setEnumAttribute(InnerFECEnum, u"FEC", inner_fec);
+    }
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    return e;
+}
+
+bool ts::TunerParametersDVBC::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name() == u"dvbc" &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntAttribute<uint32_t>(symbol_rate, u"symbolrate", false, 6900000) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+        elem->getIntEnumAttribute(inner_fec, InnerFECEnum, u"FEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
 }
 
 
