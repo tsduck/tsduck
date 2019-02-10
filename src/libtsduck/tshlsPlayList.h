@@ -293,10 +293,16 @@ namespace ts {
 
             //!
             //! Get a constant reference to a media playlist description (in master playlist).
-            //! @param [in] index Index of the playlist, from 0 to playListCount().
+            //! @param [in] index Index of the playlist, from 0 to playListCount()-1.
             //! @return A constant reference to the media playlist description at @a index.
             //!
             const MediaPlayList& playList(size_t index) const;
+
+            //!
+            //! Delete a media playlist description from a master playlist.
+            //! @param [in] index Index of the media playlist to delete, from 0 to playListCount()-1.
+            //!
+            void deletePlayList(size_t index);
 
             //!
             //! Add a media playlist in a master playlist.

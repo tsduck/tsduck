@@ -238,42 +238,56 @@ bool ts::hls::InputPlugin::start()
     if (_playlist.type() == hls::MASTER_PLAYLIST) {
         tsp->verbose(u"downloaded %s", {_playlist});
 
+        // Get a copy of the master playlist. The media playlist will be loaded in _playlist.
+        PlayList master(_playlist);
+
         // List all variants when requested.
         if (_listVariants) {
-            for (size_t i = 0; i < _playlist.playListCount(); ++i) {
-                tsp->info(_playlist.playList(i).toString());
+            for (size_t i = 0; i < master.playListCount(); ++i) {
+                tsp->info(master.playList(i).toString());
             }
         }
 
         // Apply command line selection criteria.
-        size_t index = 0;
-        if (_lowestRate) {
-            index = _playlist.selectPlayListLowestBitRate();
-        }
-        else if (_highestRate) {
-            index = _playlist.selectPlayListHighestBitRate();
-        }
-        else if (_lowestRes) {
-            index = _playlist.selectPlayListLowestResolution();
-        }
-        else if (_highestRes) {
-            index = _playlist.selectPlayListHighestResolution();
-        }
-        else {
-            index = _playlist.selectPlayList(_minRate, _maxRate, _minWidth, _maxWidth, _minHeight, _maxHeight);
-        }
-        if (index == NPOS) {
-            tsp->error(u"could not find a matching stream in master playlist");
-            return false;
-        }
-        assert(index < _playlist.playListCount());
-        tsp->verbose(u"selected playlist: %s", {_playlist.playList(index)});
-        const UString nextURL(_playlist.buildURL(_playlist.playList(index).uri));
+        // Loop until one media playlist is loaded (skip missing playlists).
+        for (;;) {
+            size_t index = 0;
+            if (_lowestRate) {
+                index = master.selectPlayListLowestBitRate();
+            }
+            else if (_highestRate) {
+                index = master.selectPlayListHighestBitRate();
+            }
+            else if (_lowestRes) {
+                index = master.selectPlayListLowestResolution();
+            }
+            else if (_highestRes) {
+                index = master.selectPlayListHighestResolution();
+            }
+            else {
+                index = master.selectPlayList(_minRate, _maxRate, _minWidth, _maxWidth, _minHeight, _maxHeight);
+            }
+            if (index == NPOS) {
+                tsp->error(u"could not find a matching stream in master playlist");
+                return false;
+            }
+            assert(index < master.playListCount());
+            tsp->verbose(u"selected playlist: %s", {master.playList(index)});
+            const UString nextURL(master.buildURL(master.playList(index).uri));
 
-        // Download selected media playlist.
-        _playlist.clear();
-        if (!_playlist.loadURL(nextURL, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
-            return false;
+            // Download selected media playlist.
+            _playlist.clear();
+            if (_playlist.loadURL(nextURL, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
+                break; // media playlist loaded
+            }
+            else if (master.playListCount() == 1) {
+                tsp->error(u"no more media playlist to try, giving up");
+                return false;
+            }
+            else {
+                // Remove the failing playlist and retry playlist selection.
+                master.deletePlayList(index);
+            }
         }
     }
 

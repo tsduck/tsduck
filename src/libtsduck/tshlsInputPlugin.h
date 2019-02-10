@@ -78,7 +78,7 @@ namespace ts {
             bool           _highestRes;
             size_t         _maxSegmentCount;
             WebRequestArgs _webArgs;
-            hls::PlayList  _playlist;
+            PlayList       _playlist;
 
             // Inaccessible operations
             InputPlugin() = delete;

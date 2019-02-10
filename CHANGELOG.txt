@@ -2,10 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1128
+VERSION 3.17-1133
 
 [IMP] Improvements on existing commands and plugins:
 
+  * In the input plugin "hls", after loading a master playlist, if the selected
+    media playlist is not found, try next one, etc.
   * The old "zap" format which was inherited from some Linux scanning tools is
     no longer supported by TSDuck. Instead, a more generic and portable XML
     format is used. See the user's guide for more details. As a consequence:
