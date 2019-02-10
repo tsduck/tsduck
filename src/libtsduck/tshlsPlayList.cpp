@@ -204,6 +204,18 @@ const ts::hls::MediaPlayList& ts::hls::PlayList::playList(size_t index) const
 
 
 //----------------------------------------------------------------------------
+// Delete a media playlist description from a master playlist.
+//----------------------------------------------------------------------------
+
+void ts::hls::PlayList::deletePlayList(size_t index)
+{
+    if (index < _playlists.size()) {
+        _playlists.erase(_playlists.begin() + index);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Add a segment or sub-playlist in a playlist.
 //----------------------------------------------------------------------------
 
