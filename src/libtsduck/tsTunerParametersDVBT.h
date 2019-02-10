@@ -75,11 +75,13 @@ namespace ts {
         virtual BitRate theoreticalBitrate() const override;
         virtual UString shortDescription(int strength = -1, int quality = -1) const override;
         virtual UString toPluginOptions(bool no_local = false) const override;
+        virtual xml::Element* toXML(xml::Element* parent) const override;
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const override;
         virtual void copy(const TunerParameters&) override;
 
     protected:
         virtual bool fromArgs(const TunerArgs&, Report&) override;
         virtual bool fromDeliveryDescriptor(const Descriptor& desc) override;
+        virtual bool fromXML(const xml::Element* element) override;
     };
 }

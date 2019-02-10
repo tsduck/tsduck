@@ -33,6 +33,7 @@
 
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
+#include "tsxmlElement.h"
 #include "tsEnumeration.h"
 TSDUCK_SOURCE;
 
@@ -308,6 +309,59 @@ bool ts::TunerParametersDVBT::fromDeliveryDescriptor(const Descriptor& desc)
     }
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersDVBT::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"dvbt");
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (fec_hp != FEC_AUTO) {
+        e->setEnumAttribute(InnerFECEnum, u"HPFEC", fec_hp);
+    }
+    if (fec_lp != FEC_AUTO) {
+        e->setEnumAttribute(InnerFECEnum, u"LPFEC", fec_lp);
+    }
+    if (bandwidth != BW_AUTO) {
+        e->setEnumAttribute(BandWidthEnum, u"bandwidth", bandwidth);
+    }
+    if (transmission_mode != TM_AUTO) {
+        e->setEnumAttribute(TransmissionModeEnum, u"transmission", transmission_mode);
+    }
+    if (guard_interval != GUARD_AUTO) {
+        e->setEnumAttribute(GuardIntervalEnum, u"guard", guard_interval);
+    }
+    if (hierarchy != HIERARCHY_AUTO) {
+        e->setEnumAttribute(HierarchyEnum, u"hierarchy", hierarchy);
+    }
+    if (plp != PLP_DISABLE) {
+        e->setIntAttribute(u"PLP", uint8_t(plp), false);
+    }
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    return e;
+}
+
+bool ts::TunerParametersDVBT::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name() == u"dvbt" &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+        elem->getIntEnumAttribute(bandwidth, BandWidthEnum, u"bandwidth", false, BW_AUTO) &&
+        elem->getIntEnumAttribute(transmission_mode, TransmissionModeEnum, u"transmission", false, TM_AUTO) &&
+        elem->getIntEnumAttribute(guard_interval, GuardIntervalEnum, u"guard", false, GUARD_AUTO) &&
+        elem->getIntEnumAttribute(fec_hp, InnerFECEnum, u"HPFEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(fec_lp, InnerFECEnum, u"LPFEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
+        elem->getIntEnumAttribute(hierarchy, HierarchyEnum, u"hierarchy", false, HIERARCHY_AUTO) &&
+        elem->getIntAttribute<PLP>(plp, u"PLP", false, PLP_DISABLE, 0, 255);
 }
 
 

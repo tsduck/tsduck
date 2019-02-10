@@ -35,6 +35,7 @@
 #include "tsTunerArgs.h"
 #include "tsDektec.h"
 #include "tsEnumeration.h"
+#include "tsxmlElement.h"
 #include "tsBCD.h"
 TSDUCK_SOURCE;
 
@@ -299,6 +300,57 @@ bool ts::TunerParametersDVBS::fromDeliveryDescriptor(const Descriptor& desc)
     }
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersDVBS::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"dvbs");
+    if (satellite_number != 0) {
+        e->setIntAttribute(u"satellite", satellite_number, false);
+    }
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setIntAttribute(u"symbolrate", symbol_rate, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (delivery_system != DS_DVB_S) {
+        e->setEnumAttribute(DeliverySystemEnum, u"system", delivery_system);
+    }
+    if (polarity != POL_AUTO) {
+        e->setEnumAttribute(PolarizationEnum, u"polarity", polarity);
+    }
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    if (inner_fec != FEC_AUTO) {
+        e->setEnumAttribute(InnerFECEnum, u"FEC", inner_fec);
+    }
+    if (delivery_system == DS_DVB_S2 && pilots != PILOT_AUTO) {
+        e->setEnumAttribute(PilotEnum, u"pilots", pilots);
+    }
+    if (delivery_system == DS_DVB_S2 && roll_off != ROLLOFF_AUTO) {
+        e->setEnumAttribute(RollOffEnum, u"rolloff", roll_off);
+    }
+    return e;
+}
+
+bool ts::TunerParametersDVBS::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name() == u"dvbs" &&
+        elem->getIntAttribute<size_t>(satellite_number, u"satellite", false, 0, 0, 3) &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntAttribute<uint32_t>(symbol_rate, u"symbolrate", false, 27500000) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QPSK) &&
+        elem->getIntEnumAttribute(delivery_system, DeliverySystemEnum, u"system", false, DS_DVB_S) &&
+        elem->getIntEnumAttribute(inner_fec, InnerFECEnum, u"FEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
+        elem->getIntEnumAttribute(polarity, PolarizationEnum, u"polarity", false, POL_AUTO) &&
+        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(pilots, PilotEnum, u"pilots", false, PILOT_AUTO)) &&
+        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(roll_off, RollOffEnum, u"rolloff", false, ROLLOFF_AUTO));
 }
 
 

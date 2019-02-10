@@ -34,6 +34,7 @@
 #include "tsTunerParametersATSC.h"
 #include "tsTunerArgs.h"
 #include "tsChannelFile.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 
@@ -81,6 +82,39 @@ ts::TunerParametersPtr ts::TunerParameters::FromDeliveryDescriptor(const Descrip
     }
     CheckNonNull(ptr.pointer());
     if (!ptr->fromDeliveryDescriptor(desc)) {
+        ptr.reset();
+    }
+    return ptr;
+}
+
+
+//----------------------------------------------------------------------------
+// Allocate a TunerParameters from an XML element.
+//----------------------------------------------------------------------------
+
+ts::TunerParametersPtr ts::TunerParameters::FromXML(const xml::Element* elem)
+{
+    if (elem == nullptr) {
+        return TunerParametersPtr();
+    }
+    TunerParametersPtr ptr;
+    if (elem->name() == u"atsc") {
+        ptr = new TunerParametersATSC();
+    }
+    else if (elem->name() == u"dvbc") {
+        ptr = new TunerParametersDVBC();
+    }
+    else if (elem->name() == u"dvbs") {
+        ptr = new TunerParametersDVBS();
+    }
+    else if (elem->name() == u"dvbt") {
+        ptr = new TunerParametersDVBT();
+    }
+    else {
+        return TunerParametersPtr(); // Not a known element
+    }
+    CheckNonNull(ptr.pointer());
+    if (!ptr->fromXML(elem)) {
         ptr.reset();
     }
     return ptr;

@@ -39,6 +39,7 @@
 #include "tsSafePtr.h"
 #include "tsException.h"
 #include "tsDescriptor.h"
+#include "tsxml.h"
 
 namespace ts {
 
@@ -104,6 +105,13 @@ namespace ts {
         virtual UString toPluginOptions(bool no_local = false) const = 0;
 
         //!
+        //! This method converts this object to XML.
+        //! @param [in,out] parent The parent node for the new XML tree.
+        //! @return The new XML element.
+        //!
+        virtual xml::Element* toXML(xml::Element* parent) const = 0;
+
+        //!
         //! Display a description of the modulation paramters on a stream, line by line.
         //! @param [in,out] strm Where to display the parameters.
         //! @param [in] margin Left margin to display.
@@ -158,6 +166,15 @@ namespace ts {
         //!
         static TunerParametersPtr FromDeliveryDescriptor(const Descriptor& desc);
 
+        //!
+        //! Allocate a TunerParameters of the appropriate subclass from an XML element.
+        //! @param [in] element XML element to convert.
+        //! @return A safe pointer to a newly allocated tuner parameters object of the appropriate class.
+        //! Return a null pointer if the descriptor was not correctly analyzed or is not
+        //! a delivery system descriptor.
+        //!
+        static TunerParametersPtr FromXML(const xml::Element* element);
+
     protected:
         //!
         //! The tuner type is set by subclasses.
@@ -188,6 +205,13 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         virtual bool fromDeliveryDescriptor(const Descriptor& desc) = 0;
+
+        //!
+        //! This abstract method fills in this object from an XML structure.
+        //! @param [in] element XML element to convert.
+        //! @return True on success, false on error.
+        //!
+        virtual bool fromXML(const xml::Element* element) = 0;
 
         //!
         //! Theoretical useful bitrate for QPSK or QAM modulation.
