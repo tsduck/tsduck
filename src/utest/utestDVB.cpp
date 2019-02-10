@@ -35,7 +35,6 @@
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
-#include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -105,14 +104,9 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     ts::TunerParametersPtr ptr(ts::TunerParameters::Factory(params.tunerType()));
     CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
 
-    const ts::UString zap(params.toZapFormat());
-    utest::Out() << "DVBTest: Zap format: \"" << zap << "\"" << std::endl;
-
     const ts::UString opts(params.toPluginOptions());
     utest::Out() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
-    CPPUNIT_ASSERT(ptr->fromZapFormat(zap));
-    CPPUNIT_ASSERT(ptr->toZapFormat() == zap);
     CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
 
     ts::Args args;

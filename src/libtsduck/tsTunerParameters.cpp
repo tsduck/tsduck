@@ -32,7 +32,6 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerParametersATSC.h"
-#include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
 #include "tsChannelFile.h"
 TSDUCK_SOURCE;
@@ -64,6 +63,27 @@ ts::TunerParametersPtr ts::TunerParameters::Factory(TunerType tuner_type)
     }
     CheckNonNull(ptr);
     return TunerParametersPtr(ptr);
+}
+
+
+//----------------------------------------------------------------------------
+// Allocate a TunerParameters from a delivery system descriptor.
+//----------------------------------------------------------------------------
+
+ts::TunerParametersPtr ts::TunerParameters::FromDeliveryDescriptor(const Descriptor& desc)
+{
+    TunerParametersPtr ptr;
+    switch (desc.tag()) {
+        case DID_SAT_DELIVERY:     ptr = new TunerParametersDVBS(); break;
+        case DID_CABLE_DELIVERY:   ptr = new TunerParametersDVBC(); break;
+        case DID_TERREST_DELIVERY: ptr = new TunerParametersDVBT(); break;
+        default: return TunerParametersPtr(); // Not a known delivery descriptor
+    }
+    CheckNonNull(ptr.pointer());
+    if (!ptr->fromDeliveryDescriptor(desc)) {
+        ptr.reset();
+    }
+    return ptr;
 }
 
 

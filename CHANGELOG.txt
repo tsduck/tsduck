@@ -2,10 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1117
+VERSION 3.17-1128
 
 [IMP] Improvements on existing commands and plugins:
 
+  * The old "zap" format which was inherited from some Linux scanning tools is
+    no longer supported by TSDuck. Instead, a more generic and portable XML
+    format is used. See the user's guide for more details. As a consequence:
+    . In plugin "dvb" and command "tsscan": Added option --tuning-file,
+      removed options --tune and --zap-config-file.
+    . In plugin "nitscan" and command "tsscan", added options --save-channels
+      and --update-channels.
   * In plugin "dvb" and command "tsscan": Added --guard-interval values
     "1/128", "19/128", "19/256". Added --transmission-mode values "1K",
     "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation

@@ -34,7 +34,6 @@
 #include "tsMain.h"
 #include "tsCOM.h"
 #include "tsTuner.h"
-#include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerParametersDVBC.h"
@@ -237,7 +236,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     list_services     = present(u"service-list");
     global_services   = present(u"global-service-list");
     psi_timeout       = intValue<ts::MilliSecond>(u"psi-timeout", DEFAULT_PSI_TIMEOUT);
-    
+
     const bool save_channel_file = present(u"save-channels");
     update_channel_file = present(u"update-channels");
     channel_file = update_channel_file ? value(u"update-channels") : value(u"save-channels");
@@ -653,7 +652,7 @@ void ScanContext::nitScan()
         // Loop on all descriptors for the current TS.
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
-            ts::TunerParametersPtr tp(ts::DecodeDeliveryDescriptor(*dlist[i]));
+            ts::TunerParametersPtr tp(ts::TunerParameters::FromDeliveryDescriptor(*dlist[i]));
             if (!tp.isNull()) {
                 // Got a delivery descriptor, this is the description of one transponder.
                 // Tune to this transponder.

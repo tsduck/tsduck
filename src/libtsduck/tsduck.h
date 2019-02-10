@@ -444,7 +444,6 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBT.h"
-#include "tsTunerUtils.h"
 #include "tsUChar.h"
 #include "tsUDPReceiver.h"
 #include "tsUDPSocket.h"
