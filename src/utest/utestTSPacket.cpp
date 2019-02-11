@@ -122,7 +122,7 @@ void TSPacketTest::testCreatePCR()
     CPPUNIT_ASSERT_EQUAL(ts::PID(0x1ABC), pkt.getPID());
     CPPUNIT_ASSERT_EQUAL(size_t(184), pkt.getPayloadSize());
     CPPUNIT_ASSERT(!pkt.hasPCR());
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), pkt.getPCR());
+    CPPUNIT_ASSERT_EQUAL(ts::INVALID_PCR, pkt.getPCR());
 
     pkt.createPCR(TS_UCONST64(0x000000126789ABCD));
 
