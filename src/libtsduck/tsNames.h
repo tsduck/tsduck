@@ -37,7 +37,7 @@
 #include "tsUString.h"
 #include "tsCASFamily.h"
 #include "tsReport.h"
-#include "tsStaticInstance.h"
+#include "tsSingletonManager.h"
 
 namespace ts {
     //!
@@ -492,13 +492,23 @@ namespace ts {
     //!
     //! An instance of names repository containing all MPEG and DVB identifiers.
     //!
-    TS_STATIC_INSTANCE_DECLARATION(ts::Names, TSDUCKDLL, NamesDVB);
+    class TSDUCKDLL NamesDVB : public Names
+    {
+        TS_DECLARE_SINGLETON(NamesDVB);
+    public:
+        virtual ~NamesDVB() override;  //!< Destructor
+    };
 
     //!
     //! An instance of names repository containing all IEEE-assigned Organizationally Unique Identifiers (OUI).
     //! Since the number of OUI values is very large, they are placed in a separate configuration file.
     //!
-    TS_STATIC_INSTANCE_DECLARATION(ts::Names, TSDUCKDLL, NamesOUI);
+    class TSDUCKDLL NamesOUI : public Names
+    {
+        TS_DECLARE_SINGLETON(NamesOUI);
+    public:
+        virtual ~NamesOUI() override;  //!< Destructor
+    };
 
     //!
     //! Get a name from a specified section in the DVB names file.
@@ -513,7 +523,7 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     UString DVBNameFromSection(const UString& sectionName, INT value, names::Flags flags = names::NAME, size_t bits = 0, INT alternateValue = 0)
     {
-        return NamesDVB::Instance().nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
+        return NamesDVB::Instance()->nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
     }
 }
 
