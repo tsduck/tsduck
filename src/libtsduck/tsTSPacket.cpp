@@ -279,16 +279,16 @@ size_t ts::TSPacket::spliceCountdownOffset() const
 // Return 0 if not found.
 //----------------------------------------------------------------------------
 
-uint64_t ts::TSPacket::getPCR () const
+uint64_t ts::TSPacket::getPCR() const
 {
-    const size_t offset = PCROffset ();
-    return offset == 0 ? 0 : GetPCR(b + offset);
+    const size_t offset = PCROffset();
+    return offset == 0 ? INVALID_PCR : GetPCR(b + offset);
 }
 
 uint64_t ts::TSPacket::getOPCR () const
 {
     const size_t offset = OPCROffset ();
-    return offset == 0 ? 0 : GetPCR(b + offset);
+    return offset == 0 ? INVALID_PCR : GetPCR(b + offset);
 }
 
 int8_t ts::TSPacket::getSpliceCountdown() const

@@ -408,13 +408,13 @@ namespace ts {
 
         //!
         //! Get the PCR - 42 bits.
-        //! @return The PCR or 0 if not found.
+        //! @return The PCR or INVALID_PCR if not found.
         //!
         uint64_t getPCR() const;
 
         //!
         //! Get the OPCR - 42 bits.
-        //! @return The OPCR or 0 if not found.
+        //! @return The OPCR or INVALID_PCR if not found.
         //!
         uint64_t getOPCR() const;
 
