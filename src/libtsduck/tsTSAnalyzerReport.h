@@ -74,6 +74,13 @@ namespace ts {
         void report(std::ostream& strm, const TSAnalyzerOptions& opt);
 
         //!
+        //! General reporting method, using the specified options.
+        //! @param [in] opt Analysis options.
+        //! @return The analysis as a String.
+        //!
+        UString reportToString(const TSAnalyzerOptions& opt);
+
+        //!
         //! Report formatted analysis about the global transport stream.
         //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.

@@ -34,6 +34,7 @@
 
 #include "tsMain.h"
 #include "tsTSPacket.h"
+#include "tsPagerArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -53,6 +54,7 @@ struct Options: public ts::Args
     ts::PIDSet        pids;        // PID values to dump.
     ts::PacketCounter max_packets; // Maximum number of packets to dump per file
     ts::UStringVector infiles;     // Input file names
+    ts::PagerArgs     pager;       // Output paging options.
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -63,8 +65,11 @@ Options::Options(int argc, char *argv[]) :
     log_size(0),
     pids(),
     max_packets(0),
-    infiles()
+    infiles(),
+    pager(true, true)
 {
+    pager.defineOptions(*this);
+
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"", u"Any number of input MPEG TS files (standard input if omitted).");
 
@@ -113,6 +118,8 @@ Options::Options(int argc, char *argv[]) :
     help(u"raw-file", u"Raw dump of file, do not interpret as TS packets.");
 
     analyze(argc, argv);
+
+    pager.load(*this);
 
     getValues(infiles);
     raw_file = present(u"raw-file");
@@ -174,7 +181,7 @@ Options::~Options()
 // Perform the dump on one input file.
 //----------------------------------------------------------------------------
 
-void DumpFile(Options& opt, std::istream& stream)
+void DumpFile(Options& opt, std::istream& in, std::ostream & out)
 {
     if (opt.raw_file) {
         // Raw dump of file
@@ -182,30 +189,30 @@ void DumpFile(Options& opt, std::istream& stream)
         const size_t MAX_RAW_BPL = 16;
         const size_t raw_bpl = (flags & ts::UString::BINARY) ? 8 : 16;  // Bytes per line in raw mode
         size_t offset = 0;
-        while (stream) {
+        while (in) {
             int c;
             size_t size;
             uint8_t buffer[MAX_RAW_BPL];
-            for (size = 0; size < raw_bpl && (c = stream.get()) != EOF; size++) {
+            for (size = 0; size < raw_bpl && (c = in.get()) != EOF; size++) {
                 buffer[size] = uint8_t(c);
             }
-            std::cout << ts::UString::Dump(buffer, size, flags, 0, raw_bpl, offset);
+            out << ts::UString::Dump(buffer, size, flags, 0, raw_bpl, offset);
             offset += size;
         }
     }
     else {
         // Read all packets in the file
         ts::TSPacket pkt;
-        for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && pkt.read(stream, true, opt); packet_index++) {
+        for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && pkt.read(in, true, opt); packet_index++) {
             if (opt.pids.test(pkt.getPID())) {
                 if (!opt.log) {
-                    std::cout << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
+                    out << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
                 }
-                pkt.display(std::cout, opt.dump_flags, opt.log ? 0 : 2, opt.log_size);
+                pkt.display(out, opt.dump_flags, opt.log ? 0 : 2, opt.log_size);
             }
         }
         if (!opt.log) {
-            std::cout << std::endl;
+            out << std::endl;
         }
     }
 }
@@ -219,12 +226,13 @@ int MainCode(int argc, char *argv[])
 {
     // Decode command line.
     Options opt(argc, argv);
+    std::ostream& out(opt.pager.output(opt));
 
     if (opt.infiles.empty()) {
         // Try to put standard input in binary mode
         SetBinaryModeStdin(opt);
         // Dump standard input.
-        DumpFile(opt, std::cin);
+        DumpFile(opt, std::cin, out);
     }
     else {
         // Dump named files.
@@ -233,9 +241,9 @@ int MainCode(int argc, char *argv[])
             std::ifstream file(opt.infiles[i].toUTF8().c_str(), std::ios::binary);
             if (file) {
                 if (opt.infiles.size() > 1 && !opt.raw_file && !opt.log) {
-                    std::cout << "* File " << opt.infiles[i] << std::endl;
+                    out << "* File " << opt.infiles[i] << std::endl;
                 }
-                DumpFile(opt, file);
+                DumpFile(opt, file, out);
             }
             else {
                 opt.error(u"cannot open file %s", {opt.infiles[i]});

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractOutputStream.h"
 #include "tsSysUtils.h"
 #include "tsReport.h"
 
@@ -41,7 +42,9 @@ namespace ts {
     //! Fork a process and create an optional pipe to its standard input.
     //! @ingroup system
     //!
-    class TSDUCKDLL ForkPipe
+    //! This class can be used as any output stream when the output is a pipe.
+    //!
+    class TSDUCKDLL ForkPipe: public AbstractOutputStream
     {
     public:
         //!
@@ -191,6 +194,10 @@ namespace ts {
         //!
         bool eof() const { return _eof; }
 
+    protected:
+        // Implementation of AbstractOutputStream
+        virtual bool writeStreamBuffer(const void* addr, size_t size) override;
+
     private:
         InputMode     _in_mode;       // Input mode for the created process.
         OutputMode    _out_mode;      // Output mode for the created process.
@@ -203,14 +210,14 @@ namespace ts {
         volatile bool _broken_pipe;   // Pipe is broken, do not attempt to write.
         volatile bool _eof;           // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
-        ::HANDLE   _handle;        // Pipe output handle.
-        ::HANDLE   _process;       // Handle to child process.
+        ::HANDLE      _handle;        // Pipe output handle.
+        ::HANDLE      _process;       // Handle to child process.
 #else
-        ::pid_t    _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
-        int        _fd;            // Pipe output file descriptor.
+        ::pid_t       _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
+        int           _fd;            // Pipe output file descriptor.
 #endif
 
-        // Inacessible operations.
+        // Inaccessible operations.
         ForkPipe(const ForkPipe&) = delete;
         ForkPipe& operator=(const ForkPipe&) = delete;
     };

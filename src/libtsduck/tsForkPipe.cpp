@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ForkPipe::ForkPipe() :
+    AbstractOutputStream(),
     _in_mode(STDIN_PIPE),
     _out_mode(KEEP_BOTH),
     _is_open(false),
@@ -70,10 +71,19 @@ ts::ForkPipe::ForkPipe() :
     IgnorePipeSignal();
 }
 
-
 ts::ForkPipe::~ForkPipe()
 {
     close(NULLREP);
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of AbstractOutputStream
+//----------------------------------------------------------------------------
+
+bool ts::ForkPipe::writeStreamBuffer(const void* addr, size_t size)
+{
+    return write(addr, size, NULLREP);
 }
 
 
@@ -444,6 +454,11 @@ bool ts::ForkPipe::close(Report& report)
     // Silent error is already closed
     if (!_is_open) {
         return false;
+    }
+
+    // Flush the output buffer, if any.
+    if (_in_pipe) {
+        flush(); // from std::basic_ostream
     }
 
     bool result = true;

@@ -35,6 +35,7 @@
 #include "tsTSAnalyzerReport.h"
 #include "tsTSAnalyzerOptions.h"
 #include "tsInputRedirector.h"
+#include "tsPagerArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -50,15 +51,18 @@ struct Options: public ts::Args
     ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
     ts::UString           infile;    // Input file name
     ts::TSAnalyzerOptions analysis;  // Analysis options.
+    ts::PagerArgs         pager;     // Output paging options.
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),
     bitrate(0),
     infile(),
-    analysis()
+    analysis(),
+    pager(true, true)
 {
     // Define all standard analysis options.
+    pager.defineOptions(*this);
     analysis.defineOptions(*this);
 
     option(u"", 0, STRING, 0, 1);
@@ -72,9 +76,12 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    // Define all standard analysis options.
+    pager.load(*this);
+    analysis.load(*this);
+
     infile = value(u"");
     bitrate = intValue<ts::BitRate>(u"bitrate");
-    analysis.load(*this);
 
     exitOnError();
 }
@@ -97,11 +104,13 @@ int MainCode(int argc, char *argv[])
 
     analyzer.setAnalysisOptions(opt.analysis);
 
+    // Read input file and perform analysis.
     while (pkt.read(std::cin, true, opt)) {
         analyzer.feedPacket(pkt);
     }
 
-    analyzer.report(std::cout, opt.analysis);
+    // Report analysis.
+    analyzer.report(opt.pager.output(opt), opt.analysis);
 
     return EXIT_SUCCESS;
 }

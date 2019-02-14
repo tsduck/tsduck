@@ -2,10 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1134
+VERSION 3.17-1136
 
 [IMP] Improvements on existing commands and plugins:
 
+  * In commands "tsanalyze", "tsdump", "tspsi", "tstabdump", "tstables", the
+    display is now sent through a pager application (less/more) when the output
+    device is a terminal. Added option --no-pager to disable this.
   * In the input plugin "hls", after loading a master playlist, if the selected
     media playlist is not found, try next one, etc.
   * Added option --evaluate-pcr-offset to plugin "pcrextract".
