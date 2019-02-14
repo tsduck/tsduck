@@ -86,9 +86,9 @@ void ts::TablesDisplay::flush()
     // Flush the output.
     _out->flush();
 
-    // On Windows, we must force the lower-level standard output.
-#if !defined(TS_WINDOWS)
-    if (!_use_outfile) {
+    // On Unix, we must force the lower-level standard output.
+#if defined(TS_UNIX)
+    if (_out == &std::cout) {
         ::fflush(stdout);
         ::fsync(STDOUT_FILENO);
     }
