@@ -26,22 +26,57 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsAbstractOutputStream.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 17
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1136
+ts::AbstractOutputStream::AbstractOutputStream(size_t bufferSize) :
+    std::basic_ostream<char>(this),
+    std::basic_streambuf<char>(),
+    _buffer()
+{
+    _buffer.resize(bufferSize);
+    resetBuffer();
+}
+
+ts::AbstractOutputStream::~AbstractOutputStream()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// This is called when buffer becomes full.
+//----------------------------------------------------------------------------
+
+int ts::AbstractOutputStream::overflow(int c)
+{
+    // Flush content of the buffer.
+    bool ok = writeStreamBuffer(pbase(), pptr() - pbase());
+
+    // Flush the character that didn't fit in buffer.
+    if (ok && c != traits_type::eof()) {
+        char ch = char(c);
+        ok = writeStreamBuffer(&ch, 1);
+    }
+
+    // Nothing to flush anymore.
+    resetBuffer();
+    return ok ? c : traits_type::eof();
+}
+
+
+//----------------------------------------------------------------------------
+// This function is called when the stream is flushed.
+//----------------------------------------------------------------------------
+
+int ts::AbstractOutputStream::sync()
+{
+    bool ok = writeStreamBuffer(pbase(), pptr() - pbase());
+    resetBuffer();
+    return ok ? 0 : -1;
+}

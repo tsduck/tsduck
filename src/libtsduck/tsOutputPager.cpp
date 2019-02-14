@@ -31,12 +31,15 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+// Default name of the environment variable containing the pager command.
+const ts::UChar* const ts::OutputPager::DEFAULT_PAGER = u"PAGER";
+
 
 //----------------------------------------------------------------------------
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::OutputPager::OutputPager(const UString& envName) :
+ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly) :
     ForkPipe(),
     _hasTerminal(false),
     _outputMode(KEEP_BOTH),
@@ -45,7 +48,7 @@ ts::OutputPager::OutputPager(const UString& envName) :
     // Check if we have a terminal.
     const bool outTerm = StdOutIsTerminal();
     const bool errTerm = StdErrIsTerminal();
-    _hasTerminal = outTerm || errTerm;
+    _hasTerminal = outTerm || (!stdoutOnly && errTerm);
 
     // Check if we should redirect one output.
     if (outTerm && !errTerm) {

@@ -184,6 +184,18 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
 
 
 //----------------------------------------------------------------------------
+// General reporting method, using the specified options.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TSAnalyzerReport::reportToString(const TSAnalyzerOptions & opt)
+{
+    std::stringstream stm(std::ios::out);
+    report(stm, opt);
+    return UString::FromUTF8(stm.str());
+}
+
+
+//----------------------------------------------------------------------------
 // Report global transport stream analysis
 //----------------------------------------------------------------------------
 

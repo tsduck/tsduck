@@ -15,6 +15,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractLongTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractOutputStream.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractSignalization.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTablePlugin.h" />
@@ -258,6 +259,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPacketDecapsulation.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPacketEncapsulation.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPacketizer.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPagerArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsParentalRatingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPAT.h" />
@@ -511,6 +513,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractLongTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractOutputStream.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractSignalization.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTablePlugin.cpp" />
@@ -717,6 +720,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPacketDecapsulation.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPacketEncapsulation.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPacketizer.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPagerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsParentalRatingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPartialTransportStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPAT.cpp" />

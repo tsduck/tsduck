@@ -209,17 +209,26 @@ namespace ts {
 
         //!
         //! Redirect the output stream to a file.
-        //! The previous file is closed.
         //! @param [in] file_name The file name to create. If empty, reset to @c std::cout.
+        //! @param [in] override It true, the previous file is closed. If false and the
+        //! output is already redirected outside @c std::cout, do nothing.
         //! @return True on success, false on error.
         //!
-        virtual bool redirect(const UString& file_name = UString());
+        virtual bool redirect(const UString& file_name, bool override = true);
+
+        //!
+        //! Redirect the output stream to a stream.
+        //! @param [in] stream The output stream to use, @c std::cout on null pointer.
+        //! @param [in] override It true, the previous file is closed. If false and the
+        //! output is already redirected outside @c std::cout, do nothing.
+        //!
+        virtual void redirect(std::ostream* stream, bool override = true);
 
         //!
         //! Get the current output stream.
         //! @return A reference to the output stream.
         //!
-        std::ostream& out();
+        std::ostream& out() { return *_out; }
 
         //!
         //! Get the default DVB character set for DVB strings without table code.
@@ -304,8 +313,8 @@ namespace ts {
     private:
         const TablesDisplayArgs& _opt;
         Report&                  _report;
+        std::ostream*            _out;
         std::ofstream            _outfile;
-        bool                     _use_outfile;
 
         // Inaccessible operations.
         TablesDisplay() = delete;

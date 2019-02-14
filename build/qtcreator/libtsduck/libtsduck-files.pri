@@ -13,6 +13,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractHTTPInputPlugin.h \
     ../../../src/libtsduck/tsAbstractLongTable.h \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.h \
+    ../../../src/libtsduck/tsAbstractOutputStream.h \
     ../../../src/libtsduck/tsAbstractSignalization.h \
     ../../../src/libtsduck/tsAbstractTable.h \
     ../../../src/libtsduck/tsAbstractTablePlugin.h \
@@ -256,6 +257,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPacketDecapsulation.h \
     ../../../src/libtsduck/tsPacketEncapsulation.h \
     ../../../src/libtsduck/tsPacketizer.h \
+    ../../../src/libtsduck/tsPagerArgs.h \
     ../../../src/libtsduck/tsParentalRatingDescriptor.h \
     ../../../src/libtsduck/tsPartialTransportStreamDescriptor.h \
     ../../../src/libtsduck/tsPAT.h \
@@ -499,6 +501,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractHTTPInputPlugin.cpp \
     ../../../src/libtsduck/tsAbstractLongTable.cpp \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.cpp \
+    ../../../src/libtsduck/tsAbstractOutputStream.cpp \
     ../../../src/libtsduck/tsAbstractSignalization.cpp \
     ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTablePlugin.cpp \
@@ -705,6 +708,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPacketDecapsulation.cpp \
     ../../../src/libtsduck/tsPacketEncapsulation.cpp \
     ../../../src/libtsduck/tsPacketizer.cpp \
+    ../../../src/libtsduck/tsPagerArgs.cpp \
     ../../../src/libtsduck/tsParentalRatingDescriptor.cpp \
     ../../../src/libtsduck/tsPartialTransportStreamDescriptor.cpp \
     ../../../src/libtsduck/tsPAT.cpp \
