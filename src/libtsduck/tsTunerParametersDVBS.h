@@ -58,16 +58,17 @@ namespace ts {
         RollOff           roll_off;           //!< Roll-off factor (DVB-S2 only).
 
         // Default values
-        static const Polarization      DEFAULT_POLARITY         = POL_VERTICAL; //!< Default value for polarity.
-        static const SpectralInversion DEFAULT_INVERSION        = SPINV_AUTO;   //!< Default value for inversion.
-        static const uint32_t          DEFAULT_SYMBOL_RATE      = 27500000;     //!< Default value for symbol_rate.
-        static const InnerFEC          DEFAULT_INNER_FEC        = FEC_AUTO;     //!< Default value for inner_fec.
-        static const size_t            DEFAULT_SATELLITE_NUMBER = 0;            //!< Default value for satellite_number.
-        static const DeliverySystem    DEFAULT_DELIVERY_SYSTEM  = DS_DVB_S;     //!< Default value for delivery_system.
-        static const Modulation        DEFAULT_MODULATION       = QPSK;         //!< Default value for modulation.
-        static const Pilot             DEFAULT_PILOTS           = PILOT_OFF;    //!< Default value for pilots.
-        static const RollOff           DEFAULT_ROLL_OFF         = ROLLOFF_35;   //!< Default value for roll_off.
-                                                                                //!< Implied value in DVB-S, default for DVB-S2.
+        static constexpr Polarization      DEFAULT_POLARITY         = POL_VERTICAL; //!< Default value for polarity.
+        static constexpr SpectralInversion DEFAULT_INVERSION        = SPINV_AUTO;   //!< Default value for inversion.
+        static constexpr uint32_t          DEFAULT_SYMBOL_RATE      = 27500000;     //!< Default value for symbol_rate.
+        static constexpr InnerFEC          DEFAULT_INNER_FEC        = FEC_AUTO;     //!< Default value for inner_fec.
+        static constexpr size_t            DEFAULT_SATELLITE_NUMBER = 0;            //!< Default value for satellite_number.
+        static constexpr DeliverySystem    DEFAULT_DELIVERY_SYSTEM  = DS_DVB_S;     //!< Default value for delivery_system.
+        static constexpr Modulation        DEFAULT_MODULATION       = QPSK;         //!< Default value for modulation.
+        static constexpr Pilot             DEFAULT_PILOTS           = PILOT_OFF;    //!< Default value for pilots.
+        static constexpr RollOff           DEFAULT_ROLL_OFF         = ROLLOFF_35;   //!< Default value for roll_off.
+                                                                                    //!< Implied value in DVB-S, default for DVB-S2.
+
         //!
         //! Default constructor.
         //!

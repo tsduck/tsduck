@@ -37,7 +37,7 @@
 #include "tsEnumeration.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersDVBT::DEFAULT_INVERSION;
 const ts::BandWidth ts::TunerParametersDVBT::DEFAULT_BANDWIDTH;
 const ts::InnerFEC ts::TunerParametersDVBT::DEFAULT_FEC_HP;

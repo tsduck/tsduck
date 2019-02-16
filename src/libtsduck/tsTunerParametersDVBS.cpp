@@ -39,7 +39,7 @@
 #include "tsBCD.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::Polarization ts::TunerParametersDVBS::DEFAULT_POLARITY;
 const ts::SpectralInversion ts::TunerParametersDVBS::DEFAULT_INVERSION;
 const uint32_t ts::TunerParametersDVBS::DEFAULT_SYMBOL_RATE;

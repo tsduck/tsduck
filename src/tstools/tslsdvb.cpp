@@ -188,7 +188,7 @@ namespace {
             }
         }
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         // Specific DirectShow tests on Windows.
         ts::DirectShowTest ds(std::cout, opt);
         ds.runTest(opt.test_type);

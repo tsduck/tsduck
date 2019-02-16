@@ -34,7 +34,7 @@
 #include "tsReport.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const int ts::Severity::Fatal;
 const int ts::Severity::Severe;
 const int ts::Severity::Error;

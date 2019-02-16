@@ -286,11 +286,11 @@ void ts::TunerArgs::defineOptions(Args& args) const
 
     args.option(u"device-name", _allow_short_options ? u'd' : 0, Args::STRING);
     args.help(u"device-name", u"name",
-#if defined (TS_LINUX)
+#if defined(TS_LINUX)
               u"Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]] "
               u"where A = adapter number, F = frontend number (default: 0), M = demux "
               u"number (default: 0), V = dvr number (default: 0). "
-#elif defined (TS_WINDOWS)
+#elif defined(TS_WINDOWS)
               u"Specify the DVB receiver device name. This is a DirectShow/BDA tuner "
               u"filter name (not case sensitive, blanks are ignored). "
 #endif

@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 62;
+        static constexpr size_t MAX_ENTRIES = 62;
 
         //!
         //! Default constructor.

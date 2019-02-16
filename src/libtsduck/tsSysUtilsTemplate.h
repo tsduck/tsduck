@@ -29,7 +29,7 @@
 
 #pragma once
 
-#if defined (TS_UNIX)
+#if defined(TS_UNIX)
 #include <glob.h>
 #endif
 

@@ -73,7 +73,7 @@ bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Rep
     bool got_error = false;
     ErrorCode error_code = SYS_SUCCESS;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
     ::DWORD flags;
@@ -153,7 +153,7 @@ bool ts::TSFileOutput::close(Report& report)
     }
 
     if (!_filename.empty()) {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
 #else
         ::close(_fd);
@@ -195,7 +195,7 @@ bool ts::TSFileOutput::write(const TSPacket* buffer, size_t packet_count, Report
     const char* const data_buffer = reinterpret_cast <const char*> (buffer);
     const char* data = data_buffer;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
 

@@ -57,12 +57,12 @@ namespace ts {
         //!
         //! DVB-encoded CR/LF in single-byte character sets.
         //!
-        static const uint8_t DVB_SINGLE_BYTE_CRLF = 0x8A;
+        static constexpr uint8_t DVB_SINGLE_BYTE_CRLF = 0x8A;
 
         //!
         //! Code point for DVB-encoded CR/LF in two-byte character sets.
         //!
-        static const uint16_t DVB_CODEPOINT_CRLF = 0xE08A;
+        static constexpr uint16_t DVB_CODEPOINT_CRLF = 0xE08A;
 
         //!
         //! This static function gets the character coding table at the beginning of a DVB string.

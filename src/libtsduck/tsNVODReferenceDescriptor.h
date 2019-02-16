@@ -71,7 +71,7 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 42;
+        static constexpr size_t MAX_ENTRIES = 42;
 
         // NVODReferenceDescriptor public members:
         EntryList entries;  //!< The list of service entries.

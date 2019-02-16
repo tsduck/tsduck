@@ -651,7 +651,7 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
 
     ErrorCode error_code = SYS_SUCCESS;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     char* data = reinterpret_cast<char*>(addr);
     ::DWORD remain = ::DWORD(max_size);

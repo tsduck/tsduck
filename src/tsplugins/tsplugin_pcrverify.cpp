@@ -80,9 +80,9 @@ namespace ts {
         PIDContext    _stats[PID_MAX];   // Per-PID statistics
 
         // PCR units per micro-second
-        static const int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
-        static const int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
-        static const int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
+        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
+        static constexpr int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
+        static constexpr int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
 
         // Inaccessible operations
         PCRVerifyPlugin() = delete;
