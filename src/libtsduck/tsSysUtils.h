@@ -275,7 +275,7 @@ namespace ts {
     //!
     //! Integer type for process identifier
     //!
-#if defined (DOXYGEN)
+#if defined(DOXYGEN)
     typedef platform_specific ProcessId;
 #elif defined(TS_WINDOWS)
     typedef ::DWORD ProcessId;

@@ -60,6 +60,11 @@ namespace ts {
         explicit OutputPager(const UString& envName = DEFAULT_PAGER, bool stdoutOnly = false);
 
         //!
+        //! Destructor.
+        //!
+        virtual ~OutputPager();
+
+        //!
         //! Check if we can run a pager.
         //! To run a pager, we must have found a valid pager command and either stdout or stderr must be a terminal.
         //! @return True if we can page.

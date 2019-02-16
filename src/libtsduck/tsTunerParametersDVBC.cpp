@@ -38,7 +38,7 @@
 #include "tsBCD.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersDVBC::DEFAULT_INVERSION;
 const uint32_t ts::TunerParametersDVBC::DEFAULT_SYMBOL_RATE;
 const ts::InnerFEC ts::TunerParametersDVBC::DEFAULT_INNER_FEC;

@@ -36,7 +36,7 @@ const ts::UChar* const ts::OutputPager::DEFAULT_PAGER = u"PAGER";
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly) :
@@ -112,6 +112,10 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly) :
         _pagerCommand = u"cmd /d /q /c more";
     }
 #endif
+}
+
+ts::OutputPager::~OutputPager()
+{
 }
 
 

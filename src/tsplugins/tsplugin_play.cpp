@@ -161,7 +161,7 @@ bool ts::PlayPlugin::start()
     // Command to execute will be built here
     UString command;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // On Windows, VLC is the only known media player that can read an MPEG
     // transport stream on its standard input. Try to locate vlc.exe using

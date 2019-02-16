@@ -54,9 +54,9 @@ namespace ts {
     private:
 
         // Default values
-        static const BitRate DEFAULT_BITRATE_MIN = 10;
-        static const BitRate DEFAULT_BITRATE_MAX = 0xFFFFFFFF;
-        static const size_t  DEFAULT_TIME_WINDOW_SIZE = 5;
+        static constexpr BitRate DEFAULT_BITRATE_MIN = 10;
+        static constexpr BitRate DEFAULT_BITRATE_MAX = 0xFFFFFFFF;
+        static constexpr size_t  DEFAULT_TIME_WINDOW_SIZE = 5;
 
         // Type indicating status of current bitrate, regarding allowed range
         enum RangeStatus {LOWER, IN_RANGE, GREATER};

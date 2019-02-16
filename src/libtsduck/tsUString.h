@@ -154,12 +154,12 @@ namespace ts {
         //!
         //! Size in bytes of the so-called "UTF-8 Byte Order Mark".
         //!
-        static const size_type UTF8_BOM_SIZE = 3;
+        static constexpr size_type UTF8_BOM_SIZE = 3;
 
         //!
         //! Maximum size in bytes of an UTF-8 encoded character.
         //!
-        static const size_type UTF8_CHAR_MAX_SIZE = 4;
+        static constexpr size_type UTF8_CHAR_MAX_SIZE = 4;
 
         //!
         //! Default separator string for groups of thousands, a comma.
@@ -174,7 +174,7 @@ namespace ts {
         //!
         //! Default line width for the Hexa() family of methods.
         //!
-        static const size_type DEFAULT_HEXA_LINE_WIDTH = 78;
+        static constexpr size_type DEFAULT_HEXA_LINE_WIDTH = 78;
 
         //!
         //! Flags for the Hexa() family of methods.

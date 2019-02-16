@@ -36,7 +36,7 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersATSC::DEFAULT_INVERSION;
 const ts::Modulation ts::TunerParametersATSC::DEFAULT_MODULATION;
 #endif
