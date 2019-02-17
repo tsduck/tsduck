@@ -130,6 +130,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
     ../../../src/libtsduck/tsDVBCharsetUTF16.h \
     ../../../src/libtsduck/tsDVBCharsetUTF8.h \
+    ../../../src/libtsduck/tsDVBCISSA.h \
     ../../../src/libtsduck/tsDVBCSA2.h \
     ../../../src/libtsduck/tsDVBHTMLApplicationBoundaryDescriptor.h \
     ../../../src/libtsduck/tsDVBHTMLApplicationDescriptor.h \
@@ -594,6 +595,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF16.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF8.cpp \
+    ../../../src/libtsduck/tsDVBCISSA.cpp \
     ../../../src/libtsduck/tsDVBCSA2.cpp \
     ../../../src/libtsduck/tsDVBHTMLApplicationBoundaryDescriptor.cpp \
     ../../../src/libtsduck/tsDVBHTMLApplicationDescriptor.cpp \

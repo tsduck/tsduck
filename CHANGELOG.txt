@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1136
+VERSION 3.17-1139
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -23,6 +23,7 @@ VERSION 3.17-1136
     "1/128", "19/128", "19/256". Added --transmission-mode values "1K",
     "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation
     values "16-APSK", "32-APSK" (DVB-S2).
+  * Added option --dvb-cissa to plugins "scrambler" and "descrambler".
 
 [BUG] Bug fixes:
 

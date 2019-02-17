@@ -26,22 +26,36 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsDVBCISSA.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 17
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1139
+ts::DVBCISSA::DVBCISSA() :
+    CBC<AES>()
+{
+    // The IV is defined by the standard and not modifiable.
+    static const uint8_t ivs[16] = {0x44, 0x56, 0x42, 0x54, 0x4d, 0x43, 0x50, 0x54, 0x41, 0x45, 0x53, 0x43, 0x49, 0x53, 0x53, 0x41};
+    setIV(ivs, sizeof(ivs));
+}
+
+
+//----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+ts::UString ts::DVBCISSA::name() const 
+{
+    return u"DVB-CISSA";
+}
+
+bool ts::DVBCISSA::setIV(const void* iv_, size_t iv_length) 
+{
+    // The IV is defined by the standard and not modifiable.
+    // This method is hidden (private) but redirected to its super class.
+    return CBC<AES>::setIV(iv_, iv_length);
+}

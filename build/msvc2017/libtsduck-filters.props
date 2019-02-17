@@ -394,6 +394,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCISSA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDVBCSA2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1810,6 +1813,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCISSA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDVBCSA2.cpp">

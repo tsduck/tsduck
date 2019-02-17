@@ -46,7 +46,9 @@
 #include "tsCTS4.h"
 #include "tsSCTE52.h"
 #include "tsDVBCSA2.h"
+#include "tsDVBCISSA.h"
 #include "tsIDSA.h"
+#include "tsTSPacket.h"
 #include "tsSystemRandomGenerator.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -58,6 +60,7 @@ TSDUCK_SOURCE;
 #include "crypto/tv_tdes.h"
 #include "crypto/tv_tdes_cbc.h"
 #include "crypto/tv_dvb_csa2.h"
+#include "crypto/tv_dvb_cissa.h"
 #include "crypto/tv_atis_idsa.h"
 #include "crypto/tv_sha1.h"
 #include "crypto/tv_sha256.h"
@@ -87,6 +90,7 @@ public:
     void testTDES();
     void testTDES_CBC();
     void testDVBCSA2();
+    void testDVBCISSA();
     void testIDSA();
     void testSCTE52_2003();
     void testSCTE52_2008();
@@ -108,6 +112,7 @@ public:
     CPPUNIT_TEST(testTDES);
     CPPUNIT_TEST(testTDES_CBC);
     CPPUNIT_TEST(testDVBCSA2);
+    CPPUNIT_TEST(testDVBCISSA);
     CPPUNIT_TEST(testIDSA);
     CPPUNIT_TEST(testSCTE52_2003);
     CPPUNIT_TEST(testSCTE52_2008);
@@ -472,6 +477,22 @@ void CryptoTest::testDVBCSA2()
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_DVB_CSA2* tv = tv_dvb_csa2 + tvi;
         testCipher(csa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
+    }
+}
+
+void CryptoTest::testDVBCISSA()
+{
+    ts::DVBCISSA cissa;
+    const size_t tv_count = sizeof(tv_dvb_cissa) / sizeof(tv_dvb_cissa[0]);
+    for (size_t tvi = 0; tvi < tv_count; ++tvi) {
+        const TV_DVB_CISSA* tv = tv_dvb_cissa + tvi;
+        const size_t hsize = tv->plain.getHeaderSize();
+        const size_t psize = tv->plain.getPayloadSize();
+        const size_t size = psize - psize % cissa.blockSize();
+        CPPUNIT_ASSERT_EQUAL(hsize, tv->cipher.getHeaderSize());
+        CPPUNIT_ASSERT_EQUAL(psize, tv->cipher.getPayloadSize());
+        CPPUNIT_ASSERT_EQUAL(size_t(16), cissa.blockSize());
+        testCipher(cissa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain.b + hsize, size, tv->cipher.b + hsize, size);
     }
 }
 
