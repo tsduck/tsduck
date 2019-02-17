@@ -144,6 +144,7 @@
 #include "tsDVBCharsetSingleByte.h"
 #include "tsDVBCharsetUTF16.h"
 #include "tsDVBCharsetUTF8.h"
+#include "tsDVBCISSA.h"
 #include "tsDVBCSA2.h"
 #include "tsDVBHTMLApplicationBoundaryDescriptor.h"
 #include "tsDVBHTMLApplicationDescriptor.h"

@@ -28,20 +28,38 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  DVB-CISSA AES-based TS packet encryption.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 17
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1139
+#include "tsCBC.h"
+#include "tsAES.h"
+
+namespace ts {
+    //!
+    //! DVB-CISSA AES-based TS packet encryption.
+    //! (CISSA = Common IPTV Software-oriented Scrambling Algorithm).
+    //! @ingroup crypto
+    //! @see ETSI TS 103 127, chapter 6
+    //!
+    class TSDUCKDLL DVBCISSA : public CBC<AES>
+    {
+    public:
+        //!
+        //! DVB-CISSA control words size in bytes (AES-128 key size).
+        //!
+        static const size_t KEY_SIZE = 16;
+
+        //!
+        //! Constructor.
+        //!
+        DVBCISSA();
+
+        // Implementation of BlockCipher interface.
+        virtual UString name() const override;
+
+    private:
+        virtual bool setIV(const void* iv_, size_t iv_length) override;
+    };
+}

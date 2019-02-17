@@ -132,6 +132,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF16.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF8.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCISSA.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCSA2.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationBoundaryDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationDescriptor.h" />
@@ -606,6 +607,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF16.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF8.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCISSA.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCSA2.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationBoundaryDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationDescriptor.cpp" />
