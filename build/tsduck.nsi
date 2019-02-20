@@ -147,7 +147,7 @@ Section "Tools & Plugins" SectionTools
         File "${BinDir}\ts*.dll"
     !endif
     File "${RootDir}\src\libtsduck\tsduck.xml"
-    File "${RootDir}\src\libtsduck\tsduck.channels.xml"
+    File "${RootDir}\src\libtsduck\tsduck.*.xml"
     File "${RootDir}\src\libtsduck\tsduck.*.names"
 
     ; Delete obsolete files from previous versions.

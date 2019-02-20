@@ -17,6 +17,8 @@
   <ItemGroup>
     <Xml Include="..\..\src\libtsduck\tsduck.xml" />
     <Xml Include="..\..\src\libtsduck\tsduck.channels.xml" />
+    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.xml" />
+    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.model.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\libtsduck\tsduck.dvb.names" />
@@ -41,9 +43,11 @@
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
   <Target Name="AfterBuild">
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.channels.xml" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.dvb.names" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.oui.names" DestinationFolder="$(OutDir)" />
+    <CreateItem Include="..\..\src\libtsduck\tsduck.xml;
+                         ..\..\src\libtsduck\tsduck.*.xml;
+                         ..\..\src\libtsduck\tsduck.*.names">
+      <Output TaskParameter="Include" ItemName="ConfigFiles" />
+    </CreateItem>
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>

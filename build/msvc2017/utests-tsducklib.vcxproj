@@ -57,6 +57,7 @@
     <ClCompile Include="..\..\src\utest\utestWebRequest.cpp" />
     <ClCompile Include="..\..\src\utest\utestXML.cpp" />
     <ClCompile Include="..\..\src\utest\utestHLS.cpp" />
+    <ClCompile Include="..\..\src\utest\utestHFBand.cpp" />
     <ClCompile Include="..\..\src\utest\utestSectionFile.cpp" />
   </ItemGroup>
   <ItemGroup>
