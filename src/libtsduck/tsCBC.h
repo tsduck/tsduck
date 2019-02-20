@@ -54,15 +54,26 @@ namespace ts {
         //!
         CBC() : CipherChainingTemplate<CIPHER>(1, 1, 1) {}
 
-        // Implementation of CipherChaining interface.
+        // Implementation of BlockCipher and CipherChaining interfaces.
+        // For some reason, doxygen is unable to automatically inherit the
+        // documentation of *some* methods when a non-template class derives
+        // from our template class. We need explicit copydoc directives.
+
+        //! @copydoc ts::CipherChaining::minMessageSize()
         virtual size_t minMessageSize() const override;
+
+        //! @copydoc ts::CipherChaining::residueAllowed()
         virtual bool residueAllowed() const override;
 
-        // Implementation of BlockCipher interface.
+        //! @copydoc ts::BlockCipher::name()
         virtual UString name() const override;
+
+        //! @copydoc ts::BlockCipher::encrypt()
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
                              size_t* cipher_length = nullptr) override;
+
+        //! @copydoc ts::BlockCipher::decrypt()
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
                              size_t* plain_length = nullptr) override;

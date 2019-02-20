@@ -174,6 +174,7 @@ HEADERS += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
     ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.h \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
+    ../../../src/libtsduck/tsHFBand.h \
     ../../../src/libtsduck/tsHiDesDevice.h \
     ../../../src/libtsduck/tsHiDesDeviceInfo.h \
     ../../../src/libtsduck/tsHierarchyDescriptor.h \
@@ -633,6 +634,7 @@ SOURCES += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCTimingAndHRDDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
+    ../../../src/libtsduck/tsHFBand.cpp \
     ../../../src/libtsduck/tsHiDesDeviceInfo.cpp \
     ../../../src/libtsduck/tsHierarchyDescriptor.cpp \
     ../../../src/libtsduck/tshls.cpp \

@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
     <Import Project="libtsduck-files.props" />
   </ImportGroup>
-
   <!-- Other data files -->
   <ItemGroup>
     <Xml Include="..\..\src\libtsduck\tsduck.xml" />
     <Xml Include="..\..\src\libtsduck\tsduck.channels.xml" />
+    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.xml">
+      <SubType>Designer</SubType>
+    </Xml>
+    <Xml Include="..\..\src\libtsduck\tsduck.hfbands.model.xml">
+      <SubType>Designer</SubType>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\libtsduck\tsduck.dvb.names" />
     <None Include="..\..\src\libtsduck\tsduck.oui.names" />
   </ItemGroup>
-  
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -41,10 +44,9 @@
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
   <Target Name="AfterBuild">
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.channels.xml" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.dvb.names" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.oui.names" DestinationFolder="$(OutDir)" />
+    <CreateItem Include="..\..\src\libtsduck\tsduck.xml;&#xD;&#xA;                         ..\..\src\libtsduck\tsduck.*.xml;&#xD;&#xA;                         ..\..\src\libtsduck\tsduck.*.names">
+      <Output TaskParameter="Include" ItemName="ConfigFiles" />
+    </CreateItem>
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" />
   </Target>
-
 </Project>

@@ -17,6 +17,8 @@ DISTFILES += \
     ../../../src/libtsduck/tsduck.oui.names \
     ../../../src/libtsduck/tsduck.xml \
     ../../../src/libtsduck/tsduck.channels.xml \
+    ../../../src/libtsduck/tsduck.hfbands.xml \
+    ../../../src/libtsduck/tsduck.hfbands.model.xml \
     ../../../src/libtsduck/tsduck.mk
 
 include(libtsduck-files.pri)

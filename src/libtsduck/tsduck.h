@@ -186,6 +186,7 @@
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsHEVCTimingAndHRDDescriptor.h"
 #include "tsHEVCVideoDescriptor.h"
+#include "tsHFBand.h"
 #include "tsHiDesDevice.h"
 #include "tsHiDesDeviceInfo.h"
 #include "tsHierarchyDescriptor.h"
