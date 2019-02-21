@@ -169,7 +169,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 
 void SectionFileTest::testConfigurationFile()
 {
-    const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.xml"));
+    const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.tables.model.xml"));
     utest::Out() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     CPPUNIT_ASSERT(ts::FileExists(conf));
 }
