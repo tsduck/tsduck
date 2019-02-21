@@ -20,10 +20,10 @@
 
   <!-- Other data files -->
   <ItemGroup>
-    <Xml Include="..\..\src\libtsduck\tsduck.xml">
+    <Xml Include="..\..\src\libtsduck\tsduck.tables.model.xml">
       <Filter>Configuration Files</Filter>
     </Xml>
-    <Xml Include="..\..\src\libtsduck\tsduck.channels.xml">
+    <Xml Include="..\..\src\libtsduck\tsduck.channels.model.xml">
       <Filter>Configuration Files</Filter>
     </Xml>
     <Xml Include="..\..\src\libtsduck\tsduck.hfbands.xml">

@@ -52,7 +52,7 @@ namespace ts {
     //! An XML file containing the description of TV channels and their networks.
     //! @ingroup mpeg
     //!
-    //! The XML template for such files is in file @c tsduck.channels.xml.
+    //! The XML template for such files is in file @c tsduck.channels.model.xml.
     //! This is a proprietary XML syntax from TSDuck which is used to replace the
     //! deprecated "zap" format from Linux tools such @c szap or @c tzap.
     //!

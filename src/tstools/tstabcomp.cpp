@@ -172,7 +172,7 @@ Options::Options(int argc, char *argv[]) :
 bool DisplayModel(Options& opt)
 {
     // Locate the model file.
-    const ts::UString inName(ts::SearchConfigurationFile(u"tsduck.xml"));
+    const ts::UString inName(ts::SearchConfigurationFile(u"tsduck.tables.model.xml"));
     if (inName.empty()) {
         opt.error(u"XML model file not found");
         return false;
@@ -184,7 +184,7 @@ bool DisplayModel(Options& opt)
     if (opt.outdir) {
         // Specified output is a directory, add default name.
         outName.push_back(ts::PathSeparator);
-        outName.append(u"tsduck.xml");
+        outName.append(u"tsduck.tables.model.xml");
     }
     if (!outName.empty()) {
         opt.verbose(u"saving model file to %s", {outName});

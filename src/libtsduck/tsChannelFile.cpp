@@ -369,7 +369,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     xml::Document model(doc.report());
-    if (!model.load(u"tsduck.channels.xml", true)) {
+    if (!model.load(u"tsduck.channels.model.xml", true)) {
         doc.report().error(u"Model for TSDuck channels XML files not found");
         return false;
     }

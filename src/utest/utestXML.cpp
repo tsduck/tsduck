@@ -245,7 +245,7 @@ void XMLTest::testFileBOM()
 void XMLTest::testValidation()
 {
     ts::xml::Document model(report());
-    CPPUNIT_ASSERT(model.load(u"tsduck.xml"));
+    CPPUNIT_ASSERT(model.load(u"tsduck.tables.model.xml"));
 
     const ts::UString xmlContent(
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -479,5 +479,5 @@ void XMLTest::testTweaks()
 void XMLTest::testChannels()
 {
     ts::xml::Document model(report());
-    CPPUNIT_ASSERT(model.load(u"tsduck.channels.xml"));
+    CPPUNIT_ASSERT(model.load(u"tsduck.channels.model.xml"));
 }
