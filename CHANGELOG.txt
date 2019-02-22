@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1139
+VERSION 3.17-1148
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -27,6 +27,7 @@ VERSION 3.17-1139
 
 [BUG] Bug fixes:
 
+  * Fixed support for ATSC tuners on Windows.
   * In plugin "scrambler", fixed a crypto-period issue with option --cw-file
     and more than one CW.
 

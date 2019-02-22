@@ -378,7 +378,7 @@ namespace ts {
         //!
         TunerParametersPtr serviceToTuning(TunerType type, const UString& name, bool strict = true, Report& report = CERR) const
         {
-            return serviceToTuningInternal(type, name, strict, false, report);
+            return serviceToTuningInternal(type, name, strict, true, report);
         }
 
     private:

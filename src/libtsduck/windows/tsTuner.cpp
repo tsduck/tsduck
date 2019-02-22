@@ -906,7 +906,7 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
                 if (!ComSuccess(hr, u"cannot get ATSC network type from tuning space \"" + fname + u"\"", report)) {
                     continue;
                 }
-                report.debug(u"ATSC network type is  \"%s\" for tuning space \"%s\"", { GetTuningSpaceNetworkType(tspace.pointer(), report), fname });
+                report.debug(u"ATSC network type is \"%s\" for tuning space \"%s\"", { GetTuningSpaceNetworkType(tspace.pointer(), report), fname });
 
                 // Check if ATSC network type matches our tuner type.
                 if (nettype == CLSID_ATSCNetworkProvider) {
