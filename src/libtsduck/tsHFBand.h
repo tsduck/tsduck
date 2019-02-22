@@ -70,11 +70,6 @@ namespace ts {
         };
 
         //!
-        //! An enumeration object for BandType.
-        //!
-        static const Enumeration BandTypeEnum;
-
-        //!
         //! Get the default region.
         //! @param [in,out] report Where to report errors.
         //! @return The default region. This is the value of the parameter "default.region"
@@ -142,6 +137,22 @@ namespace ts {
         uint32_t previousChannel(uint32_t channel) const;
 
         //!
+        //! Get the lowest frequency in the HF band.
+        //! @param [in] strict If true, @a frequency must be strictly inside the allowed offset range
+        //! of a channel. When false, only check that the frequency is inside the global band.
+        //! @return The frequency in Hz.
+        //!
+        uint64_t lowestFrequency(bool strict = false) const;
+
+        //!
+        //! Get the highest frequency in the HF band.
+        //! @param [in] strict If true, @a frequency must be strictly inside the allowed offset range
+        //! of a channel. When false, only check that the frequency is inside the global band.
+        //! @return The frequency in Hz.
+        //!
+        uint64_t highestFrequency(bool strict = false) const;
+
+        //!
         //! Get the frequency of a channel in the HF band.
         //! @param [in] channel Channel number.
         //! @param [in] offset Optional offset number.
@@ -177,13 +188,45 @@ namespace ts {
         //!
         int32_t lastOffset(uint32_t channel) const;
 
+        //!
+        //! Compute a channel number from a frequency.
+        //! @param [in] frequency Frequency in Hz.
+        //! @return Channel number or zero on error.
+        //!
+        uint32_t channelNumber(uint64_t frequency) const;
+
+        //!
+        //! Compute an offset count from frequency (approximate if necessary)
+        //! @param [in] frequency Frequency in Hz.
+        //! @return Offset count (positive or negative).
+        //!
+        int32_t offsetCount(uint64_t frequency) const;
+
+        //!
+        //! Check if a frequency is in the HF band.
+        //! @param [in] frequency Frequency in Hz.
+        //! @param [in] strict If true, @a frequency must be strictly inside the allowed offset range
+        //! of a channel. When false, only check that the frequency is inside the global band.
+        //! @return True if the frequency is in the HF band.
+        //!
+        bool inBand(uint64_t frequency, bool strict = false) const;
+
+        //!
+        //! Return a human-readable description of a channel.
+        //! @param [in] channel Channel number.
+        //! @param [in] offset Channel offset count. Displayed only if non-zero.
+        //! @param [in] strength Signal strength in percent. Ignored if negative.
+        //! @param [in] quality Signal quality in percent. Ignored if negative.
+        //! @return Channel description.
+        //!
+        UString description(int channel, int offset, int strength = -1, int quality = -1) const;
+
     private:
         // Define a range of HF channels.
         class ChannelsRange
         {
         public:
-            ChannelsRange(); // constructor
-
+            // Public members
             uint32_t first_channel;
             uint32_t last_channel;
             uint64_t base_frequency;
@@ -191,6 +234,15 @@ namespace ts {
             int32_t  first_offset;
             int32_t  last_offset;
             uint64_t offset_width;
+
+            // Constructor.
+            ChannelsRange();
+
+            // Lowest and highest frequency in range.
+            uint64_t lowestFrequency(bool strict) const;
+            uint64_t highestFrequency(bool strict) const;
+            uint32_t channelNumber(uint64_t frequency) const;
+            uint64_t frequency(uint32_t channel, int32_t offset) const;
         };
 
         // A list of channel ranges.
@@ -245,6 +297,9 @@ namespace ts {
 
             // Get the default region.
             UString defaultRegion() const { return _default_region; }
+
+            // An enumeration object for BandType.
+            const Enumeration bandTypeEnum;
 
         private:
             mutable Mutex _mutex;

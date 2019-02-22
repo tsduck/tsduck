@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsCOM.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsTunerParametersDVBT.h"
@@ -410,18 +409,8 @@ bool OffsetScanner::tryOffset(int offset)
         return false;
     }
 
-    // Previously, we double-checked that the signal was locked.
-    // However, looking for signal locked fails on Windows, even if the
-    // signal was actually locked. So, we skip this test and we rely on
-    // the fact that the signal timeout is always non-zero with tsscan,
-    // so since _tuner.start() has succeeded we can be sure that at least
-    // one packet was successfully read and there is some signal.
-    bool ok =
-#if defined(TS_LINUX)
-        _tuner.signalLocked(_opt);
-#else
-        true;
-#endif
+    // Double-check that the signal was locked.
+    bool ok = _tuner.signalLocked(_opt);
 
     if (ok) {
         // Get signal quality & strength
@@ -721,13 +710,8 @@ void ScanContext::main()
 int MainCode(int argc, char *argv[])
 {
     ScanOptions opt(argc, argv);
-    ts::COM com(opt);
-
-    if (com.isInitialized()) {
-        ScanContext ctx(opt);
-        ctx.main();
-    }
-
+    ScanContext ctx(opt);
+    ctx.main();
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

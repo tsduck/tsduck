@@ -37,6 +37,7 @@
 #include "tsArgs.h"
 #include "tsVersionInfo.h"
 #include "tsIPUtils.h"
+#include "tsCOM.h"
 
 #if defined(TS_WINDOWS) && !defined(TS_NO_BUILD_VERSION)
 #include "tsVersion.h"
@@ -71,7 +72,8 @@
     int main(int argc, char *argv[])                                          \
     {                                                                         \
         try {                                                                 \
-            if (!ts::IPInitialize()) {                                        \
+            ts::COM com;                                                      \
+            if (!com.isInitialized() || !ts::IPInitialize()) {                \
                 return EXIT_FAILURE;                                          \
             }                                                                 \
             return func(argc, argv);                                          \
@@ -98,7 +100,8 @@
             return EXIT_FAILURE;                                              \
         }                                                                     \
         try {                                                                 \
-            if (!ts::IPInitialize()) {                                        \
+            ts::COM com;                                                      \
+            if (!com.isInitialized() || !ts::IPInitialize()) {                \
                 return EXIT_FAILURE;                                          \
             }                                                                 \
             return func(argc, argv);                                          \

@@ -36,7 +36,6 @@
 #include "tsPluginRepository.h"
 #include "tsHiDesDevice.h"
 #include "tsModulation.h"
-#include "tsCOM.h"
 TSDUCK_SOURCE;
 
 
@@ -57,7 +56,6 @@ namespace ts {
         virtual BitRate getBitrate() override;
 
     private:
-        COM             _com;         // COM initialization helper
         int             _dev_number;  // Device adapter number.
         UString         _dev_name;    // Device name.
         BitRate         _bitrate;     // Nominal output bitrate.
@@ -81,7 +79,6 @@ TSPLUGIN_DECLARE_OUTPUT(hides, ts::HiDesOutput)
 
 ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to a HiDes modulator device", u"[options]"),
-    _com(*tsp_),
     _dev_number(-1),
     _dev_name(),
     _bitrate(0),
@@ -163,11 +160,6 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
 
 bool ts::HiDesOutput::start()
 {
-    // Check that COM was correctly initialized
-    if (!_com.isInitialized()) {
-        tsp->error(u"COM initialization failure");
-        return false;
-    }
     if (_device.isOpen()) {
         tsp->error(u"already started");
         return false;

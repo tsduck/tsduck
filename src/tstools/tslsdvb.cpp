@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsCOM.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsSysUtils.h"
@@ -156,62 +155,45 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-//  Main code. Isolated from main() to ensure that destructors are invoked
-//  before COM uninitialize.
-//----------------------------------------------------------------------------
-
-namespace {
-    void ListMain(Options& opt)
-    {
-        // List DVB tuner devices
-        if (!opt.tuner.device_name.empty()) {
-            // One device name specified.
-            ts::Tuner tuner(opt.tuner.device_name, true, opt);
-            ListTuner(tuner, -1, opt);
-        }
-        else {
-            // List all tuners.
-            ts::TunerPtrVector tuners;
-            if (!ts::Tuner::GetAllTuners(tuners, opt)) {
-                return;
-            }
-            else if (tuners.empty()) {
-                opt.error(u"no DVB device found");
-            }
-            else {
-                if (opt.verbose()) {
-                    std::cout << std::endl;
-                }
-                for (size_t i = 0; i < tuners.size(); ++i) {
-                    ListTuner(*tuners[i], int(i), opt);
-                }
-            }
-        }
-
-#if defined(TS_WINDOWS)
-        // Specific DirectShow tests on Windows.
-        ts::DirectShowTest ds(std::cout, opt);
-        ds.runTest(opt.test_type);
-#endif
-    }
-}
-
-
-//----------------------------------------------------------------------------
 //  Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::COM com(opt);
 
-    if (com.isInitialized()) {
-        ListMain(opt);
+    // List DVB tuner devices
+    if (!opt.tuner.device_name.empty()) {
+        // One device name specified.
+        ts::Tuner tuner(opt.tuner.device_name, true, opt);
+        ListTuner(tuner, -1, opt);
+    }
+    else {
+        // List all tuners.
+        ts::TunerPtrVector tuners;
+        if (!ts::Tuner::GetAllTuners(tuners, opt)) {
+            return EXIT_FAILURE;
+        }
+        else if (tuners.empty()) {
+            opt.error(u"no DVB device found");
+        }
+        else {
+            if (opt.verbose()) {
+                std::cout << std::endl;
+            }
+            for (size_t i = 0; i < tuners.size(); ++i) {
+                ListTuner(*tuners[i], int(i), opt);
+            }
+        }
     }
 
-    opt.exitOnError();
-    return EXIT_SUCCESS;
+#if defined(TS_WINDOWS)
+    // Specific DirectShow tests on Windows.
+    ts::DirectShowTest ds(std::cout, opt);
+    ds.runTest(opt.test_type);
+#endif
+
+    return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 TS_MAIN(MainCode)

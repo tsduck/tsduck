@@ -34,12 +34,6 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-// An enumeration object for BandType.
-const ts::Enumeration ts::HFBand::BandTypeEnum({
-    {u"VHF", ts::HFBand::VHF},
-    {u"UHF", ts::HFBand::UHF},
-});
-
 
 //----------------------------------------------------------------------------
 // Constructors and destructors
@@ -152,12 +146,7 @@ uint32_t ts::HFBand::previousChannel(uint32_t channel) const
 uint64_t ts::HFBand::frequency(uint32_t channel, int32_t offset) const
 {
     ChannelsRangeList::const_iterator it(getRange(channel));
-    if (it == _channels.end()) {
-        return 0;
-    }
-    else {
-        return it->base_frequency + (channel - it->first_channel) * it->channel_width + int64_t(offset * int64_t(it->offset_width));
-    }
+    return it == _channels.end() ? 0 : it->frequency(channel, offset);
 }
 
 uint64_t ts::HFBand::bandWidth(uint32_t channel) const
@@ -186,6 +175,142 @@ int32_t ts::HFBand::lastOffset(uint32_t channel) const
 
 
 //----------------------------------------------------------------------------
+// Lowest and highest frequency in band.
+//----------------------------------------------------------------------------
+
+uint64_t ts::HFBand::lowestFrequency(bool strict) const
+{
+    return _channels.empty() ? 0 : _channels.front().lowestFrequency(strict);
+}
+
+uint64_t ts::HFBand::highestFrequency(bool strict) const
+{
+    return _channels.empty() ? 0 : _channels.back().highestFrequency(strict);
+}
+
+
+//----------------------------------------------------------------------------
+// Lowest and highest frequency in range.
+//----------------------------------------------------------------------------
+
+uint64_t ts::HFBand::ChannelsRange::lowestFrequency(bool strict) const
+{
+    if (strict) {
+        return base_frequency + int64_t(first_offset) * int64_t(offset_width);
+    }
+    else {
+        return base_frequency - channel_width / 2;
+    }
+}
+
+uint64_t ts::HFBand::ChannelsRange::highestFrequency(bool strict) const
+{
+    if (strict) {
+        return base_frequency + (last_channel - first_channel) * channel_width + int64_t(last_offset) * int64_t(offset_width);
+    }
+    else {
+        return base_frequency + (last_channel - first_channel) * channel_width + channel_width / 2;
+    }
+}
+
+uint64_t ts::HFBand::ChannelsRange::frequency(uint32_t channel, int32_t offset) const
+{
+    return base_frequency + (channel - first_channel) * channel_width + int64_t(offset * int64_t(offset_width));
+}
+
+uint32_t ts::HFBand::ChannelsRange::channelNumber(uint64_t frequency) const
+{
+    return channel_width == 0 ? 0 : first_channel + uint32_t((frequency - base_frequency + channel_width / 2) / channel_width);
+}
+
+
+//----------------------------------------------------------------------------
+// Compute a channel or offset number from a frequency.
+//----------------------------------------------------------------------------
+
+bool ts::HFBand::inBand(uint64_t frequency, bool strict) const
+{
+    // Loop on all ranges of channels.
+    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+        // If the frequency is in this range.
+        if (frequency >= it->lowestFrequency(strict) && frequency <= it->highestFrequency(strict)) {
+            if (strict) {
+                // Check all channels individually.
+                uint64_t freq = it->base_frequency;
+                for (int32_t off = it->first_offset; off <= it->last_offset; ++off) {
+                    if (frequency >= freq + int64_t(it->first_offset) * int64_t(it->offset_width) &&
+                        frequency <= freq + int64_t(it->last_offset) * int64_t(it->offset_width))
+                    {
+                        return true;
+                    }
+                    freq += it->channel_width;
+                }
+                return false; // not in a strict channel
+            }
+            else {
+                // We are inside the band.
+                return true;
+            }
+        }
+    }
+    return false; // not found
+}
+
+uint32_t ts::HFBand::channelNumber(uint64_t frequency) const
+{
+    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+        if (frequency >= it->lowestFrequency(true) && frequency <= it->highestFrequency(true)) {
+            return it->channelNumber(frequency);
+        }
+    }
+    return 0; // not found
+}
+
+int32_t ts::HFBand::offsetCount(uint64_t frequency) const
+{
+    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+        if (it->offset_width > 0 && frequency >= it->lowestFrequency(true) && frequency <= it->highestFrequency(true)) {
+            const int32_t off = int32_t(int64_t(frequency) - int64_t(it->frequency(it->channelNumber(frequency), 0)));
+            const int32_t count = (std::abs(off) + int32_t(it->offset_width / 2)) / int32_t(it->offset_width);
+            return off < 0 ? -count : count;
+        }
+    }
+    return 0; // not found
+}
+
+
+//----------------------------------------------------------------------------
+// Return a human-readable description of a channel.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HFBand::description(int channel, int offset, int strength, int quality) const
+{
+    const uint64_t freq = frequency(channel, offset);
+    const int mhz = int(freq / 1000000);
+    const int khz = int((freq % 1000000) / 1000);
+    UString desc(u"channel ");
+    desc += UString::Decimal(channel);
+    if (offset != 0) {
+        desc += u", offset ";
+        desc += UString::Decimal(offset, 0, true, u",", true);
+    }
+    desc += u" (";
+    desc += UString::Decimal(mhz);
+    if (khz > 0) {
+        desc += UString::Format(u".%03d", {khz});
+    }
+    desc += u" MHz)";
+    if (strength >= 0) {
+        desc += UString::Format(u", strength: %d%%", {strength});
+    }
+    if (quality >= 0) {
+        desc += UString::Format(u", quality: %d%%", {quality});
+    }
+    return desc;
+}
+
+
+//----------------------------------------------------------------------------
 // Create an HFBand from an XML element. Null pointer on error.
 //----------------------------------------------------------------------------
 
@@ -196,7 +321,7 @@ ts::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     xml::ElementVector regions;
     xml::ElementVector channels;
     bool success =
-        elem->getIntEnumAttribute(type, BandTypeEnum, u"type", true) &&
+        elem->getIntEnumAttribute(type, HFBandRepository::Instance()->bandTypeEnum, u"type", true) &&
         elem->getChildren(regions, u"region", 1) &&
         elem->getChildren(channels, u"channels", 1);
 
@@ -265,7 +390,7 @@ ts::HFBand::HFBandIndex::HFBandIndex(BandType typ, const UString& reg) :
 
 ts::UString ts::HFBand::HFBandIndex::toString() const
 {
-    return UString::Format(u"%s for %s", {BandTypeEnum.name(type), region});
+    return UString::Format(u"%s band in region %s", {HFBandRepository::Instance()->bandTypeEnum.name(type), region});
 }
 
 bool ts::HFBand::HFBandIndex::operator==(const HFBandIndex& other) const
@@ -286,6 +411,7 @@ bool ts::HFBand::HFBandIndex::operator<(const HFBandIndex& other) const
 TS_DEFINE_SINGLETON(ts::HFBand::HFBandRepository);
 
 ts::HFBand::HFBandRepository::HFBandRepository() :
+    bandTypeEnum({{u"VHF", ts::HFBand::VHF}, {u"UHF", ts::HFBand::UHF}}),
     _mutex(),
     _default_region(),
     _objects()

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1148
+VERSION 3.17-1150
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -24,6 +24,9 @@ VERSION 3.17-1148
     "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation
     values "16-APSK", "32-APSK" (DVB-S2).
   * Added option --dvb-cissa to plugins "scrambler" and "descrambler".
+  * Added region-specific UHF/VHF frequency layouts in various commands and
+    plugins. Added options --hf-band-region and --default-region to command
+    "tsterinfo".
 
 [BUG] Bug fixes:
 

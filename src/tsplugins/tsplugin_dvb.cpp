@@ -38,7 +38,6 @@
 #include "tsTunerArgs.h"
 #include "tsTunerParameters.h"
 #include "tsSysUtils.h"
-#include "tsCOM.h"
 TSDUCK_SOURCE;
 
 
@@ -63,7 +62,6 @@ namespace ts {
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
 
     private:
-        COM                _com;              // COM initialization helper
         Tuner              _tuner;            // DVB tuner device
         TunerArgs          _tuner_args;       // Command-line tuning arguments
         TunerParametersPtr _tuner_params;     // Tuning parameters
@@ -86,7 +84,6 @@ TSPLUGIN_DECLARE_INPUT(dvb, ts::DVBInput)
 
 ts::DVBInput::DVBInput(TSP* tsp_) :
     InputPlugin(tsp_, u"DVB receiver device input", u"[options]"),
-    _com(*tsp_),
     _tuner(),
     _tuner_args(false, true),
     _tuner_params(),
@@ -115,12 +112,6 @@ bool ts::DVBInput::getOptions()
 
 bool ts::DVBInput::start()
 {
-    // Check that COM was correctly initialized
-    if (!_com.isInitialized()) {
-        tsp->error(u"COM initialization failure");
-        return false;
-    }
-
     // Check if tuner is already open.
     if (_tuner.isOpen()) {
         return false;
