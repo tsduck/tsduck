@@ -146,7 +146,7 @@ ts::TunerParametersPtr ts::TunerParameters::FromTunerArgs(TunerType type, const 
         }
 
         // Retrieve tuning options.
-        return channels.serviceToTuning(args.channel_name.value(), false, report);
+        return channels.serviceToTuning(type, args.channel_name.value(), false, report);
     }
     else {
         // Allocate tuning parameters of the appropriate type
