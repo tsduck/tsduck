@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsHFBand.h"
 #include "tsTunerParametersBitrateDiffDVBT.h"
 TSDUCK_SOURCE;
 
@@ -83,16 +84,18 @@ struct Options: public ts::Args
     virtual ~Options();
 
     uint64_t          frequency;     // Carrier frequency from which to get UHF channel
-    int               uhf_channel;   // UHF channel from which to compute frequency
-    int               vhf_channel;   // VHF channel from which to compute frequency
-    int               hf_offset;     // UHF/VHF offset from channel
+    uint32_t          uhf_channel;   // UHF channel from which to compute frequency
+    uint32_t          vhf_channel;   // VHF channel from which to compute frequency
+    int32_t           hf_offset;     // UHF/VHF offset from channel
     ts::BitRate       bitrate;       // TS bitrate from which to guess modulation parameters
     size_t            max_guess;     // Max number of modulation parameters to guess.
     ts::Modulation    constellation; // Modulation parameters to compute bitrate
     ts::InnerFEC      fec_hp;
     ts::GuardInterval guard_interval;
     ts::BandWidth     bandwidth;
-    bool              simple;        // Simple output
+    bool              simple;          // Simple output
+    bool              default_region;  // Display the default region for UHF/VHF band frequency layout
+    ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
 };
 
 // Destructor.
@@ -111,7 +114,9 @@ Options::Options(int argc, char *argv[]) :
     fec_hp(ts::FEC_NONE),
     guard_interval(ts::GUARD_AUTO),
     bandwidth(ts::BW_AUTO),
-    simple(false)
+    simple(false),
+    default_region(false),
+    hfband_region()
 {
     option(u"bandwidth", 'w', DVBTBandWidthEnum);
     help(u"bandwidth", u"Specify the OFMD bandwith, used to compute the resulting bitrate.");
@@ -123,6 +128,10 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"constellation", 'c', DVBTModulationEnum);
     help(u"constellation", u"Specify the OFMD constellation, used to compute the resulting bitrate.");
+
+    option(u"default-region", 'd');
+    help(u"default-region",
+         u"Display the default region for UHF/VHF band frequency layout.");
 
     option(u"frequency", 'f', UNSIGNED);
     help(u"frequency", u"Carrier frequency in Hz. UHF or VHF channel and offset will be displayed.");
@@ -142,22 +151,26 @@ Options::Options(int argc, char *argv[]) :
          u"parameters sets to display. By default, display one set of parameters, "
          u"the one giving the closest bitrate.");
 
-    option(u"offset-count", 'o', INTEGER, 0, 1, -3, 3);
+    option(u"offset-count", 'o', INTEGER, 0, 1, -10, 10);
     help(u"offset-count",
          u"Specify the number of offsets from the UHF or VHF channel. The default "
          u"is zero. See options --uhf-channel and --vhf-channel.");
+
+    option(u"hf-band-region", 'r', STRING);
+    help(u"hf-band-region", u"name",
+         u"Specify the region for UHF/VHF band frequency layout.");
 
     option(u"simple", 's');
     help(u"simple",
          u"Produce simple output: only numbers, no comment, typically useful "
          u"to write scripts.");
 
-    option(u"uhf-channel", 'u', INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    option(u"uhf-channel", 'u', POSITIVE);
     help(u"uhf-channel",
          u"Specify the UHF channel number of the carrier. Can be combined with an "
          u"--offset-count option. The resulting frequency will be displayed.");
 
-    option(u"vhf-channel", 'v', INTEGER, 0, 1, ts::VHF::FIRST_CHANNEL, ts::VHF::LAST_CHANNEL);
+    option(u"vhf-channel", 'v', POSITIVE);
     help(u"vhf-channel",
          u"Specify the VHF channel number of the carrier. Can be combined with an "
          u"--offset-count option. The resulting frequency will be displayed.");
@@ -165,9 +178,9 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     frequency      = intValue<uint64_t>(u"frequency", 0);
-    uhf_channel    = intValue<int>(u"uhf-channel", 0);
-    vhf_channel    = intValue<int>(u"vhf-channel", 0);
-    hf_offset      = intValue<int>(u"offset-count", 0);
+    uhf_channel    = intValue<uint32_t>(u"uhf-channel", 0);
+    vhf_channel    = intValue<uint32_t>(u"vhf-channel", 0);
+    hf_offset      = intValue<int32_t>(u"offset-count", 0);
     bitrate        = intValue<ts::BitRate>(u"bitrate", 0);
     max_guess      = intValue<ts::BitRate>(u"max-guess", 1);
     constellation  = enumValue(u"constellation", ts::QAM_64);
@@ -175,6 +188,8 @@ Options::Options(int argc, char *argv[]) :
     guard_interval = enumValue(u"guard-interval", ts::GUARD_AUTO);
     bandwidth      = enumValue(u"bandwidth", ts::BW_8_MHZ);
     simple         = present(u"simple");
+    default_region = present(u"default-region");
+    hfband_region  = value(u"hf-band-region");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
         (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))
@@ -206,42 +221,66 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
 
+    // Get UHF/VHF frequency layout.
+    const ts::HFBandPtr uhf(ts::HFBand::Factory(opt.hfband_region, ts::HFBand::UHF, opt));
+    const ts::HFBandPtr vhf(ts::HFBand::Factory(opt.hfband_region, ts::HFBand::VHF, opt));
+
+    // Display the default region for UHF/VHF band frequency layout
+    if (opt.default_region) {
+        if (!opt.simple) {
+            std::cout << "Default region for UHF/VHF: ";
+        }
+        std::cout << ts::HFBand::DefaultRegion(opt) << std::endl;
+    }
+
     // Convert UHF channel to frequency
     if (opt.uhf_channel > 0) {
-        if (opt.simple) {
-            std::cout << ts::UHF::Frequency(opt.uhf_channel, opt.hf_offset) << std::endl;
+        if (opt.uhf_channel < uhf->firstChannel() || opt.uhf_channel > uhf->lastChannel()) {
+            std::cerr << ts::UString::Decimal(opt.uhf_channel)
+                      << " is not a valid UHF channel, valid range is "
+                      << ts::UString::Decimal(uhf->firstChannel()) << " - "
+                      << ts::UString::Decimal(uhf->lastChannel()) << std::endl;
+        }
+        else if (opt.simple) {
+            std::cout << uhf->frequency(opt.uhf_channel, opt.hf_offset) << std::endl;
         }
         else {
             std::cout << "Carrier Frequency: "
-                      << ts::UString::Decimal(ts::UHF::Frequency(opt.uhf_channel, opt.hf_offset))
+                      << ts::UString::Decimal(uhf->frequency(opt.uhf_channel, opt.hf_offset))
                       << " Hz" << std::endl;
         }
     }
 
     // Convert VHF channel to frequency
     if (opt.vhf_channel > 0) {
-        if (opt.simple) {
-            std::cout << ts::VHF::Frequency(opt.vhf_channel, opt.hf_offset) << std::endl;
+        if (opt.vhf_channel < vhf->firstChannel() || opt.vhf_channel > vhf->lastChannel()) {
+            std::cerr << ts::UString::Decimal(opt.vhf_channel)
+                      << " is not a valid VHF channel, valid range is "
+                      << ts::UString::Decimal(vhf->firstChannel()) << " - "
+                      << ts::UString::Decimal(vhf->lastChannel()) << std::endl;
+        }
+        else if (opt.simple) {
+            std::cout << vhf->frequency(opt.vhf_channel, opt.hf_offset) << std::endl;
         }
         else {
             std::cout << "Carrier Frequency: "
-                      << ts::UString::Decimal(ts::VHF::Frequency(opt.vhf_channel, opt.hf_offset))
+                      << ts::UString::Decimal(vhf->frequency(opt.vhf_channel, opt.hf_offset))
                       << " Hz" << std::endl;
         }
     }
 
     // Convert frequency to UHF/VHF channel
     if (opt.frequency > 0) {
-        if (ts::UHF::InBand(opt.frequency)) {
+        if (uhf->inBand(opt.frequency)) {
             if (opt.simple) {
-                std::cout << ts::UHF::Channel(opt.frequency) << std::endl
-                          << ts::UHF::OffsetCount(opt.frequency) << std::endl;
+                std::cout << uhf->channelNumber(opt.frequency) << std::endl
+                          << uhf->offsetCount(opt.frequency) << std::endl;
             }
             else {
-                int channel = ts::UHF::Channel(opt.frequency);
-                int offset = ts::UHF::OffsetCount(opt.frequency);
+                int channel = uhf->channelNumber(opt.frequency);
+                int offset = uhf->offsetCount(opt.frequency);
                 std::cout << "UHF channel: " << channel << ", offset: " << offset << std::endl;
-                uint64_t exact_freq = ts::UHF::Frequency(channel, offset);
+                uint64_t exact_freq = uhf->frequency(channel, offset);
                 int diff = int(int64_t(opt.frequency) - int64_t(exact_freq));
                 if (::abs(diff) > 1) {
                     std::cout << "Warning: exact frequency for channel "
@@ -251,16 +290,16 @@ int MainCode(int argc, char *argv[])
                 }
             }
         }
-        else if (ts::VHF::InBand(opt.frequency)) {
+        else if (vhf->inBand(opt.frequency)) {
             if (opt.simple) {
-                std::cout << ts::VHF::Channel(opt.frequency) << std::endl
-                          << ts::VHF::OffsetCount(opt.frequency) << std::endl;
+                std::cout << vhf->channelNumber(opt.frequency) << std::endl
+                          << vhf->offsetCount(opt.frequency) << std::endl;
             }
             else {
-                int channel = ts::VHF::Channel(opt.frequency);
-                int offset = ts::VHF::OffsetCount(opt.frequency);
+                int channel = vhf->channelNumber(opt.frequency);
+                int offset = vhf->offsetCount(opt.frequency);
                 std::cout << "VHF channel: " << channel << ", offset: " << offset << std::endl;
-                uint64_t exact_freq = ts::VHF::Frequency(channel, offset);
+                uint64_t exact_freq = vhf->frequency(channel, offset);
                 int diff = int(int64_t(opt.frequency) - int64_t(exact_freq));
                 if (::abs(diff) > 1) {
                     std::cout << "Warning: exact frequency for channel "
@@ -272,10 +311,10 @@ int MainCode(int argc, char *argv[])
         }
         else {
             std::cerr << ts::UString::Decimal(opt.frequency) << " Hz is not in UHF or VHF bands (VHF: "
-                      << ts::UString::Decimal(ts::VHF::Frequency(ts::VHF::FIRST_CHANNEL, -3)) << " - "
-                      << ts::UString::Decimal(ts::VHF::Frequency(ts::VHF::LAST_CHANNEL, 3)) << ", UHF: "
-                      << ts::UString::Decimal(ts::UHF::Frequency(ts::UHF::FIRST_CHANNEL, -3)) << " - "
-                      << ts::UString::Decimal(ts::UHF::Frequency(ts::UHF::LAST_CHANNEL, 3)) << ")"
+                      << ts::UString::Decimal(vhf->lowestFrequency()) << " - "
+                      << ts::UString::Decimal(vhf->highestFrequency()) << ", UHF: "
+                      << ts::UString::Decimal(uhf->lowestFrequency()) << " - "
+                      << ts::UString::Decimal(uhf->highestFrequency()) << ")"
                       << std::endl;
         }
     }
@@ -334,7 +373,7 @@ int MainCode(int argc, char *argv[])
         }
     }
 
-    return EXIT_SUCCESS;
+    return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 TS_MAIN(MainCode)

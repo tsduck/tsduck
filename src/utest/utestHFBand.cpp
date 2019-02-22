@@ -127,6 +127,19 @@ void HFBandTest::testEurope()
     CPPUNIT_ASSERT_EQUAL(uint64_t(498000000), hf->frequency(24));
     CPPUNIT_ASSERT_EQUAL(uint64_t(497666668), hf->frequency(24, -2));
     CPPUNIT_ASSERT_EQUAL(uint64_t(498333332), hf->frequency(24, +2));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(24), hf->channelNumber(498000000));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(24), hf->channelNumber(497666668));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(24), hf->channelNumber(498333332));
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), hf->offsetCount(498000000));
+    CPPUNIT_ASSERT_EQUAL(int32_t(-2), hf->offsetCount(497666668));
+    CPPUNIT_ASSERT_EQUAL(int32_t(+2), hf->offsetCount(498333332));
+    CPPUNIT_ASSERT(!hf->inBand(200000000, false));
+    CPPUNIT_ASSERT(!hf->inBand(497666668, true));
+    CPPUNIT_ASSERT(hf->inBand(498000000, true));
+    CPPUNIT_ASSERT(hf->inBand(498333332, true));
+    CPPUNIT_ASSERT(hf->inBand(497666668, false));
+    CPPUNIT_ASSERT(hf->inBand(498000000, false));
+    CPPUNIT_ASSERT(hf->inBand(498333332, false));
     CPPUNIT_ASSERT_EQUAL(uint64_t(8000000), hf->bandWidth(24));
     CPPUNIT_ASSERT_EQUAL(uint64_t(166666), hf->offsetWidth(24));
     CPPUNIT_ASSERT_EQUAL(int32_t(-1), hf->firstOffset(24));
@@ -154,6 +167,8 @@ void HFBandTest::testUSA()
     CPPUNIT_ASSERT_EQUAL(uint64_t(533000000), hf->frequency(24));
     CPPUNIT_ASSERT_EQUAL(uint64_t(533000000), hf->frequency(24, -2));
     CPPUNIT_ASSERT_EQUAL(uint64_t(533000000), hf->frequency(24, +2));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(24), hf->channelNumber(533000000));
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), hf->offsetCount(533000000));
     CPPUNIT_ASSERT_EQUAL(uint64_t(6000000), hf->bandWidth(24));
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), hf->offsetWidth(24));
     CPPUNIT_ASSERT_EQUAL(int32_t(0), hf->firstOffset(24));
@@ -179,6 +194,8 @@ void HFBandTest::testVHF()
     CPPUNIT_ASSERT_EQUAL(uint64_t(63000000), hf->frequency(3));
     CPPUNIT_ASSERT_EQUAL(uint64_t(63000000), hf->frequency(3, -2));
     CPPUNIT_ASSERT_EQUAL(uint64_t(63000000), hf->frequency(3, +2));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(3), hf->channelNumber(63000000));
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), hf->offsetCount(63000000));
     CPPUNIT_ASSERT_EQUAL(uint64_t(6000000), hf->bandWidth(3));
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), hf->offsetWidth(3));
     CPPUNIT_ASSERT_EQUAL(int32_t(0), hf->firstOffset(3));
