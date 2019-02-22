@@ -271,6 +271,7 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
     const TunerParametersDVBS* dvb_s = dynamic_cast<const TunerParametersDVBS*>(&params);
     const TunerParametersDVBT* dvb_t = dynamic_cast<const TunerParametersDVBT*>(&params);
     const TunerParametersDVBC* dvb_c = dynamic_cast<const TunerParametersDVBC*>(&params);
+    const TunerParametersATSC* atsc = dynamic_cast<const TunerParametersATSC*>(&params);
 
     // Create the locator depending on the type.
     if (dvb_s != 0) {
@@ -281,6 +282,9 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
     }
     else if (dvb_c != 0) {
         return CreateLocatorDVBC(locator, *dvb_c, report);
+    }
+    else if (atsc != 0) {
+        return CreateLocatorATSC(locator, *atsc, report);
     }
     else {
         report.error(u"cannot convert %s parameters to DirectShow tuning parameters", {TunerTypeEnum.name(params.tunerType())});
@@ -435,5 +439,28 @@ bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParame
     }
 
     locator.assign(loc); // loc and loc2 are two interfaces of the same object
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Create an IDigitalLocator object for ATSC parameters
+// Return true on success, false on errors
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParametersATSC& params, Report& report)
+{
+    ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
+
+    if (loc.isNull() ||
+        !CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
+        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
+        !PUT(loc, Modulation, ::ModulationType(params.modulation)))
+    {
+        return false;
+    }
+
+    locator.assign(loc);
     return true;
 }
