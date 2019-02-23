@@ -1078,7 +1078,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         frequency = uhf->frequency(intValue<int>(u"uhf-channel", 0), intValue<int>(u"offset-count", 0));
     }
     else if (present(u"vhf-channel")) {
-        frequency = vhf->requency(intValue<int>(u"vhf-channel", 0), intValue<int>(u"offset-count", 0));
+        frequency = vhf->frequency(intValue<int>(u"vhf-channel", 0), intValue<int>(u"offset-count", 0));
     }
     else if (present(u"satellite-frequency")) {
         uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
