@@ -74,6 +74,8 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     pilots(),
     roll_off(),
     plp(),
+    uhf(),
+    vhf(),
     _info_only(info_only),
     _allow_short_options(allow_short_options)
 {
@@ -158,6 +160,11 @@ void ts::TunerArgs::load(Args& args)
         demux_queue_size = args.intValue<size_t>(u"demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
 #endif
 
+        // UHF/VHF bands descriptions.
+        const UString region(args.value(u"hf-band-region"));
+        uhf = HFBand::Factory(region, HFBand::UHF, args);
+        vhf = HFBand::Factory(region, HFBand::VHF, args);
+
         // Carrier frequency
         if (args.present(u"frequency") + args.present(u"uhf-channel") + args.present(u"vhf-channel") > 1) {
             args.error(u"options --frequency, --uhf-channel and --vhf-channel are mutually exclusive");
@@ -168,11 +175,11 @@ void ts::TunerArgs::load(Args& args)
         }
         else if (args.present(u"uhf-channel")) {
             got_one = true;
-            frequency = UHF::Frequency(args.intValue<int>(u"uhf-channel", 0), args.intValue<int>(u"offset-count", 0));
+            frequency = uhf->frequency(args.intValue<uint32_t>(u"uhf-channel", 0), args.intValue<int32_t>(u"offset-count", 0));
         }
         else if (args.present(u"vhf-channel")) {
             got_one = true;
-            frequency = VHF::Frequency(args.intValue<int>(u"vhf-channel", 0), args.intValue<int>(u"offset-count", 0));
+            frequency = vhf->frequency(args.intValue<uint32_t>(u"vhf-channel", 0), args.intValue<int32_t>(u"offset-count", 0));
         }
 
         // Other individual tuning options
@@ -382,12 +389,6 @@ void ts::TunerArgs::defineOptions(Args& args) const
                   u"Modulation type. "
                   u"The default is \"64-QAM\" for DVB-T/T2 and DVB-C, \"QPSK\" for DVB-S2, \"8-VSB\" for ATSC.");
 
-        args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -3, 3);
-        args.help(u"offset-count",
-                  u"Used for DVB-T tuners only. "
-                  u"Specify the number of offsets from the UHF or VHF channel. The default "
-                  u"is zero. See options --uhf-channel or --vhf-channel.");
-
         args.option(u"pilots", 0, PilotEnum);
         args.help(u"pilots",
                   u"Used for DVB-S2 tuners only. Presence of pilots frames. "
@@ -433,21 +434,32 @@ void ts::TunerArgs::defineOptions(Args& args) const
         args.help(u"transmission-mode",
                   u"Used for DVB-T tuners only. Transmission mode. The default is \"8K\".");
 
-        args.option(u"uhf-channel", 0, Args::INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
-        args.help(u"uhf-channel",
-                  u"Used for DVB-T tuners only. "
-                  u"Specify the UHF channel number of the carrier. Can be used in "
-                  u"replacement to --frequency. Can be combined with an --offset-count "
-                  u"option. The resulting frequency is "
-                  u"306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).");
+        // UHF/VHF frequency bands options.
+        args.option(u"hf-band-region", 0, Args::STRING);
+        args.help(u"hf-band-region", u"name",
+                  u"Specify the region for UHF/VHF band frequency layout.");
 
-        args.option(u"vhf-channel", 0, Args::INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
+        args.option(u"uhf-channel", 0, Args::POSITIVE);
+        args.help(u"uhf-channel",
+                  u"Used for DVB-T or ATSC tuners only. "
+                  u"Specify the UHF channel number of the carrier. "
+                  u"Can be used in replacement to --frequency. "
+                  u"Can be combined with an --offset-count option. "
+                  u"The UHF frequency layout depends on the region, see --hf-band-region option.");
+
+        args.option(u"vhf-channel", 0, Args::POSITIVE);
         args.help(u"vhf-channel",
-                  u"Used for DVB-T tuners only. "
-                  u"Specify the VHF channel number of the carrier. Can be used in "
-                  u"replacement to --frequency. Can be combined with an --offset-count "
-                  u"option. The resulting frequency is "
-                  u"142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).");
+                  u"Used for DVB-T or ATSC tuners only. "
+                  u"Specify the VHF channel number of the carrier. "
+                  u"Can be used in replacement to --frequency. "
+                  u"Can be combined with an --offset-count option. "
+                  u"The VHF frequency layout depends on the region, see --hf-band-region option.");
+
+        args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -10, 10);
+        args.help(u"offset-count",
+                  u"Used for DVB-T or ATSC tuners only. "
+                  u"Specify the number of offsets from the UHF or VHF channel. "
+                  u"The default is zero. See options --uhf-channel or --vhf-channel.");
 
         // Tuning using a channel configuration file.
         args.option(u"channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);

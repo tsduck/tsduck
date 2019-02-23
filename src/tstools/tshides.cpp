@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsHFBand.h"
 #include "tsHiDesDevice.h"
 TSDUCK_SOURCE;
 
@@ -103,7 +104,14 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     dev_number = intValue<int>(u"adapter", -1);
     dev_name = value(u"device");
     bandwidth = enumValue<ts::BandWidth>(u"bandwidth", ts::BW_8_MHZ);
-    frequency = intValue<uint64_t>(u"frequency", ts::UHF::Frequency(ts::UHF::FIRST_CHANNEL));
+    if (present(u"frequency")) {
+        frequency = intValue<uint64_t>(u"frequency");
+    }
+    else {
+        // Get UHF band description in the default region.
+        const ts::HFBandPtr uhf(ts::HFBand::Factory(u"", ts::HFBand::UHF, *this));
+        frequency = uhf->frequency(uhf->firstChannel());
+    }
 
     if (count && gain_range) {
         error(u"--count and --gain-range are mutually exclusive");

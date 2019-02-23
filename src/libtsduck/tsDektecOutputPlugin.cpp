@@ -31,6 +31,7 @@
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
+#include "tsHFBand.h"
 #include "tsTunerParameters.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBS.h"
@@ -335,7 +336,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"as the T2 dummy cells, not reset between symbols) or \"1K-384\" (1K OFDM "
          u"symbols with 384 active carriers containing BPSK symbols). "
          u"The default is 0.");
-    
+
     option(u"fef-type", 0, INTEGER, 0, 1, 0, 15);
     help(u"fef-type",
          u"DVB-T2 modulators: indicate the FEF type. The valid range is 0 ... 15. "
@@ -714,19 +715,23 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"transmission-mode",
          u"DVB-T modulators: indicate the transmission mode. The default is 8K.");
 
-    option(u"uhf-channel", 'u', INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
+    option(u"hf-band-region", 0, STRING);
+    help(u"hf-band-region", u"name",
+         u"Specify the region for UHF/VHF band frequency layout.");
+
+    option(u"uhf-channel", 'u', POSITIVE);
     help(u"uhf-channel",
          u"UHF modulators: indicate the UHF channel number of the output carrier. "
-         u"Can be used in replacement to --frequency. Can be combined with an "
-         u"--offset-count option. The resulting frequency is "
-         u"306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).");
+         u"Can be used in replacement to --frequency. "
+         u"Can be combined with an --offset-count option. "
+         u"The UHF frequency layout depends on the region, see --hf-band-region option.");
 
-    option(u"vhf-channel", 'v', INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
+    option(u"vhf-channel", 'v', POSITIVE);
     help(u"vhf-channel",
          u"VHF modulators: indicate the VHF channel number of the output carrier. "
-         u"Can be used in replacement to --frequency. Can be combined with an "
-         u"--offset-count option. The resulting frequency is "
-         u"142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).");
+         u"Can be used in replacement to --frequency. "
+         u"Can be combined with an --offset-count option. "
+         u"The VHF frequency layout depends on the region, see --hf-band-region option.");
 
     option(u"vsb", 0, Enumeration({
         {u"8",  DTAPI_MOD_ATSC_VSB8},
@@ -1059,16 +1064,21 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         }
     }
 
+    // Get UHF/VHF frequency layout.
+    const UString region(value(u"hf-band-region"));
+    const HFBandPtr uhf(HFBand::Factory(region, HFBand::UHF, *tsp));
+    const HFBandPtr vhf(HFBand::Factory(region, HFBand::VHF, *tsp));
+
     // Compute carrier frequency
     uint64_t frequency = 0;
     if (present(u"frequency") + present(u"satellite-frequency") + present(u"uhf-channel") + present(u"vhf-channel") > 1) {
         return startError(u"options --frequency, --satellite-frequency, --uhf-channel, --vhf-channel are mutually exclusive", DTAPI_OK);
     }
     if (present(u"uhf-channel")) {
-        frequency = UHF::Frequency(intValue<int>(u"uhf-channel", 0), intValue<int>(u"offset-count", 0));
+        frequency = uhf->frequency(intValue<int>(u"uhf-channel", 0), intValue<int>(u"offset-count", 0));
     }
     else if (present(u"vhf-channel")) {
-        frequency = VHF::Frequency(intValue<int>(u"vhf-channel", 0), intValue<int>(u"offset-count", 0));
+        frequency = vhf->requency(intValue<int>(u"vhf-channel", 0), intValue<int>(u"offset-count", 0));
     }
     else if (present(u"satellite-frequency")) {
         uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);

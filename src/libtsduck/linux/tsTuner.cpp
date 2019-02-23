@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+#include "tsHFBand.h"
 #include "tsTime.h"
 #include "tsSysUtils.h"
 #include "tsSignalAllocator.h"
@@ -1476,12 +1477,15 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbc->frequency), u"Hz");
     }
     if (params_dvbt != nullptr) {
+        // Get UHF and VHF band descriptions in the default region.
+        const HFBandPtr uhf(HFBand::Factory(u"", HFBand::UHF));
+        const HFBandPtr vhf(HFBand::Factory(u"", HFBand::VHF));
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbt->frequency), u"Hz");
-        if (UHF::InBand(params_dvbt->frequency)) {
-            Display(strm, margin, u"  UHF channel", UString::Decimal(UHF::Channel(params_dvbt->frequency)), u"");
+        if (uhf->inBand(params_dvbt->frequency, true)) {
+            Display(strm, margin, u"  UHF channel", UString::Decimal(uhf->channelNumber(params_dvbt->frequency)), u"");
         }
-        else if (VHF::InBand(params_dvbt->frequency)) {
-            Display(strm, margin, u"  VHF channel", UString::Decimal(VHF::Channel(params_dvbt->frequency)), u"");
+        else if (vhf->inBand(params_dvbt->frequency, true)) {
+            Display(strm, margin, u"  VHF channel", UString::Decimal(vhf->channelNumber(params_dvbt->frequency)), u"");
         }
     }
     if (params_atsc != nullptr) {

@@ -179,5 +179,9 @@ bool ts::TunerParametersATSC::fromXML(const xml::Element* elem)
 
 ts::BitRate ts::TunerParametersATSC::theoreticalBitrate() const
 {
-    return 0; // unknown for ATSC/VSB
+    switch (modulation) {
+        case VSB_8:  return 19392658;
+        case VSB_16: return 38785317;
+        default: return 0; // unknown
+    }
 }

@@ -33,6 +33,7 @@
 
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
+#include "tsHFBand.h"
 #include "tsxmlElement.h"
 #include "tsEnumeration.h"
 TSDUCK_SOURCE;
@@ -135,18 +136,22 @@ ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality)
 {
     UString desc;
     const UChar* band = nullptr;
-    int channel = 0;
-    int offset = 0;
+    uint32_t channel = 0;
+    int32_t offset = 0;
 
-    if (UHF::InBand(frequency)) {
+    // Get UHF and VHF band descriptions in the default region.
+    const ts::HFBandPtr uhf(ts::HFBand::Factory(u"", ts::HFBand::UHF));
+    const ts::HFBandPtr vhf(ts::HFBand::Factory(u"", ts::HFBand::VHF));
+
+    if (uhf->inBand(frequency, true)) {
         band = u"UHF";
-        channel = UHF::Channel(frequency);
-        offset = UHF::OffsetCount(frequency);
+        channel = uhf->channelNumber(frequency);
+        offset = uhf->offsetCount(frequency);
     }
-    else if (VHF::InBand(frequency)) {
+    else if (vhf->inBand(frequency, true)) {
         band = u"VHF";
-        channel = VHF::Channel(frequency);
-        offset = VHF::OffsetCount(frequency);
+        channel = vhf->channelNumber(frequency);
+        offset = vhf->offsetCount(frequency);
     }
 
     if (band != nullptr) {

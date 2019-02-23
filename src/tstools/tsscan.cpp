@@ -52,8 +52,6 @@ TSDUCK_SOURCE;
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
 #define DEFAULT_MIN_STRENGTH  10
 #define DEFAULT_MIN_QUALITY   10
-#define DEFAULT_FIRST_OFFSET  (-2)
-#define DEFAULT_LAST_OFFSET   (+2)
 #define OFFSET_EXTEND         3
 
 
@@ -69,20 +67,22 @@ public:
 
     ts::TunerArgs   tuner_args;
     bool            uhf_scan;
+    bool            vhf_scan;
     bool            nit_scan;
     bool            no_offset;
     bool            use_best_quality;
     bool            use_best_strength;
-    int             first_uhf_channel;
-    int             last_uhf_channel;
-    int             first_uhf_offset;
-    int             last_uhf_offset;
+    uint32_t        first_channel;
+    uint32_t        last_channel;
+    int32_t         first_offset;
+    int32_t         last_offset;
     int             min_strength;
     int             min_quality;
     bool            show_modulation;
     bool            list_services;
     bool            global_services;
     ts::MilliSecond psi_timeout;
+    ts::HFBandPtr   hfband;
     ts::UString     channel_file;
     bool            update_channel_file;
     bool            default_channel_file;
@@ -96,67 +96,62 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     Args(u"Scan a DVB network", u"[options]"),
     tuner_args(false, true),
     uhf_scan(false),
+    vhf_scan(false),
     nit_scan(false),
     no_offset(false),
     use_best_quality(false),
     use_best_strength(false),
-    first_uhf_channel(0),
-    last_uhf_channel(0),
-    first_uhf_offset(0),
-    last_uhf_offset(0),
+    first_channel(0),
+    last_channel(0),
+    first_offset(0),
+    last_offset(0),
     min_strength(0),
     min_quality(0),
     show_modulation(false),
     list_services(false),
     global_services(false),
     psi_timeout(0),
+    hfband(),
     channel_file(),
     update_channel_file(false),
     default_channel_file(false)
 {
-    // Warning, the following short options are already defined in TunerArgs:
-    // 'a', 'c', 'd', 'f', 'm', 's', 'z'
     tuner_args.defineOptions(*this);
 
     option(u"best-quality");
     help(u"best-quality",
-         u"With UHF-band scanning, for each channel, use the offset with the "
+         u"With UHF/VHF-band scanning, for each channel, use the offset with the "
          u"best signal quality. By default, use the average of lowest and highest "
          u"offsets with required minimum quality and strength. Note that some tuners "
          u"cannot report a correct signal quality, making this option useless.");
 
     option(u"best-strength");
     help(u"best-strength",
-         u"With UHF-band scanning, for each channel, use the offset with the "
+         u"With UHF/VHF-band scanning, for each channel, use the offset with the "
          u"best signal strength. By default, use the average of lowest and highest "
          u"offsets with required minimum quality and strength. Note that some tuners "
          u"cannot report a correct signal strength, making this option useless.");
 
-    option(u"first-uhf-channel", 0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    help(u"first-uhf-channel",
-         u"For UHF-band scanning, specify the first channel to scan (default: " +
-         ts::UString::Decimal(ts::UHF::FIRST_CHANNEL) + u").");
+    option(u"first-channel", 0, POSITIVE);
+    help(u"first-channel",
+         u"For UHF/VHF-band scanning, specify the first channel to scan (default: lowest channel in band).");
 
     option(u"first-offset", 0, INTEGER, 0, 1, -40, +40);
     help(u"first-offset",
-         u"For UHF-band scanning, specify the first offset to scan (default: " +
-         ts::UString::Decimal(DEFAULT_FIRST_OFFSET, 0, true, u",", true) + u") "
-         u"on each channel.");
+         u"For UHF/VHF-band scanning, specify the first offset to scan on each channel.");
 
     option(u"global-service-list", 'g');
     help(u"global-service-list",
          u"Same as --service-list but display a global list of services at the end "
          u"of scanning instead of per transport stream.");
 
-    option(u"last-uhf-channel", 0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    help(u"last-uhf-channel",
-         u"For UHF-band scanning, specify the last channel to scan (default: " +
-         ts::UString::Decimal(ts::UHF::LAST_CHANNEL) + u").");
+    option(u"last-channel", 0, POSITIVE);
+    help(u"last-channel",
+         u"For UHF/VHF-band scanning, specify the last channel to scan (default: highest channel in band).");
 
     option(u"last-offset", 0, INTEGER, 0, 1, -40, +40);
     help(u"last-offset",
-         u"For UHF-band scanning, specify the last offset to scan on each channel (default: " +
-         ts::UString::Decimal(DEFAULT_LAST_OFFSET, 0, true, u",", true) + u"). "
+         u"For UHF/VHF-band scanning, specify the last offset to scan on each channel. "
          u"Note that tsscan may scan higher offsets. As long as some signal is found at a "
          u"specified offset, tsscan continues to check up to 3 higher offsets above the \"last\" one. "
          u"This means that if a signal is found at offset +2, offset +3 will be checked anyway, etc. up to offset +5.");
@@ -173,8 +168,16 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
 
     option(u"no-offset", 'n');
     help(u"no-offset",
-         u"For UHF-band scanning, scan only the central frequency of each channel. "
-         u"Do not scan frequencies with offsets.");
+         u"For UHF/VHF-band scanning, scan only the central frequency of each channel. "
+         u"This is now the default. Specify option --use-offsets to scan all offsets.");
+
+    option(u"use-offsets");
+    help(u"use-offsets",
+         u"For UHF/VHF-band scanning, do not scan only the central frequency of each channel. "
+         u"Also scan frequencies with offsets. As an example, if a signal is transmitted at offset +1, "
+         u"the reception may be successful at offsets -1 to +3 (but not -2 and +4). "
+         u"With this option, tsscan checks all offsets and reports that the signal is at offset +1. "
+         u"By default, tsscan reports that the signal is found at the central frequency of the channel (offset zero).");
 
     option(u"psi-timeout", 0, UNSIGNED);
     help(u"psi-timeout", u"milliseconds",
@@ -192,10 +195,14 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
 
     option(u"uhf-band", 'u');
     help(u"uhf-band",
-         u"Perform a complete DVB-T UHF-band scanning. Do not use the NIT.\n\n"
+         u"Perform a complete DVB-T or ATSC UHF-band scanning. Do not use the NIT.\n\n"
          u"If tuning parameters are present (frequency or channel reference), the NIT is "
          u"read on the specified frequency and a full scan of the corresponding network is "
          u"performed. By default, without specific frequency, an UHF-band scanning is performed.");
+
+    option(u"vhf-band");
+    help(u"vhf-band",
+         u"Perform a complete DVB-T or ATSC VHF-band scanning. See also --uhf-band.");
 
     option(u"save-channels", 0, STRING);
     help(u"save-channels", u"filename",
@@ -220,16 +227,30 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     analyze(argc, argv);
     tuner_args.load(*this);
 
-    uhf_scan          = present(u"uhf-band");
-    nit_scan          = tuner_args.hasTuningInfo();
+    // Type of scanning
+    uhf_scan = present(u"uhf-band");
+    vhf_scan = present(u"vhf-band");
+    nit_scan = tuner_args.hasTuningInfo();
+
+    if (nit_scan + uhf_scan + vhf_scan > 1) {
+        error(u"tuning parameters (NIT scan), --uhf-band and --vhf-band are mutually exclusive.");
+    }
+    if (!uhf_scan && !vhf_scan && !nit_scan) {
+        // Default is UHF scan.
+        uhf_scan = true;
+    }
+
+    // Type of HF band to use.
+    hfband = vhf_scan ? tuner_args.vhf : tuner_args.uhf;
+
     use_best_quality  = present(u"best-quality");
     use_best_strength = present(u"best-strength");
-    first_uhf_channel = intValue(u"first-uhf-channel", ts::UHF::FIRST_CHANNEL);
-    last_uhf_channel  = intValue(u"last-uhf-channel", ts::UHF::LAST_CHANNEL);
+    first_channel     = intValue(u"first-channel", hfband->firstChannel());
+    last_channel      = intValue(u"last-channel", hfband->lastChannel());
     show_modulation   = present(u"show-modulation");
-    no_offset         = present(u"no-offset");
-    first_uhf_offset  = no_offset ? 0 : intValue(u"first-offset", DEFAULT_FIRST_OFFSET);
-    last_uhf_offset   = no_offset ? 0 : intValue(u"last-offset", DEFAULT_LAST_OFFSET);
+    no_offset         = !present(u"use-offsets");
+    first_offset      = no_offset ? 0 : intValue(u"first-offset", hfband->firstOffset(first_channel));
+    last_offset       = no_offset ? 0 : intValue(u"last-offset", hfband->lastOffset(first_channel));
     min_quality       = intValue(u"min-quality", DEFAULT_MIN_QUALITY);
     min_strength      = intValue(u"min-strength", DEFAULT_MIN_STRENGTH);
     list_services     = present(u"service-list");
@@ -241,13 +262,6 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     channel_file = update_channel_file ? value(u"update-channels") : value(u"save-channels");
     default_channel_file = (save_channel_file || update_channel_file) && (channel_file.empty() || channel_file == u"-");
 
-    if (nit_scan && uhf_scan) {
-        error(u"do not specify tuning parameters with --uhf-band");
-    }
-    if (!uhf_scan && !nit_scan) {
-        // Default is UHF scan.
-        uhf_scan = true;
-    }
     if (save_channel_file && update_channel_file) {
         error(u"--save-channels and --update-channels are mutually exclusive");
     }
@@ -261,7 +275,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
 
 
 //----------------------------------------------------------------------------
-// UHF-band offset scanner: Scan offsets around a specific UHF channel and
+// UHF/VHF-band offset scanner: Scan offsets around a specific channel and
 // determine offset with the best signal.
 //----------------------------------------------------------------------------
 
@@ -269,36 +283,36 @@ class OffsetScanner
 {
 public:
     // Constructor: Perform scanning. Keep signal tuned on best offset.
-    OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel);
+    OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channel);
 
     // Check if signal found and which offset is the best one.
     bool signalFound() const {return _signal_found;}
-    int channel() const {return _channel;}
-    int bestOffset() const {return _best_offset;}
+    uint32_t channel() const {return _channel;}
+    int32_t bestOffset() const {return _best_offset;}
     ts::TunerParametersPtr tunerParameters() const {return _best_params;}
 
 private:
-    ScanOptions& _opt;
-    ts::Tuner& _tuner;
-    const int _channel;
-    bool _signal_found;
-    int _best_offset;
-    int _lowest_offset;
-    int _highest_offset;
-    int _best_quality;
-    int _best_quality_offset;
-    int _best_strength;
-    int _best_strength_offset;
+    ScanOptions&   _opt;
+    ts::Tuner&     _tuner;
+    const uint32_t _channel;
+    bool           _signal_found;
+    int32_t        _best_offset;
+    int32_t        _lowest_offset;
+    int32_t        _highest_offset;
+    int            _best_quality;
+    int32_t        _best_quality_offset;
+    int            _best_strength;
+    int32_t        _best_strength_offset;
     ts::TunerParametersPtr _best_params;
 
     // Build tuning parameters for a channel.
-    ts::TunerParametersPtr tuningParameters(int offset);
+    ts::TunerParametersPtr tuningParameters(int32_t offset);
 
     // Tune to specified offset. Return false on error.
-    bool tune(int offset, ts::TunerParametersPtr& params);
+    bool tune(int32_t offset, ts::TunerParametersPtr& params);
 
     // Test the signal at one specific offset. Return true if signal is found.
-    bool tryOffset(int offset);
+    bool tryOffset(int32_t offset);
 };
 
 
@@ -307,7 +321,7 @@ private:
 // Perform scanning. Keep signal tuned on best offset
 //----------------------------------------------------------------------------
 
-OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel) :
+OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channel) :
     _opt(opt),
     _tuner(tuner),
     _channel(channel),
@@ -321,7 +335,7 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel) :
     _best_strength_offset(0),
     _best_params()
 {
-    _opt.verbose(u"scanning channel %'d, %'d Hz", {_channel, ts::UHF::Frequency(_channel)});
+    _opt.verbose(u"scanning channel %'d, %'d Hz", {_channel, _opt.hfband->frequency(_channel)});
 
     if (_opt.no_offset) {
         // Only try the central frequency
@@ -329,20 +343,20 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel) :
     }
     else {
         // Scan lower offsets in descending order, starting at central frequency
-        if (_opt.first_uhf_offset <= 0) {
+        if (_opt.first_offset <= 0) {
             bool last_ok = false;
-            int offset = _opt.last_uhf_offset > 0 ? 0 : _opt.last_uhf_offset;
-            while (offset >= _opt.first_uhf_offset - (last_ok ? OFFSET_EXTEND : 0)) {
+            int32_t offset = _opt.last_offset > 0 ? 0 : _opt.last_offset;
+            while (offset >= _opt.first_offset - (last_ok ? OFFSET_EXTEND : 0)) {
                 last_ok = tryOffset(offset);
                 --offset;
             }
         }
 
         // Scan higher offsets in ascending order, starting after central frequency
-        if (_opt.last_uhf_offset > 0) {
+        if (_opt.last_offset > 0) {
             bool last_ok = false;
-            int offset = _opt.first_uhf_offset <= 0 ? 1 : _opt.first_uhf_offset;
-            while (offset <= _opt.last_uhf_offset + (last_ok ? OFFSET_EXTEND : 0)) {
+            int32_t offset = _opt.first_offset <= 0 ? 1 : _opt.first_offset;
+            while (offset <= _opt.last_offset + (last_ok ? OFFSET_EXTEND : 0)) {
                 last_ok = tryOffset(offset);
                 ++offset;
             }
@@ -374,12 +388,12 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, int channel) :
 // Build tuning parameters for a channel.
 //----------------------------------------------------------------------------
 
-ts::TunerParametersPtr OffsetScanner::tuningParameters(int offset)
+ts::TunerParametersPtr OffsetScanner::tuningParameters(int32_t offset)
 {
     // Force frequency in tuning parameters.
     // Other tuning parameters from command line (or default values).
-    _opt.tuner_args.frequency = ts::UHF::Frequency(_channel, offset);
-    return ts::TunerParameters::FromTunerArgs(ts::DVB_T, _opt.tuner_args, _opt);
+    _opt.tuner_args.frequency = _opt.hfband->frequency(_channel, offset);
+    return ts::TunerParameters::FromTunerArgs(_tuner.tunerType(), _opt.tuner_args, _opt);
 }
 
 
@@ -387,7 +401,7 @@ ts::TunerParametersPtr OffsetScanner::tuningParameters(int offset)
 // UHF-band offset scanner: Tune to specified offset. Return false on error.
 //----------------------------------------------------------------------------
 
-bool OffsetScanner::tune(int offset, ts::TunerParametersPtr& params)
+bool OffsetScanner::tune(int32_t offset, ts::TunerParametersPtr& params)
 {
     params = tuningParameters(offset);
     return !params.isNull() && _tuner.tune(*params, _opt);
@@ -398,7 +412,7 @@ bool OffsetScanner::tune(int offset, ts::TunerParametersPtr& params)
 // UHF-band offset scanner: Test the signal at one specific offset.
 //----------------------------------------------------------------------------
 
-bool OffsetScanner::tryOffset(int offset)
+bool OffsetScanner::tryOffset(int32_t offset)
 {
     _opt.debug(u"trying offset %d", {offset});
 
@@ -416,7 +430,7 @@ bool OffsetScanner::tryOffset(int offset)
         // Get signal quality & strength
         const int strength = _tuner.signalStrength(_opt);
         const int quality = _tuner.signalQuality(_opt);
-        _opt.verbose(ts::UHF::Description(_channel, offset, strength, quality));
+        _opt.verbose(_opt.hfband->description(_channel, offset, strength, quality));
 
         if (strength >= 0 && strength <= _opt.min_strength) {
             // Strength is supported but too low
@@ -484,8 +498,8 @@ private:
     // Analyze a TS and generate relevant info.
     void scanTS(std::ostream& strm, const ts::UString& margin, ts::TunerParametersPtr tparams);
 
-    // UHF-band scanning
-    void uhfScan();
+    // UHF/VHF-band scanning
+    void hfBandScan();
 
     // NIT-based scanning
     void nitScan();
@@ -581,28 +595,20 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Tune
 
 
 //----------------------------------------------------------------------------
-// UHF-band scanning
+// UHF/VHF-band scanning
 //----------------------------------------------------------------------------
 
-void ScanContext::uhfScan()
+void ScanContext::hfBandScan()
 {
-    // UHF means DVB-T
-    if (_tuner.tunerType() != ts::DVB_T) {
-        _opt.error(u"UHF scanning needs DVB-T, tuner %s is %s", {_tuner.deviceName(), ts::TunerTypeEnum.name(_tuner.tunerType())});
-        return;
-    }
-
     // Loop on all selected UHF channels
-    for (int chan = _opt.first_uhf_channel; chan <= _opt.last_uhf_channel; ++chan) {
+    for (uint32_t chan = _opt.first_channel; chan <= _opt.last_channel; ++chan) {
 
         // Scan all offsets surrounding the channel
         OffsetScanner offscan(_opt, _tuner, chan);
         if (offscan.signalFound()) {
 
             // Report channel characteristics
-            std::cout << "* UHF "
-                        << ts::UHF::Description(chan, offscan.bestOffset(), _tuner.signalStrength(_opt), _tuner.signalQuality(_opt))
-                        << std::endl;
+            std::cout << "* " << _opt.hfband->description(chan, offscan.bestOffset(), _tuner.signalStrength(_opt), _tuner.signalQuality(_opt)) << std::endl;
 
             // Analyze PSI/SI if required
             scanTS(std::cout, u"  ", offscan.tunerParameters());
@@ -678,8 +684,8 @@ void ScanContext::main()
     }
 
     // Main processing depends on scanning method.
-    if (_opt.uhf_scan) {
-        uhfScan();
+    if (_opt.uhf_scan || _opt.vhf_scan) {
+        hfBandScan();
     }
     else if (_opt.nit_scan) {
         nitScan();

@@ -53,13 +53,11 @@ public:
     void testTunerArgs();
     void testTunerParams();
     void testLNB();
-    void testUHF();
 
     CPPUNIT_TEST_SUITE(DVBTest);
     CPPUNIT_TEST(testTunerArgs);
     CPPUNIT_TEST(testTunerParams);
     CPPUNIT_TEST(testLNB);
-    CPPUNIT_TEST(testUHF);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -166,22 +164,4 @@ void DVBTest::testLNB()
     ts::LNB lnb5(u"azerty");
     displayLNB(lnb5, u"azerty");
     CPPUNIT_ASSERT(!lnb5.isValid());
-}
-
-void DVBTest::testUHF()
-{
-    CPPUNIT_ASSERT_EQUAL(uint64_t(474000000), ts::UHF::Frequency(21, 0));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(474166666), ts::UHF::Frequency(21, 1));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(561833334), ts::UHF::Frequency(32, -1));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(858000000), ts::UHF::Frequency(69, 0));
-
-    CPPUNIT_ASSERT_EQUAL(21, ts::UHF::Channel(474000000));
-    CPPUNIT_ASSERT_EQUAL(21, ts::UHF::Channel(474166666));
-    CPPUNIT_ASSERT_EQUAL(32, ts::UHF::Channel(561833334));
-    CPPUNIT_ASSERT_EQUAL(69, ts::UHF::Channel(858000000));
-
-    CPPUNIT_ASSERT_EQUAL(0, ts::UHF::OffsetCount(474000000));
-    CPPUNIT_ASSERT_EQUAL(1, ts::UHF::OffsetCount(474166666));
-    CPPUNIT_ASSERT_EQUAL(-1, ts::UHF::OffsetCount(561833334));
-    CPPUNIT_ASSERT_EQUAL(0, ts::UHF::OffsetCount(858000000));
 }
