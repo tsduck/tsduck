@@ -35,6 +35,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsTunerParameters.h"
+#include "tsHFBand.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
 #include "tsLNB.h"
@@ -83,6 +84,8 @@ namespace ts {
         Variable<Pilot>             pilots;             //!< Presence of pilots (DVB-S2 only).
         Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
         Variable<PLP>               plp;                //!< PLP identification (DVB-T2 only).
+        HFBandPtr                   uhf;                //!< Local UHF band description.
+        HFBandPtr                   vhf;                //!< Local VHF band description.
 
         //!
         //! Default constructor.

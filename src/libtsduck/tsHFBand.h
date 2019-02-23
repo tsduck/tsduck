@@ -95,6 +95,12 @@ namespace ts {
         BandType type() const { return _type; }
 
         //!
+        //! Get the type of HF band as a string.
+        //! @return The type of HF band as a string.
+        //!
+        UString typeName() const;
+
+        //!
         //! Check if there is no channel in the HF band.
         //! @return True if there is no channel in the HF band (typically an invalid band).
         //!
@@ -219,7 +225,7 @@ namespace ts {
         //! @param [in] quality Signal quality in percent. Ignored if negative.
         //! @return Channel description.
         //!
-        UString description(int channel, int offset, int strength = -1, int quality = -1) const;
+        UString description(uint32_t channel, int32_t offset, int strength = -1, int quality = -1) const;
 
     private:
         // Define a range of HF channels.

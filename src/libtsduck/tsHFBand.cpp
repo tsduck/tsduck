@@ -60,6 +60,16 @@ ts::HFBand::ChannelsRange::ChannelsRange() :
 
 
 //----------------------------------------------------------------------------
+// Get the type of HF band as a string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HFBand::typeName() const
+{
+    return HFBandRepository::Instance()->bandTypeEnum.name(_type);
+}
+
+
+//----------------------------------------------------------------------------
 // Factory static method.
 //----------------------------------------------------------------------------
 
@@ -69,7 +79,6 @@ ts::HFBandPtr ts::HFBand::Factory(const UString& region, BandType type, Report& 
     repo->load(report);
     return repo->get(type, region, report);
 }
-
 
 ts::UString ts::HFBand::DefaultRegion(Report& report)
 {
@@ -283,12 +292,13 @@ int32_t ts::HFBand::offsetCount(uint64_t frequency) const
 // Return a human-readable description of a channel.
 //----------------------------------------------------------------------------
 
-ts::UString ts::HFBand::description(int channel, int offset, int strength, int quality) const
+ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int strength, int quality) const
 {
     const uint64_t freq = frequency(channel, offset);
     const int mhz = int(freq / 1000000);
     const int khz = int((freq % 1000000) / 1000);
-    UString desc(u"channel ");
+    UString desc(HFBandRepository::Instance()->bandTypeEnum.name(_type));
+    desc += u" channel ";
     desc += UString::Decimal(channel);
     if (offset != 0) {
         desc += u", offset ";
@@ -347,7 +357,7 @@ ts::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     // Build ranges of channels.
     for (size_t i = 0; i < channels.size(); ++i) {
         ChannelsRange chan;
-        const bool ok = 
+        const bool ok =
             channels[i]->getIntAttribute<uint32_t>(chan.first_channel, u"first_channel", true) &&
             channels[i]->getIntAttribute<uint32_t>(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
             channels[i]->getIntAttribute<uint64_t>(chan.base_frequency, u"base_frequency", true) &&

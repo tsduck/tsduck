@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1150
+VERSION 3.17-1151
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -25,8 +25,11 @@ VERSION 3.17-1150
     values "16-APSK", "32-APSK" (DVB-S2).
   * Added option --dvb-cissa to plugins "scrambler" and "descrambler".
   * Added region-specific UHF/VHF frequency layouts in various commands and
-    plugins. Added options --hf-band-region and --default-region to command
+    plugins. Added option --hf-band-region to plugins "dvb", "dektec" and
+    commands "tsterinfo", "tsscan". Added option --default-region to command
     "tsterinfo".
+  * The command "tsscan" can now perform VHF band scanning (option --vhf-band).
+    Offsets are no longer used by default, added options --use-offsets.
 
 [BUG] Bug fixes:
 
