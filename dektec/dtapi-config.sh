@@ -52,8 +52,10 @@ int-version()
 # Get DTAPI header file.
 get-header()
 {
-    # Unsupported outside Linux.
+    # Unsupported outside Linux/Intel.
     [[ $(uname -s) == Linux ]] || return
+    arch=$(uname -m)
+    [[ $arch == x86_64 || $arch == i?86 ]] || return
     
     local HEADER="$DTAPIDIR/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
@@ -62,9 +64,11 @@ get-header()
 # Get DTAPI object file.
 get-object()
 {
-    # Unsupported outside Linux.
+    # Unsupported outside Linux/Intel.
     [[ $(uname -s) == Linux ]] || return
-    
+    arch=$(uname -m)
+    [[ $arch == x86_64 || $arch == i?86 ]] || return
+
     # Get GCC version as an integer.
     if [[ -z "$GCCVERSION" ]]; then
         local GCC=$(which gcc 2>/dev/null)
