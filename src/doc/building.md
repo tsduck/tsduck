@@ -72,6 +72,17 @@ apt-get install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-de
 - It is not possible to build 32-bit TSDuck on 64-bit Ubuntu system (command `make m32`) because
   there is no 32-bit cross-compiled package for pcsc and cppunit on Ubuntu 64-bit.
 
+## Specific GCC requirement on Raspian {#reqraspbian}
+
+It has been noted that GCC 6 and 7 are broken and fail to compile TSDuck version 3.17 and higher.
+As of TSDuck version 3.17, the latest versions of the major Linux distros (Fedora, CentOS,
+Red Hat Entreprise, Ubuntu) have either older or newer versions of GCC. However, on Raspberry Pi,
+Raspbian 9.8 (stretch) embeds GCC 6.3.0, one of these buggy versions of GCC.
+
+If you have such a broken GCC, you need to install an older or (preferably) newer version of GCC.
+[This article](https://solarianprogrammer.com/2017/12/08/raspberry-pi-raspbian-install-gcc-compile-cpp-17-programs/)
+explains how to install GCC 8.1.0 on Raspbian.
+
 ## All Linux distros {#reqlinux}
 
 - Optional Dektec DTAPI: The command `make` at the top level will automatically
