@@ -162,6 +162,11 @@ void ts::TunerArgs::load(Args& args)
 
         // UHF/VHF bands descriptions.
         const UString region(args.value(u"hf-band-region"));
+        if (!region.empty()) {
+            // We take the responsibility to change the global default HF Band region if
+            // --hf-band-region is specified. Not sure if this is the right thing to do...
+            HFBand::SetDefaultRegion(region);
+        }
         uhf = HFBand::Factory(region, HFBand::UHF, args);
         vhf = HFBand::Factory(region, HFBand::VHF, args);
 

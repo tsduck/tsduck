@@ -222,6 +222,7 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Get UHF/VHF frequency layout.
+    ts::HFBand::SetDefaultRegion(opt.hfband_region);
     const ts::HFBandPtr uhf(ts::HFBand::Factory(opt.hfband_region, ts::HFBand::UHF, opt));
     const ts::HFBandPtr vhf(ts::HFBand::Factory(opt.hfband_region, ts::HFBand::VHF, opt));
 
