@@ -79,6 +79,15 @@ namespace ts {
         static UString DefaultRegion(Report& report = CERR);
 
         //!
+        //! Set the default region.
+        //! @param [in] region The new region to use as default. If empty, then use the value
+        //! of the parameter "default.region" in the TSDuck configuration file for the current
+        //! application. If undefined in the configuration file, the default is "europe".
+        //! @param [in,out] report Where to report errors.
+        //!
+        static void SetDefaultRegion(const UString& region = UString(), Report& report = CERR);
+
+        //!
         //! Factory static method.
         //! @param [in] region Region of country name (not case sensitive).
         //! @param [in] type HF band type.
@@ -301,8 +310,9 @@ namespace ts {
             // Get an object from the repository.
             HFBandPtr get(BandType type, const UString& region, Report& report) const;
 
-            // Get the default region.
-            UString defaultRegion() const { return _default_region; }
+            // Get/set the default region.
+            UString defaultRegion() const;
+            void setDefaultRegion(const UString&);
 
             // An enumeration object for BandType.
             const Enumeration bandTypeEnum;

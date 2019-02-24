@@ -87,6 +87,13 @@ ts::UString ts::HFBand::DefaultRegion(Report& report)
     return repo->defaultRegion();
 }
 
+void ts::HFBand::SetDefaultRegion(const ts::UString& region, ts::Report& report)
+{
+    HFBandRepository* repo = HFBandRepository::Instance();
+    repo->load(report);
+    repo->setDefaultRegion(region);
+}
+
 
 //----------------------------------------------------------------------------
 // Get the range of channels for a given channel number.
@@ -443,8 +450,8 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
         return true;
     }
 
-    // Get the default region.
-    _default_region = DuckConfigFile::Instance()->value(u"default.region", u"europe");
+    // Get the default region from configuration file.
+    setDefaultRegion(UString());
 
     // Load the repository XML file. Search it in TSDuck directory.
     xml::Document doc(report);
@@ -490,6 +497,24 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
         }
     }
     return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Get/set the default region.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HFBand::HFBandRepository::defaultRegion() const
+{
+    Guard lock(_mutex);
+    return _default_region;
+}
+
+void ts::HFBand::HFBandRepository::setDefaultRegion(const UString& region)
+{
+    Guard lock(_mutex);
+    // If the region is empty, get the one for configuration file.
+    _default_region = region.empty() ? DuckConfigFile::Instance()->value(u"default.region", u"europe") : region;
 }
 
 
