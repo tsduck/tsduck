@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"enhanced_AC3_descriptor"
 #define MY_DID ts::DID_ENHANCED_AC3
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, ts::EDID::Standard(MY_DID));
@@ -47,11 +48,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EnhancedAC3Descriptor::DisplayDescriptor, ts::EDID:
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_type(),
     bsid(),
     mainid(),
@@ -65,22 +66,8 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    component_type(),
-    bsid(),
-    mainid(),
-    asvc(),
-    mixinfoexists(false),
-    substream1(),
-    substream2(),
-    substream3(),
-    additional_info()
+ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor(const Descriptor& desc, const DVBCharset* charset) :
+    EnhancedAC3Descriptor()
 {
     deserialize(desc, charset);
 }
@@ -90,7 +77,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc, const 
 // Merge inside this object missing information which can be found in other object
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::merge (const EnhancedAC3Descriptor& other)
+void ts::EnhancedAC3Descriptor::merge(const EnhancedAC3Descriptor& other)
 {
     if (!component_type.set()) {
         component_type = other.component_type;

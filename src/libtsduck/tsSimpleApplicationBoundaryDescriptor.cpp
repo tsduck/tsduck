@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"simple_application_boundary_descriptor"
 #define MY_DID ts::DID_AIT_APP_BOUNDARY
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SimpleApplicationBoundaryDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SimpleApplicationBoundaryDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -43,20 +44,15 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SimpleApplicationBoundaryDescriptor::DisplayDescrip
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     boundary_extension()
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     SimpleApplicationBoundaryDescriptor()

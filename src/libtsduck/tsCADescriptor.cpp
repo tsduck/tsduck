@@ -42,6 +42,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_descriptor"
 #define MY_DID ts::DID_CA
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID::Standard(MY_DID));
@@ -53,7 +54,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CADescriptor::DisplayDescriptor, ts::EDID::Standard
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cas_id(cas_id_),
     ca_pid(ca_pid_),
     private_data()
@@ -67,7 +68,7 @@ ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cas_id(0),
     ca_pid(PID_NULL),
     private_data()

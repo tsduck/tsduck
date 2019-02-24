@@ -36,9 +36,10 @@ TSDUCK_SOURCE;
 // Constructors, assignments and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name) :
+ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name, Standards standards) :
     _xml_name(xml_name),
-    _is_valid(false)
+    _is_valid(false),
+    _standards(standards)
 {
 }
 
@@ -47,6 +48,7 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
     if (this != &other) {
         // Don't copy the pointer to XML name, this is a const value.
         // In debug mode, check that we have the same XML name.
+        assert(_standards == other._standards);
         assert((_xml_name == nullptr && other._xml_name == nullptr) ||
                (_xml_name != nullptr && other._xml_name != nullptr && UString(_xml_name) == UString(other._xml_name)));
         _is_valid = other._is_valid;

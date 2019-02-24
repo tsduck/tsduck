@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"TDT"
 #define MY_TID ts::TID_TDT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::TDT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::TDT, MY_TID);
@@ -48,24 +49,18 @@ TS_ID_SECTION_DISPLAY(ts::TDT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TDT::TDT(const Time& utc_time_) :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     utc_time(utc_time_)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(MY_TID, MY_XML_NAME),
-    utc_time()
+    TDT()
 {
     deserialize(table, charset);
 }

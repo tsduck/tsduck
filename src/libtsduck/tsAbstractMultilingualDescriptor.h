@@ -85,9 +85,8 @@ namespace ts {
         //! @param [in] tag Descriptor tag.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] xml_attribute XML attribute name for the "name" fields.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute, PDS pds = 0);
+        AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute);
 
         //!
         //! The subclass serializes the "prolog".

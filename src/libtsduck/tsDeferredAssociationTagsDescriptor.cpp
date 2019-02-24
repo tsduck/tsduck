@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"deferred_association_tags_descriptor"
 #define MY_DID ts::DID_DEFERRED_ASSOC_TAGS
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DeferredAssociationTagsDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DeferredAssociationTagsDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DeferredAssociationTagsDescriptor::DisplayDescripto
 //----------------------------------------------------------------------------
 
 ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     association_tags(),
     transport_stream_id(0),
     program_number(0),

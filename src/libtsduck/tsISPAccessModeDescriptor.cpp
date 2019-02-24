@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"ISP_access_mode_descriptor"
 #define MY_DID ts::DID_INT_ISP_ACCESS
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ISPAccessModeDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ISPAccessModeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -49,20 +50,15 @@ namespace {
 }
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(uint8_t mode) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     access_mode(mode)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     ISPAccessModeDescriptor()

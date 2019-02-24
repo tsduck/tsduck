@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"graphics_constraints_descriptor"
 #define MY_DID ts::DID_AIT_GRAPHICS_CONST
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::GraphicsConstraintsDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::GraphicsConstraintsDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -43,11 +44,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::GraphicsConstraintsDescriptor::DisplayDescriptor, t
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     can_run_without_visible_ui(false),
     handles_configuration_changed(false),
     handles_externally_controlled_video(false),
@@ -55,11 +56,6 @@ ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     GraphicsConstraintsDescriptor()

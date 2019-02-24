@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"smoothing_buffer_descriptor"
 #define MY_DID ts::DID_SMOOTH_BUF
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SmoothingBufferDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::SmoothingBufferDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SmoothingBufferDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::SmoothingBufferDescriptor::SmoothingBufferDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     sb_leak_rate(0),
     sb_size(0)
 {

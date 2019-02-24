@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_IP_slash_descriptor"
 #define MY_DID ts::DID_INT_IP_SLASH
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPSlashDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPSlashDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPSlashDescriptor::DisplayDescriptor, ts::EDI
 //----------------------------------------------------------------------------
 
 ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     addresses()
 {
     _is_valid = true;

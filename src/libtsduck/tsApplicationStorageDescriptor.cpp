@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"application_storage_descriptor"
 #define MY_DID ts::DID_AIT_APP_STORAGE
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationStorageDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationStorageDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationStorageDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     storage_property(0),
     not_launchable_from_broadcast(false),
     launchable_completely_from_cache(false),

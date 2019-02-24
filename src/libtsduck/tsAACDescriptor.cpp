@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AAC_descriptor"
 #define MY_DID ts::DID_AAC
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AACDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AACDescriptor, ts::EDID::Standard(MY_DID));
@@ -51,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AACDescriptor::DisplayDescriptor, ts::EDID::Standar
 //----------------------------------------------------------------------------
 
 ts::AACDescriptor::AACDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     profile_and_level(0),
     SAOC_DE(false),
     AAC_type(),

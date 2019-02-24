@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stream_event_descriptor"
 #define MY_DID ts::DID_STREAM_EVENT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StreamEventDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StreamEventDescriptor, ts::EDID::Standard(MY_DID));
@@ -42,22 +43,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StreamEventDescriptor::DisplayDescriptor, ts::EDID:
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::StreamEventDescriptor::StreamEventDescriptor(uint16_t id, uint64_t npt) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     event_id(id),
     event_NPT(npt),
     private_data()
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::StreamEventDescriptor::StreamEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     StreamEventDescriptor()

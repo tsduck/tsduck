@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"simple_application_location_descriptor"
 #define MY_DID ts::DID_AIT_APP_LOCATION
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SimpleApplicationLocationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SimpleApplicationLocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -43,20 +44,15 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SimpleApplicationLocationDescriptor::DisplayDescrip
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     initial_path()
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     SimpleApplicationLocationDescriptor()

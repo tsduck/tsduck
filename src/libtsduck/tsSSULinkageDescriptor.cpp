@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a linkage_descriptor for system software update
-//  (linkage type 0x09).
-//
-//----------------------------------------------------------------------------
 
 #include "tsSSULinkageDescriptor.h"
 #include "tsTablesDisplay.h"
@@ -38,13 +33,17 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
+#define MY_XML_NAME u""   // No XML conversion.
+#define MY_DID ts::DID_LINKAGE
+#define MY_STD ts::STD_DVB
+
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -54,13 +53,8 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor with one OUI
-//----------------------------------------------------------------------------
-
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -71,34 +65,14 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
-    ts_id(0),
-    onetw_id(0),
-    service_id(0),
-    entries(),
-    private_data()
+    SSULinkageDescriptor()
 {
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a linkage_descriptor.
-//----------------------------------------------------------------------------
-
 ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
-    ts_id(0),
-    onetw_id(0),
-    service_id(0),
-    entries(),
-    private_data()
+    SSULinkageDescriptor()
 {
     _is_valid = desc.isValid() && desc.linkage_type == LINKAGE_SSU;
     if (_is_valid) {

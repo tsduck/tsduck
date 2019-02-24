@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"supplementary_audio_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_SUPPL_AUDIO
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -52,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     mix_type(0),
     editorial_classification(0),
     language_code(),
@@ -62,7 +63,7 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
 }
 
 ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor& bin, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     mix_type(0),
     editorial_classification(0),
     language_code(),

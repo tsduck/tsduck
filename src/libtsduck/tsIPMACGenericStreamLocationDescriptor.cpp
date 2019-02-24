@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"IPMAC_generic_stream_location_descriptor"
 #define MY_DID ts::DID_INT_GEN_STREAM_LOC
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::IPMACGenericStreamLocationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::IPMACGenericStreamLocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -55,7 +56,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     interactive_network_id(0),
     modulation_system_type(0),
     modulation_system_id(0),

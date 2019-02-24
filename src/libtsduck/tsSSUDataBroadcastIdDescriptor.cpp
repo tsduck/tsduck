@@ -38,55 +38,38 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
+#define MY_XML_NAME u""   // No XML conversion.
+#define MY_DID ts::DID_DATA_BROADCAST_ID
+#define MY_STD ts::STD_DVB
+
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries(),
     private_data()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor with one OUI
-//----------------------------------------------------------------------------
-
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, uint8_t update_type) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
-    entries(),
-    private_data()
+    SSUDataBroadcastIdDescriptor()
 {
     entries.push_back(Entry(oui, update_type));
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
-    entries(),
-    private_data()
+    SSUDataBroadcastIdDescriptor()
 {
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a data_broadcast_id_descriptor.
-//----------------------------------------------------------------------------
-
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
-    entries(),
-    private_data()
+    SSUDataBroadcastIdDescriptor()
 {
     _is_valid = desc.isValid() && desc.data_broadcast_id == 0x000A;
     if (_is_valid) {

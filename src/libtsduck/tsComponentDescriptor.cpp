@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"component_descriptor"
 #define MY_DID ts::DID_COMPONENT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ComponentDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ComponentDescriptor, ts::EDID::Standard(MY_DID));
@@ -51,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ComponentDescriptor::DisplayDescriptor, ts::EDID::S
 //----------------------------------------------------------------------------
 
 ts::ComponentDescriptor::ComponentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stream_content_ext(0),
     stream_content(0),
     component_type(0),

@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AIT"
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::AIT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::AIT, MY_TID);
@@ -50,32 +51,28 @@ TS_ID_SECTION_DISPLAY(ts::AIT::DisplaySection, MY_TID);
 // Constructors:
 //----------------------------------------------------------------------------
 
-ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, bool test_application_)
-    : AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_)
-    , application_type(application_type_)
-    , test_application_flag(test_application_)
-    , descs(this)
-    , applications(this)
+ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, bool test_application_) :
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
+    application_type(application_type_),
+    test_application_flag(test_application_),
+    descs(this),
+    applications(this)
 {
     _is_valid = true;
 }
 
-ts::AIT::AIT(const BinaryTable& table, const DVBCharset* charset)
-    : AbstractLongTable(MY_TID, MY_XML_NAME)
-    , application_type(0)
-    , test_application_flag(false)
-    , descs(this)
-    , applications(this)
+ts::AIT::AIT(const BinaryTable& table, const DVBCharset* charset) :
+    AIT()
 {
     deserialize(table, charset);
 }
 
-ts::AIT::AIT(const AIT& other)
-    : AbstractLongTable(other)
-    , application_type(other.application_type)
-    , test_application_flag(other.test_application_flag)
-    , descs(this, other.descs)
-    , applications(this, other.applications)
+ts::AIT::AIT(const AIT& other) :
+    AbstractLongTable(other),
+    application_type(other.application_type),
+    test_application_flag(other.test_application_flag),
+    descs(this, other.descs),
+    applications(this, other.applications)
 {
 }
 

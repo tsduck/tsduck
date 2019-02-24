@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"logical_channel_number_descriptor"
 #define MY_DID ts::DID_LOGICAL_CHANNEL_NUM
 #define MY_PDS ts::PDS_EACEM
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::LogicalChannelNumberDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::LogicalChannelNumberDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
@@ -52,40 +53,24 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::LogicalChannelNumberDescriptor::DisplayDescriptor, 
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
-    entries ()
+ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    LogicalChannelNumberDescriptor()
 {
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor using a variable-length argument list.
-// Each entry is described by 2 arguments: service_id and lcn.
-// All services are marked as visible by default.
-// All arguments are int, not uint16_t, since integer literals are int
-// by default. The end of the argument list must be marked by -1.
-//----------------------------------------------------------------------------
-
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (int service_id, int lcn, ...) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
-    entries ()
+ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(int service_id, int lcn, ...) :
+    LogicalChannelNumberDescriptor()
 {
     _is_valid = true;
     entries.push_back (Entry (uint16_t (service_id), true, uint16_t (lcn)));

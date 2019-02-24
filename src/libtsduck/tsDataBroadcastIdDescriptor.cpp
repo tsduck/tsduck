@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
 #define MY_DID ts::DID_DATA_BROADCAST_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, ts::EDID::Standard(MY_DID));
@@ -52,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastIdDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     data_broadcast_id(id),
     private_data()
 {
@@ -65,7 +66,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     data_broadcast_id(0),
     private_data()
 {

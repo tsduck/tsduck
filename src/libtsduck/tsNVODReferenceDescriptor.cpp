@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NVOD_reference_descriptor"
 #define MY_DID ts::DID_NVOD_REFERENCE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, ts::EDID::Standard(MY_DID));
@@ -54,7 +55,7 @@ ts::NVODReferenceDescriptor::Entry::Entry(uint16_t ts, uint16_t net, uint16_t sr
 }
 
 ts::NVODReferenceDescriptor::NVODReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;

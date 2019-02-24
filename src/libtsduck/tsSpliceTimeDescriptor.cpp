@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_time_descriptor"
 #define MY_DID ts::DID_SPLICE_TIME
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceTimeDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SpliceTimeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceTimeDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::SpliceTimeDescriptor::SpliceTimeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(SPLICE_ID_CUEI),
     TAI_seconds(0),
     TAI_ns(0),

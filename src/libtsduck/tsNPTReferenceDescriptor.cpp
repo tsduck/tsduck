@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NPT_reference_descriptor"
 #define MY_DID ts::DID_NPT_REFERENCE
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NPTReferenceDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::NPTReferenceDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +47,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::NPTReferenceDescriptor::DisplayDescriptor, ts::EDID
 //----------------------------------------------------------------------------
 
 ts::NPTReferenceDescriptor::NPTReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     post_discontinuity(false),
     content_id(0),
     STC_reference(0),

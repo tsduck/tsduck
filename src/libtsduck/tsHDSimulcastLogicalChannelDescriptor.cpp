@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"HD_simulcast_logical_channel_descriptor"
 #define MY_DID ts::DID_HD_SIMULCAST_LCN
 #define MY_PDS ts::PDS_EACEM
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
@@ -52,40 +53,25 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescrip
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () :
-    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
-    entries ()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    entries()
 {
     _is_valid = true;
 }
 
 
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
-    entries ()
+ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    HDSimulcastLogicalChannelDescriptor()
 {
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor using a variable-length argument list.
-// Each entry is described by 2 arguments: service_id and lcn.
-// All services are marked as visible by default.
-// All arguments are int, not uint16_t, since integer literals are int
-// by default. The end of the argument list must be marked by -1.
-//----------------------------------------------------------------------------
-
-ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (int service_id, int lcn, ...) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
-    entries ()
+ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(int service_id, int lcn, ...) :
+    HDSimulcastLogicalChannelDescriptor()
 {
     _is_valid = true;
     entries.push_back (Entry (uint16_t (service_id), true, uint16_t (lcn)));

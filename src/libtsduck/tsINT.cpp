@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"INT"
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::INT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::INT, MY_TID);
@@ -75,7 +76,7 @@ ts::INT::Device& ts::INT::Device::operator=(const Device& other)
 //----------------------------------------------------------------------------
 
 ts::INT::INT(uint8_t version_, bool is_current_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     action_type(0),
     platform_id(0),
     processing_order(0),

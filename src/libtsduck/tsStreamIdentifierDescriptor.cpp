@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stream_identifier_descriptor"
 #define MY_DID ts::DID_STREAM_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StreamIdentifierDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_tag(ctag)
 {
     _is_valid = true;
@@ -62,7 +63,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_tag(0)
 {
     deserialize(desc, charset);

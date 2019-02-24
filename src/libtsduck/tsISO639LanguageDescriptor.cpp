@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ISO_639_language_descriptor"
 #define MY_DID ts::DID_LANGUAGE
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, ts::EDID::Standard(MY_DID));
@@ -63,21 +64,21 @@ ts::ISO639LanguageDescriptor::Entry::Entry(const UString& code, uint8_t type) :
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     deserialize(desc, charset);
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint8_t type) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;

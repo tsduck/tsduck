@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_serial_number_descriptor"
 #define MY_DID ts::DID_INT_SERIAL_NUM
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSerialNumberDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSerialNumberDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     serial_data()
 {
     _is_valid = true;

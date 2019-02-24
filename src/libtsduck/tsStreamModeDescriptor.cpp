@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stream_mode_descriptor"
 #define MY_DID ts::DID_STREAM_MODE
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StreamModeDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StreamModeDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StreamModeDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::StreamModeDescriptor::StreamModeDescriptor(uint8_t mode) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stream_mode(mode)
 {
     _is_valid = true;

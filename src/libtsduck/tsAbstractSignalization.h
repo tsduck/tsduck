@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsByteBlock.h"
+#include "tsMPEG.h"
 #include "tsxml.h"
 
 //!
@@ -74,6 +75,12 @@ namespace ts {
         {
             _is_valid = false;
         }
+
+        //!
+        //! Get the list of standards which define this structure.
+        //! @return A bit mask of standards.
+        //!
+        Standards standards() const { return _standards; }
 
         //!
         //! Get the XMl node name representing this table or descriptor.
@@ -124,8 +131,9 @@ namespace ts {
         //!
         //! Protected constructor for subclasses.
         //! @param [in] xml_name Table or descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //!
-        AbstractSignalization(const UChar* xml_name);
+        AbstractSignalization(const UChar* xml_name, Standards standards);
 
         //!
         //! Copy constructor.
@@ -187,6 +195,8 @@ namespace ts {
         }
 
     private:
+        Standards _standards; // List of standards which define this structure.
+
         // Unreachable constructors and operators.
         AbstractSignalization() = delete;
     };

@@ -38,8 +38,8 @@ TSDUCK_SOURCE;
 // Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute, PDS pds) :
-    AbstractDescriptor(tag, xml_name, pds),
+ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute) :
+    AbstractDescriptor(tag, xml_name, STD_DVB, 0),
     entries(),
     _xml_attribute(xml_attribute)
 {

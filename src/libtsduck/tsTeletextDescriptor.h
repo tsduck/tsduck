@@ -133,8 +133,9 @@ namespace ts {
         //! This is used by subclasses which have exactly the same structure as a teletext_descriptor.
         //! @param [in] tag Descriptor tag.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        TeletextDescriptor(DID tag, const UChar* xml_name, PDS pds = 0);
+        TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds);
     };
 }

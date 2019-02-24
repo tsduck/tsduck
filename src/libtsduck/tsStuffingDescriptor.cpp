@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stuffing_descriptor"
 #define MY_DID ts::DID_STUFFING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StuffingDescriptor::DisplayDescriptor, ts::EDID::St
 //----------------------------------------------------------------------------
 
 ts::StuffingDescriptor::StuffingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stuffing()
 {
     _is_valid = true;

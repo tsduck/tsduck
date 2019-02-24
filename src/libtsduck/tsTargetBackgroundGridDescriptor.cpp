@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_background_grid_descriptor"
 #define MY_DID ts::DID_TGT_BG_GRID
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TargetBackgroundGridDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetBackgroundGridDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetBackgroundGridDescriptor::DisplayDescriptor, 
 //----------------------------------------------------------------------------
 
 ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     horizontal_size(0),
     vertical_size(0),
     aspect_ratio_information(0)

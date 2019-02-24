@@ -43,6 +43,7 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"EIT"
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::EIT, MY_XML_NAME);
 TS_ID_TABLE_RANGE_FACTORY(ts::EIT, ts::TID_EIT_MIN, ts::TID_EIT_MAX);
@@ -61,7 +62,7 @@ ts::EIT::EIT(bool is_actual_,
              uint16_t service_id_,
              uint16_t ts_id_,
              uint16_t onetw_id_) :
-    AbstractLongTable(ComputeTableId(is_actual_, is_pf_, eits_index_), MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(ComputeTableId(is_actual_, is_pf_, eits_index_), MY_XML_NAME, MY_STD, version_, is_current_),
     service_id(service_id_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
@@ -72,7 +73,7 @@ ts::EIT::EIT(bool is_actual_,
 }
 
 ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
+    AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME, MY_STD, 0, true),  // TID will be updated by deserialize()
     service_id(0),
     ts_id(0),
     onetw_id(0),

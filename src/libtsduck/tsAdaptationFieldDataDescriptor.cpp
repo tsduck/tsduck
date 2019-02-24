@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"adaptation_field_data_descriptor"
 #define MY_DID ts::DID_ADAPTFIELD_DATA
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AdaptationFieldDataDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AdaptationFieldDataDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AdaptationFieldDataDescriptor::DisplayDescriptor, t
 //----------------------------------------------------------------------------
 
 ts::AdaptationFieldDataDescriptor::AdaptationFieldDataDescriptor(uint8_t id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     adaptation_field_data_identifier(id)
 {
     _is_valid = true;

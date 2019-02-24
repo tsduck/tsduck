@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"video_window_descriptor"
 #define MY_DID ts::DID_VIDEO_WIN
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::VideoWindowDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::VideoWindowDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::VideoWindowDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::VideoWindowDescriptor::VideoWindowDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     horizontal_offset(0),
     vertical_offset(0),
     window_priority(0)

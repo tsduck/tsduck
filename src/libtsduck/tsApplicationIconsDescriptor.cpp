@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"application_icons_descriptor"
 #define MY_DID ts::DID_AIT_APP_ICONS
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationIconsDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationIconsDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationIconsDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     icon_locator(),
     icon_flags(0),
     reserved_future_use()

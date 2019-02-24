@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_identifier_descriptor"
 #define MY_DID ts::DID_CA_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,49 +48,34 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CAIdentifierDescriptor::DisplayDescriptor, ts::EDID
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
-    AbstractDescriptor (MY_DID, MY_XML_NAME),
-    casids ()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    casids()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    casids()
+    CAIdentifierDescriptor()
 {
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor using a variable-length argument list.
-// Each argument is a CA_system_id. All arguments are int, not uint16_t,
-// since integer literals are int by default.
-// The end of the argument list must be marked by -1.
-//----------------------------------------------------------------------------
-
-ts::CAIdentifierDescriptor::CAIdentifierDescriptor (int casid, ...) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME),
-    casids ()
+ts::CAIdentifierDescriptor::CAIdentifierDescriptor(int casid, ...) :
+    CAIdentifierDescriptor()
 {
     _is_valid = true;
     if (casid >= 0) {
-        casids.push_back (uint16_t (casid));
+        casids.push_back(uint16_t(casid));
         va_list ap;
-        va_start (ap, casid);
-        while ((casid = va_arg (ap, int)) >= 0) {
-            casids.push_back (uint16_t (casid));
+        va_start(ap, casid);
+        while ((casid = va_arg(ap, int)) >= 0) {
+            casids.push_back(uint16_t(casid));
         }
-        va_end (ap);
+        va_end(ap);
     }
 }
 

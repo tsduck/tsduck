@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"application_recording_descriptor"
 #define MY_DID ts::DID_AIT_APP_RECORDING
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationRecordingDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationRecordingDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationRecordingDescriptor::DisplayDescriptor, 
 //----------------------------------------------------------------------------
 
 ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     scheduled_recording(false),
     trick_mode_aware(false),
     time_shift(false),

@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"ip_signalling_descriptor"
 #define MY_DID ts::DID_AIT_IP_SIGNALLING
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::IPSignallingDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::IPSignallingDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::IPSignallingDescriptor::DisplayDescriptor, ts::EDID
 //----------------------------------------------------------------------------
 
 ts::IPSignallingDescriptor::IPSignallingDescriptor(uint32_t id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     platform_id(id)
 {
     _is_valid = true;

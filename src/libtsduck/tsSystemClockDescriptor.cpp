@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"system_clock_descriptor"
 #define MY_DID ts::DID_SYS_CLOCK
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SystemClockDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::SystemClockDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SystemClockDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::SystemClockDescriptor::SystemClockDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     external_clock_reference(false),
     clock_accuracy_integer(0),
     clock_accuracy_exponent(0)

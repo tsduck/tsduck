@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a service_identifier_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsServiceIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
@@ -39,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"service_identifier_descriptor"
 #define MY_DID ts::DID_SERVICE_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceIdentifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,20 +43,15 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceIdentifierDescriptor::DisplayDescriptor, ts:
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const UString& id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(id)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     ServiceIdentifierDescriptor()

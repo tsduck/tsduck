@@ -68,9 +68,8 @@ namespace ts {
         //! @param [in] tag Descriptor tag.
         //! @param [in] sys The delivery system.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, PDS pds = 0);
+        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name);
 
     private:
         // Unreachable constructors and operators.

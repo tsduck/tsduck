@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"data_stream_alignment_descriptor"
 #define MY_DID ts::DID_DATA_ALIGN
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DataStreamAlignmentDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DataStreamAlignmentDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DataStreamAlignmentDescriptor::DisplayDescriptor, t
 //----------------------------------------------------------------------------
 
 ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     alignment_type(0)
 {
     _is_valid = true;

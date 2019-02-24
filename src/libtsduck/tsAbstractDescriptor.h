@@ -119,9 +119,10 @@ namespace ts {
         //! Protected constructor for subclasses.
         //! @param [in] tag Descriptor tag.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDescriptor(DID tag, const UChar* xml_name, PDS pds = 0);
+        AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds);
 
         //!
         //! Tool for serialization: get a byte buffer for serialization.

@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"HEVC_timing_and_HRD_descriptor"
 #define MY_DID ts::DID_MPEG_EXTENSION
 #define MY_EDID ts::MPEG_EDID_HEVC_TIM_HRD
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HEVCTimingAndHRDDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HEVCTimingAndHRDDescriptor, ts::EDID::ExtensionMPEG(MY_EDID));
@@ -43,11 +44,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor, ts::
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     hrd_management_valid(false),
     N_90khz(),
     K_90khz(),
@@ -55,11 +56,6 @@ ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor() :
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     HEVCTimingAndHRDDescriptor()

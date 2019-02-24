@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"dvb_html_application_boundary_descriptor"
 #define MY_DID ts::DID_AIT_HTML_APP_BOUND
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationBoundaryDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationBoundaryDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescri
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     label(),
     regular_expression()
 {

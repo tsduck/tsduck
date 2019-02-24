@@ -40,6 +40,8 @@
 namespace ts {
     //!
     //! Representation of an Application Information Table (AIT)
+    //!
+    //! @see ETSI TS 101 812, 10.4.6.
     //! @ingroup table
     //!
     class TSDUCKDLL AIT : public AbstractLongTable

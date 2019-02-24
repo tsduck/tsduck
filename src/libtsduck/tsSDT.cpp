@@ -41,6 +41,7 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"SDT"
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::SDT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT);
@@ -53,12 +54,8 @@ TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_OTH);
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::SDT::SDT(bool is_actual_,
-             uint8_t version_,
-             bool is_current_,
-             uint16_t ts_id_,
-             uint16_t onetw_id_) :
-    AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), MY_XML_NAME, version_, is_current_),
+ts::SDT::SDT(bool is_actual_, uint8_t version_, bool is_current_, uint16_t ts_id_, uint16_t onetw_id_) :
+    AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), MY_XML_NAME, MY_STD, version_, is_current_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
     services(this)
@@ -67,10 +64,7 @@ ts::SDT::SDT(bool is_actual_,
 }
 
 ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(TID_SDT_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
-    ts_id(0),
-    onetw_id(0),
-    services(this)
+    SDT()
 {
     deserialize(table, charset);
 }

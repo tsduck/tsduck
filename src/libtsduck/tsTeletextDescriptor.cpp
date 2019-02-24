@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a teletext_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsTeletextDescriptor.h"
 #include "tsNames.h"
@@ -40,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"teletext_descriptor"
 #define MY_DID ts::DID_TELETEXT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, ts::EDID::Standard(MY_DID));
@@ -65,21 +62,20 @@ ts::TeletextDescriptor::Entry::Entry(const UString& code, uint8_t type, uint16_t
 }
 
 ts::TeletextDescriptor::TeletextDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
-ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, PDS pds) :
-    AbstractDescriptor(tag, xml_name, pds),
+ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
+    AbstractDescriptor(tag, xml_name, standards, pds),
     entries()
 {
 }
 
 ts::TeletextDescriptor::TeletextDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    entries()
+    TeletextDescriptor()
 {
     deserialize(desc, charset);
 }

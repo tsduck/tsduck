@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"BAT"
 #define MY_TID ts::TID_BAT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::BAT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::BAT, MY_TID);
@@ -51,13 +52,13 @@ TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
-    AbstractTransportListTable(MY_TID, MY_XML_NAME, id, vers, cur),
+    AbstractTransportListTable(MY_TID, MY_XML_NAME, MY_STD, id, vers, cur),
     bouquet_id(_tid_ext)
 {
 }
 
 ts::BAT::BAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTransportListTable(MY_TID, MY_XML_NAME, table, charset),
+    AbstractTransportListTable(MY_TID, MY_XML_NAME, MY_STD, table, charset),
     bouquet_id(_tid_ext)
 {
 }
