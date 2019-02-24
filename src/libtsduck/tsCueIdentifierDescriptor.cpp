@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cue_identifier_descriptor"
 #define MY_DID ts::DID_CUE_IDENTIFIER
+#define MY_STD ts::STD_SCTE
 
 // The is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
 TS_XML_DESCRIPTOR_FACTORY(ts::CueIdentifierDescriptor, MY_XML_NAME);
@@ -61,14 +62,14 @@ const ts::Enumeration ts::CueIdentifierDescriptor::CueStreamTypeNames({
 //----------------------------------------------------------------------------
 
 ts::CueIdentifierDescriptor::CueIdentifierDescriptor(uint8_t type) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cue_stream_type(type)
 {
     _is_valid = true;
 }
 
 ts::CueIdentifierDescriptor::CueIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cue_stream_type(CUE_ALL_COMMANDS)
 {
     deserialize(desc, charset);

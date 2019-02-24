@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AVC_timing_and_HRD_descriptor"
 #define MY_DID ts::DID_AVC_TIMING_HRD
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AVCTimingAndHRDDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AVCTimingAndHRDDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +47,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AVCTimingAndHRDDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     hrd_management_valid(false),
     N_90khz(),
     K_90khz(),

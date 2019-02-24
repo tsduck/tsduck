@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"application_signalling_descriptor"
 #define MY_DID ts::DID_APPLI_SIGNALLING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, ts::EDID::Standard(MY_DID));
@@ -51,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationSignallingDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
@@ -63,7 +64,7 @@ ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     deserialize(desc, charset);

@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"protection_message_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_PROTECTION_MSG
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ProtectionMessageDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ProtectionMessageDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ProtectionMessageDescriptor::DisplayDescriptor, ts:
 //----------------------------------------------------------------------------
 
 ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_tags()
 {
     _is_valid = true;

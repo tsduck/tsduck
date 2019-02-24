@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"S2_satellite_delivery_system_descriptor"
 #define MY_DID ts::DID_S2_SAT_DELIVERY
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::S2SatelliteDeliverySystemDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::S2SatelliteDeliverySystemDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,11 +48,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::S2SatelliteDeliverySystemDescriptor::DisplayDescrip
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     scrambling_sequence_selector(false),
     multiple_input_stream_flag(false),
     backwards_compatibility_indicator(false),
@@ -61,18 +62,8 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    scrambling_sequence_selector(false),
-    multiple_input_stream_flag(false),
-    backwards_compatibility_indicator(false),
-    scrambling_sequence_index(0),
-    input_stream_identifier(0)
+    S2SatelliteDeliverySystemDescriptor()
 {
     deserialize(desc, charset);
 }

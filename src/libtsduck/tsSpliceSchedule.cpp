@@ -34,6 +34,7 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_schedule"
+#define MY_STD ts::STD_SCTE
 
 
 //----------------------------------------------------------------------------
@@ -41,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SpliceSchedule::SpliceSchedule() :
-    AbstractSignalization(MY_XML_NAME),
+    AbstractSignalization(MY_XML_NAME, MY_STD),
     events()
 {
 }

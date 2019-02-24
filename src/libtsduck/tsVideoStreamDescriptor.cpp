@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"video_stream_descriptor"
 #define MY_DID ts::DID_VIDEO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::VideoStreamDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::VideoStreamDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::VideoStreamDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::VideoStreamDescriptor::VideoStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     multiple_frame_rate(false),
     frame_rate_code(0),
     MPEG_1_only(false),

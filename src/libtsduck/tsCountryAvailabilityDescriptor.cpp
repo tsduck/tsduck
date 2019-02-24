@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"country_availability_descriptor"
 #define MY_DID ts::DID_COUNTRY_AVAIL
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CountryAvailabilityDescriptor::DisplayDescriptor, t
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     country_availability(true),
     country_codes()
 {
@@ -63,7 +64,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     country_availability(true),
     country_codes()
 {
@@ -76,7 +77,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descripto
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const std::initializer_list<UString> countries) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     country_availability(availability),
     country_codes(countries)
 {

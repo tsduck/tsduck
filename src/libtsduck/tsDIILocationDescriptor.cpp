@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"DII_location_descriptor"
 #define MY_DID ts::DID_AIT_DII_LOCATION
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DIILocationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::DIILocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DIILocationDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::DIILocationDescriptor::DIILocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     transport_protocol_label(0),
     entries()
 {

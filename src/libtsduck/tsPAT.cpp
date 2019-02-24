@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"PAT"
 #define MY_TID ts::TID_PAT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_TABLE_FACTORY(ts::PAT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::PAT, MY_TID);
@@ -47,15 +48,11 @@ TS_ID_SECTION_DISPLAY(ts::PAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors
 //----------------------------------------------------------------------------
 
-ts::PAT::PAT(uint8_t  version_,
-             bool   is_current_,
-             uint16_t ts_id_,
-             PID    nit_pid_) :
-
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+ts::PAT::PAT(uint8_t version_, bool is_current_, uint16_t ts_id_, PID nit_pid_) :
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     ts_id(ts_id_),
     nit_pid(nit_pid_),
     pmts()
@@ -63,16 +60,8 @@ ts::PAT::PAT(uint8_t  version_,
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(MY_TID, MY_XML_NAME),
-    ts_id(0),
-    nit_pid(PID_NULL),
-    pmts()
+    PAT(0, true, 0, PID_NULL)
 {
     deserialize(table, charset);
 }

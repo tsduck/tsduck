@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_IPv6_address_descriptor"
 #define MY_DID ts::DID_INT_IPV6_ADDR
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPv6AddressDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPv6AddressDescriptor::DisplayDescriptor, ts:
 //----------------------------------------------------------------------------
 
 ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     IPv6_addr_mask(),
     IPv6_addr()
 {

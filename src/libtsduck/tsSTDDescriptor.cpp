@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"STD_descriptor"
 #define MY_DID ts::DID_STD
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::STDDescriptor::DisplayDescriptor, ts::EDID::Standar
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     leak_valid(leak_valid_)
 {
     _is_valid = true;
@@ -62,7 +63,7 @@ ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     leak_valid(false)
 {
     deserialize(desc, charset);

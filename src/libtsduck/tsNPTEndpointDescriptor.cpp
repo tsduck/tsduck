@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NPT_endpoint_descriptor"
 #define MY_DID ts::DID_NPT_ENDPOINT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NPTEndpointDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::NPTEndpointDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +47,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::NPTEndpointDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::NPTEndpointDescriptor::NPTEndpointDescriptor(uint64_t start, uint64_t stop) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     start_NPT(start),
     stop_NPT(stop)
 {

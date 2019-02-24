@@ -30,8 +30,8 @@
 #include "tsAbstractDeliverySystemDescriptor.h"
 TSDUCK_SOURCE;
 
-ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, PDS pds) :
-    AbstractDescriptor(tag, xml_name, pds),
+ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name) :
+    AbstractDescriptor(tag, xml_name, STD_DVB, 0),
     _system(sys)
 {
 }

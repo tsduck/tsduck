@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"transport_stream_descriptor"
 #define MY_DID ts::DID_TRANSPORT_STREAM
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TransportStreamDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TransportStreamDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TransportStreamDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::TransportStreamDescriptor::TransportStreamDescriptor(const UString& comp) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     compliance(comp)
 {
     _is_valid = true;

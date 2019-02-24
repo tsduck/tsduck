@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"subtitling_descriptor"
 #define MY_DID ts::DID_SUBTITLING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, ts::EDID::Standard(MY_DID));
@@ -67,14 +68,14 @@ ts::SubtitlingDescriptor::Entry::Entry(const UString& code, uint8_t subt, uint16
 }
 
 ts::SubtitlingDescriptor::SubtitlingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
 ts::SubtitlingDescriptor::SubtitlingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     deserialize(desc, charset);

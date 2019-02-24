@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"MPEG4_audio_descriptor"
 #define MY_DID ts::DID_MPEG4_AUDIO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MPEG4AudioDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MPEG4AudioDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MPEG4AudioDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::MPEG4AudioDescriptor::MPEG4AudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     MPEG4_audio_profile_and_level(0)
 {
     _is_valid = true;

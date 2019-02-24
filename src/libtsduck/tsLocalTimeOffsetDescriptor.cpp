@@ -42,6 +42,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"local_time_offset_descriptor"
 #define MY_DID ts::DID_LOCAL_TIME_OFFSET
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, ts::EDID::Standard(MY_DID));
@@ -49,11 +50,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::LocalTimeOffsetDescriptor::DisplayDescriptor, ts::E
 
 
 //----------------------------------------------------------------------------
-// Default constructors
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     regions()
 {
     _is_valid = true;
@@ -68,14 +69,8 @@ ts::LocalTimeOffsetDescriptor::Region::Region() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    regions()
+    LocalTimeOffsetDescriptor()
 {
     deserialize(desc, charset);
 }

@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"discontinuity_information_table"
 #define MY_TID ts::TID_DIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_TID);
@@ -47,7 +48,7 @@ TS_ID_SECTION_DISPLAY(ts::DiscontinuityInformationTable::DisplaySection, MY_TID)
 //----------------------------------------------------------------------------
 
 ts::DiscontinuityInformationTable::DiscontinuityInformationTable(bool tr) :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     transition(tr)
 {
     _is_valid = true;

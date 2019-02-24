@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"VBI_data_descriptor"
 #define MY_DID ts::DID_VBI_DATA
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, ts::EDID::Standard(MY_DID));
@@ -64,7 +65,7 @@ ts::VBIDataDescriptor::Service::Service(uint8_t id) :
 }
 
 ts::VBIDataDescriptor::VBIDataDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     services()
 {
     _is_valid = true;

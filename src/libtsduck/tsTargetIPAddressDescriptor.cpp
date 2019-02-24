@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_IP_address_descriptor"
 #define MY_DID ts::DID_INT_IP_ADDR
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPAddressDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPAddressDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     IPv4_addr_mask(),
     IPv4_addr()
 {

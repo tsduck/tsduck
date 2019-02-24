@@ -42,6 +42,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"PMT"
 #define MY_TID ts::TID_PMT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_TABLE_FACTORY(ts::PMT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::PMT, MY_TID);
@@ -49,11 +50,11 @@ TS_ID_SECTION_DISPLAY(ts::PMT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_pid_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     service_id(service_id_),
     pcr_pid(pcr_pid_),
     descs(this),
@@ -61,11 +62,6 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor.
-//----------------------------------------------------------------------------
 
 ts::PMT::PMT(const PMT& other) :
     AbstractLongTable(other),
@@ -75,11 +71,6 @@ ts::PMT::PMT(const PMT& other) :
     streams(this, other.streams)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
 
 ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
     PMT()

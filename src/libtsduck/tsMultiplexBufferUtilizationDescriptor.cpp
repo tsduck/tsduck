@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multiplex_buffer_utilization_descriptor"
 #define MY_DID ts::DID_MUX_BUF_USE
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MultiplexBufferUtilizationDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MultiplexBufferUtilizationDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultiplexBufferUtilizationDescriptor::DisplayDescri
 //----------------------------------------------------------------------------
 
 ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     LTW_offset_lower_bound(),
     LTW_offset_upper_bound()
 {

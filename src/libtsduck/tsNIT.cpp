@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Network Information Table (NIT)
-//
-//----------------------------------------------------------------------------
 
 #include "tsNIT.h"
 #include "tsBinaryTable.h"
@@ -39,6 +35,7 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NIT"
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::NIT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_ACT);
@@ -52,13 +49,13 @@ TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_OTH);
 //----------------------------------------------------------------------------
 
 ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
-    AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), MY_XML_NAME, id, vers, cur),
+    AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), MY_XML_NAME, MY_STD, id, vers, cur),
     network_id(_tid_ext)
 {
 }
 
 ts::NIT::NIT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTransportListTable(TID_NIT_ACT, MY_XML_NAME, table, charset),  // TID updated by deserialize()
+    AbstractTransportListTable(TID_NIT_ACT, MY_XML_NAME, MY_STD, table, charset),  // TID updated by deserialize()
     network_id(_tid_ext)
 {
 }

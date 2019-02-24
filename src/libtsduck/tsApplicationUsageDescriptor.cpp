@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"application_usage_descriptor"
 #define MY_DID ts::DID_AIT_APP_USAGE
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationUsageDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationUsageDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationUsageDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(uint8_t type) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     usage_type(type)
 {
     _is_valid = true;

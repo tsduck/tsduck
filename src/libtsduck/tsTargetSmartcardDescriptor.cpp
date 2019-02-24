@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_smartcard_descriptor"
 #define MY_DID ts::DID_INT_SMARTCARD
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSmartcardDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     super_CA_system_id(0),
     private_data()
 {

@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"MPEG4_video_descriptor"
 #define MY_DID ts::DID_MPEG4_VIDEO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MPEG4VideoDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MPEG4VideoDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MPEG4VideoDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     MPEG4_visual_profile_and_level(0)
 {
     _is_valid = true;

@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"private_data_indicator_descriptor"
 #define MY_DID ts::DID_PRIV_DATA_IND
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataIndicatorDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::PrivateDataIndicatorDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +47,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataIndicatorDescriptor::DisplayDescriptor, 
 //----------------------------------------------------------------------------
 
 ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(uint32_t pdi) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     private_data_indicator(pdi)
 {
     _is_valid = true;

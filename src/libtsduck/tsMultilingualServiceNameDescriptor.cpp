@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multilingual_service_name_descriptor"
 #define MY_DID ts::DID_MLINGUAL_SERVICE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualServiceNameDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualServiceNameDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +47,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualServiceNameDescriptor::DisplayDescripto
 //----------------------------------------------------------------------------
 
 ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;

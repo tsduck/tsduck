@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
 #define MY_DID ts::DID_PREF_NAME_LIST
 #define MY_PDS ts::PDS_EACEM
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
@@ -56,7 +57,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor
 //----------------------------------------------------------------------------
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     _is_valid = true;
@@ -68,7 +69,7 @@ ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     deserialize(desc, charset);

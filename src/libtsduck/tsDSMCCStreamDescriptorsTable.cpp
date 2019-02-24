@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"DSMCC_stream_descriptors_table"
 #define MY_TID ts::TID_DSMCC_SD
+#define MY_STD ts::STD_MPEG
 
 TS_XML_TABLE_FACTORY(ts::DSMCCStreamDescriptorsTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::DSMCCStreamDescriptorsTable, MY_TID);
@@ -47,13 +48,13 @@ TS_ID_SECTION_DISPLAY(ts::DSMCCStreamDescriptorsTable::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(uint8_t vers, bool cur, uint16_t tid_ext) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, tid_ext, vers, cur),
+    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, MY_STD, tid_ext, vers, cur),
     table_id_extension(_tid_ext)
 {
 }
 
 ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, table, charset),
+    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, MY_STD, table, charset),
     table_id_extension(_tid_ext)
 {
 }

@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a generic linkage_descriptor.
-//  Specialized classes exist, depending on the linkage type.
-//
-//----------------------------------------------------------------------------
 
 #include "tsLinkageDescriptor.h"
 #include "tsNames.h"
@@ -41,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"linkage_descriptor"
 #define MY_DID ts::DID_LINKAGE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, ts::EDID::Standard(MY_DID));
@@ -121,11 +117,11 @@ void ts::LinkageDescriptor::clear()
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint8_t ltype) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -138,21 +134,8 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    ts_id(0),
-    onetw_id(0),
-    service_id(0),
-    linkage_type(0),
-    mobile_handover_info(),
-    event_linkage_info(),
-    extended_event_linkage_info(),
-    private_data()
+    LinkageDescriptor()
 {
     deserialize(desc, charset);
 }

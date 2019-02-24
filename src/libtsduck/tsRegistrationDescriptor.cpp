@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"registration_descriptor"
 #define MY_DID ts::DID_REGISTRATION
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::RegistrationDescriptor::DisplayDescriptor, ts::EDID
 //----------------------------------------------------------------------------
 
 ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const ByteBlock& info) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     format_identifier(identifier),
     additional_identification_info(info)
 {
@@ -55,9 +56,7 @@ ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const By
 }
 
 ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(0),
-    additional_identification_info()
+    RegistrationDescriptor()
 {
     deserialize(desc, charset);
 }

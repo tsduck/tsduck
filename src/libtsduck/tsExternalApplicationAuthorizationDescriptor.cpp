@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"external_application_authorization_descriptor"
 #define MY_DID ts::DID_AIT_EXT_APP_AUTH
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ExternalApplicationAuthorizationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ExternalApplicationAuthorizationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -43,20 +44,15 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ExternalApplicationAuthorizationDescriptor::Display
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorizationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorizationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     ExternalApplicationAuthorizationDescriptor()

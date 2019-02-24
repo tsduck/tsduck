@@ -64,11 +64,12 @@ namespace ts {
         //! Constructor for subclasses.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] tid_ext Table id extension.
         //! @param [in] version Table version number.
         //! @param [in] is_current True if table is current, false if table is next.
         //!
-        AbstractDescriptorsTable(TID tid, const UChar* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
+        AbstractDescriptorsTable(TID tid, const UChar* xml_name, Standards standards, uint16_t tid_ext, uint8_t version, bool is_current);
 
         //!
         //! Copy constructor.
@@ -87,10 +88,11 @@ namespace ts {
         //! Constructor from a binary table.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractDescriptorsTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset = nullptr);
+        AbstractDescriptorsTable(TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table, const DVBCharset* charset);
 
     private:
         AbstractDescriptorsTable() = delete;

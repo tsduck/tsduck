@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"partial_transport_stream_descriptor"
 #define MY_DID ts::DID_PARTIAL_TS
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::PartialTransportStreamDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::PartialTransportStreamDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::PartialTransportStreamDescriptor::DisplayDescriptor
 //----------------------------------------------------------------------------
 
 ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     peak_rate(0),
     minimum_overall_smoothing_rate(UNDEFINED_SMOOTHING_RATE),
     maximum_overall_smoothing_buffer(UNDEFINED_SMOOTHING_BUFFER)

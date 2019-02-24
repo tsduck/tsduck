@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AVC_video_descriptor"
 #define MY_DID ts::DID_AVC_VIDEO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID::St
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     profile_idc(0),
     constraint_set0(false),
     constraint_set1(false),

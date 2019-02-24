@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a service_list_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsServiceListDescriptor.h"
 #include "tsNames.h"
@@ -40,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"service_list_descriptor"
 #define MY_DID ts::DID_SERVICE_LIST
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,47 +44,33 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID:
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    entries()
+    ServiceListDescriptor()
 {
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor using a variable-length argument list.
-// Each entry is described by 2 arguments: service_id and service_type.
-// The end of the argument list must be marked by -1.
-//----------------------------------------------------------------------------
-
-ts::ServiceListDescriptor::ServiceListDescriptor (int service_id, int service_type, ...) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME),
-    entries ()
+ts::ServiceListDescriptor::ServiceListDescriptor(int service_id, int service_type, ...) :
+    ServiceListDescriptor()
 {
     _is_valid = true;
-    entries.push_back (Entry (uint16_t (service_id), uint8_t (service_type)));
+    entries.push_back(Entry(uint16_t(service_id), uint8_t(service_type)));
 
     va_list ap;
-    va_start (ap, service_type);
+    va_start(ap, service_type);
     int id, type;
-    while ((id = va_arg (ap, int)) >= 0 && (type = va_arg (ap, int)) >= 0) {
-        entries.push_back (Entry (uint16_t (id), uint8_t (type)));
+    while ((id = va_arg(ap, int)) >= 0 && (type = va_arg(ap, int)) >= 0) {
+        entries.push_back(Entry(uint16_t(id), uint8_t(type)));
     }
     va_end (ap);
 }

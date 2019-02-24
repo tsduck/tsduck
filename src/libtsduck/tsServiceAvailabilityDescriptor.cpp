@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"service_availability_descriptor"
 #define MY_DID ts::DID_SERVICE_AVAIL
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceAvailabilityDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceAvailabilityDescriptor, ts::EDID::Standard(MY_DID));
@@ -43,21 +44,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceAvailabilityDescriptor::DisplayDescriptor, t
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     availability(false),
     cell_ids()
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     ServiceAvailabilityDescriptor()

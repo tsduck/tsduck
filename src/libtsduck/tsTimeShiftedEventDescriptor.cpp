@@ -35,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"time_shifted_event_descriptor"
 #define MY_DID ts::DID_TIME_SHIFT_EVENT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TimeShiftedEventDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TimeShiftedEventDescriptor, ts::EDID::Standard(MY_DID));
@@ -42,21 +43,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TimeShiftedEventDescriptor::DisplayDescriptor, ts::
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     reference_service_id(0),
     reference_event_id(0)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     TimeShiftedEventDescriptor()

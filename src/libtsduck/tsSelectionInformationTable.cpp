@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"selection_information_table"
 #define MY_TID ts::TID_SIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::SelectionInformationTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::SelectionInformationTable, MY_TID);
@@ -46,21 +47,16 @@ TS_ID_SECTION_DISPLAY(ts::SelectionInformationTable::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SelectionInformationTable::SelectionInformationTable(uint8_t version_, bool is_current_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     descs(this),
     services(this)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor.
-//----------------------------------------------------------------------------
 
 ts::SelectionInformationTable::SelectionInformationTable(const SelectionInformationTable& other) :
     AbstractLongTable(other),
@@ -68,11 +64,6 @@ ts::SelectionInformationTable::SelectionInformationTable(const SelectionInformat
     services(this, other.services)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
 
 ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& table, const DVBCharset* charset) :
     SelectionInformationTable()

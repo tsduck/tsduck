@@ -41,6 +41,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"eutelsat_channel_number_descriptor"
 #define MY_DID ts::DID_EUTELSAT_CHAN_NUM
 #define MY_PDS ts::PDS_EUTELSAT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
@@ -52,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     _is_valid = true;
@@ -64,7 +65,7 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     deserialize(desc, charset);

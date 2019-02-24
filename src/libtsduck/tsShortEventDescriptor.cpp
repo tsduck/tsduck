@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an short_event_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsShortEventDescriptor.h"
 #include "tsTablesDisplay.h"
@@ -39,6 +35,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"short_event_descriptor"
 #define MY_DID ts::DID_SHORT_EVENT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,11 +43,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ShortEventDescriptor::DisplayDescriptor, ts::EDID::
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     language_code(),
     event_name(),
     text()
@@ -58,13 +55,8 @@ ts::ShortEventDescriptor::ShortEventDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor with description
-//----------------------------------------------------------------------------
-
 ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UString& name_, const UString& text_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     language_code(lang_),
     event_name(name_),
     text(text_)
@@ -72,16 +64,8 @@ ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UStri
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::ShortEventDescriptor::ShortEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    language_code(),
-    event_name(),
-    text()
+    ShortEventDescriptor()
 {
     deserialize(desc, charset);
 }

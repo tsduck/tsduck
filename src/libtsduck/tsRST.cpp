@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Running Status Table (RST)
-//
-//----------------------------------------------------------------------------
 
 #include "tsRST.h"
 #include "tsBinaryTable.h"
@@ -40,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"RST"
 #define MY_TID ts::TID_RST
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::RST, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::RST, MY_TID);
@@ -61,24 +58,18 @@ const ts::Enumeration ts::RST::RunningStatusNames({
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::RST::RST() :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     events()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(MY_TID, MY_XML_NAME),
-    events()
+    RST()
 {
     deserialize(table, charset);
 }

@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_MAC_address_range_descriptor"
 #define MY_DID ts::DID_INT_MAC_ADDR_RANGE
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetMACAddressRangeDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetMACAddressRangeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetMACAddressRangeDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ranges()
 {
     _is_valid = true;

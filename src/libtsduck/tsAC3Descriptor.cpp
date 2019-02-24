@@ -40,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AC3_descriptor"
 #define MY_DID ts::DID_AC3
+#define MY_STD ts::STD_DVB
 
 TS_ID_DESCRIPTOR_FACTORY(ts::AC3Descriptor, ts::EDID::Standard(MY_DID));
 TS_XML_DESCRIPTOR_FACTORY(ts::AC3Descriptor, MY_XML_NAME);
@@ -51,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AC3Descriptor::DisplayDescriptor, ts::EDID::Standar
 //----------------------------------------------------------------------------
 
 ts::AC3Descriptor::AC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_type(),
     bsid(),
     mainid(),
@@ -67,7 +68,7 @@ ts::AC3Descriptor::AC3Descriptor() :
 //----------------------------------------------------------------------------
 
 ts::AC3Descriptor::AC3Descriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_type(),
     bsid(),
     mainid(),

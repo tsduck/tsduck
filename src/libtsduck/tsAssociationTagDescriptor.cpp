@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"association_tag_descriptor"
 #define MY_DID ts::DID_ASSOCIATION_TAG
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AssociationTagDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AssociationTagDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AssociationTagDescriptor::DisplayDescriptor, ts::ED
 //----------------------------------------------------------------------------
 
 ts::AssociationTagDescriptor::AssociationTagDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     association_tag(0),
     use(0),
     selector_bytes(),

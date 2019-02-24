@@ -268,6 +268,18 @@ namespace ts {
     constexpr size_t MACROBLOCK_HEIGHT = 16;
 
     //---------------------------------------------------------------------
+    //! Bit masks for standards, used to qualify the signalization.
+    //---------------------------------------------------------------------
+
+    enum Standards : uint8_t {
+        STD_MPEG = 0x01,  //!< Define by MPEG, common to all standards
+        STD_DVB  = 0x02,  //!< Define by ETSI/DVB, common to all standards
+        STD_SCTE = 0x04,  //!< Define by ANSI/SCTE, common to all standards
+        STD_ATSC = 0x08,  //!< Define by ATSC, common to all standards
+        STD_ISDB = 0x10,  //!< Define by ISDB, common to all standards
+    };
+
+    //---------------------------------------------------------------------
     //! Predefined PID values
     //---------------------------------------------------------------------
 
@@ -279,7 +291,6 @@ namespace ts {
         PID_CAT       = 0x0001, //!< PID for Conditional Access Table
         PID_TSDT      = 0x0002, //!< PID for Transport Stream Description Table
         PID_MPEG_LAST = 0x000F, //!< Last reserved PID for MPEG.
-        PID_NULL      = 0x1FFF, //!< PID for Null packets (stuffing)
 
         // Valid in DVB context:
 
@@ -297,6 +308,14 @@ namespace ts {
         PID_DIT       = 0x001E, //!< PID for Discontinuity Information Table
         PID_SIT       = 0x001F, //!< PID for Selection Information Table
         PID_DVB_LAST  = 0x001F, //!< Last reserved PID for DVB.
+
+        // Valid in ATSC context:
+
+        PID_PSIP      = 0x1FFB, //!< PID for ATSC Program and System Information Protocol (contains most ATSC tables)
+
+        // Valid in all MPEG contexts:
+
+        PID_NULL      = 0x1FFF, //!< PID for Null packets (stuffing)
     };
 
     //---------------------------------------------------------------------
@@ -816,7 +835,19 @@ namespace ts {
         TID_MG_EMM_C      = 0x86, //!< Table id for MediaGuard EMM-C
         TID_MG_EMM_CG     = 0x89, //!< Table id for MediaGuard EMM-CG
 
-        // Valid in ATSC / SCTE context:
+        // Valid in ATSC context:
+
+        TID_MGT           = 0xC7, //!< Table id for Master Guide Table
+        TID_TVCT          = 0xC8, //!< Table id for Terrestrial Virtual Channel Table
+        TID_CVCT          = 0xC9, //!< Table id for Cable Virtual Channel Table
+        TID_RRT           = 0xCA, //!< Table id for Rating Region Table
+        TID_ATSC_EIT      = 0xCB, //!< Table id for Event Information Table (ATSC version)
+        TID_ETT           = 0xCC, //!< Table id for Extended Text Table
+        TID_STT           = 0xCD, //!< Table id for System Time Table
+        TID_DCCT          = 0xD3, //!< Table id for Directed Channel Change Table
+        TID_DCCSCT        = 0xD4, //!< Table id for Directed Channel Change Selection Code Table
+
+        // Valid in SCTE context:
 
         TID_SCTE35_SIT    = 0xFC, //!< Table id for SCTE 35 Splice Information Table
     };
@@ -839,6 +870,7 @@ namespace ts {
         PDS_LOGIWAYS  = 0x000000A2, //!< Private data specifier for Logiways.
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
+        PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII)
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
@@ -1044,20 +1076,26 @@ namespace ts {
 
         // Valid in ATSC / SCTE context:
 
-        DID_ATSC_STUFFING       = 0X80, //!< DID for ATSC stuffing_descriptor
-        DID_AC3_AUDIO_STREAM    = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
+        DID_ATSC_STUFFING       = 0x80, //!< DID for ATSC stuffing_descriptor
+        DID_ATSC_AC3            = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
         DID_ATSC_PID            = 0x85, //!< DID for ATSC program_identifier_descriptor
-        DID_CAPTION             = 0x86, //!< DID for ATSC caption_service_descriptor
-        DID_CONTENT_ADVIS       = 0x87, //!< DID for ATSC content_advisory_descriptor
+        DID_ATSC_CAPTION        = 0x86, //!< DID for ATSC caption_service_descriptor
+        DID_ATSC_CONTENT_ADVIS  = 0x87, //!< DID for ATSC content_advisory_descriptor
         DID_CUE_IDENTIFIER      = 0x8A, //!< DID for SCTE 35 cue_identifier_descriptor
-        DID_EXT_CHAN_NAME       = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
-        DID_SERV_LOCATION       = 0xA1, //!< DID for ATSC service_location_descriptor
+        DID_ATSC_EXT_CHAN_NAME  = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
+        DID_ATSC_SERVICE_LOC    = 0xA1, //!< DID for ATSC service_location_descriptor
         DID_ATSC_TIME_SHIFT     = 0xA2, //!< DID for ATSC time_shifted_event_descriptor
-        DID_COMPONENT_NAME      = 0xA3, //!< DID for ATSC component_name_descriptor
+        DID_ATSC_COMPONENT_NAME = 0xA3, //!< DID for ATSC component_name_descriptor
         DID_ATSC_DATA_BRDCST    = 0xA4, //!< DID for ATSC data_broadcast_descriptor
-        DID_PID_COUNT           = 0xA5, //!< DID for ATSC pid_count_descriptor
-        DID_DOWNLOAD            = 0xA6, //!< DID for ATSC download_descriptor
-        DID_MPROTO_ENCAPS       = 0xA7, //!< DID for ATSC multiprotocol_encapsulation_desc
+        DID_ATSC_PID_COUNT      = 0xA5, //!< DID for ATSC pid_count_descriptor
+        DID_ATSC_DOWNLOAD       = 0xA6, //!< DID for ATSC download_descriptor
+        DID_ATSC_MPROTO_ENCAPS  = 0xA7, //!< DID for ATSC multiprotocol_encapsulation_descriptor
+        DID_ATSC_DCC_DEPARTING  = 0xA8, //!< DID for ATSC DCC_departing_request_descriptor
+        DID_ATSC_DCC_ARRIVING   = 0xA9, //!< DID for ATSC DCC_arriving_request_descriptor
+        DID_ATSC_REDIST_CONTROL = 0xAA, //!< DID for ATSC redistribution_control_descriptor
+        DID_ATSC_GENRE          = 0xAB, //!< DID for ATSC genre_descriptor
+        DID_ATSC_PRIVATE_INFO   = 0xAD, //!< DID for ATSC private_information_descriptor
+        DID_ATSC_ENHANCED_AC3   = 0xCC, //!< DID for ATSC E-AC-3_audio_stream_descriptor
 
         // Valid after PDS_LOGIWAYS private_data_specifier
 
@@ -1439,3 +1477,5 @@ namespace ts {
         TELETEXT_DATA_UNIT_ID_STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
     };
 }
+
+TS_FLAGS_OPERATORS(ts::Standards)

@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"T2MI_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_T2MI
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -44,11 +45,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::T2MIDescriptor::DisplayDescriptor, ts::EDID::Extens
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::T2MIDescriptor::T2MIDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     t2mi_stream_id(0),
     num_t2mi_streams_minus_one(0),
     pcr_iscr_common_clock_flag(false),
@@ -58,11 +59,7 @@ ts::T2MIDescriptor::T2MIDescriptor() :
 }
 
 ts::T2MIDescriptor::T2MIDescriptor(const Descriptor& bin, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    t2mi_stream_id(0),
-    num_t2mi_streams_minus_one(0),
-    pcr_iscr_common_clock_flag(false),
-    reserved()
+    T2MIDescriptor()
 {
     deserialize(bin, charset);
 }

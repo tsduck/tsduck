@@ -34,6 +34,7 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_insert"
+#define MY_STD ts::STD_SCTE
 
 
 //----------------------------------------------------------------------------
@@ -41,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SpliceInsert::SpliceInsert() :
-    AbstractSignalization(MY_XML_NAME),
+    AbstractSignalization(MY_XML_NAME, MY_STD),
     event_id(0),
     canceled(true),
     splice_out(false),

@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"scrambling_descriptor"
 #define MY_DID ts::DID_SCRAMBLING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ScramblingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ScramblingDescriptor, ts::EDID::Standard(MY_DID));
@@ -43,20 +44,15 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ScramblingDescriptor::DisplayDescriptor, ts::EDID::
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ScramblingDescriptor::ScramblingDescriptor(uint8_t mode) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     scrambling_mode(mode)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ScramblingDescriptor::ScramblingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     ScramblingDescriptor()

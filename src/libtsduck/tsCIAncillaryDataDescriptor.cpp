@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"CI_ancillary_data_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_CI_ANCILLARY_DATA
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CIAncillaryDataDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CIAncillaryDataDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -48,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CIAncillaryDataDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ancillary_data()
 {
     _is_valid = true;

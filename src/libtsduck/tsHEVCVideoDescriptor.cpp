@@ -39,6 +39,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"HEVC_video_descriptor"
 #define MY_DID ts::DID_HEVC_VIDEO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HEVCVideoDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HEVCVideoDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,11 +47,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HEVCVideoDescriptor::DisplayDescriptor, ts::EDID::S
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     profile_space(0),
     tier(false),
     profile_idc(0),
@@ -68,11 +69,6 @@ ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     HEVCVideoDescriptor()

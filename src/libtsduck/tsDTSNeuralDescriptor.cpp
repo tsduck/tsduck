@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"DTS_neural_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_DTS_NEURAL
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DTSNeuralDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DTSNeuralDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -48,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DTSNeuralDescriptor::DisplayDescriptor, ts::EDID::E
 //----------------------------------------------------------------------------
 
 ts::DTSNeuralDescriptor::DTSNeuralDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     config_id(0),
     additional_info()
 {

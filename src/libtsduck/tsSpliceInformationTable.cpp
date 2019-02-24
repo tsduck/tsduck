@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_information_table"
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID);
@@ -48,7 +49,7 @@ TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::SpliceInformationTable::SpliceInformationTable() :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     protocol_version(0),
     pts_adjustment(0),
     tier(0x0FFF),

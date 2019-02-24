@@ -35,8 +35,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractLongTable::AbstractLongTable(TID tid, const UChar* xml_name, uint8_t version_, bool is_current_) :
-    AbstractTable(tid, xml_name),
+ts::AbstractLongTable::AbstractLongTable(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_) :
+    AbstractTable(tid, xml_name, standards),
     version(version_),
     is_current(is_current_)
 {
