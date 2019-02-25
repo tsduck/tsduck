@@ -148,6 +148,17 @@ bool ts::DVBInput::start()
     }
     tsp->debug(u"tuner reception started");
 
+    UString signal(UString::Format(u"signal locked: %s", {UString::YesNo(_tuner.signalLocked(*tsp))}));
+    int strength = _tuner.signalStrength(*tsp);
+    if (strength >= 0) {
+        signal += UString::Format(u", strength: %d%%", {strength});
+    }
+    int quality = _tuner.signalQuality(*tsp);
+    if (quality >= 0) {
+        signal += UString::Format(u", quality: %d%%", {quality});
+    }
+    tsp->verbose(signal);
+
     return true;
 }
 
