@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDirectShowUtils.h"
+#include "tsHFBand.h"
 #include "tsMediaTypeUtils.h"
 #include "tsWinUtils.h"
 #include "tsMemoryUtils.h"
@@ -241,6 +242,16 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
          !PUT(dvb_request, SID, -1))) {
         return false;
     }
+
+    // If this is an ATSC tuning space, get ATSC interface of tune request and set channel and
+    // minor channel to wildcards.
+    ComPtr<::IATSCChannelTuneRequest> atsc_request;
+    atsc_request.queryInterface(tune_request.pointer(), ::IID_IATSCChannelTuneRequest, report);
+    if (!atsc_request.isNull() &&
+        (!PUT(atsc_request, Channel, -1) ||
+         !PUT(atsc_request, MinorChannel, -1))) {
+        return false;
+	}
 
     // Create a locator (where to find the physical TS, ie. tuning params).
     ComPtr<::IDigitalLocator> locator;
@@ -452,12 +463,39 @@ bool ts::CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParame
 {
     ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
 
+    // It seems that with DirectShow, the CarrierFrequency must be set to -1
+    // for ATSC tuning to work and the physicalChannel used instead. This means
+    // we need to take the frequency and map it to the corresponding HF channel
+    // using the global HF band region.
+
+    const HFBandPtr uhf(HFBand::Factory(u"", HFBand::UHF));
+    const HFBandPtr vhf(HFBand::Factory(u"", HFBand::VHF));
+    long physical_channel;
+    if (uhf->inBand(params.frequency)) {
+        physical_channel = uhf->channelNumber(params.frequency);
+    }
+    else if (vhf->inBand(params.frequency)) {
+        physical_channel = vhf->channelNumber(params.frequency);
+    }
+    else {
+        report.error(u"frequency %d is in neither the UHF nor VHF band", {params.frequency});
+        return false;
+	}
+
+    report.debug(u"mapped frequency %d to physical channel %d", {params.frequency, physical_channel});
+	
     if (loc.isNull() ||
         !CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
-        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
-        !PUT(loc, Modulation, ::ModulationType(params.modulation)))
-    {
+		!CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
+		!PUT(loc, CarrierFrequency, -1) ||
+		!PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+		!PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+		!PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+		!PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+		!PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
+		!PUT(loc, SymbolRate, -1) ||
+		!PUT(loc, PhysicalChannel, physical_channel) ||
+		!PUT(loc, TSID, -1)) {
         return false;
     }
 
