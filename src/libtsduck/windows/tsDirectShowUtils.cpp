@@ -480,7 +480,7 @@ bool ts::CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParame
     else {
         report.error(u"frequency %d is in neither the UHF nor VHF band", {params.frequency});
         return false;
-	}
+    }
 
     report.debug(u"mapped frequency %d to physical channel %d", {params.frequency, physical_channel});
 	
