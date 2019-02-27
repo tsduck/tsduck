@@ -262,6 +262,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // since the TVCT or CVCT can also be found here.
                 _display.displayTable(table);
             }
+            break;
         }
 
         default: {
