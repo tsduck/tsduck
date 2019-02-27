@@ -97,11 +97,7 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _pes_demux(this),
     _t2mi_demux(this)
 {
-    // Specify the PID filters to collect PSI tables.
-    // Start with all MPEG/DVB reserved PID's.
-    for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
-        _demux.addPID(pid);
-    }
+    resetSectionDemux();
 }
 
 
@@ -165,14 +161,28 @@ void ts::TSAnalyzer::reset()
     _ts_bitrate_cnt = 0;
     _preceding_errors = 0;
     _preceding_suspects = 0;
-    _demux.reset();
     _pes_demux.reset();
+
+    resetSectionDemux();
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the section demux.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::resetSectionDemux()
+{
+    _demux.reset();
 
     // Specify the PID filters to collect PSI tables.
     // Start with all MPEG/DVB reserved PID's.
     for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
         _demux.addPID(pid);
     }
+
+    // Also add ATSC PSIP PID.
+    _demux.addPID(PID_PSIP);
 }
 
 
@@ -319,6 +329,12 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
             description = u"SIT";
             referenced = true;
             optional = true;
+            break;
+        case PID_PSIP:
+            description = u"ATSC PSIP";
+            referenced = true;
+            optional = true;
+            carry_section = true;
             break;
         default:
             break;
@@ -580,6 +596,13 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
             }
             break;
         }
+        case TID_MGT: {
+            MGT mgt(table);
+            if (mgt.isValid()) {
+                analyzeMGT(mgt);
+            }
+            break;
+        }
         default: {
             break;
         }
@@ -735,6 +758,16 @@ void ts::TSAnalyzer::analyzeTOT(const TOT& tot)
             _first_tot = _last_tot;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ATSC MGT
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
+{
+    // TODO @@@@@@@@@@@@@
 }
 
 

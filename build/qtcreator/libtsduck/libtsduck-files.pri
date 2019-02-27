@@ -228,6 +228,7 @@ HEADERS += \
     ../../../src/libtsduck/tsMessagePriorityQueueTemplate.h \
     ../../../src/libtsduck/tsMessageQueue.h \
     ../../../src/libtsduck/tsMessageQueueTemplate.h \
+    ../../../src/libtsduck/tsMGT.h \
     ../../../src/libtsduck/tsMJD.h \
     ../../../src/libtsduck/tsModulation.h \
     ../../../src/libtsduck/tsMonotonic.h \
@@ -681,6 +682,7 @@ SOURCES += \
     ../../../src/libtsduck/tsMD5.cpp \
     ../../../src/libtsduck/tsMemoryUtils.cpp \
     ../../../src/libtsduck/tsMessageDescriptor.cpp \
+    ../../../src/libtsduck/tsMGT.cpp \
     ../../../src/libtsduck/tsMJD.cpp \
     ../../../src/libtsduck/tsModulation.cpp \
     ../../../src/libtsduck/tsMonotonic.cpp \

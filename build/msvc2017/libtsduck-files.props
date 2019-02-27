@@ -230,6 +230,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueueTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueueTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMGT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMJD.h" />
     <ClInclude Include="..\..\src\libtsduck\tsModulation.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMonotonic.h" />
@@ -693,6 +694,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMD5.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMemoryUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMessageDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMGT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMJD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsModulation.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMonotonic.cpp" />
