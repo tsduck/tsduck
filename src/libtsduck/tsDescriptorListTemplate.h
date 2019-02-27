@@ -39,10 +39,10 @@
 //----------------------------------------------------------------------------
 
 template <class DESC>
-size_t ts::DescriptorList::search (DID tag, DESC& desc, size_t start_index, PDS pds) const
+size_t ts::DescriptorList::search(DID tag, DESC& desc, size_t start_index, PDS pds) const
 {
     // Repeatedly search for a descriptor until one is successfully deserialized
-    for (size_t index = search (tag, start_index, pds); index < _list.size(); index = search (tag, index + 1, pds)) {
+    for (size_t index = search(tag, start_index, pds); index < _list.size(); index = search(tag, index + 1, pds)) {
         desc.deserialize(*(_list[index].desc));
         if (desc.isValid()) {
             return index;

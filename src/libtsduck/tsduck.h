@@ -237,6 +237,7 @@
 #include "tsMessageDescriptor.h"
 #include "tsMessagePriorityQueue.h"
 #include "tsMessageQueue.h"
+#include "tsMGT.h"
 #include "tsMJD.h"
 #include "tsModulation.h"
 #include "tsMonotonic.h"

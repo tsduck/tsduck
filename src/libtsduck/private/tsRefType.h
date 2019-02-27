@@ -5,6 +5,7 @@
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
     REF_TYPE(INT);
+    REF_TYPE(MGT);
     REF_TYPE(NIT);
     REF_TYPE(PAT);
     REF_TYPE(PMT);

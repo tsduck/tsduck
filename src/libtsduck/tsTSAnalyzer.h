@@ -44,6 +44,7 @@
 #include "tsSDT.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
+#include "tsMGT.h"
 #include "tsTime.h"
 #include "tsUString.h"
 #include "tsSafePtr.h"
@@ -449,6 +450,9 @@ namespace ts {
         // Return a service context. Allocate a new entry if service not found.
         ServiceContextPtr getService(uint16_t service_id);
 
+        // Reset the section demux.
+        void resetSectionDemux();
+
         // Analyze the various PSI tables
         void analyzePAT(const PAT&);
         void analyzeCAT(const CAT&);
@@ -456,6 +460,7 @@ namespace ts {
         void analyzeSDT(const SDT&);
         void analyzeTDT(const TDT&);
         void analyzeTOT(const TOT&);
+        void analyzeMGT(const MGT&);
 
         // Analyse a list of descriptors.
         // If svp is not 0, we are in the PMT of the specified service.

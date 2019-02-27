@@ -39,6 +39,7 @@
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsEIT.h"
 #include "tsINT.h"
+#include "tsMGT.h"
 #include "tsNIT.h"
 #include "tsPAT.h"
 #include "tsPMT.h"

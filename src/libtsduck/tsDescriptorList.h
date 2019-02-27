@@ -398,6 +398,11 @@ namespace ts {
         const AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
         ElementVector              _list;   // Vector of smart pointers to descriptors.
 
+        // Get the default Private Data Specified value in this descriptor list.
+        // This is normally zero in a DVB table. However, we use some "fake" PDS
+        // values to characterize descriptors with tag >= 0x80 in non-DVB tables.
+        PDS defaultPDS() const;
+
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).
         // When it can be removed, the current PDS of all subsequent descriptors is updated.

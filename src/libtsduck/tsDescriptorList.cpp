@@ -85,8 +85,8 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
         return false;
     }
     for (size_t i = 0; i < _list.size(); ++i) {
-        const DescriptorPtr& desc1 (_list[i].desc);
-        const DescriptorPtr& desc2 (other._list[i].desc);
+        const DescriptorPtr& desc1(_list[i].desc);
+        const DescriptorPtr& desc2(other._list[i].desc);
         if (desc1.isNull() || desc2.isNull() || *desc1 != *desc2) {
             return false;
         }
@@ -96,22 +96,43 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
 
 
 //----------------------------------------------------------------------------
+// Get the default Private Data Specified value in this descriptor list.
+//----------------------------------------------------------------------------
+
+ts::PDS ts::DescriptorList::defaultPDS() const
+{
+    if (_table == nullptr) {
+        // Unknown table, assume DVB rules.
+        return 0;
+    }
+    else if ((_table->standards() & STD_ATSC) != 0) {
+        // Use fake PDS for ATSC descriptors.
+        return PDS_ATSC;
+    }
+    else {
+        // Assume DVB rules.
+        return 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
 void ts::DescriptorList::add(const DescriptorPtr& desc)
 {
-    PDS pds;
+    PDS pds = 0;
 
     // Determine which PDS to associate with the descriptor
     if (desc->tag() == DID_PRIV_DATA_SPECIF) {
         // This descriptor defines a new "private data specifier".
         // The PDS is the only thing in the descriptor payload.
-        pds = desc->payloadSize() < 4 ? 0 : GetUInt32 (desc->payload());
+        pds = desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload());
     }
     else if (_list.empty()) {
         // First descriptor in the list
-        pds = 0;
+        pds = defaultPDS();
     }
     else {
         // Use same PDS as previous descriptor
@@ -119,7 +140,7 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
     }
 
     // Add the descriptor in the list
-    _list.push_back (Element (desc, pds));
+    _list.push_back(Element(desc, pds));
 }
 
 
@@ -159,7 +180,7 @@ void ts::DescriptorList::add(const void* data, size_t size)
 // Prepare removal of a private_data_specifier descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::prepareRemovePDS (const ElementVector::iterator& it)
+bool ts::DescriptorList::prepareRemovePDS(const ElementVector::iterator& it)
 {
     // Eliminate invalid cases
     if (it == _list.end() || it->desc->tag() != DID_PRIV_DATA_SPECIF) {
@@ -196,10 +217,10 @@ bool ts::DescriptorList::prepareRemovePDS (const ElementVector::iterator& it)
 // Add a private_data_specifier if necessary at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::addPrivateDataSpecifier (PDS pds)
+void ts::DescriptorList::addPrivateDataSpecifier(PDS pds)
 {
     if (pds != 0 && (_list.size() == 0 || _list[_list.size() - 1].pds != pds)) {
-        add (PrivateDataSpecifierDescriptor (pds));
+        add(PrivateDataSpecifierDescriptor(pds));
     }
 }
 
@@ -232,7 +253,7 @@ size_t ts::DescriptorList::removeInvalidPrivateDescriptors()
 // Remove the descriptor at the specified index in the list.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::removeByIndex (size_t index)
+bool ts::DescriptorList::removeByIndex(size_t index)
 {
     // Check index validity
     if (index >= _list.size()) {
@@ -240,12 +261,12 @@ bool ts::DescriptorList::removeByIndex (size_t index)
     }
 
     // Private_data_specifier descriptor can be removed under certain conditions only
-    if (_list[index].desc->tag() == DID_PRIV_DATA_SPECIF && !prepareRemovePDS (_list.begin() + index)) {
+    if (_list[index].desc->tag() == DID_PRIV_DATA_SPECIF && !prepareRemovePDS(_list.begin() + index)) {
         return false;
     }
 
     // Remove the specified descriptor
-    _list.erase (_list.begin() + index);
+    _list.erase(_list.begin() + index);
     return true;
 }
 
@@ -282,7 +303,7 @@ size_t ts::DescriptorList::binarySize() const
 {
     size_t size = 0;
 
-    for (int i = 0; i < int (_list.size()); ++i) {
+    for (int i = 0; i < int(_list.size()); ++i) {
         size += _list[i].desc->size();
     }
 
