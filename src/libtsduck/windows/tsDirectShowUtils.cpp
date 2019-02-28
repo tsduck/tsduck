@@ -239,7 +239,8 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
     if (!dvb_request.isNull() &&
         (!PUT(dvb_request, ONID, -1) ||
          !PUT(dvb_request, TSID, -1) ||
-         !PUT(dvb_request, SID, -1))) {
+         !PUT(dvb_request, SID, -1)))
+    {
         return false;
     }
 
@@ -249,9 +250,10 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
     atsc_request.queryInterface(tune_request.pointer(), ::IID_IATSCChannelTuneRequest, report);
     if (!atsc_request.isNull() &&
         (!PUT(atsc_request, Channel, -1) ||
-         !PUT(atsc_request, MinorChannel, -1))) {
+         !PUT(atsc_request, MinorChannel, -1)))
+    {
         return false;
-	}
+    }
 
     // Create a locator (where to find the physical TS, ie. tuning params).
     ComPtr<::IDigitalLocator> locator;
@@ -487,15 +489,16 @@ bool ts::CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParame
     if (loc.isNull() ||
         !CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
 		!CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
-		!PUT(loc, CarrierFrequency, -1) ||
-		!PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
-		!PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
-		!PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
-		!PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
-		!PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
-		!PUT(loc, SymbolRate, -1) ||
-		!PUT(loc, PhysicalChannel, physical_channel) ||
-		!PUT(loc, TSID, -1)) {
+        !PUT(loc, CarrierFrequency, -1) ||
+        !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+        !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+        !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+        !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
+        !PUT(loc, SymbolRate, -1) ||
+        !PUT(loc, PhysicalChannel, physical_channel) ||
+        !PUT(loc, TSID, -1))
+    {
         return false;
     }
 
