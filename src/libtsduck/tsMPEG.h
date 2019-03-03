@@ -272,11 +272,11 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum Standards : uint8_t {
-        STD_MPEG = 0x01,  //!< Define by MPEG, common to all standards
-        STD_DVB  = 0x02,  //!< Define by ETSI/DVB, common to all standards
-        STD_SCTE = 0x04,  //!< Define by ANSI/SCTE, common to all standards
-        STD_ATSC = 0x08,  //!< Define by ATSC, common to all standards
-        STD_ISDB = 0x10,  //!< Define by ISDB, common to all standards
+        STD_MPEG = 0x01,  //!< Defined by MPEG, common to all standards
+        STD_DVB  = 0x02,  //!< Defined by ETSI/DVB.
+        STD_SCTE = 0x04,  //!< Defined by ANSI/SCTE.
+        STD_ATSC = 0x08,  //!< Defined by ATSC.
+        STD_ISDB = 0x10,  //!< Defined by ISDB.
     };
 
     //---------------------------------------------------------------------
@@ -1475,6 +1475,27 @@ namespace ts {
         TELETEXT_DATA_UNIT_ID_VPS             = 0xC3,  //!< Data_unit_id for VPS (extension ?).
         TELETEXT_DATA_UNIT_ID_CLOSED_CAPTIONS = 0xC5,  //!< Data_unit_id for Closed Caption (extension ?).
         TELETEXT_DATA_UNIT_ID_STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
+    };
+
+    //---------------------------------------------------------------------
+    //! Table type in ATSC Master Guide Table (MGT)
+    //---------------------------------------------------------------------
+
+    enum : uint16_t {
+        ATSC_TTYPE_TVCT_CURRENT = 0x0000,  //!< Terrestrial VCT with current_next_indicator=’1’.
+        ATSC_TTYPE_TVCT_NEXT    = 0x0001,  //!< Terrestrial VCT with current_next_indicator=’0’.
+        ATSC_TTYPE_CVCT_CURRENT = 0x0002,  //!< Cable VCT with current_next_indicator=’1’.
+        ATSC_TTYPE_CVCT_NEXT    = 0x0003,  //!< Cable VCT with current_next_indicator=’0’.
+        ATSC_TTYPE_CETT         = 0x0004,  //!< Channel ETT.
+        ATSC_TTYPE_DCCSCT       = 0x0005,  //!< DCCSCT
+        ATSC_TTYPE_EIT_FIRST    = 0x0100,  //!< First EIT (EIT-0).
+        ATSC_TTYPE_EIT_LAST     = 0x017F,  //!< Last EIT (EIT-127).
+        ATSC_TTYPE_EETT_FIRST   = 0x0200,  //!< First Event ETT (EET-0).
+        ATSC_TTYPE_EETT_LAST    = 0x027F,  //!< Last Event ETT (ETT-127).
+        ATSC_TTYPE_RRT_FIRST    = 0x0301,  //!< First RRT (RRT with rating_region 1).
+        ATSC_TTYPE_RRT_LAST     = 0x03FF,  //!< Last RRT (RRT with rating_region 255).
+        ATSC_TTYPE_DCCT_FIRST   = 0x1400,  //!< First DCCT (DCCT with dcc_id 0x00).
+        ATSC_TTYPE_DCCT_LAST    = 0x14FF,  //!< Last DCCT (DCCT with dcc_id 0xFF).
     };
 }
 
