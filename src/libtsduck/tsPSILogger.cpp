@@ -265,6 +265,13 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
 
+        case TID_TVCT:
+        case TID_CVCT: {
+            // ATSC tables with channel description.
+            _display.displayTable(table);
+            break;
+        }
+
         default: {
             if (_report.verbose()) {
                 strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid}) << std::endl;

@@ -113,6 +113,13 @@ namespace ts {
         virtual void fromXML(const xml::Element*) override;
         DeclareDisplaySection();
 
+        //!
+        //! Get the name for a 16-bit table type from an MGT.
+        //! @param [in] table_type Table type value.
+        //! @return The corresponding name.
+        //!
+        static UString TableTypeName(uint16_t table_type);
+
     private:
         // An Enumeration object for table_type.
         // Need a specific constructor because of the large list of values.

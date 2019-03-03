@@ -767,7 +767,33 @@ void ts::TSAnalyzer::analyzeTOT(const TOT& tot)
 
 void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
 {
-    // TODO @@@@@@@@@@@@@
+    // Process all table types.
+    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
+
+        // The table type and its name.
+        const MGT::TableType& tab(it->second);
+        const UString name(u"ATSC " + MGT::TableTypeName(tab.table_type));
+
+        // Get the PID context.
+        const PIDContextPtr ps(getPID(tab.table_type_PID, name));
+        ps->referenced = true;
+        ps->carry_section = true;
+
+        // An ATSC PID may carry more than one table type.
+        if (ps->description != name) {
+            AppendUnique(ps->attributes, name);
+        }
+
+        // Some additional PSIP PID's shall be analyzed.
+        switch (tab.table_type) {
+            case ATSC_TTYPE_TVCT_CURRENT:
+            case ATSC_TTYPE_CVCT_CURRENT:
+                _demux.addPID(tab.table_type_PID);
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 

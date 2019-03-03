@@ -133,6 +133,7 @@ void ts::MGT::deserialize(const BinaryTable& table, const DVBCharset* charset)
             info_length = std::min(info_length, remain);
             tt.descs.add(data, info_length);
             data += info_length; remain -= info_length;
+            tables_defined--;
         }
         if (tables_defined > 0 || remain < 2) {
             return; // truncated table.
@@ -249,6 +250,16 @@ ts::MGT::TableTypeEnum::TableTypeEnum() :
 
 
 //----------------------------------------------------------------------------
+// Get the name for a 16-bit table type from an MGT.
+//----------------------------------------------------------------------------
+
+ts::UString ts::MGT::TableTypeName(uint16_t table_type)
+{
+    return TableTypeEnum::Instance()->name(table_type);
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a MGT section.
 //----------------------------------------------------------------------------
 
@@ -270,7 +281,7 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
             const uint16_t type = GetUInt16(data);
             const PID pid = GetUInt16(data + 2) & 0x1FFF;
-            strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeEnum::Instance()->name(type), type}) << std::endl
+            strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl
                  << margin << UString::Format(u"  PID: 0x%X (%d), version: %d, size: %d bytes", {pid, pid, data[4] & 0x1F, GetUInt32(data + 5)}) << std::endl;
 
             size_t info_length = GetUInt16(data + 9) & 0x0FFF;
