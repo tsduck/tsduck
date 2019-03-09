@@ -327,6 +327,7 @@ namespace ts {
         //!
         //! Same as serialize(), but prepend a 2-byte length field before the descriptor list.
         //! The 2-byte length field has 4 reserved bits and 12 bits for the length of the descriptor list.
+        //! In fact, the number of bits in the length can be set in @a length_bits.
         //! @param [in,out] addr Address of the memory area where the descriptors
         //! are serialized. Upon return, @a addr is updated to contain the next
         //! address in memory, after the last serialized byte.
@@ -335,13 +336,14 @@ namespace ts {
         //! of the buffer. Descriptors are written one by one until either the end
         //! of the list or until one descriptor does not fit.
         //! @param [in] start Start serializing at this index in the descriptor list.
-        //! @param [in] reserved_bits Upper 4 bits of the length field.
+        //! @param [in] reserved_bits Value of the upper bits of the length field.
+        //! @param [in] length_bits Number of meaningful bits in the length field.
         //! @return The index of the first descriptor that could not be serialized
         //! (or count() if all descriptors were serialized). In the first case,
         //! the returned index can be used as @a start parameter to serialized the
         //! rest of the list (in another section for instance).
         //!
-        size_t lengthSerialize(uint8_t*& addr, size_t& size, size_t start = 0, uint8_t reserved_bits = 0x0F) const;
+        size_t lengthSerialize(uint8_t*& addr, size_t& size, size_t start = 0, uint16_t reserved_bits = 0x000F, size_t length_bits = 12) const;
 
         //!
         //! This method converts a descriptor list to XML.

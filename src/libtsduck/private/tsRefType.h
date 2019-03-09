@@ -1,6 +1,7 @@
     REF_TYPE(AIT);
     REF_TYPE(BAT);
     REF_TYPE(CAT);
+    REF_TYPE(CVCT);
     REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
@@ -16,6 +17,7 @@
     REF_TYPE(TDT);
     REF_TYPE(TOT);
     REF_TYPE(TSDT);
+    REF_TYPE(TVCT);
 
     REF_TYPE(AACDescriptor);
     REF_TYPE(AC3Descriptor);

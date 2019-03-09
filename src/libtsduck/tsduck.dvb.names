@@ -2921,10 +2921,19 @@ Bits = 16
 0x1400-0x14FF = DCCT with dcc_id 0x00 – 0xFF
 
 [ATSCModulationModes]
-# modulation_mode in ATSC TVCT
+# modulation_mode in ATSC VCT
 Bits = 8
 0x01 = Analog
 0x02 = SCTE_mode_1 (64-QAM)
 0x03 = SCTE_mode_2 (256-QAM)
 0x04 = ATSC 8-VSB
 0x05 = ATSC 16-VSB
+
+[ATSCServiceType]
+# service type in ATSC VCT
+Bits = 6
+0x01 = Analog Television
+0x02 = ATSC Digital Television
+0x03 = ATSC Audio
+0x04 = ATSC Data Only Service
+0x05 = ATSC Software Download Service

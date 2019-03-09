@@ -26,22 +26,32 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsCVCT.h"
+#include "tsTablesFactory.h"
+TSDUCK_SOURCE;
+
+#define MY_XML_NAME u"CVCT"
+#define MY_TID ts::TID_CVCT
+#define MY_STD ts::STD_ATSC
+
+TS_XML_TABLE_FACTORY(ts::CVCT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::CVCT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::CVCT::DisplaySection, MY_TID);
+
+
+//----------------------------------------------------------------------------
+// Constructors
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 17
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1165
+ts::CVCT::CVCT(uint8_t version_, bool is_current_) :
+    AbstractVCT(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
+{
+    _is_valid = true;
+}
+
+ts::CVCT::CVCT(const BinaryTable& table, const DVBCharset* charset) :
+    CVCT()
+{
+    deserialize(table, charset);
+}

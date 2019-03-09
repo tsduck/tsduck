@@ -28,20 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ATSC Cable Virtual Channel Table (CVCT)
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 17
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1165
+#include "tsAbstractVCT.h"
+
+namespace ts {
+    //!
+    //! Representation of an ATSC Cable Virtual Channel Table (CVCT)
+    //! @see ATSC A/65, section 6.3.2.
+    //! @ingroup table
+    //!
+    class TSDUCKDLL CVCT : public AbstractVCT
+    {
+    public:
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //!
+        CVCT(uint8_t version = 0, bool is_current = true);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        CVCT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+    };
+}
