@@ -35,6 +35,7 @@
 #include "tsAIT.h"
 #include "tsBAT.h"
 #include "tsCAT.h"
+#include "tsCVCT.h"
 #include "tsDiscontinuityInformationTable.h"
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsEIT.h"
@@ -50,6 +51,7 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsTSDT.h"
+#include "tsTVCT.h"
 
 #include "tsAACDescriptor.h"
 #include "tsAC3Descriptor.h"

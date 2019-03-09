@@ -19,6 +19,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractTablePlugin.h \
     ../../../src/libtsduck/tsAbstractTableTemplate.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
+    ../../../src/libtsduck/tsAbstractVCT.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
     ../../../src/libtsduck/tsAC3Descriptor.h \
     ../../../src/libtsduck/tsAC4Descriptor.h \
@@ -103,6 +104,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCTS4.h \
     ../../../src/libtsduck/tsCTS4Template.h \
     ../../../src/libtsduck/tsCueIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsCVCT.h \
     ../../../src/libtsduck/tsCyclingPacketizer.h \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.h \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.h \
@@ -449,6 +451,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTunerParametersDVBC.h \
     ../../../src/libtsduck/tsTunerParametersDVBS.h \
     ../../../src/libtsduck/tsTunerParametersDVBT.h \
+    ../../../src/libtsduck/tsTVCT.h \
     ../../../src/libtsduck/tsUChar.h \
     ../../../src/libtsduck/tsUDPReceiver.h \
     ../../../src/libtsduck/tsUDPSocket.h \
@@ -509,6 +512,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTablePlugin.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
+    ../../../src/libtsduck/tsAbstractVCT.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
     ../../../src/libtsduck/tsAC4Descriptor.cpp \
@@ -572,6 +576,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCPIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCRC32.cpp \
     ../../../src/libtsduck/tsCueIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsCVCT.cpp \
     ../../../src/libtsduck/tsCyclingPacketizer.cpp \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.cpp \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.cpp \
@@ -882,6 +887,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTunerParametersDVBC.cpp \
     ../../../src/libtsduck/tsTunerParametersDVBS.cpp \
     ../../../src/libtsduck/tsTunerParametersDVBT.cpp \
+    ../../../src/libtsduck/tsTVCT.cpp \
     ../../../src/libtsduck/tsUChar.cpp \
     ../../../src/libtsduck/tsUDPReceiver.cpp \
     ../../../src/libtsduck/tsUDPSocket.cpp \
