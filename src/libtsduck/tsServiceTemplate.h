@@ -89,7 +89,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         if (fields & ONID) {
             strm << "ONetId ";
         }
-        if (fields & TYPE) {
+        if (fields & (TYPE_DVB | TYPE_ATSC)) {
             strm << "Type ";
         }
         if (fields & PMT_PID) {
@@ -114,7 +114,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         if (fields & ONID) {
             strm << "------ ";
         }
-        if (fields & TYPE) {
+        if (fields & (TYPE_DVB | TYPE_ATSC)) {
             strm << "---- ";
         }
         if (fields & PMT_PID) {
@@ -164,9 +164,12 @@ std::ostream& ts::Service::Display(std::ostream& strm,
                 strm << "       ";
             }
         }
-        if (fields & TYPE) {
-            if (it->_type.set()) {
-                strm << UString::Format(u"0x%02X ", {it->_type.value()});
+        if (fields & (TYPE_DVB | TYPE_ATSC)) {
+            if (it->_type_dvb.set()) {
+                strm << UString::Format(u"0x%02X ", {it->_type_dvb.value()});
+            }
+            else if (it->_type_atsc.set()) {
+                strm << UString::Format(u"0x%02X ", {it->_type_atsc.value()});
             }
             else {
                 strm << "     ";

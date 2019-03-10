@@ -336,7 +336,7 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                     for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
                         ServiceDesc& serv(getServiceDesc(sdt.ts_id, it->first));
                         serv.setONId(sdt.onetw_id);
-                        serv.setType(it->second.serviceType());
+                        serv.setTypeDVB(it->second.serviceType());
                         serv.setName(it->second.serviceName());
                         serv.setProvider(it->second.providerName());
                         serv.setEITsPresent(it->second.EITs_present);

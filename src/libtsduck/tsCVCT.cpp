@@ -45,7 +45,7 @@ TS_ID_SECTION_DISPLAY(ts::CVCT::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::CVCT::CVCT(uint8_t version_, bool is_current_) :
-    AbstractVCT(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
+    VCT(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
 {
     _is_valid = true;
 }

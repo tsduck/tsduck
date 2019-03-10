@@ -173,8 +173,8 @@ void ts::ChannelFile::TransportStream::addServices(const ServiceList& list)
             if (it->hasPMTPID()) {
                 srv->pmtPID = it->getPMTPID();
             }
-            if (it->hasType()) {
-                srv->type = it->getType();
+            if (it->hasTypeDVB()) {
+                srv->type = it->getTypeDVB();
             }
             if (it->hasCAControlled()) {
                 srv->cas = it->getCAControlled();

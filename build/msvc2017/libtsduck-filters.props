@@ -61,9 +61,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsAbstractVCT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1393,6 +1390,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsVBITeletextDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsVCT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1564,9 +1564,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsAbstractVCT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp">
@@ -2716,6 +2713,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsVCT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsVersionInfo.cpp">

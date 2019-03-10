@@ -21,7 +21,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTablePlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTableTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsAbstractVCT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC4Descriptor.h" />
@@ -465,6 +464,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVariableTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVBIDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVBITeletextDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsVCT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersionString.h" />
@@ -524,7 +524,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTablePlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsAbstractVCT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC4Descriptor.cpp" />
@@ -908,6 +907,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsUString.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVBIDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsVCT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVersionInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoStreamDescriptor.cpp" />

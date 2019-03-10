@@ -33,6 +33,8 @@
 
 #include "tsTSScanner.h"
 #include "tsTime.h"
+#include "tsTVCT.h"
+#include "tsCVCT.h"
 TSDUCK_SOURCE;
 
 #define BUFFER_PACKET_COUNT  10000 // packets
@@ -50,13 +52,16 @@ ts::TSScanner::TSScanner(Tuner& tuner, MilliSecond timeout, bool pat_only, Repor
     _tparams(),
     _pat(),
     _sdt(),
-    _nit()
+    _nit(),
+    _mgt(),
+    _vct()
 {
-    // Collect PAT, SDT, NIT
+    // Collect PAT, SDT, NIT, MGT.
     _demux.addPID(PID_PAT);
     if (!_pat_only) {
         _demux.addPID(PID_SDT);
         _demux.addPID(PID_NIT);
+        _demux.addPID(PID_PSIP);
     }
 
     // Start packet acquisition
@@ -106,13 +111,13 @@ bool ts::TSScanner::getServices(ServiceList& services) const
         return false;
     }
 
-    if (_sdt.isNull() && !_pat_only) {
-        _report.warning(u"No SDT found, services names are unknown");
+    if (_sdt.isNull() && _vct.isNull() && !_pat_only) {
+        _report.warning(u"No SDT or VCT found, services names are unknown");
         // do not return, collect service ids.
     }
 
     // Loop on all services in the PAT
-    for (PAT::ServiceMap::const_iterator it = _pat->pmts.begin(); it != _pat->pmts.end(); ++it) {
+    for (auto it = _pat->pmts.begin(); it != _pat->pmts.end(); ++it) {
 
         // Service id, PMT PID and TS id are extracted from the PAT
         Service srv;
@@ -124,13 +129,13 @@ bool ts::TSScanner::getServices(ServiceList& services) const
         if (!_sdt.isNull()) {
             srv.setONId(_sdt->onetw_id);
             // Search service in the SDT
-            const SDT::ServiceMap::const_iterator sit = _sdt->services.find(srv.getId());
+            const auto sit = _sdt->services.find(srv.getId());
             if (sit != _sdt->services.end()) {
                 const uint8_t type = sit->second.serviceType();
                 const UString name(sit->second.serviceName());
                 const UString provider(sit->second.providerName());
                 if (type != 0) {
-                    srv.setType(type);
+                    srv.setTypeDVB(type);
                 }
                 if (!name.empty()) {
                     srv.setName(name);
@@ -138,6 +143,10 @@ bool ts::TSScanner::getServices(ServiceList& services) const
                 if (!provider.empty()) {
                     srv.setProvider(provider);
                 }
+                srv.setCAControlled(sit->second.CA_controlled);
+                srv.setEITpfPresent(sit->second.EITpf_present);
+                srv.setEITsPresent(sit->second.EITs_present);
+                srv.setRunningStatus(sit->second.running_status);
             }
         }
 
@@ -164,6 +173,21 @@ bool ts::TSScanner::getServices(ServiceList& services) const
                         size -= 4;
                     }
                 }
+            }
+        }
+
+        // ATSC service type, name are extracted from the VCT.
+        if (!_vct.isNull()) {
+            // Search service in the VCT
+            const auto sit = _vct->findService(srv.getId());
+            if (sit != _vct->channels.end()) {
+                if (sit->second.service_type != 0) {
+                    srv.setTypeATSC(sit->second.service_type);
+                }
+                if (!sit->second.short_name.empty()) {
+                    srv.setName(sit->second.short_name);
+                }
+                srv.setCAControlled(sit->second.access_controlled);
             }
         }
 
@@ -215,11 +239,46 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
 
+        case TID_MGT: {
+            SafePtr<MGT> mgt(new MGT(table));
+            if (mgt->isValid()) {
+                _mgt = mgt;
+                // Intercept TVCT and CVCT, they contain the service names.
+                for (auto it = mgt->tables.begin(); it != mgt->tables.end(); ++it) {
+                    switch (it->second.table_type) {
+                        case ATSC_TTYPE_TVCT_CURRENT:
+                        case ATSC_TTYPE_CVCT_CURRENT:
+                            _demux.addPID(it->second.table_type_PID);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            break;
+        }
+
+        case TID_TVCT: {
+            SafePtr<VCT> vct(new TVCT(table));
+            if (vct->isValid()) {
+                _vct = vct;
+            }
+            break;
+        }
+
+        case TID_CVCT: {
+            SafePtr<VCT> vct(new CVCT(table));
+            if (vct->isValid()) {
+                _vct = vct;
+            }
+            break;
+        }
+
         default: {
             break;
         }
     }
 
     // When all tables are ready, stop collection
-    _completed = !_pat.isNull() && (_pat_only || (!_sdt.isNull() && !_nit.isNull()));
+    _completed = !_pat.isNull() && (_pat_only || (!_sdt.isNull() && !_nit.isNull()) || (!_mgt.isNull() && !_vct.isNull()));
 }

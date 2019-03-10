@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractVCT.h"
+#include "tsVCT.h"
 
 namespace ts {
     //!
@@ -41,7 +41,7 @@ namespace ts {
     //! @see ATSC A/65, section 6.3.1.
     //! @ingroup table
     //!
-    class TSDUCKDLL TVCT : public AbstractVCT
+    class TSDUCKDLL TVCT : public VCT
     {
     public:
         //!

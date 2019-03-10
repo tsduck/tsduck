@@ -36,14 +36,16 @@
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
 #include "tsEnumeration.h"
+#include "tsService.h"
 
 namespace ts {
     //!
-    //! Abstract base class for ATSC Virtual Channel Table (VCT).
+    //! Base class for ATSC Virtual Channel Table (VCT).
+    //! Existing concrete subclasses are TVCT (terrestrial) and CVCT (cable).
     //! @see ATSC A/65, section 6.3.
     //! @ingroup table
     //!
-    class TSDUCKDLL AbstractVCT : public AbstractLongTable
+    class TSDUCKDLL VCT : public AbstractLongTable
     {
     public:
         //!
@@ -71,7 +73,7 @@ namespace ts {
 
             //!
             //! Constructor.
-            //! @param [in] table Parent AbstractVCT.
+            //! @param [in] table Parent VCT.
             //!
             explicit Channel(const AbstractTable* table);
 
@@ -96,14 +98,45 @@ namespace ts {
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        AbstractVCT(const AbstractVCT& other);
+        VCT(const VCT& other);
 
         //!
         //! Assignment operator.
         //! @param [in] other Other instance to copy.
         //! @return A reference to this object.
         //!
-        AbstractVCT& operator=(const AbstractVCT& other) = default;
+        VCT& operator=(const VCT& other) = default;
+
+        //!
+        //! Search a service by id.
+        //! @param [in] id Service id to search.
+        //! @param [in] same_ts If true, only look for services in the same TS as the VCT.
+        //! @return An iterator to the service if found, channels.end() if not found.
+        //!
+        ChannelList::const_iterator findService(uint16_t id, bool same_ts = true) const;
+
+        //!
+        //! Search a service by name.
+        //! @param [in] name Service name to search.
+        //! @param [in] exact_match If true, the service name must be exactly
+        //! identical to @a name. If it is false, the search is case-insensitive
+        //! and blanks are ignored.
+        //! @param [in] same_ts If true, only look for services in the same TS as the VCT.
+        //! @return An iterator to the service if found, channels.end() if not found.
+        //!
+        ChannelList::const_iterator findService(const UString& name, bool exact_match = false, bool same_ts = true) const;
+
+        //!
+        //! Search a service by name, using a ts::Service class.
+        //! @param [in,out] service Service description. Use service name to search.
+        //! Set the service id if found.
+        //! @param [in] exact_match If true, the service name must be exactly
+        //! identical to the name in @a service. If it is false, the search is case-insensitive
+        //! and blanks are ignored.
+        //! @param [in] same_ts If true, only look for services in the same TS as the VCT.
+        //! @return True if the service is found, false if not found.
+        //!
+        bool findService(Service& service, bool exact_match = false, bool same_ts = true) const;
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
@@ -121,7 +154,7 @@ namespace ts {
         //! @param [in] version_ Table version number.
         //! @param [in] is_current_ True if table is current, false if table is next.
         //!
-        AbstractVCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_);
+        VCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_);
 
     private:
         // Add a new section to a table being serialized.
