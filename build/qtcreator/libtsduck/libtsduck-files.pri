@@ -19,7 +19,6 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractTablePlugin.h \
     ../../../src/libtsduck/tsAbstractTableTemplate.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
-    ../../../src/libtsduck/tsAbstractVCT.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
     ../../../src/libtsduck/tsAC3Descriptor.h \
     ../../../src/libtsduck/tsAC4Descriptor.h \
@@ -463,6 +462,7 @@ HEADERS += \
     ../../../src/libtsduck/tsVariableTemplate.h \
     ../../../src/libtsduck/tsVBIDataDescriptor.h \
     ../../../src/libtsduck/tsVBITeletextDescriptor.h \
+    ../../../src/libtsduck/tsVCT.h \
     ../../../src/libtsduck/tsVersion.h \
     ../../../src/libtsduck/tsVersionInfo.h \
     ../../../src/libtsduck/tsVersionString.h \
@@ -512,7 +512,6 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTablePlugin.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
-    ../../../src/libtsduck/tsAbstractVCT.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
     ../../../src/libtsduck/tsAC4Descriptor.cpp \
@@ -896,6 +895,7 @@ SOURCES += \
     ../../../src/libtsduck/tsUString.cpp \
     ../../../src/libtsduck/tsVBIDataDescriptor.cpp \
     ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \
+    ../../../src/libtsduck/tsVCT.cpp \
     ../../../src/libtsduck/tsVersionInfo.cpp \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
     ../../../src/libtsduck/tsVideoStreamDescriptor.cpp \

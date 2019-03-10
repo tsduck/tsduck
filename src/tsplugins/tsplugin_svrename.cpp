@@ -183,7 +183,7 @@ bool ts::SVRenamePlugin::start()
         _new_service.setLCN(intValue<uint16_t>(u"lcn"));
     }
     if (present(u"type")) {
-        _new_service.setType(intValue<uint8_t>(u"type"));
+        _new_service.setTypeDVB(intValue<uint8_t>(u"type"));
     }
     if (present(u"free-ca-mode")) {
         _new_service.setCAControlled(intValue<int>(u"free-ca-mode") != 0);
@@ -385,8 +385,8 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
         if (_new_service.hasProvider()) {
             sdt.services[_old_service.getId()].setProvider(_new_service.getProvider());
         }
-        if (_new_service.hasType()) {
-            sdt.services[_old_service.getId()].setType(_new_service.getType());
+        if (_new_service.hasTypeDVB()) {
+            sdt.services[_old_service.getId()].setType(_new_service.getTypeDVB());
         }
         if (_new_service.hasCAControlled()) {
             sdt.services[_old_service.getId()].CA_controlled = _new_service.getCAControlled();
@@ -520,8 +520,8 @@ void ts::SVRenamePlugin::processNITBATDescriptorList(DescriptorList& dlist)
                 if (_new_service.hasId()) {
                     PutUInt16(data, _new_service.getId());
                 }
-                if (_new_service.hasType()) {
-                    data[2] = _new_service.getType();
+                if (_new_service.hasTypeDVB()) {
+                    data[2] = _new_service.getTypeDVB();
                 }
             }
             data += 3;

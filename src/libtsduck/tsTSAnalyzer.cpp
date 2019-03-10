@@ -815,13 +815,18 @@ void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
 // Analyze an ATSC TVCT (terrestrial) or CVCT (cable)
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeVCT(const AbstractVCT& vct)
+void ts::TSAnalyzer::analyzeVCT(const VCT& vct)
 {
     // Register characteristics of all services
     for (auto it = vct.channels.begin(); it != vct.channels.end(); ++it) {
-        ServiceContextPtr svp(getService(it->second.program_number));
-        if (!it->second.short_name.empty()) {
-            svp->name = it->second.short_name;
+        // Only keep services from this transport stream.
+        if (it->second.channel_TSID == vct.transport_stream_id) {
+            // Get or create the service with this service id ("program number" in ATSC parlance).
+            ServiceContextPtr svp(getService(it->second.program_number));
+            if (!it->second.short_name.empty()) {
+                // Update the service name.
+                svp->name = it->second.short_name;
+            }
         }
     }
 }

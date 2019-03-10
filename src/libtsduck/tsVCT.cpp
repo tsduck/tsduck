@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAbstractVCT.h"
+#include "tsVCT.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::AbstractVCT::AbstractVCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_) :
+ts::VCT::VCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_) :
     AbstractLongTable(tid, xml_name, standards, version_, is_current_),
     protocol_version(0),
     transport_stream_id(0),
@@ -49,7 +49,7 @@ ts::AbstractVCT::AbstractVCT(TID tid, const UChar* xml_name, Standards standards
 {
 }
 
-ts::AbstractVCT::AbstractVCT(const AbstractVCT& other) :
+ts::VCT::VCT(const VCT& other) :
     AbstractLongTable(other),
     protocol_version(other.protocol_version),
     transport_stream_id(other.transport_stream_id),
@@ -58,7 +58,7 @@ ts::AbstractVCT::AbstractVCT(const AbstractVCT& other) :
 {
 }
 
-ts::AbstractVCT::Channel::Channel(const AbstractTable* table) :
+ts::VCT::Channel::Channel(const AbstractTable* table) :
     EntryWithDescriptors(table),
     short_name(),
     major_channel_number(0),
@@ -80,10 +80,62 @@ ts::AbstractVCT::Channel::Channel(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// Search a service by name.
+//----------------------------------------------------------------------------
+
+ts::VCT::ChannelList::const_iterator ts::VCT::findService(uint16_t id, bool same_ts) const
+{
+    for (auto it = channels.begin(); it != channels.end(); ++it) {
+        if (!same_ts || it->second.channel_TSID == transport_stream_id) {
+            if (id == it->second.program_number) {
+                return it;
+            }
+        }
+    }
+
+    // Service not found
+    return channels.end();
+}
+
+ts::VCT::ChannelList::const_iterator ts::VCT::findService(const UString& name, bool exact_match, bool same_ts) const
+{
+    for (auto it = channels.begin(); it != channels.end(); ++it) {
+        if (!same_ts || it->second.channel_TSID == transport_stream_id) {
+            if ((exact_match && name == it->second.short_name) || (!exact_match && name.similar(it->second.short_name))) {
+                return it;
+            }
+        }
+    }
+
+    // Service not found
+    return channels.end();
+}
+
+bool ts::VCT::findService(Service& service, bool exact_match, bool same_ts) const
+{
+    if (!service.hasName()) {
+        // No name set, can't find the service.
+        return false;
+    }
+    // Search the service by name.
+    const auto it = findService(service.getName(), exact_match, same_ts);
+    if (it == channels.end()) {
+        // Service not found.
+        return false;
+    }
+    else {
+        // Service found, set the service id ("program number" in ATSC parlance).
+        service.setId(it->second.program_number);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractVCT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::VCT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -192,7 +244,7 @@ void ts::AbstractVCT::deserialize(const BinaryTable& table, const DVBCharset* ch
 // Section number is incremented. Data and remain are reinitialized.
 //----------------------------------------------------------------------------
 
-void ts::AbstractVCT::addSection(BinaryTable& table,
+void ts::VCT::addSection(BinaryTable& table,
                                  int& section_number,
                                  uint8_t* payload,
                                  uint8_t*& data,
@@ -219,7 +271,7 @@ void ts::AbstractVCT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractVCT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::VCT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();
@@ -320,7 +372,7 @@ void ts::AbstractVCT::serialize(BinaryTable& table, const DVBCharset* charset) c
 // A static method to display a VCT section.
 //----------------------------------------------------------------------------
 
-void ts::AbstractVCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
+void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
@@ -389,7 +441,7 @@ void ts::AbstractVCT::DisplaySection(TablesDisplay& display, const ts::Section& 
 // XML values for modulation mode and service_type.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::AbstractVCT::ModulationModeEnum({
+const ts::Enumeration ts::VCT::ModulationModeEnum({
     {u"analog",  0x01},
     {u"64-QAM",  0x02},
     {u"256-QAM", 0x03},
@@ -397,7 +449,7 @@ const ts::Enumeration ts::AbstractVCT::ModulationModeEnum({
     {u"16-VSB",  0x05},
 });
 
-const ts::Enumeration ts::AbstractVCT::ServiceTypeEnum({
+const ts::Enumeration ts::VCT::ServiceTypeEnum({
     {u"analog",   0x01},
     {u"dtv",      0x02},
     {u"audio",    0x03},
@@ -410,7 +462,7 @@ const ts::Enumeration ts::AbstractVCT::ServiceTypeEnum({
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractVCT::buildXML(xml::Element* root) const
+void ts::VCT::buildXML(xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
@@ -447,7 +499,7 @@ void ts::AbstractVCT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractVCT::fromXML(const xml::Element* element)
+void ts::VCT::fromXML(const xml::Element* element)
 {
     descs.clear();
     channels.clear();
