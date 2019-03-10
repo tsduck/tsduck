@@ -186,7 +186,7 @@ ts::BitRate ts::DVBInput::getBitrate()
     // number of used bits vs. transported bits (FEC), etc.
 
     // Get current tuning information
-    if (!_tuner.getCurrentTuning (*_tuner_params, false, *tsp)) {
+    if (!_tuner.getCurrentTuning(*_tuner_params, false, *tsp)) {
         return 0; // error
     }
 
@@ -194,13 +194,14 @@ ts::BitRate ts::DVBInput::getBitrate()
     BitRate bitrate = _tuner_params->theoreticalBitrate();
 
     // When bitrate changes, the modulation parameters have changed
-    if (bitrate != _previous_bitrate && tsp->verbose()) {
+    if (bitrate != _previous_bitrate) {
         // Store the new parameters in a global repository (may be used by other plugins)
         TunerParametersPtr new_params(TunerParameters::Factory(_tuner_params->tunerType()));
         new_params->copy(*_tuner_params);
         Object::StoreInRepository(u"tsp.dvb.params", new_params.upcast<Object>());
+
         // Display new tuning info
-        tsp->verbose(u"actual tuning options: " + new_params->toPluginOptions());
+        tsp->verbose(u"actual tuning options: %s", {_tuner_params->toPluginOptions()});
     }
 
     return _previous_bitrate = bitrate;
