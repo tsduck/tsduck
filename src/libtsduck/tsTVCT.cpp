@@ -41,7 +41,7 @@ TS_ID_SECTION_DISPLAY(ts::TVCT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TVCT::TVCT(uint8_t version_, bool is_current_) :
@@ -54,4 +54,8 @@ ts::TVCT::TVCT(const BinaryTable& table, const DVBCharset* charset) :
     TVCT()
 {
     deserialize(table, charset);
+}
+
+ts::TVCT::~TVCT()
+{
 }

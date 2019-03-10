@@ -2,10 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1151
+VERSION 3.17-1167
 
 [IMP] Improvements on existing commands and plugins:
 
+  * In various analysis commands and plugins, ATSC signalization is now
+    recognized.
   * In commands "tsanalyze", "tsdump", "tspsi", "tstabdump", "tstables", the
     display is now sent through a pager application (less/more) when the output
     device is a terminal. Added option --no-pager to disable this.

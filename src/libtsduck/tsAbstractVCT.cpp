@@ -164,7 +164,7 @@ void ts::AbstractVCT::deserialize(const BinaryTable& table, const DVBCharset* ch
             ch.source_id = GetUInt16(data + 28);
 
             // Descriptors for this channel.
-            size_t info_length = GetUInt16(data + 30) & 0x0FFF;
+            size_t info_length = GetUInt16(data + 30) & 0x03FF; // 10 bits only
             data += 32; remain -= 32;
             info_length = std::min(info_length, remain);
             ch.descs.add(data, info_length);
@@ -176,7 +176,7 @@ void ts::AbstractVCT::deserialize(const BinaryTable& table, const DVBCharset* ch
         }
 
         // Get global descriptor list
-        size_t info_length = GetUInt16(data) & 0x0FFF;
+        size_t info_length = GetUInt16(data) & 0x03FF; // 10 bits only
         data += 2; remain -= 2;
         info_length = std::min(info_length, remain);
         descs.add(data, info_length);
@@ -317,55 +317,71 @@ void ts::AbstractVCT::serialize(BinaryTable& table, const DVBCharset* charset) c
 
 
 //----------------------------------------------------------------------------
-// A static method to display a AbstractVCT section.
+// A static method to display a VCT section.
 //----------------------------------------------------------------------------
 
 void ts::AbstractVCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    /*@@@@@@
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    if (size >= 3) {
+    if (size >= 2) {
         // Fixed part.
-        uint16_t table_count = GetUInt16(data + 1);
-        strm << margin << UString::Format(u"Protocol version: %d, number of table types: %d", {data[0], table_count}) << std::endl;
-        data += 3; size -= 3;
+        uint16_t num_channels = data[1];
+        strm << margin << UString::Format(u"Transport stream id: 0x%X (%d)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl
+             << margin << UString::Format(u"Protocol version: %d, number of channels: %d", {data[0], num_channels}) << std::endl;
+        data += 2; size -= 2;
 
-        // Display all table types.
-        while (table_count > 0 && size >= 11) {
+        // Loop on all channel definitions.
+        while (num_channels > 0 && size >= 32) {
+            // The short name is at most 7 UTF-16 characters.
+            UString name;
+            for (size_t i = 0; i < 7; i++) {
+                const uint16_t c = GetUInt16(data + 2*i);
+                if (c == 0) {
+                    break; // padding zeroes
+                }
+                else {
+                    name.push_back(UChar(c));
+                }
+            }
+            const uint32_t num = GetUInt24(data + 14);
+            const uint8_t flags = data[26];
+            strm << margin << UString::Format(u"- Channel %d.%d, short name: \"%s\"", {(num >> 10) & 0x03FF, num & 0x03FF, name}) << std::endl
+                 << margin << UString::Format(u"  Modulation: %s, frequency: %'d", {DVBNameFromSection(u"ATSCModulationModes", data[17]), GetUInt32(data + 18)}) << std::endl
+                 << margin << UString::Format(u"  TS id: 0x%X (%d), program number: 0x%X (%d)", {GetUInt16(data + 22), GetUInt16(data + 22), GetUInt16(data + 24), GetUInt16(data + 24)}) << std::endl
+                 << margin << UString::Format(u"  ETM location: %d, access controlled: %s", {(flags >> 6) & 0x03, UString::YesNo((flags & 0x20) != 0)}) << std::endl;
+            if (section.tableId() == TID_CVCT) {
+                // The following two bits are used in CVCT only.
+                strm << margin << UString::Format(u"  Path select: %d, out of band: %s", {(flags >> 3) & 0x01, UString::YesNo((flags & 0x04) != 0)}) << std::endl;
+            }
+            strm << margin << UString::Format(u"  Hidden: %s, hide guide: %s", {UString::YesNo((flags & 0x10) != 0), UString::YesNo((flags & 0x02) != 0)}) << std::endl
+                 << margin << UString::Format(u"  Service type: %s, source id: 0x%X (%d)", {DVBNameFromSection(u"ATSCServiceType", data[27] & 0x3F), GetUInt16(data + 28), GetUInt16(data + 28)}) << std::endl;
 
-            const uint16_t type = GetUInt16(data);
-            const PID pid = GetUInt16(data + 2) & 0x1FFF;
-            strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl
-                 << margin << UString::Format(u"  PID: 0x%X (%d), version: %d, size: %d bytes", {pid, pid, data[4] & 0x1F, GetUInt32(data + 5)}) << std::endl;
-
-            size_t info_length = GetUInt16(data + 9) & 0x0FFF;
-            data += 11; size -= 11;
+            // Descriptors for this channel. Use fake PDS for ATSC.
+            size_t info_length = GetUInt16(data + 30) & 0x03FF; // 10 bits only
+            data += 32; size -= 32;
             info_length = std::min(info_length, size);
-            display.displayDescriptorList(data, info_length, indent + 2, section.tableId());
-
+            display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
             data += info_length; size -= info_length;
-            table_count--;
+            num_channels--;
         }
-
-        // Display common descriptors.
-        if (table_count == 0 && size >= 2) {
-            size_t info_length = GetUInt16(data) & 0x0FFF;
+        if (num_channels == 0 && size >= 2) {
+            // Common descriptors. Use fake PDS for ATSC.
+            size_t info_length = GetUInt16(data) & 0x03FF; // 10 bits only
             data += 2; size -= 2;
             info_length = std::min(info_length, size);
             if (info_length > 0) {
                 strm << margin << "- Global descriptors:" << std::endl;
-                display.displayDescriptorList(data, info_length, indent + 2, section.tableId());
+                display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
                 data += info_length; size -= info_length;
             }
         }
     }
 
     display.displayExtraData(data, size, indent);
-    @@@@@@*/
 }
 
 
@@ -418,7 +434,7 @@ void ts::AbstractVCT::buildXML(xml::Element* root) const
             // CVCT-specific fields.
             e->setIntAttribute(u"path_select", it->second.path_select, false);
             root->setBoolAttribute(u"out_of_band", it->second.out_of_band);
-        } 
+        }
         root->setBoolAttribute(u"hide_guide", it->second.hide_guide);
         e->setEnumAttribute(ServiceTypeEnum, u"service_type", it->second.service_type);
         e->setIntAttribute(u"source_id", it->second.source_id, true);
@@ -436,51 +452,40 @@ void ts::AbstractVCT::fromXML(const xml::Element* element)
     descs.clear();
     channels.clear();
 
-    /*@@@@@@
     xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        descs.fromXML(children, element, u"table");
+        element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
+        descs.fromXML(children, element, u"channel");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
-        // Add a new TableType at the end of the list.
-        TableType& tt(tables.newEntry());
+        // Add a new Channel at the end of the list.
+        Channel& ch(channels.newEntry());
 
         _is_valid =
-            children[index]->getIntEnumAttribute(tt.table_type, *TableTypeEnum::Instance(), u"type", true) &&
-            children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
-            children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
-            children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
-            tt.descs.fromXML(children[index]);
+            children[index]->getAttribute(ch.short_name, u"short_name", true, UString(), 0, 7) &&
+            children[index]->getIntAttribute<uint16_t>(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+            children[index]->getIntAttribute<uint16_t>(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
+            children[index]->getIntEnumAttribute(ch.modulation_mode, ModulationModeEnum, u"modulation_mode", true) &&
+            children[index]->getIntAttribute<uint32_t>(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
+            children[index]->getIntAttribute<uint16_t>(ch.channel_TSID, u"channel_TSID", true) &&
+            children[index]->getIntAttribute<uint16_t>(ch.program_number, u"program_number", true) &&
+            children[index]->getIntAttribute<uint8_t>(ch.ETM_location, u"ETM_location", false, 0, 0x00, 0x03) &&
+            children[index]->getBoolAttribute(ch.access_controlled, u"access_controlled", false, false) &&
+            children[index]->getBoolAttribute(ch.hidden, u"hidden", false, false) &&
+            children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
+            children[index]->getIntEnumAttribute<uint8_t>(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
+            children[index]->getIntAttribute<uint16_t>(ch.source_id, u"source_id", true) &&
+            ch.descs.fromXML(children[index]);
+
+        if (_is_valid && _table_id == TID_CVCT) {
+            // CVCT-specific fields.
+            _is_valid =
+                children[index]->getIntAttribute<uint8_t>(ch.path_select, u"path_select", false, 0, 0, 1) &&
+                children[index]->getBoolAttribute(ch.out_of_band, u"out_of_band", false, false);
+        }
     }
-
-  <CVCT version="uint5, default=0"
-        current="bool, default=true"
-        protocol_version="uint8, default=0"
-        transport_stream_id="uint16, required">
-    <!-- Common descriptors loop -->
-    <_any in="_descriptors"/>
-    <!-- One per channel -->
-    <channel short_name="string, required"
-             major_channel_number="uint10, required"
-             minor_channel_number="uint10, required"
-             modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
-             carrier_frequency="uint32, default=0"
-             channel_TSID="uint16, required"
-             program_number="uint16, required"
-             ETM_location="uint2, default=0"
-             access_controlled="bool, default=false"
-             hidden="bool, default=false"
-             path_select="uint1, default=0"
-             out_of_band="bool, default=0"
-             hide_guide="bool, default=false"
-             service_type="analog|dtv|audio|data|software|uint6, default=dtv"
-             source_id="uint16, required">
-      <_any in="_descriptors"/>
-    </channel>
-  </CVCT>
-
-    @@@@@@*/
 }

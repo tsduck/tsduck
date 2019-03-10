@@ -603,6 +603,20 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
             }
             break;
         }
+        case TID_TVCT: {
+            TVCT tvct(table);
+            if (tvct.isValid()) {
+                analyzeVCT(tvct);
+            }
+            break;
+        }
+        case TID_CVCT: {
+            CVCT cvct(table);
+            if (cvct.isValid()) {
+                analyzeVCT(cvct);
+            }
+            break;
+        }
         default: {
             break;
         }
@@ -711,7 +725,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
 void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 {
     // Register characteristics of all services
-    for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+    for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
 
         ServiceContextPtr svp(getService(it->first)); // it->first = map key = service id
         svp->orig_netw_id = sdt.onetw_id;
@@ -792,6 +806,22 @@ void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
                 break;
             default:
                 break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ATSC TVCT (terrestrial) or CVCT (cable)
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeVCT(const AbstractVCT& vct)
+{
+    // Register characteristics of all services
+    for (auto it = vct.channels.begin(); it != vct.channels.end(); ++it) {
+        ServiceContextPtr svp(getService(it->second.program_number));
+        if (!it->second.short_name.empty()) {
+            svp->name = it->second.short_name;
         }
     }
 }

@@ -284,23 +284,24 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             strm << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl
                  << margin << UString::Format(u"  PID: 0x%X (%d), version: %d, size: %d bytes", {pid, pid, data[4] & 0x1F, GetUInt32(data + 5)}) << std::endl;
 
+            // Use fake PDS for ATSC.
             size_t info_length = GetUInt16(data + 9) & 0x0FFF;
             data += 11; size -= 11;
             info_length = std::min(info_length, size);
-            display.displayDescriptorList(data, info_length, indent + 2, section.tableId());
+            display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
 
             data += info_length; size -= info_length;
             table_count--;
         }
 
-        // Display common descriptors.
+        // Display common descriptors. Use fake PDS for ATSC.
         if (table_count == 0 && size >= 2) {
             size_t info_length = GetUInt16(data) & 0x0FFF;
             data += 2; size -= 2;
             info_length = std::min(info_length, size);
             if (info_length > 0) {
                 strm << margin << "- Global descriptors:" << std::endl;
-                display.displayDescriptorList(data, info_length, indent + 2, section.tableId());
+                display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
                 data += info_length; size -= info_length;
             }
         }

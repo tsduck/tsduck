@@ -2924,8 +2924,8 @@ Bits = 16
 # modulation_mode in ATSC VCT
 Bits = 8
 0x01 = Analog
-0x02 = SCTE_mode_1 (64-QAM)
-0x03 = SCTE_mode_2 (256-QAM)
+0x02 = SCTE mode 1 (64-QAM)
+0x03 = SCTE mode 2 (256-QAM)
 0x04 = ATSC 8-VSB
 0x05 = ATSC 16-VSB
 
