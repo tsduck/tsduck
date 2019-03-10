@@ -324,7 +324,7 @@
              access_controlled="bool, default=false"
              hidden="bool, default=false"
              path_select="uint1, default=0"
-             out_of_band="bool, default=0"
+             out_of_band="bool, default=false"
              hide_guide="bool, default=false"
              service_type="analog|dtv|audio|data|software|uint6, default=dtv"
              source_id="uint16, required">
