@@ -230,11 +230,11 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            uint8_t continuity;               // Last continuity counter
-            bool sync;                        // We are synchronous in this PID
-            ByteBlock ts;                     // TS payload buffer
-            std::map<ETID, ETIDContext> tids; // TID analysis contexts
-            PacketCounter pusi_pkt_index;     // Index of last PUSI packet in this PID
+            PacketCounter pusi_pkt_index;     // Index of last packet with PUSI in this PID
+            uint8_t       continuity;         // Last continuity counter
+            bool          sync;               // We are synchronous in this PID
+            ByteBlock     ts;                 // TS payload buffer
+            std::map<ETID,ETIDContext> tids;  // TID analysis contexts
 
             // Default constructor.
             PIDContext();

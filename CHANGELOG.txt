@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1167
+VERSION 3.17-1169
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -38,6 +38,11 @@ VERSION 3.17-1167
   * Fixed support for ATSC tuners on Windows.
   * In plugin "scrambler", fixed a crypto-period issue with option --cw-file
     and more than one CW.
+  * Now accept to demux probably incorrect section muxing when a TS packet is
+    such that 1) PUSI is set, 2) start of payload before the pointer field is
+    unused (do not contain a valid section) and 3) starts with FF. This is a
+    probably incorrect muxing which has been found on at least one satellite
+    transponder.
 
 -------------------------------------------------------------------------------
 
