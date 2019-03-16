@@ -2,6 +2,12 @@
 TSDuck - List of features to be implemented or fixed
 ====================================================
 
+* Update plugin "zap" to recognize ATSC services by name and rebuild a
+  consistent SPTS in PSIP PID.
+
+* In plugin "bitrate_monitor", add an option to monitor the global TS
+  bitrate instead of one PID.
+
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
@@ -59,3 +65,26 @@ TSDuck - List of features to be implemented or fixed
 
   ETSI EN 303 560 (TTML subtitling systems)
   - 5.2.1.1  TTML subtitling descriptor
+
+  ATSC A/65 (Program and System Information Protocol)
+  - 6.1     System Time Table (STT)
+  - 6.4     Rating Region Table (RRT)
+  - 6.5     Event Information Table (EIT, ATSC version)
+  - 6.6     Extended Text Table (ETT)
+  - 6.7     Directed Channel Change Table (DCCT)
+  - 6.8     DCC Selection Code Table (DCCSCT)
+  - 6.9.2   caption_service_descriptor
+  - 6.9.3   content_advisory_descriptor
+  - 6.9.4   extended_channel_name_descriptor
+  - 6.9.5   service_location_descriptor
+  - 6.9.6   time_shifted_service_descriptor
+  - 6.9.7   component_name_descriptor
+  - 6.9.8   ATSC_stuffing_descriptor
+  - 6.9.10  DCC_departing_request_descriptor
+  - 6.9.11  DCC_arriving_request_descriptor
+  - 6.9.12  redistribution_control_descriptor
+  - 6.9.13  genre_descriptor
+
+  ATSC A/52 (AC-3, E-AC-3)
+  - A.4.3   ATSC_AC3_audio_descriptor
+  - G.3.5   ATSC_EAC3_audio_descriptor
