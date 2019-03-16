@@ -68,8 +68,8 @@ void ts::tsp::OutputExecutor::main()
         waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
 
         // We ignore the returned "aborted" which comes from the "next"
-        // processor in the chaine, here the input thread. For the
-        // output thread, aborted means was interrupted by used.
+        // processor in the chain, here the input thread. For the
+        // output thread, aborted means was interrupted by user.
         aborted = _tsp_aborting;
 
         // Exit thread if no more packet to process

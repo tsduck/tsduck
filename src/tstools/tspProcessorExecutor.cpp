@@ -69,7 +69,8 @@ void ts::tsp::ProcessorExecutor::main()
     do {
         // Wait for packets to process
 
-        size_t pkt_first, pkt_cnt;
+        size_t pkt_first = 0;
+        size_t pkt_cnt = 0;
         waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
 
         // If bit rate was never modified by the plugin, always copy the

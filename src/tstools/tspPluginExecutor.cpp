@@ -85,29 +85,15 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
 
 
 //----------------------------------------------------------------------------
-// This method signals that the specified number of packets have been
-// processed by this processor. These packets are passed to the next processor
-// (which is notified that there is something to do)
-//
-// Note that, if the caller thread is the output processor, the semantic of
-// the operation is "these buffers are no longer used and can be reused by
-// the input thread".
-//
-// Here, "input_end" means "this processor will no longer produce packets".
-// And "aborted" means "this processor has encountered an error and will
-// cease to accept packets".
+// Signal that the specified number of packets have been processed.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pass
-                                          BitRate bitrate,  // pass to next processor
-                                          bool input_end,   // pass to next processor
-                                          bool aborted)     // set to current processor
-
+bool ts::tsp::PluginExecutor::passPackets(size_t count, BitRate bitrate, bool input_end, bool aborted)
 {
     assert(count <= _pkt_cnt);
     assert(_pkt_first + count <= _buffer->count());
 
-    log(10, u"passPackets (count = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {count, bitrate, input_end, aborted});
+    log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {count, bitrate, input_end, aborted});
 
     // We access data under the protection of the global mutex.
     Guard lock(_global_mutex);
@@ -129,7 +115,11 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pas
 
     // Force to abort our processor when the next one is aborting.
     // Already done in waitWork() but force immediately.
-    aborted = aborted || next->_tsp_aborting;
+    // Don't do that if current is output and next is input because
+    // there is no propagation of packets from output back to input.
+    if (plugin()->type() != OUTPUT_PLUGIN) {
+        aborted = aborted || next->_tsp_aborting;
+    }
 
     // Wake the previous processor when we abort
     if (aborted) {
@@ -165,18 +155,10 @@ bool ts::tsp::PluginExecutor::isRealTime() const
 
 
 //----------------------------------------------------------------------------
-// This method makes the calling processor thread waiting for packets
-// to process or some error condition. Always return a contiguous array
-// of packets. If the circular buffer wrap-over occurs in the middle of
-// the caller's area, only return the first part, up the buffer's highest
-// address. The next call to waitWork will return the second part.
+// Wait for packets to process or some error condition.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
-                                       size_t& pkt_cnt,
-                                       BitRate& bitrate,
-                                       bool& input_end,
-                                       bool& aborted)    // get from next processor
+void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted)
 {
     log(10, u"waitWork(...)");
 
@@ -197,7 +179,11 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
     pkt_cnt = std::min(_pkt_cnt, _buffer->count() - _pkt_first);
     bitrate = _bitrate;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
-    aborted = next->_tsp_aborting;
 
-    log(10, u"waitWork (pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {pkt_first, pkt_cnt, bitrate, input_end, aborted});
+    // Force to abort our processor when the next one is aborting.
+    // Don't do that if current is output and next is input because
+    // there is no propagation of packets from output back to input.
+    aborted = plugin()->type() != OUTPUT_PLUGIN && next->_tsp_aborting;
+
+    log(10, u"waitWork(pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {pkt_first, pkt_cnt, bitrate, input_end, aborted});
 }

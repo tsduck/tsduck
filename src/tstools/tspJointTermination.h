@@ -77,11 +77,10 @@ namespace ts {
             PacketCounter totalPacketsBeforeJointTermination() const;
 
         private:
-            bool          _use_jt;          // Use "joint termination"
-            bool          _jt_completed;    // Completed, for "joint termination"
+            bool _use_jt;        // Use "joint termination"
+            bool _jt_completed;  // Completed, for "joint termination"
 
-            // The following static private data must be accessed exclusively under the
-            // protection of the global mutex.
+            // The following static private data must be accessed exclusively under the protection of the global mutex.
             static int           _jt_users;         // Nb plugins using "joint termination"
             static int           _jt_remaining;     // Nb pluging using jt but not yet completed
             static PacketCounter _jt_hightest_pkt;  // Highest pkt# for completed jt plugins

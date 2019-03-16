@@ -186,9 +186,15 @@ namespace ts {
 
             //!
             //! Pass processed packets to the next packet processor.
+            //!
             //! This method is invoked by a subclass to indicate that some packets
             //! have been processed by this packet process and shall be passed to
             //! the next processor.
+            //!
+            //! Note that, if the caller thread is the output processor, the semantic of
+            //! the operation is "these buffers are no longer used and can be reused by
+            //! the input thread".
+            //!
             //! @param [in] count Number of packets to pass to next processor.
             //! @param [in] bitrate Bitrate, as computed by this processor or passed
             //! from the previous processor. To be passed to next processor.
@@ -196,36 +202,32 @@ namespace ts {
             //! @param [in] aborted if true, this processor has encountered an error and will cease to accept packets.
             //! @return True when the processor shall continue, false when it shall stop.
             //!
-            bool passPackets(size_t count,
-                             BitRate bitrate,
-                             bool input_end,
-                             bool aborted);
+            bool passPackets(size_t count, BitRate bitrate, bool input_end, bool aborted);
 
             //!
             //! Wait for something to do.
+            //!
             //! This method is invoked by a subclass when it has nothing to do.
             //! This method makes the calling processor thread waiting for packets
-            //! to process or some error condition. Always return a contiguous array
-            //! of packets. If the circular buffer wrap-over occurs in the middle of
-            //! the caller's area, only return the first part, up the buffer's highest
-            //! address. The next call to wait_work will return the second part.
+            //! to process or some error condition.
+            //!
+            //! Always return a contiguous array of packets. If the circular buffer
+            //! wrap-over occurs in the middle of the caller's area, only return the
+            //! first part, up the buffer's highest address. The next call to waitWork()
+            //! will return the second part.
+            //!
             //! @param [out] pkt_first Index of first packet to process in the buffer.
             //! @param [out] pkt_cnt Number of packets to process in the buffer.
             //! @param [out] bitrate Current bitrate, as computed from previous processors.
             //! @param [out] input_end The previous processor indicates that no more packets will be produced.
             //! @param [out] aborted The *next* processor indicates that it aborts and will no longer accept packets.
             //!
-            void waitWork(size_t& pkt_first,
-                          size_t& pkt_cnt,
-                          BitRate& bitrate,
-                          bool& input_end,
-                          bool& aborted);
+            void waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted);
 
         private:
             Condition _to_do;    // Notify processor to do something
 
-            // The following private data must be accessed exclusively under the
-            // protection of the global mutex.
+            // The following private data must be accessed exclusively under the protection of the global mutex.
             size_t  _pkt_first;  // Starting index of packets area
             size_t  _pkt_cnt;    // Size of packets area
             bool    _input_end;  // No more packet after current ones
