@@ -235,6 +235,14 @@ namespace ts {
         //!
         typedef std::set<uint16_t> ServiceIdSet;
 
+        //!
+        //! Get a service context.
+        //! Allocate a new entry if service is not found.
+        //! @param [in] service_id Service to search.
+        //! @return A safe pointer to the service context.
+        //!
+        ServiceContextPtr getService(uint16_t service_id);
+
     protected:
 
         // -------------------
@@ -278,6 +286,14 @@ namespace ts {
         //! Map of ETIDContext, indexed by ETID.
         //!
         typedef std::map<ETID, ETIDContextPtr> ETIDContextMap;
+
+        //!
+        //! Get an ETID context.
+        //! Allocate a new entry if the ETID is not found.
+        //! @param [in] section A section containing the ETID to search.
+        //! @return A safe pointer to the ETID context.
+        //!
+        ETIDContextPtr getETID(const Section& section);
 
     protected:
 
@@ -382,6 +398,22 @@ namespace ts {
         //!
         typedef std::map <PID, PIDContextPtr> PIDContextMap;
 
+        //!
+        //! Check if a PID context exists.
+        //! @param [in] pid PID to search.
+        //! @return True if the PID exists, false otherwise.
+        //!
+        bool pidExists(PID pid) const {return _pids.find(pid) != _pids.end();}
+
+        //!
+        //! Get a PID context.
+        //! Allocate a new entry if PID not found.
+        //! @param [in] pid PID to search.
+        //! @param [in] description Initial description of the PID if the context is created.
+        //! @return A safe pointer to the PID context.
+        //!
+        PIDContextPtr getPID(PID pid, const UString& description = UNREFERENCED);
+
     protected:
 
         // ----------------------------
@@ -439,18 +471,6 @@ namespace ts {
     private:
         // Constant string "Unreferenced"
         static const UString UNREFERENCED;
-
-        // Check if a PID context exists.
-        bool pidExists(PID pid) const {return _pids.find(pid) != _pids.end();}
-
-        // Return a PID context. Allocate a new entry if PID not found.
-        PIDContextPtr getPID(PID pid, const UString& description = UNREFERENCED);
-
-        // Return an ETID context. Allocate a new entry if ETID not found.
-        ETIDContextPtr getETID(const Section&);
-
-        // Return a service context. Allocate a new entry if service not found.
-        ServiceContextPtr getService(uint16_t service_id);
 
         // Reset the section demux.
         void resetSectionDemux();
