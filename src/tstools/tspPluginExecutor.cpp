@@ -158,7 +158,7 @@ bool ts::tsp::PluginExecutor::isRealTime() const
 // Wait for packets to process or some error condition.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted)
+void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout)
 {
     log(10, u"waitWork(...)");
 
@@ -166,17 +166,19 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
     GuardCondition lock(_global_mutex, _to_do);
 
     PluginExecutor* next = ringNext<PluginExecutor>();
+    timeout = false;
 
-    while (_pkt_cnt == 0 && !_input_end && !next->_tsp_aborting) {
+    while (_pkt_cnt == 0 && !_input_end && !timeout && !next->_tsp_aborting) {
         // If packet area for this processor is empty, wait for some packet.
         // The mutex is implicitely released, we wait for the condition
         // '_to_do' and, once we get it, implicitely relock the mutex.
         // We loop on this until packets are actually available.
-        lock.waitCondition();
+        // If there is a timeout in the packet reception, call the plugin handler.
+        timeout = !lock.waitCondition(_tsp_timeout) && !plugin()->handlePacketTimeout();
     }
 
     pkt_first = _pkt_first;
-    pkt_cnt = std::min(_pkt_cnt, _buffer->count() - _pkt_first);
+    pkt_cnt = timeout ? 0 : std::min(_pkt_cnt, _buffer->count() - _pkt_first);
     bitrate = _bitrate;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
 
@@ -185,5 +187,6 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
     // there is no propagation of packets from output back to input.
     aborted = plugin()->type() != OUTPUT_PLUGIN && next->_tsp_aborting;
 
-    log(10, u"waitWork(pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {pkt_first, pkt_cnt, bitrate, input_end, aborted});
+    log(10, u"waitWork(pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s, timeout = %s)",
+        {pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout});
 }

@@ -51,6 +51,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual bool handlePacketTimeout() override;
 
     private:
 
@@ -84,6 +85,9 @@ namespace ts {
 
         // Compute bitrate. Report any alarm.
         void computeBitrate();
+
+        // Check time and compute bitrate when necessary.
+        void checkTime();
 
         // Inaccessible operations.
         BitrateMonitorPlugin() = delete;
@@ -235,6 +239,9 @@ bool ts::BitrateMonitorPlugin::start()
     _last_second = ::time(nullptr);
     _startup = true;
 
+    // We must never wait for packets more than one second.
+    tsp->setPacketTimeout(MilliSecPerSec);
+
     return true;
 }
 
@@ -258,8 +265,7 @@ void ts::BitrateMonitorPlugin::runAlarmCommand(const ts::UString& parameter)
 
 
 //----------------------------------------------------------------------------
-// Compute bitrate for the monitored PID. Report an alarm if the bitrate
-// is out of allowed range, or back in it.
+// Compute bitrate, report alarms.
 //----------------------------------------------------------------------------
 
 void ts::BitrateMonitorPlugin::computeBitrate()
@@ -277,7 +283,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     // Periodic bitrate display.
     if (_periodic_bitrate > 0 && --_periodic_countdown <= 0) {
         _periodic_countdown = _periodic_bitrate;
-        tsp->info(u"%s, pid %d (0x%X), bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATE | Time::TIME), _pid, _pid, bitrate});
+        tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATE | Time::TIME), _alarm_prefix, bitrate});
     }
 
     // Check the bitrate value, regarding the allowed range.
@@ -321,12 +327,12 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
 
 //----------------------------------------------------------------------------
-// Packet processing method
+// Check time and compute bitrate when necessary.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+void ts::BitrateMonitorPlugin::checkTime()
 {
-    time_t now = ::time(nullptr);
+    const time_t now = ::time(nullptr);
 
     // NOTE : the computation method used here is meaningful only if at least
     // one packet is received per second (whatever its PID).
@@ -351,6 +357,31 @@ ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pk
 
         _last_second = now;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Packet timeout processing method.
+//----------------------------------------------------------------------------
+
+bool ts::BitrateMonitorPlugin::handlePacketTimeout()
+{
+    // Check time and bitrates.
+    checkTime();
+
+    // Always continue waiting, never abort.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing method.
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+{
+    // Check time and bitrates.
+    checkTime();
 
     // If packet's PID matches, increment the number of packets received during the current second.
     if (_full_ts || pkt.getPID() == _pid) {

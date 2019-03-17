@@ -59,18 +59,28 @@ void ts::tsp::OutputExecutor::main()
     debug(u"output thread started");
 
     PacketCounter output_packets = 0;
-    bool aborted;
+    bool aborted = false;
 
     do {
         // Wait for packets to output
-        size_t pkt_first, pkt_cnt;
-        bool input_end;
-        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
+        size_t pkt_first = 0;
+        size_t pkt_cnt = 0;
+        bool input_end = false;
+        bool timeout = false;
+        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
 
         // We ignore the returned "aborted" which comes from the "next"
         // processor in the chain, here the input thread. For the
         // output thread, aborted means was interrupted by user.
         aborted = _tsp_aborting;
+
+        // In case of abort on timeout, notify previous and next plugin, then exit.
+        if (timeout) {
+            // Do not transmit bitrate or input end to next (since next is input processor).
+            passPackets(0, 0, false, true);
+            aborted = true;
+            break;
+        }
 
         // Exit thread if no more packet to process
         if ((pkt_cnt == 0 && input_end) || aborted) {

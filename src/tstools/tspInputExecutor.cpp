@@ -293,14 +293,23 @@ void ts::tsp::InputExecutor::main()
         size_t pkt_first = 0;
         size_t pkt_max = 0;
         BitRate bitrate = 0;
+        bool timeout = false;
 
         // Wait for space in the input buffer.
         // Ignore input_end and bitrate from previous, we are the input processor.
-        waitWork(pkt_first, pkt_max, bitrate, input_end, aborted);
+        waitWork(pkt_first, pkt_max, bitrate, input_end, aborted, timeout);
 
         // If the next thread has given up, give up too since our packets are now useless.
         // Do not even try to add trailing stuffing (--add-stop-stuffing).
         if (aborted) {
+            break;
+        }
+
+        // In case of abort on timeout, notify previous and next plugin, then exit.
+        if (timeout) {
+            // Do not progate abort to previous processor since the "previous" one is the output one.
+            passPackets(0, _tsp_bitrate, true, false);
+            aborted = true;
             break;
         }
 

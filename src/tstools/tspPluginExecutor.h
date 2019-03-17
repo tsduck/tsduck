@@ -221,8 +221,10 @@ namespace ts {
             //! @param [out] bitrate Current bitrate, as computed from previous processors.
             //! @param [out] input_end The previous processor indicates that no more packets will be produced.
             //! @param [out] aborted The *next* processor indicates that it aborts and will no longer accept packets.
+            //! @param [out] timeout No packet could be returned within the timeout specified by the plugin and
+            //! the plugin requested an abort.
             //!
-            void waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted);
+            void waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout);
 
         private:
             Condition _to_do;    // Notify processor to do something

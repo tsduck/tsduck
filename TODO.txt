@@ -5,10 +5,6 @@ TSDuck - List of features to be implemented or fixed
 * Update plugin "zap" to recognize ATSC services by name and rebuild a
   consistent SPTS in PSIP PID.
 
-* Add a "waitWork timeout" in plugin API to be set by plugins which must
-  be notified when no packet is coming. Application to bitrate_monitor:
-  detect zero bitrate (issue #225).
-
 * Improve packet distribution in plugin "merge". Evaluate average stuffing
   distribution, evaluate merged stream bitrate, then smoothen merged packets.
 

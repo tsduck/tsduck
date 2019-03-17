@@ -71,7 +71,8 @@ void ts::tsp::ProcessorExecutor::main()
 
         size_t pkt_first = 0;
         size_t pkt_cnt = 0;
-        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
+        bool timeout = false;
+        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
 
         // If bit rate was never modified by the plugin, always copy the
         // input bitrate as output bitrate. Otherwise, keep previous
@@ -79,6 +80,14 @@ void ts::tsp::ProcessorExecutor::main()
 
         if (bitrate_never_modified) {
             output_bitrate = _tsp_bitrate;
+        }
+
+        // In case of abort on timeout, notify previous and next plugin, then exit.
+
+        if (timeout) {
+            passPackets(0, output_bitrate, true, true);
+            aborted = true;
+            break;
         }
 
         // If next processor has aborted, abort as well.
