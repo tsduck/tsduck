@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  Monitor PID bitrate
+//  Monitor PID or TS bitrate
 //
 //----------------------------------------------------------------------------
 
@@ -48,6 +48,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         BitrateMonitorPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
@@ -58,17 +59,20 @@ namespace ts {
         static constexpr BitRate DEFAULT_BITRATE_MAX = 0xFFFFFFFF;
         static constexpr size_t  DEFAULT_TIME_WINDOW_SIZE = 5;
 
-        // Type indicating status of current bitrate, regarding allowed range
+        // Type indicating status of current bitrate, regarding allowed range.
         enum RangeStatus {LOWER, IN_RANGE, GREATER};
 
-        PID         _pid;                  // Monitored PID
-        BitRate     _min_bitrate;          // Minimum allowed bitrate
-        BitRate     _max_bitrate;          // Maximum allowed bitrate
-        Second      _periodic_bitrate;     // Report bitrate at regular intervals, even if in range
-        Second      _periodic_countdown;   // Countdown to report bitrate
-        RangeStatus _last_bitrate_status;  // Status of the last bitrate, regarding allowed range
-        UString     _alarm_command;        // Alarm command name
-        time_t      _last_second;          // Last second number
+        bool        _full_ts;              // Monitor full TS.
+        PID         _pid;                  // Monitored PID (when _full_ts is false).
+        UString     _tag;                  // Message tag.
+        BitRate     _min_bitrate;          // Minimum allowed bitrate.
+        BitRate     _max_bitrate;          // Maximum allowed bitrate.
+        Second      _periodic_bitrate;     // Report bitrate at regular intervals, even if in range.
+        Second      _periodic_countdown;   // Countdown to report bitrate.
+        RangeStatus _last_bitrate_status;  // Status of the last bitrate, regarding allowed range.
+        UString     _alarm_command;        // Alarm command name.
+        UString     _alarm_prefix;         // Prefix for alarm messages.
+        time_t      _last_second;          // Last second number.
         size_t      _window_size;          // Size (in seconds) of the time window, used to compute bitrate.
         bool        _startup;              // Measurement in progress.
         size_t      _pkt_count_index;      // Index for packet number array.
@@ -81,7 +85,7 @@ namespace ts {
         // Compute bitrate. Report any alarm.
         void computeBitrate();
 
-        // Inaccessible operations
+        // Inaccessible operations.
         BitrateMonitorPlugin() = delete;
         BitrateMonitorPlugin(const BitrateMonitorPlugin&) = delete;
         BitrateMonitorPlugin& operator=(const BitrateMonitorPlugin&) = delete;
@@ -92,9 +96,9 @@ TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_PROCESSOR(bitrate_monitor, ts::BitrateMonitorPlugin)
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;
-const ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MAX;
-const size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
+constexpr ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;
+constexpr ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MAX;
+constexpr size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
 #endif
 
 
@@ -103,22 +107,30 @@ const size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
 //----------------------------------------------------------------------------
 
 ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Monitor bitrate for a given pid", u"[options] pid"),
+    ProcessorPlugin(tsp_, u"Monitor bitrate for TS or a given PID", u"[options]"),
+    _full_ts(false),
     _pid(PID_NULL),
+    _tag(),
     _min_bitrate(0),
     _max_bitrate(0),
     _periodic_bitrate(0),
     _periodic_countdown(0),
     _last_bitrate_status(LOWER),
     _alarm_command(),
+    _alarm_prefix(),
     _last_second(0),
     _window_size(0),
     _startup(false),
     _pkt_count_index(0),
     _pkt_count()
 {
-    option(u"", 0, PIDVAL, 1, 1);
-    help(u"", u"Specifies the PID to monitor.");
+    // The PID was previously passed as argument. We now use option --pid.
+    // We still accept the argument for legacy, but not both.
+    option(u"", 0, PIDVAL, 0, 1);
+    option(u"pid", 0, PIDVAL);
+    help(u"pid",
+         u"Specifies the PID to monitor. "
+         u"By default, when no --pid is specified, monitor the bitrate of the full TS.");
 
     option(u"alarm-command", 'a', STRING);
     help(u"alarm-command", u"'command'",
@@ -143,6 +155,64 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     help(u"periodic-bitrate",
          u"Always report bitrate at the specific interval in seconds, even if the "
          u"bitrate is in range.");
+
+    option(u"tag", 0, STRING);
+    help(u"tag", u"'string'",
+         u"Message tag to be displayed in alarms. "
+         u"Useful when the plugin is used several times in the same process.");
+}
+
+
+//----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::BitrateMonitorPlugin::getOptions()
+{
+    bool ok = true;
+
+    // Get the PID. Accept either --pid or legacy argument, but not both.
+    const bool got_legacy_arg = present(u"");
+    const bool got_pid_option = present(u"pid");
+    _full_ts = !got_legacy_arg && !got_pid_option;
+
+    if (got_legacy_arg && got_pid_option) {
+        tsp->error(u"specify either --pid or legacy argument, but not both");
+        ok = false;
+    }
+    else if (got_legacy_arg) {
+        _pid = intValue<PID>(u"");
+    }
+    else if (got_pid_option) {
+        _pid = intValue<PID>(u"pid");
+    }
+
+    // Get options
+    _tag = value(u"tag");
+    _alarm_command = value(u"alarm-command");
+    _window_size = intValue(u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
+    _min_bitrate = intValue(u"min", DEFAULT_BITRATE_MIN);
+    _max_bitrate = intValue(u"max", DEFAULT_BITRATE_MAX);
+    _periodic_bitrate = intValue(u"periodic-bitrate", 0);
+
+    if (_min_bitrate > _max_bitrate) {
+        tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", {_min_bitrate, _max_bitrate});
+        ok = false;
+    }
+
+    // Prefix for alarm messages.
+    _alarm_prefix = _tag;
+    if (!_alarm_prefix.empty()) {
+        _alarm_prefix += u": ";
+    }
+    if (_full_ts) {
+        _alarm_prefix += u"TS";
+    }
+    else {
+        _alarm_prefix += UString::Format(u"PID 0x%X (%d)", {_pid, _pid});
+    }
+
+    return ok;
 }
 
 
@@ -152,20 +222,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
 
 bool ts::BitrateMonitorPlugin::start()
 {
-    // Get command line arguments
-    _alarm_command = value(u"alarm-command");
-    _pid = intValue<PID>(u"", PID_NULL);
-    _window_size = intValue(u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
-    _min_bitrate = intValue(u"min", DEFAULT_BITRATE_MIN);
-    _max_bitrate = intValue(u"max", DEFAULT_BITRATE_MAX);
-    _periodic_bitrate = intValue(u"periodic-bitrate", 0);
-
-    if (_min_bitrate > _max_bitrate) {
-        tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", {_min_bitrate, _max_bitrate});
-        return false;
-    }
-
-    // Initialize array wick packets count.
+    // Initialize array with packets count.
     _pkt_count.resize(_window_size);
     _pkt_count_index = 0;
 
@@ -237,16 +294,16 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
     // Report an error, if the bitrate status has changed.
     if (new_bitrate_status != _last_bitrate_status) {
-        ts::UString alarmMessage(UString::Format(u"pid %d (0x%X) - bitrate (%'d bits/s)", {_pid, _pid, bitrate}));
+        ts::UString alarmMessage(UString::Format(u"%s bitrate (%'d bits/s) ", {_alarm_prefix, bitrate}));
         switch (new_bitrate_status) {
             case LOWER:
-                alarmMessage += UString::Format(u" is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
+                alarmMessage += UString::Format(u"is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
                 break;
             case IN_RANGE:
-                alarmMessage += UString::Format(u" is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
+                alarmMessage += UString::Format(u"is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
                 break;
             case GREATER:
-                alarmMessage += UString::Format(u" is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
+                alarmMessage += UString::Format(u"is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
                 break;
             default:
                 assert(false); // should not get there
@@ -296,7 +353,7 @@ ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pk
     }
 
     // If packet's PID matches, increment the number of packets received during the current second.
-    if (pkt.getPID() == _pid) {
+    if (_full_ts || pkt.getPID() == _pid) {
         _pkt_count[_pkt_count_index]++;
     }
 

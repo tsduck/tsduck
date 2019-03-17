@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1169
+VERSION 3.17-1172
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -32,6 +32,8 @@ VERSION 3.17-1169
     "tsterinfo".
   * The command "tsscan" can now perform VHF band scanning (option --vhf-band).
     Offsets are no longer used by default, added options --use-offsets.
+  * Added options --pid and --tag to plugin "bitrate_monitor". The plugin can
+    now also monitor the bitrate of the complete TS.
 
 [BUG] Bug fixes:
 
