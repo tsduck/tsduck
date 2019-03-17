@@ -14,7 +14,8 @@ VERSION 3.17-1172
   * Added option --evaluate-pcr-offset to plugin "pcrextract".
   * Added option --dvb-cissa to plugins "scrambler" and "descrambler".
   * Added options --pid and --tag to plugin "bitrate_monitor". The plugin can
-    now also monitor the bitrate of the complete TS.
+    now also monitor the bitrate of the complete TS and can detect zero bitrate
+    on the transport stream.
   * In various analysis commands and plugins, ATSC signalization is now known.
   * General list of improvements regarding tuners and scanning:
     - Added region-specific UHF/VHF frequency layouts in various commands and

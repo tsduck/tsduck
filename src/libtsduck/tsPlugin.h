@@ -103,7 +103,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 9;
+        static const int API_VERSION = 10;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -133,6 +133,19 @@ namespace ts {
         //! @return True if the current plugin environment should use defaults for real-time.
         //!
         bool realtime() const {return _use_realtime;}
+
+        //!
+        //! Set a timeout for the reception of packets by the current plugin.
+        //! For input plugins, this is the timeout for the availability of free space in input buffer.
+        //!
+        //! When the timeout is triggered, the method handlePacketTimeout() is invoked in the plugin.
+        //! If the method returns true, the application continues waiting for packets.
+        //! If the method returns false, the plugin is aborted.
+        //!
+        //! @param [in] timeout Maximum number of milliseconds to wait for packets in the buffer.
+        //! The default timeout is infinite.
+        //!
+        void setPacketTimeout(MilliSecond timeout) {_tsp_timeout = timeout;}
 
         //!
         //! Check for aborting application.
@@ -177,6 +190,7 @@ namespace ts {
     protected:
         bool          _use_realtime;  //!< The plugin should use realtime defaults.
         BitRate       _tsp_bitrate;   //!< TSP input bitrate.
+        MilliSecond   _tsp_timeout;   //!< Timeout when waiting for packets (infinite by default).
         volatile bool _tsp_aborting;  //!< TSP is currently aborting.
 
         //!
@@ -307,6 +321,17 @@ namespace ts {
         //! @return The plugin type.
         //!
         virtual PluginType type() const = 0;
+
+        //!
+        //! Invoked when no packet could be retrieved within the specified timeout.
+        //!
+        //! For input plugins, this method is called when no space in input buffer
+        //! can be found within the specified timeout.
+        //!
+        //! @return True if the application should continue to wait, false to abort.
+        //! The default implementation aborts (but the default timeout is infinite).
+        //!
+        virtual bool handlePacketTimeout();
 
         //!
         //! Constructor.
