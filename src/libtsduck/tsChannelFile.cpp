@@ -52,7 +52,10 @@ ts::ChannelFile::Service::Service(uint16_t id_) :
     lcn(),
     pmtPID(),
     type(),
-    cas()
+    cas(),
+    atscType(),
+    atscMajorId(),
+    atscMinorId()
 {
 }
 
@@ -108,10 +111,19 @@ ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceGetOrCreate
 
 ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByName(const UString& name, bool strict) const
 {
+    // Check if the name has "major.minor" syntax.
+    uint16_t majorId = 0;
+    uint16_t minorId = 0;
+    const bool atscId = !strict && name.scan(u"%d.%d", {&majorId, &minorId});
+
+    // Now lookup all services in transport.
     for (size_t i = 0; i < _services.size(); ++i) {
         const ServicePtr& srv(_services[i]);
         assert(!srv.isNull());
-        if ((strict && srv->name == name) || (!strict && name.similar(srv->name))) {
+        if ((strict && srv->name == name) ||
+            (!strict && name.similar(srv->name)) ||
+            (atscId && srv->atscMajorId == majorId && srv->atscMinorId == minorId))
+        {
             return srv;
         }
     }
@@ -178,6 +190,15 @@ void ts::ChannelFile::TransportStream::addServices(const ServiceList& list)
             }
             if (it->hasCAControlled()) {
                 srv->cas = it->getCAControlled();
+            }
+            if (it->hasTypeATSC()) {
+                srv->atscType = it->getTypeATSC();
+            }
+            if (it->hasMajorIdATSC()) {
+                srv->atscMajorId = it->getMajorIdATSC();
+            }
+            if (it->hasMinorIdATSC()) {
+                srv->atscMinorId = it->getMinorIdATSC();
             }
         }
     }
@@ -410,7 +431,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
             uint16_t onid = 0;
             bool tsOk =
                 (*itts)->getIntAttribute<uint16_t>(tsid, u"id", true) &&
-                (*itts)->getIntAttribute<uint16_t>(onid, u"onid", true);
+                (*itts)->getIntAttribute<uint16_t>(onid, u"onid", false, 0xFFFF);
             success = tsOk && success;
 
             if (tsOk) {
@@ -435,6 +456,9 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                             e->getOptionalIntAttribute(srv->pmtPID, u"PMTPID", PID(0), PID(PID_NULL)) &&
                             e->getOptionalIntAttribute(srv->type, u"type") &&
                             e->getOptionalBoolAttribute(srv->cas, u"cas") &&
+                            e->getOptionalIntAttribute<uint8_t>(srv->atscType, u"atsc_type", 0, 0x3F) &&
+                            e->getOptionalIntAttribute<uint16_t>(srv->atscMajorId, u"atsc_major_id", 0, 0x03FF) &&
+                            e->getOptionalIntAttribute<uint16_t>(srv->atscMinorId, u"atsc_minor_id", 0, 0x03FF) &&
                             success;
 
                         // Add the service in the transport stream.
@@ -520,7 +544,9 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
             // Create one transport stream element.
             xml::Element* xts = xnet->addElement(u"ts");
             xts->setIntAttribute(u"id", ts->id, true);
-            xts->setIntAttribute(u"onid", ts->onid, true);
+            if (ts->onid != 0xFFFF) {
+                xts->setIntAttribute(u"onid", ts->onid, true);
+            }
 
             // Set tuner parameters. No error if null (this is just an incomplete description).
             if (!ts->tune.isNull()) {
@@ -541,6 +567,9 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
                 xsrv->setOptionalIntAttribute(u"PMTPID", srv->pmtPID, true);
                 xsrv->setOptionalIntAttribute(u"type", srv->type, true);
                 xsrv->setOptionalBoolAttribute(u"cas", srv->cas);
+                xsrv->setOptionalIntAttribute(u"atsc_type", srv->atscType, true);
+                xsrv->setOptionalIntAttribute(u"atsc_major_id", srv->atscMajorId, false);
+                xsrv->setOptionalIntAttribute(u"atsc_minor_id", srv->atscMinorId, false);
             }
         }
     }

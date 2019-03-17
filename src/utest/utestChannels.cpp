@@ -84,8 +84,8 @@ void ChannelsTest::testText()
         u"  <network id=\"0x1234\" type=\"ATSC\">\n"
         u"    <ts id=\"0x5678\" onid=\"0x9ABC\">\n"
         u"      <atsc frequency=\"123,456\" modulation=\"16-VSB\"/>\n"
-        u"      <service id=\"0x0001\"/>\n"
-        u"      <service id=\"0x0002\" name=\"Foo Channel\" provider=\"Foo Provider\" LCN=\"23\" PMTPID=\"0x0789\" type=\"0x12\" cas=\"true\"/>\n"
+        u"      <service id=\"0x0001\" atsc_major_id=\"1\" atsc_minor_id=\"3\"/>\n"
+        u"      <service id=\"0x0002\" name=\"Foo Channel\" provider=\"Foo Provider\" LCN=\"23\" PMTPID=\"0x0789\" type=\"0x12\" cas=\"true\" atsc_major_id=\"1\" atsc_minor_id=\"4\"/>\n"
         u"    </ts>\n"
         u"  </network>\n"
         u"  <network id=\"0x7883\" type=\"DVB-C\">\n"
@@ -182,6 +182,44 @@ void ChannelsTest::testText()
     CPPUNIT_ASSERT(!srv->cas.set());
 
     CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false, NULLREP));
+    CPPUNIT_ASSERT(net.isNull());
+    CPPUNIT_ASSERT(ts.isNull());
+    CPPUNIT_ASSERT(srv.isNull());
+
+    // Search by ATSC major.minor
+    CPPUNIT_ASSERT(channels.searchService(net, ts, srv, u"1.4", false));
+
+    CPPUNIT_ASSERT(!net.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), net->id);
+    CPPUNIT_ASSERT_EQUAL(ts::ATSC, net->type);
+
+    CPPUNIT_ASSERT(!ts.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x5678), ts->id);
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x9ABC), ts->onid);
+    CPPUNIT_ASSERT(!ts->tune.isNull());
+    atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
+    CPPUNIT_ASSERT(atsc != nullptr);
+    CPPUNIT_ASSERT_EQUAL(uint64_t(123456), atsc->frequency);
+    CPPUNIT_ASSERT_EQUAL(ts::VSB_16, atsc->modulation);
+
+    CPPUNIT_ASSERT(!srv.isNull());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(2), srv->id);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Channel", srv->name);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Provider", srv->provider);
+    CPPUNIT_ASSERT(srv->lcn.set());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(23), srv->lcn.value());
+    CPPUNIT_ASSERT(srv->pmtPID.set());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
+    CPPUNIT_ASSERT(srv->type.set());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(0x12), srv->type.value());
+    CPPUNIT_ASSERT(srv->cas.set());
+    CPPUNIT_ASSERT(srv->cas.value());
+    CPPUNIT_ASSERT(srv->atscMajorId.set());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(1), srv->atscMajorId.value());
+    CPPUNIT_ASSERT(srv->atscMinorId.set());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(4), srv->atscMinorId.value());
+
+    CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"1.5", false, NULLREP));
     CPPUNIT_ASSERT(net.isNull());
     CPPUNIT_ASSERT(ts.isNull());
     CPPUNIT_ASSERT(srv.isNull());

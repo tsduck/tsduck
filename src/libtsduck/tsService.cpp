@@ -48,7 +48,9 @@ ts::Service::Service() :
     _eits_present(),
     _eitpf_present(),
     _ca_controlled(),
-    _running_status()
+    _running_status(),
+    _major_id_atsc(),
+    _minor_id_atsc()
 {
 }
 
@@ -108,6 +110,8 @@ void ts::Service::clear()
     _eitpf_present.reset();
     _ca_controlled.reset();
     _running_status.reset();
+    _major_id_atsc.reset();
+    _minor_id_atsc.reset();
 }
 
 
@@ -156,6 +160,12 @@ uint32_t ts::Service::getFields() const
     }
     if (_running_status.set()) {
         fields |= RUNNING;
+    }
+    if (_major_id_atsc.set()) {
+        fields |= MAJORID_ATSC;
+    }
+    if (_minor_id_atsc.set()) {
+        fields |= MINORID_ATSC;
     }
     return fields;
 }

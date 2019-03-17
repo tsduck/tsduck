@@ -6,34 +6,36 @@ VERSION 3.17-1172
 
 [IMP] Improvements on existing commands and plugins:
 
-  * In various analysis commands and plugins, ATSC signalization is now
-    recognized.
   * In commands "tsanalyze", "tsdump", "tspsi", "tstabdump", "tstables", the
     display is now sent through a pager application (less/more) when the output
     device is a terminal. Added option --no-pager to disable this.
   * In the input plugin "hls", after loading a master playlist, if the selected
     media playlist is not found, try next one, etc.
   * Added option --evaluate-pcr-offset to plugin "pcrextract".
-  * The old "zap" format which was inherited from some Linux scanning tools is
-    no longer supported by TSDuck. Instead, a more generic and portable XML
-    format is used. See the user's guide for more details. As a consequence:
-    . In plugin "dvb" and command "tsscan": Added option --tuning-file,
-      removed options --tune and --zap-config-file.
-    . In plugin "nitscan" and command "tsscan", added options --save-channels
-      and --update-channels.
-  * In plugin "dvb" and command "tsscan": Added --guard-interval values
-    "1/128", "19/128", "19/256". Added --transmission-mode values "1K",
-    "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation
-    values "16-APSK", "32-APSK" (DVB-S2).
   * Added option --dvb-cissa to plugins "scrambler" and "descrambler".
-  * Added region-specific UHF/VHF frequency layouts in various commands and
-    plugins. Added option --hf-band-region to plugins "dvb", "dektec" and
-    commands "tsterinfo", "tsscan". Added option --default-region to command
-    "tsterinfo".
-  * The command "tsscan" can now perform VHF band scanning (option --vhf-band).
-    Offsets are no longer used by default, added options --use-offsets.
   * Added options --pid and --tag to plugin "bitrate_monitor". The plugin can
     now also monitor the bitrate of the complete TS.
+  * In various analysis commands and plugins, ATSC signalization is now known.
+  * General list of improvements regarding tuners and scanning:
+    - Added region-specific UHF/VHF frequency layouts in various commands and
+      plugins. Added option --hf-band-region to plugins "dvb", "dektec" and
+      commands "tsterinfo", "tsscan". Added option --default-region to command
+      "tsterinfo".
+    - The command "tsscan" can now perform VHF band scanning: added option
+      --vhf-band. Offsets are no longer used by default: added option
+      --use-offsets.
+    - In plugin "dvb" and command "tsscan": Added --guard-interval values
+      "1/128", "19/128", "19/256". Added --transmission-mode values "1K",
+      "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation
+      values "16-APSK", "32-APSK" (DVB-S2). The option --channel-transponder
+      now accepts ATSC channel ids (major.minor).
+    - The old "zap" format which was inherited from some Linux scanning tools
+      is no longer supported by TSDuck. Instead, a more generic and portable
+      XML format is used. See the user's guide for more details. Impact:
+      . In plugin "dvb" and command "tsscan": Added option --tuning-file,
+        removed options --tune and --zap-config-file.
+      . In plugin "nitscan" and command "tsscan", added options --save-channels
+        and --update-channels.
 
 [BUG] Bug fixes:
 

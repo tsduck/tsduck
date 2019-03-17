@@ -176,7 +176,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
             }
         }
 
-        // ATSC service type, name are extracted from the VCT.
+        // ATSC service descriptions are extracted from the VCT.
         if (!_vct.isNull()) {
             // Search service in the VCT
             const auto sit = _vct->findService(srv.getId());
@@ -188,6 +188,12 @@ bool ts::TSScanner::getServices(ServiceList& services) const
                     srv.setName(sit->second.short_name);
                 }
                 srv.setCAControlled(sit->second.access_controlled);
+                if (sit->second.major_channel_number > 0) {
+                    // Major channel numbers start at 1.
+                    srv.setMajorIdATSC(sit->second.major_channel_number);
+                }
+                // Minor channel number 0 is valid (means analog).
+                srv.setMinorIdATSC(sit->second.minor_channel_number);
             }
         }
 
