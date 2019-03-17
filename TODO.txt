@@ -5,9 +5,6 @@ TSDuck - List of features to be implemented or fixed
 * Update plugin "zap" to recognize ATSC services by name and rebuild a
   consistent SPTS in PSIP PID.
 
-* In plugin "bitrate_monitor", add an option to monitor the global TS
-  bitrate instead of one PID.
-
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)

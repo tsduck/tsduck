@@ -346,16 +346,19 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
         const IOption& opt(it->second);
         if (opt.name.empty()) {
             // This is the parameters (ie. not options).
-            if (!text.empty()) {
+            // Print nothing if parameters are undocumented.
+            if (!opt.help.empty() || !opt.syntax.empty()) {
+                if (!text.empty()) {
+                    text += LINE_FEED;
+                }
+                UString title(u"Parameter");
+                if (opt.max_occur > 1) {
+                    title += u's';
+                }
+                text += HelpLines(0, title + u':', line_width);
                 text += LINE_FEED;
+                text += HelpLines(1, opt.help.empty() ? opt.syntax : opt.help, line_width);
             }
-            UString title(u"Parameter");
-            if (opt.max_occur > 1) {
-                title += u's';
-            }
-            text += HelpLines(0, title + u':', line_width);
-            text += LINE_FEED;
-            text += HelpLines(1, opt.help.empty() ? opt.syntax : opt.help, line_width);
         }
         else {
             // This is an option. Add 'Options:' the first time.
