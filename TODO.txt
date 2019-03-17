@@ -5,9 +5,6 @@ TSDuck - List of features to be implemented or fixed
 * Update plugin "zap" to recognize ATSC services by name and rebuild a
   consistent SPTS in PSIP PID.
 
-* For ATSC channels, store major.minor in XML channels files (from tsscan).
-  Then allow --channel major.minor in tuning options (issue #243).
-
 * Add a "waitWork timeout" in plugin API to be set by plugins which must
   be notified when no packet is coming. Application to bitrate_monitor:
   detect zero bitrate (issue #225).

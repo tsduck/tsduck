@@ -131,13 +131,16 @@ namespace ts {
         class TSDUCKDLL Service
         {
         public:
-            uint16_t           id;        //!< Service Id.
-            UString            name;      //!< Service Name.
-            UString            provider;  //!< Provider Name.
-            Variable<uint16_t> lcn;       //!< Logical Channel Number (optional).
-            Variable<PID>      pmtPID;    //!< PMT PID (optional).
-            Variable<uint8_t>  type;      //!< Service Type as declared in service_descriptor (optional).
-            Variable<bool>     cas;       //!< CA-controlled as declared in the SDT (optional).
+            uint16_t           id;          //!< Service Id.
+            UString            name;        //!< Service Name.
+            UString            provider;    //!< Provider Name.
+            Variable<uint16_t> lcn;         //!< Logical Channel Number (optional).
+            Variable<PID>      pmtPID;      //!< PMT PID (optional).
+            Variable<uint8_t>  type;        //!< DVB service type as declared in service_descriptor (optional).
+            Variable<bool>     cas;         //!< CA-controlled as declared in the SDT (optional).
+            Variable<uint8_t>  atscType;    //!< ATSC service type as declared in TVCT or CVCT (6 bits, optional).
+            Variable<uint16_t> atscMajorId; //!< ATSC service major id as declared in TVCT or CVCT (10 bits, optional).
+            Variable<uint16_t> atscMinorId; //!< ATSC service minor id as declared in TVCT or CVCT (10 bits, optional).
 
             //!
             //! Default constructor.
@@ -195,7 +198,9 @@ namespace ts {
             //!
             //! Get a service by name in the transport stream.
             //! @param [in] name Service name.
-            //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+            //! @param [in] strict If true, search exactly @a name.
+            //! If false, the comparison is case-insensitive and spaces are ignored.
+            //! If false, @a name can also be "major.minor" for ATSC services.
             //! @return A safe pointer to the service description or a null pointer if the specified service does not exist.
             //!
             ServicePtr serviceByName(const UString& name, bool strict = true) const;
@@ -320,7 +325,9 @@ namespace ts {
         //! @param [out] ts Returned transport stream of the service.
         //! @param [out] srv Returned service.
         //! @param [in] name Service name.
-        //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+        //! @param [in] strict If true, search exactly @a name.
+        //! If false, the comparison is case-insensitive and spaces are ignored.
+        //! If false, @a name can also be "major.minor" for ATSC services.
         //! @param [in,out] report Where to report errors.
         //! @return True if the service is found, false if the specified service does not exist.
         //!
@@ -341,7 +348,9 @@ namespace ts {
         //! @param [out] srv Returned service.
         //! @param [in] type Search only these tuner types.
         //! @param [in] name Service name.
-        //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+        //! @param [in] strict If true, search exactly @a name.
+        //! If false, the comparison is case-insensitive and spaces are ignored.
+        //! If false, @a name can also be "major.minor" for ATSC services.
         //! @param [in,out] report Where to report errors.
         //! @return True if the service is found, false if the specified service does not exist.
         //!
@@ -359,7 +368,9 @@ namespace ts {
         //!
         //! Get tuner parameters from a service name in any network of the file.
         //! @param [in] name Service name.
-        //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+        //! @param [in] strict If true, search exactly @a name.
+        //! If false, the comparison is case-insensitive and spaces are ignored.
+        //! If false, @a name can also be "major.minor" for ATSC services.
         //! @param [in,out] report Where to report errors.
         //! @return A safe pointer to the tuner parameters or a null pointer if the specified service does not exist.
         //!
@@ -372,7 +383,9 @@ namespace ts {
         //! Get tuner parameters from a service name in any network of a given type of the file.
         //! @param [in] type Search only these tuner types.
         //! @param [in] name Service name.
-        //! @param [in] strict If true, search exactly @a name. If false, the comparison is case-insensitive and spaces are ignored.
+        //! @param [in] strict If true, search exactly @a name.
+        //! If false, the comparison is case-insensitive and spaces are ignored.
+        //! If false, @a name can also be "major.minor" for ATSC services.
         //! @param [in,out] report Where to report errors.
         //! @return A safe pointer to the tuner parameters or a null pointer if the specified service does not exist.
         //!

@@ -50,8 +50,7 @@
            type="ATSC|DVB-C|DVB-S|DVB-T, required">
 
     <!-- Description of one transport stream -->
-    <ts id="uint16, required"
-        onid="uint16, required">
+    <ts id="uint16, required" onid="uint16, optional">
 
       <!-- Tuning information: exactly one of atsc, dvbc, dvbs, dvbt (same as network type) -->
       <atsc frequency="uint64, required"
@@ -94,7 +93,11 @@
                LCN="uint16, optional"
                PMTPID="uint13, optional"
                type="uint8, optional"
-               cas="bool, optional"/>
+               cas="bool, optional"
+               atsc_type="uint6, optional"
+               atsc_major_id="uint10, optional"
+               atsc_minor_id="uint10, optional"/>
+
     </ts>
   </network>
 </tsduck>
