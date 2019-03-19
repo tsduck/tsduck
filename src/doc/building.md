@@ -20,7 +20,7 @@ on Windows and Linux. macOS can only support files and IP for TS input and outpu
 - Doxygen for Windows. Download [here](http://www.doxygen.org/download.html).
 
 - Graphviz for Windows (used by Doxygen to generate graphs and diagrams).
-  Download [here](http://www.graphviz.org/Download_windows.php).
+  Download [here](https://graphviz.gitlab.io/_pages/Download/Download_windows.html).
 
 - NSIS, the NullSoft Scriptable Install System.
   Download [here](http://nsis.sourceforge.net/Download).
