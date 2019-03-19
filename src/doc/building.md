@@ -176,7 +176,7 @@ current version of TSDuck is 3.12-745.
 
 | File name                             | Description
 | ------------------------------------- | -----------------------------------------------------
-| TSDduck-3.12-745-src.zip              | Source archive on Windows
+| TSDuck-3.12-745-src.zip               | Source archive on Windows
 | tsduck-3.12-745.tgz                   | Source archive on Linux and macOS
 | tsduck_3.12-745_amd64.deb             | Binary package for 64-bit Ubuntu
 | tsduck_3.12-745_armhf.deb             | Binary package for 32-bit Raspbian (Raspberry Pi)

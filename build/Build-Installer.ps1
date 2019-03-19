@@ -239,7 +239,7 @@ if (-not $NoPortable -and $Win64) {
 if (-not $NoSource) {
 
     # Source archive name.
-    $SrcArchive = (Join-Path $InstallerDir "TSDduck-${Version}-src.zip")
+    $SrcArchive = (Join-Path $InstallerDir "TSDuck-${Version}-src.zip")
 
     # Create a temporary directory.
     $TempDir = New-TempDirectory
