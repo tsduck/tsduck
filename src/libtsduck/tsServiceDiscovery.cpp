@@ -305,11 +305,8 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
         _report.verbose(u"found service \"%s\", service id is 0x%X (%d)", {getName(), getId(), getId()});
     }
 
-    // Now collect suitable information from the VCT. ATSC info is a subset of DVB info.
-    setTSId(srv->second.channel_TSID);
-    setCAControlled(srv->second.access_controlled);
-    setTypeATSC(srv->second.service_type);
-    setName(srv->second.short_name);
+    // Now collect suitable information from the VCT.
+    srv->second.setService(*this);
 }
 
 

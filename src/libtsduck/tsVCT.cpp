@@ -80,7 +80,23 @@ ts::VCT::Channel::Channel(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
-// Search a service by name.
+// Set all known values in a Service object.
+//----------------------------------------------------------------------------
+
+void ts::VCT::Channel::setService(Service& service) const
+{
+    service.setId(program_number);
+    service.setTSId(channel_TSID);
+    service.setName(short_name);
+    service.setMajorIdATSC(major_channel_number);
+    service.setMinorIdATSC(minor_channel_number);
+    service.setTypeATSC(service_type);
+    service.setCAControlled(access_controlled);
+}
+
+
+//----------------------------------------------------------------------------
+// Search a service by name or id.
 //----------------------------------------------------------------------------
 
 ts::VCT::ChannelList::const_iterator ts::VCT::findService(uint16_t id, bool same_ts) const
@@ -97,11 +113,11 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findService(uint16_t id, bool same
     return channels.end();
 }
 
-ts::VCT::ChannelList::const_iterator ts::VCT::findService(const UString& name, bool exact_match, bool same_ts) const
+ts::VCT::ChannelList::const_iterator ts::VCT::findService(uint16_t major, uint16_t minor, bool same_ts) const
 {
     for (auto it = channels.begin(); it != channels.end(); ++it) {
         if (!same_ts || it->second.channel_TSID == transport_stream_id) {
-            if ((exact_match && name == it->second.short_name) || (!exact_match && name.similar(it->second.short_name))) {
+            if (major == it->second.major_channel_number && minor == it->second.minor_channel_number) {
                 return it;
             }
         }
@@ -111,23 +127,47 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findService(const UString& name, b
     return channels.end();
 }
 
+ts::VCT::ChannelList::const_iterator ts::VCT::findService(const UString& name, bool exact_match, bool same_ts) const
+{
+    // Search using various interpretations of "name".
+    Service service(name);
+    return findServiceInternal(service, exact_match, same_ts);
+}
+
 bool ts::VCT::findService(Service& service, bool exact_match, bool same_ts) const
 {
-    if (!service.hasName()) {
-        // No name set, can't find the service.
-        return false;
+    return findServiceInternal(service, exact_match, same_ts) != channels.end();
+}
+
+ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& service, bool exact_match, bool same_ts) const
+{
+    ChannelList::const_iterator srv = channels.end();
+    if (service.hasId()) {
+        // Search by service id.
+        srv = findService(service.getId(), same_ts);
     }
-    // Search the service by name.
-    const auto it = findService(service.getName(), exact_match, same_ts);
-    if (it == channels.end()) {
-        // Service not found.
-        return false;
+    else if (service.hasMajorIdATSC() && service.hasMinorIdATSC()) {
+        // Search by major.minor id.
+        srv = findService(service.getMajorIdATSC(), service.getMinorIdATSC(), same_ts);
     }
-    else {
-        // Service found, set the service id ("program number" in ATSC parlance).
-        service.setId(it->second.program_number);
-        return true;
+    else if (service.hasName()) {
+        // Search by service name.
+        const UString name(service.getName());
+        for (srv = channels.begin(); srv != channels.end(); ++srv) {
+            if (!same_ts || srv->second.channel_TSID == transport_stream_id) {
+                if ((exact_match && name == srv->second.short_name) || (!exact_match && name.similar(srv->second.short_name))) {
+                    break;
+                }
+            }
+        }
     }
+
+    if (srv != channels.end()) {
+        // Service found, set known fields.
+        srv->second.setService(service);
+    }
+
+    return srv;
 }
 
 

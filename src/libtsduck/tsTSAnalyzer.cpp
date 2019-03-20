@@ -823,9 +823,14 @@ void ts::TSAnalyzer::analyzeVCT(const VCT& vct)
         if (it->second.channel_TSID == vct.transport_stream_id) {
             // Get or create the service with this service id ("program number" in ATSC parlance).
             ServiceContextPtr svp(getService(it->second.program_number));
-            if (!it->second.short_name.empty()) {
+            const UString name(it->second.short_name.toTrimmed());
+            if (!name.empty()) {
                 // Update the service name.
-                svp->name = it->second.short_name;
+                svp->name = name;
+            }
+            // Provider is a DVB concept, we replace it with major.minor with ATSC.
+            if (svp->provider.empty()) {
+                svp->provider = UString::Format(u"ATSC %d.%d", {it->second.major_channel_number, it->second.minor_channel_number});
             }
         }
     }
