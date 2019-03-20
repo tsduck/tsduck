@@ -2,9 +2,6 @@
 TSDuck - List of features to be implemented or fixed
 ====================================================
 
-* Update plugin "zap" to recognize ATSC services by name and rebuild a
-  consistent SPTS in PSIP PID.
-
 * Improve packet distribution in plugin "merge". Evaluate average stuffing
   distribution, evaluate merged stream bitrate, then smoothen merged packets.
 

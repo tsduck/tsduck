@@ -77,6 +77,12 @@ namespace ts {
             //!
             explicit Channel(const AbstractTable* table);
 
+            //!
+            //! Set all known values in a Service object.
+            //! @param [in,out] service Service object to update.
+            //!
+            void setService(Service& service) const;
+
         private:
             // Inaccessible operations.
             Channel() = delete;
@@ -116,6 +122,15 @@ namespace ts {
         ChannelList::const_iterator findService(uint16_t id, bool same_ts = true) const;
 
         //!
+        //! Search a service by major.minor id.
+        //! @param [in] major Major id to search.
+        //! @param [in] minor Minor id to search.
+        //! @param [in] same_ts If true, only look for services in the same TS as the VCT.
+        //! @return An iterator to the service if found, channels.end() if not found.
+        //!
+        ChannelList::const_iterator findService(uint16_t major, uint16_t minor, bool same_ts = true) const;
+
+        //!
         //! Search a service by name.
         //! @param [in] name Service name to search.
         //! @param [in] exact_match If true, the service name must be exactly
@@ -127,8 +142,8 @@ namespace ts {
         ChannelList::const_iterator findService(const UString& name, bool exact_match = false, bool same_ts = true) const;
 
         //!
-        //! Search a service by name, using a ts::Service class.
-        //! @param [in,out] service Service description. Use service name to search.
+        //! Search a service by name or ATSC major.minor, using a ts::Service class.
+        //! @param [in,out] service Service description. Use service name or major.minor to search.
         //! Set the service id if found.
         //! @param [in] exact_match If true, the service name must be exactly
         //! identical to the name in @a service. If it is false, the search is case-insensitive
@@ -164,6 +179,9 @@ namespace ts {
                         uint8_t* payload,
                         uint8_t*& data,
                         size_t& remain) const;
+
+        // Internal version of find by Service class.
+        ChannelList::const_iterator findServiceInternal(Service& service, bool exact_match, bool same_ts) const;
 
         // XML values for modulation mode and service_type.
         static const Enumeration ModulationModeEnum;

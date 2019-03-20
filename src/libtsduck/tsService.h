@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Describe a DVB service
+//!  Describe a DVB or ATSC service
 //!
 //----------------------------------------------------------------------------
 
@@ -36,17 +36,18 @@
 #include "tsMPEG.h"
 #include "tsUString.h"
 #include "tsVariable.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     //!
-    //! Describe a DVB service.
+    //! Describe a DVB or ATSC service.
     //! @ingroup mpeg
     //!
     //! An instance of this class contains all possible properties of a
     //! DVB service. But all properties are optional. They may be set and
     //! cleared. Check the availability of a property before getting it.
     //!
-    class TSDUCKDLL Service
+    class TSDUCKDLL Service: public StringifyInterface
     {
     public:
         //!
@@ -85,6 +86,9 @@ namespace ts {
         //! Clear all fields.
         //!
         virtual void clear();
+
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
 
         // Accessors to the properties are repeated, use macros.
 
