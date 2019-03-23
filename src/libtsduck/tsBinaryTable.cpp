@@ -179,6 +179,16 @@ bool ts::BinaryTable::operator==(const BinaryTable& table) const
 
 
 //----------------------------------------------------------------------------
+// Override of AbstractDefinedByStandards, get standard from table id.
+//----------------------------------------------------------------------------
+
+ts::Standards ts::BinaryTable::definingStandards() const
+{
+    return TablesFactory::Instance()->getTableStandards(tableId());
+}
+
+
+//----------------------------------------------------------------------------
 // Modifiable properties.
 //----------------------------------------------------------------------------
 
@@ -366,8 +376,10 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
         _sections[index] = sect;
     }
 
-    // The table becomes valid if there is no more missing section
+    // Propagate the list of standards in the environment.
+    addAllStandards(sect->allStandards());
 
+    // The table becomes valid if there is no more missing section
     _is_valid = _missing_count == 0;
     assert(_missing_count >= 0);
 

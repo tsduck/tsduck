@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::AIT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::AIT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::AIT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::AIT::DisplaySection, MY_TID);
 
 //----------------------------------------------------------------------------

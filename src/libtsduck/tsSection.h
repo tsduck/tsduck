@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsAbstractDefinedByStandards.h"
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
@@ -57,7 +57,7 @@ namespace ts {
     //! Typically, if the ByteBlock comes from the wire, use CHECK.
     //! If the ByteBlock is built by the application, use COMPUTE,
     //!
-    class TSDUCKDLL Section
+    class TSDUCKDLL Section : public AbstractDefinedByStandards
     {
     public:
         //!
@@ -316,7 +316,8 @@ namespace ts {
         //! Check if the section is a short one.
         //! @return True if the section is a short one.
         //!
-        bool isShortSection() const {
+        bool isShortSection() const
+        {
             return _is_valid ? ((*_data)[1] & 0x80) == 0 : false;
         }
 
@@ -629,6 +630,9 @@ namespace ts {
         //!
         template <class CONTAINER>
         static PacketCounter PacketCount(const CONTAINER& container, bool pack = true);
+
+        // Override of AbstractDefinedByStandards
+        virtual Standards definingStandards() const override;
 
     private:
         // Private fields

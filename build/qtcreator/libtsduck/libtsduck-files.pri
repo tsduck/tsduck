@@ -5,6 +5,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.h \
     ../../../src/libtsduck/tsAbstractAVCData.h \
     ../../../src/libtsduck/tsAbstractAVCStructure.h \
+    ../../../src/libtsduck/tsAbstractDefinedByStandards.h \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsAbstractDemux.h \
     ../../../src/libtsduck/tsAbstractDescrambler.h \
@@ -499,6 +500,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
     ../../../src/libtsduck/tsAbstractAVCData.cpp \
     ../../../src/libtsduck/tsAbstractAVCStructure.cpp \
+    ../../../src/libtsduck/tsAbstractDefinedByStandards.cpp \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDemux.cpp \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \

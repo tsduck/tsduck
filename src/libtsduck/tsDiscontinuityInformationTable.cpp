@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::DiscontinuityInformationTable::DisplaySection, MY_TID);
 
 

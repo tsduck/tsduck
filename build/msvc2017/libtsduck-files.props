@@ -7,6 +7,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCData.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDefinedByStandards.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
@@ -511,6 +512,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCData.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDefinedByStandards.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
