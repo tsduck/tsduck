@@ -105,7 +105,7 @@ ts::PDS ts::DescriptorList::defaultPDS() const
         // Unknown table, assume DVB rules.
         return 0;
     }
-    else if ((_table->standards() & STD_ATSC) != 0) {
+    else if (((_table->definingStandards() | _table->allStandards()) & STD_ATSC) != 0) {
         // Use fake PDS for ATSC descriptors.
         return PDS_ATSC;
     }

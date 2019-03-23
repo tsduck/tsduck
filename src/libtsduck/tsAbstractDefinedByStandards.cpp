@@ -27,35 +27,45 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsCVCT.h"
-#include "tsTablesFactory.h"
+#include "tsAbstractDefinedByStandards.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"CVCT"
-#define MY_TID ts::TID_CVCT
-#define MY_STD ts::STD_ATSC
 
-TS_XML_TABLE_FACTORY(ts::CVCT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::CVCT, MY_TID, MY_STD);
-TS_ID_SECTION_DISPLAY(ts::CVCT::DisplaySection, MY_TID);
+//----------------------------------------------------------------------------
+// Constructors, assignments and destructors.
+//----------------------------------------------------------------------------
+
+ts::AbstractDefinedByStandards::AbstractDefinedByStandards(Standards standards) :
+    _definingStandards(standards),
+    _allStandards(standards)
+{
+}
+
+ts::AbstractDefinedByStandards::~AbstractDefinedByStandards()
+{
+}
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Default implementations of virtual methods.
 //----------------------------------------------------------------------------
 
-ts::CVCT::CVCT(uint8_t version_, bool is_current_) :
-    VCT(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
+ts::Standards ts::AbstractDefinedByStandards::definingStandards() const
 {
-    _is_valid = true;
+    return _definingStandards;
 }
 
-ts::CVCT::CVCT(const BinaryTable& table, const DVBCharset* charset) :
-    CVCT()
+ts::Standards ts::AbstractDefinedByStandards::allStandards() const
 {
-    deserialize(table, charset);
+    return _allStandards;
 }
 
-ts::CVCT::~CVCT()
+void ts::AbstractDefinedByStandards::addAllStandards(Standards mask)
 {
+    _allStandards |= mask;
+}
+
+void ts::AbstractDefinedByStandards::resetAllStandards()
+{
+    _allStandards = definingStandards();
 }

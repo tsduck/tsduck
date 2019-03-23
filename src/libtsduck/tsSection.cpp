@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSection.h"
+#include "tsTablesFactory.h"
 #include "tsCRC32.h"
 #include "tsNames.h"
 #include "tsMemoryUtils.h"
@@ -357,6 +358,16 @@ void ts::Section::recomputeCRC()
         const size_t size = _data->size() - 4;
         PutUInt32(_data->data() + size, CRC32(_data->data(), size).value());
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Override of AbstractDefinedByStandards, get standard from table id.
+//----------------------------------------------------------------------------
+
+ts::Standards ts::Section::definingStandards() const
+{
+    return TablesFactory::Instance()->getTableStandards(tableId());
 }
 
 

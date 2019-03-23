@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDefinedByStandards.h"
 #include "tsByteBlock.h"
-#include "tsMPEG.h"
 #include "tsxml.h"
 
 //!
@@ -55,7 +55,7 @@ namespace ts {
     //! Abstract base class for MPEG PSI/SI tables and descriptors.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL AbstractSignalization
+    class TSDUCKDLL AbstractSignalization : public AbstractDefinedByStandards
     {
     public:
         //!
@@ -75,12 +75,6 @@ namespace ts {
         {
             _is_valid = false;
         }
-
-        //!
-        //! Get the list of standards which define this structure.
-        //! @return A bit mask of standards.
-        //!
-        Standards standards() const { return _standards; }
 
         //!
         //! Get the XMl node name representing this table or descriptor.
@@ -195,8 +189,6 @@ namespace ts {
         }
 
     private:
-        Standards _standards; // List of standards which define this structure.
-
         // Unreachable constructors and operators.
         AbstractSignalization() = delete;
     };

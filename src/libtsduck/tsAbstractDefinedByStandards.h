@@ -26,36 +26,59 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsCVCT.h"
-#include "tsTablesFactory.h"
-TSDUCK_SOURCE;
-
-#define MY_XML_NAME u"CVCT"
-#define MY_TID ts::TID_CVCT
-#define MY_STD ts::STD_ATSC
-
-TS_XML_TABLE_FACTORY(ts::CVCT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::CVCT, MY_TID, MY_STD);
-TS_ID_SECTION_DISPLAY(ts::CVCT::DisplaySection, MY_TID);
-
-
-//----------------------------------------------------------------------------
-// Constructors and destructors.
+//!
+//!  @file
+//!  Abstract base class for objects which are defined by standards.
+//!
 //----------------------------------------------------------------------------
 
-ts::CVCT::CVCT(uint8_t version_, bool is_current_) :
-    VCT(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
-{
-    _is_valid = true;
-}
+#pragma once
+#include "tsMPEG.h"
 
-ts::CVCT::CVCT(const BinaryTable& table, const DVBCharset* charset) :
-    CVCT()
-{
-    deserialize(table, charset);
-}
+namespace ts {
+    //!
+    //! Abstract base class for objects which are defined by standards.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL AbstractDefinedByStandards
+    {
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] mask A bit mask of defining standards.
+        //!
+        explicit AbstractDefinedByStandards(Standards mask = STD_NONE);
 
-ts::CVCT::~CVCT()
-{
+        //!
+        //! Get the list of standards which define this object.
+        //! @return A bit mask of standards.
+        //!
+        virtual Standards definingStandards() const;
+
+        //!
+        //! Get the list of standards which are present in the transport stream or context.
+        //! @return A bit mask of standards.
+        //!
+        virtual Standards allStandards() const;
+
+        //!
+        //! Add a list of standards which are present in the transport stream or context.
+        //! @param [in] mask A bit mask of standards.
+        //!
+        virtual void addAllStandards(Standards mask);
+
+        //!
+        //! Reset the list of standards which are present in the transport stream or context.
+        //!
+        virtual void resetAllStandards();
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~AbstractDefinedByStandards();
+
+    private:
+        Standards _definingStandards;
+        Standards _allStandards;
+    };
 }

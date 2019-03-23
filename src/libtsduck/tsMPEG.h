@@ -272,6 +272,7 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum Standards : uint8_t {
+        STD_NONE = 0x00,  //!< No known standard
         STD_MPEG = 0x01,  //!< Defined by MPEG, common to all standards
         STD_DVB  = 0x02,  //!< Defined by ETSI/DVB.
         STD_SCTE = 0x04,  //!< Defined by ANSI/SCTE.

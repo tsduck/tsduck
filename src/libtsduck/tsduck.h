@@ -34,6 +34,7 @@
 #include "tsAbstractAVCAccessUnit.h"
 #include "tsAbstractAVCData.h"
 #include "tsAbstractAVCStructure.h"
+#include "tsAbstractDefinedByStandards.h"
 #include "tsAbstractDeliverySystemDescriptor.h"
 #include "tsAbstractDemux.h"
 #include "tsAbstractDescrambler.h"

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDefinedByStandards.h"
 #include "tsSection.h"
 #include "tsUString.h"
 #include "tsTablesPtr.h"
@@ -54,7 +55,7 @@ namespace ts {
     //! the first section is added. Subsequent sections must have the
     //! same properties.
     //!
-    class TSDUCKDLL BinaryTable
+    class TSDUCKDLL BinaryTable : public AbstractDefinedByStandards
     {
     public:
         //!
@@ -306,6 +307,9 @@ namespace ts {
         //! If the name is valid but the content is incorrect, true is returned and this object is invalidated.
         //!
         bool fromXML(const xml::Element* node, const DVBCharset* charset = nullptr);
+
+        // Override of AbstractDefinedByStandards
+        virtual Standards definingStandards() const override;
 
     private:
         BinaryTable(const BinaryTable& table) = delete;

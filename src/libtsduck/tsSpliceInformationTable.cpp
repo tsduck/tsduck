@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_SCTE
 
 TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
 
 
