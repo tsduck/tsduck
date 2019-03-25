@@ -54,6 +54,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _fixedSegmentSize(0),
     _targetDuration(0),
     _liveDepth(0),
+    _initialMediaSeq(0),
     _demux(this),
     _patPackets(),
     _pmtPackets(),
@@ -65,7 +66,8 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _segmentFile(),
     _liveSegmentFiles(),
     _playlist(),
-    _pcrAnalyzer(1, 4)  // Minimum required: 1 PID, 4 PCR
+    _pcrAnalyzer(1, 4),  // Minimum required: 1 PID, 4 PCR
+    _previousBitrate(0)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -105,6 +107,11 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"The playlist and the segment files can be written to distinct directories but, in all cases, "
          u"the URI of the segment files in the playlist are always relative to the playlist location. "
          u"By default, no playlist file is created (media segments only).");
+
+    option(u"start-media-sequence", 's', POSITIVE);
+    help(u"start-media-sequence",
+         u"Initial media sequence number in #EXT-X-MEDIA-SEQUENCE directive in the playlist. "
+         u"The default is zero.");
 }
 
 
@@ -130,6 +137,7 @@ bool ts::hls::OutputPlugin::getOptions()
     _liveDepth = intValue<size_t>(u"live");
     _targetDuration = intValue<Second>(u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
+    _initialMediaSeq = intValue<size_t>(u"start-media-sequence", 0);
     return true;
 }
 
@@ -171,6 +179,7 @@ bool ts::hls::OutputPlugin::start()
     _pmtPID = PID_NULL;
     _videoPID = PID_NULL;
     _pcrAnalyzer.reset();
+    _previousBitrate = 0;
 
     // Initialize the segment and playlist files.
     _liveSegmentFiles.clear();
@@ -182,6 +191,7 @@ bool ts::hls::OutputPlugin::start()
         _playlist.reset(hls::MEDIA_PLAYLIST, _playlistFile);
         _playlist.setTargetDuration(_targetDuration, *tsp);
         _playlist.setPlaylistType(_liveDepth == 0 ? u"VOD" : u"EVENT", *tsp);
+        _playlist.setMediaSequence(_initialMediaSeq, *tsp);
     }
 
     // Create the first segment file.
@@ -269,13 +279,23 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         // Declare a new segment.
         hls::MediaSegment seg;
         seg.uri = segName;
+
+        // Estimate duration and bitrate of the segment. We use PCR's from the
+        // segment to compute the average bitrate. Then we compute the duration
+        // from the bitrate and segment file size. If we cannot get the bitrate
+        // of a segment but got one from previous segment, assume that bitrate
+        // did not change and reuse previous one.
         if (_pcrAnalyzer.bitrateIsValid()) {
             // We have an estimation of the bitrate of the segment file.
-            seg.bitrate = _pcrAnalyzer.bitrate188();
+            _previousBitrate = _pcrAnalyzer.bitrate188();
+        }
+        if (_previousBitrate > 0) {
+            // Compute duration based on segment bitrate (or previous one).
+            seg.bitrate = _previousBitrate;
             seg.duration = PacketInterval(seg.bitrate, segPackets);
         }
         else {
-            // Otherwise, we build a fake bitrate based on the target duration.
+            // Completely unknown bitrate, we build a fake one based on the target duration.
             seg.duration = _targetDuration * MilliSecPerSec;
             seg.bitrate = PacketBitRate(segPackets, seg.duration);
         }

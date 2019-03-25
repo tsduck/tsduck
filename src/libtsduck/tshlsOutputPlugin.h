@@ -76,6 +76,7 @@ namespace ts {
             PacketCounter  _fixedSegmentSize;     // Optional fixed segment size in packets.
             Second         _targetDuration;       // Segment target duration in seconds.
             size_t         _liveDepth;            // Number of simultaneous segments in live streams.
+            size_t         _initialMediaSeq;      // Initial media sequence value.
             SectionDemux   _demux;                // Demux to extract PAT and PMT.
             TSPacketVector _patPackets;           // TS packets for the PAT at start of each segment file.
             TSPacketVector _pmtPackets;           // TS packets for the PMT at start of each segment file, after the PAT.
@@ -88,6 +89,7 @@ namespace ts {
             UStringList    _liveSegmentFiles;     // List of current segments in a live stream.
             hls::PlayList  _playlist;             // Generated playlist.
             PCRAnalyzer    _pcrAnalyzer;          // PCR analyzer to compute bitrates.
+            BitRate        _previousBitrate;      // Bitrate of previous segment.
 
             // Create the next segment file (also close the previous one if necessary).
             bool createNextSegment();

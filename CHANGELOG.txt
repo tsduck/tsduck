@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1172
+VERSION 3.17-1181
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -16,6 +16,7 @@ VERSION 3.17-1172
   * Added options --pid and --tag to plugin "bitrate_monitor". The plugin can
     now also monitor the bitrate of the complete TS and can detect zero bitrate
     on the transport stream.
+  * Added option --start-media-sequence to output plugin "hls".
   * In various analysis commands and plugins, ATSC signalization is now known.
   * General list of improvements regarding tuners and scanning:
     - Added region-specific UHF/VHF frequency layouts in various commands and
