@@ -71,15 +71,10 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const UChar* xml
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AbstractDescriptorsTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     descs.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -108,24 +103,15 @@ void ts::AbstractDescriptorsTable::deserialize(const BinaryTable& table, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AbstractDescriptorsTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear ();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Add all descriptors, creating several sections if necessary.
     // Make sure to create at least one section if the list is empty.
-
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number (0);
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
-    size_t start_index (0);
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
+    size_t start_index = 0;
 
     while ((section_number == 0 || start_index < descs.count()) && section_number < 256) {
 
@@ -133,15 +119,15 @@ void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharse
         start_index = descs.serialize(data, remain, start_index);
 
         // Add section in the table
-        table.addSection (new Section (_table_id,
-                                       false,  // is_private_section
-                                       _tid_ext,
-                                       version,
-                                       is_current,
-                                       uint8_t(section_number),
-                                       uint8_t(section_number), // last_section_number
-                                       payload,
-                                       data - payload));        // payload_size,
+        table.addSection(new Section(_table_id,
+                                     false,  // is_private_section
+                                     _tid_ext,
+                                     version,
+                                     is_current,
+                                     uint8_t(section_number),
+                                     uint8_t(section_number), // last_section_number
+                                     payload,
+                                     data - payload));        // payload_size,
 
         // Prepare for next section (if any)
         section_number++;
@@ -157,7 +143,7 @@ void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharse
 
 void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    display.displayDescriptorList(section.payload(), section.payloadSize(), indent, section.tableId());
+    display.displayDescriptorList(section, section.payload(), section.payloadSize(), indent);
 }
 
 

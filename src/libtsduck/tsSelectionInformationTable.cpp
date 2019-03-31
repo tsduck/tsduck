@@ -76,16 +76,11 @@ ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& tabl
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SelectionInformationTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     descs.clear();
     services.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections, although a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
@@ -134,16 +129,8 @@ void ts::SelectionInformationTable::deserialize(const BinaryTable& table, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SelectionInformationTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section. Note that a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -205,7 +192,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
         // Process and display global descriptor list.
         if (info_length > 0) {
             strm << margin << "Global information:" << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
         }
         data += info_length; size -= info_length;
 
@@ -219,7 +206,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
                 info_length = size;
             }
             strm << margin << UString::Format(u"Service id: %d (0x%X), Status: %s", {id, id, RST::RunningStatusNames.name(rs)}) << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
             data += info_length; size -= info_length;
         }
     }

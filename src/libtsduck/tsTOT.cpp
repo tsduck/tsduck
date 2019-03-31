@@ -128,10 +128,9 @@ void ts::TOT::addDescriptors(const DescriptorList& dlist)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::TOT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     regions.clear();
     descs.clear();
 
@@ -142,13 +141,8 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Reference to single section
     const Section& sect(*table.sectionAt(0));
-    const uint8_t* data(sect.payload());
-    size_t remain(sect.payloadSize());
-
-    // Abort if not a TOT
-    if (sect.tableId() != MY_TID) {
-        return;
-    }
+    const uint8_t* data = sect.payload();
+    size_t remain = sect.payloadSize();
 
     // A TOT section is a short section with a CRC32.
     // Normally, only long sections have a CRC32.
@@ -190,16 +184,8 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::TOT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section
     uint8_t payload [MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
@@ -279,7 +265,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             if (length > size) {
                 length = size;
             }
-            display.displayDescriptorList(data, length, indent, section.tableId());
+            display.displayDescriptorList(section, data, length, indent);
             data += length; size -= length;
         }
 

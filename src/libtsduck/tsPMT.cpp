@@ -83,18 +83,13 @@ ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::PMT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     service_id = 0;
     pcr_pid = PID_NULL;
     descs.clear();
     streams.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections (although a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9)
@@ -155,21 +150,13 @@ void ts::PMT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::PMT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section. Note that a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9
     uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Add PCR PID
     PutUInt16(data, pcr_pid | 0xE000);
@@ -350,7 +337,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Process and display "program info"
         if (info_length > 0) {
             strm << margin << "Program information:" << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
         }
         data += info_length; size -= info_length;
 
@@ -365,7 +352,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             }
             strm << margin << "Elementary stream: type " << names::StreamType(stream, names::FIRST)
                  << ", PID: " << es_pid << UString::Format(u" (0x%X)", {es_pid}) << std::endl;
-            display.displayDescriptorList(data, es_info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, es_info_length, indent);
             data += es_info_length; size -= es_info_length;
         }
     }

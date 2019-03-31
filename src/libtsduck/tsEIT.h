@@ -192,11 +192,15 @@ namespace ts {
         static void Fix(BinaryTable& table, FixMode mode);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual bool isValidTableId(TID tid) const override;
+        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
+        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
+        virtual void buildXML(xml::Element*) const override;
 
     private:
         constexpr static size_t EIT_HEADER_SIZE        = LONG_SECTION_HEADER_SIZE;

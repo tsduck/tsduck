@@ -84,10 +84,6 @@ namespace ts {
         DescriptorList  descs;          //!< Top-level descriptor list.
         TransportMap    transports;     //!< Map of TS descriptions, key=onid/tsid, value=descriptor_list.
 
-        // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
@@ -133,6 +129,10 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         AbstractTransportListTable(TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table, const DVBCharset* charset);
+
+        // Inherited methods
+        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
+        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
 
     private:
         typedef std::set<TransportStreamId> TransportStreamIdSet;

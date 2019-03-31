@@ -528,6 +528,9 @@ void ts::Args::writeLog(int severity, const UString& message)
             if (severity < Severity::Info) {
                 std::cerr << _app_name << ": ";
             }
+            else if (severity > Severity::Verbose) {
+                std::cerr << _app_name << ": " << Severity::Header(severity);
+            }
             std::cerr << message << std::endl;
         }
     }

@@ -509,12 +509,20 @@ std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int i
 // Display a list of descriptors from a memory area
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t size, int indent, TID tid, PDS pds, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, const void* data, size_t size, int indent, CASFamily cas)
 {
     std::ostream& strm(*_out);
     const std::string margin(indent, ' ');
     const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
     size_t desc_index = 0;
+    const TID tid = section.tableId();
+
+    // Compute default PDS. Use fake PDS for descriptors in ATSC context.
+    PDS default_pds = _opt.default_pds;
+    if (default_pds == 0 && ((section.definingStandards() | section.allStandards()) & STD_ATSC) != 0) {
+        default_pds = PDS_ATSC;
+    }
+    PDS pds = default_pds;
 
     // Loop across all descriptors
     while (size >= 2) {  // descriptor header size
@@ -525,24 +533,27 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t 
         size -= 2;
 
         if (desc_length > size) {
-            strm << margin << "- Invalid descriptor length: " << desc_length
-                 << " (" << size << " bytes allocated)" << std::endl;
+            strm << margin << "- Invalid descriptor length: " << desc_length << " (" << size << " bytes allocated)" << std::endl;
             break;
         }
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << names::DID(desc_tag, actualPDS(pds), tid, names::VALUE | names::BOTH) << ", "
+             << names::DID(desc_tag, pds, tid, names::VALUE | names::BOTH) << ", "
              << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a private_data_specifier, keep it
         // to establish a private context.
         if (desc_tag == DID_PRIV_DATA_SPECIF && desc_length >= 4) {
             pds = GetUInt32(desc_start);
+            // PDS zero means return to default value.
+            if (pds == 0) {
+                pds = default_pds;
+            }
         }
 
         // Display descriptor.
-        displayDescriptorData(desc_tag, desc_start, desc_length, indent + 2, tid, actualPDS(pds), cas);
+        displayDescriptorData(desc_tag, desc_start, desc_length, indent + 2, tid, pds, cas);
 
         // Move to next descriptor for next iteration
         desc_start += desc_length;
@@ -559,15 +570,16 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t 
 // Display a list of descriptors.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, int indent, TID tid, PDS pds, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, int indent, CASFamily cas)
 {
     std::ostream& strm(*_out);
     const std::string margin(indent, ' ');
+    const TID tid = list.tableId();
 
     for (size_t i = 0; i < list.count(); ++i) {
         const DescriptorPtr& desc(list[i]);
         if (!desc.isNull()) {
-            pds = list.privateDataSpecifier(i);
+            const PDS pds = list.privateDataSpecifier(i);
             strm << margin << "- Descriptor " << i << ": "
                  << names::DID(desc->tag(), actualPDS(pds), tid, names::VALUE | names::BOTH) << ", "
                  << desc->size() << " bytes" << std::endl;

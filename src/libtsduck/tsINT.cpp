@@ -143,19 +143,14 @@ bool ts::INT::GetDescriptorList(DescriptorList& dlist, const uint8_t*& data, siz
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::INT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::INT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     action_type = 0;
     platform_id = 0;
     processing_order = 0;
     platform_descs.clear();
     devices.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -203,16 +198,8 @@ void ts::INT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::INT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::INT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
@@ -338,7 +325,7 @@ void ts::INT::addSection(BinaryTable& table,
 // Display a descriptor list. Update data and remain. Return true on success.
 //----------------------------------------------------------------------------
 
-bool ts::INT::DisplayDescriptorList(TablesDisplay& display, TID tid, const uint8_t*& data, size_t& remain, int indent)
+bool ts::INT::DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
@@ -359,7 +346,7 @@ bool ts::INT::DisplayDescriptorList(TablesDisplay& display, TID tid, const uint8
         strm << margin << "None" << std::endl;
     }
     else {
-        display.displayDescriptorList(data, dlength, indent, tid);
+        display.displayDescriptorList(section, data, dlength, indent);
         data += dlength; remain -= dlength;
     }
 
@@ -397,17 +384,17 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << "Platform descriptors:" << std::endl;
 
         // Get platform descriptor loop.
-        if (DisplayDescriptorList(display, section.tableId(), data, size, indent + 2)) {
+        if (DisplayDescriptorList(display, section, data, size, indent + 2)) {
             // Get device descriptions.
             int device_index = 0;
             bool ok = true;
             while (ok && size > 0) {
                 strm << margin << "Device #" << device_index++ << std::endl
                      << margin << "  Target descriptors:" << std::endl;
-                ok = DisplayDescriptorList(display, section.tableId(), data, size, indent + 4);
+                ok = DisplayDescriptorList(display, section, data, size, indent + 4);
                 if (ok) {
                     strm << margin << "  Operational descriptors:" << std::endl;
-                    ok = DisplayDescriptorList(display, section.tableId(), data, size, indent + 4);
+                    ok = DisplayDescriptorList(display, section, data, size, indent + 4);
                 }
             }
         }

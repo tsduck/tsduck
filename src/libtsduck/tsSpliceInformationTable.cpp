@@ -129,13 +129,13 @@ ts::SpliceInformationTable::SpliceInformationTable(const BinaryTable& table, con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SpliceInformationTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     clear();
 
     // This is a short table, must have only one section
-    if (!table.isValid() || table.tableId() != _table_id || table.sectionCount() != 1) {
+    if (table.sectionCount() != 1) {
         return;
     }
 
@@ -226,16 +226,8 @@ void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SpliceInformationTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section header.
     ByteBlockPtr bb(new ByteBlock);
     bb->appendUInt8(MY_TID);
@@ -534,7 +526,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
             if (dl_length > size) {
                 dl_length = size;
             }
-            display.displayDescriptorList(data, dl_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, dl_length, indent);
             data += dl_length; size -= dl_length;
         }
     }

@@ -88,9 +88,6 @@ namespace ts {
         void adjustPTS();
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
         DeclareDisplaySection();
 
@@ -102,5 +99,11 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool ExtractSpliceInsert(SpliceInsert& command, const Section& section);
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
+        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
+        virtual void buildXML(xml::Element*) const override;
     };
 }
