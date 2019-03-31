@@ -633,6 +633,7 @@ namespace ts {
 
         // Override of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;
+        virtual Standards allStandards() const override;
 
     private:
         // Private fields

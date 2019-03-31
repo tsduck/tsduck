@@ -76,22 +76,18 @@ ts::AIT::AIT(const AIT& other) :
 {
 }
 
+
 //----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AIT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     application_type = 0;
     test_application_flag = false;
     descs.clear();
     applications.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -153,22 +149,14 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AIT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Current limitation: only one section is serialized.
     // Extraneous descriptors are dropped.
 
     uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Insert common descriptors list (with leading length field).
     // Provision space for 16-bit application loop length.
@@ -237,7 +225,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Process and display "common descriptors loop"
         if (length_field > 0) {
             strm << margin << "Common descriptor loop:" << std::endl;
-            display.displayDescriptorList(data, length_field, indent, section.tableId());
+            display.displayDescriptorList(section, data, length_field, indent);
         }
         data += length_field;
         size -= length_field;
@@ -262,7 +250,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                      << ", Application id: " << UString::Format(u"%d (0x%X)", { app_id, app_id })
                      << UString::Format(u"), Control code: %d", { control_code })
                      << std::endl;
-                display.displayDescriptorList(data, length_field, indent, section.tableId());
+                display.displayDescriptorList(section, data, length_field, indent);
                 data += length_field;
                 size -= length_field;
             }

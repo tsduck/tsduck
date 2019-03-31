@@ -100,28 +100,12 @@ void ts::AbstractTransportListTable::clearPreferredSections()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AbstractTransportListTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     _tid_ext = 0xFFFF;
     descs.clear();
     transports.clear();
-
-    if (!table.isValid()) {
-        return;
-    }
-
-    // Check table id: Must be the same one as set in the constructor,
-    // except NIT Actual and NIT Other which can be mixed.
-    const TID tid (table.tableId());
-    if ((_table_id == TID_NIT_ACT || _table_id == TID_NIT_OTH) && (tid == TID_NIT_ACT || tid == TID_NIT_OTH)) {
-        // Both are NITs and compatible
-        _table_id = tid;
-    }
-    else if (tid != _table_id) {
-        return;
-    }
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -278,16 +262,8 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AbstractTransportListTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear ();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build a set of TS id to serialize.
     TransportStreamIdSet ts_set;
     for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
@@ -296,9 +272,9 @@ void ts::AbstractTransportListTable::serialize(BinaryTable& table, const DVBChar
 
     // Build the sections
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number(0);
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Add top-level descriptor list.
     // If the descriptor list is too long to fit into one section,

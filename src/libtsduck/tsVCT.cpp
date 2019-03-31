@@ -175,18 +175,13 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& servi
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::VCT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     protocol_version = 0;
     transport_stream_id = 0,
     descs.clear();
     channels.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -311,16 +306,8 @@ void ts::VCT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::VCT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections one by one.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
@@ -456,7 +443,7 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             size_t info_length = GetUInt16(data + 30) & 0x03FF; // 10 bits only
             data += 32; size -= 32;
             info_length = std::min(info_length, size);
-            display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
+            display.displayDescriptorList(section, data, info_length, indent + 2);
             data += info_length; size -= info_length;
             num_channels--;
         }
@@ -467,7 +454,7 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             info_length = std::min(info_length, size);
             if (info_length > 0) {
                 strm << margin << "- Global descriptors:" << std::endl;
-                display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
+                display.displayDescriptorList(section, data, info_length, indent + 2);
                 data += info_length; size -= info_length;
             }
         }

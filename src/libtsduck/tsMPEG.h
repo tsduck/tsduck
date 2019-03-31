@@ -280,6 +280,12 @@ namespace ts {
         STD_ISDB = 0x10,  //!< Defined by ISDB.
     };
 
+    //!
+    //! Enumeration description of standard values.
+    //! Typically using StandardsEnum::bitMaskNames().
+    //!
+    TSDUCKDLL extern const Enumeration StandardsEnum;
+
     //---------------------------------------------------------------------
     //! Predefined PID values
     //---------------------------------------------------------------------

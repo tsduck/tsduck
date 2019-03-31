@@ -77,6 +77,16 @@ ts::NIT& ts::NIT::operator=(const NIT& other)
 
 
 //----------------------------------------------------------------------------
+// This method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::NIT::isValidTableId(TID tid) const
+{
+    return tid == TID_NIT_ACT || tid == TID_NIT_OTH;
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a NIT section.
 //----------------------------------------------------------------------------
 
@@ -98,7 +108,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
         if (loop_length > 0) {
             strm << margin << "Network information:" << std::endl;
-            display.displayDescriptorList(data, loop_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, loop_length, indent);
         }
         data += loop_length; size -= loop_length;
 
@@ -120,7 +130,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                     length = loop_length;
                 }
                 strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
-                display.displayDescriptorList(data, length, indent, section.tableId());
+                display.displayDescriptorList(section, data, length, indent);
                 data += length; size -= length; loop_length -= length;
             }
         }

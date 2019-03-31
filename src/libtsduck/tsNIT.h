@@ -94,8 +94,12 @@ namespace ts {
         }
 
         // Inherited methods
-        virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual bool isValidTableId(TID tid) const override;
+        virtual void buildXML(xml::Element*) const override;
     };
 }

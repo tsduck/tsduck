@@ -71,16 +71,11 @@ ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::PAT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
-    // Clear table content
-    _is_valid = false;
+    // Clear table content.
     nit_pid = PID_NULL;
-    pmts.clear ();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
+    pmts.clear();
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -123,21 +118,13 @@ void ts::PAT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::PAT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number (0);
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Add the NIT PID in the first section
     if (nit_pid != PID_NULL) {

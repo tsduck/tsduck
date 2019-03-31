@@ -75,8 +75,11 @@ namespace ts {
         BAT& operator=(const BAT& other);
 
         // Inherited methods.
-        virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods.
+        virtual void buildXML(xml::Element*) const override;
     };
 }

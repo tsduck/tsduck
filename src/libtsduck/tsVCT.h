@@ -154,9 +154,6 @@ namespace ts {
         bool findService(Service& service, bool exact_match = false, bool same_ts = true) const;
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
         DeclareDisplaySection();
 
@@ -170,6 +167,11 @@ namespace ts {
         //! @param [in] is_current_ True if table is current, false if table is next.
         //!
         VCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_);
+
+        // Inherited methods
+        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
+        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
+        virtual void buildXML(xml::Element*) const override;
 
     private:
         // Add a new section to a table being serialized.

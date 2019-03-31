@@ -70,29 +70,16 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(const BinaryTab
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::DiscontinuityInformationTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
-    // Clear table content
-    _is_valid = false;
-
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
     // Reference to single section
     const Section& sect(*table.sectionAt(0));
-    const uint8_t* data(sect.payload());
-    size_t remain(sect.payloadSize());
-
-    // Abort if not a DiscontinuityInformationTable
-    if (sect.tableId() != MY_TID || remain < 1) {
-        return;
-    }
 
     // Get content
-    transition = (data[0] & 0x80) != 0;
-    _is_valid = true;
+    if (sect.payloadSize() >= 1) {
+        transition = (sect.payload()[0] & 0x80) != 0;
+        _is_valid = true;
+    }
 }
 
 
@@ -100,16 +87,8 @@ void ts::DiscontinuityInformationTable::deserialize(const BinaryTable& table, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::DiscontinuityInformationTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Encode the data in the payload
     const uint8_t payload = transition ? 0xFF : 0x7F;
 

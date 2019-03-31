@@ -106,6 +106,16 @@ ts::EIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
+// This  method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::EIT::isValidTableId(TID tid) const
+{
+    return tid >= TID_EIT_PF_ACT && tid <= TID_EIT_S_OTH_MAX;
+}
+
+
+//----------------------------------------------------------------------------
 // Compute an EIT table id.
 //----------------------------------------------------------------------------
 
@@ -155,24 +165,14 @@ void ts::EIT::setActual(bool is_actual)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::EIT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     service_id = 0;
     ts_id = 0;
     onetw_id = 0;
     last_table_id = _table_id;
     events.clear();
-
-    if (!table.isValid()) {
-        return;
-    }
-
-    // Check table id.
-    if ((_table_id = table.tableId()) < TID_EIT_MIN || _table_id > TID_EIT_MAX) {
-        return;
-    }
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -235,16 +235,8 @@ void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::EIT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Inside an EIT, events shall be sorted in start time order.
     // Build a list of events in order of start time.
     std::list<const Event*> ordered_events;
@@ -539,7 +531,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << UString::Format(u"Duration: %02d:%02d:%02d", {hour, min, sec}) << std::endl
              << margin << "Running status: " << names::RunningStatus(run) << std::endl
              << margin << "CA mode: " << (ca_mode ? "controlled" : "free") << std::endl;
-        display.displayDescriptorList(data, loop_length, indent, section.tableId());
+        display.displayDescriptorList(section, data, loop_length, indent);
         data += loop_length; size -= loop_length;
     }
 
