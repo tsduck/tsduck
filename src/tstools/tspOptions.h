@@ -57,22 +57,23 @@ namespace ts {
             Options(int argc, char *argv[]);
 
             // Option values
-            bool          timed_log;       //!< Add time stamps in log messages.
-            int           list_proc_flags; //!< List processors, mask of PluginRepository::ListFlag.
-            bool          monitor;         //!< Run a resource monitoring thread.
-            bool          ignore_jt;       //!< Ignore "joint termination" options in plugins.
-            bool          sync_log;        //!< Synchronous log.
-            size_t        bufsize;         //!< Buffer size.
-            size_t        log_msg_count;   //!< Maximum buffered log messages.
-            size_t        max_flush_pkt;   //!< Max processed packets before flush.
-            size_t        max_input_pkt;   //!< Max packets per input operation.
-            size_t        instuff_nullpkt; //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
-            size_t        instuff_inpkt;   //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
-            size_t        instuff_start;   //!< Add input stuffing: add @a instuff_start null packets before actual input.
-            size_t        instuff_stop;    //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
-            BitRate       bitrate;         //!< Fixed input bitrate.
-            MilliSecond   bitrate_adj;     //!< Bitrate adjust interval.
-            Tristate      realtime;        //!< Use real-time options.
+            bool          timed_log;        //!< Add time stamps in log messages.
+            int           list_proc_flags;  //!< List processors, mask of PluginRepository::ListFlag.
+            bool          monitor;          //!< Run a resource monitoring thread.
+            bool          ignore_jt;        //!< Ignore "joint termination" options in plugins.
+            bool          sync_log;         //!< Synchronous log.
+            size_t        bufsize;          //!< Buffer size.
+            size_t        log_msg_count;    //!< Maximum buffered log messages.
+            size_t        max_flush_pkt;    //!< Max processed packets before flush.
+            size_t        max_input_pkt;    //!< Max packets per input operation.
+            size_t        instuff_nullpkt;  //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
+            size_t        instuff_inpkt;    //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
+            size_t        instuff_start;    //!< Add input stuffing: add @a instuff_start null packets before actual input.
+            size_t        instuff_stop;     //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
+            BitRate       bitrate;          //!< Fixed input bitrate.
+            MilliSecond   bitrate_adj;      //!< Bitrate adjust interval.
+            PacketCounter init_bitrate_adj; //!< As long as input bitrate is unknown, reevaluate periodically.
+            Tristate      realtime;         //!< Use real-time options.
 
             //!
             //! Apply default values to options which were not specified on the command line.
