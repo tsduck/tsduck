@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1181
+VERSION 3.17-1183
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -49,6 +49,9 @@ VERSION 3.17-1181
     unused (do not contain a valid section) and 3) starts with FF. This is a
     probably incorrect muxing which has been found on at least one satellite
     transponder.
+  * Fixed bitrate computation based on PCR's. Null packets uselessly reset the
+    bitrate computation and introduced a small bias. New computed values can be
+    slightly different but more accurate.
 
 -------------------------------------------------------------------------------
 

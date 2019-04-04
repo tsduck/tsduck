@@ -33,6 +33,7 @@
 
 #include "tsPCRAnalyzer.h"
 #include "tsMemoryUtils.h"
+#include "tsUString.h"
 TSDUCK_SOURCE;
 
 
@@ -53,7 +54,8 @@ ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
     _ts_bitrate_204(0),
     _ts_bitrate_cnt(0),
     _completed_pids(0),
-    _pcr_pids(0)
+    _pcr_pids(0),
+    _discontinuities(0)
 {
     TS_ZERO(_pid);
 }
@@ -95,19 +97,25 @@ ts::PCRAnalyzer::Status::Status() :
     bitrate_204(0),
     packet_count(0),
     pcr_count(0),
-    pcr_pids(0)
+    pcr_pids(0),
+    discontinuities(0)
 {
 }
 
-ts::PCRAnalyzer::Status::Status(const PCRAnalyzer& an) :
-    bitrate_valid(false),
-    bitrate_188(0),
-    bitrate_204(0),
-    packet_count(0),
-    pcr_count(0),
-    pcr_pids(0)
+ts::PCRAnalyzer::Status::Status(const PCRAnalyzer& an) : Status()
 {
     an.getStatus(*this);
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface for PCRAnalyzez::Status.
+//----------------------------------------------------------------------------
+
+ts::UString ts::PCRAnalyzer::Status::toString() const
+{
+    return UString::Format(u"valid: %s, bitrate: %'d b/s, packets: %'d, PCRs: %'d, PIDs with PCR: %'d, discont: %'d",
+                           {bitrate_valid, bitrate_188, packet_count, pcr_count, pcr_pids, discontinuities});
 }
 
 
@@ -174,6 +182,8 @@ void ts::PCRAnalyzer::setIgnoreErrors(bool ignore)
 
 void ts::PCRAnalyzer::processDiscountinuity()
 {
+    _discontinuities++;
+
     // All collected PCR becomes invalid since at least one packet is missing.
     for (size_t i = 0; i < PID_MAX; ++i) {
         if (_pid[i] != nullptr) {
@@ -234,11 +244,12 @@ ts::PacketCounter ts::PCRAnalyzer::packetCount(PID pid) const
 void ts::PCRAnalyzer::getStatus(Status& stat) const
 {
     stat.bitrate_valid = _bitrate_valid;
-    stat.bitrate_188   = bitrate188();
-    stat.bitrate_204   = bitrate204();
-    stat.packet_count  = _ts_pkt_cnt;
-    stat.pcr_count     = _ts_bitrate_cnt;
-    stat.pcr_pids      = _pcr_pids;
+    stat.bitrate_188 = bitrate188();
+    stat.bitrate_204 = bitrate204();
+    stat.packet_count = _ts_pkt_cnt;
+    stat.pcr_count = _ts_bitrate_cnt;
+    stat.pcr_pids = _pcr_pids;
+    stat.discontinuities = _discontinuities;
 }
 
 
@@ -269,6 +280,11 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
 
     // Count one more packet in the PID
     ps->ts_pkt_cnt++;
+
+    // Null packets are ignored in PCR calculation.
+    if (pid == PID_NULL) {
+        return _bitrate_valid;
+    }
 
     // Process discontinuities. If a discontinuity is discovered,
     // the PCR calculation across this packet is not valid.
