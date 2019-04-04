@@ -92,6 +92,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsConfigSection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsConfigSectionTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsContinuityAnalyzer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCopyrightDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCPDescriptor.h" />
@@ -583,6 +584,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsConfigFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsConfigSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsContinuityAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCopyrightDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCPDescriptor.cpp" />
