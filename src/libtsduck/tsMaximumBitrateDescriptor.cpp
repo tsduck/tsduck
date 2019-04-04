@@ -54,7 +54,7 @@ ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(uint32_t mbr) :
 }
 
 ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    MaximumBitrateDescriptor()
+    MaximumBitrateDescriptor(0)
 {
     deserialize(desc, charset);
 }
