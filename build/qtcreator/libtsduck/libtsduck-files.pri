@@ -90,6 +90,7 @@ HEADERS += \
     ../../../src/libtsduck/tsConfigSection.h \
     ../../../src/libtsduck/tsConfigSectionTemplate.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
+    ../../../src/libtsduck/tsContinuityAnalyzer.h \
     ../../../src/libtsduck/tsCopyrightDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
     ../../../src/libtsduck/tsCPDescriptor.h \
@@ -571,6 +572,7 @@ SOURCES += \
     ../../../src/libtsduck/tsConfigFile.cpp \
     ../../../src/libtsduck/tsConfigSection.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
+    ../../../src/libtsduck/tsContinuityAnalyzer.cpp \
     ../../../src/libtsduck/tsCopyrightDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
     ../../../src/libtsduck/tsCPDescriptor.cpp \

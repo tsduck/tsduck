@@ -220,6 +220,11 @@ namespace ts {
     constexpr uint8_t CC_MAX = 1 << CC_BITS;
 
     //!
+    //! An invalid Continuity Counter (CC) value, typically meaning "undefined".
+    //!
+    constexpr uint8_t INVALID_CC = 0xFF;
+
+    //!
     //! Size (in bits) of a section version field.
     //!
     constexpr size_t SVERSION_BITS = 5;

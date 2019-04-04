@@ -110,6 +110,7 @@
 #include "tsConfigFile.h"
 #include "tsConfigSection.h"
 #include "tsContentDescriptor.h"
+#include "tsContinuityAnalyzer.h"
 #include "tsCopyrightDescriptor.h"
 #include "tsCountryAvailabilityDescriptor.h"
 #include "tsCPDescriptor.h"
