@@ -132,7 +132,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCha
 void ts::ShortEventDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -155,7 +155,7 @@ void ts::ShortEventDescriptor::deserialize(const Descriptor& desc, const DVBChar
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    language_code = UString::FromDVB(data, 3, charset);
+    language_code = UString::FromDVB(data, 3);
     data += 3; size -= 3;
 
     event_name = UString::FromDVBWithByteLength(data, size, charset);
@@ -203,7 +203,7 @@ void ts::ShortEventDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::fromXML(const xml::Element* element)
+void ts::ShortEventDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

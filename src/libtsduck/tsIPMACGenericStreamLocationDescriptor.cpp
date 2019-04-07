@@ -164,7 +164,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::fromXML(const xml::Element* element)
+void ts::IPMACGenericStreamLocationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

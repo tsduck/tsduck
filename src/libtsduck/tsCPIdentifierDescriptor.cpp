@@ -114,7 +114,7 @@ void ts::CPIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::CPIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     cpids.clear();
     xml::ElementVector children;

@@ -156,7 +156,7 @@ void ts::ServiceListDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::fromXML(const xml::Element* element)
+void ts::ServiceListDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

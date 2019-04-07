@@ -84,7 +84,7 @@ void ts::EacemPreferredNameListDescriptor::serialize(Descriptor& desc, const DVB
 {
     ByteBlockPtr bbp(serializeStart());
     for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        if (!SerializeLanguageCode(*bbp, it1->first, charset)) {
+        if (!SerializeLanguageCode(*bbp, it1->first)) {
             desc.invalidate();
             return;
         }
@@ -114,7 +114,7 @@ void ts::EacemPreferredNameListDescriptor::deserialize(const Descriptor& desc, c
         // Loop on languages.
         while (size >= 4) {
             // Get language and name count.
-            const UString lang(UString::FromDVB(data, 3, charset));
+            const UString lang(UString::FromDVB(data, 3));
             uint8_t count = data[3];
             data += 4; size -= 4;
 
@@ -190,7 +190,7 @@ void ts::EacemPreferredNameListDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameListDescriptor::fromXML(const xml::Element* element)
+void ts::EacemPreferredNameListDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     xml::ElementVector children1;
     _is_valid = checkXMLName(element) && element->getChildren(children1, u"language");

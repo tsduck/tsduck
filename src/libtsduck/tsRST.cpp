@@ -196,7 +196,7 @@ void ts::RST::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::fromXML(const xml::Element* element)
+void ts::RST::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     events.clear();
 

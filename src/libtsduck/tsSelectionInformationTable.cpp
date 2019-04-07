@@ -238,7 +238,7 @@ void ts::SelectionInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::fromXML(const xml::Element* element)
+void ts::SelectionInformationTable::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     services.clear();
@@ -248,13 +248,13 @@ void ts::SelectionInformationTable::fromXML(const xml::Element* element)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(children, element, u"service");
+        descs.fromXML(children, element, u"service", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         uint16_t id = 0;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
             children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
-            services[id].descs.fromXML(children[index]);
+            services[id].descs.fromXML(children[index], charset);
     }
 }

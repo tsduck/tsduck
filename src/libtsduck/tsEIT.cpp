@@ -575,7 +575,7 @@ void ts::EIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::fromXML(const xml::Element* element)
+void ts::EIT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     events.clear();
 
@@ -600,7 +600,7 @@ void ts::EIT::fromXML(const xml::Element* element)
             children[i]->getTimeAttribute(event.duration, u"duration", true) &&
             children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
             children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-            event.descs.fromXML(children[i]);
+            event.descs.fromXML(children[i], charset);
     }
 }
 

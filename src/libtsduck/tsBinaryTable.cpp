@@ -522,7 +522,7 @@ bool ts::BinaryTable::fromXML(const xml::Element* node, const DVBCharset* charse
         // Create a table instance of the right type.
         AbstractTablePtr table = fac();
         if (!table.isNull()) {
-            table->fromXML(node);
+            table->fromXML(node, charset);
         }
         if (!table.isNull() && table->isValid()) {
             // Serialize the table.

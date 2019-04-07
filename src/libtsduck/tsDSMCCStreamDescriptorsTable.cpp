@@ -100,7 +100,7 @@ void ts::DSMCCStreamDescriptorsTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DSMCCStreamDescriptorsTable::fromXML(const xml::Element* element)
+void ts::DSMCCStreamDescriptorsTable::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     AbstractDescriptorsTable::fromXML(element);
     _is_valid = _is_valid && element->getIntAttribute<uint16_t>(_tid_ext, u"table_id_extension", false, 0xFFFF);

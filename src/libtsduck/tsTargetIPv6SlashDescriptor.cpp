@@ -139,7 +139,7 @@ void ts::TargetIPv6SlashDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SlashDescriptor::fromXML(const xml::Element* element)
+void ts::TargetIPv6SlashDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     addresses.clear();
 

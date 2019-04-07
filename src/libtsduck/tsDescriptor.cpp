@@ -272,7 +272,7 @@ bool ts::Descriptor::fromXML(const xml::Element* node, TID tid, const DVBCharset
         // Create a descriptor instance of the right type.
         AbstractDescriptorPtr desc = fac();
         if (!desc.isNull()) {
-            desc->fromXML(node);
+            desc->fromXML(node, charset);
         }
         if (!desc.isNull() && desc->isValid()) {
             // Serialize the descriptor.

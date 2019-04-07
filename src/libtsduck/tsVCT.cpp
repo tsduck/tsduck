@@ -526,7 +526,7 @@ void ts::VCT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::fromXML(const xml::Element* element)
+void ts::VCT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     channels.clear();
@@ -538,7 +538,7 @@ void ts::VCT::fromXML(const xml::Element* element)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        descs.fromXML(children, element, u"channel");
+        descs.fromXML(children, element, u"channel", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         // Add a new Channel at the end of the list.
@@ -558,7 +558,7 @@ void ts::VCT::fromXML(const xml::Element* element)
             children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
             children[index]->getIntEnumAttribute<uint8_t>(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
             children[index]->getIntAttribute<uint16_t>(ch.source_id, u"source_id", true) &&
-            ch.descs.fromXML(children[index]);
+            ch.descs.fromXML(children[index], charset);
 
         if (_is_valid && _table_id == TID_CVCT) {
             // CVCT-specific fields.

@@ -107,7 +107,7 @@ namespace ts {
         MGT& operator=(const MGT& other) = default;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
         DeclareDisplaySection();
 
         //!

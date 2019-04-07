@@ -152,7 +152,7 @@ void ts::ApplicationIconsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationIconsDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     icon_locator.clear();
     reserved_future_use.clear();

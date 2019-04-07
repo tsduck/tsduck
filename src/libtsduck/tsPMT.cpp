@@ -388,7 +388,7 @@ void ts::PMT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::fromXML(const xml::Element* element)
+void ts::PMT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     streams.clear();
@@ -400,13 +400,13 @@ void ts::PMT::fromXML(const xml::Element* element)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        descs.fromXML(children, element, u"component");
+        descs.fromXML(children, element, u"component", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         PID pid = PID_NULL;
         _is_valid =
             children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
             children[index]->getIntAttribute<uint8_t>(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
-            streams[pid].descs.fromXML(children[index]);
+            streams[pid].descs.fromXML(children[index], charset);
     }
 }

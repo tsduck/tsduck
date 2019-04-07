@@ -86,7 +86,7 @@ void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8(message_id);
-    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -109,7 +109,7 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
     }
 
     message_id = data[1];
-    language_code = UString::FromDVB(data + 2, 3, charset);
+    language_code = UString::FromDVB(data + 2, 3);
     message = UString::FromDVB(data + 5, size - 5, charset);
 }
 
@@ -130,7 +130,7 @@ void ts::MessageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::fromXML(const xml::Element* element)
+void ts::MessageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

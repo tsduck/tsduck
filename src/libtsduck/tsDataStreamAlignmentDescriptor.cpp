@@ -122,7 +122,7 @@ void ts::DataStreamAlignmentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::fromXML(const xml::Element* element)
+void ts::DataStreamAlignmentDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -142,7 +142,7 @@ void ts::SpliceTimeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceTimeDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

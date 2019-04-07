@@ -159,7 +159,7 @@ namespace ts {
         PID firstVideoPID() const;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
         DeclareDisplaySection();
 
     protected:

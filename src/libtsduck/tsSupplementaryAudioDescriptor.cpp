@@ -86,7 +86,7 @@ void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBChar
                      ((editorial_classification & 0x1F) << 2) |
                      0x02 |
                      (language_code.empty() ? 0x00 : 0x01));
-    if (!language_code.empty() && !SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!language_code.empty() && !SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -122,7 +122,7 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
             _is_valid = false;
             return;
         }
-        language_code = UString::FromDVB(data, 3, charset);
+        language_code = UString::FromDVB(data, 3);
         data += 3; size -= 3;
     }
 
@@ -151,7 +151,7 @@ void ts::SupplementaryAudioDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::fromXML(const xml::Element* element)
+void ts::SupplementaryAudioDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

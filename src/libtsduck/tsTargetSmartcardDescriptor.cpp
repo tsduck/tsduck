@@ -133,7 +133,7 @@ void ts::TargetSmartcardDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::fromXML(const xml::Element* element)
+void ts::TargetSmartcardDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     private_data.clear();
 

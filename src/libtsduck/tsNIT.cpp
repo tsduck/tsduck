@@ -168,7 +168,7 @@ void ts::NIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NIT::fromXML(const xml::Element* element)
+void ts::NIT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     transports.clear();
@@ -182,7 +182,7 @@ void ts::NIT::fromXML(const xml::Element* element)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(network_id, u"network_id", true, 0, 0x0000, 0xFFFF) &&
         element->getBoolAttribute(actual, u"actual", false, true) &&
-        descs.fromXML(children, element, u"transport_stream");
+        descs.fromXML(children, element, u"transport_stream", charset);
 
     setActual(actual);
 
@@ -191,7 +191,7 @@ void ts::NIT::fromXML(const xml::Element* element)
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(children[index]);
+            transports[ts].descs.fromXML(children[index], charset);
         if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
             _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }

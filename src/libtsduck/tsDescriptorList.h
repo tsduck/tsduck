@@ -377,11 +377,11 @@ namespace ts {
 
         //!
         //! This method decodes an XML list of descriptors.
-        //! @param [in] parent The XML element containing all descriptors.
-        //! All children must be valid descriptors.
+        //! @param [in] parent The XML element containing all descriptors. All children must be valid descriptors.
+        //! @param [in] charset If not zero, character set to use to serialize text.
         //! @return True on success, false on error.
         //!
-        bool fromXML(const xml::Element* parent);
+        bool fromXML(const xml::Element* parent, const DVBCharset* charset = nullptr);
 
     private:
         // Each entry contains a descriptor and its corresponding private data specifier.
