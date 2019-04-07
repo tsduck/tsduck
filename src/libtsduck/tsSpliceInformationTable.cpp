@@ -349,7 +349,7 @@ void ts::SpliceInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::fromXML(const xml::Element* element)
+void ts::SpliceInformationTable::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
     xml::ElementVector command;
@@ -359,7 +359,7 @@ void ts::SpliceInformationTable::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint64_t>(pts_adjustment, u"pts_adjustment", false, 0) &&
         element->getIntAttribute<uint16_t>(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
-        descs.fromXML(command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
+        descs.fromXML(command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command", charset);
 
     if (!_is_valid && command.size() != 1) {
         _is_valid = false;

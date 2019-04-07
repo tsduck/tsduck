@@ -357,7 +357,7 @@ void ts::SpliceInsert::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInsert::fromXML(const xml::Element* element)
+void ts::SpliceInsert::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
 

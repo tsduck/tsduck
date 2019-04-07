@@ -323,7 +323,7 @@ void ts::MGT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::fromXML(const xml::Element* element)
+void ts::MGT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     tables.clear();
@@ -333,7 +333,7 @@ void ts::MGT::fromXML(const xml::Element* element)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        descs.fromXML(children, element, u"table");
+        descs.fromXML(children, element, u"table", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
@@ -344,6 +344,6 @@ void ts::MGT::fromXML(const xml::Element* element)
             children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
             children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
             children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
-            tt.descs.fromXML(children[index]);
+            tt.descs.fromXML(children[index], charset);
     }
 }

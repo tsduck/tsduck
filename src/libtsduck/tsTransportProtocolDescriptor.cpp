@@ -463,7 +463,7 @@ void ts::TransportProtocolDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element)
+void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
 

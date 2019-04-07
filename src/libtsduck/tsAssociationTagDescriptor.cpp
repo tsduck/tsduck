@@ -162,7 +162,7 @@ void ts::AssociationTagDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AssociationTagDescriptor::fromXML(const xml::Element* element)
+void ts::AssociationTagDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     selector_bytes.clear();
     private_data.clear();

@@ -159,7 +159,7 @@ void ts::HierarchyDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::fromXML(const xml::Element* element)
+void ts::HierarchyDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

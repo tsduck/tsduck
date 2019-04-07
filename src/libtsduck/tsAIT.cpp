@@ -287,13 +287,19 @@ void ts::AIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::fromXML(const xml::Element* element)
+void ts::AIT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     applications.clear();
 
     xml::ElementVector children;
-    _is_valid = checkXMLName(element) && element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) && element->getBoolAttribute(is_current, u"current", false, true) && element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) && element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) && descs.fromXML(children, element, u"application");
+    _is_valid =
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
+        element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+        descs.fromXML(children, element, u"application", charset);
 
     // Iterate through applications
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
@@ -304,8 +310,9 @@ void ts::AIT::fromXML(const xml::Element* element)
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 
-        _is_valid = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
-            application.descs.fromXML(others, children[index], allowed) &&
+        _is_valid =
+            children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
+            application.descs.fromXML(others, children[index], allowed, charset) &&
             id != nullptr &&
             id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
             id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);

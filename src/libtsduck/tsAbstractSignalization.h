@@ -103,8 +103,9 @@ namespace ts {
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
         //! @param [in] element XML element to convert.
+        //! @param [in] charset If not zero, character set to use to serialize text.
         //!
-        virtual void fromXML(const xml::Element* element) = 0;
+        virtual void fromXML(const xml::Element* element, const DVBCharset* charset = nullptr) = 0;
 
         //!
         //! Virtual destructor
@@ -180,12 +181,11 @@ namespace ts {
         //! This abstract method serializes a 3-byte language or country code.
         //! @param [in,out] bb A byte-block where @a str will be appended if its size is correct.
         //! @param [in] str String to serialize.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True if the size has the required length and has been serialized.
         //!
-        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, const DVBCharset* charset = nullptr)
+        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str)
         {
-            return SerializeFixedLength(bb, str, 3, charset);
+            return SerializeFixedLength(bb, str, 3);
         }
 
     private:

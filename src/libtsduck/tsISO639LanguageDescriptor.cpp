@@ -95,7 +95,7 @@ void ts::ISO639LanguageDescriptor::serialize(Descriptor& desc, const DVBCharset*
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code, charset)) {
+        if (!SerializeLanguageCode(*bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -119,7 +119,7 @@ void ts::ISO639LanguageDescriptor::deserialize(const Descriptor& desc, const DVB
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back(Entry(UString::FromDVB(data, 3, charset), data[3]));
+            entries.push_back(Entry(UString::FromDVB(data, 3), data[3]));
             data += 4;
             size -= 4;
         }
@@ -165,7 +165,7 @@ void ts::ISO639LanguageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::fromXML(const xml::Element* element)
+void ts::ISO639LanguageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

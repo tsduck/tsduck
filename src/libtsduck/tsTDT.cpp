@@ -142,7 +142,7 @@ void ts::TDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(const xml::Element* element)
+void ts::TDT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

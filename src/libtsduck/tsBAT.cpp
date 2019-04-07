@@ -159,7 +159,7 @@ void ts::BAT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BAT::fromXML(const xml::Element* element)
+void ts::BAT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     transports.clear();
@@ -170,14 +170,14 @@ void ts::BAT::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(bouquet_id, u"bouquet_id", true, 0, 0x0000, 0xFFFF) &&
-        descs.fromXML(children, element, u"transport_stream");
+        descs.fromXML(children, element, u"transport_stream", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         TransportStreamId ts;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(children[index]);
+            transports[ts].descs.fromXML(children[index], charset);
         if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
             _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }

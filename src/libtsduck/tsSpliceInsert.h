@@ -119,6 +119,6 @@ namespace ts {
 
         // Inherited methods
         virtual void buildXML(xml::Element* root) const override;
-        virtual void fromXML(const xml::Element* element) override;
+        virtual void fromXML(const xml::Element* element, const DVBCharset* charset = nullptr) override;
     };
 }

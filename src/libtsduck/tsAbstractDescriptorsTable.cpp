@@ -163,12 +163,12 @@ void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::fromXML(const xml::Element* element)
+void ts::AbstractDescriptorsTable::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     _is_valid =
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(element);
+        descs.fromXML(element, charset);
 }

@@ -540,10 +540,10 @@ bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element*
     return fromXML(others, parent, allowed, charset);
 }
 
-bool ts::DescriptorList::fromXML(const xml::Element* parent)
+bool ts::DescriptorList::fromXML(const xml::Element* parent, const DVBCharset* charset)
 {
     xml::ElementVector others;
-    return fromXML(others, parent, UStringList());
+    return fromXML(others, parent, UStringList(), charset);
 }
 
 bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)

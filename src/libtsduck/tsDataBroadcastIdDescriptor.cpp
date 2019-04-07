@@ -334,7 +334,7 @@ void ts::DataBroadcastIdDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::fromXML(const xml::Element* element)
+void ts::DataBroadcastIdDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

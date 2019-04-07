@@ -94,7 +94,7 @@ void ts::CountryAvailabilityDescriptor::serialize(Descriptor& desc, const DVBCha
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(country_availability ? 0xFF : 0x7F);
     for (size_t n = 0; n < country_codes.size(); ++n) {
-        if (!SerializeLanguageCode(*bbp, country_codes[n], charset)) {
+        if (!SerializeLanguageCode(*bbp, country_codes[n])) {
             desc.invalidate();
             return;
         }
@@ -118,7 +118,7 @@ void ts::CountryAvailabilityDescriptor::deserialize(const Descriptor& desc, cons
         country_availability = (data[0] & 0x80) != 0;
         data++; size--;
         while (size >= 3) {
-            country_codes.push_back(UString::FromDVB(data, 3, charset));
+            country_codes.push_back(UString::FromDVB(data, 3));
             data += 3;
             size -= 3;
         }
@@ -167,7 +167,7 @@ void ts::CountryAvailabilityDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::fromXML(const xml::Element* element)
+void ts::CountryAvailabilityDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     country_codes.clear();
 

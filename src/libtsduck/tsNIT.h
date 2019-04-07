@@ -94,7 +94,7 @@ namespace ts {
         }
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
         DeclareDisplaySection();
 
     protected:

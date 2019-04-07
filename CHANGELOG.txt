@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1187
+VERSION 3.17-1189
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -17,6 +17,7 @@ VERSION 3.17-1187
     now also monitor the bitrate of the complete TS and can detect zero bitrate
     on the transport stream.
   * Added option --start-media-sequence to output plugin "hls".
+  * Added option --pack-and-flush to "tstabcomp".
   * In various analysis commands and plugins, ATSC signalization is now known.
   * General list of improvements regarding tuners and scanning:
     - Added region-specific UHF/VHF frequency layouts in various commands and
@@ -53,6 +54,8 @@ VERSION 3.17-1187
     bitrate computation and introduced a small bias. New computed values can be
     slightly different but more accurate.
   * Fixed various discrepancies in adjustment of continuity counters.
+  * The option --default-charset was not always correctly used when compiling
+    tables from XML.
 
 -------------------------------------------------------------------------------
 

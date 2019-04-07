@@ -156,7 +156,7 @@ void ts::DVBHTMLApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::fromXML(const xml::Element* element)
+void ts::DVBHTMLApplicationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     application_ids.clear();
     parameter.clear();

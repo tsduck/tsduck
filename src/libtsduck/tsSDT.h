@@ -249,7 +249,7 @@ namespace ts {
         bool findService(ts::Service& service, bool exact_match = false) const;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
         DeclareDisplaySection();
 
     protected:

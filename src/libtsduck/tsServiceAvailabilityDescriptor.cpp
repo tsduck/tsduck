@@ -139,7 +139,7 @@ void ts::ServiceAvailabilityDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::fromXML(const xml::Element* element)
+void ts::ServiceAvailabilityDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     cell_ids.clear();
 

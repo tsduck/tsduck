@@ -644,7 +644,7 @@ void ts::LinkageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::fromXML(const xml::Element* element)
+void ts::LinkageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
 

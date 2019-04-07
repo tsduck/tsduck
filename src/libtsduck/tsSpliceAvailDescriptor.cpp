@@ -131,7 +131,7 @@ void ts::SpliceAvailDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceAvailDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceAvailDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -128,6 +128,56 @@ void ts::SectionFile::add(const SectionPtr& section)
 
 
 //----------------------------------------------------------------------------
+// Pack all orphan sections.
+//----------------------------------------------------------------------------
+
+size_t ts::SectionFile::packOrphanSections()
+{
+    size_t createCount = 0;
+
+    // Loop on all orphan sections, locating sets of sections from the same table.
+    for (auto first = _orphanSections.begin(); first != _orphanSections.end(); ) {
+        assert(!first->isNull());
+        assert((*first)->isValid());
+
+        // Point after first section.
+        auto end = first + 1;
+
+        // A short section should be a table in itself, no need to dive further.
+        // Long sections must be grouped by tid / tid-ext.
+        if ((*first)->isLongSection()) {
+            const TID tid = (*first)->tableId();
+            const uint16_t tidExt = (*first)->tableIdExtension();
+            while (end != _orphanSections.end() && (*end)->tableId() == tid && (*end)->tableIdExtension() == tidExt) {
+                ++end;
+            }
+        }
+
+        // Build a binary table from orphan sections.
+        BinaryTablePtr table(new BinaryTable);
+        CheckNonNull(table.pointer());
+        table->addSections(first, end, true, true);
+
+        // Compress all sections to make a valid table.
+        table->packSections();
+        assert(table->isValid());
+
+        // Now we got a table.
+        _tables.push_back(table);
+        createCount++;
+
+        // Loop on next set of sections.
+        first = end;
+    }
+
+    // Clear the list of orphan sections, they are now in tables.
+    _orphanSections.clear();
+
+    return createCount;
+}
+
+
+//----------------------------------------------------------------------------
 // Check it a table can be formed using the last sections in _orphanSections.
 //----------------------------------------------------------------------------
 
@@ -139,7 +189,7 @@ void ts::SectionFile::collectLastTable()
     }
 
     // Get a iterator to last section.
-    SectionPtrVector::iterator first = _orphanSections.end();
+    SectionPtrVector::iterator first(_orphanSections.end());
     --first;
     assert(!first->isNull());
     assert((*first)->isValid());
@@ -319,7 +369,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
         BinaryTablePtr bin(new BinaryTable);
         CheckNonNull(bin.pointer());
-        if (bin->fromXML(node) && bin->isValid()) {
+        if (bin->fromXML(node, _charset) && bin->isValid()) {
             add(bin);
         }
         else {

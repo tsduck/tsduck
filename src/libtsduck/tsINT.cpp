@@ -436,7 +436,7 @@ void ts::INT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::INT::fromXML(const xml::Element* element)
+void ts::INT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     platform_descs.clear();
     devices.clear();
@@ -449,7 +449,7 @@ void ts::INT::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(action_type, u"action_type", false, 0x01) &&
         element->getIntAttribute<uint8_t>(processing_order, u"processing_order", false, 0x00) &&
         element->getIntAttribute<uint32_t>(platform_id, u"platform_id", true, 0, 0x000000, 0xFFFFFF) &&
-        platform_descs.fromXML(children, element, u"device");
+        platform_descs.fromXML(children, element, u"device", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         Device& dev(devices.newEntry());
@@ -457,8 +457,8 @@ void ts::INT::fromXML(const xml::Element* element)
         xml::ElementVector operational;
         _is_valid =
             children[index]->getChildren(target, u"target", 0, 1) &&
-            (target.empty() || dev.target_descs.fromXML(target[0])) &&
+            (target.empty() || dev.target_descs.fromXML(target[0], charset)) &&
             children[index]->getChildren(operational, u"operational", 0, 1) &&
-            (operational.empty() || dev.operational_descs.fromXML(operational[0]));
+            (operational.empty() || dev.operational_descs.fromXML(operational[0], charset));
     }
 }

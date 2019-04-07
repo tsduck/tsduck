@@ -322,7 +322,7 @@ void ts::TOT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::fromXML(const xml::Element* element)
+void ts::TOT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     regions.clear();
     descs.clear();
@@ -332,7 +332,7 @@ void ts::TOT::fromXML(const xml::Element* element)
     _is_valid =
         checkXMLName(element) &&
         element->getDateTimeAttribute(utc_time, u"UTC_time", true) &&
-        orig.fromXML(element);
+        orig.fromXML(element, charset);
 
     // Then, split local_time_offset_descriptor and others.
     addDescriptors(orig);

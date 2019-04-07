@@ -230,7 +230,7 @@ void ts::PAT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::fromXML(const xml::Element* element)
+void ts::PAT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     xml::ElementVector children;
     _is_valid =

@@ -488,7 +488,7 @@ void ts::SDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::fromXML(const xml::Element* element)
+void ts::SDT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     services.clear();
 
@@ -515,7 +515,7 @@ void ts::SDT::fromXML(const xml::Element* element)
             children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
             children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
             children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
-            services[id].descs.fromXML(children[index]);
+            services[id].descs.fromXML(children[index], charset);
         if (_is_valid) {
             services[id].running_status = uint8_t(rs);
         }

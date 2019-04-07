@@ -169,7 +169,7 @@ void ts::LogicalChannelNumberDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::fromXML(const xml::Element* element)
+void ts::LogicalChannelNumberDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

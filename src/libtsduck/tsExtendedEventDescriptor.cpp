@@ -215,7 +215,7 @@ void ts::ExtendedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* 
     ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt8((descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -254,7 +254,7 @@ void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBC
 
     descriptor_number = data[0] >> 4;
     last_descriptor_number = data[0] & 0x0F;
-    language_code = UString::FromDVB(data + 1, 3, charset);
+    language_code = UString::FromDVB(data + 1, 3);
     size_t items_length = data[4];
     data += 5; size -= 5;
     _is_valid = items_length < size;
@@ -339,7 +339,7 @@ void ts::ExtendedEventDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::fromXML(const xml::Element* element)
+void ts::ExtendedEventDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     language_code.clear();
     text.clear();
