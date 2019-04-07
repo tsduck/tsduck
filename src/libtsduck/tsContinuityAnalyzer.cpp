@@ -29,7 +29,6 @@
 
 #include "tsContinuityAnalyzer.h"
 #include "tsNullReport.h"
-#include "tsUString.h"
 TSDUCK_SOURCE;
 
 
@@ -37,20 +36,28 @@ TSDUCK_SOURCE;
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::ContinuityAnalyzer::ContinuityAnalyzer(bool display, bool fix, const PIDSet& pid_filter, Report* report) :
+ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* report) :
     _report(report != nullptr ? report : NullReport::Instance()),
-    _display_errors(display),
-    _fix_errors(fix),
-    _packet_count(0),
+    _severity(Severity::Info),
+    _display_errors(false),
+    _fix_errors(false),
+    _generator(false),
+    _prefix(),
+    _total_packets(0),
+    _processed_packets(0),
     _fix_count(0),
     _error_count(0),
-    _pid_filter(pid_filter)
+    _pid_filter(pid_filter),
+    _pid_states()
 {
 }
 
-ts::ContinuityAnalyzer::~ContinuityAnalyzer()
+ts::ContinuityAnalyzer::PIDState::PIDState() :
+    first_cc(INVALID_CC),
+    last_cc_in(INVALID_CC),
+    last_cc_out(INVALID_CC),
+    dup_count(0)
 {
-    reset();
 }
 
 
@@ -70,21 +77,11 @@ void ts::ContinuityAnalyzer::setReport(Report* report)
 
 void ts::ContinuityAnalyzer::reset()
 {
-    _packet_count = 0;
+    _total_packets = 0;
+    _processed_packets = 0;
     _fix_count = 0;
     _error_count = 0;
-
-    //@@@@@
-}
-
-
-//----------------------------------------------------------------------------
-// Reset the context for one single PID.
-//----------------------------------------------------------------------------
-
-void ts::ContinuityAnalyzer::resetPID(PID pid)
-{
-    //@@@@
+    _pid_states.clear();
 }
 
 
@@ -104,7 +101,7 @@ void ts::ContinuityAnalyzer::setPIDFilter(const PIDSet& pids)
     if (removed_pids.any()) {
         for (PID pid = 0; pid < PID_MAX; ++pid) {
             if (removed_pids[pid]) {
-                resetPID(pid);
+                _pid_states.erase(pid);
             }
         }
     }
@@ -126,13 +123,8 @@ void ts::ContinuityAnalyzer::removePID(PID pid)
 {
     if (pid < _pid_filter.size() && _pid_filter[pid]) {
         _pid_filter.reset(pid);
-        resetPID(pid);
+        _pid_states.erase(pid);
     }
-}
-
-size_t ts::ContinuityAnalyzer::pidCount() const
-{
-    return _pid_filter.count();
 }
 
 bool ts::ContinuityAnalyzer::hasPID(PID pid) const
@@ -142,37 +134,113 @@ bool ts::ContinuityAnalyzer::hasPID(PID pid) const
 
 
 //----------------------------------------------------------------------------
-// Process a constant TS packet.
+// Get the first and last CC in a PID.
 //----------------------------------------------------------------------------
 
-bool ts::ContinuityAnalyzer::feedPacket(const TSPacket& pkt)
+uint8_t ts::ContinuityAnalyzer::firstCC(PID pid) const
 {
-    // Count packets.
-    _packet_count++;
+    auto it = _pid_states.find(pid);
+    return it == _pid_states.end() ? INVALID_CC : it->second.first_cc;
+}
 
-    // Process error reporting.
-    bool success = true;
-    if (_display_errors) {
-        //@@@@
-    }
-
-    return success;
+uint8_t ts::ContinuityAnalyzer::lastCC(PID pid) const
+{
+    auto it = _pid_states.find(pid);
+    return it == _pid_states.end() ? INVALID_CC : it->second.last_cc_out;
 }
 
 
 //----------------------------------------------------------------------------
-// Process or modify a TS packet.
+//  Return the number of missing packets between two continuity counters
 //----------------------------------------------------------------------------
 
-bool ts::ContinuityAnalyzer::feedPacket(TSPacket& pkt)
+int ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
 {
-    // Process error reporting first.
-    bool success = feedPacket(*static_cast<const TSPacket*>(&pkt));
+    return (cc2 <= cc1 ? 16 : 0) + cc2 - cc1 - 1;
+}
 
-    // Process packet fixing.
-    if (_fix_errors) {
-        //@@@@
+
+//----------------------------------------------------------------------------
+// Detect error on packet.
+//----------------------------------------------------------------------------
+
+bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
+{
+    assert(pkt != nullptr);
+    const PID pid = pkt->getPID();
+    bool result = true;
+
+    // The null PID is never eligible for CC processing.
+    if (pid != PID_NULL && _pid_filter.test(pid)) {
+
+        // Get or create PID context.
+        PIDState& state(_pid_states[pid]);
+
+        const uint8_t cc = pkt->getCC();
+        const bool has_payload = pkt->hasPayload();
+
+        if (state.first_cc == INVALID_CC) {
+            // First packet on this PID
+            state.first_cc = cc;
+        }
+        else if (_generator) {
+            // Generator mode, ignore input CC, generate a smooth stream.
+            if (update) {
+                pkt->clearDiscontinuityIndicator();
+                pkt->setCC(has_payload ? ((state.last_cc_out + 1) & CC_MASK) : state.last_cc_out);
+                _fix_count++;
+                result = false;
+            }
+        }
+        else if (pkt->getDiscontinuityIndicator()) {
+            // Discontinuity indicator is set, ignore any discontinuity.
+            state.dup_count = 0;
+        }
+        else if (cc == state.last_cc_in && pkt->hasPayload()) {
+            // Duplicate packet.
+            if (++state.dup_count >= 2) {
+                // The standard allows at most 2 duplicate packets.
+                if (_display_errors) {
+                    _report->log(_severity, u"%spacket: %'d, PID: 0x%04X, %d duplicate packets", {_prefix, _total_packets, pid, state.dup_count + 1});
+                }
+                // There is nothing we can do to fix this.
+                _error_count++;
+                result = false;
+            }
+            if (update && cc != state.last_cc_out && _fix_errors) {
+                // Replicate a duplicate.
+                pkt->setCC(state.last_cc_out);
+                result = false;
+                _fix_count++;
+            }
+        }
+        else {
+            // Compute expected CC for this packet.
+            const uint8_t good_cc_in = has_payload ? ((state.last_cc_in + 1) & CC_MASK) : state.last_cc_in;
+            const uint8_t good_cc_out = has_payload ? ((state.last_cc_out + 1) & CC_MASK) : state.last_cc_out;
+
+            if (cc != good_cc_in) {
+                if (_display_errors) {
+                    _report->log(_severity, u"%spacket: %'d, PID: 0x%04X, missing: %2d packets", {_prefix, _total_packets, pid, MissingPackets(state.last_cc_in, cc)});
+                }
+                _error_count++;
+                result = false;
+            }
+            if (update && cc != good_cc_out && _fix_errors) {
+                pkt->setCC(good_cc_out);
+                result = false;
+                _fix_count++;
+            }
+            state.dup_count = 0;
+        }
+
+        // Save actual CC for next time.
+        state.last_cc_in = cc;
+        state.last_cc_out = pkt->getCC();
+        _processed_packets++;
     }
 
-    return success;
+    // Count total packets.
+    _total_packets++;
+    return result;
 }

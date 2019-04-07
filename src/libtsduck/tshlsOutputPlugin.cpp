@@ -60,14 +60,13 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _pmtPackets(),
     _videoPID(PID_NULL),
     _pmtPID(PID_NULL),
-    _patCC(0),
-    _pmtCC(0),
     _segClosePending(false),
     _segmentFile(),
     _liveSegmentFiles(),
     _playlist(),
     _pcrAnalyzer(1, 4),  // Minimum required: 1 PID, 4 PCR
-    _previousBitrate(0)
+    _previousBitrate(0),
+    _ccFixer(NoPID, tsp)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -175,11 +174,16 @@ bool ts::hls::OutputPlugin::start()
     _demux.addPID(PID_PAT);
     _patPackets.clear();
     _pmtPackets.clear();
-    _patCC = _pmtCC = 0;
     _pmtPID = PID_NULL;
     _videoPID = PID_NULL;
     _pcrAnalyzer.reset();
     _previousBitrate = 0;
+
+    // Fix continuity counters in PAT PID. Will add the PMT PID when found.
+    _ccFixer.reset();
+    _ccFixer.setGenerator(true);
+    _ccFixer.setPIDFilter(NoPID);
+    _ccFixer.addPID(PID_PAT);
 
     // Initialize the segment and playlist files.
     _liveSegmentFiles.clear();
@@ -366,6 +370,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                     const uint16_t srv(pat.pmts.begin()->first);
                     _pmtPID = pat.pmts.begin()->second;
                     _demux.addPID(_pmtPID);
+                    _ccFixer.addPID(_pmtPID);
                     tsp->verbose(u"using service id 0x%X (%d) as reference, PMT PID 0x%X (%d)", {srv, srv, _pmtPID, _pmtPID});
                 }
             }
@@ -416,16 +421,15 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
         const TSPacket* p = pkt + i;
 
         // If the packet comes from the PAT or PMT, get a copy and fix continuity counter.
-        if (pkt[i].getPID() == PID_PAT) {
-            tmp = pkt[i];
-            tmp.setCC(_patCC);
-            _patCC = (_patCC + 1) & CC_MASK;
+        const PID pid = pkt[i].getPID();
+        if (pid == PID_PAT) {
+            tmp = *p;
+            _ccFixer.feedPacket(tmp);
             p = &tmp;
         }
-        else if (_pmtPID != PID_NULL && pkt[i].getPID() == _pmtPID) {
-            tmp = pkt[i];
-            tmp.setCC(_pmtCC);
-            _pmtCC = (_pmtCC + 1) & CC_MASK;
+        else if (_pmtPID != PID_NULL && pid == _pmtPID) {
+            tmp = *p;
+            _ccFixer.feedPacket(tmp);
             p = &tmp;
         }
 

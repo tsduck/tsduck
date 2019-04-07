@@ -37,6 +37,7 @@
 #include "tsSectionDemux.h"
 #include "tsTSFileOutput.h"
 #include "tsPCRAnalyzer.h"
+#include "tsContinuityAnalyzer.h"
 #include "tshlsPlayList.h"
 
 namespace ts {
@@ -82,14 +83,13 @@ namespace ts {
             TSPacketVector _pmtPackets;           // TS packets for the PMT at start of each segment file, after the PAT.
             PID            _videoPID;             // Video PID on which the segmentation is evaluated.
             PID            _pmtPID;               // PID of the PMT of the reference service.
-            uint8_t        _patCC;                // Continuity counter for the PAT PID.
-            uint8_t        _pmtCC;                // Continuity counter for the PMT PID.
             bool           _segClosePending;      // Close the current segment when possible.
             TSFileOutput   _segmentFile;          // Output segment file.
             UStringList    _liveSegmentFiles;     // List of current segments in a live stream.
             hls::PlayList  _playlist;             // Generated playlist.
             PCRAnalyzer    _pcrAnalyzer;          // PCR analyzer to compute bitrates.
             BitRate        _previousBitrate;      // Bitrate of previous segment.
+            ContinuityAnalyzer _ccFixer;          // To fix continuity counters in PAT and PMT PID's.
 
             // Create the next segment file (also close the previous one if necessary).
             bool createNextSegment();

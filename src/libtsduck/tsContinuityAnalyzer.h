@@ -47,17 +47,10 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] display When true, display discontinuity errors on @a report.
-        //! @param [in] fix When true, fix discontinuity errors.
         //! @param [in] pid_filter The set of PID's to analyze or fix.
         //! @param [in] report Where to report discontinuity errors. Drop errors if null.
         //!
-        explicit ContinuityAnalyzer(bool display = false, bool fix = false, const PIDSet& pid_filter = NoPID, Report* report = nullptr);
-
-        //!
-        //! Destructor.
-        //!
-        ~ContinuityAnalyzer();
+        explicit ContinuityAnalyzer(const PIDSet& pid_filter = NoPID, Report* report = nullptr);
 
         //!
         //! Reset all collected information.
@@ -71,21 +64,29 @@ namespace ts {
         //! @param [in] pkt A transport stream packet.
         //! @return True if the packet has no discontinuity error. False if it has an error.
         //!
-        bool feedPacket(const TSPacket& pkt);
+        bool feedPacket(const TSPacket& pkt) { return feedPacketInternal(const_cast<TSPacket*>(&pkt), false); }
 
         //!
         //! Process or modify a TS packet.
-        //! @param [in,out] pkt A transport stream packet. It can be modified only when error fixing is activated.
-        //! @return True if the packet had no discontinuity error. False if it had an error.
-        //! If fixing is activated, the error is fixed and false is returned.
+        //! @param [in,out] pkt A transport stream packet.
+        //! It can be modified only when error fixing or generator mode is activated.
+        //! @return True if the packet had no discontinuity error and is unmodified.
+        //! False if the packet had an error or was modified.
         //!
-        bool feedPacket(TSPacket& pkt);
+        bool feedPacket(TSPacket& pkt) { return feedPacketInternal(&pkt, true); }
+
+        //!
+        //! Get the total number of TS packets.
+        //! @return The total number of TS packets.
+        //!
+        PacketCounter totalPackets() const { return _total_packets; }
 
         //!
         //! Get the number of processed TS packets.
+        //! Only packets from selected PID's are counted.
         //! @return The number of processed TS packets.
         //!
-        PacketCounter packetCount() const { return _packet_count; }
+        PacketCounter processedPackets() const { return _processed_packets; }
 
         //!
         //! Get the number of fixed (modified) TS packets.
@@ -118,6 +119,28 @@ namespace ts {
         void setFix(bool fix) { _fix_errors = fix; }
 
         //!
+        //! Set generator mode.
+        //! When the generator mode is on, the input continuity counters are always ignored.
+        //! The output continuity counters are updated to create a continuous stream.
+        //! No error is reported.
+        //! @param [in] gen When true, activate generator mode.
+        //!
+        void setGenerator(bool gen) { _generator = gen; }
+
+        //!
+        //! Define the severity of messages.
+        //! The default severity is Severity::Info.
+        //! @param [in] level The severity of each message.
+        //!
+        void setMessageSeverity(int level) { _severity = level; }
+
+        //!
+        //! Define a prefix string to be displayed with each message.
+        //! @param [in] prefix The prefix string to be displayed with each message.
+        //!
+        void setMessagePrefix(const UString& prefix) { _prefix = prefix; }
+
+        //!
         //! Replace the list of PID's to process.
         //! @param [in] pid_filter The list of PID's to process.
         //!
@@ -145,26 +168,70 @@ namespace ts {
         //! Get the current number of PID's being processed.
         //! @return The current number of PID's being processed.
         //!
-        size_t pidCount() const;
+        size_t pidCount() const { return _pid_filter.count(); }
 
         //!
         //! Check if a PID is processed.
         //! @param [in] pid The PID to test.
-        //! @return Tue if @a pid is processed.
+        //! @return True if @a pid is processed.
         //!
         bool hasPID(PID pid) const;
 
-    private:
-        Report*       _report;          // Where to report errors, never null.
-        bool          _display_errors;  // Display discontinuity errors.
-        bool          _fix_errors;      // Fix discontinuity errors.
-        PacketCounter _packet_count;    // Number of processed packets.
-        PacketCounter _fix_count;       // Number of fixed (modified) packets.
-        PacketCounter _error_count;     // Number of discontinuity errors.
-        PIDSet        _pid_filter;      // Current set of filtered PID's.
+        //!
+        //! Get the first CC in a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The first CC value in the PID or ts::INVALID_CC when the PID is not filtered.
+        //! The first CC in a PID is never modified.
+        //!
+        uint8_t firstCC(PID pid) const;
 
-        // Reset the context for one single PID.
-        void resetPID(PID pid);
+        //!
+        //! Get the last CC in a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The last CC value in the PID or ts::INVALID_CC when the PID is not filtered.
+        //! This is the output CC value, possibly modified.
+        //!
+        uint8_t lastCC(PID pid) const;
+
+        //!
+        //! Compute the number of missing packets between two continuity counters.
+        //! @param [in] cc1 First continuity counter.
+        //! @param [in] cc2 Second continuity counter.
+        //! @return Number of missing packets between @a cc1 and @a cc2.
+        //!
+        static int MissingPackets(int cc1, int cc2);
+
+    private:
+        // PID analysis state
+        class PIDState
+        {
+        public:
+            PIDState();           // Constructor
+            uint8_t first_cc;     // First CC value in a PID.
+            uint8_t last_cc_in;   // Last input CC value in a PID.
+            uint8_t last_cc_out;  // Last output CC value in a PID.
+            size_t  dup_count;    // Consecutive duplicate count.
+        };
+
+        // A map of PID state, indexed by PID.
+        typedef std::map<PID,PIDState> PIDStateMap;
+
+        // Private members.
+        Report*       _report;            // Where to report errors, never null.
+        int           _severity;          // Severity level for error messages.
+        bool          _display_errors;    // Display discontinuity errors.
+        bool          _fix_errors;        // Fix discontinuity errors.
+        bool          _generator;         // Use generator mode.
+        UString       _prefix;            // Message prefix.
+        PacketCounter _total_packets;     // Total number of packets.
+        PacketCounter _processed_packets; // Number of processed packets.
+        PacketCounter _fix_count;         // Number of fixed (modified) packets.
+        PacketCounter _error_count;       // Number of discontinuity errors.
+        PIDSet        _pid_filter;        // Current set of filtered PID's.
+        PIDStateMap   _pid_states;        // State of all PID's.
+
+        // Internal version of feedPacket.
+        bool feedPacketInternal(TSPacket* pkt, bool update);
 
         // Unreachable constructors and operators.
         ContinuityAnalyzer(const ContinuityAnalyzer&) = delete;
