@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1183
+VERSION 3.17-1187
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -52,6 +52,7 @@ VERSION 3.17-1183
   * Fixed bitrate computation based on PCR's. Null packets uselessly reset the
     bitrate computation and introduced a small bias. New computed values can be
     slightly different but more accurate.
+  * Fixed various discrepancies in adjustment of continuity counters.
 
 -------------------------------------------------------------------------------
 
