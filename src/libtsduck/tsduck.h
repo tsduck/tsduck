@@ -363,6 +363,7 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsStreamModeDescriptor.h"
 #include "tsStringifyInterface.h"
+#include "tsSTT.h"
 #include "tsStuffingDescriptor.h"
 #include "tsSubRipGenerator.h"
 #include "tsSubtitlingDescriptor.h"

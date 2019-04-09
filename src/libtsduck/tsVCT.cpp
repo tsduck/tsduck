@@ -383,7 +383,7 @@ void ts::VCT::serializeContent(BinaryTable& table, const DVBCharset* charset) co
         }
 
         // Now store the number of channels in this section.
-        PutUInt16(payload + 1, num_channels);
+        payload[1] = num_channels;
 
         // Store all or some global descriptors.
         // Warning: the VCT has an unusual 10-bit size for the descriptor list length.
@@ -507,14 +507,14 @@ void ts::VCT::buildXML(xml::Element* root) const
         e->setIntAttribute(u"channel_TSID", it->second.channel_TSID, true);
         e->setIntAttribute(u"program_number", it->second.program_number, true);
         e->setIntAttribute(u"ETM_location", it->second.ETM_location, false);
-        root->setBoolAttribute(u"access_controlled", it->second.access_controlled);
-        root->setBoolAttribute(u"hidden", it->second.hidden);
+        e->setBoolAttribute(u"access_controlled", it->second.access_controlled);
+        e->setBoolAttribute(u"hidden", it->second.hidden);
         if (_table_id == TID_CVCT) {
             // CVCT-specific fields.
             e->setIntAttribute(u"path_select", it->second.path_select, false);
-            root->setBoolAttribute(u"out_of_band", it->second.out_of_band);
+            e->setBoolAttribute(u"out_of_band", it->second.out_of_band);
         }
-        root->setBoolAttribute(u"hide_guide", it->second.hide_guide);
+        e->setBoolAttribute(u"hide_guide", it->second.hide_guide);
         e->setEnumAttribute(ServiceTypeEnum, u"service_type", it->second.service_type);
         e->setIntAttribute(u"source_id", it->second.source_id, true);
         it->second.descs.toXML(e);

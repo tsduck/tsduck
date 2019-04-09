@@ -135,6 +135,9 @@ namespace ts {
         // Display list of services a PID belongs to.
         void reportServicesForPID(Grid& grid, const PIDContext&) const;
 
+        // Report a time stamp.
+        void reportTimeStamp(Grid& grid, const UString& name, const Time& value) const;
+
         // Display one normalized line of a time value.
         static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
     };
