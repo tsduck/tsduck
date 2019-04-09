@@ -362,6 +362,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamModeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSTT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
@@ -819,6 +820,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamModeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStringifyInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSTT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />

@@ -66,10 +66,10 @@ ts::MGT::MGT(const MGT& other) :
 {
 }
 
-ts::MGT::MGT(const BinaryTable& table, const DVBCharset* charset) :
+ts::MGT::MGT(const BinaryTable& table) :
     MGT()
 {
-    deserialize(table, charset);
+    deserialize(table);
 }
 
 ts::MGT::TableType::TableType(const AbstractTable* table) :

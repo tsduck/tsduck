@@ -50,10 +50,10 @@ ts::TVCT::TVCT(uint8_t version_, bool is_current_) :
     _is_valid = true;
 }
 
-ts::TVCT::TVCT(const BinaryTable& table, const DVBCharset* charset) :
+ts::TVCT::TVCT(const BinaryTable& table) :
     TVCT()
 {
-    deserialize(table, charset);
+    deserialize(table);
 }
 
 ts::TVCT::~TVCT()

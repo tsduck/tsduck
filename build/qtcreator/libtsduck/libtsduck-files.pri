@@ -360,6 +360,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
     ../../../src/libtsduck/tsStreamModeDescriptor.h \
     ../../../src/libtsduck/tsStringifyInterface.h \
+    ../../../src/libtsduck/tsSTT.h \
     ../../../src/libtsduck/tsStuffingDescriptor.h \
     ../../../src/libtsduck/tsSubRipGenerator.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
@@ -807,6 +808,7 @@ SOURCES += \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsStreamModeDescriptor.cpp \
     ../../../src/libtsduck/tsStringifyInterface.cpp \
+    ../../../src/libtsduck/tsSTT.cpp \
     ../../../src/libtsduck/tsStuffingDescriptor.cpp \
     ../../../src/libtsduck/tsSubRipGenerator.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
