@@ -68,7 +68,6 @@ TSDuck - List of features to be implemented or fixed
   - 5.2.1.1  TTML subtitling descriptor
 
   ATSC A/65 (Program and System Information Protocol)
-  - 6.1     System Time Table (STT)
   - 6.4     Rating Region Table (RRT)
   - 6.5     Event Information Table (EIT, ATSC version)
   - 6.6     Extended Text Table (ETT)
