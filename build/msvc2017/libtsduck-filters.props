@@ -388,6 +388,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsDuckConfigFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDuckContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1831,6 +1834,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDuckConfigFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDuckContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp">
