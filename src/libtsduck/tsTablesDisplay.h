@@ -176,7 +176,7 @@ namespace ts {
         //! A utility method to interpret data as an ASCII string.
         //! @param [in] data Address of data.
         //! @param [in] size Size of data.
-        //! @return If all bytes in data are ASCII (optioanlly padded with zeroes), return the
+        //! @return If all bytes in data are ASCII (optionally padded with zeroes), return the
         //! equivalent ASCII string. Otherwise, return an empty string.
         //!
         static std::string ToASCII(const void *data, size_t size);
