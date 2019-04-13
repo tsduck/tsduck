@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.18-1191
+
+[BUG] Bug fixes:
+
+  * Fixed an issue while reading XML files: leading and trailing spaces were
+    removed by default inside all text nodes.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.17-1189
 
 [IMP] Improvements on existing commands and plugins:
