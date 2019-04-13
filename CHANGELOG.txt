@@ -2,12 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1191
+VERSION 3.18-1192
 
 [BUG] Bug fixes:
 
   * Fixed an issue while reading XML files: leading and trailing spaces were
     removed by default inside all text nodes.
+  * Fixed input plugin "dektec": with satellite receivers, the LNB was not
+    properly enabled.
 
 -------------------------------------------------------------------------------
 

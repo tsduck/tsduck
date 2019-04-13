@@ -707,7 +707,7 @@ bool ts::DektecInputPlugin::configureLNB()
     // encoded in the DiSEqC commands.
 
     // Enable the LNB controller.
-    Dtapi::DTAPI_RESULT status = _guts->chan.LnbEnable(false);
+    Dtapi::DTAPI_RESULT status = _guts->chan.LnbEnable(true);
     if (status != DTAPI_OK) {
         tsp->error(u"error enabling Dektec LNB controller: %s", {DektecStrError(status)});
         return false;
