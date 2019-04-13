@@ -198,5 +198,5 @@ void ts::DataBroadcastDescriptor::fromXML(const xml::Element* element, const DVB
         element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
         element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
         element->getHexaTextChild(selector_bytes, u"selector_bytes", true) &&
-        element->getTextChild(text, u"text", true, false);
+        element->getTextChild(text, u"text");
 }
