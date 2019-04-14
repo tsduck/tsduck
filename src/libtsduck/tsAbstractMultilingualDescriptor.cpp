@@ -81,9 +81,9 @@ void ts::AbstractMultilingualDescriptor::serialize(Descriptor& desc, const DVBCh
     // Let the subclass serialize the prolog here.
     serializeProlog(bbp, charset);
 
-    // Serialize the multillingual name loop.
+    // Serialize the multi-lingual name loop.
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language, charset)) {
+        if (!SerializeLanguageCode(*bbp, it->language)) {
             desc.invalidate();
             return;
         }
@@ -110,7 +110,7 @@ void ts::AbstractMultilingualDescriptor::deserialize(const Descriptor& desc, con
 
     // Deserialize the multillingual name loop.
     while (_is_valid && size >= 4) {
-        const UString lang(UString::FromDVB(data, 3, charset));
+        const UString lang(UString::FromDVB(data, 3));
         const size_t len = data[3];
         data += 4; size -= 4;
         _is_valid = len <= size;
@@ -163,7 +163,7 @@ void ts::AbstractMultilingualDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::fromXML(const xml::Element* element)
+void ts::AbstractMultilingualDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

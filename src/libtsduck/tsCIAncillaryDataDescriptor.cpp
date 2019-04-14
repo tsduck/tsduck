@@ -107,7 +107,7 @@ void ts::CIAncillaryDataDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::fromXML(const xml::Element* element)
+void ts::CIAncillaryDataDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

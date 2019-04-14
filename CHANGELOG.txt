@@ -2,7 +2,18 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.17-1172
+VERSION 3.18-1192
+
+[BUG] Bug fixes:
+
+  * Fixed an issue while reading XML files: leading and trailing spaces were
+    removed by default inside all text nodes.
+  * Fixed input plugin "dektec": with satellite receivers, the LNB was not
+    properly enabled.
+
+-------------------------------------------------------------------------------
+
+VERSION 3.17-1189
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -16,6 +27,8 @@ VERSION 3.17-1172
   * Added options --pid and --tag to plugin "bitrate_monitor". The plugin can
     now also monitor the bitrate of the complete TS and can detect zero bitrate
     on the transport stream.
+  * Added option --start-media-sequence to output plugin "hls".
+  * Added option --pack-and-flush to "tstabcomp".
   * In various analysis commands and plugins, ATSC signalization is now known.
   * General list of improvements regarding tuners and scanning:
     - Added region-specific UHF/VHF frequency layouts in various commands and
@@ -48,6 +61,12 @@ VERSION 3.17-1172
     unused (do not contain a valid section) and 3) starts with FF. This is a
     probably incorrect muxing which has been found on at least one satellite
     transponder.
+  * Fixed bitrate computation based on PCR's. Null packets uselessly reset the
+    bitrate computation and introduced a small bias. New computed values can be
+    slightly different but more accurate.
+  * Fixed various discrepancies in adjustment of continuity counters.
+  * The option --default-charset was not always correctly used when compiling
+    tables from XML.
 
 -------------------------------------------------------------------------------
 

@@ -93,7 +93,7 @@ void ts::tsp::ProcessorExecutor::main()
         // If next processor has aborted, abort as well.
         // We call passPacket to inform our predecessor that we aborted.
 
-        if (aborted) {
+        if (aborted && !input_end) {
             passPackets(0, output_bitrate, true, true);
             break;
         }
@@ -185,5 +185,5 @@ void ts::tsp::ProcessorExecutor::main()
     _processor->stop();
 
     debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
-          {aborted ? u"aborted" : u"terminated", pluginPackets(), passed_packets, dropped_packets, nullified_packets});
+          {input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets});
 }

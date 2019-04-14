@@ -85,7 +85,7 @@ void ts::LocalTimeOffsetDescriptor::serialize(Descriptor& desc, const DVBCharset
     ByteBlockPtr bbp(serializeStart());
 
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->country, charset)) {
+        if (!SerializeLanguageCode(*bbp, it->country)) {
             desc.invalidate();
             return;
         }
@@ -115,7 +115,7 @@ void ts::LocalTimeOffsetDescriptor::deserialize(const Descriptor& desc, const DV
         size_t size = desc.payloadSize();
         while (size >= 13) {
             Region region;
-            region.country = UString::FromDVB(data, 3, charset);
+            region.country = UString::FromDVB(data, 3);
             region.region_id = data[3] >> 2;
             const uint8_t polarity = data[3] & 0x01;
             int hours = DecodeBCD(data[4]);
@@ -201,7 +201,7 @@ void ts::LocalTimeOffsetDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::fromXML(const xml::Element* element)
+void ts::LocalTimeOffsetDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     regions.clear();
     xml::ElementVector children;

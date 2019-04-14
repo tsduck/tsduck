@@ -121,7 +121,7 @@ void ts::StuffingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::fromXML(const xml::Element* element)
+void ts::StuffingDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     stuffing.clear();
     _is_valid = checkXMLName(element) && element->getHexaText(stuffing, 0, 255);

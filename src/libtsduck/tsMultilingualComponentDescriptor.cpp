@@ -118,7 +118,7 @@ void ts::MultilingualComponentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::fromXML(const xml::Element* element)
+void ts::MultilingualComponentDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     AbstractMultilingualDescriptor::fromXML(element);
     _is_valid = _is_valid && element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);

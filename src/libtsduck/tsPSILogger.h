@@ -103,9 +103,10 @@ namespace ts {
         int              _received_pmt;  // Received PMT count
         PacketCounter    _clear_packets_cnt;
         PacketCounter    _scrambled_packets_cnt;
-        SectionDemux     _demux;
+        SectionDemux     _demux;         // Demux reporting PSI tables.
+        Standards        _standards;     // List of current standards in the PSI logger.
 
-        // Hooks
+        // Implementations of TableHandlerInterface and SectionHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
     };

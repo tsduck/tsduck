@@ -188,7 +188,7 @@ ts::xml::Element* ts::SSUDataBroadcastIdDescriptor::toXML(xml::Element* parent) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::fromXML(const xml::Element* element)
+void ts::SSUDataBroadcastIdDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.

@@ -130,7 +130,7 @@ void ts::AncillaryDataDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::fromXML(const xml::Element* element)
+void ts::AncillaryDataDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

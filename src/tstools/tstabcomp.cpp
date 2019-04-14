@@ -63,6 +63,7 @@ struct Options: public ts::Args
     bool                  outdir;          // Output name is a directory.
     bool                  compile;         // Explicit compilation.
     bool                  decompile;       // Explicit decompilation.
+    bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
     bool                  xmlModel;        // Display XML model instead of compilation.
     ts::xml::TweaksArgs   xmlTweaks;       // XML formatting options.
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
@@ -84,6 +85,7 @@ Options::Options(int argc, char *argv[]) :
     outdir(false),
     compile(false),
     decompile(false),
+    packAndFlush(false),
     xmlModel(false),
     xmlTweaks(),
     defaultCharset(nullptr)
@@ -120,6 +122,12 @@ Options::Options(int argc, char *argv[]) :
          u"typically the usual local character table for the region. This option "
          u"forces a non-standard character table.");
 
+    option(u"pack-and-flush");
+    help(u"pack-and-flush",
+         u"When loading a binary file for decompilation, pack incomplete tables, "
+         u"ignoring missing sections, and flush them. "
+         u"Use with care because this may create inconsistent tables.");
+
     option(u"output", 'o', STRING);
     help(u"output", u"filepath",
          u"Specify the output file name. By default, the output file has the same "
@@ -141,6 +149,7 @@ Options::Options(int argc, char *argv[]) :
     getValue(outfile, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
+    packAndFlush = present(u"pack-and-flush");
     xmlModel = present(u"xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
     xmlTweaks.load(*this);
@@ -248,7 +257,16 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
     else {
         // Load binary sections and save XML file.
         opt.verbose(u"Decompiling %s to %s", {infile, outname});
-        return file.loadBinary(infile, report) && file.saveXML(outname, report);
+        if (!file.loadBinary(infile, report)) {
+            return false;
+        }
+        if (opt.packAndFlush) {
+            const size_t packed = file.packOrphanSections();
+            if (packed > 0) {
+                opt.verbose(u"Packed %d incomplete tables, may be invalid", {packed});
+            }
+        }
+        return file.saveXML(outname, report);
     }
 }
 

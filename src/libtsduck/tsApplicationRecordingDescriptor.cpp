@@ -276,7 +276,7 @@ void ts::ApplicationRecordingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationRecordingDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     labels.clear();
     component_tags.clear();

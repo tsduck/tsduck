@@ -48,6 +48,7 @@
 #include "tsSDT.h"
 #include "tsSelectionInformationTable.h"
 #include "tsSpliceInformationTable.h"
+#include "tsSTT.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsTSDT.h"

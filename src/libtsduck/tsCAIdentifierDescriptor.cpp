@@ -156,7 +156,7 @@ void ts::CAIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::CAIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     casids.clear();
     xml::ElementVector children;

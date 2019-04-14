@@ -136,7 +136,7 @@ void ts::EacemPreferredNameIdentifierDescriptor::buildXML(xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::EacemPreferredNameIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

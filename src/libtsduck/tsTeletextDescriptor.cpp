@@ -138,7 +138,7 @@ void ts::TeletextDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code, charset)) {
+        if (!SerializeLanguageCode(*bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -167,7 +167,7 @@ void ts::TeletextDescriptor::deserialize(const Descriptor& desc, const DVBCharse
 
     while (size >= 5) {
         Entry entry;
-        entry.language_code = UString::FromDVB(data, 3, charset);
+        entry.language_code = UString::FromDVB(data, 3);
         entry.teletext_type = data[3] >> 3;
         entry.setFullNumber(data[3] & 0x07, data[4]);
         entries.push_back(entry);
@@ -197,7 +197,7 @@ void ts::TeletextDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::fromXML(const xml::Element* element)
+void ts::TeletextDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
     xml::ElementVector children;

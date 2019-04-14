@@ -385,7 +385,7 @@ void ts::SpliceSegmentationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceSegmentationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
 

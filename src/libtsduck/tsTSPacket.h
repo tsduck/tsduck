@@ -362,6 +362,26 @@ namespace ts {
         }
 
         //!
+        //! Clear discontinuity_indicator - 1 bit
+        //!
+        inline void clearDiscontinuityIndicator()
+        {
+            if (getAFSize() > 0) {
+                b[5] &= ~0x80;
+            }
+        }
+
+        //!
+        //! Set discontinuity_indicator - 1 bit
+        //!
+        inline void setDiscontinuityIndicator()
+        {
+            if (getAFSize() > 0) {
+                b[5] |= 0x80;
+            }
+        }
+
+        //!
         //! Check if packet has a random_access_indicator set - 1 bit
         //! @return True if packet has a random_access_indicator set.
         //!

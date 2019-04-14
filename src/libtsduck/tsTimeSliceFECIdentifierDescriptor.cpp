@@ -132,7 +132,7 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     id_selector_bytes.clear();
 

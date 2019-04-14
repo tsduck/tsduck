@@ -333,7 +333,7 @@ void ts::AudioPreselectionDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::fromXML(const xml::Element* element)
+void ts::AudioPreselectionDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
     xml::ElementVector children;

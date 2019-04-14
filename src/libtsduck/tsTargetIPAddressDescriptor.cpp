@@ -140,7 +140,7 @@ void ts::TargetIPAddressDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::fromXML(const xml::Element* element)
+void ts::TargetIPAddressDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     IPv4_addr.clear();
 

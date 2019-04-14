@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::TDT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::TDT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::TDT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::TDT::DisplaySection, MY_TID);
 
 
@@ -70,11 +70,8 @@ ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::TDT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
-    // Clear table content
-    _is_valid = false;
-
     // This is a short table, must have only one section
     if (table.sectionCount() != 1) {
         return;
@@ -82,17 +79,12 @@ void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Reference to single section
     const Section& sect(*table.sectionAt(0));
-    const uint8_t* data(sect.payload());
-    size_t remain(sect.payloadSize());
 
-    // Abort if not a TDT
-    if (sect.tableId() != MY_TID || remain < MJD_SIZE) {
-        return;
+    // Get UTC time.
+    if (sect.payloadSize() >= MJD_SIZE) {
+        DecodeMJD(sect.payload(), MJD_SIZE, utc_time);
+        _is_valid = true;
     }
-
-    // Get UTC time
-    DecodeMJD(data, MJD_SIZE, utc_time);
-    _is_valid = true;
 }
 
 
@@ -100,16 +92,8 @@ void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::TDT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Encode the data in MJD in the payload (5 bytes)
     uint8_t payload[MJD_SIZE];
     EncodeMJD(utc_time, payload, MJD_SIZE);
@@ -158,7 +142,7 @@ void ts::TDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(const xml::Element* element)
+void ts::TDT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&
