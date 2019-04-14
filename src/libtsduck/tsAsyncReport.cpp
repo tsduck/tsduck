@@ -89,9 +89,12 @@ void ts::AsyncReport::terminate()
 void ts::AsyncReport::writeLog(int severity, const UString &msg)
 {
 #if defined(TS_WINDOWS) && defined(TS_DEBUG_LOG)
+    // On Windows, when TS_DEBUG_LOG is set, also send all messages to the debugger console.
+    // If the environment variable TS_DEBUG_LOG is set during compilation, then the macro
+    // TS_DEBUG_LOG is automatically defined and the debug logging is active.
     UString msgNewLine(msg);
     msgNewLine += u"\n";
-    OutputDebugStringA(msgNewLine.toUTF8().c_str());
+    ::OutputDebugStringA(msgNewLine.toUTF8().c_str());
 #endif
 
     if (!_terminated) {
