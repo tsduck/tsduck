@@ -121,6 +121,46 @@ ts::UString ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) co
 
 
 //----------------------------------------------------------------------------
+// Get the names from a bit-mask value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Enumeration::bitMaskNames(int value, const ts::UString& separator, bool hexa, size_t hexDigitCount) const
+{
+    UString list;
+    int done = 0; // Bitmask of all values which are already added in the list.
+
+    // Insert all known names.
+    for (auto it = _map.begin(); it != _map.end(); ++it) {
+        if ((value & it->first) == it->first) {
+            // This bit pattern is present.
+            done |= it->first;
+            if (!list.empty()) {
+                list += separator;
+            }
+            list += it->second;
+        }
+    }
+
+    // Now loop on bits which were not already printed.
+    value &= ~done;
+    for (int mask = 1; value != 0 && mask != 0; mask <<= 1) {
+        value &= ~mask;
+        if (!list.empty()) {
+            list += separator;
+        }
+        if (hexa) {
+            list += UString::Format(u"0x%0*X", {hexDigitCount, mask});
+        }
+        else {
+            list += UString::Decimal(mask, 0, true, UString());
+        }
+    }
+
+    return list;
+}
+
+
+//----------------------------------------------------------------------------
 // Return a comma-separated list of all possible names.
 //----------------------------------------------------------------------------
 

@@ -33,8 +33,8 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const uint8_t  ts::DVBCharset::DVB_SINGLE_BYTE_CRLF;
-const uint16_t ts::DVBCharset::DVB_CODEPOINT_CRLF;
+constexpr uint8_t  ts::DVBCharset::DVB_SINGLE_BYTE_CRLF;
+constexpr uint16_t ts::DVBCharset::DVB_CODEPOINT_CRLF;
 #endif
 
 

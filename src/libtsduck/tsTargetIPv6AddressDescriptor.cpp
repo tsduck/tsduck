@@ -140,7 +140,7 @@ void ts::TargetIPv6AddressDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6AddressDescriptor::fromXML(const xml::Element* element)
+void ts::TargetIPv6AddressDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     IPv6_addr.clear();
 

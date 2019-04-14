@@ -14,6 +14,7 @@
     REF_TYPE(SDT);
     REF_TYPE(SelectionInformationTable);
     REF_TYPE(SpliceInformationTable);
+    REF_TYPE(STT);
     REF_TYPE(TDT);
     REF_TYPE(TOT);
     REF_TYPE(TSDT);

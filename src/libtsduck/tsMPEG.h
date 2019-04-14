@@ -220,6 +220,11 @@ namespace ts {
     constexpr uint8_t CC_MAX = 1 << CC_BITS;
 
     //!
+    //! An invalid Continuity Counter (CC) value, typically meaning "undefined".
+    //!
+    constexpr uint8_t INVALID_CC = 0xFF;
+
+    //!
     //! Size (in bits) of a section version field.
     //!
     constexpr size_t SVERSION_BITS = 5;
@@ -272,12 +277,19 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum Standards : uint8_t {
+        STD_NONE = 0x00,  //!< No known standard
         STD_MPEG = 0x01,  //!< Defined by MPEG, common to all standards
         STD_DVB  = 0x02,  //!< Defined by ETSI/DVB.
         STD_SCTE = 0x04,  //!< Defined by ANSI/SCTE.
         STD_ATSC = 0x08,  //!< Defined by ATSC.
         STD_ISDB = 0x10,  //!< Defined by ISDB.
     };
+
+    //!
+    //! Enumeration description of standard values.
+    //! Typically using StandardsEnum::bitMaskNames().
+    //!
+    TSDUCKDLL extern const Enumeration StandardsEnum;
 
     //---------------------------------------------------------------------
     //! Predefined PID values

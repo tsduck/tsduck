@@ -189,7 +189,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element)
+void ts::S2SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     Variable<uint32_t> scrambling;
     Variable<uint8_t> stream;

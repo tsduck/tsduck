@@ -140,7 +140,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::buildXML(xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::fromXML(const xml::Element* element)
+void ts::ExternalApplicationAuthorizationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

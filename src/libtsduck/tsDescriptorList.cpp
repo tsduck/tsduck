@@ -99,19 +99,14 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
 // Get the default Private Data Specified value in this descriptor list.
 //----------------------------------------------------------------------------
 
-ts::PDS ts::DescriptorList::defaultPDS() const
+ts::PDS ts::DescriptorList::defaultPDS(PDS pds) const
 {
-    if (_table == nullptr) {
-        // Unknown table, assume DVB rules.
-        return 0;
-    }
-    else if ((_table->standards() & STD_ATSC) != 0) {
+    if (pds == 0 && _table != nullptr && ((_table->definingStandards() | _table->allStandards()) & STD_ATSC) != 0) {
         // Use fake PDS for ATSC descriptors.
         return PDS_ATSC;
     }
     else {
-        // Assume DVB rules.
-        return 0;
+        return pds;
     }
 }
 
@@ -128,7 +123,7 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
     if (desc->tag() == DID_PRIV_DATA_SPECIF) {
         // This descriptor defines a new "private data specifier".
         // The PDS is the only thing in the descriptor payload.
-        pds = desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload());
+        pds = defaultPDS(desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload()));
     }
     else if (_list.empty()) {
         // First descriptor in the list
@@ -545,10 +540,10 @@ bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element*
     return fromXML(others, parent, allowed, charset);
 }
 
-bool ts::DescriptorList::fromXML(const xml::Element* parent)
+bool ts::DescriptorList::fromXML(const xml::Element* parent, const DVBCharset* charset)
 {
     xml::ElementVector others;
-    return fromXML(others, parent, UStringList());
+    return fromXML(others, parent, UStringList(), charset);
 }
 
 bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)

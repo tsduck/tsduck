@@ -121,7 +121,7 @@ void ts::TargetSerialNumberDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::fromXML(const xml::Element* element)
+void ts::TargetSerialNumberDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     serial_data.clear();
 

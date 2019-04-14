@@ -58,21 +58,21 @@ namespace ts {
         TID tableId() const {return _table_id;}
 
         //!
-        //! This abstract method serializes a table.
+        //! This method serializes a table.
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
         //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serialize(BinaryTable& bin, const DVBCharset* charset = nullptr) const = 0;
+        void serialize(BinaryTable& bin, const DVBCharset* charset = nullptr) const;
 
         //!
-        //! This abstract method deserializes a binary table.
+        //! This method deserializes a binary table.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
         //! @param [in] bin A binary table to interpret according to the table subclass.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        virtual void deserialize(const BinaryTable& bin, const DVBCharset* charset = nullptr) = 0;
+        void deserialize(const BinaryTable& bin, const DVBCharset* charset = nullptr);
 
         //!
         //! Virtual destructor
@@ -250,6 +250,33 @@ namespace ts {
         //! @param [in] standards A bit mask of standards which define this structure.
         //!
         AbstractTable(TID tid, const UChar* xml_name, Standards standards);
+
+        //!
+        //! This method checks if a table id is valid for this object.
+        //! @param [in] tid A table id to check.
+        //! @return True if @a tid is a valid table id for this object, false otherwise.
+        //! The default implementation checks that @a tid is identical to the table id
+        //! of this object.
+        //!
+        virtual bool isValidTableId(TID tid) const;
+
+        //!
+        //! This abstract method serializes the content of a table.
+        //! This method is invoked by serialize() when the table is valid.
+        //! @param [out] bin A binary table object.
+        //! Its content is replaced with a binary representation of this object.
+        //! @param [in] charset If not zero, default character set to use.
+        //!
+        virtual void serializeContent(BinaryTable& bin, const DVBCharset* charset) const = 0;
+
+        //!
+        //! This abstract method deserializes the content of a binary table.
+        //! In case of success, this object is replaced with the interpreted content of @a bin.
+        //! In case of error, this object is invalidated.
+        //! @param [in] bin A binary table to interpret according to the table subclass.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        virtual void deserializeContent(const BinaryTable& bin, const DVBCharset* charset) = 0;
 
     private:
         // Unreachable constructors and operators.

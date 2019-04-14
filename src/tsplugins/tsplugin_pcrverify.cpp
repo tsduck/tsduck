@@ -95,9 +95,9 @@ TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_PROCESSOR(pcrverify, ts::PCRVerifyPlugin)
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
-const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX_US;
-const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
+constexpr int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
+constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX_US;
+constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 #endif
 
 

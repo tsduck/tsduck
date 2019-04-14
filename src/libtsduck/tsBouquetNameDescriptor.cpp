@@ -126,7 +126,7 @@ void ts::BouquetNameDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::fromXML(const xml::Element* element)
+void ts::BouquetNameDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

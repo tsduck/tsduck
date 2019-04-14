@@ -165,7 +165,7 @@ void ts::DeferredAssociationTagsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::fromXML(const xml::Element* element)
+void ts::DeferredAssociationTagsDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     association_tags.clear();
     private_data.clear();

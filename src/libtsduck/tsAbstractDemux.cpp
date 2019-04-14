@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractDemux::AbstractDemux(const PIDSet& pid_filter) :
+    AbstractDefinedByStandards(STD_MPEG), // the demux itself only uses MPEG standard
     _pid_filter(pid_filter),
     _packet_count(0),
     _in_handler(false),
@@ -131,6 +132,7 @@ void ts::AbstractDemux::resetPID(PID pid)
 
 void ts::AbstractDemux::immediateReset()
 {
+    resetAllStandards();
 }
 
 void ts::AbstractDemux::immediateResetPID(PID pid)

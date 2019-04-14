@@ -126,7 +126,7 @@ namespace ts {
             //!
             bool getTextChild(UString& data,
                               const UString& name,
-                              bool trim = true,
+                              bool trim = false,
                               bool required = false,
                               const UString& defValue = UString(),
                               size_t minSize = 0,
@@ -141,7 +141,7 @@ namespace ts {
             //! @param [in] maxSize Maximum allowed size for the value string.
             //! @return True on success, false on error.
             //!
-            bool getText(UString& data, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
+            bool getText(UString& data, bool trim = false, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
 
             //!
             //! Get text inside an element.
@@ -149,7 +149,7 @@ namespace ts {
             //! @param [in] trim If true, remove leading and trailing spaces.
             //! @return The content of the text children, empty if non-existent.
             //!
-            UString text(bool trim = true) const;
+            UString text(bool trim = false) const;
 
             //!
             //! Get text in a child containing hexadecimal data.

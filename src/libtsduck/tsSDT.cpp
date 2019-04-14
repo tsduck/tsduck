@@ -44,8 +44,8 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::SDT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT);
-TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_OTH);
+TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT, MY_STD);
+TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_OTH, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_ACT);
 TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_OTH);
 
@@ -75,6 +75,16 @@ ts::SDT::SDT(const SDT& other) :
     onetw_id(other.onetw_id),
     services(this, other.services)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::SDT::isValidTableId(TID tid) const
+{
+    return tid == TID_SDT_ACT || tid == TID_SDT_OTH;
 }
 
 
@@ -114,22 +124,12 @@ bool ts::SDT::findService(ts::Service& service, bool exact_match) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SDT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     ts_id = 0;
     onetw_id = 0;
     services.clear();
-
-    if (!table.isValid()) {
-        return;
-    }
-
-    // Check table id: SDT Actual or Other
-    if ((_table_id = table.tableId()) != TID_SDT_ACT && _table_id != TID_SDT_OTH) {
-        return;
-    }
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -156,23 +156,23 @@ void ts::SDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         if (remain < 3) {
             return;
         }
-        onetw_id = GetUInt16 (data);
+        onetw_id = GetUInt16(data);
         data += 3;
         remain -= 3;
 
         // Get services description
         while (remain >= 5) {
-            uint16_t service_id = GetUInt16 (data);
-            Service& serv (services[service_id]);
+            uint16_t service_id = GetUInt16(data);
+            Service& serv(services[service_id]);
             serv.EITs_present = (data[2] & 0x02) != 0;
             serv.EITpf_present = (data[2] & 0x01) != 0;
             serv.running_status = data[3] >> 5;
             serv.CA_controlled = (data[3] & 0x10) != 0;
-            size_t info_length (GetUInt16 (data + 3) & 0x0FFF);
+            size_t info_length = GetUInt16(data + 3) & 0x0FFF;
             data += 5;
             remain -= 5;
-            info_length = std::min (info_length, remain);
-            serv.descs.add (data, info_length);
+            info_length = std::min(info_length, remain);
+            serv.descs.add(data, info_length);
             data += info_length;
             remain -= info_length;
         }
@@ -215,21 +215,13 @@ void ts::SDT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SDT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number(0);
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Add original_network_id and one reserved byte at beginning of the
     // payload (will remain identical in all sections).
@@ -241,7 +233,7 @@ void ts::SDT::serialize(BinaryTable& table, const DVBCharset* charset) const
     // Add all services
     for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
 
-        const uint16_t service_id(it->first);
+        const uint16_t service_id = it->first;
         const Service& serv(it->second);
 
         // If we cannot at least add the fixed part, open a new section
@@ -459,7 +451,7 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                  << std::endl << margin
                  << "Running status: " << names::RunningStatus(running_status)
                  << std::endl;
-            display.displayDescriptorList(data, length, indent, section.tableId());
+            display.displayDescriptorList(section, data, length, indent);
             data += length; size -= length;
         }
     }
@@ -496,7 +488,7 @@ void ts::SDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::fromXML(const xml::Element* element)
+void ts::SDT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     services.clear();
 
@@ -523,7 +515,7 @@ void ts::SDT::fromXML(const xml::Element* element)
             children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
             children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
             children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
-            services[id].descs.fromXML(children[index]);
+            services[id].descs.fromXML(children[index], charset);
         if (_is_valid) {
             services[id].running_status = uint8_t(rs);
         }

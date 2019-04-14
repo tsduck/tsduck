@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::RST, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::RST, MY_TID);
+TS_ID_TABLE_FACTORY(ts::RST, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::RST::DisplaySection, MY_TID);
 
 
@@ -79,14 +79,13 @@ ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::RST::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     events.clear();
 
     // This is a short table, must have only one section
-    if (!table.isValid() || table.tableId() != _table_id || table.sectionCount() != 1) {
+    if (table.sectionCount() != 1) {
         return;
     }
 
@@ -117,16 +116,8 @@ void ts::RST::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::RST::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section
     uint8_t payload[MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
@@ -205,7 +196,7 @@ void ts::RST::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::fromXML(const xml::Element* element)
+void ts::RST::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     events.clear();
 

@@ -161,7 +161,7 @@ void ts::EutelsatChannelNumberDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::fromXML(const xml::Element* element)
+void ts::EutelsatChannelNumberDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

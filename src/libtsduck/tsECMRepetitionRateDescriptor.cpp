@@ -116,7 +116,7 @@ void ts::ECMRepetitionRateDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::fromXML(const xml::Element* element)
+void ts::ECMRepetitionRateDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     private_data.clear();
 

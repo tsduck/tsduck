@@ -38,8 +38,8 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::NIT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_ACT);
-TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_OTH);
+TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_ACT, MY_STD);
+TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_OTH, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_ACT);
 TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_OTH);
 
@@ -77,6 +77,16 @@ ts::NIT& ts::NIT::operator=(const NIT& other)
 
 
 //----------------------------------------------------------------------------
+// This method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::NIT::isValidTableId(TID tid) const
+{
+    return tid == TID_NIT_ACT || tid == TID_NIT_OTH;
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a NIT section.
 //----------------------------------------------------------------------------
 
@@ -98,7 +108,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
         if (loop_length > 0) {
             strm << margin << "Network information:" << std::endl;
-            display.displayDescriptorList(data, loop_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, loop_length, indent);
         }
         data += loop_length; size -= loop_length;
 
@@ -120,7 +130,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                     length = loop_length;
                 }
                 strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
-                display.displayDescriptorList(data, length, indent, section.tableId());
+                display.displayDescriptorList(section, data, length, indent);
                 data += length; size -= length; loop_length -= length;
             }
         }
@@ -158,7 +168,7 @@ void ts::NIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NIT::fromXML(const xml::Element* element)
+void ts::NIT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     transports.clear();
@@ -172,7 +182,7 @@ void ts::NIT::fromXML(const xml::Element* element)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(network_id, u"network_id", true, 0, 0x0000, 0xFFFF) &&
         element->getBoolAttribute(actual, u"actual", false, true) &&
-        descs.fromXML(children, element, u"transport_stream");
+        descs.fromXML(children, element, u"transport_stream", charset);
 
     setActual(actual);
 
@@ -181,7 +191,7 @@ void ts::NIT::fromXML(const xml::Element* element)
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(children[index]);
+            transports[ts].descs.fromXML(children[index], charset);
         if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
             _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }

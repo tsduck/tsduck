@@ -122,7 +122,7 @@ void ts::MPEG4VideoDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4VideoDescriptor::fromXML(const xml::Element* element)
+void ts::MPEG4VideoDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

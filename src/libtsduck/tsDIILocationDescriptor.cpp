@@ -153,7 +153,7 @@ void ts::DIILocationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::fromXML(const xml::Element* element)
+void ts::DIILocationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

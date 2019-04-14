@@ -124,7 +124,7 @@ void ts::ApplicationUsageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationUsageDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationUsageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

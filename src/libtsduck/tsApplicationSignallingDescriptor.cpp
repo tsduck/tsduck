@@ -127,7 +127,7 @@ void ts::ApplicationSignallingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationSignallingDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

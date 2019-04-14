@@ -145,7 +145,7 @@ void ts::ProtectionMessageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::fromXML(const xml::Element* element)
+void ts::ProtectionMessageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     component_tags.clear();
     xml::ElementVector children;

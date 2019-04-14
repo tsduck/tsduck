@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractTable.h"
+#include "tsBinaryTable.h"
 TSDUCK_SOURCE;
 
 
@@ -67,4 +68,68 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
         descs = other.descs;
     }
     return *this;
+}
+
+
+//----------------------------------------------------------------------------
+// This method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractTable::isValidTableId(TID tid) const
+{
+    // The default implementation checks that the TID is identical to the TID of this object.
+    return tid == _table_id;
+}
+
+
+//----------------------------------------------------------------------------
+// This method serializes a table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+{
+    // Reinitialize table object.
+    table.clear();
+
+    // Return an empty table if this object is not valid.
+    if (!_is_valid) {
+        return;
+    }
+
+    // Transfer our standards into serialized object.
+    // The implementation of serializeContent() has the opportunity to modify them..
+    table.resetAllStandards();
+    table.addAllStandards(allStandards());
+
+    // Call the subclass implementation.
+    serializeContent(table, charset);
+}
+
+
+//----------------------------------------------------------------------------
+// This method deserializes a binary table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+{
+    // Invalidate this object.
+    // Note that deserializeContent() is still responsible for clearing specific fields.
+    _is_valid = false;
+
+    // Keep this object invalid if the binary table is invalid or has an incorrect table if for this class.
+    if (!table.isValid() || !isValidTableId(table.tableId())) {
+        return;
+    }
+
+    // Transfer standards from the serialized object to this object.
+    // The implementation of deserializeContent() has the opportunity to modify them..
+    resetAllStandards();
+    addAllStandards(table.allStandards());
+
+    // Table is already checked to be compatible but can be different from current one.
+    // So, we need to update this object.
+    _table_id = table.tableId();
+
+    // Call the subclass implementation.
+    deserializeContent(table, charset);
 }

@@ -176,7 +176,7 @@ void ts::VideoStreamDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::fromXML(const xml::Element* element)
+void ts::VideoStreamDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -144,7 +144,7 @@ void ts::GraphicsConstraintsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::fromXML(const xml::Element* element)
+void ts::GraphicsConstraintsDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

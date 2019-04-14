@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDefinedByStandards.h"
 #include "tsByteBlock.h"
-#include "tsMPEG.h"
 #include "tsxml.h"
 
 //!
@@ -55,7 +55,7 @@ namespace ts {
     //! Abstract base class for MPEG PSI/SI tables and descriptors.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL AbstractSignalization
+    class TSDUCKDLL AbstractSignalization : public AbstractDefinedByStandards
     {
     public:
         //!
@@ -75,12 +75,6 @@ namespace ts {
         {
             _is_valid = false;
         }
-
-        //!
-        //! Get the list of standards which define this structure.
-        //! @return A bit mask of standards.
-        //!
-        Standards standards() const { return _standards; }
 
         //!
         //! Get the XMl node name representing this table or descriptor.
@@ -109,8 +103,9 @@ namespace ts {
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
         //! @param [in] element XML element to convert.
+        //! @param [in] charset If not zero, character set to use to serialize text.
         //!
-        virtual void fromXML(const xml::Element* element) = 0;
+        virtual void fromXML(const xml::Element* element, const DVBCharset* charset = nullptr) = 0;
 
         //!
         //! Virtual destructor
@@ -186,17 +181,14 @@ namespace ts {
         //! This abstract method serializes a 3-byte language or country code.
         //! @param [in,out] bb A byte-block where @a str will be appended if its size is correct.
         //! @param [in] str String to serialize.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True if the size has the required length and has been serialized.
         //!
-        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str, const DVBCharset* charset = nullptr)
+        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str)
         {
-            return SerializeFixedLength(bb, str, 3, charset);
+            return SerializeFixedLength(bb, str, 3);
         }
 
     private:
-        Standards _standards; // List of standards which define this structure.
-
         // Unreachable constructors and operators.
         AbstractSignalization() = delete;
     };

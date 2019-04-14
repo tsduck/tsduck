@@ -40,15 +40,15 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const ts::Polarization ts::TunerParametersDVBS::DEFAULT_POLARITY;
-const ts::SpectralInversion ts::TunerParametersDVBS::DEFAULT_INVERSION;
-const uint32_t ts::TunerParametersDVBS::DEFAULT_SYMBOL_RATE;
-const ts::InnerFEC ts::TunerParametersDVBS::DEFAULT_INNER_FEC;
-const size_t ts::TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
-const ts::DeliverySystem ts::TunerParametersDVBS::DEFAULT_DELIVERY_SYSTEM;
-const ts::Modulation ts::TunerParametersDVBS::DEFAULT_MODULATION;
-const ts::Pilot ts::TunerParametersDVBS::DEFAULT_PILOTS;
-const ts::RollOff ts::TunerParametersDVBS::DEFAULT_ROLL_OFF;
+constexpr ts::Polarization ts::TunerParametersDVBS::DEFAULT_POLARITY;
+constexpr ts::SpectralInversion ts::TunerParametersDVBS::DEFAULT_INVERSION;
+constexpr uint32_t ts::TunerParametersDVBS::DEFAULT_SYMBOL_RATE;
+constexpr ts::InnerFEC ts::TunerParametersDVBS::DEFAULT_INNER_FEC;
+constexpr size_t ts::TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
+constexpr ts::DeliverySystem ts::TunerParametersDVBS::DEFAULT_DELIVERY_SYSTEM;
+constexpr ts::Modulation ts::TunerParametersDVBS::DEFAULT_MODULATION;
+constexpr ts::Pilot ts::TunerParametersDVBS::DEFAULT_PILOTS;
+constexpr ts::RollOff ts::TunerParametersDVBS::DEFAULT_ROLL_OFF;
 #endif
 
 

@@ -151,7 +151,7 @@ void ts::ContentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::fromXML(const xml::Element* element)
+void ts::ContentDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

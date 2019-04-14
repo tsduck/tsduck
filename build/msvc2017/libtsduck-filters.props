@@ -19,6 +19,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDefinedByStandards.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -271,6 +274,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsContinuityAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCopyrightDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -380,6 +386,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDuckConfigFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDuckContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h">
@@ -1078,6 +1087,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSTT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1527,6 +1539,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDefinedByStandards.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1737,6 +1752,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsContinuityAnalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCopyrightDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1816,6 +1834,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDuckConfigFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDuckContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp">
@@ -2437,6 +2458,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsStringifyInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSTT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp">

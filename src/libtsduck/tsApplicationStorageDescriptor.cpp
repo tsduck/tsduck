@@ -154,7 +154,7 @@ void ts::ApplicationStorageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationStorageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

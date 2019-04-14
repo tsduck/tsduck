@@ -54,7 +54,7 @@ ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(uint32_t mbr) :
 }
 
 ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    MaximumBitrateDescriptor()
+    MaximumBitrateDescriptor(0)
 {
     deserialize(desc, charset);
 }
@@ -119,7 +119,7 @@ void ts::MaximumBitrateDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::fromXML(const xml::Element* element)
+void ts::MaximumBitrateDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     uint32_t mbr = 0;
 

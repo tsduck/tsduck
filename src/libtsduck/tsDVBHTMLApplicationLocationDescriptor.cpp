@@ -140,7 +140,7 @@ void ts::DVBHTMLApplicationLocationDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::fromXML(const xml::Element* element)
+void ts::DVBHTMLApplicationLocationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

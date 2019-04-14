@@ -7,6 +7,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCData.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDefinedByStandards.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
@@ -91,6 +92,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsConfigSection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsConfigSectionTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsContinuityAnalyzer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCopyrightDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCPDescriptor.h" />
@@ -128,6 +130,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsduck.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckConfigFile.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDuckContext.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
@@ -360,6 +363,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamModeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSTT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
@@ -511,6 +515,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCData.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDefinedByStandards.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
@@ -581,6 +586,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsConfigFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsConfigSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsContinuityAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCopyrightDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCPDescriptor.cpp" />
@@ -608,6 +614,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSNeuralDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckConfigFile.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDuckContext.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />
@@ -815,6 +822,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamModeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStringifyInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSTT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
