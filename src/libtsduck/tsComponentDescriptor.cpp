@@ -86,7 +86,7 @@ void ts::ComponentDescriptor::serialize(Descriptor& desc, const DVBCharset* char
     bbp->appendUInt8((stream_content_ext << 4) | (stream_content & 0x0F));
     bbp->appendUInt8(component_type);
     bbp->appendUInt8(component_tag);
-    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -112,7 +112,7 @@ void ts::ComponentDescriptor::deserialize(const Descriptor& desc, const DVBChars
         stream_content = data[0] & 0x0F;
         component_type = data[1];
         component_tag = data[2];
-        language_code.assign(UString::FromDVB(data + 3, 3, charset));
+        language_code.assign(UString::FromDVB(data + 3, 3));
         text.assign(UString::FromDVB(data + 6, size - 6, charset));
     }
 }
@@ -163,7 +163,7 @@ void ts::ComponentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::fromXML(const xml::Element* element)
+void ts::ComponentDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

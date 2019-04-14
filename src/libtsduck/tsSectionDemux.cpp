@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionDemux.h"
+#include "tsTablesFactory.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 
@@ -468,9 +469,12 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         if (section_ok) {
 
+            // Get the list of standards which define this table id.
+            // Add this list to the standards of the demux.
+            addAllStandards(TablesFactory::Instance()->getTableStandards(etid.tid()));
+
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
-
             ETIDContext& tc(pc.tids[etid]);
 
             // If this is a new version of the table, reset the TID context.
@@ -507,6 +511,8 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     _status.wrong_crc++;  // only possible error (hum?)
                     section_ok = false;
                 }
+                // Make sure the new section conveys the standards from the demux.
+                sect_ptr->addAllStandards(allStandards());
             }
 
             // Mark that we are in the context of a table or section handler.

@@ -74,7 +74,7 @@ ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const Descriptor& d
 void ts::IPMACPlatformNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    if (SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (SerializeLanguageCode(*bbp, language_code)) {
         bbp->append(text.toDVB(0, NPOS, charset));
         serializeEnd(desc, bbp);
     }
@@ -96,7 +96,7 @@ void ts::IPMACPlatformNameDescriptor::deserialize(const Descriptor& desc, const 
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3;
 
     if (_is_valid) {
-        language_code = UString::FromDVB(data, 3, charset);
+        language_code = UString::FromDVB(data, 3);
         text = UString::FromDVB(data + 3, size - 3, charset);
     }
 }
@@ -136,7 +136,7 @@ void ts::IPMACPlatformNameDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::fromXML(const xml::Element* element)
+void ts::IPMACPlatformNameDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

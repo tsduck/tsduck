@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tspPluginExecutor.h"
+#include "tsPCRAnalyzer.h"
 
 namespace ts {
     namespace tsp {
@@ -71,26 +72,30 @@ namespace ts {
             bool initAllBuffers(PacketBuffer* buffer);
 
         private:
-            InputPlugin* _input;             // Plugin API
-            bool         _in_sync_lost;      // Input synchronization lost (no 0x47 at start of packet)
+            InputPlugin* _input;                  // Plugin API
+            bool         _in_sync_lost;           // Input synchronization lost (no 0x47 at start of packet)
             size_t       _instuff_start_remain;
             size_t       _instuff_stop_remain;
             size_t       _instuff_nullpkt_remain;
             size_t       _instuff_inpkt_remain;
+            PCRAnalyzer  _pcr_analyzer;           // Compute input bitrate from PCR's.
+            PCRAnalyzer  _dts_analyzer;           // Compute input bitrate from video DTS's.
+            bool         _use_dts_analyzer;       // Use DTS analyzer, not PCR analyzer.
 
             // Inherited from Thread
             virtual void main() override;
 
-            // Encapsulation of the plugin's receive() method,
-            // checking the validity of the input.
-            size_t receiveAndValidate (TSPacket* buffer, size_t max_packets);
+            // Receive null packets.
+            size_t receiveNullPackets(TSPacket* buffer, size_t max_packets);
 
-            // Encapsulation of receiveAndValidate() method,
-            // taking into account the tsp input stuffing options.
-            size_t receiveAndStuff (TSPacket* buffer, size_t max_packets);
+            // Encapsulation of the plugin's receive() method, checking the validity of the input.
+            size_t receiveAndValidate(TSPacket* buffer, size_t max_packets);
 
-            // Encapsulation of the plugin's getBitrate() method,
-            // taking into account the tsp input stuffing options.
+            // Encapsulation of receiveAndValidate() method, adding tsp input stuffing options.
+            size_t receiveAndStuff(TSPacket* buffer, size_t max_packets);
+
+            // Encapsulation of the plugin's getBitrate() method, taking into account the tsp input
+            // stuffing options. Use PCR analysis if bitrate not otherwise available.
             BitRate getBitrate();
 
             // Inaccessible operations

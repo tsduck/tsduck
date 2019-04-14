@@ -136,7 +136,7 @@ void ts::PrivateDataSpecifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::fromXML(const xml::Element* element)
+void ts::PrivateDataSpecifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

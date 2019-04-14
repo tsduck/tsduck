@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsTSPacket.h"
+#include "tsContinuityAnalyzer.h"
 TSDUCK_SOURCE;
 
 
@@ -45,7 +45,7 @@ class Options: public ts::Args
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
-    
+
     bool         test;      // Test mode
     bool         circular;  // Add empty packets to enforce circular continuity
     ts::UString  filename;  // File name
@@ -85,10 +85,6 @@ Options::Options(int argc, char *argv[]) :
     circular = present(u"circular");
     test = present(u"noaction");
 
-    if (test) {
-        setMaxSeverity(ts::Severity::Verbose);
-    }
-
     exitOnError();
 }
 
@@ -106,46 +102,20 @@ bool Options::fileError(const ts::UChar* message)
 
 
 //----------------------------------------------------------------------------
-//  Return the number of missing packets between two continuity counters
-//----------------------------------------------------------------------------
-
-inline int MissingPackets(int cc1, int cc2)
-{
-    return (cc2 <= cc1 ? 16 : 0) + cc2 - cc1 - 1;
-}
-
-
-//----------------------------------------------------------------------------
-//  PID analysis state
-//----------------------------------------------------------------------------
-
-class PIDState
-{
-public:
-    uint8_t first_cc;
-    uint8_t last_cc;
-    bool    sync;
-
-    // Constructor
-    PIDState() :
-        first_cc(0xFF),
-        last_cc(0xFF),
-        sync(false)
-    {
-    }
-};
-
-
-//----------------------------------------------------------------------------
 //  Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
+    ts::ContinuityAnalyzer fixer(ts::AllPIDs, &opt);
+
+    // Configure the CC analyzer.
+    fixer.setDisplay(true);
+    fixer.setFix(!opt.test);
+    fixer.setMessageSeverity(opt.test ? ts::Severity::Info : ts::Severity::Verbose);
 
     // Open file in read/write mode (CC are overwritten)
-
     std::ios::openmode mode = std::ios::in | std::ios::binary;
     if (!opt.test) {
         mode |= std::ios::out;
@@ -159,56 +129,24 @@ int MainCode(int argc, char *argv[])
     }
 
     // Process all packets in the file
-
-    PIDState pids[ts::PID_MAX];
-    ts::PacketCounter packet_count = 0;
-    ts::PacketCounter error_count = 0;
-    ts::PacketCounter rewrite_count = 0;
     ts::TSPacket pkt;
 
     for (;;) {
 
         // Save position of current packet
-
         const std::ios::pos_type pos = opt.file.tellg();
         if (opt.fileError(u"error getting file position")) {
             break;
         }
 
         // Read a TS packet
-
         if (!pkt.read(opt.file, true, opt)) {
             break; // end of file
         }
 
         // Process packet
-
-        const ts::PID pid = pkt.getPID();
-        const uint8_t cc = pkt.getCC();
-        uint8_t good_cc = cc;
-
-        if (pids[pid].first_cc > 0x0F) {
-            // First packet on this PID
-            pids[pid].first_cc = cc;
-            pids[pid].sync = true;
-        }
-        else {
-            // Compute expected CC for this packet
-            good_cc = pkt.hasPayload() ? ((pids[pid].last_cc + 1) & 0x0F) : pids[pid].last_cc;
-            if (pids[pid].sync && cc != good_cc) {
-                // PID was correctly synchronized, but the current CC is wrong.
-                // We now loose the synchronization on this PID.
-                pids[pid].sync = false;
-                error_count++;
-                opt.verbose(u"TS packet: %'d, PID: 0x%04X, missing: %2d packets", {packet_count, pid, MissingPackets(pids[pid].last_cc, cc)});
-            }
-        }
-
-        // Rewrite packet if no longer synchronized
-
-        if (!pids[pid].sync && !opt.test) {
-            // Update CC in packet with expected value
-            pkt.setCC(good_cc);
+        if (!fixer.feedPacket(pkt) && !opt.test) {
+            // Packet was modified, need to rewrite it.
             // Rewind to beginning of current packet
             opt.file.seekp(pos);
             if (opt.fileError(u"error setting file position")) {
@@ -224,14 +162,10 @@ int MainCode(int argc, char *argv[])
             if (opt.fileError(u"error setting file position")) {
                 break;
             }
-            rewrite_count++;
         }
-
-        pids[pid].last_cc = good_cc;
-        packet_count++;
     }
 
-    opt.verbose(u"%'d packets read, %'d discontinuities, %'d packets updated", {packet_count, error_count, rewrite_count});
+    opt.verbose(u"%'d packets read, %'d discontinuities, %'d packets updated", {fixer.totalPackets(), fixer.errorCount(), fixer.fixCount()});
 
     // Append empty packet to ensure circular continuity
     if (opt.circular && opt.valid()) {
@@ -254,19 +188,21 @@ int MainCode(int argc, char *argv[])
         }
 
         // Loop through all PIDs, adding packets where some are missing
-        for (size_t pid = 0; opt.valid() && pid < ts::PID_MAX; pid++) {
-            if (pids[pid].first_cc <= 0x0F && pids[pid].first_cc != ((pids[pid].last_cc + 1) & 0x0F)) {
+        for (ts::PID pid = 0; opt.valid() && pid < ts::PID_MAX; pid++) {
+            const uint8_t first_cc = fixer.firstCC(pid);
+            uint8_t last_cc = fixer.lastCC(pid);
+            if (first_cc != ts::INVALID_CC && first_cc != ((last_cc + 1) & ts::CC_MASK)) {
                 // We must add some packets on this PID
-                opt.verbose(u"PID: 0x%04X, adding %2d empty packets", {pid, MissingPackets(pids[pid].last_cc, pids[pid].first_cc)});
+                opt.verbose(u"PID: 0x%04X, adding %2d empty packets", {pid, ts::ContinuityAnalyzer::MissingPackets(last_cc, first_cc)});
                 if (!opt.test) {
                     for (;;) {
-                        pids[pid].last_cc = (pids[pid].last_cc + 1) & 0x0F;
-                        if (pids[pid].first_cc == pids[pid].last_cc) {
+                        last_cc = (last_cc + 1) & ts::CC_MASK;
+                        if (first_cc == last_cc) {
                             break; // complete
                         }
                         // Update PID and CC in the packet
                         pkt.setPID(ts::PID(pid));
-                        pkt.setCC(pids[pid].last_cc);
+                        pkt.setCC(last_cc);
                         // Write the new packet
                         pkt.write(opt.file, opt);
                         if (opt.fileError(u"error writing extra packet")) {

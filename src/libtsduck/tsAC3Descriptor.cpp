@@ -240,7 +240,7 @@ void ts::AC3Descriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC3Descriptor::fromXML(const xml::Element* element)
+void ts::AC3Descriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

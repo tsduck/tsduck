@@ -228,7 +228,7 @@ void ts::VBIDataDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::fromXML(const xml::Element* element)
+void ts::VBIDataDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     services.clear();
 

@@ -59,7 +59,8 @@ ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& rep
     _received_pmt(0),
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
-    _demux(this, _opt.dump ? this : nullptr)
+    _demux(this, _opt.dump ? this : nullptr),
+    _standards(STD_NONE)
 {
     // Open/create the destination
     if (!_display.redirect(_opt.output)) {
@@ -117,6 +118,13 @@ void ts::PSILogger::feedPacket(const TSPacket& pkt)
     if (_scrambled_packets_cnt == 0 && _clear_packets_cnt > MIN_CLEAR_PACKETS) {
         _cat_ok = true;
     }
+
+    // Check if the list of standards has changed.
+    const Standards new_standards = _demux.allStandards();
+    if (new_standards != _standards) {
+        _report.debug(u"standards are now %s", {StandardsEnum.bitMaskNames(new_standards, u", ", true)});
+        _standards = new_standards;
+    }
 }
 
 
@@ -158,6 +166,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             // Display the content of the PAT
             _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 
@@ -176,6 +185,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             // Display the table
             _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 
@@ -187,6 +197,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _received_pmt++;
             }
             _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 
@@ -194,6 +205,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             // Ignore NIT for other networks if only one version required
             if (_opt.all_versions) {
                 _display.displayTable(table);
+                strm << std::endl;
             }
             break;
         }
@@ -207,6 +219,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _demux.removePID(pid);
             }
             _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 
@@ -215,12 +228,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // An SDT is only expected on PID 0x0011
                 strm << UString::Format(u"* Got unexpected SDT on PID %d (0x%X)", {pid, pid}) << std::endl;
                 _display.displayTable(table);
+                strm << std::endl;
             }
             else if (_opt.all_versions || !_sdt_ok) {
                 _sdt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since a BAT can also be found here.
                 _display.displayTable(table);
+                strm << std::endl;
             }
             break;
         }
@@ -229,6 +244,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             // Ignore SDT for other networks if only one version required
             if (_opt.all_versions) {
                 _display.displayTable(table);
+                strm << std::endl;
             }
             break;
         }
@@ -238,6 +254,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // An SDT is only expected on PID 0x0011
                 strm << UString::Format(u"* Got unexpected BAT on PID %d (0x%X)", {pid, pid}) << std::endl;
                 _display.displayTable(table);
+                strm << std::endl;
             }
             else if (_opt.all_versions || !_bat_ok) {
                 // Got the BAT.
@@ -245,6 +262,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // We cannot stop filtering this PID if we don't need all versions
                 // since the SDT can also be found here.
                 _display.displayTable(table);
+                strm << std::endl;
             }
             break;
         }
@@ -254,6 +272,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // An MGT is only expected on PID 0x1FFB
                 strm << UString::Format(u"* Got unexpected ATSC MGT on PID %d (0x%X)", {pid, pid}) << std::endl;
                 _display.displayTable(table);
+                strm << std::endl;
             }
             else if (_opt.all_versions || !_mgt_ok) {
                 // Got the MGT.
@@ -261,6 +280,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // We cannot stop filtering this PID if we don't need all versions
                 // since the TVCT or CVCT can also be found here.
                 _display.displayTable(table);
+                strm << std::endl;
             }
             break;
         }
@@ -269,17 +289,16 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_CVCT: {
             // ATSC tables with channel description.
             _display.displayTable(table);
+            strm << std::endl;
             break;
         }
 
         default: {
             if (_report.verbose()) {
-                strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid}) << std::endl;
+                strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid}) << std::endl << std::endl;
             }
         }
     }
-
-    strm << std::endl;
 }
 
 

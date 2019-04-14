@@ -310,7 +310,7 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::fromXML(const xml::Element* element)
+void ts::TerrestrialDeliverySystemDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     uint64_t frequency = 0;
     _is_valid =

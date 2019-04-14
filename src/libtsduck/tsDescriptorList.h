@@ -377,11 +377,11 @@ namespace ts {
 
         //!
         //! This method decodes an XML list of descriptors.
-        //! @param [in] parent The XML element containing all descriptors.
-        //! All children must be valid descriptors.
+        //! @param [in] parent The XML element containing all descriptors. All children must be valid descriptors.
+        //! @param [in] charset If not zero, character set to use to serialize text.
         //! @return True on success, false on error.
         //!
-        bool fromXML(const xml::Element* parent);
+        bool fromXML(const xml::Element* parent, const DVBCharset* charset = nullptr);
 
     private:
         // Each entry contains a descriptor and its corresponding private data specifier.
@@ -403,7 +403,7 @@ namespace ts {
         // Get the default Private Data Specified value in this descriptor list.
         // This is normally zero in a DVB table. However, we use some "fake" PDS
         // values to characterize descriptors with tag >= 0x80 in non-DVB tables.
-        PDS defaultPDS() const;
+        PDS defaultPDS(PDS pds = 0) const;
 
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).

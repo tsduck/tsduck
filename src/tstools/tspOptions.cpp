@@ -36,12 +36,13 @@
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
-#define DEF_BUFSIZE_MB            16  // mega-bytes
-#define DEF_BITRATE_INTERVAL       5  // seconds
-#define DEF_MAX_FLUSH_PKT_OFL  10000  // packets
-#define DEF_MAX_FLUSH_PKT_RT    1000  // packets
-#define DEF_MAX_INPUT_PKT_OFL      0  // packets
-#define DEF_MAX_INPUT_PKT_RT    1000  // packets
+#define DEF_BUFSIZE_MB                    16  // mega-bytes
+#define DEF_BITRATE_INTERVAL               5  // seconds
+#define DEF_INIT_BITRATE_PKT_INTERVAL   1000  // packets
+#define DEF_MAX_FLUSH_PKT_OFL          10000  // packets
+#define DEF_MAX_FLUSH_PKT_RT            1000  // packets
+#define DEF_MAX_INPUT_PKT_OFL              0  // packets
+#define DEF_MAX_INPUT_PKT_RT            1000  // packets
 
 // Options for --list-processor.
 const ts::Enumeration ts::tsp::Options::ListProcessorEnum({
@@ -73,6 +74,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     instuff_stop(0),
     bitrate(0),
     bitrate_adj(0),
+    init_bitrate_adj(DEF_INIT_BITRATE_PKT_INTERVAL),
     realtime(MAYBE)
 {
     setDescription(u"MPEG transport stream processor using a chain of plugins");

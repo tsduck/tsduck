@@ -175,18 +175,13 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& servi
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::VCT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     protocol_version = 0;
     transport_stream_id = 0,
     descs.clear();
     channels.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -311,16 +306,8 @@ void ts::VCT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::VCT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections one by one.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
@@ -396,7 +383,7 @@ void ts::VCT::serialize(BinaryTable& table, const DVBCharset* charset) const
         }
 
         // Now store the number of channels in this section.
-        PutUInt16(payload + 1, num_channels);
+        payload[1] = num_channels;
 
         // Store all or some global descriptors.
         // Warning: the VCT has an unusual 10-bit size for the descriptor list length.
@@ -456,7 +443,7 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             size_t info_length = GetUInt16(data + 30) & 0x03FF; // 10 bits only
             data += 32; size -= 32;
             info_length = std::min(info_length, size);
-            display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
+            display.displayDescriptorList(section, data, info_length, indent + 2);
             data += info_length; size -= info_length;
             num_channels--;
         }
@@ -467,7 +454,7 @@ void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             info_length = std::min(info_length, size);
             if (info_length > 0) {
                 strm << margin << "- Global descriptors:" << std::endl;
-                display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
+                display.displayDescriptorList(section, data, info_length, indent + 2);
                 data += info_length; size -= info_length;
             }
         }
@@ -520,14 +507,14 @@ void ts::VCT::buildXML(xml::Element* root) const
         e->setIntAttribute(u"channel_TSID", it->second.channel_TSID, true);
         e->setIntAttribute(u"program_number", it->second.program_number, true);
         e->setIntAttribute(u"ETM_location", it->second.ETM_location, false);
-        root->setBoolAttribute(u"access_controlled", it->second.access_controlled);
-        root->setBoolAttribute(u"hidden", it->second.hidden);
+        e->setBoolAttribute(u"access_controlled", it->second.access_controlled);
+        e->setBoolAttribute(u"hidden", it->second.hidden);
         if (_table_id == TID_CVCT) {
             // CVCT-specific fields.
             e->setIntAttribute(u"path_select", it->second.path_select, false);
-            root->setBoolAttribute(u"out_of_band", it->second.out_of_band);
+            e->setBoolAttribute(u"out_of_band", it->second.out_of_band);
         }
-        root->setBoolAttribute(u"hide_guide", it->second.hide_guide);
+        e->setBoolAttribute(u"hide_guide", it->second.hide_guide);
         e->setEnumAttribute(ServiceTypeEnum, u"service_type", it->second.service_type);
         e->setIntAttribute(u"source_id", it->second.source_id, true);
         it->second.descs.toXML(e);
@@ -539,7 +526,7 @@ void ts::VCT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::fromXML(const xml::Element* element)
+void ts::VCT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     channels.clear();
@@ -551,7 +538,7 @@ void ts::VCT::fromXML(const xml::Element* element)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        descs.fromXML(children, element, u"channel");
+        descs.fromXML(children, element, u"channel", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         // Add a new Channel at the end of the list.
@@ -571,7 +558,7 @@ void ts::VCT::fromXML(const xml::Element* element)
             children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
             children[index]->getIntEnumAttribute<uint8_t>(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
             children[index]->getIntAttribute<uint16_t>(ch.source_id, u"source_id", true) &&
-            ch.descs.fromXML(children[index]);
+            ch.descs.fromXML(children[index], charset);
 
         if (_is_valid && _table_id == TID_CVCT) {
             // CVCT-specific fields.

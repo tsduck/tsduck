@@ -161,7 +161,7 @@ void ts::StreamEventDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::fromXML(const xml::Element* element)
+void ts::StreamEventDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     UString text;
 

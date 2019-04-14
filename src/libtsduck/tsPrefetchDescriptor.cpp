@@ -162,7 +162,7 @@ void ts::PrefetchDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::fromXML(const xml::Element* element)
+void ts::PrefetchDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

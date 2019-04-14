@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_SCTE
 
 TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
 
 
@@ -129,13 +129,13 @@ ts::SpliceInformationTable::SpliceInformationTable(const BinaryTable& table, con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SpliceInformationTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     clear();
 
     // This is a short table, must have only one section
-    if (!table.isValid() || table.tableId() != _table_id || table.sectionCount() != 1) {
+    if (table.sectionCount() != 1) {
         return;
     }
 
@@ -226,16 +226,8 @@ void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SpliceInformationTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section header.
     ByteBlockPtr bb(new ByteBlock);
     bb->appendUInt8(MY_TID);
@@ -357,7 +349,7 @@ void ts::SpliceInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::fromXML(const xml::Element* element)
+void ts::SpliceInformationTable::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
     xml::ElementVector command;
@@ -367,7 +359,7 @@ void ts::SpliceInformationTable::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint64_t>(pts_adjustment, u"pts_adjustment", false, 0) &&
         element->getIntAttribute<uint16_t>(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
-        descs.fromXML(command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
+        descs.fromXML(command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command", charset);
 
     if (!_is_valid && command.size() != 1) {
         _is_valid = false;
@@ -534,7 +526,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
             if (dl_length > size) {
                 dl_length = size;
             }
-            display.displayDescriptorList(data, dl_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, dl_length, indent);
             data += dl_length; size -= dl_length;
         }
     }

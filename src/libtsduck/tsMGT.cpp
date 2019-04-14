@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_ATSC
 
 TS_XML_TABLE_FACTORY(ts::MGT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::MGT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::MGT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::MGT::DisplaySection, MY_TID);
 
 
@@ -66,10 +66,10 @@ ts::MGT::MGT(const MGT& other) :
 {
 }
 
-ts::MGT::MGT(const BinaryTable& table, const DVBCharset* charset) :
+ts::MGT::MGT(const BinaryTable& table) :
     MGT()
 {
-    deserialize(table, charset);
+    deserialize(table);
 }
 
 ts::MGT::TableType::TableType(const AbstractTable* table) :
@@ -86,17 +86,12 @@ ts::MGT::TableType::TableType(const AbstractTable* table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::MGT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     protocol_version = 0;
     descs.clear();
     tables.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections (although a MGT is not allowed to use more than one section, see A/65, section 6.2)
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -156,16 +151,8 @@ void ts::MGT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::MGT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section. Note that a MGT is not allowed to use more than one section, see A/65, section 6.2.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
@@ -242,7 +229,7 @@ ts::MGT::TableTypeEnum::TableTypeEnum() :
     for (int val = 0x0301; val <= 0x03FF; ++val) {
         add(UString::Format(u"RRT-%d", {val & 0x00FF}), val);
     }
-    // 0x1400 - 0x14FF DCCT with dcc_id 0x00 – 0xFF
+    // 0x1400 - 0x14FF DCCT with dcc_id 0x00 - 0xFF
     for (int val = 0x1400; val <= 0x14FF; ++val) {
         add(UString::Format(u"DCCT-%d", {val & 0x00FF}), val);
     }
@@ -288,7 +275,7 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             size_t info_length = GetUInt16(data + 9) & 0x0FFF;
             data += 11; size -= 11;
             info_length = std::min(info_length, size);
-            display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
+            display.displayDescriptorList(section, data, info_length, indent + 2);
 
             data += info_length; size -= info_length;
             table_count--;
@@ -301,7 +288,7 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             info_length = std::min(info_length, size);
             if (info_length > 0) {
                 strm << margin << "- Global descriptors:" << std::endl;
-                display.displayDescriptorList(data, info_length, indent + 2, section.tableId(), PDS_ATSC);
+                display.displayDescriptorList(section, data, info_length, indent + 2);
                 data += info_length; size -= info_length;
             }
         }
@@ -336,7 +323,7 @@ void ts::MGT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::fromXML(const xml::Element* element)
+void ts::MGT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     tables.clear();
@@ -346,7 +333,7 @@ void ts::MGT::fromXML(const xml::Element* element)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        descs.fromXML(children, element, u"table");
+        descs.fromXML(children, element, u"table", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
@@ -357,6 +344,6 @@ void ts::MGT::fromXML(const xml::Element* element)
             children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
             children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
             children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
-            tt.descs.fromXML(children[index]);
+            tt.descs.fromXML(children[index], charset);
     }
 }

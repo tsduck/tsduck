@@ -120,7 +120,7 @@ void ts::DataBroadcastDescriptor::serialize(Descriptor& desc, const DVBCharset* 
     bbp->appendUInt8(component_tag);
     bbp->appendUInt8(int8_t(selector_bytes.size()));
     bbp->append(selector_bytes);
-    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -159,7 +159,7 @@ void ts::DataBroadcastDescriptor::deserialize(const Descriptor& desc, const DVBC
     selector_bytes.copy(data, length);
     data += length; size -= length;
 
-    language_code = UString::FromDVB(data, 3, charset);
+    language_code = UString::FromDVB(data, 3);
     data += 3; size -= 3;
     text = UString::FromDVBWithByteLength(data, size, charset);
     _is_valid = size == 0;
@@ -186,7 +186,7 @@ void ts::DataBroadcastDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::fromXML(const xml::Element* element)
+void ts::DataBroadcastDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     selector_bytes.clear();
     language_code.clear();
@@ -198,5 +198,5 @@ void ts::DataBroadcastDescriptor::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true) &&
         element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
         element->getHexaTextChild(selector_bytes, u"selector_bytes", true) &&
-        element->getTextChild(text, u"text", true, false);
+        element->getTextChild(text, u"text");
 }

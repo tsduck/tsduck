@@ -135,7 +135,7 @@ void ts::SimpleApplicationBoundaryDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::fromXML(const xml::Element* element)
+void ts::SimpleApplicationBoundaryDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     boundary_extension.clear();
     xml::ElementVector children;

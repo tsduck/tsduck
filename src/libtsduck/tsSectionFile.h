@@ -338,6 +338,15 @@ namespace ts {
         //!
         void add(const SectionPtrVector& sections);
 
+        //!
+        //! Pack all orphan sections.
+        //! Consecutive sections from the same tables are packed: the sections are
+        //! renumbered starting at zero. The result is a complete but potentially
+        //! invalid section.
+        //! @return The number of tables which were created.
+        //!
+        size_t packOrphanSections();
+
 #if !defined(DOXYGEN)
         // Just to make sure the compiler is aware that we do this on purpose, despite the private charset pointer.
         SectionFile(const SectionFile&) = default;

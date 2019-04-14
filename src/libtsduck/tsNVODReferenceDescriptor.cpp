@@ -146,7 +146,7 @@ void ts::NVODReferenceDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::fromXML(const xml::Element* element)
+void ts::NVODReferenceDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

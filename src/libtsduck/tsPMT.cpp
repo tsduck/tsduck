@@ -45,7 +45,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_MPEG
 
 TS_XML_TABLE_FACTORY(ts::PMT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::PMT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::PMT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::PMT::DisplaySection, MY_TID);
 
 
@@ -83,18 +83,13 @@ ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::PMT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     service_id = 0;
     pcr_pid = PID_NULL;
     descs.clear();
     streams.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections (although a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9)
@@ -155,21 +150,13 @@ void ts::PMT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::PMT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section. Note that a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9
     uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Add PCR PID
     PutUInt16(data, pcr_pid | 0xE000);
@@ -350,7 +337,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Process and display "program info"
         if (info_length > 0) {
             strm << margin << "Program information:" << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
         }
         data += info_length; size -= info_length;
 
@@ -365,7 +352,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             }
             strm << margin << "Elementary stream: type " << names::StreamType(stream, names::FIRST)
                  << ", PID: " << es_pid << UString::Format(u" (0x%X)", {es_pid}) << std::endl;
-            display.displayDescriptorList(data, es_info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, es_info_length, indent);
             data += es_info_length; size -= es_info_length;
         }
     }
@@ -401,7 +388,7 @@ void ts::PMT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::fromXML(const xml::Element* element)
+void ts::PMT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     streams.clear();
@@ -413,13 +400,13 @@ void ts::PMT::fromXML(const xml::Element* element)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        descs.fromXML(children, element, u"component");
+        descs.fromXML(children, element, u"component", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         PID pid = PID_NULL;
         _is_valid =
             children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
             children[index]->getIntAttribute<uint8_t>(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
-            streams[pid].descs.fromXML(children[index]);
+            streams[pid].descs.fromXML(children[index], charset);
     }
 }

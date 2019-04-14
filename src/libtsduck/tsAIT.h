@@ -118,10 +118,13 @@ namespace ts {
         AIT(const BinaryTable& table, const DVBCharset* charset = nullptr);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
+        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
+        virtual void buildXML(xml::Element*) const override;
     };
 }

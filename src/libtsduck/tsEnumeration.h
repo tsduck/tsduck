@@ -200,6 +200,21 @@ namespace ts {
         UString name(int value, bool hexa = false, size_t hexDigitCount = 0) const;
 
         //!
+        //! Get the names from a bit-mask value.
+        //! The method is useful only when the integer values in the enumeration are bit-masks.
+        //!
+        //! @param [in] value A bit-mask, built from integer values in the Enumeration object.
+        //! @param [in] separator The separator to be used between values, a comma by default.
+        //! @param [in] hexa If true and no name exists for a value, insert the value
+        //! as an hexadecimal string with "0x" prefix instead of decimal.
+        //! @param [in] hexDigitCount When an hexadecimal value is returned, specify the
+        //! minimum number of digits.
+        //! @return The corresponding string containing a list of names. If several names were
+        //! registered with the same value, all of them are inserted in the string.
+        //!
+        UString bitMaskNames(int value, const UString& separator = u", ", bool hexa = false, size_t hexDigitCount = 0) const;
+
+        //!
         //! Return a comma-separated list of all names for a list of integer values.
         //!
         //! @tparam CONTAINER A container class of integer values as defined by the C++ Standard Template Library (STL).

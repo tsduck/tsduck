@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::AIT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::AIT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::AIT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::AIT::DisplaySection, MY_TID);
 
 //----------------------------------------------------------------------------
@@ -76,22 +76,18 @@ ts::AIT::AIT(const AIT& other) :
 {
 }
 
+
 //----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AIT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     application_type = 0;
     test_application_flag = false;
     descs.clear();
     applications.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -153,22 +149,14 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AIT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Current limitation: only one section is serialized.
     // Extraneous descriptors are dropped.
 
     uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Insert common descriptors list (with leading length field).
     // Provision space for 16-bit application loop length.
@@ -237,7 +225,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Process and display "common descriptors loop"
         if (length_field > 0) {
             strm << margin << "Common descriptor loop:" << std::endl;
-            display.displayDescriptorList(data, length_field, indent, section.tableId());
+            display.displayDescriptorList(section, data, length_field, indent);
         }
         data += length_field;
         size -= length_field;
@@ -262,7 +250,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                      << ", Application id: " << UString::Format(u"%d (0x%X)", { app_id, app_id })
                      << UString::Format(u"), Control code: %d", { control_code })
                      << std::endl;
-                display.displayDescriptorList(data, length_field, indent, section.tableId());
+                display.displayDescriptorList(section, data, length_field, indent);
                 data += length_field;
                 size -= length_field;
             }
@@ -299,13 +287,19 @@ void ts::AIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::fromXML(const xml::Element* element)
+void ts::AIT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     applications.clear();
 
     xml::ElementVector children;
-    _is_valid = checkXMLName(element) && element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) && element->getBoolAttribute(is_current, u"current", false, true) && element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) && element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) && descs.fromXML(children, element, u"application");
+    _is_valid =
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
+        element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+        descs.fromXML(children, element, u"application", charset);
 
     // Iterate through applications
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
@@ -316,8 +310,9 @@ void ts::AIT::fromXML(const xml::Element* element)
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 
-        _is_valid = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
-            application.descs.fromXML(others, children[index], allowed) &&
+        _is_valid =
+            children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
+            application.descs.fromXML(others, children[index], allowed, charset) &&
             id != nullptr &&
             id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
             id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);

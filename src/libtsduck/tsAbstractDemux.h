@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
+#include "tsAbstractDefinedByStandards.h"
 #include "tsTSPacket.h"
 
 namespace ts {
@@ -46,7 +46,7 @@ namespace ts {
     //!
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL AbstractDemux
+    class TSDUCKDLL AbstractDemux : public AbstractDefinedByStandards
     {
     public:
         //!
@@ -198,10 +198,10 @@ namespace ts {
         PacketCounter _packet_count; //!< Number of TS packets in the demultiplexed stream.
 
     private:
-        bool _in_handler;        // true when in the context of an application-defined handler
+        bool _in_handler;        // True when in the context of an application-defined handler
         PID  _pid_in_handler;    // PID which is currently processed by the handler
-        bool _reset_pending;     // delayed reset()
-        bool _pid_reset_pending; // delayed resetPID(_pid_in_handler)
-        int  _demux_id;          // demux identity (from application)
+        bool _reset_pending;     // Delayed reset()
+        bool _pid_reset_pending; // Delayed resetPID(_pid_in_handler)
+        int  _demux_id;          // Demux identity (from application)
     };
 }

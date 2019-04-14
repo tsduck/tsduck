@@ -176,7 +176,7 @@ void ts::DTSDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSDescriptor::fromXML(const xml::Element* element)
+void ts::DTSDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

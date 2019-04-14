@@ -137,7 +137,7 @@ void ts::TargetBackgroundGridDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::fromXML(const xml::Element* element)
+void ts::TargetBackgroundGridDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&
