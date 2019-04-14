@@ -88,6 +88,12 @@ void ts::AsyncReport::terminate()
 
 void ts::AsyncReport::writeLog(int severity, const UString &msg)
 {
+#if defined(TS_WINDOWS) && defined(TS_DEBUG_LOG)
+    UString msgNewLine(msg);
+    msgNewLine += u"\n";
+    OutputDebugStringA(msgNewLine.toUTF8().c_str());
+#endif
+
     if (!_terminated) {
         // Enqueue the message immediately (timeout = 0), drop message on overflow.
         // On the contrary, in synchronous mode, wait infinitely until the message is queued.
