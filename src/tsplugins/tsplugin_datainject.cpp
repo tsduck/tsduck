@@ -41,6 +41,7 @@
 #include "tsUDPReceiver.h"
 #include "tsMessageQueue.h"
 #include "tstlvMessageFactory.h"
+#include "tsContinuityAnalyzer.h"
 #include "tsThread.h"
 TSDUCK_SOURCE;
 
@@ -128,7 +129,7 @@ namespace ts {
         PacketCounter   _pkt_current;          // Current TS packet index
         PacketCounter   _pkt_next_data;        // Next data insertion point
         PID             _data_pid;             // PID for data (constant after start)
-        uint8_t         _data_cc;              // Continuity counter in data PID.
+        ContinuityAnalyzer _cc_fixer;          // To fix continuity counters in injected PID
         BitRate         _max_bitrate;          // Max data PID's bitrate (constant after start)
         bool            _unregulated;          // Insert data packet as soon as received.
         SocketAddress   _tcp_address;          // TCP port and optional local address.
@@ -189,7 +190,7 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _pkt_current(0),
     _pkt_next_data(0),
     _data_pid(PID_NULL),
-    _data_cc(0),
+    _cc_fixer(AllPIDs, tsp),
     _max_bitrate(0),
     _unregulated(false),
     _tcp_address(),
@@ -352,7 +353,8 @@ bool ts::DataInjectPlugin::start()
     tsp->verbose(u"initial bandwidth allocation is %s", {_req_bitrate == 0 ? u"unlimited" : UString::Decimal(_req_bitrate) + u" b/s"});
 
     // TS processing state
-    _data_cc = 0;
+    _cc_fixer.reset();
+    _cc_fixer.setGenerator(true);
     _pkt_current = 0;
     _pkt_next_data = 0;
 
@@ -452,8 +454,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, b
             if (got_packet) {
                 // Update PID and continuity counter.
                 pkt.setPID(_data_pid);
-                pkt.setCC(_data_cc);
-                _data_cc = (_data_cc + 1) & CC_MASK;
+                _cc_fixer.feedPacket(pkt);
                 // Compute next insertion point if the data PID bitrate is specified.
                 // Otherwise, try to update any null packet (unbounded bitrate).
                 if (!_unregulated || _req_bitrate != 0) {

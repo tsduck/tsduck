@@ -140,7 +140,7 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationBoundaryDescriptor::fromXML(const xml::Element* element)
+void ts::DVBHTMLApplicationBoundaryDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

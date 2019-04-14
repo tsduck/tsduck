@@ -190,7 +190,7 @@ void ts::ApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     profiles.clear();
     transport_protocol_labels.clear();

@@ -283,7 +283,7 @@ void ts::SpliceSchedule::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSchedule::fromXML(const xml::Element* element)
+void ts::SpliceSchedule::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     clear();
 

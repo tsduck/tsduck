@@ -140,7 +140,7 @@ void ts::TargetMACAddressDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::fromXML(const xml::Element* element)
+void ts::TargetMACAddressDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     MAC_addr.clear();
 

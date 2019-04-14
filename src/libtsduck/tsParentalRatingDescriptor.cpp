@@ -96,7 +96,7 @@ void ts::ParentalRatingDescriptor::serialize(Descriptor& desc, const DVBCharset*
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->country_code, charset)) {
+        if (!SerializeLanguageCode(*bbp, it->country_code)) {
             desc.invalidate();
             return;
         }
@@ -120,7 +120,7 @@ void ts::ParentalRatingDescriptor::deserialize(const Descriptor& desc, const DVB
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back(Entry(UString::FromDVB(data, 3, charset), data[3]));
+            entries.push_back(Entry(UString::FromDVB(data, 3), data[3]));
             data += 4;
             size -= 4;
         }
@@ -176,7 +176,7 @@ void ts::ParentalRatingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::fromXML(const xml::Element* element)
+void ts::ParentalRatingDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

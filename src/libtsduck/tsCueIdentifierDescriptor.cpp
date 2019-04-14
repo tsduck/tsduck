@@ -143,7 +143,7 @@ void ts::CueIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::CueIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

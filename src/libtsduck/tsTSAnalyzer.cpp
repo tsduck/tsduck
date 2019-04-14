@@ -80,6 +80,8 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _last_tdt(Time::Epoch),
     _first_tot(Time::Epoch),
     _last_tot(Time::Epoch),
+    _first_stt(Time::Epoch),
+    _last_stt(Time::Epoch),
     _country_code(),
     _scrambled_services_cnt(0),
     _tid_present(),
@@ -152,6 +154,8 @@ void ts::TSAnalyzer::reset()
     _last_tdt = Time::Epoch;
     _first_tot = Time::Epoch;
     _last_tot = Time::Epoch;
+    _first_stt = Time::Epoch;
+    _last_stt = Time::Epoch;
     _country_code.clear();
     _scrambled_services_cnt = 0;
     _tid_present.reset();
@@ -536,6 +540,17 @@ void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
             etc->last_version = version;
         }
     }
+
+    // On ATSC streams, the System Time Table (STT) shall be read as a section.
+    // Due to some ATSC weirdness, they use a long-section format with always
+    // the same version number to carry an ever-changing time. As a consequence,
+    // it is reported only once as a table.
+    if (section.tableId() == TID_STT) {
+        const STT stt(section);
+        if (stt.isValid()) {
+            analyzeSTT(stt);
+        }
+    }
 }
 
 
@@ -555,63 +570,63 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
     // Process specific tables
     switch (tid) {
         case TID_PAT: {
-            PAT pat(table);
+            const PAT pat(table);
             if (pid == PID_PAT && pat.isValid()) {
                 analyzePAT(pat);
             }
             break;
         }
         case TID_CAT: {
-            CAT cat(table);
+            const CAT cat(table);
             if (pid == PID_CAT && cat.isValid()) {
                 analyzeCAT(cat);
             }
             break;
         }
         case TID_PMT: {
-            PMT pmt(table);
+            const PMT pmt(table);
             if (pmt.isValid()) {
                 analyzePMT(pid, pmt);
             }
             break;
         }
         case TID_SDT_ACT: {
-            SDT sdt(table);
+            const SDT sdt(table);
             if (sdt.isValid()) {
                 analyzeSDT(sdt);
             }
             break;
         }
         case TID_TDT: {
-            TDT tdt(table);
+            const TDT tdt(table);
             if (tdt.isValid()) {
                 analyzeTDT(tdt);
             }
             break;
         }
         case TID_TOT: {
-            TOT tot(table);
+            const TOT tot(table);
             if (tot.isValid()) {
                 analyzeTOT(tot);
             }
             break;
         }
         case TID_MGT: {
-            MGT mgt(table);
+            const MGT mgt(table);
             if (mgt.isValid()) {
                 analyzeMGT(mgt);
             }
             break;
         }
         case TID_TVCT: {
-            TVCT tvct(table);
+            const TVCT tvct(table);
             if (tvct.isValid()) {
                 analyzeVCT(tvct);
             }
             break;
         }
         case TID_CVCT: {
-            CVCT cvct(table);
+            const CVCT cvct(table);
             if (cvct.isValid()) {
                 analyzeVCT(cvct);
             }
@@ -833,6 +848,20 @@ void ts::TSAnalyzer::analyzeVCT(const VCT& vct)
                 svp->provider = UString::Format(u"ATSC %d.%d", {it->second.major_channel_number, it->second.minor_channel_number});
             }
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ATSC STT.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeSTT(const STT& stt)
+{
+    // Keep first and last time stamps
+    _last_stt = stt.utcTime();
+    if (_first_stt == Time::Epoch) {
+        _first_stt = _last_stt;
     }
 }
 

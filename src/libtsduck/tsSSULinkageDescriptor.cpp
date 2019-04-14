@@ -196,7 +196,7 @@ ts::xml::Element* ts::SSULinkageDescriptor::toXML(xml::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::fromXML(const xml::Element* element)
+void ts::SSULinkageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.

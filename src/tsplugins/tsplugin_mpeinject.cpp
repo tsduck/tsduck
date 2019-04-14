@@ -37,6 +37,7 @@
 #include "tsUDPReceiver.h"
 #include "tsMPEPacket.h"
 #include "tsOneShotPacketizer.h"
+#include "tsContinuityAnalyzer.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 TSDUCK_SOURCE;
@@ -77,7 +78,7 @@ namespace ts {
         SectionQueue   _section_queue;  // Queue of datagrams between the UDP server and the MPE inserter.
         TSPacketVector _mpe_packets;    // TS packets to insert, contain a packetized MPE section.
         size_t         _packet_index;   // Next index in _mpe_packets.
-        uint8_t        _next_cc;        // Next continuity counter in MPE PID.
+        ContinuityAnalyzer _cc_fixer;   // To fix continuity counters in MPE PID.
 
         // Invoked in the context of the server thread.
         virtual void main() override;
@@ -110,7 +111,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     _section_queue(DEFAULT_MAX_QUEUED_SECTION),
     _mpe_packets(),
     _packet_index(0),
-    _next_cc(0)
+    _cc_fixer(AllPIDs, tsp)
 {
     // UDP receiver common options.
     _sock.defineOptions(*this);
@@ -186,7 +187,8 @@ bool ts::MPEInjectPlugin::start()
     _section_queue.setMaxMessages(_max_queued);
     _mpe_packets.clear();
     _packet_index = 0;
-    _next_cc = 0;
+    _cc_fixer.reset();
+    _cc_fixer.setGenerator(true);
 
     // Start the internal thread which listens to incoming UDP packet.
     _terminate = false;
@@ -247,8 +249,7 @@ ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, bo
     if (_packet_index < _mpe_packets.size()) {
         // There is an available TS packet, replace the current TS packet.
         pkt = _mpe_packets[_packet_index++];
-        pkt.setCC(_next_cc);
-        _next_cc = (_next_cc + 1) & CC_MASK;
+        _cc_fixer.feedPacket(pkt);
         return TSP_OK;
     }
     else {

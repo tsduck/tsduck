@@ -141,7 +141,7 @@ void ts::DVBJApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::fromXML(const xml::Element* element)
+void ts::DVBJApplicationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     parameters.clear();
 

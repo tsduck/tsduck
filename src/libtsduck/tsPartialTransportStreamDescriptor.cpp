@@ -157,7 +157,7 @@ void ts::PartialTransportStreamDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::fromXML(const xml::Element* element)
+void ts::PartialTransportStreamDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     _is_valid =
         checkXMLName(element) &&

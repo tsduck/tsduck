@@ -37,6 +37,7 @@
 #include "tsServiceDiscovery.h"
 #include "tsSectionDemux.h"
 #include "tsSpliceInformationTable.h"
+#include "tsContinuityAnalyzer.h"
 TSDUCK_SOURCE;
 
 
@@ -53,6 +54,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         RMSplicePlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
@@ -86,7 +88,6 @@ namespace ts {
         {
         public:
             PID        pid;                  // PID value.
-            uint8_t    cc;                   // Last continuity counter in the PID.
             bool       currentlyOut;         // PID is currently spliced out.
             uint64_t   outStart;             // When spliced out, PTS value at the time of splicing out.
             uint64_t   totalAdjust;          // Total removed time in PTS units.
@@ -132,6 +133,7 @@ namespace ts {
         std::set<uint32_t> _eventIDs;    // set of event IDs of interest
         bool               _dryRun;      // Just report what it would do
         PID                _videoPID;    // First video PID, if there is one
+        ContinuityAnalyzer _ccFixer;     // To fix continuity counters in spliced PID's.
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
@@ -165,7 +167,8 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _states(),
     _eventIDs(),
     _dryRun(false),
-    _videoPID(PID_NULL)
+    _videoPID(PID_NULL),
+    _ccFixer(NoPID, tsp)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -208,12 +211,11 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::RMSplicePlugin::start()
+bool ts::RMSplicePlugin::getOptions()
 {
-    // Get command line arguments.
     _service.set(value(u""));
     _dropStatus = present(u"stuffing") ? TSP_NULL : TSP_DROP;
     _continue = present(u"continue");
@@ -221,13 +223,26 @@ bool ts::RMSplicePlugin::start()
     _fixCC = present(u"fix-cc");
     getIntValues(_eventIDs, u"event-id");
     _dryRun = present(u"dry-run");
+    return true;
+}
 
-    // Reinitialize the plugin state.
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::RMSplicePlugin::start()
+{
     _tagsByPID.clear();
     _states.clear();
     _demux.reset();
     _videoPID = PID_NULL;
     _abort = false;
+
+    _ccFixer.reset();
+    _ccFixer.setGenerator(true);
+    _ccFixer.setPIDFilter(NoPID);
+
     return true;
 }
 
@@ -238,7 +253,6 @@ bool ts::RMSplicePlugin::start()
 
 ts::RMSplicePlugin::PIDState::PIDState(PID pid_) :
     pid(pid_),
-    cc(0xFF),
     currentlyOut(false),
     outStart(INVALID_PTS),
     totalAdjust(0),
@@ -278,15 +292,15 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt)
         }
         else {
             // Other component, possibly a PID to splice.
-            // Enforce the creation of the state for this PID if non-existent.
             if (_states.find(pid) == _states.end()) {
+                // Remember the first video PID in the service.
                 if (_videoPID == PID_NULL && stream.isVideo()) {
                     _videoPID = pid;
                 }
-                PIDState pidState(pid);
+                // Enforce the creation of the state for this PID if non-existent.
+                PIDState& pidState(_states[pid]);
                 pidState.isAudio = stream.isAudio();
                 pidState.isVideo = stream.isVideo();
-                _states.insert(std::make_pair(pid, pidState));
             }
 
             // Look for an optional stream_identifier_descriptor for this component.
@@ -468,6 +482,12 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
 
         // If this packet has a PTS, there is maybe a splice point to process.
         if (pkt.hasPTS()) {
+
+            // All possibly spliced PID's with at least one PCR should be CC-adjusted when --fix-cc
+            if (_fixCC) {
+                _ccFixer.addPID(pid); // can be added multiple times
+            }
+
             // Keep last PTS of the PID.
             uint64_t currentPTS = pkt.getPTS();
             if (pkt.getRandomAccessIndicator()) {
@@ -640,11 +660,8 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
                     pkt.setOPCR(pkt.getOPCR() - state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR);
                 }
             }
-            // Fix continuity counters.
-            if (_fixCC && state.cc != 0xFF) {
-                pkt.setCC((state.cc + 1) & CC_MASK);
-            }
-            state.cc = pkt.getCC();
+            // Fix continuity counters if needed.
+            _ccFixer.feedPacket(pkt);
         }
     }
 

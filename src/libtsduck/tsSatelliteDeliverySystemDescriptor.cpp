@@ -207,7 +207,7 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element)
+void ts::SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     uint64_t freq = 0;
     uint64_t symrate = 0;

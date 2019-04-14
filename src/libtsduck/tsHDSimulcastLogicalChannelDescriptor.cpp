@@ -170,7 +170,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::fromXML(const xml::Element* element)
+void ts::HDSimulcastLogicalChannelDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     entries.clear();
 

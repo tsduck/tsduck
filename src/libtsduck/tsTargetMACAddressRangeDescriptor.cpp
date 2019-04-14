@@ -142,7 +142,7 @@ void ts::TargetMACAddressRangeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::fromXML(const xml::Element* element)
+void ts::TargetMACAddressRangeDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     ranges.clear();
 
@@ -154,8 +154,8 @@ void ts::TargetMACAddressRangeDescriptor::fromXML(const xml::Element* element)
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Range range;
         _is_valid =
-                children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
-                children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
+            children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
+            children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
         if (_is_valid) {
             ranges.push_back(range);
         }

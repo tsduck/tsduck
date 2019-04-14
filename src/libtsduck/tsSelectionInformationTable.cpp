@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::SelectionInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SelectionInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::SelectionInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::SelectionInformationTable::DisplaySection, MY_TID);
 
 
@@ -76,16 +76,11 @@ ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& tabl
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SelectionInformationTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
-    _is_valid = false;
     descs.clear();
     services.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections, although a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
@@ -134,16 +129,8 @@ void ts::SelectionInformationTable::deserialize(const BinaryTable& table, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SelectionInformationTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section. Note that a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -205,7 +192,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
         // Process and display global descriptor list.
         if (info_length > 0) {
             strm << margin << "Global information:" << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
         }
         data += info_length; size -= info_length;
 
@@ -219,7 +206,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
                 info_length = size;
             }
             strm << margin << UString::Format(u"Service id: %d (0x%X), Status: %s", {id, id, RST::RunningStatusNames.name(rs)}) << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
             data += info_length; size -= info_length;
         }
     }
@@ -251,7 +238,7 @@ void ts::SelectionInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::fromXML(const xml::Element* element)
+void ts::SelectionInformationTable::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     services.clear();
@@ -261,13 +248,13 @@ void ts::SelectionInformationTable::fromXML(const xml::Element* element)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(children, element, u"service");
+        descs.fromXML(children, element, u"service", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         uint16_t id = 0;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
             children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
-            services[id].descs.fromXML(children[index]);
+            services[id].descs.fromXML(children[index], charset);
     }
 }

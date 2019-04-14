@@ -113,11 +113,14 @@ namespace ts {
         INT(const BinaryTable& table, const DVBCharset* charset = nullptr);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
+        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
+        virtual void buildXML(xml::Element*) const override;
 
     private:
         // Add a new section to a table being serialized
@@ -132,6 +135,6 @@ namespace ts {
         static bool GetDescriptorList(DescriptorList& dlist, const uint8_t*& data, size_t& remain);
 
         // Display a descriptor list. Update data and remain. Return true on success.
-        static bool DisplayDescriptorList(TablesDisplay& display, TID tid, const uint8_t*& data, size_t& remain, int indent);
+        static bool DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent);
     };
 }

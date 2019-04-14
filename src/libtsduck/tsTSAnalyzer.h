@@ -47,6 +47,7 @@
 #include "tsMGT.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
+#include "tsSTT.h"
 #include "tsTime.h"
 #include "tsUString.h"
 #include "tsSafePtr.h"
@@ -462,11 +463,13 @@ namespace ts {
         Time        _last_tdt;           //!< Last TDT UTC time stamp.
         Time        _first_tot;          //!< First TOT local time stamp.
         Time        _last_tot;           //!< Last TOT local time stamp.
+        Time        _first_stt;          //!< First STT (ATCS) UTC time stamp.
+        Time        _last_stt;           //!< Last STT (ATCS) time stamp.
         UString     _country_code;       //!< TOT country code.
         uint16_t    _scrambled_services_cnt; //!< Number of scrambled services;.
-        std::bitset <TID_MAX> _tid_present;  //!< Array of detected tables.
-        PIDContextMap     _pids;        //!< Description of PIDs.
-        ServiceContextMap _services;    //!< Description of services, map key: service id..
+        std::bitset<TID_MAX> _tid_present;   //!< Array of detected tables.
+        PIDContextMap     _pids;             //!< Description of PIDs.
+        ServiceContextMap _services;         //!< Description of services, map key: service id..
 
     private:
         // Constant string "Unreferenced"
@@ -484,6 +487,7 @@ namespace ts {
         void analyzeTOT(const TOT&);
         void analyzeMGT(const MGT&);
         void analyzeVCT(const VCT&);
+        void analyzeSTT(const STT&);
 
         // Analyse a list of descriptors.
         // If svp is not 0, we are in the PMT of the specified service.

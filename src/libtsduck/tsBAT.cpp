@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::BAT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::BAT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::BAT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 
 
@@ -101,7 +101,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
         if (loop_length > 0) {
             strm << margin << "Bouquet information:" << std::endl;
-            display.displayDescriptorList(data, loop_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, loop_length, indent);
         }
         data += loop_length; size -= loop_length;
 
@@ -122,7 +122,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                     length = loop_length;
                 }
                 strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
-                display.displayDescriptorList(data, length, indent, section.tableId());
+                display.displayDescriptorList(section, data, length, indent);
                 data += length; size -= length; loop_length -= length;
             }
         }
@@ -159,7 +159,7 @@ void ts::BAT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BAT::fromXML(const xml::Element* element)
+void ts::BAT::fromXML(const xml::Element* element, const DVBCharset* charset)
 {
     descs.clear();
     transports.clear();
@@ -170,14 +170,14 @@ void ts::BAT::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(bouquet_id, u"bouquet_id", true, 0, 0x0000, 0xFFFF) &&
-        descs.fromXML(children, element, u"transport_stream");
+        descs.fromXML(children, element, u"transport_stream", charset);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         TransportStreamId ts;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(children[index]);
+            transports[ts].descs.fromXML(children[index], charset);
         if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
             _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }

@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 #define MY_STD ts::STD_ATSC
 
 TS_XML_TABLE_FACTORY(ts::CVCT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::CVCT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::CVCT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::CVCT::DisplaySection, MY_TID);
 
 
@@ -50,10 +50,10 @@ ts::CVCT::CVCT(uint8_t version_, bool is_current_) :
     _is_valid = true;
 }
 
-ts::CVCT::CVCT(const BinaryTable& table, const DVBCharset* charset) :
+ts::CVCT::CVCT(const BinaryTable& table) :
     CVCT()
 {
-    deserialize(table, charset);
+    deserialize(table);
 }
 
 ts::CVCT::~CVCT()
