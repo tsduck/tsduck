@@ -64,6 +64,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <ItemDefinitionGroup Condition="'$(TS_DEBUG_LOG)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>TS_DEBUG_LOG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
   <ItemDefinitionGroup Condition="'$(NoTeletext)'!=''">
     <ClCompile>
       <PreprocessorDefinitions>TS_NOTELETEXT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
