@@ -70,10 +70,10 @@ ts::UString ts::HFBand::typeName() const
 
 
 //----------------------------------------------------------------------------
-// Factory static method.
+// GetBand static method.
 //----------------------------------------------------------------------------
 
-ts::HFBandPtr ts::HFBand::Factory(const UString& region, BandType type, Report& report)
+const ts::HFBand* ts::HFBand::GetBand(const UString& region, BandType type, Report& report)
 {
     HFBandRepository* repo = HFBandRepository::Instance();
     repo->load(report);
@@ -92,6 +92,13 @@ void ts::HFBand::SetDefaultRegion(const ts::UString& region, ts::Report& report)
     HFBandRepository* repo = HFBandRepository::Instance();
     repo->load(report);
     repo->setDefaultRegion(region);
+}
+
+ts::UStringList ts::HFBand::GetAllRegions(Report& report)
+{
+    HFBandRepository* repo = HFBandRepository::Instance();
+    repo->load(report);
+    return repo->allRegions();
 }
 
 
@@ -331,7 +338,7 @@ ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int streng
 // Create an HFBand from an XML element. Null pointer on error.
 //----------------------------------------------------------------------------
 
-ts::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
+ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
 {
     // Get the content of the <hfband> element.
     BandType type = UHF;
@@ -431,7 +438,9 @@ ts::HFBand::HFBandRepository::HFBandRepository() :
     bandTypeEnum({{u"VHF", ts::HFBand::VHF}, {u"UHF", ts::HFBand::UHF}}),
     _mutex(),
     _default_region(),
-    _objects()
+    _objects(),
+    _allRegions(),
+    _voidBand(new HFBand)
 {
 }
 
@@ -452,6 +461,9 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
 
     // Get the default region from configuration file.
     setDefaultRegion(UString());
+
+    // A set of region names (to build a list of unique names).
+    std::set<UString> regionSet;
 
     // Load the repository XML file. Search it in TSDuck directory.
     xml::Document doc(report);
@@ -485,7 +497,10 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
         else {
             // Add the object in the repository.
             for (auto it = hf->_regions.begin(); it != hf->_regions.end(); ++it) {
+                // Get band type + region name.
                 const HFBandIndex index(hf->_type, *it);
+                // Build a set of unique entries for region names.
+                regionSet.insert(*it);
                 if (_objects.find(index) != _objects.end()) {
                     report.error(u"duplicate definition for %s, line %d", {index, node->lineNumber()});
                     success = false;
@@ -496,6 +511,12 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
             }
         }
     }
+
+    // Build a sorted list of region names.
+    for (auto it = regionSet.begin(); it != regionSet.end(); ++it) {
+        _allRegions.push_back(*it);
+    }
+
     return success;
 }
 
@@ -522,7 +543,7 @@ void ts::HFBand::HFBandRepository::setDefaultRegion(const UString& region)
 // Get an object from the repository.
 //----------------------------------------------------------------------------
 
-ts::HFBandPtr ts::HFBand::HFBandRepository::get(BandType type, const UString& region, Report& report) const
+const ts::HFBand* ts::HFBand::HFBandRepository::get(BandType type, const UString& region, Report& report) const
 {
     // Lock access to the repository.
     Guard lock(_mutex);
@@ -530,10 +551,10 @@ ts::HFBandPtr ts::HFBand::HFBandRepository::get(BandType type, const UString& re
     const HFBandIndex index(type, region.empty() ? _default_region : region);
     const auto it = _objects.find(index);
     if (it != _objects.end()) {
-        return it->second;
+        return it->second.pointer();
     }
     else {
         report.warning(u"no definition for %s", {index});
-        return HFBandPtr(new HFBand);
+        return _voidBand.pointer();
     }
 }

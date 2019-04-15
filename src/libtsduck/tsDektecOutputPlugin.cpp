@@ -1066,8 +1066,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
     // Get UHF/VHF frequency layout.
     const UString region(value(u"hf-band-region"));
-    const HFBandPtr uhf(HFBand::Factory(region, HFBand::UHF, *tsp));
-    const HFBandPtr vhf(HFBand::Factory(region, HFBand::VHF, *tsp));
+    const HFBand* uhf = HFBand::GetBand(region, HFBand::UHF, *tsp);
+    const HFBand* vhf = HFBand::GetBand(region, HFBand::VHF, *tsp);
 
     // Compute carrier frequency
     uint64_t frequency = 0;

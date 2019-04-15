@@ -84,8 +84,8 @@ namespace ts {
         Variable<Pilot>             pilots;             //!< Presence of pilots (DVB-S2 only).
         Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
         Variable<PLP>               plp;                //!< PLP identification (DVB-T2 only).
-        HFBandPtr                   uhf;                //!< Local UHF band description.
-        HFBandPtr                   vhf;                //!< Local VHF band description.
+        const HFBand*               uhf;                //!< Local UHF band description.
+        const HFBand*               vhf;                //!< Local VHF band description.
 
         //!
         //! Default constructor.

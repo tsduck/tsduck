@@ -45,18 +45,13 @@ namespace ts {
     class HFBand;
 
     //!
-    //! Safe pointer to an HFBand instance (thread-safe).
-    //!
-    typedef SafePtr<HFBand,Mutex> HFBandPtr;
-
-    //!
     //! Definition of an HF frequency band (UHF, VHF).
     //! @ingroup hardware
     //!
     //! There is a repository of known UHF and VHF bands layout per country or region.
     //! This repository is read from an XML file. There is only one instance of HFBand
     //! per country or region.
-    //! @see ts::HFBand::Factory()
+    //! @see ts::HFBand::GetBand()
     //!
     class TSDUCKDLL HFBand
     {
@@ -88,14 +83,21 @@ namespace ts {
         static void SetDefaultRegion(const UString& region = UString(), Report& report = CERR);
 
         //!
-        //! Factory static method.
+        //! Get a list of all available regions from the configuration file.
+        //! @param [in,out] report Where to report errors.
+        //! @return The list of all available regions.
+        //!
+        static UStringList GetAllRegions(Report& report = CERR);
+
+        //!
+        //! Get the description of an HF band from the configuration file.
         //! @param [in] region Region of country name (not case sensitive).
         //! @param [in] type HF band type.
         //! @param [in,out] report Where to report errors.
-        //! @return A safe pointer to the instance for the corresponding @a region.
+        //! @return A pointer to the instance for the corresponding @a region.
         //! If the repository contains no known band for the region, return an empty object.
         //!
-        static HFBandPtr Factory(const UString& region = UString(), BandType type = UHF, Report& report = CERR);
+        static const HFBand* GetBand(const UString& region = UString(), BandType type = UHF, Report& report = CERR);
 
         //!
         //! Get the type of HF band.
@@ -263,13 +265,17 @@ namespace ts {
         // A list of channel ranges.
         typedef std::list<ChannelsRange> ChannelsRangeList;
 
+        // Safe pointer to an HBBand object.
+        // Not thread-safe since these objects are loaded once and remain constant.
+        typedef SafePtr<HFBand,NullMutex> HFBandPtr;
+
         // HFBand members.
         const BandType    _type;          // Type of HF band.
         uint32_t          _channel_count; // Number of channels in the band.
         UStringList       _regions;       // List of applicable regions.
         ChannelsRangeList _channels;      // Channel ranges, in order of channel numbers.
 
-        // Default constructor (private only, use Factory() from application).
+        // Default constructor (private only, use GetBand() from application).
         HFBand(BandType = UHF);
 
         // Get the range of channels for a given channel number. Null pointer on error.
@@ -308,7 +314,7 @@ namespace ts {
             bool load(Report&);
 
             // Get an object from the repository.
-            HFBandPtr get(BandType type, const UString& region, Report& report) const;
+            const HFBand* get(BandType type, const UString& region, Report& report) const;
 
             // Get/set the default region.
             UString defaultRegion() const;
@@ -317,10 +323,15 @@ namespace ts {
             // An enumeration object for BandType.
             const Enumeration bandTypeEnum;
 
+            // List of available regions.
+            const UStringList& allRegions() const { return _allRegions; }
+
         private:
             mutable Mutex _mutex;
             UString       _default_region;
             HFBandMap     _objects;
+            UStringList   _allRegions;
+            HFBandPtr     _voidBand;
         };
 
         // Inaccessible operations.

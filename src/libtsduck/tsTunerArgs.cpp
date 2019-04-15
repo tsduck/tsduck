@@ -167,8 +167,8 @@ void ts::TunerArgs::load(Args& args)
             // --hf-band-region is specified. Not sure if this is the right thing to do...
             HFBand::SetDefaultRegion(region);
         }
-        uhf = HFBand::Factory(region, HFBand::UHF, args);
-        vhf = HFBand::Factory(region, HFBand::VHF, args);
+        uhf = HFBand::GetBand(region, HFBand::UHF, args);
+        vhf = HFBand::GetBand(region, HFBand::VHF, args);
 
         // Carrier frequency
         if (args.present(u"frequency") + args.present(u"uhf-channel") + args.present(u"vhf-channel") > 1) {

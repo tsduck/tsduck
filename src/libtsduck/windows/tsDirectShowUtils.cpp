@@ -470,8 +470,8 @@ bool ts::CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParame
     // we need to take the frequency and map it to the corresponding HF channel
     // using the global HF band region.
 
-    const HFBandPtr uhf(HFBand::Factory(u"", HFBand::UHF));
-    const HFBandPtr vhf(HFBand::Factory(u"", HFBand::VHF));
+    const HFBand* uhf = HFBand::GetBand(u"", HFBand::UHF);
+    const HFBand* vhf = HFBand::GetBand(u"", HFBand::VHF);
     long physical_channel;
     if (uhf->inBand(params.frequency)) {
         physical_channel = uhf->channelNumber(params.frequency);

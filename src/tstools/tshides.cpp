@@ -109,7 +109,7 @@ HiDesOptions::HiDesOptions(int argc, char *argv[]) :
     }
     else {
         // Get UHF band description in the default region.
-        const ts::HFBandPtr uhf(ts::HFBand::Factory(u"", ts::HFBand::UHF, *this));
+        const ts::HFBand* uhf = ts::HFBand::GetBand(u"", ts::HFBand::UHF, *this);
         frequency = uhf->frequency(uhf->firstChannel());
     }
 

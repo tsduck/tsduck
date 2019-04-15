@@ -106,16 +106,16 @@ void HFBandTest::testDefaultRegion()
 
 void HFBandTest::testEmpty()
 {
-    ts::HFBandPtr hf(ts::HFBand::Factory(u"zozoland", ts::HFBand::UHF, report()));
-    CPPUNIT_ASSERT(!hf.isNull());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"zozoland", ts::HFBand::UHF, report());
+    CPPUNIT_ASSERT(hf != nullptr);
     CPPUNIT_ASSERT(hf->empty());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), hf->channelCount());
 }
 
 void HFBandTest::testEurope()
 {
-    ts::HFBandPtr hf(ts::HFBand::Factory(u"Europe", ts::HFBand::UHF, report()));
-    CPPUNIT_ASSERT(!hf.isNull());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"Europe", ts::HFBand::UHF, report());
+    CPPUNIT_ASSERT(hf != nullptr);
     CPPUNIT_ASSERT(!hf->empty());
     CPPUNIT_ASSERT_EQUAL(ts::HFBand::BandType(ts::HFBand::UHF), hf->type());
     CPPUNIT_ASSERT_EQUAL(uint32_t(49), hf->channelCount());
@@ -154,8 +154,8 @@ void HFBandTest::testEurope()
 
 void HFBandTest::testUSA()
 {
-    ts::HFBandPtr hf(ts::HFBand::Factory(u"USA", ts::HFBand::UHF, report()));
-    CPPUNIT_ASSERT(!hf.isNull());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", ts::HFBand::UHF, report());
+    CPPUNIT_ASSERT(hf != nullptr);
     CPPUNIT_ASSERT(!hf->empty());
     CPPUNIT_ASSERT_EQUAL(ts::HFBand::BandType(ts::HFBand::UHF), hf->type());
     CPPUNIT_ASSERT_EQUAL(uint32_t(56), hf->channelCount());
@@ -183,8 +183,8 @@ void HFBandTest::testUSA()
 
 void HFBandTest::testVHF()
 {
-    ts::HFBandPtr hf(ts::HFBand::Factory(u"USA", ts::HFBand::VHF, report()));
-    CPPUNIT_ASSERT(!hf.isNull());
+    const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", ts::HFBand::VHF, report());
+    CPPUNIT_ASSERT(hf != nullptr);
     CPPUNIT_ASSERT(!hf->empty());
     CPPUNIT_ASSERT_EQUAL(ts::HFBand::BandType(ts::HFBand::VHF), hf->type());
     CPPUNIT_ASSERT_EQUAL(uint32_t(13), hf->channelCount());

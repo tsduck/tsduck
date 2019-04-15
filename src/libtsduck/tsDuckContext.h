@@ -40,7 +40,9 @@
 namespace ts {
 
     class DVBCharset;
+    class HFBand;
     class Report;
+    class Args;
 
     //!
     //! TSDuck execution context containing current preferences.
@@ -48,14 +50,28 @@ namespace ts {
     //!
     //! An instance of this class contains specific contextual information
     //! for the execution of TSDuck. This context contains either user's
-    //! preferences (eg. region or default character set) and accumulated
-    //! contextual information (eg. encountered DVB or ATSC tables).
+    //! preferences and accumulated contextual information.
+    //!
+    //! Context information include:
+    //! - Report for log and error messages.
+    //! - Text output stream.
+    //! - Default DVB character sets (input and output).
+    //! - Default CAS family.
+    //! - Default Private Data Specifier (PDS) for DVB private descriptors.
+    //! - Accumulated standards from the signalization (MPEG, DVB, ATSC, etc.)
+    //! - Default region for UHF and VHF frequency layout.
+    //!
+    //! Support is included to define and analyze command line options which
+    //! define values for the environment.
     //!
     //! Unlike DuckConfigFile, this class is not a singleton. More than
     //! one context is allowed in the same process as long as the various
     //! instances of classes which use DuckContext use only one context at
     //! a time. For instance, inside a @e tsp or @e tsswitch process, each
     //! plugin can use its own context, using different preferences.
+    //!
+    //! The class DuckContext is not thread-safe. It shall be used from one
+    //! single thread or explicit synchronization is required.
     //!
     class TSDUCKDLL DuckContext
     {
@@ -71,13 +87,19 @@ namespace ts {
         //! Get the current report for log and error messages.
         //! @return A reference to the current output report.
         //!
-        Report& report() {return *_report;}
+        Report& report() const {return *_report;}
+
+        //!
+        //! Set a new report for log and error messages.
+        //! @param [in] report Address of the report for log and error messages. If null, use the standard error.
+        //!
+        void setReport(Report* report);
 
         //!
         //! Get the current output stream to issue long text output.
         //! @return A reference to the output stream.
         //!
-        std::ostream& out() {return *_out;}
+        std::ostream& out() const {return *_out;}
 
         //!
         //! Redirect the output stream to a file.
@@ -86,7 +108,7 @@ namespace ts {
         //! output is already redirected outside @c std::cout, do nothing.
         //! @return True on success, false on error.
         //!
-        bool redirect(const UString& fileName, bool override = true);
+        bool setOutput(const UString& fileName, bool override = true);
 
         //!
         //! Redirect the output stream to a stream.
@@ -94,7 +116,7 @@ namespace ts {
         //! @param [in] override It true, the previous file is closed. If false and the
         //! output is already redirected outside @c std::cout, do nothing.
         //!
-        void redirect(std::ostream* output, bool override = true);
+        void setOutput(std::ostream* output, bool override = true);
 
         //!
         //! Flush the text output.
@@ -136,11 +158,40 @@ namespace ts {
         const DVBCharset* dvbCharsetOut() const {return _dvbCharsetOut;}
 
         //!
+        //! Set the default input DVB character set for DVB strings without table code.
+        //! The default should be the DVB superset of ISO/IEC 6937 as defined in ETSI EN 300 468.
+        //! Use another default in the context of an operator using an incorrect signalization,
+        //! assuming another default character set (usually from its own country).
+        //! @param [in] charset The new default input DVB character set or a null pointer to revert
+        //! to the default.
+        //!
+        void setDefaultDVBCharsetIn(const DVBCharset* charset);
+
+        //!
+        //! Set the preferred output DVB character set for DVB strings.
+        //! @param [in] charset The new preferred output DVB character set or a null pointer to revert
+        //! to the default.
+        //!
+        void setDefaultDVBCharsetOut(const DVBCharset* charset);
+
+        //!
+        //! Set the default CAS family to use.
+        //! @param [in] cas Default CAS family to be used when the CAS is unknown.
+        //!
+        void setDefaultCASFamily(CASFamily cas);
+
+        //!
         //! The actual CAS family to use.
-        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, can be overridden by subclass.
+        //! @param [in] cas Proposed CAS family. If equal to CAS_OTHER, then another value can be returned.
         //! @return The actual CAS family to use.
         //!
-        CASFamily casFamily(CASFamily cas) const;
+        CASFamily casFamily(CASFamily cas = CAS_OTHER) const;
+
+        //!
+        //! Set the default private data specifier to use in the absence of explicit private_data_specifier_descriptor.
+        //! @param [in] pds Default PDS. Use zero to revert to no default.
+        //!
+        void setDefaultPDS(PDS pds);
 
         //!
         //! The actual private data specifier to use.
@@ -149,12 +200,79 @@ namespace ts {
         //!
         PDS actualPDS(PDS pds) const;
 
+        //!
+        //! Get the list of standards which are present in the transport stream or context.
+        //! @return A bit mask of standards.
+        //!
+        Standards standards() const {return _accStandards;}
+
+        //!
+        //! Add a list of standards which are present in the transport stream or context.
+        //! @param [in] mask A bit mask of standards.
+        //!
+        void addStandards(Standards mask);
+
+        //!
+        //! Reset the list of standards which are present in the transport stream or context.
+        //! @param [in] mask A bit mask of standards.
+        //!
+        void resetStandards(Standards mask = STD_NONE);
+
+        //!
+        //! Set the name of the default region for UVH and VHF band frequency layout.
+        //! @param [in] region Name of the region. Use an empty string to revert to the default.
+        //!
+        void setDefaultHFRegion(const UString& region);
+
+        //!
+        //! Get the name of the default region for UVH and VHF band frequency layout.
+        //! @return Name of the default region.
+        //!
+        UString defaultHFRegion() const;
+
+        //!
+        //! Get the description of the VHF band for the default region.
+        //! @return The description of the VHF band for the default region. Never null.
+        //!
+        const HFBand* vhfBand() const;
+
+        //!
+        //! Get the description of the UHF band for the default region.
+        //! @return The description of the UHF band for the default region. Never null.
+        //!
+        const HFBand* uhfBand() const;
+
+        //!
+        //! Load the values of all previously defined arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool load(Args& args);
+
     private:
-        Report*           _report;         // Pointer to a report for error messages. Never null.
-        std::ostream*     _out;            // Pointer to text output stream. Never null.
-        std::ofstream     _outFile;        // Open stream when redirected to a file by name.
-        const DVBCharset* _dvbCharsetIn;   // DVB character set to interpret strings without prefix code.
-        const DVBCharset* _dvbCharsetOut;  // Preferred DVB character set to generate strings.
+        Report*           _report;            // Pointer to a report for error messages. Never null.
+        std::ostream*     _out;               // Pointer to text output stream. Never null.
+        std::ofstream     _outFile;           // Open stream when redirected to a file by name.
+        const DVBCharset* _dvbCharsetIn;      // DVB character set to interpret strings without prefix code.
+        const DVBCharset* _dvbCharsetOut;     // Preferred DVB character set to generate strings.
+        CASFamily         _casFamily;         // Preferred CAS family.
+        PDS               _defaultPDS;        // Default PDS value if undefined.
+        Standards         _cmdStandards;      // Forced standards from the command line.
+        Standards         _accStandards;      // Accumulated list of standards in the context.
+        UString           _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
+        int               _definedCmdOptions; // Defined command line options.
+
+        // List of command line options to define and analyze.
+        enum CmdOptions {
+            CMD_DVB_CHARSET = 0x0001,
+            CMD_HF_REGION   = 0x0002,
+            CMD_STANDARDS   = 0x0004,
+            CMD_PDS         = 0x0008,
+        };
+
+        // Define several classes of command line options in an Args.
+        void defineOptions(Args& args, int cmdOptionsMask);
 
         // Inaccessible operations.
         DuckContext(const DuckContext&) = delete;
