@@ -86,6 +86,11 @@ public:
     ts::UString       channel_file;
     bool              update_channel_file;
     bool              default_channel_file;
+
+private:
+    // Inaccessible operations.
+    ScanOptions(const ScanOptions&) = delete;
+    ScanOptions& operator=(const ScanOptions&) = delete;
 };
 
 // Destructor.
