@@ -65,27 +65,27 @@ public:
     ScanOptions(int argc, char *argv[]);
     virtual ~ScanOptions();
 
-    ts::TunerArgs   tuner_args;
-    bool            uhf_scan;
-    bool            vhf_scan;
-    bool            nit_scan;
-    bool            no_offset;
-    bool            use_best_quality;
-    bool            use_best_strength;
-    uint32_t        first_channel;
-    uint32_t        last_channel;
-    int32_t         first_offset;
-    int32_t         last_offset;
-    int             min_strength;
-    int             min_quality;
-    bool            show_modulation;
-    bool            list_services;
-    bool            global_services;
-    ts::MilliSecond psi_timeout;
-    ts::HFBandPtr   hfband;
-    ts::UString     channel_file;
-    bool            update_channel_file;
-    bool            default_channel_file;
+    ts::TunerArgs     tuner_args;
+    bool              uhf_scan;
+    bool              vhf_scan;
+    bool              nit_scan;
+    bool              no_offset;
+    bool              use_best_quality;
+    bool              use_best_strength;
+    uint32_t          first_channel;
+    uint32_t          last_channel;
+    int32_t           first_offset;
+    int32_t           last_offset;
+    int               min_strength;
+    int               min_quality;
+    bool              show_modulation;
+    bool              list_services;
+    bool              global_services;
+    ts::MilliSecond   psi_timeout;
+    const ts::HFBand* hfband;
+    ts::UString       channel_file;
+    bool              update_channel_file;
+    bool              default_channel_file;
 };
 
 // Destructor.

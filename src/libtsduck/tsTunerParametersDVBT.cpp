@@ -140,8 +140,8 @@ ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality)
     int32_t offset = 0;
 
     // Get UHF and VHF band descriptions in the default region.
-    const ts::HFBandPtr uhf(ts::HFBand::Factory(u"", ts::HFBand::UHF));
-    const ts::HFBandPtr vhf(ts::HFBand::Factory(u"", ts::HFBand::VHF));
+    const ts::HFBand* uhf = ts::HFBand::GetBand(u"", ts::HFBand::UHF);
+    const ts::HFBand* vhf = ts::HFBand::GetBand(u"", ts::HFBand::VHF);
 
     if (uhf->inBand(frequency, true)) {
         band = u"UHF";
