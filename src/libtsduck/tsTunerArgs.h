@@ -95,6 +95,23 @@ namespace ts {
         TunerArgs(bool info_only = false, bool allow_short_options = true);
 
         //!
+        //! Copy constructor.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //!
+        TunerArgs(const TunerArgs& other) = default;
+
+        //!
+        //! Assignment operator.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //! @return A reference to this object.
+        //!
+        TunerArgs& operator=(const TunerArgs& other) = default;
+
+        //!
         //! Check if actual tuning information is set.
         //! @return True if actual tuning information is set.
         //!

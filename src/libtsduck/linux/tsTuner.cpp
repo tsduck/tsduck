@@ -1478,8 +1478,8 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     }
     if (params_dvbt != nullptr) {
         // Get UHF and VHF band descriptions in the default region.
-        const HFBandPtr uhf(HFBand::Factory(u"", HFBand::UHF));
-        const HFBandPtr vhf(HFBand::Factory(u"", HFBand::VHF));
+        const HFBand* uhf = HFBand::GetBand(u"", HFBand::UHF);
+        const HFBand* vhf = HFBand::GetBand(u"", HFBand::VHF);
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbt->frequency), u"Hz");
         if (uhf->inBand(params_dvbt->frequency, true)) {
             Display(strm, margin, u"  UHF channel", UString::Decimal(uhf->channelNumber(params_dvbt->frequency)), u"");
