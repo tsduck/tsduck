@@ -56,23 +56,19 @@ namespace ts {
     public:
         //!
         //! Default constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pmtHandler Handler to call for each new PMT.
-        //! @param [in,out] report Where to report error and verbose messages.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //! For incorrect signalization only.
         //!
-        explicit ServiceDiscovery(PMTHandlerInterface* pmtHandler = nullptr, Report& report = NULLREP, const DVBCharset* charset = nullptr);
+        explicit ServiceDiscovery(DuckContext& duck, PMTHandlerInterface* pmtHandler = nullptr);
 
         //!
         //! Constructor using a string description.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] desc Service description string. If the string evaluates to an integer (decimal or hexa),
         //! this is a service id, otherwise this is a service name. If the string is empty, use the first service from the PAT.
         //! @param [in] pmtHandler Handler to call for each new PMT.
-        //! @param [in,out] report Where to report error and verbose messages.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //! For incorrect signalization only.
         //!
-        explicit ServiceDiscovery(const UString& desc, PMTHandlerInterface* pmtHandler = nullptr, Report& report = NULLREP, const DVBCharset* charset = nullptr);
+        explicit ServiceDiscovery(DuckContext& duck, const UString& desc, PMTHandlerInterface* pmtHandler = nullptr);
 
         // Inherited methods
         virtual void set(const UString& desc) override;
@@ -111,9 +107,8 @@ namespace ts {
         bool nonExistentService() const { return _notFound; }
 
     private:
-        Report&              _report;      // Where to report errors.
+        DuckContext&         _duck;
         bool                 _notFound;    // Set when service does not exist.
-        const DVBCharset*    _charset;     // Default DVB charset.
         PMTHandlerInterface* _pmtHandler;  // Handler to call for each new PMT.
         PMT                  _pmt;         // Last valid PMT for the service.
         SectionDemux         _demux;       // PSI demux for service discovery.
@@ -129,6 +124,7 @@ namespace ts {
         void analyzeVCT(const VCT&);
 
         // Inaccessible operations.
+        ServiceDiscovery() = delete;
         ServiceDiscovery(const ServiceDiscovery&) = delete;
         ServiceDiscovery& operator=(const ServiceDiscovery&) = delete;
     };

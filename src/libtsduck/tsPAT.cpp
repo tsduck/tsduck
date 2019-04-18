@@ -60,10 +60,10 @@ ts::PAT::PAT(uint8_t version_, bool is_current_, uint16_t ts_id_, PID nit_pid_) 
     _is_valid = true;
 }
 
-ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
+ts::PAT::PAT(DuckContext& duck, const BinaryTable& table) :
     PAT(0, true, 0, PID_NULL)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -71,7 +71,7 @@ ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::PAT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content.
     nit_pid = PID_NULL;
@@ -118,7 +118,7 @@ void ts::PAT::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::PAT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -184,7 +184,7 @@ void ts::PAT::serializeContent(BinaryTable& table, const DVBCharset* charset) co
 
 void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -210,7 +210,7 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::buildXML(xml::Element* root) const
+void ts::PAT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
@@ -230,7 +230,7 @@ void ts::PAT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::PAT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     _is_valid =

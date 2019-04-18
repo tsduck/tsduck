@@ -129,7 +129,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _hexa_bpl(0),
     _min_payload(0),
     _max_payload(0),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"audio-attributes", 'a');
     help(u"audio-attributes", u"Display audio attributes.");

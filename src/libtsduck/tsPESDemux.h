@@ -57,10 +57,11 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] handler The object to invoke when PES packets are analyzed.
         //! @param [in] pids The set of PID's to demux.
         //!
-        PESDemux(PESHandlerInterface* handler = nullptr, const PIDSet& pids = AllPIDs);
+        explicit PESDemux(DuckContext& duck, PESHandlerInterface* handler = nullptr, const PIDSet& pids = AllPIDs);
 
         //!
         //! Destructor.
@@ -181,6 +182,7 @@ namespace ts {
         SectionDemux         _section_demux;
 
         // Inaccessible operations
+        PESDemux() = delete;
         PESDemux(const PESDemux&) = delete;
         PESDemux& operator=(const PESDemux&) = delete;
     };

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -58,10 +59,10 @@ ts::ApplicationDescriptor::ApplicationDescriptor() :
     _is_valid = true;
 }
 
-ts::ApplicationDescriptor::ApplicationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ApplicationDescriptor::ApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::ApplicationDescriptor::Profile::Profile() :
@@ -77,7 +78,7 @@ ts::ApplicationDescriptor::Profile::Profile() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(uint8_t(5 * profiles.size()));
@@ -98,7 +99,7 @@ void ts::ApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ApplicationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     profiles.clear();
     transport_protocol_labels.clear();
@@ -139,7 +140,7 @@ void ts::ApplicationDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -170,7 +171,7 @@ void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::buildXML(xml::Element* root) const
+void ts::ApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"service_bound", service_bound);
     root->setIntAttribute(u"visibility", visibility);
@@ -190,7 +191,7 @@ void ts::ApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ApplicationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     profiles.clear();
     transport_protocol_labels.clear();

@@ -37,17 +37,19 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name, Standards standards) :
-    AbstractDefinedByStandards(standards),
+    AbstractDefinedByStandards(),
     _xml_name(xml_name),
-    _is_valid(false)
+    _is_valid(false),
+    _standards(standards)
 {
 }
 
 ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSignalization& other)
 {
     if (this != &other) {
-        // Don't copy the pointer to XML name, this is a const value.
+        // Don't copy the pointer to XML name or the list of standards, they are const values.
         // In debug mode, check that we have the same XML name.
+        assert(_standards == other._standards);
         assert((_xml_name == nullptr && other._xml_name == nullptr) ||
                (_xml_name != nullptr && other._xml_name != nullptr && UString(_xml_name) == UString(other._xml_name)));
         _is_valid = other._is_valid;
@@ -57,6 +59,16 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
 
 ts::AbstractSignalization::~AbstractSignalization()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of AbstractDefinedByStandards.
+//----------------------------------------------------------------------------
+
+ts::Standards ts::AbstractSignalization::definingStandards() const
+{
+    return _standards;
 }
 
 
@@ -74,7 +86,7 @@ ts::UString ts::AbstractSignalization::xmlName() const
 // Default helper method to convert this object to XML.
 //----------------------------------------------------------------------------
 
-void ts::AbstractSignalization::buildXML(xml::Element* root) const
+void ts::AbstractSignalization::buildXML(DuckContext& duck, xml::Element* root) const
 {
 }
 
@@ -83,11 +95,11 @@ void ts::AbstractSignalization::buildXML(xml::Element* root) const
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::AbstractSignalization::toXML(xml::Element* parent) const
+ts::xml::Element* ts::AbstractSignalization::toXML(DuckContext& duck, xml::Element* parent) const
 {
     xml::Element* root = _is_valid && parent != nullptr ? parent->addElement(_xml_name) : nullptr;
     if (root != nullptr) {
-        buildXML(root);
+        buildXML(duck, root);
     }
     return root;
 }
@@ -113,12 +125,30 @@ bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
 
 
 //----------------------------------------------------------------------------
+// This static method serializes a 3-byte language or country code.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractSignalization::SerializeLanguageCode(DuckContext& duck, ByteBlock& bb, const UString& str)
+{
+    // All country codes are encoded in ASCII, no exception allowed.
+    bool ok = str.size() == 3;
+    for (size_t i = 0; ok && i < 3; ++i) {
+        ok = int(str[i]) < 128;
+    }
+    for (size_t i = 0; ok && i < 3; ++i) {
+        bb.append(uint8_t(str[i]));
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
 // This static method serializes a DVB string with a required fixed size.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractSignalization::SerializeFixedLength(ByteBlock& bb, const UString& str, const size_t size, const DVBCharset* charset)
+bool ts::AbstractSignalization::SerializeFixedLength(DuckContext& duck, ByteBlock& bb, const UString& str, const size_t size)
 {
-    const ByteBlock dvb(str.toDVB(0, NPOS, charset));
+    const ByteBlock dvb(duck.toDVB(str));
     if (dvb.size() == size) {
         bb.append(dvb);
         return true;

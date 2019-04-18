@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCableDeliverySystemDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsBCD.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -66,10 +67,10 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     CableDeliverySystemDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -77,7 +78,7 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(const Descripto
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CableDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -96,7 +97,7 @@ void ts::CableDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CableDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 11)) {
         return;
@@ -151,7 +152,7 @@ namespace {
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::buildXML(xml::Element* root) const
+void ts::CableDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"frequency", 100 * uint64_t(frequency), false);
     root->setIntEnumAttribute(OuterFecNames, u"FEC_outer", FEC_outer);
@@ -165,7 +166,7 @@ void ts::CableDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::CableDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     uint64_t freq = 0;
     uint64_t symrate = 0;
@@ -191,7 +192,7 @@ void ts::CableDeliverySystemDescriptor::fromXML(const xml::Element* element, con
 
 void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 11) {

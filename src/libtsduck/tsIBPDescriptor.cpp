@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIBPDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -60,10 +61,10 @@ ts::IBPDescriptor::IBPDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::IBPDescriptor::IBPDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::IBPDescriptor::IBPDescriptor(DuckContext& duck, const Descriptor& desc) :
     IBPDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -71,7 +72,7 @@ ts::IBPDescriptor::IBPDescriptor(const Descriptor& desc, const DVBCharset* chars
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::IBPDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16((closed_gop ? 0x8000 : 0x0000) |
@@ -85,7 +86,7 @@ void ts::IBPDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::IBPDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -106,7 +107,7 @@ void ts::IBPDescriptor::deserialize(const Descriptor& desc, const DVBCharset* ch
 
 void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -128,7 +129,7 @@ void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::buildXML(xml::Element* root) const
+void ts::IBPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"closed_gop", closed_gop);
     root->setBoolAttribute(u"identical_gop", identical_gop);
@@ -140,7 +141,7 @@ void ts::IBPDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IBPDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::IBPDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

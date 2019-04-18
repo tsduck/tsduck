@@ -55,7 +55,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _targetDuration(0),
     _liveDepth(0),
     _initialMediaSeq(0),
-    _demux(this),
+    _demux(duck, this),
     _patPackets(),
     _pmtPackets(),
     _videoPID(PID_NULL),
@@ -362,7 +362,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
 
     switch (table.tableId()) {
         case TID_PAT: {
-            const PAT pat(table);
+            const PAT pat(duck, table);
             if (pat.isValid()) {
                 packets = &_patPackets;
                 // Get the PMT of the first service.
@@ -377,7 +377,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
             break;
         }
         case TID_PMT: {
-            const PMT pmt(table);
+            const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 packets = &_pmtPackets;
                 _videoPID = pmt.firstVideoPID();

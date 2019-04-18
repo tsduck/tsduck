@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 TSDUCK_SOURCE;
 
@@ -56,13 +57,13 @@ ts::AbstractDescriptor::~AbstractDescriptor()
 // Deserialize from a descriptor list.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptor::deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset)
+void ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index)
 {
     if (index > dlist.count()) {
         invalidate();
     }
     else {
-        deserialize(*dlist[index], charset);
+        deserialize(duck, *dlist[index]);
     }
 }
 

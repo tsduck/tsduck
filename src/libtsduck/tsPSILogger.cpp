@@ -43,12 +43,12 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& report) :
+ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display) :
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _opt(opt),
     _display(display),
-    _report(report),
+    _duck(_display.duck()),
     _abort(false),
     _pat_ok(_opt.cat_only),
     _cat_ok(_opt.clear),
@@ -59,11 +59,11 @@ ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& rep
     _received_pmt(0),
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
-    _demux(this, _opt.dump ? this : nullptr),
+    _demux(_duck, this, _opt.dump ? this : nullptr),
     _standards(STD_NONE)
 {
     // Open/create the destination
-    if (!_display.redirect(_opt.output)) {
+    if (!_duck.setOutput(_opt.output)) {
         _abort = true;
         return;
     }
@@ -83,17 +83,7 @@ ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& rep
     _demux.setCurrentNext(opt.use_current, opt.use_next);
 
     // Initial blank line
-    _display.out() << std::endl;
-}
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
-ts::PSILogger::~PSILogger()
-{
-    // Files are automatically closed by their destructors.
+    _display.duck().out() << std::endl;
 }
 
 
@@ -120,9 +110,9 @@ void ts::PSILogger::feedPacket(const TSPacket& pkt)
     }
 
     // Check if the list of standards has changed.
-    const Standards new_standards = _demux.allStandards();
+    const Standards new_standards = _duck.standards();
     if (new_standards != _standards) {
-        _report.debug(u"standards are now %s", {StandardsEnum.bitMaskNames(new_standards, u", ", true)});
+        _duck.report().debug(u"standards are now %s", {StandardsEnum.bitMaskNames(new_standards, u", ", true)});
         _standards = new_standards;
     }
 }
@@ -136,14 +126,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
     assert(table.sectionCount() > 0);
 
-    std::ostream& strm(_display.out());
+    std::ostream& strm(_display.duck().out());
     const TID tid = table.tableId();
     const PID pid = table.sourcePID();
 
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat(table);
+            PAT pat(_duck, table);
             if (pid != PID_PAT) {
                 // A PAT is only expected on PID 0
                 strm << UString::Format(u"* Got unexpected PAT on PID %d (0x%X)", {pid, pid}) << std::endl;
@@ -294,7 +284,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         default: {
-            if (_report.verbose()) {
+            if (_duck.report().verbose()) {
                 strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid}) << std::endl << std::endl;
             }
         }
@@ -309,7 +299,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
 void ts::PSILogger::handleSection(SectionDemux&, const Section& sect)
 {
-    sect.dump(_display.out()) << std::endl;
+    sect.dump(_display.duck().out()) << std::endl;
 }
 
 
@@ -321,7 +311,7 @@ void ts::PSILogger::reportDemuxErrors ()
 {
     if (_demux.hasErrors()) {
         SectionDemux::Status status(_demux);
-        _display.out() << "* PSI/SI analysis errors:" << std::endl;
-        status.display(_display.out(), 4, true);
+        _display.duck().out() << "* PSI/SI analysis errors:" << std::endl;
+        status.display(_display.duck().out(), 4, true);
     }
 }

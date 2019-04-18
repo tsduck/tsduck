@@ -34,9 +34,10 @@
 
 #pragma once
 #include "tsAbstractDemux.h"
-#include "tsETID.h"
 #include "tsTableHandlerInterface.h"
 #include "tsSectionHandlerInterface.h"
+#include "tsDuckContext.h"
+#include "tsETID.h"
 
 namespace ts {
     //!
@@ -57,13 +58,16 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
+        //! Contextual information (such as standards) are accumulated in the context from demuxed sections.
         //! @param [in] table_handler The object to invoke when a new complete table is extracted.
         //! @param [in] section_handler The object to invoke when any section is extracted.
         //! @param [in] pid_filter The set of PID's to demux.
         //!
-        SectionDemux(TableHandlerInterface* table_handler = nullptr,
-                     SectionHandlerInterface* section_handler = nullptr,
-                     const PIDSet& pid_filter = NoPID);
+        explicit SectionDemux(DuckContext& duck,
+                              TableHandlerInterface* table_handler = nullptr,
+                              SectionHandlerInterface* section_handler = nullptr,
+                              const PIDSet& pid_filter = NoPID);
 
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;
@@ -258,6 +262,7 @@ namespace ts {
         bool                     _get_next;
 
         // Inacessible operations
+        SectionDemux() = delete;
         SectionDemux(const SectionDemux&) = delete;
         SectionDemux& operator=(const SectionDemux&) = delete;
     };

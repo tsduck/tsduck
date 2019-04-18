@@ -154,7 +154,7 @@ namespace ts {
         bool findService(Service& service, bool exact_match = false, bool same_ts = true) const;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
@@ -169,9 +169,9 @@ namespace ts {
         VCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_);
 
         // Inherited methods
-        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
-        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
-        virtual void buildXML(xml::Element*) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         // Add a new section to a table being serialized.

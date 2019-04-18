@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultilingualNetworkNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 
@@ -50,10 +51,10 @@ ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
     _is_valid = true;
 }
 
-ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualNetworkNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::MultilingualNetworkNameDescriptor::~MultilingualNetworkNameDescriptor()

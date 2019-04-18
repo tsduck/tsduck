@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsInputRedirector.h"
 #include "tsPagerArgs.h"
 #include "tsPSILogger.h"
@@ -53,6 +54,7 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
     virtual ~Options();
 
+    ts::DuckContext       duck;     // TSDuck execution context.
     ts::UString           infile;   // Input file name
     ts::PSILoggerArgs     logger;   // Table logging options
     ts::TablesDisplayArgs display;  // Table formatting options.
@@ -65,11 +67,14 @@ Options::~Options() {}
 // Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract all standard PSI from an MPEG transport stream", u"[options] [filename]"),
+    duck(this),
     infile(),
     logger(),
-    display(),
+    display(duck),
     pager(true, true)
 {
+    duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForDVBCharset(*this);
     pager.defineOptions(*this);
     logger.defineOptions(*this);
     display.defineOptions(*this);
@@ -79,6 +84,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadOptions(*this);
     pager.load(*this);
     logger.load(*this);
     display.load(*this);
@@ -97,12 +103,12 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
-    ts::TablesDisplay display(opt.display, opt);
-    ts::PSILogger logger(opt.logger, display, opt);
+    ts::TablesDisplay display(opt.display);
+    ts::PSILogger logger(opt.logger, display);
     ts::TSPacket pkt;
 
     // Redirect display on pager process or stdout only.
-    display.redirect(&opt.pager.output(opt), false);
+    opt.duck.setOutput(&opt.pager.output(opt), false);
 
     // Read all packets in the file and pass them to the logger
     while (!logger.completed() && pkt.read(std::cin, true, opt)) {

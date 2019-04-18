@@ -175,7 +175,7 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& servi
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::VCT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     protocol_version = 0;
@@ -306,7 +306,7 @@ void ts::VCT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::VCT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections one by one.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -401,7 +401,7 @@ void ts::VCT::serializeContent(BinaryTable& table, const DVBCharset* charset) co
 
 void ts::VCT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -489,13 +489,13 @@ const ts::Enumeration ts::VCT::ServiceTypeEnum({
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::buildXML(xml::Element* root) const
+void ts::VCT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"protocol_version", protocol_version);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (auto it = channels.begin(); it != channels.end(); ++it) {
         xml::Element* e = root->addElement(u"channel");
@@ -517,7 +517,7 @@ void ts::VCT::buildXML(xml::Element* root) const
         e->setBoolAttribute(u"hide_guide", it->second.hide_guide);
         e->setEnumAttribute(ServiceTypeEnum, u"service_type", it->second.service_type);
         e->setIntAttribute(u"source_id", it->second.source_id, true);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -526,7 +526,7 @@ void ts::VCT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VCT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::VCT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     channels.clear();
@@ -538,7 +538,7 @@ void ts::VCT::fromXML(const xml::Element* element, const DVBCharset* charset)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint16_t>(transport_stream_id, u"transport_stream_id", true) &&
-        descs.fromXML(children, element, u"channel", charset);
+        descs.fromXML(duck, children, element, u"channel");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         // Add a new Channel at the end of the list.
@@ -558,7 +558,7 @@ void ts::VCT::fromXML(const xml::Element* element, const DVBCharset* charset)
             children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
             children[index]->getIntEnumAttribute<uint8_t>(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
             children[index]->getIntAttribute<uint16_t>(ch.source_id, u"source_id", true) &&
-            ch.descs.fromXML(children[index], charset);
+            ch.descs.fromXML(duck, children[index]);
 
         if (_is_valid && _table_id == TID_CVCT) {
             // CVCT-specific fields.

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPMACStreamLocationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -63,10 +64,10 @@ ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACStreamLocationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -74,7 +75,7 @@ ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor(const Descripto
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::IPMACStreamLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(network_id);
@@ -90,7 +91,7 @@ void ts::IPMACStreamLocationDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::IPMACStreamLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -113,7 +114,7 @@ void ts::IPMACStreamLocationDescriptor::deserialize(const Descriptor& desc, cons
 
 void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 9) {
@@ -138,7 +139,7 @@ void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::buildXML(xml::Element* root) const
+void ts::IPMACStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"network_id", network_id, true);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
@@ -152,7 +153,7 @@ void ts::IPMACStreamLocationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::IPMACStreamLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

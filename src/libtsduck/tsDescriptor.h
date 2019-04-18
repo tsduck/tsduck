@@ -33,10 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
-#include "tsMPEG.h"
+#include "tsDuckContext.h"
 #include "tsEDID.h"
 #include "tsxml.h"
 
@@ -252,24 +251,24 @@ namespace ts {
         //! This method converts a descriptor to XML.
         //! If the descriptor has a specialized implementation, generate a specialized
         //! XML structure. Otherwise, generate a \<generic_descriptor> node.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the XML descriptor.
         //! @param [in] pds Associated private data specifier.
         //! @param [in] tid Optional table id of the table containing the descriptor.
         //! @param [in] forceGeneric Force a \<generic_descriptor> node even if the descriptor can be specialized.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return The new XML element or zero if the descriptor is not valid.
         //!
-        xml::Element* toXML(xml::Element* parent, PDS pds = 0, TID tid = TID_NULL, bool forceGeneric = false, const DVBCharset* charset = nullptr) const;
+        xml::Element* toXML(DuckContext& duck, xml::Element* parent, PDS pds = 0, TID tid = TID_NULL, bool forceGeneric = false) const;
 
         //!
         //! This method converts an XML node as a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] node The root of the XML descriptor.
         //! @param [in] tid Optional table id of the table containing the descriptor.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True if the XML element name is a valid descriptor name, false otherwise.
         //! If the name is valid but the content is incorrect, true is returned and this object is invalidated.
         //!
-        bool fromXML(const xml::Element* node, TID tid = TID_NULL, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, const xml::Element* node, TID tid = TID_NULL);
 
     private:
         Descriptor(const Descriptor&) = delete;

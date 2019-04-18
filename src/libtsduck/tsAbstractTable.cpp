@@ -86,7 +86,7 @@ bool ts::AbstractTable::isValidTableId(TID tid) const
 // This method serializes a table.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
 {
     // Reinitialize table object.
     table.clear();
@@ -96,13 +96,11 @@ void ts::AbstractTable::serialize(BinaryTable& table, const DVBCharset* charset)
         return;
     }
 
-    // Transfer our standards into serialized object.
-    // The implementation of serializeContent() has the opportunity to modify them..
-    table.resetAllStandards();
-    table.addAllStandards(allStandards());
-
     // Call the subclass implementation.
-    serializeContent(table, charset);
+    serializeContent(duck, table);
+
+    // Add the standards of the serialized table into the context.
+    duck.addStandards(definingStandards());
 }
 
 
@@ -110,7 +108,7 @@ void ts::AbstractTable::serialize(BinaryTable& table, const DVBCharset* charset)
 // This method deserializes a binary table.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
 {
     // Invalidate this object.
     // Note that deserializeContent() is still responsible for clearing specific fields.
@@ -121,15 +119,13 @@ void ts::AbstractTable::deserialize(const BinaryTable& table, const DVBCharset* 
         return;
     }
 
-    // Transfer standards from the serialized object to this object.
-    // The implementation of deserializeContent() has the opportunity to modify them..
-    resetAllStandards();
-    addAllStandards(table.allStandards());
-
     // Table is already checked to be compatible but can be different from current one.
     // So, we need to update this object.
     _table_id = table.tableId();
 
     // Call the subclass implementation.
-    deserializeContent(table, charset);
+    deserializeContent(duck, table);
+
+    // Add the standards of the deserialized table into the context.
+    duck.addStandards(definingStandards());
 }

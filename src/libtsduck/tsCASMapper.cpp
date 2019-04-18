@@ -43,10 +43,10 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::CASMapper::CASMapper(Report& report) :
+ts::CASMapper::CASMapper(DuckContext& duck) :
     TableHandlerInterface(),
-    _report(report),
-    _demux(this),
+    _duck(duck),
+    _demux(_duck, this),
     _pids()
 {
     // Specify the PID filters
@@ -63,7 +63,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
 {
     switch (table.tableId()) {
         case TID_PAT: {
-            const PAT pat(table);
+            const PAT pat(_duck, table);
             if (pat.isValid()) {
                 // Add a filter on each referenced PID to get all PMT's.
                 for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -73,7 +73,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
         case TID_CAT: {
-            const CAT cat(table);
+            const CAT cat(_duck, table);
             if (cat.isValid()) {
                 // Identify all EMM PID's.
                 analyzeCADescriptors(cat.descs, false);
@@ -81,7 +81,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
         case TID_PMT: {
-            const PMT pmt(table);
+            const PMT pmt(_duck, table);
             if (pmt.isValid()) {
                 // Identify all ECM PID's at program level.
                 analyzeCADescriptors(pmt.descs, true);
@@ -93,7 +93,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
         default: {
-            _report.debug(u"Got unexpected TID %d (0x%X) on PID %d (0x%X)", {table.tableId(), table.tableId(), table.sourcePID(), table.sourcePID()});
+            _duck.report().debug(u"Got unexpected TID %d (0x%X) on PID %d (0x%X)", {table.tableId(), table.tableId(), table.sourcePID(), table.sourcePID()});
             break;
         }
     }
@@ -108,11 +108,11 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
     for (size_t i = 0; i < descs.count(); ++i) {
         const DescriptorPtr& desc(descs[i]);
         if (!desc.isNull() && desc->tag() == DID_CA) {
-            const CADescriptorPtr cadesc(new CADescriptor(*desc));
+            const CADescriptorPtr cadesc(new CADescriptor(_duck, *desc));
             if (!cadesc.isNull() && cadesc->isValid()) {
                 const std::string cas_name(names::CASId(cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);
-                _report.debug(u"Found %s PID %d (0x%X) for CAS id 0x%X (%s)", {is_ecm ? u"ECM" : u"EMM", cadesc->ca_pid, cadesc->ca_pid, cadesc->cas_id, cas_name});
+                _duck.report().debug(u"Found %s PID %d (0x%X) for CAS id 0x%X (%s)", {is_ecm ? u"ECM" : u"EMM", cadesc->ca_pid, cadesc->ca_pid, cadesc->cas_id, cas_name});
             }
         }
     }

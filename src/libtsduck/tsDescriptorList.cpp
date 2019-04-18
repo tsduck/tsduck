@@ -96,22 +96,6 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
 
 
 //----------------------------------------------------------------------------
-// Get the default Private Data Specified value in this descriptor list.
-//----------------------------------------------------------------------------
-
-ts::PDS ts::DescriptorList::defaultPDS(PDS pds) const
-{
-    if (pds == 0 && _table != nullptr && ((_table->definingStandards() | _table->allStandards()) & STD_ATSC) != 0) {
-        // Use fake PDS for ATSC descriptors.
-        return PDS_ATSC;
-    }
-    else {
-        return pds;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
@@ -123,11 +107,11 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
     if (desc->tag() == DID_PRIV_DATA_SPECIF) {
         // This descriptor defines a new "private data specifier".
         // The PDS is the only thing in the descriptor payload.
-        pds = defaultPDS(desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload()));
+        pds = desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload());
     }
     else if (_list.empty()) {
         // First descriptor in the list
-        pds = defaultPDS();
+        pds = 0;
     }
     else {
         // Use same PDS as previous descriptor
@@ -143,11 +127,11 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add(const AbstractDescriptor& desc)
+void ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 {
     DescriptorPtr pd(new Descriptor);
     CheckNonNull(pd.pointer());
-    desc.serialize(*pd);
+    desc.serialize(duck, *pd);
     if (pd->isValid()) {
         add(pd);
     }
@@ -215,7 +199,12 @@ bool ts::DescriptorList::prepareRemovePDS(const ElementVector::iterator& it)
 void ts::DescriptorList::addPrivateDataSpecifier(PDS pds)
 {
     if (pds != 0 && (_list.size() == 0 || _list[_list.size() - 1].pds != pds)) {
-        add(PrivateDataSpecifierDescriptor(pds));
+        // Build a private_data_specifier_descriptor
+        uint8_t data[6];
+        data[0] = DID_PRIV_DATA_SPECIF;
+        data[1] = 4;
+        PutUInt32(data + 2, pds);
+        add(DescriptorPtr(new Descriptor(data, sizeof(data))));
     }
 }
 
@@ -517,11 +506,11 @@ size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_
 // This method converts a descriptor list to XML.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) const
+bool ts::DescriptorList::toXML(DuckContext& duck, xml::Element* parent) const
 {
     bool success = true;
     for (size_t index = 0; index < _list.size(); ++index) {
-        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, tableId() , false, charset) == nullptr) {
+        if (_list[index].desc.isNull() || _list[index].desc->toXML(duck, parent, _list[index].pds, tableId() , false) == nullptr) {
             success = false;
         }
     }
@@ -533,20 +522,20 @@ bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) 
 // These methods decode an XML list of descriptors.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset)
+bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers)
 {
     UStringList allowed;
     allowedOthers.split(allowed);
-    return fromXML(others, parent, allowed, charset);
+    return fromXML(duck, others, parent, allowed);
 }
 
-bool ts::DescriptorList::fromXML(const xml::Element* parent, const DVBCharset* charset)
+bool ts::DescriptorList::fromXML(DuckContext& duck, const xml::Element* parent)
 {
     xml::ElementVector others;
-    return fromXML(others, parent, UStringList(), charset);
+    return fromXML(duck, others, parent, UStringList());
 }
 
-bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)
+bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers)
 {
     bool success = true;
     clear();
@@ -559,7 +548,7 @@ bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element*
         CheckNonNull(bin.pointer());
 
         // Try to analyze the XML element.
-        if (bin->fromXML(node, tableId(), charset)) {
+        if (bin->fromXML(duck, node, tableId())) {
             // The XML tag is a valid descriptor name.
             if (bin->isValid()) {
                 add(bin);

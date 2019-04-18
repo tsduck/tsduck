@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEnhancedAC3Descriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -66,10 +67,10 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
     _is_valid = true;
 }
 
-ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
     EnhancedAC3Descriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -111,7 +112,7 @@ void ts::EnhancedAC3Descriptor::merge(const EnhancedAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::EnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -158,7 +159,7 @@ void ts::EnhancedAC3Descriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::EnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
@@ -216,7 +217,7 @@ void ts::EnhancedAC3Descriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -276,7 +277,7 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::buildXML(xml::Element* root) const
+void ts::EnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"mixinfoexists", mixinfoexists);
     root->setOptionalIntAttribute(u"component_type", component_type, true);
@@ -296,7 +297,7 @@ void ts::EnhancedAC3Descriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::EnhancedAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

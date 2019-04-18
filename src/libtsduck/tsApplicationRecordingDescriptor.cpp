@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationRecordingDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -69,10 +70,10 @@ ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationRecordingDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -80,7 +81,7 @@ ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor(const Descrip
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ApplicationRecordingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((scheduled_recording ? 0x80 : 0x00) |
@@ -92,7 +93,7 @@ void ts::ApplicationRecordingDescriptor::serialize(Descriptor& desc, const DVBCh
                      0x03);
     bbp->appendUInt8(uint8_t(labels.size()));
     for (auto it = labels.begin(); it != labels.end(); ++it) {
-        bbp->append(it->label.toDVBWithByteLength());
+        bbp->append(duck.toDVBWithByteLength(it->label));
         bbp->appendUInt8((it->storage_properties << 6) | 0x3F);
     }
     bbp->appendUInt8(uint8_t(component_tags.size()));
@@ -108,7 +109,7 @@ void ts::ApplicationRecordingDescriptor::serialize(Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ApplicationRecordingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     labels.clear();
     component_tags.clear();
@@ -136,7 +137,7 @@ void ts::ApplicationRecordingDescriptor::deserialize(const Descriptor& desc, con
         _is_valid = size >= 1 && size >= size_t(data[0] + 2);
         if (_is_valid) {
             const size_t len = data[0];
-            labels.push_back(RecodingLabel(UString::FromDVB(data + 1, len), (data[len + 1] >> 6) & 0x03));
+            labels.push_back(RecodingLabel(duck.fromDVB(data + 1, len), (data[len + 1] >> 6) & 0x03));
             data += len + 2;
             size -= len + 2;
             labelCount--;
@@ -174,7 +175,7 @@ void ts::ApplicationRecordingDescriptor::deserialize(const Descriptor& desc, con
 
 void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     // Flags in first byte.
@@ -198,7 +199,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
             valid = size >= 1 && size >= size_t(data[0] + 2);
             if (valid) {
                 const size_t len = data[0];
-                strm << margin << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {UString::FromDVB(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)}) << std::endl;
+                strm << margin << UString::Format(u"Label: \"%s\", storage properties: 0x%X", {display.duck().fromDVB(data + 1, len), uint8_t((data[len + 1] >> 6) & 0x03)}) << std::endl;
                 data += len + 2;
                 size -= len + 2;
                 labelCount--;
@@ -246,7 +247,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::buildXML(xml::Element* root) const
+void ts::ApplicationRecordingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"scheduled_recording", scheduled_recording);
     root->setBoolAttribute(u"trick_mode_aware", trick_mode_aware);
@@ -276,7 +277,7 @@ void ts::ApplicationRecordingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationRecordingDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ApplicationRecordingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     labels.clear();
     component_tags.clear();

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTransportStreamDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -62,10 +63,10 @@ ts::TransportStreamDescriptor::TransportStreamDescriptor(const UString& comp) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::TransportStreamDescriptor::TransportStreamDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TransportStreamDescriptor::TransportStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     TransportStreamDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -73,10 +74,10 @@ ts::TransportStreamDescriptor::TransportStreamDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TransportStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(compliance.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVB(compliance));
     serializeEnd(desc, bbp);
 }
 
@@ -85,12 +86,12 @@ void ts::TransportStreamDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TransportStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        compliance.assign(UString::FromDVB(desc.payload(), desc.payloadSize(), charset));
+        compliance.assign(duck.fromDVB(desc.payload(), desc.payloadSize()));
     }
     else {
         compliance.clear();
@@ -104,10 +105,9 @@ void ts::TransportStreamDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    display.out() << std::string(indent, ' ')
-                  << "Compliance: \""
-                  << UString::FromDVB(payload, size, display.dvbCharset())
-                  << "\"" << std::endl;
+    std::ostream& strm(display.duck().out());
+    const std::string margin(indent, ' ');
+    strm << margin << "Compliance: \"" << display.duck().fromDVB(payload, size) << "\"" << std::endl;
 }
 
 
@@ -115,7 +115,7 @@ void ts::TransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::buildXML(xml::Element* root) const
+void ts::TransportStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"compliance", compliance);
 }
@@ -125,7 +125,7 @@ void ts::TransportStreamDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportStreamDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TransportStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

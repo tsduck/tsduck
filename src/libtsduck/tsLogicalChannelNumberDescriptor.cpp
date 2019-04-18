@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsLogicalChannelNumberDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -63,10 +64,10 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
     _is_valid = true;
 }
 
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
     LogicalChannelNumberDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(int service_id, int lcn, ...) :
@@ -89,7 +90,7 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(int service_i
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::LogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -110,7 +111,7 @@ void ts::LogicalChannelNumberDescriptor::serialize(Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::LogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
@@ -133,7 +134,7 @@ void ts::LogicalChannelNumberDescriptor::deserialize(const Descriptor& desc, con
 
 void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
@@ -154,7 +155,7 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::buildXML(xml::Element* root) const
+void ts::LogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
@@ -169,7 +170,7 @@ void ts::LogicalChannelNumberDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::LogicalChannelNumberDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

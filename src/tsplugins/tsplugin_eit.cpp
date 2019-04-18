@@ -126,7 +126,7 @@ ts::EITPlugin::EITPlugin(TSP* tsp_) :
     _eitpf_oth_count(0),
     _eits_act_count(0),
     _eits_oth_count(0),
-    _demux(this, this),
+    _demux(duck, this, this),
     _services(),
     _ts_id()
 {
@@ -313,7 +313,7 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     _ts_id = pat.ts_id;
                     tsp->verbose(u"TS id is %d (0x%X)", {pat.ts_id, pat.ts_id});
@@ -330,15 +330,15 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     // Register all services
                     for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
                         ServiceDesc& serv(getServiceDesc(sdt.ts_id, it->first));
                         serv.setONId(sdt.onetw_id);
-                        serv.setTypeDVB(it->second.serviceType());
-                        serv.setName(it->second.serviceName());
-                        serv.setProvider(it->second.providerName());
+                        serv.setTypeDVB(it->second.serviceType(duck));
+                        serv.setName(it->second.serviceName(duck));
+                        serv.setProvider(it->second.providerName(duck));
                         serv.setEITsPresent(it->second.EITs_present);
                         serv.setEITpfPresent(it->second.EITpf_present);
                         serv.setCAControlled(it->second.CA_controlled);
@@ -350,7 +350,7 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
         case TID_TDT: {
             if (table.sourcePID() == PID_TDT) {
-                TDT tdt(table);
+                TDT tdt(duck, table);
                 if (tdt.isValid()) {
                     _last_utc = tdt.utc_time;
                 }

@@ -47,7 +47,7 @@ namespace ts {
         DescriptorList descs; //!< List of descriptors.
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
@@ -83,18 +83,18 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractDescriptorsTable(TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table, const DVBCharset* charset);
+        AbstractDescriptorsTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table);
 
         // Inherited methods
-        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
-        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
-        virtual void buildXML(xml::Element*) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         AbstractDescriptorsTable() = delete;

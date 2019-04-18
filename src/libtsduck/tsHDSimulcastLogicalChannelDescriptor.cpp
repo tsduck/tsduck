@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -64,10 +65,10 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () 
 }
 
 
-ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(DuckContext& duck, const Descriptor& desc) :
     HDSimulcastLogicalChannelDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(int service_id, int lcn, ...) :
@@ -90,7 +91,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor(int
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::HDSimulcastLogicalChannelDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -111,7 +112,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::serialize(Descriptor& desc, const 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::HDSimulcastLogicalChannelDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
@@ -134,7 +135,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::deserialize(const Descriptor& desc
 
 void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
@@ -155,7 +156,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::buildXML(xml::Element* root) const
+void ts::HDSimulcastLogicalChannelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
@@ -170,7 +171,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::HDSimulcastLogicalChannelDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

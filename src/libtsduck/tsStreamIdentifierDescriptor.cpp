@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsStreamIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -62,11 +63,11 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_tag(0)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -74,7 +75,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::StreamIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (3));
     CheckNonNull (bbp.pointer());
@@ -91,12 +92,12 @@ void ts::StreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::StreamIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
     if (_is_valid) {
-        component_tag = GetUInt8 (desc.payload());
+        component_tag = GetUInt8(desc.payload());
     }
 }
 
@@ -107,7 +108,7 @@ void ts::StreamIdentifierDescriptor::deserialize(const Descriptor& desc, const D
 
 void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
 
     if (size >= 1) {
         uint8_t id = data[0];
@@ -123,7 +124,7 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::StreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"component_tag", component_tag, true);
 }
@@ -133,7 +134,7 @@ void ts::StreamIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::StreamIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDataBroadcastDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -63,7 +64,7 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor() :
     _is_valid = true;
 }
 
-ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DataBroadcastDescriptor::DataBroadcastDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     data_broadcast_id(0),
     component_tag(0),
@@ -71,7 +72,7 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc, con
     language_code(),
     text()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -81,7 +82,7 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc, con
 
 void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -98,9 +99,9 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         DataBroadcastIdDescriptor::DisplaySelectorBytes(display, data, slength, indent, dbid);
         data += slength; size -= slength;
         if (size >= 3) {
-            strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset()) << std::endl;
+            strm << margin << "Language: " << UString::FromDVB(data, 3) << std::endl;
             data += 3; size -= 3;
-            strm << margin << "Description: \"" << UString::FromDVBWithByteLength(data, size, display.dvbCharset()) << "\"" << std::endl;
+            strm << margin << "Description: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
         }
     }
 
@@ -112,7 +113,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DataBroadcastDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -120,11 +121,11 @@ void ts::DataBroadcastDescriptor::serialize(Descriptor& desc, const DVBCharset* 
     bbp->appendUInt8(component_tag);
     bbp->appendUInt8(int8_t(selector_bytes.size()));
     bbp->append(selector_bytes);
-    if (!SerializeLanguageCode(*bbp, language_code)) {
+    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
         desc.invalidate();
         return;
     }
-    bbp->append(text.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(duck.toDVBWithByteLength(text));
 
     serializeEnd(desc, bbp);
 }
@@ -134,7 +135,7 @@ void ts::DataBroadcastDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DataBroadcastDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     selector_bytes.clear();
     language_code.clear();
@@ -161,7 +162,7 @@ void ts::DataBroadcastDescriptor::deserialize(const Descriptor& desc, const DVBC
 
     language_code = UString::FromDVB(data, 3);
     data += 3; size -= 3;
-    text = UString::FromDVBWithByteLength(data, size, charset);
+    text = duck.fromDVBWithByteLength(data, size);
     _is_valid = size == 0;
 }
 
@@ -170,7 +171,7 @@ void ts::DataBroadcastDescriptor::deserialize(const Descriptor& desc, const DVBC
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::buildXML(xml::Element* root) const
+void ts::DataBroadcastDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"data_broadcast_id", data_broadcast_id, true);
     root->setIntAttribute(u"component_tag", component_tag, true);
@@ -186,7 +187,7 @@ void ts::DataBroadcastDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::DataBroadcastDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     selector_bytes.clear();
     language_code.clear();

@@ -65,10 +65,10 @@ ts::SelectionInformationTable::SelectionInformationTable(const SelectionInformat
 {
 }
 
-ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& table, const DVBCharset* charset) :
+ts::SelectionInformationTable::SelectionInformationTable(DuckContext& duck, const BinaryTable& table) :
     SelectionInformationTable()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -76,7 +76,7 @@ ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& tabl
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::SelectionInformationTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     descs.clear();
@@ -129,7 +129,7 @@ void ts::SelectionInformationTable::deserializeContent(const BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::SelectionInformationTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section. Note that a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
@@ -176,7 +176,7 @@ void ts::SelectionInformationTable::serializeContent(BinaryTable& table, const D
 
 void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -219,17 +219,17 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::buildXML(xml::Element* root) const
+void ts::SelectionInformationTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (auto it = services.begin(); it != services.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it->first, true);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -238,7 +238,7 @@ void ts::SelectionInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SelectionInformationTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     services.clear();
@@ -248,13 +248,13 @@ void ts::SelectionInformationTable::fromXML(const xml::Element* element, const D
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(children, element, u"service", charset);
+        descs.fromXML(duck, children, element, u"service");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         uint16_t id = 0;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
             children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
-            services[id].descs.fromXML(children[index], charset);
+            services[id].descs.fromXML(duck, children[index]);
     }
 }

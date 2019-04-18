@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceMoveDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -56,10 +57,10 @@ ts::ServiceMoveDescriptor::ServiceMoveDescriptor() :
     _is_valid = true;
 }
 
-ts::ServiceMoveDescriptor::ServiceMoveDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ServiceMoveDescriptor::ServiceMoveDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceMoveDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +68,7 @@ ts::ServiceMoveDescriptor::ServiceMoveDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceMoveDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ServiceMoveDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(new_original_network_id);
@@ -81,7 +82,7 @@ void ts::ServiceMoveDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceMoveDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ServiceMoveDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 6;
 
@@ -100,7 +101,7 @@ void ts::ServiceMoveDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::ServiceMoveDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
@@ -118,7 +119,7 @@ void ts::ServiceMoveDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceMoveDescriptor::buildXML(xml::Element* root) const
+void ts::ServiceMoveDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"new_original_network_id", new_original_network_id, true);
     root->setIntAttribute(u"new_transport_stream_id", new_transport_stream_id, true);
@@ -130,7 +131,7 @@ void ts::ServiceMoveDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceMoveDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ServiceMoveDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

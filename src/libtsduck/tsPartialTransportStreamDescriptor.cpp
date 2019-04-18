@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPartialTransportStreamDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -61,10 +62,10 @@ ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     PartialTransportStreamDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,7 +73,7 @@ ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor(const Des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::PartialTransportStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt24(0x00C00000 | peak_rate);
@@ -86,7 +87,7 @@ void ts::PartialTransportStreamDescriptor::serialize(Descriptor& desc, const DVB
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::PartialTransportStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -107,7 +108,7 @@ void ts::PartialTransportStreamDescriptor::deserialize(const Descriptor& desc, c
 
 void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 8) {
@@ -141,7 +142,7 @@ void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::buildXML(xml::Element* root) const
+void ts::PartialTransportStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"peak_rate", peak_rate, true);
     if (minimum_overall_smoothing_rate != UNDEFINED_SMOOTHING_RATE) {
@@ -157,7 +158,7 @@ void ts::PartialTransportStreamDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PartialTransportStreamDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::PartialTransportStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBJApplicationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -59,10 +60,10 @@ ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBJApplicationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,11 +71,11 @@ ts::DVBJApplicationDescriptor::DVBJApplicationDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DVBJApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-        bbp->append(it->toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(duck.toDVBWithByteLength(*it));
     }
     serializeEnd(desc, bbp);
 }
@@ -84,7 +85,7 @@ void ts::DVBJApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DVBJApplicationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     parameters.clear();
     _is_valid = desc.isValid() && desc.tag() == _tag;
@@ -97,7 +98,7 @@ void ts::DVBJApplicationDescriptor::deserialize(const Descriptor& desc, const DV
         data += 1; size -= 1;
         _is_valid = len <= size;
         if (_is_valid) {
-            parameters.push_back(UString::FromDVB(data, len, charset));
+            parameters.push_back(duck.fromDVB(data, len));
             data += len; size -= len;
         }
     }
@@ -112,12 +113,12 @@ void ts::DVBJApplicationDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 1) {
         const size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Parameter: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+        strm << margin << "Parameter: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
         data += 1 + len; size -= 1 + len;
     }
 
@@ -129,7 +130,7 @@ void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::buildXML(xml::Element* root) const
+void ts::DVBJApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
         root->addElement(u"parameter")->setAttribute(u"value", *it);
@@ -141,7 +142,7 @@ void ts::DVBJApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBJApplicationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::DVBJApplicationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     parameters.clear();
 

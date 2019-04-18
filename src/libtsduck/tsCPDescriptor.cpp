@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCPDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -57,10 +58,10 @@ ts::CPDescriptor::CPDescriptor(uint16_t cp_id_, PID cp_pid_) :
     _is_valid = true;
 }
 
-ts::CPDescriptor::CPDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::CPDescriptor::CPDescriptor(DuckContext& duck, const Descriptor& desc) :
     CPDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +69,7 @@ ts::CPDescriptor::CPDescriptor(const Descriptor& bin, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CPDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -83,7 +84,7 @@ void ts::CPDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CPDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -101,7 +102,7 @@ void ts::CPDescriptor::deserialize(const Descriptor& desc, const DVBCharset* cha
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::buildXML(xml::Element* root) const
+void ts::CPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"CP_system_id", cp_id, true);
     root->setIntAttribute(u"CP_PID", cp_pid, true);
@@ -115,7 +116,7 @@ void ts::CPDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::CPDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -136,7 +137,7 @@ void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 4) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
 
         uint16_t id = GetUInt16(data);

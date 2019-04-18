@@ -121,7 +121,7 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _outfile(),
     _t2mi_count(0),
     _ts_count(0),
-    _demux(this),
+    _demux(duck, this),
     _identified(),
     _ts_queue()
 {

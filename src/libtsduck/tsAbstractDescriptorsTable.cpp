@@ -58,12 +58,12 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(const ts::AbstractDescrip
 
 }
 
-ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table, const DVBCharset* charset) :
+ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table) :
     AbstractLongTable(tid, xml_name, standards, 0, true),
     descs(this),
     _tid_ext(0xFFFF)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -71,7 +71,7 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const UChar* xml
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::AbstractDescriptorsTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     descs.clear();
@@ -103,7 +103,7 @@ void ts::AbstractDescriptorsTable::deserializeContent(const BinaryTable& table, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::AbstractDescriptorsTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Add all descriptors, creating several sections if necessary.
     // Make sure to create at least one section if the list is empty.
@@ -151,11 +151,11 @@ void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
+void ts::AbstractDescriptorsTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 }
 
 
@@ -163,12 +163,12 @@ void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::AbstractDescriptorsTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     _is_valid =
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(element, charset);
+        descs.fromXML(duck, element);
 }

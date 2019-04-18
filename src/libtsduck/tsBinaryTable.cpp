@@ -179,11 +179,12 @@ bool ts::BinaryTable::operator==(const BinaryTable& table) const
 
 
 //----------------------------------------------------------------------------
-// Override of AbstractDefinedByStandards, get standard from table id.
+// Implementation of AbstractDefinedByStandards.
 //----------------------------------------------------------------------------
 
 ts::Standards ts::BinaryTable::definingStandards() const
 {
+    // The defining standard is taken from table id.
     return TablesFactory::Instance()->getTableStandards(tableId());
 }
 
@@ -376,9 +377,6 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
         _sections[index] = sect;
     }
 
-    // Propagate the list of standards in the environment.
-    addAllStandards(sect->allStandards());
-
     // The table becomes valid if there is no more missing section
     _is_valid = _missing_count == 0;
     assert(_missing_count >= 0);
@@ -442,7 +440,7 @@ bool ts::BinaryTable::isShortSection() const
 // This method converts the table to XML.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::BinaryTable::toXML(xml::Element* parent, bool forceGeneric, const DVBCharset* charset) const
+ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent, bool forceGeneric) const
 {
     // Filter invalid tables.
     if (!_is_valid || _sections.size() == 0 || _sections[0].isNull()) {
@@ -461,10 +459,10 @@ ts::xml::Element* ts::BinaryTable::toXML(xml::Element* parent, bool forceGeneric
             AbstractTablePtr tp = fac();
             if (!tp.isNull()) {
                 // Deserialize from binary to object.
-                tp->deserialize(*this, charset);
+                tp->deserialize(duck, *this);
                 if (tp->isValid()) {
                     // Serialize from object to XML.
-                    node = tp->toXML(parent);
+                    node = tp->toXML(duck, parent);
                 }
             }
         }
@@ -507,7 +505,7 @@ ts::xml::Element* ts::BinaryTable::toXML(xml::Element* parent, bool forceGeneric
 // This method converts an XML node as a binary descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::fromXML(const xml::Element* node, const DVBCharset* charset)
+bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
 {
     // Filter invalid parameters.
     clear();
@@ -522,11 +520,11 @@ bool ts::BinaryTable::fromXML(const xml::Element* node, const DVBCharset* charse
         // Create a table instance of the right type.
         AbstractTablePtr table = fac();
         if (!table.isNull()) {
-            table->fromXML(node, charset);
+            table->fromXML(duck, node);
         }
         if (!table.isNull() && table->isValid()) {
             // Serialize the table.
-            table->serialize(*this, charset);
+            table->serialize(duck, *this);
         }
         // The XML element name was valid.
         return true;

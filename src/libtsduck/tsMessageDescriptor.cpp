@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMessageDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -70,10 +71,10 @@ ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const 
     _is_valid = true;
 }
 
-ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::MessageDescriptor::MessageDescriptor(DuckContext& duck, const Descriptor& desc) :
     MessageDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -81,16 +82,16 @@ ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin, const DVBCharset
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::MessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8(message_id);
-    if (!SerializeLanguageCode(*bbp, language_code)) {
+    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
         desc.invalidate();
         return;
     }
-    bbp->append(message.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVB(message));
     serializeEnd(desc, bbp);
 }
 
@@ -99,7 +100,7 @@ void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::MessageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -110,7 +111,7 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 
     message_id = data[1];
     language_code = UString::FromDVB(data + 2, 3);
-    message = UString::FromDVB(data + 5, size - 5, charset);
+    message = duck.fromDVB(data + 5, size - 5);
 }
 
 
@@ -118,7 +119,7 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::buildXML(xml::Element* root) const
+void ts::MessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"message_id", message_id, true);
     root->setAttribute(u"language_code", language_code);
@@ -130,7 +131,7 @@ void ts::MessageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::MessageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -151,11 +152,11 @@ void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 4) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         strm << margin << "Message id: " << int(data[0])
-             << ", language: " << UString::FromDVB(data + 1, 3, display.dvbCharset()) << std::endl
-             << margin << "Message: \"" << UString::FromDVB(data + 4, size - 4, display.dvbCharset()) << "\"" << std::endl;
+             << ", language: " << UString::FromDVB(data + 1, 3) << std::endl
+             << margin << "Message: \"" << display.duck().fromDVB(data + 4, size - 4) << "\"" << std::endl;
     }
     else {
         display.displayExtraData(data, size, indent);

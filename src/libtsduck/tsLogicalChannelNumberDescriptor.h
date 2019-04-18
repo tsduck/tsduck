@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        LogicalChannelNumberDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        LogicalChannelNumberDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Constructor using a variable-length argument list.
@@ -108,10 +108,10 @@ namespace ts {
         LogicalChannelNumberDescriptor(int service_id, int lcn, ...);
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
     };
 }

@@ -72,7 +72,7 @@ ts::EIT::EIT(bool is_actual_,
     _is_valid = true;
 }
 
-ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
+ts::EIT::EIT(DuckContext& duck, const BinaryTable& table) :
     AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME, MY_STD, 0, true),  // TID will be updated by deserialize()
     service_id(0),
     ts_id(0),
@@ -80,7 +80,7 @@ ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
     last_table_id(0),
     events(this)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -165,7 +165,7 @@ void ts::EIT::setActual(bool is_actual)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::EIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     service_id = 0;
@@ -235,7 +235,7 @@ void ts::EIT::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::EIT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Inside an EIT, events shall be sorted in start time order.
     // Build a list of events in order of start time.
@@ -490,7 +490,7 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 
 void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -543,7 +543,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::buildXML(xml::Element* root) const
+void ts::EIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (isPresentFollowing()) {
         root->setAttribute(u"type", u"pf");
@@ -566,7 +566,7 @@ void ts::EIT::buildXML(xml::Element* root) const
         e->setTimeAttribute(u"duration", it->second.duration);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
         e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -575,7 +575,7 @@ void ts::EIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::EIT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     events.clear();
 
@@ -600,7 +600,7 @@ void ts::EIT::fromXML(const xml::Element* element, const DVBCharset* charset)
             children[i]->getTimeAttribute(event.duration, u"duration", true) &&
             children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
             children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-            event.descs.fromXML(children[i], charset);
+            event.descs.fromXML(duck, children[i]);
     }
 }
 

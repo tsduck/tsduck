@@ -111,12 +111,12 @@ ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
     _ignore_bat(false),
     _ignore_eit(false),
     _ignore_nit(false),
-    _demux(this),
+    _demux(duck, this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
-    _eit_process(PID_EIT, tsp_)
+    _eit_process(duck, PID_EIT)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -246,7 +246,7 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -255,7 +255,7 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         }
 
         case TID_PMT: {
-            PMT pmt(table);
+            PMT pmt(duck, table);
             if (pmt.isValid() && _old_service.hasId(pmt.service_id)) {
                 processPMT(pmt);
             }
@@ -264,7 +264,7 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     processSDT(sdt);
                 }
@@ -298,11 +298,11 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
                 }
                 else {
                     // Modify BAT
-                    BAT bat(table);
+                    BAT bat(duck, table);
                     if (bat.isValid()) {
                         processNITBAT(bat);
                         _pzer_sdt_bat.removeSections(TID_BAT, bat.bouquet_id);
-                        _pzer_sdt_bat.addTable(bat);
+                        _pzer_sdt_bat.addTable(duck, bat);
                     }
                 }
             }
@@ -316,11 +316,11 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
             }
             else {
                 // Modify NIT Actual
-                NIT nit(table);
+                NIT nit(duck, table);
                 if (nit.isValid()) {
                     processNITBAT(nit);
                     _pzer_nit.removeSections(TID_NIT_ACT, nit.network_id);
-                    _pzer_nit.addTable(nit);
+                    _pzer_nit.addTable(duck, nit);
                 }
             }
             break;
@@ -365,7 +365,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
     }
     else {
         // Search service by name
-        found = sdt.findService(_old_service);
+        found = sdt.findService(duck, _old_service);
         if (!found) {
             // Here, this is an error. A service can be searched by name only in current TS
             tsp->error(u"service \"%s\" not found in SDT", {_old_service.getName()});
@@ -380,10 +380,10 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
     // Modify the SDT with new service identification
     if (found) {
         if (_new_service.hasName()) {
-            sdt.services[_old_service.getId()].setName(_new_service.getName());
+            sdt.services[_old_service.getId()].setName(duck, _new_service.getName());
         }
         if (_new_service.hasProvider()) {
-            sdt.services[_old_service.getId()].setProvider(_new_service.getProvider());
+            sdt.services[_old_service.getId()].setProvider(duck, _new_service.getProvider());
         }
         if (_new_service.hasTypeDVB()) {
             sdt.services[_old_service.getId()].setType(_new_service.getTypeDVB());
@@ -402,7 +402,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
 
     // Replace the SDT.in the PID
     _pzer_sdt_bat.removeSections(TID_SDT_ACT, sdt.ts_id);
-    _pzer_sdt_bat.addTable(sdt);
+    _pzer_sdt_bat.addTable(duck, sdt);
 }
 
 
@@ -449,7 +449,7 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
 
     // Replace the PAT.in the PID
     _pzer_pat.removeSections(TID_PAT);
-    _pzer_pat.addTable(pat);
+    _pzer_pat.addTable(duck, pat);
     _pat_found = true;
 
     // Now that we know the ts_id, we can process the NIT
@@ -480,7 +480,7 @@ void ts::SVRenamePlugin::processPMT(PMT& pmt)
     // Replace the PMT.in the PID
     _pzer_pmt.removeSections(TID_PMT, _old_service.getId());
     _pzer_pmt.removeSections(TID_PMT, _new_service.getId());
-    _pzer_pmt.addTable(pmt);
+    _pzer_pmt.addTable(duck, pmt);
 }
 
 

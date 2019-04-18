@@ -118,11 +118,11 @@ ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
     _ignore_nit(false),
     _add_bat(false),
     _add_nit(false),
-    _demux(this),
+    _demux(duck, this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
-    _eit_process(PID_EIT, tsp_)
+    _eit_process(duck, PID_EIT)
 {
     option(u"add", 'a');
     help(u"add", u"Equivalent to --add-bat --add-nit.");
@@ -210,7 +210,7 @@ void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -220,7 +220,7 @@ void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     processSDT(sdt);
                 }
@@ -246,11 +246,11 @@ void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
                 }
                 else {
                     // Modify BAT
-                    BAT bat(table);
+                    BAT bat(duck, table);
                     if (bat.isValid()) {
                         processNITBAT(bat, _add_bat);
                         _pzer_sdt_bat.removeSections(TID_BAT, bat.bouquet_id);
-                        _pzer_sdt_bat.addTable(bat);
+                        _pzer_sdt_bat.addTable(duck, bat);
                     }
                 }
             }
@@ -260,11 +260,11 @@ void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         case TID_NIT_ACT: {
             if (!_ignore_nit) {
                 // Modify NIT Actual
-                NIT nit(table);
+                NIT nit(duck, table);
                 if (nit.isValid()) {
                     processNITBAT(nit, _add_nit);
                     _pzer_nit.removeSections(TID_NIT_ACT, nit.network_id);
-                    _pzer_nit.addTable(nit);
+                    _pzer_nit.addTable(duck, nit);
                 }
             }
             break;
@@ -318,7 +318,7 @@ void ts::TSRenamePlugin::processPAT(PAT& pat)
 
     // Replace the PAT in the packetizer.
     _pzer_pat.removeSections(TID_PAT);
-    _pzer_pat.addTable(pat);
+    _pzer_pat.addTable(duck, pat);
 
     // We are now ready to process the TS.
     _demux.addPID(PID_SDT);
@@ -344,8 +344,8 @@ void ts::TSRenamePlugin::processSDT(SDT& sdt)
     }
 
     // Replace the SDT.in the PID
-    _pzer_sdt_bat.removeSections (TID_SDT_ACT, sdt.ts_id);
-    _pzer_sdt_bat.addTable (sdt);
+    _pzer_sdt_bat.removeSections(TID_SDT_ACT, sdt.ts_id);
+    _pzer_sdt_bat.addTable(duck, sdt);
 }
 
 

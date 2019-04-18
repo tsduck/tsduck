@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDIILocationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsNames.h"
@@ -61,10 +62,10 @@ ts::DIILocationDescriptor::DIILocationDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DIILocationDescriptor::DIILocationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DIILocationDescriptor::DIILocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DIILocationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,7 +73,7 @@ ts::DIILocationDescriptor::DIILocationDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DIILocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(transport_protocol_label);
@@ -88,7 +89,7 @@ void ts::DIILocationDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DIILocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     entries.clear();
 
@@ -116,7 +117,7 @@ void ts::DIILocationDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::DIILocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -138,7 +139,7 @@ void ts::DIILocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::buildXML(xml::Element* root) const
+void ts::DIILocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_protocol_label", transport_protocol_label, true);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
@@ -153,7 +154,7 @@ void ts::DIILocationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DIILocationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::DIILocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSystemClockDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -56,10 +57,10 @@ ts::SystemClockDescriptor::SystemClockDescriptor() :
     _is_valid = true;
 }
 
-ts::SystemClockDescriptor::SystemClockDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SystemClockDescriptor::SystemClockDescriptor(DuckContext& duck, const Descriptor& desc) :
     SystemClockDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +68,7 @@ ts::SystemClockDescriptor::SystemClockDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SystemClockDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((external_clock_reference ? 0x80 : 0x00) | 0x40 | (clock_accuracy_integer & 0x3F));
@@ -80,7 +81,7 @@ void ts::SystemClockDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SystemClockDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -101,7 +102,7 @@ void ts::SystemClockDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -118,7 +119,7 @@ void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::buildXML(xml::Element* root) const
+void ts::SystemClockDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"external_clock_reference", external_clock_reference);
     root->setIntAttribute(u"clock_accuracy_integer", clock_accuracy_integer);
@@ -130,7 +131,7 @@ void ts::SystemClockDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SystemClockDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SystemClockDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

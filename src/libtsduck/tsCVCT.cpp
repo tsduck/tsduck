@@ -50,10 +50,10 @@ ts::CVCT::CVCT(uint8_t version_, bool is_current_) :
     _is_valid = true;
 }
 
-ts::CVCT::CVCT(const BinaryTable& table) :
+ts::CVCT::CVCT(DuckContext& duck, const BinaryTable& table) :
     CVCT()
 {
-    deserialize(table);
+    deserialize(duck, table);
 }
 
 ts::CVCT::~CVCT()

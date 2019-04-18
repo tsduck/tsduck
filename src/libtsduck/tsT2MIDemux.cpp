@@ -53,11 +53,11 @@ ts::T2MIDemux::PIDContext::PIDContext() :
 {
 }
 
-ts::T2MIDemux::T2MIDemux(T2MIHandlerInterface* t2mi_handler, const PIDSet& pid_filter) :
-    SuperClass(pid_filter),
+ts::T2MIDemux::T2MIDemux(DuckContext& duck, T2MIHandlerInterface* t2mi_handler, const PIDSet& pid_filter) :
+    SuperClass(duck, pid_filter),
     _handler(t2mi_handler),
     _pids(),
-    _psi_demux(this)
+    _psi_demux(duck, this)
 {
     immediateReset();
 }
@@ -353,7 +353,7 @@ void ts::T2MIDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat(table);
+            PAT pat(_duck, table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
                 // Add all PMT PID's to PSI demux.
                 for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -364,7 +364,7 @@ void ts::T2MIDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_PMT: {
-            PMT pmt(table);
+            PMT pmt(_duck, table);
             if (pmt.isValid()) {
                 processPMT(pmt);
             }
@@ -392,7 +392,7 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
         const DescriptorList& dlist(it->second.descs);
         for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
             if (!dlist[index].isNull()) {
-                const T2MIDescriptor desc(*dlist[index]);
+                const T2MIDescriptor desc(_duck, *dlist[index]);
                 if (desc.isValid() && _handler != nullptr) {
                     // Invoke the user-defined handler to signal the new PID.
                     beforeCallingHandler(pid);

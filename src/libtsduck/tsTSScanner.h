@@ -57,12 +57,12 @@ namespace ts {
         //! Constructor.
         //! The transport stream is scanned be the constructor.
         //! The collected data cna be fetched later.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the scanner.
         //! @param [in,out] tuner A tuner which is already tuned to the expected channel.
         //! @param [in] timeout Execution timeout in milliseconds.
         //! @param [in] pat_only If true, only collect the PAT, do not wait for more information.
-        //! @param [in,out] report Where to report errors.
         //!
-        TSScanner(Tuner& tuner, MilliSecond timeout = Infinite, bool pat_only = false, Report& report = CERR);
+        TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout = Infinite, bool pat_only = false);
 
         //!
         //! Get the list of services.
@@ -109,9 +109,10 @@ namespace ts {
         void getVCT(SafePtr<VCT>& vct) const {vct = _vct;}
 
     private:
+        DuckContext&       _duck;
+        Report&            _report;
         bool               _pat_only;
         bool               _completed;
-        Report&            _report;
         SectionDemux       _demux;
         TunerParametersPtr _tparams;
         SafePtr<PAT>       _pat;

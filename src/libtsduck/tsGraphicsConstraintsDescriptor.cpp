@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsGraphicsConstraintsDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -57,10 +58,10 @@ ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
     _is_valid = true;
 }
 
-ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(DuckContext& duck, const Descriptor& desc) :
     GraphicsConstraintsDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +69,7 @@ ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(const Descripto
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::GraphicsConstraintsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(0xF8 |
@@ -84,7 +85,7 @@ void ts::GraphicsConstraintsDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::GraphicsConstraintsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     graphics_configuration.clear();
     const uint8_t* data = desc.payload();
@@ -107,7 +108,7 @@ void ts::GraphicsConstraintsDescriptor::deserialize(const Descriptor& desc, cons
 
 void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -129,7 +130,7 @@ void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::buildXML(xml::Element* root) const
+void ts::GraphicsConstraintsDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"can_run_without_visible_ui", can_run_without_visible_ui);
     root->setBoolAttribute(u"handles_configuration_changed", handles_configuration_changed);
@@ -144,7 +145,7 @@ void ts::GraphicsConstraintsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::GraphicsConstraintsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

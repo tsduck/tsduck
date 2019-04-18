@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsISO639LanguageDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -70,11 +71,11 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
     _is_valid = true;
 }
 
-ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint8_t type) :
@@ -90,12 +91,12 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ISO639LanguageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code)) {
+        if (!SerializeLanguageCode(duck, *bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -110,7 +111,7 @@ void ts::ISO639LanguageDescriptor::serialize(Descriptor& desc, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ISO639LanguageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
@@ -133,12 +134,12 @@ void ts::ISO639LanguageDescriptor::deserialize(const Descriptor& desc, const DVB
 
 void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
         const uint8_t type = data[3];
-        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
+        strm << margin << "Language: " << UString::FromDVB(data, 3)
              << ", Type: " << names::AudioType(type, names::FIRST) << std::endl;
         data += 4; size -= 4;
     }
@@ -151,7 +152,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::buildXML(xml::Element* root) const
+void ts::ISO639LanguageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"language");
@@ -165,7 +166,7 @@ void ts::ISO639LanguageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ISO639LanguageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

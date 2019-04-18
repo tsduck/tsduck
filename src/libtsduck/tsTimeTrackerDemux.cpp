@@ -84,8 +84,8 @@ uint64_t ts::TimeTrackerDemux::TimeTracker::duration() const
 // Construction and reset.
 //----------------------------------------------------------------------------
 
-ts::TimeTrackerDemux::TimeTrackerDemux(const PIDSet& pid_filter) :
-    SuperClass(pid_filter),
+ts::TimeTrackerDemux::TimeTrackerDemux(DuckContext& duck, const PIDSet& pid_filter) :
+    SuperClass(duck, pid_filter),
     _pcrPID(PID_NULL),
     _pcrTime(PCR_SCALE),
     _pids()

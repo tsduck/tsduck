@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTimeShiftedEventDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -54,10 +55,10 @@ ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor() :
     _is_valid = true;
 }
 
-ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(DuckContext& duck, const Descriptor& desc) :
     TimeShiftedEventDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TimeShiftedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(reference_service_id);
@@ -78,7 +79,7 @@ void ts::TimeShiftedEventDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeShiftedEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 
@@ -96,7 +97,7 @@ void ts::TimeShiftedEventDescriptor::deserialize(const Descriptor& desc, const D
 
 void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -115,7 +116,7 @@ void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::buildXML(xml::Element* root) const
+void ts::TimeShiftedEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"reference_service_id", reference_service_id, true);
     root->setIntAttribute(u"reference_event_id", reference_event_id, true);
@@ -126,7 +127,7 @@ void ts::TimeShiftedEventDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedEventDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TimeShiftedEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

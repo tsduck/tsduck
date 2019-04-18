@@ -68,10 +68,10 @@ ts::RST::RST() :
     _is_valid = true;
 }
 
-ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
+ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
     RST()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -79,7 +79,7 @@ ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::RST::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     events.clear();
@@ -116,7 +116,7 @@ void ts::RST::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::RST::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section
     uint8_t payload[MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE];
@@ -147,7 +147,7 @@ void ts::RST::serializeContent(BinaryTable& table, const DVBCharset* charset) co
 
 void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -179,7 +179,7 @@ void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::buildXML(xml::Element* root) const
+void ts::RST::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EventList::const_iterator it = events.begin(); it != events.end(); ++it) {
         xml::Element* e = root->addElement(u"event");
@@ -196,7 +196,7 @@ void ts::RST::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::RST::fromXML(DuckContext& duck, const xml::Element* element)
 {
     events.clear();
 

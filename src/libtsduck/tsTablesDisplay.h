@@ -33,13 +33,19 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsMPEG.h"
+#include "tsCASFamily.h"
 #include "tsTablesDisplayArgs.h"
-#include "tsBinaryTable.h"
-#include "tsSection.h"
-#include "tsDescriptor.h"
-#include "tsDescriptorList.h"
 
 namespace ts {
+
+    class Report;
+    class BinaryTable;
+    class Section;
+    class Descriptor;
+    class DescriptorList;
+    class TLVSyntax;
+
     //!
     //! A class to display PSI/SI tables.
     //! @ingroup mpeg
@@ -52,14 +58,19 @@ namespace ts {
         //! By default, all displays are done on @c std::cout.
         //! Use redirect() to redirect the output to a file.
         //! @param [in] options Table logging options.
-        //! @param [in,out] report Where to log errors.
         //!
-        TablesDisplay(const TablesDisplayArgs& options, Report& report);
+        TablesDisplay(const TablesDisplayArgs& options);
 
         //!
         //! Virtual destructor.
         //!
         virtual ~TablesDisplay();
+
+        //!
+        //! Get the TSDuck execution context.
+        //! @return A reference to the TSDuck execution context.
+        //!
+        DuckContext& duck() { return _opt.duck; }
 
         //!
         //! Display a table on the output stream.
@@ -172,71 +183,6 @@ namespace ts {
         //!
         virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
 
-        //!
-        //! A utility method to interpret data as an ASCII string.
-        //! @param [in] data Address of data.
-        //! @param [in] size Size of data.
-        //! @return If all bytes in data are ASCII (optionally padded with zeroes), return the
-        //! equivalent ASCII string. Otherwise, return an empty string.
-        //!
-        static std::string ToASCII(const void *data, size_t size);
-
-        //!
-        //! A utility method to display data if it can be interpreted as an ASCII string.
-        //! @param [in] data Address of data.
-        //! @param [in] size Size of data.
-        //! @param [in] prefix To print before the ASCII data.
-        //! @param [in] suffix To print after the ASCII data.
-        //! @return A reference to the output stream.
-        //!
-        virtual std::ostream& displayIfASCII(const void *data, size_t size, const UString& prefix = UString(), const UString& suffix = UString());
-
-        //!
-        //! Redirect the output stream to a file.
-        //! @param [in] file_name The file name to create. If empty, reset to @c std::cout.
-        //! @param [in] override It true, the previous file is closed. If false and the
-        //! output is already redirected outside @c std::cout, do nothing.
-        //! @return True on success, false on error.
-        //!
-        virtual bool redirect(const UString& file_name, bool override = true);
-
-        //!
-        //! Redirect the output stream to a stream.
-        //! @param [in] stream The output stream to use, @c std::cout on null pointer.
-        //! @param [in] override It true, the previous file is closed. If false and the
-        //! output is already redirected outside @c std::cout, do nothing.
-        //!
-        virtual void redirect(std::ostream* stream, bool override = true);
-
-        //!
-        //! Get the current output stream.
-        //! @return A reference to the output stream.
-        //!
-        std::ostream& out() { return *_out; }
-
-        //!
-        //! Get the default DVB character set for DVB strings without table code.
-        //! @return The default DVB character set.
-        //!
-        const DVBCharset* dvbCharset() const
-        {
-            return _opt.default_charset;
-        }
-
-        //!
-        //! Get the current output report.
-        //! @return A reference to the current output report.
-        //!
-        Report& report()
-        {
-            return _report;
-        }
-
-        //!
-        //! Flush the text output.
-        //!
-        virtual void flush();
-
     protected:
         //!
         //! Display the content of an unknown section.
@@ -256,20 +202,6 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         void displayUnkownDescriptor(DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
-
-        //!
-        //! The actual CAS family to use.
-        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, can be overridden by subclass.
-        //! @return The actual CAS family to use.
-        //!
-        virtual CASFamily casFamily(CASFamily cas) const;
-
-        //!
-        //! The actual private data specifier to use.
-        //! @param [in] pds Current PDS, typically from a private_data_specifier_descriptor.
-        //! @return The actual PDS to use.
-        //!
-        virtual PDS actualPDS(PDS pds) const;
 
         //!
         //! Display a memory area containing a list of TLV records.
@@ -296,9 +228,6 @@ namespace ts {
 
     private:
         const TablesDisplayArgs& _opt;
-        Report&                  _report;
-        std::ostream*            _out;
-        std::ofstream            _outfile;
 
         // Inaccessible operations.
         TablesDisplay() = delete;

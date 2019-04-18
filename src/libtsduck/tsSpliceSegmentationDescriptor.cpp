@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSpliceSegmentationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsSCTE35.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -72,10 +73,10 @@ ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor() :
     _is_valid = true;
 }
 
-ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor(DuckContext& duck, const Descriptor& desc) :
     SpliceSegmentationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -119,7 +120,7 @@ bool ts::SpliceSegmentationDescriptor::deliveryNotRestricted() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SpliceSegmentationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(identifier);
@@ -163,7 +164,7 @@ void ts::SpliceSegmentationDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -257,7 +258,7 @@ void ts::SpliceSegmentationDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     bool ok = size >= 9;
@@ -268,7 +269,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 
     if (ok) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
              << margin << UString::Format(u"Segmentation event id: 0x%X, cancel: %d", {GetUInt32(data + 4), cancel})
              << std::endl;
@@ -345,7 +346,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::buildXML(xml::Element* root) const
+void ts::SpliceSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"identifier", identifier, true);
     root->setIntAttribute(u"segmentation_event_id", segmentation_event_id, true);
@@ -385,7 +386,7 @@ void ts::SpliceSegmentationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SpliceSegmentationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

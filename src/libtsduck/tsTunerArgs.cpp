@@ -36,6 +36,7 @@
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsChannelFile.h"
+#include "tsHFBand.h"
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
@@ -74,8 +75,6 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     pilots(),
     roll_off(),
     plp(),
-    uhf(),
-    vhf(),
     _info_only(info_only),
     _allow_short_options(allow_short_options)
 {
@@ -121,10 +120,9 @@ void ts::TunerArgs::reset()
 
 //----------------------------------------------------------------------------
 // Load arguments from command line.
-// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::TunerArgs::load(Args& args)
+void ts::TunerArgs::load(Args& args, DuckContext& duck)
 {
     reset();
 
@@ -160,16 +158,6 @@ void ts::TunerArgs::load(Args& args)
         demux_queue_size = args.intValue<size_t>(u"demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
 #endif
 
-        // UHF/VHF bands descriptions.
-        const UString region(args.value(u"hf-band-region"));
-        if (!region.empty()) {
-            // We take the responsibility to change the global default HF Band region if
-            // --hf-band-region is specified. Not sure if this is the right thing to do...
-            HFBand::SetDefaultRegion(region);
-        }
-        uhf = HFBand::GetBand(region, HFBand::UHF, args);
-        vhf = HFBand::GetBand(region, HFBand::VHF, args);
-
         // Carrier frequency
         if (args.present(u"frequency") + args.present(u"uhf-channel") + args.present(u"vhf-channel") > 1) {
             args.error(u"options --frequency, --uhf-channel and --vhf-channel are mutually exclusive");
@@ -180,11 +168,11 @@ void ts::TunerArgs::load(Args& args)
         }
         else if (args.present(u"uhf-channel")) {
             got_one = true;
-            frequency = uhf->frequency(args.intValue<uint32_t>(u"uhf-channel", 0), args.intValue<int32_t>(u"offset-count", 0));
+            frequency = duck.uhfBand()->frequency(args.intValue<uint32_t>(u"uhf-channel"));
         }
         else if (args.present(u"vhf-channel")) {
             got_one = true;
-            frequency = vhf->frequency(args.intValue<uint32_t>(u"vhf-channel", 0), args.intValue<int32_t>(u"offset-count", 0));
+            frequency = duck.vhfBand()->frequency(args.intValue<uint32_t>(u"vhf-channel"));
         }
 
         // Other individual tuning options
@@ -440,10 +428,6 @@ void ts::TunerArgs::defineOptions(Args& args) const
                   u"Used for DVB-T tuners only. Transmission mode. The default is \"8K\".");
 
         // UHF/VHF frequency bands options.
-        args.option(u"hf-band-region", 0, Args::STRING);
-        args.help(u"hf-band-region", u"name",
-                  u"Specify the region for UHF/VHF band frequency layout.");
-
         args.option(u"uhf-channel", 0, Args::POSITIVE);
         args.help(u"uhf-channel",
                   u"Used for DVB-T or ATSC tuners only. "

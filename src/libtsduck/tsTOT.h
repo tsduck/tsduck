@@ -65,7 +65,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TOT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        TOT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
@@ -96,20 +96,17 @@ namespace ts {
         static UString timeOffsetFormat(int minutes);
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
-        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
-        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
-        virtual void buildXML(xml::Element*) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
-        //!
-        //! Add descriptors, filling regions from local_time_offset_descriptor's.
-        //! @param [in] dlist Descriptor list to add.
-        //!
-        void addDescriptors(const DescriptorList& dlist);
+        // Add descriptors, filling regions from local_time_offset_descriptor's.
+        void addDescriptors(DuckContext& duck, const DescriptorList& dlist);
     };
 }

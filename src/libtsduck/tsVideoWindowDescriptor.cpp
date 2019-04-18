@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsVideoWindowDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -56,10 +57,10 @@ ts::VideoWindowDescriptor::VideoWindowDescriptor() :
     _is_valid = true;
 }
 
-ts::VideoWindowDescriptor::VideoWindowDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::VideoWindowDescriptor::VideoWindowDescriptor(DuckContext& duck, const Descriptor& desc) :
     VideoWindowDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +68,7 @@ ts::VideoWindowDescriptor::VideoWindowDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::VideoWindowDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32((uint32_t(horizontal_offset & 0x3FFF) << 18) |
@@ -81,7 +82,7 @@ void ts::VideoWindowDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::VideoWindowDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -103,7 +104,7 @@ void ts::VideoWindowDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::VideoWindowDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -122,7 +123,7 @@ void ts::VideoWindowDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::buildXML(xml::Element* root) const
+void ts::VideoWindowDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"horizontal_offset", horizontal_offset);
     root->setIntAttribute(u"vertical_offset", vertical_offset);
@@ -134,7 +135,7 @@ void ts::VideoWindowDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoWindowDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::VideoWindowDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

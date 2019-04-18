@@ -362,19 +362,13 @@ void ts::Section::recomputeCRC()
 
 
 //----------------------------------------------------------------------------
-// Override of AbstractDefinedByStandards.
+// Implementation of AbstractDefinedByStandards.
 //----------------------------------------------------------------------------
 
 ts::Standards ts::Section::definingStandards() const
 {
     // The defining standard is taken from table id.
     return TablesFactory::Instance()->getTableStandards(tableId());
-}
-
-ts::Standards ts::Section::allStandards() const
-{
-    // Make sure we include the defining standards in all environment standards.
-    return AbstractDefinedByStandards::allStandards() | Section::definingStandards();
 }
 
 

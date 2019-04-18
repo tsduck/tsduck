@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDeliverySystemDescriptor.h"
+#include "tsDescriptor.h"
 TSDUCK_SOURCE;
 
 ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name) :

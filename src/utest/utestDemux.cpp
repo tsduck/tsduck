@@ -224,13 +224,15 @@ bool DemuxTest::checkPackets(const char* test_name, const char* table_name, cons
 // Unitary test for one table.
 void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t ref_packets_size, const uint8_t* ref_sections, size_t ref_sections_size)
 {
+    ts::DuckContext duck;
+
     CPPUNIT_ASSERT(ref_packets_size % ts::PKT_SIZE == 0);
     utest::Out() << "DemuxTest: Testing " << name << std::endl;
 
     // Analyze TS packets. We expect only one table
 
     const ts::TSPacket* ref_pkt = reinterpret_cast<const ts::TSPacket*>(ref_packets);
-    ts::StandaloneTableDemux demux(ts::AllPIDs);
+    ts::StandaloneTableDemux demux(duck, ts::AllPIDs);
 
     for (size_t pi = 0; pi < ref_packets_size / ts::PKT_SIZE; ++pi) {
         demux.feedPacket(ref_pkt[pi]);
@@ -251,22 +253,22 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
 
     switch (table1.tableId()) {
         case ts::TID_PAT: { // TNT R4
-            ts::PAT pat(table1);
+            ts::PAT pat(duck, table1);
             CPPUNIT_ASSERT(pat.ts_id == 0x0004);
             CPPUNIT_ASSERT(pat.nit_pid == 0x0010);
             CPPUNIT_ASSERT(pat.pmts.size() == 7);
             CPPUNIT_ASSERT(pat.pmts[0x0403] == 0x0136);
-            pat.serialize(table2);
+            pat.serialize(duck, table2);
             break;
         }
         case ts::TID_CAT: { // TNT R3 or R6
-            ts::CAT cat(table1);
+            ts::CAT cat(duck, table1);
             CPPUNIT_ASSERT(cat.descs.count() == 1 || cat.descs.count() == 2);
-            cat.serialize(table2);
+            cat.serialize(duck, table2);
             break;
         }
         case ts::TID_PMT: { // Planete (TNT R3) or HEVC
-            ts::PMT pmt(table1);
+            ts::PMT pmt(duck, table1);
             switch (pmt.service_id) {
                 case 0x0304: { // Planete
                     CPPUNIT_ASSERT(pmt.pcr_pid == 0x00A3);
@@ -294,11 +296,11 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     CPPUNIT_FAIL("unexpected service id");
                 }
             }
-            pmt.serialize(table2);
+            pmt.serialize(duck, table2);
             break;
         }
         case ts::TID_SDT_ACT: { // TNT R3
-            ts::SDT sdt(table1);
+            ts::SDT sdt(duck, table1);
             CPPUNIT_ASSERT(sdt.ts_id == 0x0003);
             CPPUNIT_ASSERT(sdt.onetw_id == 0x20FA);
             CPPUNIT_ASSERT(sdt.services.size() == 8);
@@ -308,14 +310,14 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             CPPUNIT_ASSERT(sdt.services[0x0304].CA_controlled);
             CPPUNIT_ASSERT(sdt.services[0x0304].descs.count() == 1);
             CPPUNIT_ASSERT(sdt.services[0x0304].descs[0]->tag() == ts::DID_SERVICE);
-            CPPUNIT_ASSERT(sdt.services[0x0304].serviceType() == 0x01);
-            CPPUNIT_ASSERT(sdt.services[0x0304].serviceName() == u"PLANETE");
-            CPPUNIT_ASSERT(sdt.services[0x0304].providerName() == u"CNH");
-            sdt.serialize(table2);
+            CPPUNIT_ASSERT(sdt.services[0x0304].serviceType(duck) == 0x01);
+            CPPUNIT_ASSERT(sdt.services[0x0304].serviceName(duck) == u"PLANETE");
+            CPPUNIT_ASSERT(sdt.services[0x0304].providerName(duck) == u"CNH");
+            sdt.serialize(duck, table2);
             break;
         }
         case ts::TID_NIT_ACT: { // TNT v23
-            ts::NIT nit(table1);
+            ts::NIT nit(duck, table1);
             CPPUNIT_ASSERT(nit.network_id == 0x20FA);
             CPPUNIT_ASSERT(nit.descs.count() == 8);
             CPPUNIT_ASSERT(nit.descs[0]->tag() == ts::DID_NETWORK_NAME);
@@ -325,11 +327,11 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             CPPUNIT_ASSERT(nit.transports[id].descs.count() == 4);
             CPPUNIT_ASSERT(nit.transports[id].descs[0]->tag() == ts::DID_PRIV_DATA_SPECIF);
             CPPUNIT_ASSERT(nit.transports[id].descs[3]->tag() == ts::DID_TERREST_DELIVERY);
-            nit.serialize(table2);
+            nit.serialize(duck, table2);
             break;
         }
         case ts::TID_BAT: { // Tv Numeric or Canal+ TNT
-            ts::BAT bat(table1);
+            ts::BAT bat(duck, table1);
             switch (bat.bouquet_id) {
                 case 0x0086: { // Tv Numeric
                     CPPUNIT_ASSERT(bat.descs.count() == 5);
@@ -355,17 +357,17 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     CPPUNIT_FAIL("unexpected bouquet id");
                 }
             }
-            bat.serialize(table2);
+            bat.serialize(duck, table2);
             break;
         }
         case ts::TID_TDT: { // TNT
-            ts::TDT tdt(table1);
+            ts::TDT tdt(duck, table1);
             CPPUNIT_ASSERT(tdt.utc_time == ts::Time(2007, 11, 23, 13, 25, 03));
-            tdt.serialize(table2);
+            tdt.serialize(duck, table2);
             break;
         }
         case ts::TID_TOT: { // TNT
-            ts::TOT tot(table1);
+            ts::TOT tot(duck, table1);
             CPPUNIT_ASSERT(tot.utc_time == ts::Time(2007, 11, 23, 13, 25, 14));
             CPPUNIT_ASSERT(tot.regions.size() == 1);
             CPPUNIT_ASSERT(tot.descs.count() == 0);
@@ -374,7 +376,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             CPPUNIT_ASSERT(tot.regions[0].time_offset == 60);
             CPPUNIT_ASSERT(tot.regions[0].next_change == ts::Time(2008, 3, 30, 1, 0, 0));
             CPPUNIT_ASSERT(tot.regions[0].next_time_offset == 120);
-            tot.serialize(table2);
+            tot.serialize(duck, table2);
             break;
         }
         default: {
@@ -410,7 +412,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
 
     // Reanalyze the packetized table and check it is identical to table2
 
-    ts::StandaloneTableDemux demux2(ts::AllPIDs);
+    ts::StandaloneTableDemux demux2(duck, ts::AllPIDs);
 
     for (ts::TSPacketVector::const_iterator it = packets.begin(); it != packets.end(); ++it) {
         demux2.feedPacket(*it);

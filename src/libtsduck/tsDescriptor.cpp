@@ -207,7 +207,7 @@ bool ts::Descriptor::operator== (const Descriptor& desc) const
 // This method converts a descriptor to XML.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::Descriptor::toXML(xml::Element* parent, PDS pds, TID tid, bool forceGeneric, const DVBCharset* charset) const
+ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent, PDS pds, TID tid, bool forceGeneric) const
 {
     // Filter invalid descriptors.
     if (!isValid()) {
@@ -226,10 +226,10 @@ ts::xml::Element* ts::Descriptor::toXML(xml::Element* parent, PDS pds, TID tid, 
             AbstractDescriptorPtr dp = fac();
             if (!dp.isNull()) {
                 // Deserialize from binary to object.
-                dp->deserialize(*this, charset);
+                dp->deserialize(duck, *this);
                 if (dp->isValid()) {
                     // Serialize from object to XML.
-                    node = dp->toXML(parent);
+                    node = dp->toXML(duck, parent);
                 }
             }
         }
@@ -251,7 +251,7 @@ ts::xml::Element* ts::Descriptor::toXML(xml::Element* parent, PDS pds, TID tid, 
 // This method converts an XML node as a binary descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::Descriptor::fromXML(const xml::Element* node, TID tid, const DVBCharset* charset)
+bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID tid)
 {
     // Filter invalid parameters.
     invalidate();
@@ -272,11 +272,11 @@ bool ts::Descriptor::fromXML(const xml::Element* node, TID tid, const DVBCharset
         // Create a descriptor instance of the right type.
         AbstractDescriptorPtr desc = fac();
         if (!desc.isNull()) {
-            desc->fromXML(node, charset);
+            desc->fromXML(duck, node);
         }
         if (!desc.isNull() && desc->isValid()) {
             // Serialize the descriptor.
-            desc->serialize(*this, charset);
+            desc->serialize(duck, *this);
         }
         // The XML element name was valid.
         return true;

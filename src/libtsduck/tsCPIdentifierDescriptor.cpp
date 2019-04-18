@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCPIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -55,10 +56,10 @@ ts::CPIdentifierDescriptor::CPIdentifierDescriptor() :
     _is_valid = true;
 }
 
-ts::CPIdentifierDescriptor::CPIdentifierDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::CPIdentifierDescriptor::CPIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     CPIdentifierDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +67,7 @@ ts::CPIdentifierDescriptor::CPIdentifierDescriptor(const Descriptor& bin, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CPIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -81,7 +82,7 @@ void ts::CPIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CPIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -102,7 +103,7 @@ void ts::CPIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCh
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::CPIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (size_t i = 0; i < cpids.size(); ++i) {
         root->addElement(u"CP_system_id")->setIntAttribute(u"value", cpids[i], true);
@@ -114,7 +115,7 @@ void ts::CPIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::CPIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     cpids.clear();
     xml::ElementVector children;
@@ -141,7 +142,7 @@ void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {

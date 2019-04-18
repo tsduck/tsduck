@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCarouselIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -55,10 +56,10 @@ ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor() :
     _is_valid = true;
 }
 
-ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     CarouselIdentifierDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +67,7 @@ ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CarouselIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(carousel_id);
@@ -79,7 +80,7 @@ void ts::CarouselIdentifierDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CarouselIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -99,7 +100,7 @@ void ts::CarouselIdentifierDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -119,7 +120,7 @@ void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::CarouselIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"carousel_id", carousel_id, true);
     if (!private_data.empty()) {
@@ -132,7 +133,7 @@ void ts::CarouselIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::CarouselIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

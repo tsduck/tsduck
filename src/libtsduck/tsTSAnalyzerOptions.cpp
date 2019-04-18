@@ -58,8 +58,7 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions() :
     prefix(),
     title(),
     suspect_min_error_count(1),
-    suspect_max_consecutive(1),
-    default_charset(nullptr)
+    suspect_max_consecutive(1)
 {
 }
 
@@ -168,16 +167,6 @@ void ts::TSAnalyzerOptions::defineOptions(Args& args) const
               u"(see option --suspect-min-error-count)\n"
               u"- it immediately follows no more than the specified number consecutive "
               u"suspect packets.");
-
-    args.option(u"default-charset", 0, Args::STRING);
-    args.help(u"default-charset",
-              u"Default character set to use when interpreting DVB strings without "
-              u"explicit character table code. According to DVB standard ETSI EN 300 468, "
-              u"the default DVB character set is ISO-6937. However, some bogus "
-              u"signalization may assume that the default character set is different, "
-              u"typically the usual local character table for the region. This option "
-              u"forces a non-standard character table. The available table names are " +
-              UString::Join(DVBCharset::GetAllNames()) + u".");
 }
 
 
@@ -205,12 +194,6 @@ void ts::TSAnalyzerOptions::load(Args& args)
     title = args.value(u"title");
     suspect_min_error_count = args.intValue<uint64_t>(u"suspect-min-error-count", 1);
     suspect_max_consecutive = args.intValue<uint64_t>(u"suspect-max-consecutive", 1);
-
-    // Get default DVB character set.
-    const UString csName(args.value(u"default-charset"));
-    if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == nullptr) {
-        args.error(u"invalid character set name '%s", {csName});
-    }
 
     // Default: --ts-analysis --service-analysis --pid-analysis
     if (!ts_analysis &&

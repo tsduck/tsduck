@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDataStreamAlignmentDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -54,10 +55,10 @@ ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor() :
     _is_valid = true;
 }
 
-ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor(DuckContext& duck, const Descriptor& desc) :
     DataStreamAlignmentDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor(const Descripto
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DataStreamAlignmentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(alignment_type);
@@ -77,7 +78,7 @@ void ts::DataStreamAlignmentDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DataStreamAlignmentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -96,7 +97,7 @@ void ts::DataStreamAlignmentDescriptor::deserialize(const Descriptor& desc, cons
 
 void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -112,7 +113,7 @@ void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::buildXML(xml::Element* root) const
+void ts::DataStreamAlignmentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"alignment_type", alignment_type, true);
 }
@@ -122,7 +123,7 @@ void ts::DataStreamAlignmentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::DataStreamAlignmentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

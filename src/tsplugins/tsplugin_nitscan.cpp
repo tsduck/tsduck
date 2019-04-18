@@ -117,7 +117,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _network_id(0),
     _nit_pid(PID_NULL),
     _nit_count(0),
-    _demux(this),
+    _demux(duck, this),
     _channels(),
     _channel_file(),
     _save_channel_file(false),
@@ -294,7 +294,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                const PAT pat(table);
+                const PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -304,7 +304,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_NIT_ACT: {
             if (table.sourcePID() == _nit_pid) {
-                const NIT nit(table);
+                const NIT nit(duck, table);
                 if (nit.isValid()) {
                     processNIT(nit);
                 }
@@ -314,7 +314,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_NIT_OTH: {
             if (table.sourcePID() == _nit_pid) {
-                const NIT nit(table);
+                const NIT nit(duck, table);
                 if (nit.isValid() && (_all_nits || (_nit_other && _network_id == nit.network_id))) {
                     processNIT(nit);
                 }

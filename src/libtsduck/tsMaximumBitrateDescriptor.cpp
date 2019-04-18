@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMaximumBitrateDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -53,10 +54,10 @@ ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(uint32_t mbr) :
     _is_valid = true;
 }
 
-ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(DuckContext& duck, const Descriptor& desc) :
     MaximumBitrateDescriptor(0)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -64,7 +65,7 @@ ts::MaximumBitrateDescriptor::MaximumBitrateDescriptor(const Descriptor& desc, c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::MaximumBitrateDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt24(0x00C00000 | (maximum_bitrate & 0x003FFFFF));
@@ -76,7 +77,7 @@ void ts::MaximumBitrateDescriptor::serialize(Descriptor& desc, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::MaximumBitrateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 3;
 
@@ -92,7 +93,7 @@ void ts::MaximumBitrateDescriptor::deserialize(const Descriptor& desc, const DVB
 
 void ts::MaximumBitrateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {
@@ -109,7 +110,7 @@ void ts::MaximumBitrateDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::buildXML(xml::Element* root) const
+void ts::MaximumBitrateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"maximum_bitrate", maximum_bitrate * BITRATE_UNIT, false);
 }
@@ -119,7 +120,7 @@ void ts::MaximumBitrateDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MaximumBitrateDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::MaximumBitrateDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     uint32_t mbr = 0;
 

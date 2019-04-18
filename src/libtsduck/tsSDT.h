@@ -69,26 +69,24 @@ namespace ts {
 
             //!
             //! Get the service type.
-            //! @return The service type, as found from the first DVB
-            //! "service descriptor", if there is one in the list.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @return The service type, as found from the first DVB "service descriptor", if there is one in the list.
             //!
-            uint8_t serviceType() const;
+            uint8_t serviceType(DuckContext& duck) const;
 
             //!
             //! Get the service name.
-            //! @param [in] charset If not zero, character set to use without explicit table code.
-            //! @return The service name, as found from the first DVB
-            //! "service descriptor", if there is one in the list.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @return The service name, as found from the first DVB "service descriptor", if there is one in the list.
             //!
-            UString serviceName(const DVBCharset* charset = nullptr) const;
+            UString serviceName(DuckContext& duck) const;
 
             //!
             //! Get the provider name.
-            //! @param [in] charset If not zero, character set to use without explicit table code.
-            //! @return The provider name, as found from the first DVB
-            //! "service descriptor", if there is one in the list.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @return The provider name, as found from the first DVB "service descriptor", if there is one in the list.
             //!
-            UString providerName(const DVBCharset* charset = nullptr) const;
+            UString providerName(DuckContext& duck) const;
 
             //!
             //! Set the service name.
@@ -97,17 +95,16 @@ namespace ts {
             //! with the new service name. If there is no service_descriptor,
             //! a new one is added with the specified @a service type.
             //!
+            //! @param [in,out] duck TSDuck execution context.
             //! @param [in] name New service name.
             //! @param [in] service_type If there is no service_descriptor,
             //! a new one is added with the specified @a service type.
             //! The default service_type is 1, ie. "digital television service".
             //! Ignored if a service_descriptor already exists.
-            //! @param [in] charset If not zero, character set to use for decoding without explicit table code
-            //! and preferred character set for DVB encoding.
             //!
-            void setName(const UString& name, uint8_t service_type = 1, const DVBCharset* charset = nullptr)
+            void setName(DuckContext& duck, const UString& name, uint8_t service_type = 1)
             {
-                setString(&ServiceDescriptor::service_name, name, service_type, charset);
+                setString(duck, &ServiceDescriptor::service_name, name, service_type);
             }
 
             //!
@@ -117,17 +114,16 @@ namespace ts {
             //! with the new provider name. If there is no service_descriptor,
             //! a new one is added with the specified @a service type.
             //!
+            //! @param [in,out] duck TSDuck execution context.
             //! @param [in] provider New provider name.
             //! @param [in] service_type If there is no service_descriptor,
             //! a new one is added with the specified @a service type.
             //! The default service_type is 1, ie. "digital television service".
             //! Ignored if a service_descriptor already exists.
-            //! @param [in] charset If not zero, character set to use for decoding without explicit table code
-            //! and preferred character set for DVB encoding.
             //!
-            void setProvider(const UString& provider, uint8_t service_type = 1, const DVBCharset* charset = nullptr)
+            void setProvider(DuckContext& duck, const UString& provider, uint8_t service_type = 1)
             {
-                setString(&ServiceDescriptor::provider_name, provider, service_type, charset);
+                setString(duck, &ServiceDescriptor::provider_name, provider, service_type);
             }
 
             //!
@@ -143,21 +139,21 @@ namespace ts {
 
             //!
             //! Locate and deserialize the first DVB service_descriptor inside the entry.
+            //! @param [in,out] duck TSDuck execution context.
             //! @param [out] desc Returned content of the service descriptor.
-            //! @param [in] charset If not zero, character set to use without explicit table code.
             //! @return True if found and valid, false otherwise.
             //!
-            bool locateServiceDescriptor(ServiceDescriptor& desc, const DVBCharset* charset = nullptr) const;
+            bool locateServiceDescriptor(DuckContext& duck, ServiceDescriptor& desc) const;
 
         private:
             //!
             //! Set a string value (typically provider or service name).
+            //! @param [in,out] duck TSDuck execution context.
             //! @param [in] field Pointer to UString member in service descriptor.
             //! @param [in] value New string value.
             //! @param [in] service_type If there is no service_descriptor, a new one is added with the specified @a service type.
-            //! @param [in] charset If not zero, defautl DVB character set to use.
             //!
-            void setString(UString ServiceDescriptor::* field, const UString& value, uint8_t service_type, const DVBCharset* charset);
+            void setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type);
 
             // Inaccessible operations.
             Service() = delete;
@@ -190,10 +186,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SDT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        SDT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
@@ -228,6 +224,7 @@ namespace ts {
 
         //!
         //! Search a service by name.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] name Service name to search.
         //! @param [out] service_id Returned service id.
         //! @param [in] exact_match If true, the service name must be exactly
@@ -235,10 +232,11 @@ namespace ts {
         //! and blanks are ignored.
         //! @return True if the service is found, false if not found.
         //!
-        bool findService(const UString& name, uint16_t& service_id, bool exact_match = false) const;
+        bool findService(DuckContext& duck, const UString& name, uint16_t& service_id, bool exact_match = false) const;
 
         //!
         //! Search a service by name, using a ts::Service class.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] service Service description. Use service name to search.
         //! Set the service id if found.
         //! @param [in] exact_match If true, the service name must be exactly
@@ -246,18 +244,18 @@ namespace ts {
         //! and blanks are ignored.
         //! @return True if the service is found, false if not found.
         //!
-        bool findService(ts::Service& service, bool exact_match = false) const;
+        bool findService(DuckContext& duck, ts::Service& service, bool exact_match = false) const;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
         virtual bool isValidTableId(TID tid) const override;
-        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
-        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
-        virtual void buildXML(xml::Element*) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         // Add a new section to a table being serialized

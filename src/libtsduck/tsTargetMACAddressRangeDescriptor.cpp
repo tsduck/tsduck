@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetMACAddressRangeDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -54,10 +55,10 @@ ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor() :
     _is_valid = true;
 }
 
-ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetMACAddressRangeDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::TargetMACAddressRangeDescriptor::Range::Range(const MACAddress& addr1, const MACAddress& addr2) :
@@ -71,7 +72,7 @@ ts::TargetMACAddressRangeDescriptor::Range::Range(const MACAddress& addr1, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetMACAddressRangeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = ranges.begin(); it != ranges.end(); ++it) {
@@ -86,7 +87,7 @@ void ts::TargetMACAddressRangeDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetMACAddressRangeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -109,7 +110,7 @@ void ts::TargetMACAddressRangeDescriptor::deserialize(const Descriptor& desc, co
 
 void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 12) {
@@ -128,7 +129,7 @@ void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::buildXML(xml::Element* root) const
+void ts::TargetMACAddressRangeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = ranges.begin(); it != ranges.end(); ++it) {
         xml::Element* e = root->addElement(u"range");
@@ -142,7 +143,7 @@ void ts::TargetMACAddressRangeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TargetMACAddressRangeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     ranges.clear();
 

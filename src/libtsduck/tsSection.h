@@ -631,9 +631,8 @@ namespace ts {
         template <class CONTAINER>
         static PacketCounter PacketCount(const CONTAINER& container, bool pack = true);
 
-        // Override of AbstractDefinedByStandards
+        // Implementation of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;
-        virtual Standards allStandards() const override;
 
     private:
         // Private fields

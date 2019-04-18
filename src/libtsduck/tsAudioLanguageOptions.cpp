@@ -153,7 +153,7 @@ bool ts::AudioLanguageOptionsVector::getFromArgs (Args& args, const UChar* optio
 // Apply requested transformations on a PMT.
 //----------------------------------------------------------------------------
 
-bool ts::AudioLanguageOptionsVector::apply(PMT& pmt, Report& report, int severity) const
+bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int severity) const
 {
     bool ok = true;
     // Loop on all options
@@ -164,7 +164,7 @@ bool ts::AudioLanguageOptionsVector::apply(PMT& pmt, Report& report, int severit
             // Find the audio stream by PID in the PMT
             smi = pmt.streams.find(it->getPID());
             if (smi == pmt.streams.end()) {
-                report.log(severity, u"audio PID %d (0x%X) not found in PMT", {it->getPID(), it->getPID()});
+                duck.report().log(severity, u"audio PID %d (0x%X) not found in PMT", {it->getPID(), it->getPID()});
                 ok = false;
             }
         }
@@ -180,7 +180,7 @@ bool ts::AudioLanguageOptionsVector::apply(PMT& pmt, Report& report, int severit
                 ++smi;
             }
             if (smi == pmt.streams.end()) {
-                report.log(severity, u"audio stream %d not found in PMT", {it->getAudioStreamNumber()});
+                duck.report().log(severity, u"audio stream %d not found in PMT", {it->getAudioStreamNumber()});
                 ok = false;
             }
         }
@@ -189,7 +189,7 @@ bool ts::AudioLanguageOptionsVector::apply(PMT& pmt, Report& report, int severit
             // Remove any previous language descriptor
             smi->second.descs.removeByTag(DID_LANGUAGE);
             // Add a new one
-            smi->second.descs.add(ISO639LanguageDescriptor(*it));
+            smi->second.descs.add(duck, ISO639LanguageDescriptor(*it));
         }
     }
     return ok;

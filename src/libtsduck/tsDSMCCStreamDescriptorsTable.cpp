@@ -53,8 +53,8 @@ ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(uint8_t vers, bool 
 {
 }
 
-ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, MY_STD, table, charset),
+ts::DSMCCStreamDescriptorsTable::DSMCCStreamDescriptorsTable(DuckContext& duck, const BinaryTable& table) :
+    AbstractDescriptorsTable(duck, MY_TID, MY_XML_NAME, MY_STD, table),
     table_id_extension(_tid_ext)
 {
 }
@@ -80,7 +80,7 @@ ts::DSMCCStreamDescriptorsTable& ts::DSMCCStreamDescriptorsTable::operator=(cons
 
 void ts::DSMCCStreamDescriptorsTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    display.out() << UString::Format(u"%*sTable id extension: 0x%X (%d)", {indent, u"", section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
+    display.duck().out() << UString::Format(u"%*sTable id extension: 0x%X (%d)", {indent, u"", section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
     AbstractDescriptorsTable::DisplaySection(display, section, indent);
 }
 
@@ -89,9 +89,9 @@ void ts::DSMCCStreamDescriptorsTable::DisplaySection(TablesDisplay& display, con
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DSMCCStreamDescriptorsTable::buildXML(xml::Element* root) const
+void ts::DSMCCStreamDescriptorsTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    AbstractDescriptorsTable::buildXML(root);
+    AbstractDescriptorsTable::buildXML(duck, root);
     root->setIntAttribute(u"table_id_extension", _tid_ext, true);
 }
 
@@ -100,8 +100,8 @@ void ts::DSMCCStreamDescriptorsTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DSMCCStreamDescriptorsTable::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::DSMCCStreamDescriptorsTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
-    AbstractDescriptorsTable::fromXML(element);
+    AbstractDescriptorsTable::fromXML(duck, element);
     _is_valid = _is_valid && element->getIntAttribute<uint16_t>(_tid_ext, u"table_id_extension", false, 0xFFFF);
 }

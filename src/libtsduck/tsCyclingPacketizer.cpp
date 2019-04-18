@@ -92,10 +92,10 @@ void ts::CyclingPacketizer::addTable(const BinaryTable& table, MilliSecond rep_r
 // Add all sections of a table into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addTable(const AbstractTable& table, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addTable(DuckContext& duck, const AbstractTable& table, MilliSecond rep_rate)
 {
     BinaryTable bin;
-    table.serialize(bin);
+    table.serialize(duck, bin);
     addTable(bin, rep_rate);
 }
 

@@ -97,7 +97,8 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
     utest::Out() << "PacketizerTest: DemuxTable: Rebuilding " << name << std::endl;
     CPPUNIT_ASSERT_EQUAL(size_t(0), packets_size % ts::PKT_SIZE);
 
-    ts::StandaloneTableDemux demux(ts::AllPIDs);
+    ts::DuckContext duck;
+    ts::StandaloneTableDemux demux(duck, ts::AllPIDs);
     const ts::TSPacket* pkt = reinterpret_cast<const ts::TSPacket*>(packets);
     for (size_t pi = 0; pi < packets_size / ts::PKT_SIZE; ++pi) {
         demux.feedPacket (pkt[pi]);
@@ -113,6 +114,7 @@ void PacketizerTest::testPacketizer()
 {
     // Build a PAT, PMT and SDT. All these tables use one packet.
 
+    ts::DuckContext duck;
     ts::BinaryTablePtr binpat;
     ts::BinaryTablePtr binpmt;
     ts::BinaryTablePtr binsdt;
@@ -121,9 +123,9 @@ void PacketizerTest::testPacketizer()
     DemuxTable(binpmt, "PMT", psi_pmt_planete_packets, sizeof(psi_pmt_planete_packets));
     DemuxTable(binsdt, "SDT", psi_sdt_r3_packets, sizeof(psi_sdt_r3_packets));
 
-    ts::PAT pat(*binpat);
-    ts::PMT pmt(*binpmt);
-    ts::SDT sdt(*binsdt);
+    ts::PAT pat(duck, *binpat);
+    ts::PMT pmt(duck, *binpmt);
+    ts::SDT sdt(duck, *binsdt);
 
     CPPUNIT_ASSERT(pat.isValid());
     CPPUNIT_ASSERT(pmt.isValid());
@@ -134,9 +136,9 @@ void PacketizerTest::testPacketizer()
     const ts::BitRate bitrate = ts::PKT_SIZE * 8 * 10; // 10 packets per second
 
     ts::CyclingPacketizer pzer(ts::PID_PAT, ts::CyclingPacketizer::ALWAYS, bitrate);
-    pzer.addTable(pat);        // unscheduled
-    pzer.addTable(pmt, 1000);  // 1000 ms => 1 table / second
-    pzer.addTable(sdt, 250);   // 250 ms => 4 tables / second
+    pzer.addTable(duck, pat);        // unscheduled
+    pzer.addTable(duck, pmt, 1000);  // 1000 ms => 1 table / second
+    pzer.addTable(duck, sdt, 250);   // 250 ms => 4 tables / second
 
     utest::Out() << "PacketizerTest: Packetizer state before packetization: " << std::endl << pzer;
 

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsVBITeletextDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -51,10 +52,10 @@ ts::VBITeletextDescriptor::VBITeletextDescriptor() :
     _is_valid = true;
 }
 
-ts::VBITeletextDescriptor::VBITeletextDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::VBITeletextDescriptor::VBITeletextDescriptor(DuckContext& duck, const Descriptor& desc) :
     VBITeletextDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 ts::VBITeletextDescriptor::~VBITeletextDescriptor()

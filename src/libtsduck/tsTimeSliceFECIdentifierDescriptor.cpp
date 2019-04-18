@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTimeSliceFECIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -59,10 +60,10 @@ ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor() :
     _is_valid = true;
 }
 
-ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     TimeSliceFECIdentifierDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,7 +71,7 @@ ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(const Des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TimeSliceFECIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((time_slicing ? 0x80 : 0x00) |
@@ -89,7 +90,7 @@ void ts::TimeSliceFECIdentifierDescriptor::serialize(Descriptor& desc, const DVB
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeSliceFECIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     id_selector_bytes.clear();
 
@@ -114,7 +115,7 @@ void ts::TimeSliceFECIdentifierDescriptor::deserialize(const Descriptor& desc, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"time_slicing", time_slicing);
     root->setIntAttribute(u"mpe_fec", mpe_fec, true);
@@ -132,7 +133,7 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TimeSliceFECIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     id_selector_bytes.clear();
 
@@ -154,7 +155,7 @@ void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element, 
 
 void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {

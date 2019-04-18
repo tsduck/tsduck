@@ -65,12 +65,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzerReport::TSAnalyzerReport(BitRate bitrate_hint) :
-    TSAnalyzer(bitrate_hint)
-{
-}
-
-ts::TSAnalyzerReport::~TSAnalyzerReport()
+ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint) :
+    TSAnalyzer(duck, bitrate_hint)
 {
 }
 
@@ -83,7 +79,6 @@ void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerOptions& opt)
 {
     setMinErrorCountBeforeSuspect(opt.suspect_min_error_count);
     setMaxConsecutiveSuspectCount(opt.suspect_max_consecutive);
-    setDefaultCharacterSet(opt.default_charset);
 }
 
 

@@ -89,7 +89,7 @@ ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
     _pass_pmt(false),
     _drop_status(TSP_DROP),
     _pass_pids(),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"bat");
     help(u"bat", u"Extract PID 0x0011 (SDT/BAT).");
@@ -197,7 +197,7 @@ void ts::SIFilterPlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat(table);
+            PAT pat(duck, table);
             if (pat.isValid()) {
                 processPAT(pat);
             }
@@ -205,7 +205,7 @@ void ts::SIFilterPlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         }
 
         case TID_CAT: {
-            CAT cat(table);
+            CAT cat(duck, table);
             if (cat.isValid()) {
                 _cas_args.addMatchingPIDs(_pass_pids, cat, *tsp);
             }
@@ -213,7 +213,7 @@ void ts::SIFilterPlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         }
 
         case TID_PMT: {
-            PMT pmt(table);
+            PMT pmt(duck, table);
             if (pmt.isValid()) {
                 _cas_args.addMatchingPIDs(_pass_pids, pmt, *tsp);
             }

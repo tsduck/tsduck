@@ -115,7 +115,8 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     CPPUNIT_ASSERT(args.analyze(u"", args_vec));
 
     ts::TunerArgs tuner;
-    tuner.load(args);
+    ts::DuckContext duck;
+    tuner.load(args, duck);
     ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
     CPPUNIT_ASSERT(!ptr.isNull());
     CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());

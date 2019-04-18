@@ -141,7 +141,7 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
     _excessPackets(0),
     _excessBits(0),
     _pids1(),
-    _demux(this),
+    _demux(duck, this),
     _pidContexts(),
     _clock(),
     _bitsSecond(0)
@@ -297,7 +297,7 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
         case TID_PAT: {
-            const PAT pat(table);
+            const PAT pat(duck, table);
             if (pat.isValid()) {
                 // Collect all PMT PID's.
                 for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -310,7 +310,7 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             break;
         }
         case TID_PMT: {
-            const PMT pmt(table);
+            const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Collect all component PID's.
                 tsp->debug(u"Found PMT in PID 0x%X (%d)", {table.sourcePID(), table.sourcePID()});

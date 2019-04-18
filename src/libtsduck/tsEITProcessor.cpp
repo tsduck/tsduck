@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsEITProcessor.h"
-#include "tsNullReport.h"
 #include "tsSection.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
@@ -38,11 +37,11 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::EITProcessor::EITProcessor(PID pid, Report* report) :
-    _report(report != nullptr ? report : NullReport::Instance()),
+ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
+    _duck(duck),
     _input_pids(),
     _output_pid(pid),
-    _demux(nullptr, this),
+    _demux(_duck, nullptr, this),
     _packetizer(pid, this),
     _sections(),
     _removed_tids(),

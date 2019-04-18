@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPrefetchDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsNames.h"
@@ -61,10 +62,10 @@ ts::PrefetchDescriptor::PrefetchDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::PrefetchDescriptor::PrefetchDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::PrefetchDescriptor::PrefetchDescriptor(DuckContext& duck, const Descriptor& desc) :
     PrefetchDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,12 +73,12 @@ ts::PrefetchDescriptor::PrefetchDescriptor(const Descriptor& desc, const DVBChar
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::PrefetchDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(transport_protocol_label);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(it->label.toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(duck.toDVBWithByteLength(it->label));
         bbp->appendUInt8(it->prefetch_priority);
     }
     serializeEnd(desc, bbp);
@@ -88,7 +89,7 @@ void ts::PrefetchDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::PrefetchDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     entries.clear();
 
@@ -105,7 +106,7 @@ void ts::PrefetchDescriptor::deserialize(const Descriptor& desc, const DVBCharse
             data++; size--;
             _is_valid = len + 1 <= size;
             if (_is_valid) {
-                entries.push_back(Entry(UString::FromDVB(data, len, charset), data[len]));
+                entries.push_back(Entry(duck.fromDVB(data, len), data[len]));
                 data += len + 1; size -= len + 1;
             }
         }
@@ -121,7 +122,7 @@ void ts::PrefetchDescriptor::deserialize(const Descriptor& desc, const DVBCharse
 
 void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -133,7 +134,7 @@ void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
                 break;
             }
             strm << margin
-                 << UString::Format(u"Label: \"%s\", prefetch priority: %d", {UString::FromDVB(data + 1, len, display.dvbCharset()), data[len + 1]})
+                 << UString::Format(u"Label: \"%s\", prefetch priority: %d", {display.duck().fromDVB(data + 1, len), data[len + 1]})
                  << std::endl;
             data += len + 2; size -= len + 2;
         }
@@ -147,7 +148,7 @@ void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::buildXML(xml::Element* root) const
+void ts::PrefetchDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_protocol_label", transport_protocol_label, true);
     for (auto it = entries.begin(); it != entries.end(); ++it) {
@@ -162,7 +163,7 @@ void ts::PrefetchDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrefetchDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::PrefetchDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMPEG4VideoDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -54,10 +55,10 @@ ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor() :
     _is_valid = true;
 }
 
-ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor(DuckContext& duck, const Descriptor& desc) :
     MPEG4VideoDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::MPEG4VideoDescriptor::MPEG4VideoDescriptor(const Descriptor& desc, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4VideoDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::MPEG4VideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MPEG4_visual_profile_and_level);
@@ -77,7 +78,7 @@ void ts::MPEG4VideoDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4VideoDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::MPEG4VideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -96,7 +97,7 @@ void ts::MPEG4VideoDescriptor::deserialize(const Descriptor& desc, const DVBChar
 
 void ts::MPEG4VideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -112,7 +113,7 @@ void ts::MPEG4VideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4VideoDescriptor::buildXML(xml::Element* root) const
+void ts::MPEG4VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"MPEG4_visual_profile_and_level", MPEG4_visual_profile_and_level, true);
 }
@@ -122,7 +123,7 @@ void ts::MPEG4VideoDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MPEG4VideoDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::MPEG4VideoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

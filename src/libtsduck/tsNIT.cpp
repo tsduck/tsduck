@@ -54,8 +54,8 @@ ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
 {
 }
 
-ts::NIT::NIT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTransportListTable(TID_NIT_ACT, MY_XML_NAME, MY_STD, table, charset),  // TID updated by deserialize()
+ts::NIT::NIT(DuckContext& duck, const BinaryTable& table) :
+    AbstractTransportListTable(duck, TID_NIT_ACT, MY_XML_NAME, MY_STD, table),  // TID updated by deserialize()
     network_id(_tid_ext)
 {
 }
@@ -92,7 +92,7 @@ bool ts::NIT::isValidTableId(TID tid) const
 
 void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -144,13 +144,13 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::NIT::buildXML(xml::Element* root) const
+void ts::NIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"network_id", network_id, true);
     root->setBoolAttribute(u"actual", isActual());
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
         xml::Element* e = root->addElement(u"transport_stream");
@@ -159,7 +159,7 @@ void ts::NIT::buildXML(xml::Element* root) const
         if (it->second.preferred_section >= 0) {
             e->setIntAttribute(u"preferred_section", it->second.preferred_section, false);
         }
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -168,7 +168,7 @@ void ts::NIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NIT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::NIT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     transports.clear();
@@ -182,7 +182,7 @@ void ts::NIT::fromXML(const xml::Element* element, const DVBCharset* charset)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(network_id, u"network_id", true, 0, 0x0000, 0xFFFF) &&
         element->getBoolAttribute(actual, u"actual", false, true) &&
-        descs.fromXML(children, element, u"transport_stream", charset);
+        descs.fromXML(duck, children, element, u"transport_stream");
 
     setActual(actual);
 
@@ -191,7 +191,7 @@ void ts::NIT::fromXML(const xml::Element* element, const DVBCharset* charset)
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(children[index], charset);
+            transports[ts].descs.fromXML(duck, children[index]);
         if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
             _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }

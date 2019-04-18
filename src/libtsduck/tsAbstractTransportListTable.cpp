@@ -64,17 +64,17 @@ ts::AbstractTransportListTable::AbstractTransportListTable(const AbstractTranspo
 {
 }
 
-ts::AbstractTransportListTable::AbstractTransportListTable(TID tid,
+ts::AbstractTransportListTable::AbstractTransportListTable(DuckContext& duck, 
+                                                           TID tid,
                                                            const UChar* xml_name,
                                                            Standards standards,
-                                                           const BinaryTable& table,
-                                                           const DVBCharset* charset) :
+                                                           const BinaryTable& table) :
     AbstractLongTable(tid, xml_name, standards, 0, true),
     descs(this),
     transports(this),
     _tid_ext(0xFFFF)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table) :
@@ -100,7 +100,7 @@ void ts::AbstractTransportListTable::clearPreferredSections()
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::AbstractTransportListTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     _tid_ext = 0xFFFF;
@@ -262,7 +262,7 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::AbstractTransportListTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build a set of TS id to serialize.
     TransportStreamIdSet ts_set;

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceRelocatedDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -57,10 +58,10 @@ ts::ServiceRelocatedDescriptor::ServiceRelocatedDescriptor() :
     _is_valid = true;
 }
 
-ts::ServiceRelocatedDescriptor::ServiceRelocatedDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ServiceRelocatedDescriptor::ServiceRelocatedDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceRelocatedDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +69,7 @@ ts::ServiceRelocatedDescriptor::ServiceRelocatedDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ServiceRelocatedDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -83,7 +84,7 @@ void ts::ServiceRelocatedDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ServiceRelocatedDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
 
@@ -107,7 +108,7 @@ void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& display, D
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
@@ -125,7 +126,7 @@ void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::buildXML(xml::Element* root) const
+void ts::ServiceRelocatedDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"old_original_network_id", old_original_network_id, true);
     root->setIntAttribute(u"old_transport_stream_id", old_transport_stream_id, true);
@@ -137,7 +138,7 @@ void ts::ServiceRelocatedDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ServiceRelocatedDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

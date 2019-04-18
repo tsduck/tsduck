@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAudioPreselectionDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -55,10 +56,10 @@ ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor() :
     _is_valid = true;
 }
 
-ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor(DuckContext& duck, const Descriptor& desc) :
     AudioPreselectionDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::AudioPreselectionDescriptor::PreSelection::PreSelection() :
@@ -98,7 +99,7 @@ bool ts::AudioPreselectionDescriptor::hasValidSizes() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AudioPreselectionDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     if (!hasValidSizes()) {
         desc.invalidate();
@@ -119,7 +120,10 @@ void ts::AudioPreselectionDescriptor::serialize(Descriptor& desc, const DVBChars
                          (it->aux_component_tags.empty() ? 0x00 : 0x02) |
                          (it->future_extension.empty() ? 0x00 : 0x01));
 
-        bbp->append(it->ISO_639_language_code.toDVB(0, NPOS, charset));
+        if (!it->ISO_639_language_code.empty() && !SerializeLanguageCode(duck, *bbp, it->ISO_639_language_code)) {
+            desc.invalidate();
+            return;
+        }
         if (it->message_id.set()) {
             bbp->appendUInt8(it->message_id.value());
         }
@@ -140,7 +144,7 @@ void ts::AudioPreselectionDescriptor::serialize(Descriptor& desc, const DVBChars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AudioPreselectionDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -172,7 +176,7 @@ void ts::AudioPreselectionDescriptor::deserialize(const Descriptor& desc, const 
             if (hasLanguage) {
                 _is_valid = size >= 3;
                 if (_is_valid) {
-                    sel.ISO_639_language_code = UString::FromDVB(data, 3, charset);
+                    sel.ISO_639_language_code = duck.fromDVB(data, 3);
                     data += 3;
                     size -= 3;
                 }
@@ -227,7 +231,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -254,7 +258,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
             if (hasLanguage) {
                 valid = size >= 3;
                 if (valid) {
-                    strm << margin << "  Language code: \"" << UString::FromDVB(data, 3, display.dvbCharset()) << '"' << std::endl;
+                    strm << margin << "  Language code: \"" << display.duck().fromDVB(data, 3) << '"' << std::endl;
                     data += 3;
                     size -= 3;
                 }
@@ -302,7 +306,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::buildXML(xml::Element* root) const
+void ts::AudioPreselectionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = entries.begin(); it != entries.end(); ++ it) {
         xml::Element* e = root->addElement(u"preselection");
@@ -333,7 +337,7 @@ void ts::AudioPreselectionDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioPreselectionDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::AudioPreselectionDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
     xml::ElementVector children;

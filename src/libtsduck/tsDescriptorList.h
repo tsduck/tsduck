@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsDescriptor.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -79,28 +80,19 @@ namespace ts {
         //! Check if the descriptor list is empty.
         //! @return True if the descriptor list is empty.
         //!
-        bool empty() const
-        {
-            return _list.empty();
-        }
+        bool empty() const { return _list.empty(); }
 
         //!
         //! Get the number of descriptors in the list (same as count()).
         //! @return The number of descriptors in the list.
         //!
-        size_t size() const
-        {
-            return _list.size();
-        }
+        size_t size() const { return _list.size(); }
 
         //!
         //! Get the number of descriptors in the list (same as size()).
         //! @return The number of descriptors in the list.
         //!
-        size_t count() const
-        {
-            return _list.size();
-        }
+        size_t count() const { return _list.size(); }
 
         //!
         //! Get the table id of the parent table.
@@ -161,9 +153,10 @@ namespace ts {
 
         //!
         //! Add one descriptor at end of list
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc The descriptor to add.
         //!
-        void add(const AbstractDescriptor& desc);
+        void add(DuckContext& duck, const AbstractDescriptor& desc);
 
         //!
         //! Add another list of descriptors at end of list.
@@ -233,10 +226,7 @@ namespace ts {
         //!
         //! Clear the content of the descriptor list.
         //!
-        void clear()
-        {
-            _list.clear();
-        }
+        void clear() { _list.clear(); }
 
         //!
         //! Search a descriptor with the specified tag.
@@ -347,41 +337,41 @@ namespace ts {
 
         //!
         //! This method converts a descriptor list to XML.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the XML descriptors.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True on success, false on error.
         //!
-        bool toXML(xml::Element* parent, const DVBCharset* charset = nullptr) const;
+        bool toXML(DuckContext& duck, xml::Element* parent) const;
 
         //!
         //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in] parent The XML element containing all descriptors.
         //! @param [in] allowedOthers A list of allowed element names inside @a parent which are not descriptors.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers);
 
         //!
         //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in] parent The XML element containing all descriptors.
         //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent which are not descriptors.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers);
 
         //!
         //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] parent The XML element containing all descriptors. All children must be valid descriptors.
-        //! @param [in] charset If not zero, character set to use to serialize text.
         //! @return True on success, false on error.
         //!
-        bool fromXML(const xml::Element* parent, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, const xml::Element* parent);
 
     private:
         // Each entry contains a descriptor and its corresponding private data specifier.
@@ -399,11 +389,6 @@ namespace ts {
         // Private members
         const AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
         ElementVector              _list;   // Vector of smart pointers to descriptors.
-
-        // Get the default Private Data Specified value in this descriptor list.
-        // This is normally zero in a DVB table. However, we use some "fake" PDS
-        // values to characterize descriptors with tag >= 0x80 in non-DVB tables.
-        PDS defaultPDS(PDS pds = 0) const;
 
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).

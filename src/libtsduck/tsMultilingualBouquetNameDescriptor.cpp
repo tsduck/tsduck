@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultilingualBouquetNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 
@@ -50,10 +51,10 @@ ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor() :
     _is_valid = true;
 }
 
-ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualBouquetNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::MultilingualBouquetNameDescriptor::~MultilingualBouquetNameDescriptor()

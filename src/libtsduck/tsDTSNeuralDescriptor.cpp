@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDTSNeuralDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -56,10 +57,10 @@ ts::DTSNeuralDescriptor::DTSNeuralDescriptor() :
     _is_valid = true;
 }
 
-ts::DTSNeuralDescriptor::DTSNeuralDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::DTSNeuralDescriptor::DTSNeuralDescriptor(DuckContext& duck, const Descriptor& desc) :
     DTSNeuralDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +68,7 @@ ts::DTSNeuralDescriptor::DTSNeuralDescriptor(const Descriptor& bin, const DVBCha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DTSNeuralDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -81,7 +82,7 @@ void ts::DTSNeuralDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DTSNeuralDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -98,7 +99,7 @@ void ts::DTSNeuralDescriptor::deserialize(const Descriptor& desc, const DVBChars
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::buildXML(xml::Element* root) const
+void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"config_id", config_id, true);
     if (!additional_info.empty()) {
@@ -111,7 +112,7 @@ void ts::DTSNeuralDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::DTSNeuralDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -131,7 +132,7 @@ void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size > 0) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         strm << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
         if (size > 1) {

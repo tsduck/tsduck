@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCountryAvailabilityDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -63,12 +64,12 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     country_availability(true),
     country_codes()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -89,12 +90,12 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availabili
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CountryAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(country_availability ? 0xFF : 0x7F);
     for (size_t n = 0; n < country_codes.size(); ++n) {
-        if (!SerializeLanguageCode(*bbp, country_codes[n])) {
+        if (!SerializeLanguageCode(duck, *bbp, country_codes[n])) {
             desc.invalidate();
             return;
         }
@@ -107,7 +108,7 @@ void ts::CountryAvailabilityDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CountryAvailabilityDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 1;
     country_codes.clear();
@@ -132,7 +133,7 @@ void ts::CountryAvailabilityDescriptor::deserialize(const Descriptor& desc, cons
 
 void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -140,7 +141,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
         data += 1; size -= 1;
         strm << margin << "Available: " << UString::YesNo(available) << std::endl;
         while (size >= 3) {
-            strm << margin << "Country code: \"" << UString::FromDVB(data, 3, display.dvbCharset()) << "\"" << std::endl;
+            strm << margin << "Country code: \"" << UString::FromDVB(data, 3) << "\"" << std::endl;
             data += 3; size -= 3;
         }
     }
@@ -153,7 +154,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::buildXML(xml::Element* root) const
+void ts::CountryAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"country_availability", country_availability);
     for (UStringVector::const_iterator it = country_codes.begin(); it != country_codes.end(); ++it) {
@@ -167,7 +168,7 @@ void ts::CountryAvailabilityDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::CountryAvailabilityDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     country_codes.clear();
 

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEacemStreamIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -68,11 +69,11 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t ver
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     version(0)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -80,7 +81,7 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descr
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::EacemStreamIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(new ByteBlock(3));
     CheckNonNull (bbp.pointer());
@@ -96,7 +97,7 @@ void ts::EacemStreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::EacemStreamIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
@@ -113,7 +114,7 @@ void ts::EacemStreamIdentifierDescriptor::deserialize(const Descriptor& desc, co
 
 void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -130,7 +131,7 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::EacemStreamIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version_byte", version, true);
 }
@@ -140,7 +141,7 @@ void ts::EacemStreamIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::EacemStreamIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
