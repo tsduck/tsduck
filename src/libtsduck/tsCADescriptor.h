@@ -66,8 +66,8 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         CADescriptor(DuckContext& duck, const Descriptor& bin);
 
@@ -86,7 +86,6 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside this object.
         //! @param [in,out] dlist Descriptor list. The new CA descriptors are added in the list.
         //! @param [in] values List of CA descriptors in command-line form: casid/pid[/private-data]
-        //! @param [in,out] report Where to report errors (typically badly formed parameters).
         //! @return True on success, false on error.
         //! @see fromCommmandLine()
         //!
