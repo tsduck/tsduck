@@ -89,6 +89,7 @@ namespace ts {
         //!
         //! The subclass serializes the "prolog".
         //! The prolog is between the descriptor header and the multilingual names loop.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] bbp Serialize the prolog in this byte block.
         //!
         virtual void serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const;
@@ -97,6 +98,7 @@ namespace ts {
         //! The subclass deserializes the "prolog".
         //! The prolog is between the descriptor header and the multilingual names loop.
         //! The subclass shall set _is_valid to false on error.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] data Address of prolog. Updated after deserialization.
         //! @param [in,out] size Remaining descriptor size, including prolog. Updated after deserialization.
         //!

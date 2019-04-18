@@ -95,8 +95,8 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         ISO639LanguageDescriptor(DuckContext& duck, const Descriptor& bin);
 
