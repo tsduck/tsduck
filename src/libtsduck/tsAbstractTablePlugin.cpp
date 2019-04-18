@@ -56,7 +56,7 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     _incr_version(false),
     _set_version(false),
     _new_version(0),
-    _demux(this),
+    _demux(duck, this),
     _pzer(pid)
 {
     option(u"bitrate", 'b', POSITIVE);

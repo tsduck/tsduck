@@ -78,16 +78,16 @@ ts::STT::STT(const STT& other) :
 {
 }
 
-ts::STT::STT(const BinaryTable& table) :
+ts::STT::STT(DuckContext& duck, const BinaryTable& table) :
     STT()
 {
-    deserialize(table);
+    deserialize(duck, table);
 }
 
-ts::STT::STT(const Section& section) :
+ts::STT::STT(DuckContext& duck, const Section& section) :
     STT()
 {
-    deserializeSection(section);
+    deserializeSection(duck, section);
 }
 
 
@@ -113,11 +113,11 @@ ts::Time ts::STT::utcTime() const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::STT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Deserialize first section.
     if (table.sectionCount() > 0 && !table.sectionAt(0).isNull()) {
-        deserializeSection(*table.sectionAt(0));
+        deserializeSection(duck, *table.sectionAt(0));
     }
 }
 
@@ -126,7 +126,7 @@ void ts::STT::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Deserialize one section.
 //----------------------------------------------------------------------------
 
-void ts::STT::deserializeSection(const Section& section)
+void ts::STT::deserializeSection(DuckContext& duck, const Section& section)
 {
     // Clear table content
     _is_valid = false;
@@ -165,7 +165,7 @@ void ts::STT::deserializeSection(const Section& section)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::STT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section. Note that a STT is not allowed to use more than one section, see A/65, section 6.1.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -202,7 +202,7 @@ void ts::STT::serializeContent(BinaryTable& table, const DVBCharset* charset) co
 
 void ts::STT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -231,7 +231,7 @@ void ts::STT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::STT::buildXML(xml::Element* root) const
+void ts::STT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"protocol_version", protocol_version);
     root->setIntAttribute(u"system_time", system_time);
@@ -243,7 +243,7 @@ void ts::STT::buildXML(xml::Element* root) const
     if (DS_day_of_month > 0 || DS_hour > 0) {
         root->setIntAttribute(u"DS_hour", DS_hour);
     }
-    descs.toXML(root);
+    descs.toXML(duck, root);
 }
 
 
@@ -251,7 +251,7 @@ void ts::STT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::STT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     _is_valid =
@@ -262,5 +262,5 @@ void ts::STT::fromXML(const xml::Element* element, const DVBCharset* charset)
         element->getBoolAttribute(DS_status, u"DS_status", true) &&
         element->getIntAttribute<uint8_t>(DS_day_of_month, u"DS_day_of_month", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(DS_hour, u"DS_hour", false, 0, 0, 23) &&
-        descs.fromXML(element, charset);
+        descs.fromXML(duck, element);
 }

@@ -34,8 +34,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsTunerParameters.h"
-#include "tsMPEG.h"
 
 namespace ts {
     //!
@@ -73,10 +71,10 @@ namespace ts {
         EntryList entries;  //!< List of language entries.
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
 
     protected:
@@ -92,9 +90,8 @@ namespace ts {
         //! The subclass serializes the "prolog".
         //! The prolog is between the descriptor header and the multilingual names loop.
         //! @param [in,out] bbp Serialize the prolog in this byte block.
-        //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serializeProlog(const ByteBlockPtr& bbp, const DVBCharset* charset) const;
+        virtual void serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const;
 
         //!
         //! The subclass deserializes the "prolog".
@@ -102,9 +99,8 @@ namespace ts {
         //! The subclass shall set _is_valid to false on error.
         //! @param [in,out] data Address of prolog. Updated after deserialization.
         //! @param [in,out] size Remaining descriptor size, including prolog. Updated after deserialization.
-        //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void deserializeProlog(const uint8_t*& data, size_t& size, const DVBCharset* charset);
+        virtual void deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size);
 
     private:
         const UChar* _xml_attribute;

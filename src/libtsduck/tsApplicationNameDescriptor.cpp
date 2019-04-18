@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 
@@ -51,10 +52,10 @@ ts::ApplicationNameDescriptor::ApplicationNameDescriptor() :
     _is_valid = true;
 }
 
-ts::ApplicationNameDescriptor::ApplicationNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ApplicationNameDescriptor::ApplicationNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::ApplicationNameDescriptor::~ApplicationNameDescriptor()

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationStorageDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -64,10 +65,10 @@ ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationStorageDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -75,7 +76,7 @@ ts::ApplicationStorageDescriptor::ApplicationStorageDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ApplicationStorageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(storage_property);
@@ -93,7 +94,7 @@ void ts::ApplicationStorageDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ApplicationStorageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -117,7 +118,7 @@ void ts::ApplicationStorageDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 7) {
@@ -139,7 +140,7 @@ void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::buildXML(xml::Element* root) const
+void ts::ApplicationStorageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"storage_property", storage_property, true);
     root->setBoolAttribute(u"not_launchable_from_broadcast", not_launchable_from_broadcast);
@@ -154,7 +155,7 @@ void ts::ApplicationStorageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationStorageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ApplicationStorageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

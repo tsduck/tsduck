@@ -235,7 +235,7 @@ TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
 
 ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]"),
-    _service(this, *tsp),
+    _service(duck, this),
     _use_service(false),
     _component_level(false),
     _scramble_audio(false),
@@ -555,7 +555,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
     // Add a scrambling_descriptor in the PMT for scrambling other than DVB-CSA2.
     if (_scrambling.scramblingType() != SCRAMBLING_DVB_CSA2) {
         _update_pmt = true;
-        pmt.descs.add(ScramblingDescriptor(_scrambling.scramblingType()));
+        pmt.descs.add(duck, ScramblingDescriptor(_scrambling.scramblingType()));
     }
 
     // With ECM generation, modify the PMT
@@ -571,13 +571,13 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
             // Add a CA_descriptor in each scrambled component
             for (PMT::StreamMap::iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                 if (_scrambled_pids.test(it->first)) {
-                    it->second.descs.add(ca_desc);
+                    it->second.descs.add(duck, ca_desc);
                 }
             }
         }
         else {
             // Add one single CA_descriptor at program level
-            pmt.descs.add(ca_desc);
+            pmt.descs.add(duck, ca_desc);
         }
     }
 
@@ -585,7 +585,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
     if (_update_pmt) {
         _pzer_pmt.removeSections(TID_PMT, pmt.service_id);
         _pzer_pmt.setPID(_service.getPMTPID());
-        _pzer_pmt.addTable(pmt);
+        _pzer_pmt.addTable(duck, pmt);
     }
 
     // Next crypto-period.

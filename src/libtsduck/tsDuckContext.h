@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-------------------       ---------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2019, Thierry Lelegard
@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsByteBlock.h"
 #include "tsMPEG.h"
 #include "tsCASFamily.h"
 
@@ -78,16 +79,16 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] output The output stream to use, @c std::cout on null pointer.
         //! @param [in] report Address of the report for log and error messages. If null, use the standard error.
+        //! @param [in] output The output stream to use, @c std::cout on null pointer.
         //!
-        DuckContext(std::ostream* output = nullptr, Report* report = nullptr);
+        DuckContext(Report* report = nullptr, std::ostream* output = nullptr);
 
         //!
         //! Get the current report for log and error messages.
         //! @return A reference to the current output report.
         //!
-        Report& report() const {return *_report;}
+        Report& report() const { return *_report; }
 
         //!
         //! Set a new report for log and error messages.
@@ -99,7 +100,7 @@ namespace ts {
         //! Get the current output stream to issue long text output.
         //! @return A reference to the output stream.
         //!
-        std::ostream& out() const {return *_out;}
+        std::ostream& out() const { return *_out; }
 
         //!
         //! Redirect the output stream to a file.
@@ -149,13 +150,111 @@ namespace ts {
         //! signalization, assuming another default character set (usually from its own country).
         //! @return The default input DVB character set or the null pointer if none is defined.
         //!
-        const DVBCharset* dvbCharsetIn() const {return _dvbCharsetIn;}
+        const DVBCharset* dvbCharsetIn() const { return _dvbCharsetIn; }
 
         //!
         //! Get the preferred output DVB character set for DVB strings.
         //! @return The preferred output DVB character set or the null pointer if none is defined.
         //!
-        const DVBCharset* dvbCharsetOut() const {return _dvbCharsetOut;}
+        const DVBCharset* dvbCharsetOut() const { return _dvbCharsetOut; }
+
+        //!
+        //! Convert a DVB string into UTF-16 using the default input DVB character set.
+        //! @param [in] dvb A string in DVB representation.
+        //! The first bytes of the string indicate the DVB character set to use.
+        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        UString fromDVB(const std::string& dvb) const
+        {
+            return UString::FromDVB(dvb, _dvbCharsetIn);
+        }
+
+        //!
+        //! Convert a DVB string into UTF-16 using the default input DVB character set.
+        //! @param [in] dvb Address of a string in DVB representation.
+        //! The first bytes of the string indicate the DVB character set to use.
+        //! @param [in] dvbSize Size in bytes of the DVB string.
+        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        UString fromDVB(const uint8_t* dvb, size_t dvbSize) const
+        {
+            return UString::FromDVB(dvb, dvbSize, _dvbCharsetIn);
+        }
+
+        //!
+        //! Convert a DVB string into UTF-16 (preceded by its one-byte length) using the default input DVB character set.
+        //! @param [in,out] buffer Address of a buffer containing a DVB string to read.
+        //! The first byte in the buffer is the length in bytes of the string.
+        //! Upon return, @a buffer is updated to point after the end of the string.
+        //! @param [in,out] size Size in bytes of the buffer, which may be larger than
+        //! the DVB string. Upon return, @a size is updated, decremented by the same amount
+        //! @a buffer was incremented.
+        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        UString fromDVBWithByteLength(const uint8_t*& buffer, size_t& size) const
+        {
+            return UString::FromDVBWithByteLength(buffer, size, _dvbCharsetIn);
+        }
+
+        //!
+        //! Encode an UTF-16 string into a DVB string using the preferred output DVB character set.
+        //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in,out] buffer Address of the buffer where the DVB string is written.
+        //! The address is updated to point after the encoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t toDVB(const UString& str, uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const
+        {
+            return str.toDVB(buffer, size, start, count, _dvbCharsetOut);
+        }
+
+        //!
+        //! Encode an UTF-16 string into a DVB string using the preferred output DVB character set.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The DVB string.
+        //!
+        ByteBlock toDVB(const UString& str, size_t start = 0, size_t count = NPOS) const
+        {
+            return str.toDVB(start, count, _dvbCharsetOut);
+        }
+
+        //!
+        //! Encode an UTF-16 string into a DVB string (preceded by its one-byte length) using the preferred output DVB character set.
+        //! Stop either when this string is serialized or when the buffer is full or when 255 bytes are written, whichever comes first.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in,out] buffer Address of the buffer where the DVB string is written.
+        //! The first byte will receive the size in bytes of the DVB string.
+        //! The address is updated to point after the encoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t toDVBWithByteLength(const UString& str, uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const
+        {
+            return str.toDVBWithByteLength(buffer, size, start, count, _dvbCharsetOut);
+        }
+
+        //!
+        //! Encode an UTF-16 string into a DVB string (preceded by its one-byte length) using the preferred output DVB character set.
+        //! @param [in] str The UTF-16 string to encode.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The DVB string with the initial length byte.
+        //!
+        ByteBlock toDVBWithByteLength(const UString& str, size_t start = 0, size_t count = NPOS) const
+        {
+            return str.toDVBWithByteLength(start, count, _dvbCharsetOut);
+        }
 
         //!
         //! Set the default input DVB character set for DVB strings without table code.
@@ -204,7 +303,7 @@ namespace ts {
         //! Get the list of standards which are present in the transport stream or context.
         //! @return A bit mask of standards.
         //!
-        Standards standards() const {return _accStandards;}
+        Standards standards() const { return _accStandards; }
 
         //!
         //! Add a list of standards which are present in the transport stream or context.
@@ -243,12 +342,44 @@ namespace ts {
         const HFBand* uhfBand() const;
 
         //!
+        //! Define DVB character set command line options in an Args.
+        //! Defined options: @c -\-default-charset, @c -\-europe.
+        //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineOptionsForDVBCharset(Args& args) { defineOptions(args, CMD_DVB_CHARSET); }
+
+        //!
+        //! Define Private Data Specifier command line options in an Args.
+        //! Defined options: @c -\-default-pds.
+        //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineOptionsForPDS(Args& args) { defineOptions(args, CMD_PDS); }
+
+        //!
+        //! Define contextual standards command line options in an Args.
+        //! Defined options: @c -\-atsc.
+        //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineOptionsForStandards(Args& args) { defineOptions(args, CMD_STANDARDS); }
+
+        //!
+        //! Define HF band command line options in an Args.
+        //! Defined options: @c -\-hf-band-region.
+        //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineOptionsForHFBand(Args& args) { defineOptions(args, CMD_HF_REGION); }
+
+        //!
         //! Load the values of all previously defined arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
         //! @return True on success, false on error in argument line.
         //!
-        bool load(Args& args);
+        bool loadOptions(Args& args);
 
     private:
         Report*           _report;            // Pointer to a report for error messages. Never null.

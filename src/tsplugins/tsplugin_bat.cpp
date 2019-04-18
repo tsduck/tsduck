@@ -159,7 +159,7 @@ void ts::BATPlugin::createNewTable(BinaryTable& table)
         bat.bouquet_id = _bouquet_id;
     }
 
-    bat.serialize(table);
+    bat.serialize(duck, table);
 }
 
 
@@ -176,7 +176,7 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Process the BAT.
-    BAT bat(table);
+    BAT bat(duck, table);
     if (!bat.isValid()) {
         tsp->warning(u"found invalid BAT");
         reinsert = false;
@@ -208,7 +208,7 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     // Reserialize modified BAT.
     bat.clearPreferredSections();
-    bat.serialize(table);
+    bat.serialize(duck, table);
 }
 
 

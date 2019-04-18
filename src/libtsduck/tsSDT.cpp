@@ -63,10 +63,10 @@ ts::SDT::SDT(bool is_actual_, uint8_t version_, bool is_current_, uint16_t ts_id
     _is_valid = true;
 }
 
-ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
+ts::SDT::SDT(DuckContext& duck, const BinaryTable& table) :
     SDT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 ts::SDT::SDT(const SDT& other) :
@@ -92,10 +92,10 @@ bool ts::SDT::isValidTableId(TID tid) const
 // Search a service by name.
 //----------------------------------------------------------------------------
 
-bool ts::SDT::findService(const UString& name, uint16_t& service_id, bool exact_match) const
+bool ts::SDT::findService(DuckContext& duck, const UString& name, uint16_t& service_id, bool exact_match) const
 {
     for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
-        const UString service_name(it->second.serviceName());
+        const UString service_name(it->second.serviceName(duck));
         if ((exact_match && service_name == name) || (!exact_match && service_name.similar(name))) {
             service_id = it->first;
             return true;
@@ -107,10 +107,10 @@ bool ts::SDT::findService(const UString& name, uint16_t& service_id, bool exact_
     return false;
 }
 
-bool ts::SDT::findService(ts::Service& service, bool exact_match) const
+bool ts::SDT::findService(DuckContext& duck, ts::Service& service, bool exact_match) const
 {
     uint16_t service_id = 0;
-    if (!service.hasName() || !findService(service.getName(), service_id, exact_match)) {
+    if (!service.hasName() || !findService(duck, service.getName(), service_id, exact_match)) {
         return false;
     }
     else {
@@ -124,7 +124,7 @@ bool ts::SDT::findService(ts::Service& service, bool exact_match) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::SDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     ts_id = 0;
@@ -215,7 +215,7 @@ void ts::SDT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::SDT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -310,7 +310,7 @@ ts::SDT::Service::Service(const AbstractTable* table) :
 // Locate and deserialize the first DVB service_descriptor inside the entry.
 //----------------------------------------------------------------------------
 
-bool ts::SDT::Service::locateServiceDescriptor(ServiceDescriptor& desc, const DVBCharset* charset) const
+bool ts::SDT::Service::locateServiceDescriptor(DuckContext& duck, ServiceDescriptor& desc) const
 {
     const size_t index = descs.search(DID_SERVICE);
 
@@ -320,7 +320,7 @@ bool ts::SDT::Service::locateServiceDescriptor(ServiceDescriptor& desc, const DV
     }
     else {
         assert(!descs[index].isNull());
-        desc.deserialize(*descs[index], charset);
+        desc.deserialize(duck, *descs[index]);
         return desc.isValid();
     }
 }
@@ -331,22 +331,22 @@ bool ts::SDT::Service::locateServiceDescriptor(ServiceDescriptor& desc, const DV
 // the first DVB "service descriptor", if there is one in the list).
 //----------------------------------------------------------------------------
 
-uint8_t ts::SDT::Service::serviceType() const
+uint8_t ts::SDT::Service::serviceType(DuckContext& duck) const
 {
     ServiceDescriptor sd;
-    return locateServiceDescriptor(sd) ? sd.service_type : 0; // 0 is a "reserved" service_type value
+    return locateServiceDescriptor(duck, sd) ? sd.service_type : 0; // 0 is a "reserved" service_type value
 }
 
-ts::UString ts::SDT::Service::providerName(const DVBCharset* charset) const
+ts::UString ts::SDT::Service::providerName(DuckContext& duck) const
 {
     ServiceDescriptor sd;
-    return locateServiceDescriptor(sd, charset) ? sd.provider_name : UString();
+    return locateServiceDescriptor(duck, sd) ? sd.provider_name : UString();
 }
 
-ts::UString ts::SDT::Service::serviceName(const DVBCharset* charset) const
+ts::UString ts::SDT::Service::serviceName(DuckContext& duck) const
 {
     ServiceDescriptor sd;
-    return locateServiceDescriptor(sd, charset) ? sd.service_name : UString();
+    return locateServiceDescriptor(duck, sd) ? sd.service_name : UString();
 }
 
 
@@ -354,7 +354,7 @@ ts::UString ts::SDT::Service::serviceName(const DVBCharset* charset) const
 // Set a string value (typically provider or service name).
 //----------------------------------------------------------------------------
 
-void ts::SDT::Service::setString(UString ServiceDescriptor::* field, const UString& value, uint8_t service_type, const DVBCharset* charset)
+void ts::SDT::Service::setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type)
 {
     // Locate the service descriptor
     const size_t index = descs.search(DID_SERVICE);
@@ -365,7 +365,7 @@ void ts::SDT::Service::setString(UString ServiceDescriptor::* field, const UStri
         sd.*field = value;
         DescriptorPtr dp(new Descriptor);
         CheckNonNull(dp.pointer());
-        sd.serialize(*dp, charset);
+        sd.serialize(duck, *dp);
         if (dp->isValid()) {
             descs.add(dp);
         }
@@ -374,10 +374,10 @@ void ts::SDT::Service::setString(UString ServiceDescriptor::* field, const UStri
         // Replace service name in existing descriptor
         assert(!descs[index].isNull());
         ServiceDescriptor sd;
-        sd.deserialize(*descs[index], charset);
+        sd.deserialize(duck, *descs[index]);
         if (sd.isValid()) {
             sd.*field = value;
-            sd.serialize(*descs[index], charset);
+            sd.serialize(duck, *descs[index]);
         }
     }
 }
@@ -416,7 +416,7 @@ void ts::SDT::Service::setType(uint8_t service_type)
 
 void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -464,7 +464,7 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::buildXML(xml::Element* root) const
+void ts::SDT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
@@ -479,7 +479,7 @@ void ts::SDT::buildXML(xml::Element* root) const
         e->setBoolAttribute(u"EIT_present_following", it->second.EITpf_present);
         e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -488,7 +488,7 @@ void ts::SDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SDT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     services.clear();
 
@@ -515,7 +515,7 @@ void ts::SDT::fromXML(const xml::Element* element, const DVBCharset* charset)
             children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
             children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
             children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
-            services[id].descs.fromXML(children[index], charset);
+            services[id].descs.fromXML(duck, children[index]);
         if (_is_valid) {
             services[id].running_status = uint8_t(rs);
         }

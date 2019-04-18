@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSSUDataBroadcastIdDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -62,21 +63,21 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, ui
     _is_valid = true;
 }
 
-ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(DuckContext& duck, const Descriptor& desc) :
     SSUDataBroadcastIdDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
-ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc, const DVBCharset* charset) :
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(DuckContext& duck, const DataBroadcastIdDescriptor& desc) :
     SSUDataBroadcastIdDescriptor()
 {
     _is_valid = desc.isValid() && desc.data_broadcast_id == 0x000A;
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        desc.serialize(bin, charset);
-        deserialize(bin, charset);
+        desc.serialize(duck, bin);
+        deserialize(duck, bin);
     }
 }
 
@@ -85,13 +86,13 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadca
 // Convert to a data_broadcast_id_descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DataBroadcastIdDescriptor& desc, const DVBCharset* charset) const
+void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DuckContext& duck, DataBroadcastIdDescriptor& desc) const
 {
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        serialize(bin, charset);
-        desc.deserialize(bin, charset);
+        serialize(duck, bin);
+        desc.deserialize(duck, bin);
     }
     else {
         desc.invalidate();
@@ -103,7 +104,7 @@ void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DataBroadcast
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SSUDataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -132,7 +133,7 @@ void ts::SSUDataBroadcastIdDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SSUDataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3 && GetUInt16 (desc.payload()) == 0x000A;
     entries.clear();
@@ -174,13 +175,13 @@ void ts::SSUDataBroadcastIdDescriptor::deserialize(const Descriptor& desc, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::SSUDataBroadcastIdDescriptor::toXML(xml::Element* parent) const
+ts::xml::Element* ts::SSUDataBroadcastIdDescriptor::toXML(DuckContext& duck, xml::Element* parent) const
 {
     // There is no specific representation of this descriptor.
     // Convert to a data_broadcast_id_descriptor.
     DataBroadcastIdDescriptor desc;
-    toDataBroadcastIdDescriptor(desc);
-    return desc.toXML(parent);
+    toDataBroadcastIdDescriptor(duck, desc);
+    return desc.toXML(duck, parent);
 }
 
 
@@ -188,7 +189,7 @@ ts::xml::Element* ts::SSUDataBroadcastIdDescriptor::toXML(xml::Element* parent) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SSUDataBroadcastIdDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.

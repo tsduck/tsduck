@@ -141,11 +141,11 @@ ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
     _include_eit(false),
     _pes_only(false),
     _drop_status(TSP_DROP),
-    _demux(this),
+    _demux(duck, this),
     _pzer_sdt(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
-    _eit_process(PID_EIT, tsp_)
+    _eit_process(duck, PID_EIT)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -293,7 +293,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -303,7 +303,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
         case TID_CAT: {
             if (table.sourcePID() == PID_CAT) {
-                CAT cat(table);
+                CAT cat(duck, table);
                 if (cat.isValid()) {
                     processCAT(cat);
                 }
@@ -313,7 +313,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     processSDT(sdt);
                 }
@@ -322,7 +322,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_PMT: {
-            PMT pmt(table);
+            PMT pmt(duck, table);
             if (pmt.isValid() && _service.hasId(pmt.service_id)) {
                 processPMT(pmt);
             }
@@ -330,7 +330,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_MGT: {
-            MGT mgt(table);
+            MGT mgt(duck, table);
             if (mgt.isValid()) {
                 processMGT(mgt);
             }
@@ -338,7 +338,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_TVCT: {
-            TVCT tvct(table);
+            TVCT tvct(duck, table);
             if (tvct.isValid()) {
                 processVCT(tvct);
             }
@@ -346,7 +346,7 @@ void ts::ZapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_CVCT: {
-            CVCT cvct(table);
+            CVCT cvct(duck, table);
             if (cvct.isValid()) {
                 processVCT(cvct);
             }
@@ -374,7 +374,7 @@ void ts::ZapPlugin::processSDT(SDT& sdt)
     uint16_t service_id = 0xFFFF;
 
     if (_service.hasName()) {
-        found = sdt.findService(_service.getName(), service_id);
+        found = sdt.findService(duck, _service.getName(), service_id);
     }
     else {
         service_id = _service.getId();
@@ -411,7 +411,7 @@ void ts::ZapPlugin::processSDT(SDT& sdt)
     // Build the list of TS packets containing the new SDT.
     // These packets will replace everything on the SDT/BAT PID.
     _pzer_sdt.removeAll();
-    _pzer_sdt.addTable(sdt);
+    _pzer_sdt.addTable(duck, sdt);
 
     // Now allow transmission of (modified) packets from SDT PID
     _pid_state[PID_SDT] = TSPID_SDT;
@@ -567,10 +567,10 @@ void ts::ZapPlugin::processPAT(PAT& pat)
     // Build the list of TS packets containing the new PAT.
     // These packets will replace everything on the PAT PID.
     _pzer_pat.removeAll();
-    _pzer_pat.addTable (pat);
+    _pzer_pat.addTable(duck, pat);
 
     // Now allow transmission of (modified) packets from PAT PID
-    _pid_state [PID_PAT] = TSPID_PAT;
+    _pid_state[PID_PAT] = TSPID_PAT;
 }
 
 
@@ -669,11 +669,11 @@ void ts::ZapPlugin::processPMT(PMT& pmt)
     // These packets will replace everything on the PMT PID.
     assert(_service.hasPMTPID());
     _pzer_pmt.removeAll();
-    _pzer_pmt.setPID (_service.getPMTPID());
-    _pzer_pmt.addTable (pmt);
+    _pzer_pmt.setPID(_service.getPMTPID());
+    _pzer_pmt.addTable(duck, pmt);
 
     // Now allow transmission of (modified) packets from PMT PID
-    _pid_state [_service.getPMTPID()] = TSPID_PMT;
+    _pid_state[_service.getPMTPID()] = TSPID_PMT;
 }
 
 

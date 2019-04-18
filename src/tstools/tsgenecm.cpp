@@ -50,6 +50,7 @@ namespace ts {
         GenECMOptions(int argc, char *argv[]);
         virtual ~GenECMOptions();
 
+        DuckContext    duck;       // TSDuck execution context.
         UString        outFile;    // Name of binary output file.
         ECMGClientArgs ecmg;       // ECMG parameters
         uint16_t       cpNumber;   // Crypto-period number
@@ -64,6 +65,7 @@ ts::GenECMOptions::~GenECMOptions() {}
 // Constructor.
 ts::GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
+    duck(this),
     outFile(),
     ecmg(),
     cpNumber(0),
@@ -121,7 +123,7 @@ namespace ts {
             }
 
             // Demux the ECM sections from the TS packets.
-            ts::StandaloneTableDemux demux(ts::AllPIDs);
+            ts::StandaloneTableDemux demux(opt.duck, ts::AllPIDs);
             for (size_t index = 0; index + PKT_SIZE <= response.ECM_datagram.size(); index += PKT_SIZE) {
                 TSPacket pkt;
                 pkt.copyFrom(&response.ECM_datagram[index]);
@@ -191,7 +193,7 @@ int MainCode(int argc, char *argv[])
     ecmg.disconnect();
 
     // Get the ECM section from the ECMG response.
-    ts::SectionFile ecmFile;
+    ts::SectionFile ecmFile(opt.duck);
     if (!ts::ExtractECMs(opt, ecmFile, channelStatus, response)) {
         // Malformed response, error message already reported
         return EXIT_FAILURE;

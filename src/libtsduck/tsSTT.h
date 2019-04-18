@@ -80,15 +80,17 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
         //!
-        STT(const BinaryTable& table);
+        STT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Constructor from a binary section.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] section Binary section to deserialize.
         //!
-        STT(const Section& section);
+        STT(DuckContext& duck, const Section& section);
 
         //!
         //! Assignment operator.
@@ -104,17 +106,17 @@ namespace ts {
         Time utcTime() const;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
         // Inherited methods
-        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
-        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
-        virtual void buildXML(xml::Element*) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         // Deserialize one section.
-        void deserializeSection(const Section&);
+        void deserializeSection(DuckContext&, const Section&);
     };
 }

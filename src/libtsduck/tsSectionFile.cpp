@@ -45,12 +45,12 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::SectionFile::SectionFile() :
+ts::SectionFile::SectionFile(DuckContext& duck) :
+    _duck(duck),
     _tables(),
     _sections(),
     _orphanSections(),
     _xmlTweaks(),
-    _charset(),
     _crc_op(CRC32::IGNORE)
 {
 }
@@ -76,7 +76,7 @@ void ts::SectionFile::add(const AbstractTablePtr& table)
 {
     if (!table.isNull() && table->isValid()) {
         BinaryTablePtr bin(new BinaryTable);
-        table->serialize(*bin, _charset);
+        table->serialize(_duck, *bin);
         if (bin->isValid()) {
             add(bin);
         }
@@ -93,6 +93,8 @@ void ts::SectionFile::add(const BinaryTablePtrVector& tables)
 void ts::SectionFile::add(const BinaryTablePtr& table)
 {
     if (!table.isNull() && table->isValid()) {
+        // Add the standards from the table in the context.
+        _duck.addStandards(table->definingStandards());
         // Add the table as a whole.
         _tables.push_back(table);
         // Add all its sections (none of them is orphan).
@@ -117,6 +119,8 @@ void ts::SectionFile::add(const SectionPtrVector& sections)
 void ts::SectionFile::add(const SectionPtr& section)
 {
     if (!section.isNull() && section->isValid()) {
+        // Add the standards from the section in the context.
+        _duck.addStandards(section->definingStandards());
         // Make the section part of the global list of sections.
         _sections.push_back(section);
         // Temporary push this section in the orphan list.
@@ -369,7 +373,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
         BinaryTablePtr bin(new BinaryTable);
         CheckNonNull(bin.pointer());
-        if (bin->fromXML(node, _charset) && bin->isValid()) {
+        if (bin->fromXML(_duck, node) && bin->isValid()) {
             add(bin);
         }
         else {
@@ -416,7 +420,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
     for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
         const BinaryTablePtr& table(*it);
         if (!table.isNull()) {
-            table->toXML(root, false, _charset);
+            table->toXML(_duck, root, false);
         }
     }
 

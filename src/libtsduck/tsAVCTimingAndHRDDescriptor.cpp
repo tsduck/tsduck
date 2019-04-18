@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAVCTimingAndHRDDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -64,10 +65,10 @@ ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor(DuckContext& duck, const Descriptor& desc) :
     AVCTimingAndHRDDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -75,7 +76,7 @@ ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     const bool has_90kHz = N_90khz.set() && K_90khz.set();
@@ -101,7 +102,7 @@ void ts::AVCTimingAndHRDDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -151,7 +152,7 @@ void ts::AVCTimingAndHRDDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::AVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -192,7 +193,7 @@ void ts::AVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::buildXML(xml::Element* root) const
+void ts::AVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"hrd_management_valid", hrd_management_valid);
     root->setOptionalIntAttribute(u"N_90khz", N_90khz);
@@ -208,7 +209,7 @@ void ts::AVCTimingAndHRDDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCTimingAndHRDDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::AVCTimingAndHRDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

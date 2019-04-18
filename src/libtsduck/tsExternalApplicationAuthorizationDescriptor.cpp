@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsExternalApplicationAuthorizationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -54,10 +55,10 @@ ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorization
     _is_valid = true;
 }
 
-ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorizationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorizationDescriptor(DuckContext& duck, const Descriptor& desc) :
     ExternalApplicationAuthorizationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::ExternalApplicationAuthorizationDescriptor::ExternalApplicationAuthorization
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ExternalApplicationAuthorizationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
@@ -81,7 +82,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::serialize(Descriptor& desc,
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ExternalApplicationAuthorizationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     entries.clear();
     const uint8_t* data = desc.payload();
@@ -104,7 +105,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::deserialize(const Descripto
 
 void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 7) {
@@ -125,7 +126,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDis
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::buildXML(xml::Element* root) const
+void ts::ExternalApplicationAuthorizationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"application");
@@ -140,7 +141,7 @@ void ts::ExternalApplicationAuthorizationDescriptor::buildXML(xml::Element* root
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalApplicationAuthorizationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ExternalApplicationAuthorizationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

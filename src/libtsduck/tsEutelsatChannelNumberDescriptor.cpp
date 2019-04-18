@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEutelsatChannelNumberDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -64,11 +65,11 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -76,7 +77,7 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descr
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::EutelsatChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(new ByteBlock(2));
     CheckNonNull(bbp.pointer());
@@ -99,7 +100,7 @@ void ts::EutelsatChannelNumberDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::EutelsatChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 8 == 0;
     entries.clear();
@@ -122,7 +123,7 @@ void ts::EutelsatChannelNumberDescriptor::deserialize(const Descriptor& desc, co
 
 void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 8) {
@@ -145,7 +146,7 @@ void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::buildXML(xml::Element* root) const
+void ts::EutelsatChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
@@ -161,7 +162,7 @@ void ts::EutelsatChannelNumberDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::EutelsatChannelNumberDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

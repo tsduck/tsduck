@@ -65,25 +65,25 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        ShortEventDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        ShortEventDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Split the content into several ShortEventDescriptor.
         //! Split if the content is too long and add them in a descriptor list.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] dlist Descriptor list.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return The number of descriptors.
         //!
-        size_t splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = nullptr) const;
+        size_t splitAndAdd(DuckContext& duck, DescriptorList& dlist) const;
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
     };
 }

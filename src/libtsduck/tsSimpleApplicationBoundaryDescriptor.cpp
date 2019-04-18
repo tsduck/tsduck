@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSimpleApplicationBoundaryDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -54,10 +55,10 @@ ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor() :
     _is_valid = true;
 }
 
-ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(DuckContext& duck, const Descriptor& desc) :
     SimpleApplicationBoundaryDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,12 +66,12 @@ ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SimpleApplicationBoundaryDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(uint8_t(boundary_extension.size()));
     for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
-        bbp->append(it->toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(duck.toDVBWithByteLength(*it));
     }
     serializeEnd(desc, bbp);
 }
@@ -80,7 +81,7 @@ void ts::SimpleApplicationBoundaryDescriptor::serialize(Descriptor& desc, const 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SimpleApplicationBoundaryDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     boundary_extension.clear();
     const uint8_t* data = desc.payload();
@@ -92,7 +93,7 @@ void ts::SimpleApplicationBoundaryDescriptor::deserialize(const Descriptor& desc
         const size_t count = data[0];
         data++; size--;
         while (size > 0) {
-            boundary_extension.push_back(UString::FromDVBWithByteLength(data, size, charset));
+            boundary_extension.push_back(duck.fromDVBWithByteLength(data, size));
         }
         _is_valid = count == boundary_extension.size();
     }
@@ -105,7 +106,7 @@ void ts::SimpleApplicationBoundaryDescriptor::deserialize(const Descriptor& desc
 
 void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size > 0) {
@@ -114,7 +115,7 @@ void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& d
     }
 
     while (size > 0) {
-        strm << margin << "Boundary extension: \"" << UString::FromDVBWithByteLength(data, size, display.dvbCharset()) << "\"" << std::endl;
+        strm << margin << "Boundary extension: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
     }
 }
 
@@ -123,7 +124,7 @@ void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::buildXML(xml::Element* root) const
+void ts::SimpleApplicationBoundaryDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
         root->addElement(u"prefix")->setAttribute(u"boundary_extension", *it);
@@ -135,7 +136,7 @@ void ts::SimpleApplicationBoundaryDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationBoundaryDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SimpleApplicationBoundaryDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     boundary_extension.clear();
     xml::ElementVector children;

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsScramblingDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -54,10 +55,10 @@ ts::ScramblingDescriptor::ScramblingDescriptor(uint8_t mode) :
     _is_valid = true;
 }
 
-ts::ScramblingDescriptor::ScramblingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ScramblingDescriptor::ScramblingDescriptor(DuckContext& duck, const Descriptor& desc) :
     ScramblingDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::ScramblingDescriptor::ScramblingDescriptor(const Descriptor& desc, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ScramblingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(scrambling_mode);
@@ -77,7 +78,7 @@ void ts::ScramblingDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ScramblingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
@@ -93,7 +94,7 @@ void ts::ScramblingDescriptor::deserialize(const Descriptor& desc, const DVBChar
 
 void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -110,7 +111,7 @@ void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::buildXML(xml::Element* root) const
+void ts::ScramblingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"scrambling_mode", scrambling_mode, true);
 }
@@ -120,7 +121,7 @@ void ts::ScramblingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ScramblingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

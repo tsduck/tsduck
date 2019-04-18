@@ -55,8 +55,8 @@ ts::TSDT::TSDT(uint8_t vers, bool cur) :
 {
 }
 
-ts::TSDT::TSDT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, MY_STD, table, charset)
+ts::TSDT::TSDT(DuckContext& duck, const BinaryTable& table) :
+    AbstractDescriptorsTable(duck, MY_TID, MY_XML_NAME, MY_STD, table)
 {
 }
 

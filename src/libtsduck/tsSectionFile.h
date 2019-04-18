@@ -109,9 +109,10 @@ namespace ts {
     {
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //!
-        SectionFile();
+        SectionFile(DuckContext& duck);
 
         //!
         //! Section file formats.
@@ -151,12 +152,6 @@ namespace ts {
         //! @param [in] tweaks XML tweaks.
         //!
         void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
-
-        //!
-        //! Set the default DVB charset to use when load or saving section files.
-        //! @param [in] charset If not zero, default character set to encode or decode strings.
-        //!
-        void setDefaultCharset(const DVBCharset* charset = nullptr) { _charset = charset; }
 
         //!
         //! Set the CRC32 processing mode when loading binary sections.
@@ -347,18 +342,12 @@ namespace ts {
         //!
         size_t packOrphanSections();
 
-#if !defined(DOXYGEN)
-        // Just to make sure the compiler is aware that we do this on purpose, despite the private charset pointer.
-        SectionFile(const SectionFile&) = default;
-        SectionFile& operator=(const SectionFile&) = default;
-#endif
-
     private:
+        DuckContext&         _duck;            //!< Reference to TSDuck execution context.
         BinaryTablePtrVector _tables;          //!< Loaded tables.
         SectionPtrVector     _sections;        //!< All sections from the file.
         SectionPtrVector     _orphanSections;  //!< Sections which do not belong to any table.
         xml::Tweaks          _xmlTweaks;       //!< XML formatting and parsing tweaks.
-        const DVBCharset*    _charset;         //!< Default DVB charset.
         CRC32::Validation    _crc_op;          //!< Processing of CRC32 when loading sections.
 
         //!
@@ -379,5 +368,10 @@ namespace ts {
         //! Check it a table can be formed using the last sections in _orphanSections.
         //!
         void collectLastTable();
+
+        // Inaccessible operations
+        SectionFile() = delete;
+        SectionFile(const SectionFile&) = delete;
+        SectionFile& operator=(const SectionFile&) = delete;
     };
 }

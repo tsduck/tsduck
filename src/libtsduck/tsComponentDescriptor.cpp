@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsComponentDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -68,10 +69,10 @@ ts::ComponentDescriptor::ComponentDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ComponentDescriptor::ComponentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ComponentDescriptor::ComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
     ComponentDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -79,18 +80,18 @@ ts::ComponentDescriptor::ComponentDescriptor(const Descriptor& desc, const DVBCh
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt8((stream_content_ext << 4) | (stream_content & 0x0F));
     bbp->appendUInt8(component_type);
     bbp->appendUInt8(component_tag);
-    if (!SerializeLanguageCode(*bbp, language_code)) {
+    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
         desc.invalidate();
         return;
     }
-    bbp->append(text.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVB(text));
 
     serializeEnd(desc, bbp);
 }
@@ -100,7 +101,7 @@ void ts::ComponentDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ComponentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -112,8 +113,8 @@ void ts::ComponentDescriptor::deserialize(const Descriptor& desc, const DVBChars
         stream_content = data[0] & 0x0F;
         component_type = data[1];
         component_tag = data[2];
-        language_code.assign(UString::FromDVB(data + 3, 3));
-        text.assign(UString::FromDVB(data + 6, size - 6, charset));
+        language_code.assign(duck.fromDVB(data + 3, 3));
+        text.assign(duck.fromDVB(data + 6, size - 6));
     }
 }
 
@@ -124,7 +125,7 @@ void ts::ComponentDescriptor::deserialize(const Descriptor& desc, const DVBChars
 
 void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
@@ -132,10 +133,10 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         const uint8_t tag = data[2];
         strm << margin << "Content/type: " << names::ComponentType(type, names::FIRST) << std::endl
              << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl
-             << margin << "Language: " << UString::FromDVB(data + 3, 3, display.dvbCharset()) << std::endl;
+             << margin << "Language: " << display.duck().fromDVB(data + 3, 3) << std::endl;
         data += 6; size -= 6;
         if (size > 0) {
-            strm << margin << "Description: \"" << UString::FromDVB(data, size, display.dvbCharset()) << "\"" << std::endl;
+            strm << margin << "Description: \"" << display.duck().fromDVB(data, size) << "\"" << std::endl;
         }
         data += size; size = 0;
     }
@@ -148,7 +149,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::buildXML(xml::Element* root) const
+void ts::ComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"stream_content", stream_content, true);
     root->setIntAttribute(u"stream_content_ext", stream_content_ext, true);
@@ -163,7 +164,7 @@ void ts::ComponentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ComponentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

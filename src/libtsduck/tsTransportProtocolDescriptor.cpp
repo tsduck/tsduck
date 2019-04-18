@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTransportProtocolDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsNames.h"
@@ -60,10 +61,10 @@ ts::TransportProtocolDescriptor::TransportProtocolDescriptor() :
     _is_valid = true;
 }
 
-ts::TransportProtocolDescriptor::TransportProtocolDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TransportProtocolDescriptor::TransportProtocolDescriptor(DuckContext& duck, const Descriptor& desc) :
     TransportProtocolDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 void ts::TransportProtocolDescriptor::clear()
@@ -126,7 +127,7 @@ ts::TransportProtocolDescriptor::HTTPEntry::HTTPEntry() :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TransportProtocolDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(protocol_id);
@@ -157,16 +158,16 @@ void ts::TransportProtocolDescriptor::serialize(Descriptor& desc, const DVBChars
             }
             bbp->appendUInt8(mpe.alignment_indicator ? 0xFF : 0x7F);
             for (auto it = mpe.urls.begin(); it != mpe.urls.end(); ++it) {
-                bbp->append(it->toDVBWithByteLength(0, NPOS, charset));
+                bbp->append(duck.toDVBWithByteLength(*it));
             }
             break;
         }
         case MHP_PROTO_HTTP: {
             for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
-                bbp->append(it1->URL_base.toDVBWithByteLength(0, NPOS, charset));
+                bbp->append(duck.toDVBWithByteLength(it1->URL_base));
                 bbp->appendUInt8(uint8_t(it1->URL_extensions.size()));
                 for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
-                    bbp->append(it2->toDVBWithByteLength(0, NPOS, charset));
+                    bbp->append(duck.toDVBWithByteLength(*it2));
                 }
             }
             break;
@@ -185,7 +186,7 @@ void ts::TransportProtocolDescriptor::serialize(Descriptor& desc, const DVBChars
 // into the appropriate structure. Return false on invalid selector bytes.
 //----------------------------------------------------------------------------
 
-bool ts::TransportProtocolDescriptor::transferSelectorBytes(const DVBCharset* charset)
+bool ts::TransportProtocolDescriptor::transferSelectorBytes(DuckContext& duck)
 {
     // Clear other protocols.
     carousel.clear();
@@ -238,7 +239,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(const DVBCharset* ch
                 if (size < 1 + len) {
                     return false;
                 }
-                mpe.urls.push_back(UString::FromDVB(data + 1, len, charset));
+                mpe.urls.push_back(duck.fromDVB(data + 1, len));
                 data += 1 + len; size -= 1 + len;
             }
             break;
@@ -252,7 +253,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(const DVBCharset* ch
                 if (size < 2 + len) {
                     return false;
                 }
-                e.URL_base = UString::FromDVB(data + 1, len, charset);
+                e.URL_base = duck.fromDVB(data + 1, len);
                 size_t count = data[1 + len];
                 data += 2 + len; size -= 2 + len;
                 // Loop on all URL extensions.
@@ -264,7 +265,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(const DVBCharset* ch
                     if (size < 1 + extlen) {
                         return false;
                     }
-                    e.URL_extensions.push_back(UString::FromDVB(data + 1, extlen, charset));
+                    e.URL_extensions.push_back(duck.fromDVB(data + 1, extlen));
                     data += 1 + extlen; size -= 1 + extlen;
                 }
                 // URL entry completed.
@@ -288,7 +289,7 @@ bool ts::TransportProtocolDescriptor::transferSelectorBytes(const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TransportProtocolDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     clear();
 
@@ -301,7 +302,7 @@ void ts::TransportProtocolDescriptor::deserialize(const Descriptor& desc, const 
         protocol_id = GetUInt16(data);
         transport_protocol_label = data[2];
         selector.copy(data + 3, size - 3);
-        _is_valid = transferSelectorBytes(charset);
+        _is_valid = transferSelectorBytes(duck);
     }
 }
 
@@ -312,7 +313,7 @@ void ts::TransportProtocolDescriptor::deserialize(const Descriptor& desc, const 
 
 void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {
@@ -367,7 +368,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                         const size_t len = data[0];
                         ok = size >= 1 + len;
                         if (ok) {
-                            strm << margin << "URL: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+                            strm << margin << "URL: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
                             data += 1 + len; size -= 1 + len;
                         }
                     }
@@ -380,14 +381,14 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
                     const size_t len = data[0];
                     ok = size >= 2 + len;
                     if (ok) {
-                        strm << margin << "URL base: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl;
+                        strm << margin << "URL base: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl;
                         size_t count = data[1 + len];
                         data += 2 + len; size -= 2 + len;
                         while (count-- > 0) {
                             const size_t extlen = data[0];
                             ok = size >= 1 + extlen;
                             if (ok) {
-                                strm << margin << "  Extension: \"" << UString::FromDVB(data + 1, extlen, display.dvbCharset()) << "\"" << std::endl;
+                                strm << margin << "  Extension: \"" << display.duck().fromDVB(data + 1, extlen) << "\"" << std::endl;
                                 data += 1 + extlen; size -= 1 + extlen;
                             }
                         }
@@ -413,7 +414,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::buildXML(xml::Element* root) const
+void ts::TransportProtocolDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_protocol_label", transport_protocol_label, true);
     switch (protocol_id) {
@@ -463,7 +464,7 @@ void ts::TransportProtocolDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TransportProtocolDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 
@@ -534,6 +535,6 @@ void ts::TransportProtocolDescriptor::fromXML(const xml::Element* element, const
         _is_valid =
             proto[0]->getIntAttribute<uint16_t>(protocol_id, u"id", true) &&
             proto[0]->getHexaText(selector) &&
-            transferSelectorBytes(nullptr);
+            transferSelectorBytes(duck);
     }
 }

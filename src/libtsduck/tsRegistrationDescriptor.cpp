@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsRegistrationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -55,10 +56,10 @@ ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const By
     _is_valid = true;
 }
 
-ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::RegistrationDescriptor::RegistrationDescriptor(DuckContext& duck, const Descriptor& desc) :
     RegistrationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +67,7 @@ ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::RegistrationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(format_identifier);
@@ -79,7 +80,7 @@ void ts::RegistrationDescriptor::serialize(Descriptor& desc, const DVBCharset* c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::RegistrationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
     additional_identification_info.clear();
@@ -99,13 +100,13 @@ void ts::RegistrationDescriptor::deserialize(const Descriptor& desc, const DVBCh
 
 void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the format identifier is made of ASCII characters. Try to display them.
         strm << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl;
         data += 4; size -= 4;
         // Additional binary info.
@@ -124,7 +125,7 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
+void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"format_identifier", format_identifier, true);
     if (!additional_identification_info.empty()) {
@@ -137,7 +138,7 @@ void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::RegistrationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

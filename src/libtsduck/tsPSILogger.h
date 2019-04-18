@@ -51,14 +51,8 @@ namespace ts {
         //! Constructor.
         //! @param [in] options PSI logging options.
         //! @param [in,out] display Object to display tables and sections.
-        //! @param [in,out] report Where to log errors.
         //!
-        PSILogger(PSILoggerArgs& options, TablesDisplay& display, Report& report);
-
-        //!
-        //! Destructor.
-        //!
-        ~PSILogger();
+        PSILogger(PSILoggerArgs& options, TablesDisplay& display);
 
         //!
         //! The following method feeds the logger with a TS packet.
@@ -92,7 +86,7 @@ namespace ts {
     private:
         const PSILoggerArgs& _opt;
         TablesDisplay&   _display;
-        Report&          _report;
+        DuckContext&     _duck;
         bool             _abort;
         bool             _pat_ok;        // Got a PAT
         bool             _cat_ok;        // Got a CAT or not interested in CAT
@@ -109,6 +103,11 @@ namespace ts {
         // Implementations of TableHandlerInterface and SectionHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
+
+        // Inaccessible operations
+        PSILogger() = delete;
+        PSILogger(const PSILogger&) = delete;
+        PSILogger& operator=(const PSILogger&) = delete;
     };
 
     //!

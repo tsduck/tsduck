@@ -48,6 +48,7 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
     virtual ~Options();
 
+    ts::DuckContext       duck;      // TSDuck execution context.
     ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
     ts::UString           infile;    // Input file name
     ts::TSAnalyzerOptions analysis;  // Analysis options.
@@ -56,12 +57,14 @@ struct Options: public ts::Args
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),
+    duck(this),
     bitrate(0),
     infile(),
     analysis(),
     pager(true, true)
 {
     // Define all standard analysis options.
+    duck.defineOptionsForDVBCharset(*this);
     pager.defineOptions(*this);
     analysis.defineOptions(*this);
 
@@ -77,6 +80,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Define all standard analysis options.
+    duck.loadOptions(*this);
     pager.load(*this);
     analysis.load(*this);
 
@@ -98,7 +102,7 @@ Options::~Options()
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::TSAnalyzerReport analyzer(opt.bitrate);
+    ts::TSAnalyzerReport analyzer(opt.duck, opt.bitrate);
     ts::InputRedirector input(opt.infile, opt);
     ts::TSPacket pkt;
 

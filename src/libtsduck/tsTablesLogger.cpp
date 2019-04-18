@@ -46,23 +46,24 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& display, Report& report) :
+ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& display) :
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _opt(opt),
     _display(display),
-    _report(report),
+    _duck(_display.duck()),
+    _report(_duck.report()),
     _abort(false),
     _exit(false),
     _table_count(0),
     _packet_count(0),
-    _demux(nullptr, nullptr, opt.pid),
-    _cas_mapper(report),
-    _xmlOut(report),
-    _xmlDoc(report),
+    _demux(_duck, nullptr, nullptr, opt.pid),
+    _cas_mapper(_duck),
+    _xmlOut(_report),
+    _xmlDoc(_report),
     _xmlOpen(false),
     _binfile(),
-    _sock(false, report),
+    _sock(false, _report),
     _shortSections(),
     _allSections(),
     _sectionsOnce()
@@ -80,7 +81,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _cas_mapper.setCurrentNext(opt.use_current, opt.use_next);
 
     // Open/create the text output.
-    if (_opt.use_text && !_display.redirect(_opt.text_destination)) {
+    if (_opt.use_text && !_duck.setOutput(_opt.text_destination)) {
         _abort = true;
         return;
     }
@@ -184,7 +185,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
     // Add PMT PID's when necessary
     if (_opt.add_pmt_pids && table.tableId() == TID_PAT) {
-        PAT pat(table);
+        PAT pat(_duck, table);
         if (pat.isValid()) {
             if (pat.nit_pid != PID_NULL) {
                 _demux.addPID(pat.nit_pid);
@@ -586,7 +587,7 @@ bool ts::TablesLogger::createXML(const ts::UString& name)
 void ts::TablesLogger::saveXML(const ts::BinaryTable& table)
 {
     // Convert the table into an XML structure.
-    xml::Element* elem = table.toXML(_xmlDoc.rootElement(), false, _display.dvbCharset());
+    xml::Element* elem = table.toXML(_duck, _xmlDoc.rootElement(), false);
     if (elem == nullptr) {
         // XML conversion error, message already displayed.
         return;
@@ -684,7 +685,7 @@ bool ts::TablesLogger::isFiltered(const Section& sect, CASFamily cas) const
 
 void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
 {
-    std::ostream& strm(_display.out());
+    std::ostream& strm(_display.duck().out());
 
     // Initial spacing
     if (_table_count == 0 && !_opt.logger) {
@@ -716,7 +717,7 @@ void ts::TablesLogger::postDisplay()
 {
     // Flush output file if required
     if (_opt.flush) {
-        _display.flush();
+        _duck.flush();
     }
 }
 

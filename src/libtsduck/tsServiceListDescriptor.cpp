@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceListDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -54,10 +55,10 @@ ts::ServiceListDescriptor::ServiceListDescriptor() :
     _is_valid = true;
 }
 
-ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ServiceListDescriptor::ServiceListDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceListDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::ServiceListDescriptor::ServiceListDescriptor(int service_id, int service_type, ...) :
@@ -80,7 +81,7 @@ ts::ServiceListDescriptor::ServiceListDescriptor(int service_id, int service_typ
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ServiceListDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -101,7 +102,7 @@ void ts::ServiceListDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ServiceListDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 0;
     entries.clear();
@@ -124,7 +125,7 @@ void ts::ServiceListDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 3) {
@@ -142,7 +143,7 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::buildXML(xml::Element* root) const
+void ts::ServiceListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
@@ -156,7 +157,7 @@ void ts::ServiceListDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ServiceListDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

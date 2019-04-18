@@ -161,7 +161,7 @@ uint64_t ts::SpliceInsert::lowestPTS() const
 
 void ts::SpliceInsert::display(TablesDisplay& display, int indent) const
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     strm << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {event_id, canceled}) << std::endl;
@@ -322,7 +322,7 @@ void ts::SpliceInsert::serialize(ByteBlock& data) const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInsert::buildXML(xml::Element* root) const
+void ts::SpliceInsert::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"splice_event_id", event_id, true);
     root->setBoolAttribute(u"splice_event_cancel", canceled);
@@ -357,7 +357,7 @@ void ts::SpliceInsert::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInsert::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SpliceInsert::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

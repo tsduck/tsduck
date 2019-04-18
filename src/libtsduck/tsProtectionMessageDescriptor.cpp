@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsProtectionMessageDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -54,10 +55,10 @@ ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor() :
     _is_valid = true;
 }
 
-ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor(DuckContext& duck, const Descriptor& desc) :
     ProtectionMessageDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::ProtectionMessageDescriptor::ProtectionMessageDescriptor(const Descriptor& d
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ProtectionMessageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     if (component_tags.size() > 15) {
         desc.invalidate();
@@ -84,7 +85,7 @@ void ts::ProtectionMessageDescriptor::serialize(Descriptor& desc, const DVBChars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ProtectionMessageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -112,7 +113,7 @@ void ts::ProtectionMessageDescriptor::DisplayDescriptor(TablesDisplay& display, 
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -133,7 +134,7 @@ void ts::ProtectionMessageDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::buildXML(xml::Element* root) const
+void ts::ProtectionMessageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (size_t i = 0; i < component_tags.size(); ++i) {
         root->addElement(u"component")->setIntAttribute(u"tag", component_tags[i], true);
@@ -145,7 +146,7 @@ void ts::ProtectionMessageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ProtectionMessageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ProtectionMessageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     component_tags.clear();
     xml::ElementVector children;

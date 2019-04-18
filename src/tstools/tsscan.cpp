@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsTunerParametersDVBT.h"
@@ -39,6 +40,7 @@
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersATSC.h"
 #include "tsModulation.h"
+#include "tsHFBand.h"
 #include "tsTSScanner.h"
 #include "tsChannelFile.h"
 #include "tsNIT.h"
@@ -65,6 +67,7 @@ public:
     ScanOptions(int argc, char *argv[]);
     virtual ~ScanOptions();
 
+    ts::DuckContext   duck;
     ts::TunerArgs     tuner_args;
     bool              uhf_scan;
     bool              vhf_scan;
@@ -99,6 +102,7 @@ ScanOptions::~ScanOptions() {}
 // Constructor.
 ScanOptions::ScanOptions(int argc, char *argv[]) :
     Args(u"Scan a DVB network", u"[options]"),
+    duck(this),
     tuner_args(false, true),
     uhf_scan(false),
     vhf_scan(false),
@@ -121,6 +125,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     update_channel_file(false),
     default_channel_file(false)
 {
+    duck.defineOptionsForHFBand(*this);
     tuner_args.defineOptions(*this);
 
     option(u"best-quality");
@@ -230,7 +235,8 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"See also option --save-channels.");
 
     analyze(argc, argv);
-    tuner_args.load(*this);
+    duck.loadOptions(*this);
+    tuner_args.load(*this, duck);
 
     // Type of scanning
     uhf_scan = present(u"uhf-band");
@@ -246,7 +252,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     }
 
     // Type of HF band to use.
-    hfband = vhf_scan ? tuner_args.vhf : tuner_args.uhf;
+    hfband = vhf_scan ? duck.vhfBand() : duck.uhfBand();
 
     use_best_quality  = present(u"best-quality");
     use_best_strength = present(u"best-strength");
@@ -535,7 +541,7 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Tune
 
     // Collect info from the TS.
     // Use "PAT only" when we do not need the services or channels file.
-    ts::TSScanner info(_tuner, _opt.psi_timeout, !get_services && _opt.channel_file.empty(), _opt);
+    ts::TSScanner info(_opt.duck, _tuner, _opt.psi_timeout, !get_services && _opt.channel_file.empty());
 
     if (tparams.isNull()) {
         info.getTunerParameters(tparams);
@@ -635,7 +641,7 @@ void ScanContext::nitScan()
     }
 
     // Collect info on reference transponder.
-    ts::TSScanner info(_tuner, _opt.psi_timeout, false, _opt);
+    ts::TSScanner info(_opt.duck, _tuner, _opt.psi_timeout, false);
 
     // Get the collected NIT
     ts::SafePtr<ts::NIT> nit;

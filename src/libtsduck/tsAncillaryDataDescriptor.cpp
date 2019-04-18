@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAncillaryDataDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -59,10 +60,10 @@ ts::AncillaryDataDescriptor::AncillaryDataDescriptor(uint8_t id) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AncillaryDataDescriptor::AncillaryDataDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AncillaryDataDescriptor::AncillaryDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     AncillaryDataDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,7 +71,7 @@ ts::AncillaryDataDescriptor::AncillaryDataDescriptor(const Descriptor& desc, con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AncillaryDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(ancillary_data_identifier);
@@ -82,7 +83,7 @@ void ts::AncillaryDataDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AncillaryDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
@@ -98,7 +99,7 @@ void ts::AncillaryDataDescriptor::deserialize(const Descriptor& desc, const DVBC
 
 void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -120,7 +121,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::buildXML(xml::Element* root) const
+void ts::AncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"ancillary_data_identifier", ancillary_data_identifier, true);
 }
@@ -130,7 +131,7 @@ void ts::AncillaryDataDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AncillaryDataDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::AncillaryDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsSysUtils.h"
@@ -55,7 +56,8 @@ struct Options: public ts::Args
     ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
 #endif
 
-    ts::TunerArgs tuner;  // Name of device to list (unspecified means all).
+    ts::DuckContext duck;
+    ts::TunerArgs   tuner;  // Name of device to list (unspecified means all).
 };
 
 // Destructor.
@@ -67,6 +69,7 @@ Options::Options(int argc, char *argv[]) :
 #if defined(TS_WINDOWS)
     test_type(ts::DirectShowTest::NONE),
 #endif
+    duck(this),
     tuner(true, true)
 {
 #if defined(TS_WINDOWS)
@@ -86,7 +89,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Analyze command line options.
     analyze(argc, argv);
-    tuner.load(*this);
+    tuner.load(*this, duck);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".

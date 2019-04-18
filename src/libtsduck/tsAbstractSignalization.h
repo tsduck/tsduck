@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
+#include "tsDuckContext.h"
 #include "tsByteBlock.h"
 #include "tsxml.h"
 
@@ -93,19 +94,23 @@ namespace ts {
         //! If the object is serialized as one single XML node, it is simpler to
         //! implement buidlXML().
         //!
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @return The new XML element.
         //!
-        virtual xml::Element* toXML(xml::Element* parent) const;
+        virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const;
 
         //!
         //! This abstract converts an XML structure to a table or descriptor.
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
-        //! @param [in] charset If not zero, character set to use to serialize text.
         //!
-        virtual void fromXML(const xml::Element* element, const DVBCharset* charset = nullptr) = 0;
+        virtual void fromXML(DuckContext& duck, const xml::Element* element) = 0;
+
+        // Implementation of AbstractDefinedByStandards
+        virtual Standards definingStandards() const override;
 
         //!
         //! Virtual destructor
@@ -157,8 +162,9 @@ namespace ts {
         //! won't be invoked.
         //!
         //! @param [in,out] root The root node for the new XML tree.
+        //! @param [in,out] duck TSDuck execution context.
         //!
-        virtual void buildXML(xml::Element* root) const;
+        virtual void buildXML(DuckContext& duck, xml::Element* root) const;
 
         //!
         //! Check that an XML element has the right name for this table.
@@ -169,26 +175,26 @@ namespace ts {
 
         //!
         //! This static method serializes a DVB string with a required fixed size.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] bb A byte-block where @a str will be appended if its size is correct.
         //! @param [in] str String to serialize.
         //! @param [in] size Required size in bytes of the serialized string.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True if the size has the required length and has been serialized.
         //!
-        static bool SerializeFixedLength(ByteBlock& bb, const UString& str, const size_t size, const DVBCharset* charset = nullptr);
+        static bool SerializeFixedLength(DuckContext& duck, ByteBlock& bb, const UString& str, const size_t size);
 
         //!
-        //! This abstract method serializes a 3-byte language or country code.
+        //! This static method serializes a 3-byte language or country code.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] bb A byte-block where @a str will be appended if its size is correct.
         //! @param [in] str String to serialize.
         //! @return True if the size has the required length and has been serialized.
         //!
-        static bool SerializeLanguageCode(ByteBlock& bb, const UString& str)
-        {
-            return SerializeFixedLength(bb, str, 3);
-        }
+        static bool SerializeLanguageCode(DuckContext& duck, ByteBlock& bb, const UString& str);
 
     private:
+        const Standards _standards;  // Defining standards (usually only one).
+
         // Unreachable constructors and operators.
         AbstractSignalization() = delete;
     };

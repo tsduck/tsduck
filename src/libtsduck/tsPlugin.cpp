@@ -48,7 +48,8 @@ ts::TSP::TSP(int max_severity) :
 
 ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
     Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION | NO_CONFIG_FILE),
-    tsp(to_tsp)
+    tsp(to_tsp),
+    duck(to_tsp)
 {
 }
 

@@ -55,8 +55,8 @@ ts::CAT::CAT(uint8_t vers, bool cur) :
 {
 }
 
-ts::CAT::CAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, MY_STD, table, charset)
+ts::CAT::CAT(DuckContext& duck, const BinaryTable& table) :
+    AbstractDescriptorsTable(duck, MY_TID, MY_XML_NAME, MY_STD, table)
 {
 }
 

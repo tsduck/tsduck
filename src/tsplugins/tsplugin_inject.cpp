@@ -330,7 +330,7 @@ bool ts::InjectPlugin::reloadFiles()
     // Load sections from input files
     bool success = true;
     uint64_t bits_per_1000s = 0;  // Total bits in 1000 seconds.
-    SectionFile file;
+    SectionFile file(duck);
     file.setCRCValidation(_crc_op);
 
     for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {

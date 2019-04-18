@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -53,10 +54,10 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const UString& id) 
     _is_valid = true;
 }
 
-ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceIdentifierDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -64,10 +65,10 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(const Descriptor& d
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ServiceIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(identifier.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVB(identifier));
     serializeEnd(desc, bbp);
 }
 
@@ -76,12 +77,12 @@ void ts::ServiceIdentifierDescriptor::serialize(Descriptor& desc, const DVBChars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ServiceIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        identifier.assign(UString::FromDVB(desc.payload(), desc.payloadSize(), charset));
+        identifier.assign(duck.fromDVB(desc.payload(), desc.payloadSize()));
     }
     else {
         identifier.clear();
@@ -95,10 +96,9 @@ void ts::ServiceIdentifierDescriptor::deserialize(const Descriptor& desc, const 
 
 void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    display.out() << std::string(indent, ' ')
-                  << "Service identifier: \""
-                  << UString::FromDVB(payload, size, display.dvbCharset())
-                  << "\"" << std::endl;
+    std::ostream& strm(display.duck().out());
+    const std::string margin(indent, ' ');
+    strm << margin << "Service identifier: \"" << display.duck().fromDVB(payload, size) << "\"" << std::endl;
 }
 
 
@@ -106,7 +106,7 @@ void ts::ServiceIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::ServiceIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"service_identifier", identifier);
 }
@@ -116,7 +116,7 @@ void ts::ServiceIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdentifierDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ServiceIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

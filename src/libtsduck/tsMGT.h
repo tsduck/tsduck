@@ -94,9 +94,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
         //!
-        MGT(const BinaryTable& table);
+        MGT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Assignment operator.
@@ -106,7 +107,7 @@ namespace ts {
         MGT& operator=(const MGT& other) = default;
 
         // Inherited methods
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
         //!
@@ -118,9 +119,9 @@ namespace ts {
 
     protected:
         // Inherited methods
-        virtual void serializeContent(BinaryTable&, const DVBCharset*) const override;
-        virtual void deserializeContent(const BinaryTable&, const DVBCharset*) override;
-        virtual void buildXML(xml::Element*) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         // An Enumeration object for table_type.

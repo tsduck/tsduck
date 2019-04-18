@@ -30,42 +30,6 @@
 #include "tsAbstractDefinedByStandards.h"
 TSDUCK_SOURCE;
 
-
-//----------------------------------------------------------------------------
-// Constructors, assignments and destructors.
-//----------------------------------------------------------------------------
-
-ts::AbstractDefinedByStandards::AbstractDefinedByStandards(Standards standards) :
-    _definingStandards(standards),
-    _allStandards(standards)
-{
-}
-
 ts::AbstractDefinedByStandards::~AbstractDefinedByStandards()
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Default implementations of virtual methods.
-//----------------------------------------------------------------------------
-
-ts::Standards ts::AbstractDefinedByStandards::definingStandards() const
-{
-    return _definingStandards;
-}
-
-ts::Standards ts::AbstractDefinedByStandards::allStandards() const
-{
-    return _allStandards;
-}
-
-void ts::AbstractDefinedByStandards::addAllStandards(Standards mask)
-{
-    _allStandards |= mask;
-}
-
-void ts::AbstractDefinedByStandards::resetAllStandards()
-{
-    _allStandards = definingStandards();
 }

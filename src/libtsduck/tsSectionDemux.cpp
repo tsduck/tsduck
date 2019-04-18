@@ -200,8 +200,8 @@ void ts::SectionDemux::PIDContext::syncLost()
 // SectionDemux constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler, SectionHandlerInterface* section_handler, const PIDSet& pid_filter) :
-    SuperClass(pid_filter),
+ts::SectionDemux::SectionDemux(DuckContext& duck, TableHandlerInterface* table_handler, SectionHandlerInterface* section_handler, const PIDSet& pid_filter) :
+    SuperClass(duck, pid_filter),
     _table_handler(table_handler),
     _section_handler(section_handler),
     _pids(),
@@ -244,7 +244,6 @@ void ts::SectionDemux::feedPacket(const TSPacket& pkt)
 void ts::SectionDemux::processPacket(const TSPacket& pkt)
 {
     // Reject invalid packets
-
     if (!pkt.hasValidSync()) {
         _status.invalid_ts++;
         return;
@@ -252,14 +251,11 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
     // Get PID and reference to the PID context.
     // The PID context is created if did not exist.
-
     const PID pid = pkt.getPID();
     PIDContext& pc(_pids[pid]);
 
-    // If TS packet is scrambled, we cannot decode it and we loose
-    // synchronization on this PID (usually, PID's carrying sections
-    // are not scrambled).
-
+    // If TS packet is scrambled, we cannot decode it and we loose synchronization
+    // on this PID (usually, PID's carrying sections are not scrambled).
     if (pkt.getScrambling()) {
         _status.scrambled++;
         pc.syncLost();
@@ -268,7 +264,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
     // Check continuity counter on this PID (only if we have not lost
     // the synchronization on this PID).
-
     if (pc.sync) {
         // Ignore duplicate packets (same CC)
         if (pkt.getCC() == pc.continuity) {
@@ -284,9 +279,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     pc.continuity = pkt.getCC();
 
     // Locate TS packet payload
-
     size_t header_size = pkt.getHeaderSize();
-
     if (!pkt.hasPayload () || header_size >= PKT_SIZE) {
         return;
     }
@@ -337,7 +330,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     }
 
     // If no previous synchronization, skip incomplete sections
-
     if (!pc.sync) {
         // If no new section in this packet, ignore it
         if (!pkt.getPUSI()) {
@@ -352,11 +344,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     }
 
     // Copy TS packet payload in PID context
-
     pc.ts.append(payload, payload_size);
 
     // Locate TS buffer by address and size.
-
     const uint8_t* ts_start = pc.ts.data();
     size_t ts_size = pc.ts.size();
 
@@ -469,9 +459,8 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         if (section_ok) {
 
-            // Get the list of standards which define this table id.
-            // Add this list to the standards of the demux.
-            addAllStandards(TablesFactory::Instance()->getTableStandards(etid.tid()));
+            // Get the list of standards which define this table id and add them in context.
+            _duck.addStandards(TablesFactory::Instance()->getTableStandards(etid.tid()));
 
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
@@ -511,8 +500,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     _status.wrong_crc++;  // only possible error (hum?)
                     section_ok = false;
                 }
-                // Make sure the new section conveys the standards from the demux.
-                sect_ptr->addAllStandards(allStandards());
             }
 
             // Mark that we are in the context of a table or section handler.

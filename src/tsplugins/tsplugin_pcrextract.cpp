@@ -169,7 +169,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
     _output(nullptr),
     _stats(),
     _splices(),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"csv", 'c');
     help(u"csv",
@@ -569,21 +569,21 @@ void ts::PCRExtractPlugin::handleTable(SectionDemux& demux, const BinaryTable& t
 {
     switch (table.tableId()) {
         case TID_PAT: {
-            const PAT pat(table);
+            const PAT pat(duck, table);
             if (pat.isValid()) {
                 processPAT(pat);
             }
             break;
         }
         case TID_PMT: {
-            const PMT pmt(table);
+            const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 processPMT(pmt);
             }
             break;
         }
         case TID_SCTE35_SIT: {
-            SpliceInformationTable sit(table);
+            SpliceInformationTable sit(duck, table);
             if (sit.isValid()) {
                 processSpliceCommand(table.sourcePID(), sit);
             }
@@ -619,7 +619,7 @@ void ts::PCRExtractPlugin::processPMT(const PMT& pmt)
     bool scte35_found = false;
     if (_scte35) {
         for (size_t index = pmt.descs.search(DID_REGISTRATION); !scte35_found && index < pmt.descs.count(); index = pmt.descs.search(DID_REGISTRATION, index + 1)) {
-            const RegistrationDescriptor reg(*pmt.descs[index]);
+            const RegistrationDescriptor reg(duck, *pmt.descs[index]);
             scte35_found = reg.isValid() && reg.format_identifier == SPLICE_ID_CUEI;
         }
     }

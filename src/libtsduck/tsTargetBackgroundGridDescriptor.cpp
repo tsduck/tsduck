@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetBackgroundGridDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -56,10 +57,10 @@ ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor() :
     _is_valid = true;
 }
 
-ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetBackgroundGridDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +68,7 @@ ts::TargetBackgroundGridDescriptor::TargetBackgroundGridDescriptor(const Descrip
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetBackgroundGridDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32((uint32_t(horizontal_size & 0x3FFF) << 18) |
@@ -81,7 +82,7 @@ void ts::TargetBackgroundGridDescriptor::serialize(Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetBackgroundGridDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -103,7 +104,7 @@ void ts::TargetBackgroundGridDescriptor::deserialize(const Descriptor& desc, con
 
 void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -125,7 +126,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::buildXML(xml::Element* root) const
+void ts::TargetBackgroundGridDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"horizontal_size", horizontal_size);
     root->setIntAttribute(u"vertical_size", vertical_size);
@@ -137,7 +138,7 @@ void ts::TargetBackgroundGridDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetBackgroundGridDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TargetBackgroundGridDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsLinkageDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -134,10 +135,10 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
     _is_valid = true;
 }
 
-ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::LinkageDescriptor::LinkageDescriptor(DuckContext& duck, const Descriptor& desc) :
     LinkageDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -145,7 +146,7 @@ ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc, const DVBCharse
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::LinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     if (!_is_valid) {
         desc.invalidate();
@@ -225,7 +226,7 @@ void ts::LinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::LinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     clear();
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;
@@ -344,7 +345,7 @@ void ts::LinkageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 
 void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 7) {
@@ -403,7 +404,7 @@ void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& display,
         return;
     }
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     uint8_t hand_over = *data >> 4;
@@ -443,7 +444,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
         return;
     }
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     uint8_t dlength = data[0];
@@ -478,7 +479,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint
 void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
     if (size >= 1) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
 
         uint8_t ttype = data[0];
@@ -505,7 +506,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
         return;
     }
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     uint8_t data_length = data[0];
@@ -526,14 +527,14 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
         strm << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(plf_id, names::HEXA_FIRST)}) << std::endl;
 
         while (loop_length >= 4) {
-            const UString lang(UString::FromDVB(data, 3, display.dvbCharset()));
+            const UString lang(UString::FromDVB(data, 3));
             uint8_t name_length = data[3];
             data += 4; size -= 4;  data_length -= 4; loop_length -= 4;
             if (name_length > loop_length) {
                 name_length = loop_length;
             }
 
-            const UString name(UString::FromDVB(data, name_length, display.dvbCharset()));
+            const UString name(display.duck().fromDVB(data, name_length));
             data += name_length; size -= name_length; data_length -= name_length; loop_length -= name_length;
 
             strm << margin << "  Language: " << lang << ", name: \"" << name << "\"" << std::endl;
@@ -549,7 +550,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint
 void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
 {
     if (size >= 1) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
 
         uint8_t ttype = data[0];
@@ -586,7 +587,7 @@ namespace {
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::buildXML(xml::Element* root) const
+void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_stream_id", ts_id, true);
     root->setIntAttribute(u"original_network_id", onetw_id, true);
@@ -644,7 +645,7 @@ void ts::LinkageDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::LinkageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

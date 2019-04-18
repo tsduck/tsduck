@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSmoothingBufferDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -55,10 +56,10 @@ ts::SmoothingBufferDescriptor::SmoothingBufferDescriptor() :
     _is_valid = true;
 }
 
-ts::SmoothingBufferDescriptor::SmoothingBufferDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SmoothingBufferDescriptor::SmoothingBufferDescriptor(DuckContext& duck, const Descriptor& desc) :
     SmoothingBufferDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +67,7 @@ ts::SmoothingBufferDescriptor::SmoothingBufferDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SmoothingBufferDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SmoothingBufferDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt24(0x00C00000 | sb_leak_rate);
@@ -79,7 +80,7 @@ void ts::SmoothingBufferDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SmoothingBufferDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SmoothingBufferDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -99,7 +100,7 @@ void ts::SmoothingBufferDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
@@ -118,7 +119,7 @@ void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SmoothingBufferDescriptor::buildXML(xml::Element* root) const
+void ts::SmoothingBufferDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"sb_leak_rate", sb_leak_rate, true);
     root->setIntAttribute(u"sb_size", sb_size, true);
@@ -129,7 +130,7 @@ void ts::SmoothingBufferDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SmoothingBufferDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SmoothingBufferDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

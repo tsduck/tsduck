@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNPTEndpointDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -59,10 +60,10 @@ ts::NPTEndpointDescriptor::NPTEndpointDescriptor(uint64_t start, uint64_t stop) 
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::NPTEndpointDescriptor::NPTEndpointDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::NPTEndpointDescriptor::NPTEndpointDescriptor(DuckContext& duck, const Descriptor& desc) :
     NPTEndpointDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,7 +71,7 @@ ts::NPTEndpointDescriptor::NPTEndpointDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::NPTEndpointDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt48(TS_UCONST64(0x0000FFFE00000000) | start_NPT);
@@ -83,7 +84,7 @@ void ts::NPTEndpointDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::NPTEndpointDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 14;
 
@@ -101,7 +102,7 @@ void ts::NPTEndpointDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 14) {
@@ -121,7 +122,7 @@ void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::buildXML(xml::Element* root) const
+void ts::NPTEndpointDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"start_NPT", start_NPT, true);
     root->setIntAttribute(u"stop_NPT", stop_NPT, true);
@@ -132,7 +133,7 @@ void ts::NPTEndpointDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NPTEndpointDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::NPTEndpointDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

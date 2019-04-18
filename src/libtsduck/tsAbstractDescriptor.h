@@ -34,15 +34,16 @@
 
 #pragma once
 #include "tsAbstractSignalization.h"
+#include "tsDuckContext.h"
 #include "tsTablesPtr.h"
 #include "tsMPEG.h"
 
 namespace ts {
 
+    class DuckContext;
     class Descriptor;
     class DescriptorList;
     class TablesDisplay;
-    class DVBCharset;
 
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
@@ -74,30 +75,30 @@ namespace ts {
 
         //!
         //! This abstract method serializes a descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] bin A binary descriptor object.
         //! Its content is replaced with a binary representation of this object.
-        //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serialize(Descriptor& bin, const DVBCharset* charset = nullptr) const = 0;
+        virtual void serialize(DuckContext& duck, Descriptor& bin) const = 0;
 
         //!
         //! This abstract method deserializes a binary descriptor.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to interpret according to the descriptor subclass.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        virtual void deserialize(const Descriptor& bin, const DVBCharset* charset = nullptr) = 0;
+        virtual void deserialize(DuckContext& duck, const Descriptor& bin) = 0;
 
         //!
         //! Deserialize a descriptor from a descriptor list.
         //! In case of success, this object is replaced with the interpreted content of the binary descriptor.
         //! In case of error, this object is invalidated.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] dlist A list of binary descriptors.
         //! @param [in] index Index of the descriptor to deserialize in @a dlist.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset = nullptr);
+        void deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index);
 
         //!
         //! Virtual destructor

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAC4Descriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -67,10 +68,10 @@ ts::AC4Descriptor::AC4Descriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AC4Descriptor::AC4Descriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AC4Descriptor::AC4Descriptor(DuckContext& duck, const Descriptor& desc) :
     AC4Descriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -78,7 +79,7 @@ ts::AC4Descriptor::AC4Descriptor(const Descriptor& desc, const DVBCharset* chars
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AC4Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -99,7 +100,7 @@ void ts::AC4Descriptor::serialize(Descriptor& desc, const DVBCharset* charset) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AC4Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -155,7 +156,7 @@ void ts::AC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -193,7 +194,7 @@ void ts::AC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::buildXML(xml::Element* root) const
+void ts::AC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setOptionalBoolAttribute(u"ac4_dialog_enhancement_enabled", ac4_dialog_enhancement_enabled);
     root->setOptionalIntAttribute(u"ac4_channel_mode", ac4_channel_mode);
@@ -210,7 +211,7 @@ void ts::AC4Descriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::AC4Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

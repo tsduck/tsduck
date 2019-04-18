@@ -59,20 +59,20 @@ namespace ts {
 
         //!
         //! This method serializes a table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
-        //! @param [in] charset If not zero, default character set to use.
         //!
-        void serialize(BinaryTable& bin, const DVBCharset* charset = nullptr) const;
+        void serialize(DuckContext& duck, BinaryTable& bin) const;
 
         //!
         //! This method deserializes a binary table.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary table to interpret according to the table subclass.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void deserialize(const BinaryTable& bin, const DVBCharset* charset = nullptr);
+        void deserialize(DuckContext& duck, const BinaryTable& bin);
 
         //!
         //! Virtual destructor
@@ -263,20 +263,20 @@ namespace ts {
         //!
         //! This abstract method serializes the content of a table.
         //! This method is invoked by serialize() when the table is valid.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
-        //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serializeContent(BinaryTable& bin, const DVBCharset* charset) const = 0;
+        virtual void serializeContent(DuckContext& duck, BinaryTable& bin) const = 0;
 
         //!
         //! This abstract method deserializes the content of a binary table.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary table to interpret according to the table subclass.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        virtual void deserializeContent(const BinaryTable& bin, const DVBCharset* charset) = 0;
+        virtual void deserializeContent(DuckContext& duck, const BinaryTable& bin) = 0;
 
     private:
         // Unreachable constructors and operators.

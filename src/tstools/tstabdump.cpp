@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsTime.h"
 #include "tsSectionFile.h"
 #include "tsTablesDisplay.h"
@@ -59,6 +60,7 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
     virtual ~Options();
 
+    ts::DuckContext       duck;              // TSDuck execution context.
     ts::UStringVector     infiles;           // Input file names
     ts::TablesDisplayArgs display;           // Options about displaying tables
     ts::PagerArgs         pager;             // Output paging options.
@@ -74,14 +76,17 @@ Options::~Options() {}
 // Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
+    duck(this),
     infiles(),
-    display(),
+    display(duck),
     pager(true, true),
     udp(*this, false, false),
     max_tables(0),
     max_invalid_udp(16),
     no_encapsulation(false)
 {
+    duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForDVBCharset(*this);
     pager.defineOptions(*this);
     display.defineOptions(*this);
     udp.defineOptions(*this);
@@ -105,6 +110,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadOptions(*this);
     pager.load(*this);
     display.load(*this);
     udp.load(*this);
@@ -137,12 +143,12 @@ bool DumpUDP(Options& opt)
     ts::SocketAddress sender;
     ts::SocketAddress destination;
     ts::ByteBlock packet(ts::IP_MAX_PACKET_SIZE);
-    ts::TablesDisplay display(opt.display, opt);
+    ts::TablesDisplay display(opt.display);
     ts::Time timestamp;
     ts::SectionPtrVector sections;
 
     // Redirect display on pager process or stdout only.
-    display.redirect(&opt.pager.output(opt), false);
+    opt.duck.setOutput(&opt.pager.output(opt), false);
 
     // Receive UDP packets.
     while (ok && opt.max_tables > 0) {
@@ -207,8 +213,7 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 
     // Load all sections
     bool ok = false;
-    ts::SectionFile file;
-    file.setDefaultCharset(opt.display.default_charset);
+    ts::SectionFile file(opt.duck);
 
     if (file_name.empty()) {
         // no input file specified, use standard input
@@ -221,8 +226,8 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 
     if (ok) {
         // Display all sections.
-        ts::TablesDisplay display(opt.display, opt);
-        display.redirect(&opt.pager.output(opt), false);
+        ts::TablesDisplay display(opt.display);
+        opt.duck.setOutput(&opt.pager.output(opt), false);
         for (ts::SectionPtrVector::const_iterator it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
             display.displaySection(**it) << std::endl;
             opt.max_tables--;

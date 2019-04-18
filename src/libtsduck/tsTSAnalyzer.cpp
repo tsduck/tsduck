@@ -45,7 +45,8 @@ const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");
 // Constructor for the TS analyzer
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
+ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, BitRate bitrate_hint) :
+    _duck(duck),
     _ts_id(0),
     _ts_id_valid(false),
     _ts_pkt_cnt(0),
@@ -94,10 +95,9 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _preceding_suspects(0),
     _min_error_before_suspect(1),
     _max_consecutive_suspects(1),
-    _default_charset(nullptr),
-    _demux(this, this),
-    _pes_demux(this),
-    _t2mi_demux(this)
+    _demux(_duck, this, this),
+    _pes_demux(_duck, this),
+    _t2mi_demux(_duck, this)
 {
     resetSectionDemux();
 }
@@ -546,7 +546,7 @@ void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
     // the same version number to carry an ever-changing time. As a consequence,
     // it is reported only once as a table.
     if (section.tableId() == TID_STT) {
-        const STT stt(section);
+        const STT stt(_duck, section);
         if (stt.isValid()) {
             analyzeSTT(stt);
         }
@@ -570,63 +570,63 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
     // Process specific tables
     switch (tid) {
         case TID_PAT: {
-            const PAT pat(table);
+            const PAT pat(_duck, table);
             if (pid == PID_PAT && pat.isValid()) {
                 analyzePAT(pat);
             }
             break;
         }
         case TID_CAT: {
-            const CAT cat(table);
+            const CAT cat(_duck, table);
             if (pid == PID_CAT && cat.isValid()) {
                 analyzeCAT(cat);
             }
             break;
         }
         case TID_PMT: {
-            const PMT pmt(table);
+            const PMT pmt(_duck, table);
             if (pmt.isValid()) {
                 analyzePMT(pid, pmt);
             }
             break;
         }
         case TID_SDT_ACT: {
-            const SDT sdt(table);
+            const SDT sdt(_duck, table);
             if (sdt.isValid()) {
                 analyzeSDT(sdt);
             }
             break;
         }
         case TID_TDT: {
-            const TDT tdt(table);
+            const TDT tdt(_duck, table);
             if (tdt.isValid()) {
                 analyzeTDT(tdt);
             }
             break;
         }
         case TID_TOT: {
-            const TOT tot(table);
+            const TOT tot(_duck, table);
             if (tot.isValid()) {
                 analyzeTOT(tot);
             }
             break;
         }
         case TID_MGT: {
-            const MGT mgt(table);
+            const MGT mgt(_duck, table);
             if (mgt.isValid()) {
                 analyzeMGT(mgt);
             }
             break;
         }
         case TID_TVCT: {
-            const TVCT tvct(table);
+            const TVCT tvct(_duck, table);
             if (tvct.isValid()) {
                 analyzeVCT(tvct);
             }
             break;
         }
         case TID_CVCT: {
-            const CVCT cvct(table);
+            const CVCT cvct(_duck, table);
             if (cvct.isValid()) {
                 analyzeVCT(cvct);
             }
@@ -744,11 +744,11 @@ void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 
         ServiceContextPtr svp(getService(it->first)); // it->first = map key = service id
         svp->orig_netw_id = sdt.onetw_id;
-        svp->service_type = it->second.serviceType();
+        svp->service_type = it->second.serviceType(_duck);
 
         // Replace names only if they are not empty.
-        const UString provider(it->second.providerName(_default_charset));
-        const UString name(it->second.serviceName(_default_charset));
+        const UString provider(it->second.providerName(_duck));
+        const UString name(it->second.serviceName(_duck));
         if (!provider.empty()) {
             svp->provider = provider;
         }

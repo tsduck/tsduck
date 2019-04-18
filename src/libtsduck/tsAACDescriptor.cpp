@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAACDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -66,10 +67,10 @@ ts::AACDescriptor::AACDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AACDescriptor::AACDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AACDescriptor::AACDescriptor(DuckContext& duck, const Descriptor& desc) :
     AACDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -77,7 +78,7 @@ ts::AACDescriptor::AACDescriptor(const Descriptor& desc, const DVBCharset* chars
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AACDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -98,7 +99,7 @@ void ts::AACDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AACDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -134,7 +135,7 @@ void ts::AACDescriptor::deserialize(const Descriptor& desc, const DVBCharset* ch
 
 void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -165,7 +166,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::buildXML(xml::Element* root) const
+void ts::AACDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"profile_and_level", profile_and_level, true);
     root->setBoolAttribute(u"SAOC_DE", SAOC_DE);
@@ -180,7 +181,7 @@ void ts::AACDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AACDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::AACDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

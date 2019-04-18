@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsExternalESIdDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -54,10 +55,10 @@ ts::ExternalESIdDescriptor::ExternalESIdDescriptor() :
     _is_valid = true;
 }
 
-ts::ExternalESIdDescriptor::ExternalESIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ExternalESIdDescriptor::ExternalESIdDescriptor(DuckContext& duck, const Descriptor& desc) :
     ExternalESIdDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +66,7 @@ ts::ExternalESIdDescriptor::ExternalESIdDescriptor(const Descriptor& desc, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ExternalESIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(external_ES_ID);
@@ -77,7 +78,7 @@ void ts::ExternalESIdDescriptor::serialize(Descriptor& desc, const DVBCharset* c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ExternalESIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -96,7 +97,7 @@ void ts::ExternalESIdDescriptor::deserialize(const Descriptor& desc, const DVBCh
 
 void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -113,7 +114,7 @@ void ts::ExternalESIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::buildXML(xml::Element* root) const
+void ts::ExternalESIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"external_ES_ID", external_ES_ID, true);
 }
@@ -123,7 +124,7 @@ void ts::ExternalESIdDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExternalESIdDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::ExternalESIdDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

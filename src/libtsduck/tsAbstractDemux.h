@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDefinedByStandards.h"
 #include "tsTSPacket.h"
+#include "tsDuckContext.h"
 
 namespace ts {
     //!
@@ -46,7 +46,7 @@ namespace ts {
     //!
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL AbstractDemux : public AbstractDefinedByStandards
+    class TSDUCKDLL AbstractDemux
     {
     public:
         //!
@@ -141,10 +141,11 @@ namespace ts {
 
     protected:
         //!
-        //! Constructor.
+        //! Constructor for subclasses.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pid_filter The initial set of PID's to demux.
         //!
-        AbstractDemux(const PIDSet& pid_filter = NoPID);
+        explicit AbstractDemux(DuckContext& duck, const PIDSet& pid_filter = NoPID);
 
         //!
         //! Helper for subclass, before invoking an application-defined handler.
@@ -194,6 +195,7 @@ namespace ts {
         virtual void immediateResetPID(PID pid);
 
         // Protected directly accessible to subclasses.
+        DuckContext&  _duck;         //!< The TSDuck execution context is accessible to all subclasses.
         PIDSet        _pid_filter;   //!< Current set of filtered PID's.
         PacketCounter _packet_count; //!< Number of TS packets in the demultiplexed stream.
 
@@ -203,5 +205,10 @@ namespace ts {
         bool _reset_pending;     // Delayed reset()
         bool _pid_reset_pending; // Delayed resetPID(_pid_in_handler)
         int  _demux_id;          // Demux identity (from application)
+
+        // Inaccessible operations
+        AbstractDemux() = delete;
+        AbstractDemux(const AbstractDemux&) = delete;
+        AbstractDemux& operator=(const AbstractDemux&) = delete;
     };
 }

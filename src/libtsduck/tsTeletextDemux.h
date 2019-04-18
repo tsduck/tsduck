@@ -53,10 +53,11 @@ namespace ts {
 
         //!
         //! Constructor
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] handler User handler for Teletext notification.
         //! @param [in] pids The set of PID's to demux.
         //!
-        explicit TeletextDemux(TeletextHandlerInterface* handler = nullptr, const PIDSet& pids = NoPID);
+        explicit TeletextDemux(DuckContext& duck, TeletextHandlerInterface* handler = nullptr, const PIDSet& pids = NoPID);
 
         //!
         //! Destructor.

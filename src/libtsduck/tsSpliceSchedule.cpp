@@ -80,7 +80,7 @@ void ts::SpliceSchedule::clear()
 
 void ts::SpliceSchedule::display(TablesDisplay& display, int indent) const
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     for (EventList::const_iterator ev = events.begin(); ev != events.end(); ++ev) {
@@ -248,7 +248,7 @@ void ts::SpliceSchedule::serialize(ByteBlock& data) const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSchedule::buildXML(xml::Element* root) const
+void ts::SpliceSchedule::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto ev = events.begin(); ev != events.end(); ++ev) {
         xml::Element* e = root->addElement(u"splice_event");
@@ -283,7 +283,7 @@ void ts::SpliceSchedule::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSchedule::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::SpliceSchedule::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

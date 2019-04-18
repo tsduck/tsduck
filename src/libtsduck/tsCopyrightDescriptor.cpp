@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCopyrightDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -55,10 +56,10 @@ ts::CopyrightDescriptor::CopyrightDescriptor() :
     _is_valid = true;
 }
 
-ts::CopyrightDescriptor::CopyrightDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::CopyrightDescriptor::CopyrightDescriptor(DuckContext& duck, const Descriptor& desc) :
     CopyrightDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +67,7 @@ ts::CopyrightDescriptor::CopyrightDescriptor(const Descriptor& desc, const DVBCh
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CopyrightDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(copyright_identifier);
@@ -79,7 +80,7 @@ void ts::CopyrightDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CopyrightDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     additional_copyright_info.clear();
 
@@ -101,13 +102,13 @@ void ts::CopyrightDescriptor::deserialize(const Descriptor& desc, const DVBChars
 
 void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
         // Sometimes, the copyright identifier is made of ASCII characters. Try to display them.
         strm << margin << UString::Format(u"Copyright identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl;
         data += 4; size -= 4;
         // Additional binary info.
@@ -126,7 +127,7 @@ void ts::CopyrightDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::buildXML(xml::Element* root) const
+void ts::CopyrightDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"copyright_identifier", copyright_identifier, true);
     if (!additional_copyright_info.empty()) {
@@ -139,7 +140,7 @@ void ts::CopyrightDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CopyrightDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::CopyrightDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -62,10 +63,10 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
     _is_valid = true;
 }
 
-ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     S2SatelliteDeliverySystemDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -73,7 +74,7 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::S2SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -100,7 +101,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::serialize(Descriptor& desc, const 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::S2SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1)) {
         return;
@@ -141,7 +142,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserialize(const Descriptor& desc
 
 void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -173,7 +174,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
+void ts::S2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"backwards_compatibility", backwards_compatibility_indicator);
     if (scrambling_sequence_selector) {
@@ -189,7 +190,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::S2SatelliteDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     Variable<uint32_t> scrambling;
     Variable<uint8_t> stream;

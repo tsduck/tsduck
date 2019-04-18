@@ -66,10 +66,10 @@ ts::MGT::MGT(const MGT& other) :
 {
 }
 
-ts::MGT::MGT(const BinaryTable& table) :
+ts::MGT::MGT(DuckContext& duck, const BinaryTable& table) :
     MGT()
 {
-    deserialize(table);
+    deserialize(duck, table);
 }
 
 ts::MGT::TableType::TableType(const AbstractTable* table) :
@@ -86,7 +86,7 @@ ts::MGT::TableType::TableType(const AbstractTable* table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::MGT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     protocol_version = 0;
@@ -151,7 +151,7 @@ void ts::MGT::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::MGT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section. Note that a MGT is not allowed to use more than one section, see A/65, section 6.2.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -252,7 +252,7 @@ ts::UString ts::MGT::TableTypeName(uint16_t table_type)
 
 void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -302,11 +302,11 @@ void ts::MGT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::buildXML(xml::Element* root) const
+void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setIntAttribute(u"protocol_version", protocol_version);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (auto it = tables.begin(); it != tables.end(); ++it) {
         xml::Element* e = root->addElement(u"table");
@@ -314,7 +314,7 @@ void ts::MGT::buildXML(xml::Element* root) const
         e->setIntAttribute(u"PID", it->second.table_type_PID, true);
         e->setIntAttribute(u"version_number", it->second.table_type_version_number);
         e->setIntAttribute(u"number_bytes", it->second.number_bytes);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -323,7 +323,7 @@ void ts::MGT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MGT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::MGT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     tables.clear();
@@ -333,7 +333,7 @@ void ts::MGT::fromXML(const xml::Element* element, const DVBCharset* charset)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
-        descs.fromXML(children, element, u"table", charset);
+        descs.fromXML(duck, children, element, u"table");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
@@ -344,6 +344,6 @@ void ts::MGT::fromXML(const xml::Element* element, const DVBCharset* charset)
             children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
             children[index]->getIntAttribute<uint8_t>(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
             children[index]->getIntAttribute<uint32_t>(tt.number_bytes, u"number_bytes", true) &&
-            tt.descs.fromXML(children[index], charset);
+            tt.descs.fromXML(duck, children[index]);
     }
 }

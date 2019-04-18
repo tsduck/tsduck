@@ -211,7 +211,7 @@ void ts::SDTPlugin::createNewTable(BinaryTable& table)
         sdt.ts_id = _other_ts_id;
     }
 
-    sdt.serialize(table);
+    sdt.serialize(duck, table);
 }
 
 
@@ -230,7 +230,7 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Process the SDT.
-    SDT sdt(table);
+    SDT sdt(duck, table);
     if (!sdt.isValid()) {
         tsp->warning(u"found invalid SDT");
         reinsert = false;
@@ -256,7 +256,7 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
             sv.EITpf_present = false;
             sv.running_status = 4; // running
             sv.CA_controlled = false;
-            sv.descs.add(ServiceDescriptor(0x01, u"", u""));
+            sv.descs.add(duck, ServiceDescriptor(0x01, u"", u""));
         }
 
         // Locate service to modify
@@ -273,10 +273,10 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
             sv.CA_controlled = _service.getCAControlled();
         }
         if (_service.hasName()) {
-            sv.setName(_service.getName());
+            sv.setName(duck, _service.getName());
         }
         if (_service.hasProvider()) {
-            sv.setProvider(_service.getProvider());
+            sv.setProvider(duck, _service.getProvider());
         }
         if (_service.hasRunningStatus()) {
             sv.running_status = _service.getRunningStatus();
@@ -299,5 +299,5 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Reserialize modified SDT.
-    sdt.serialize(table);
+    sdt.serialize(duck, table);
 }

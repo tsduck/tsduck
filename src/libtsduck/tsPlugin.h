@@ -38,6 +38,7 @@
 #include "tsReport.h"
 #include "tsTSPacket.h"
 #include "tsEnumeration.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -333,6 +334,10 @@ namespace ts {
         //!
         virtual bool handlePacketTimeout();
 
+    protected:
+        TSP*        tsp;   //!< The TSP callback structure can be directly accessed by subclasses.
+        DuckContext duck;  //!< The TSDuck context with various MPEG/DV features.
+
         //!
         //! Constructor.
         //!
@@ -341,9 +346,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         Plugin(TSP* to_tsp, const UString& description = UString(), const UString& syntax = UString());
-
-    protected:
-        TSP* tsp; //!< The TSP callback structure can be directly accessed by subclasses.
 
         // Report implementation.
         virtual void writeLog(int severity, const UString& message) override;

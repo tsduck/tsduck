@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsT2MIDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -58,10 +59,10 @@ ts::T2MIDescriptor::T2MIDescriptor() :
     _is_valid = true;
 }
 
-ts::T2MIDescriptor::T2MIDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::T2MIDescriptor::T2MIDescriptor(DuckContext& duck, const Descriptor& desc) :
     T2MIDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -69,7 +70,7 @@ ts::T2MIDescriptor::T2MIDescriptor(const Descriptor& bin, const DVBCharset* char
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::T2MIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -85,7 +86,7 @@ void ts::T2MIDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::T2MIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -105,7 +106,7 @@ void ts::T2MIDescriptor::deserialize(const Descriptor& desc, const DVBCharset* c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::buildXML(xml::Element* root) const
+void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"t2mi_stream_id", t2mi_stream_id, true);
     root->setIntAttribute(u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
@@ -120,7 +121,7 @@ void ts::T2MIDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::T2MIDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -142,7 +143,7 @@ void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, cons
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 3) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         strm << margin << "T2-MI stream id: " << int(data[0] & 0x07)
              << ", T2-MI stream count: " << int((data[1] & 0x07) + 1)

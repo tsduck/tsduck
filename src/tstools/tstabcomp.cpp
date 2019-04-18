@@ -58,6 +58,7 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
     virtual ~Options();
 
+    ts::DuckContext       duck;            // Execution context.
     ts::UStringVector     infiles;         // Input file names.
     ts::UString           outfile;         // Output file path.
     bool                  outdir;          // Output name is a directory.
@@ -80,6 +81,7 @@ Options::~Options() {}
 // Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),
+    duck(this),
     infiles(),
     outfile(),
     outdir(false),
@@ -90,6 +92,7 @@ Options::Options(int argc, char *argv[]) :
     xmlTweaks(),
     defaultCharset(nullptr)
 {
+    duck.defineOptionsForDVBCharset(*this);
     xmlTweaks.defineOptions(*this);
 
     option(u"", 0, STRING);
@@ -107,20 +110,6 @@ Options::Options(int argc, char *argv[]) :
     help(u"decompile",
          u"Decompile all files as binary files into XML files. This is the default "
          u"for .bin files.");
-
-    option(u"default-charset", 0, STRING);
-    help(u"default-charset", u"name",
-         u"Default DVB character set to use. The available table names are " +
-         ts::UString::Join(ts::DVBCharset::GetAllNames()) + u".\n\n"
-         u"With --compile, this character set is used to encode strings. If a "
-         u"given string cannot be encoded with this character set or if this option "
-         u"is not specified, an appropriate character set is automatically selected.\n\n"
-         u"With --decompile, this character set is used to interpret DVB strings "
-         u"without explicit character table code. According to DVB standard ETSI EN "
-         u"300 468, the default DVB character set is ISO-6937. However, some bogus "
-         u"signalization may assume that the default character set is different, "
-         u"typically the usual local character table for the region. This option "
-         u"forces a non-standard character table.");
 
     option(u"pack-and-flush");
     help(u"pack-and-flush",
@@ -145,6 +134,9 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadOptions(*this);
+    xmlTweaks.load(*this);
+
     getValues(infiles, u"");
     getValue(outfile, u"output");
     compile = present(u"compile");
@@ -152,7 +144,6 @@ Options::Options(int argc, char *argv[]) :
     packAndFlush = present(u"pack-and-flush");
     xmlModel = present(u"xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
-    xmlTweaks.load(*this);
 
     if (!infiles.empty() && xmlModel) {
         error(u"do not specify input files with --xml-model");
@@ -229,9 +220,8 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
         outname += ts::PathSeparator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
     }
 
-    ts::SectionFile file;
+    ts::SectionFile file(opt.duck);
     file.setTweaks(opt.xmlTweaks.tweaks());
-    file.setDefaultCharset(opt.defaultCharset);
     file.setCRCValidation(ts::CRC32::CHECK);
 
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");

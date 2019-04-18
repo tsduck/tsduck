@@ -150,7 +150,7 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
     _ignorePTS(false),
     _ignoreScrambled(false),
     _pktCount(0),
-    _demux(this),
+    _demux(duck, this),
     _pidContexts()
 {
     option(u"bitrate", 'b', POSITIVE);
@@ -258,7 +258,7 @@ void ts::PCRAdjustPlugin::handleTable(SectionDemux& demux, const BinaryTable& ta
 {
     switch (table.tableId()) {
         case TID_PAT: {
-            const PAT pat(table);
+            const PAT pat(duck, table);
             if (pat.isValid()) {
                 // Add all PMT PID's to the demux to grab all PMT's.
                 for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -268,7 +268,7 @@ void ts::PCRAdjustPlugin::handleTable(SectionDemux& demux, const BinaryTable& ta
             break;
         }
         case TID_PMT: {
-            const PMT pmt(table);
+            const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Add all component PID's.
                 for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {

@@ -44,41 +44,14 @@ namespace ts {
     {
     public:
         //!
-        //! Constructor.
-        //! @param [in] mask A bit mask of defining standards.
-        //!
-        explicit AbstractDefinedByStandards(Standards mask = STD_NONE);
-
-        //!
         //! Get the list of standards which define this object.
         //! @return A bit mask of standards.
         //!
-        virtual Standards definingStandards() const;
-
-        //!
-        //! Get the list of standards which are present in the transport stream or context.
-        //! @return A bit mask of standards.
-        //!
-        virtual Standards allStandards() const;
-
-        //!
-        //! Add a list of standards which are present in the transport stream or context.
-        //! @param [in] mask A bit mask of standards.
-        //!
-        virtual void addAllStandards(Standards mask);
-
-        //!
-        //! Reset the list of standards which are present in the transport stream or context.
-        //!
-        virtual void resetAllStandards();
+        virtual Standards definingStandards() const = 0;
 
         //!
         //! Virtual destructor
         //!
         virtual ~AbstractDefinedByStandards();
-
-    private:
-        Standards _definingStandards;
-        Standards _allStandards;
     };
 }

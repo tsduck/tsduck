@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsVideoStreamDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -62,10 +63,10 @@ ts::VideoStreamDescriptor::VideoStreamDescriptor() :
     _is_valid = true;
 }
 
-ts::VideoStreamDescriptor::VideoStreamDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::VideoStreamDescriptor::VideoStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     VideoStreamDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -73,7 +74,7 @@ ts::VideoStreamDescriptor::VideoStreamDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::VideoStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((multiple_frame_rate ? 0x80 : 00) |
@@ -95,7 +96,7 @@ void ts::VideoStreamDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::VideoStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -124,7 +125,7 @@ void ts::VideoStreamDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -157,7 +158,7 @@ void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::buildXML(xml::Element* root) const
+void ts::VideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"multiple_frame_rate", multiple_frame_rate);
     root->setIntAttribute(u"frame_rate_code", frame_rate_code);
@@ -176,7 +177,7 @@ void ts::VideoStreamDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VideoStreamDescriptor::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::VideoStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

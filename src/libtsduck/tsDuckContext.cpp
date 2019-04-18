@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 // Constructor and destructors.
 //----------------------------------------------------------------------------
 
-ts::DuckContext::DuckContext(std::ostream* output, Report* report) :
+ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _report(report != nullptr ? report : CerrReport::Instance()),
     _out(output != nullptr ? output : &std::cout),
     _outFile(),
@@ -357,7 +357,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 // Load the values of all previously defined arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::DuckContext::load(Args& args)
+bool ts::DuckContext::loadOptions(Args& args)
 {
     // List of forced standards from the command line.
     _cmdStandards = STD_NONE;

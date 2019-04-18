@@ -44,11 +44,12 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSScanner::TSScanner(Tuner& tuner, MilliSecond timeout, bool pat_only, Report& report):
+ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, bool pat_only):
+    _duck(duck),
+    _report(duck.report()),
     _pat_only(pat_only),
     _completed(false),
-    _report(report),
-    _demux(this),
+    _demux(_duck, this),
     _tparams(),
     _pat(),
     _sdt(),
@@ -131,9 +132,9 @@ bool ts::TSScanner::getServices(ServiceList& services) const
             // Search service in the SDT
             const auto sit = _sdt->services.find(srv.getId());
             if (sit != _sdt->services.end()) {
-                const uint8_t type = sit->second.serviceType();
-                const UString name(sit->second.serviceName());
-                const UString provider(sit->second.providerName());
+                const uint8_t type = sit->second.serviceType(_duck);
+                const UString name(sit->second.serviceName(_duck));
+                const UString provider(sit->second.providerName(_duck));
                 if (type != 0) {
                     srv.setTypeDVB(type);
                 }
@@ -217,7 +218,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            SafePtr<PAT> pat(new PAT(table));
+            SafePtr<PAT> pat(new PAT(_duck, table));
             if (pat->isValid()) {
                 _pat = pat;
                 if (_pat->nit_pid != PID_NULL && _pat->nit_pid != PID_NIT) {
@@ -230,7 +231,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_SDT_ACT: {
-            SafePtr<SDT> sdt(new SDT(table));
+            SafePtr<SDT> sdt(new SDT(_duck, table));
             if (sdt->isValid()) {
                 _sdt = sdt;
             }
@@ -238,7 +239,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_NIT_ACT: {
-            SafePtr<NIT> nit(new NIT(table));
+            SafePtr<NIT> nit(new NIT(_duck, table));
             if (nit->isValid()) {
                 _nit = nit;
             }
@@ -246,7 +247,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_MGT: {
-            SafePtr<MGT> mgt(new MGT(table));
+            SafePtr<MGT> mgt(new MGT(_duck, table));
             if (mgt->isValid()) {
                 _mgt = mgt;
                 // Intercept TVCT and CVCT, they contain the service names.
@@ -265,7 +266,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_TVCT: {
-            SafePtr<VCT> vct(new TVCT(table));
+            SafePtr<VCT> vct(new TVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = vct;
             }
@@ -273,7 +274,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_CVCT: {
-            SafePtr<VCT> vct(new CVCT(table));
+            SafePtr<VCT> vct(new CVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = vct;
             }

@@ -34,7 +34,6 @@
 #include "tsPMT.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
-#include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -72,10 +71,10 @@ ts::PMT::PMT(const PMT& other) :
 {
 }
 
-ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
+ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
     PMT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -83,7 +82,7 @@ ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::PMT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     service_id = 0;
@@ -150,7 +149,7 @@ void ts::PMT::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::PMT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section. Note that a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9
@@ -258,9 +257,9 @@ bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
 {
     // Loop on all stream_identifier_descriptors until a valid one is found.
     for (size_t i = descs.search(DID_STREAM_ID); i < descs.count(); i = descs.search(DID_STREAM_ID, i + 1)) {
-        const StreamIdentifierDescriptor sid(*descs[i]);
-        if (sid.isValid()) {
-            tag = sid.component_tag;
+        if (!descs[i].isNull() && descs[i]->payloadSize() >= 1) {
+            // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
+            tag = descs[i]->payload()[0];
             return true;
         }
     }
@@ -280,8 +279,8 @@ ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
         const PMT::Stream& stream(it->second);
         // Loop on all stream_identifier_descriptors.
         for (size_t i = stream.descs.search(DID_STREAM_ID); i < stream.descs.count(); i = stream.descs.search(DID_STREAM_ID, i + 1)) {
-            const StreamIdentifierDescriptor sid(*stream.descs[i]);
-            if (sid.isValid() && sid.component_tag == tag) {
+            // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
+            if (!stream.descs[i].isNull() && stream.descs[i]->payloadSize() >= 1 && stream.descs[i]->payload()[0] == tag) {
                 return pid;
             }
         }
@@ -311,7 +310,7 @@ ts::PID ts::PMT::firstVideoPID() const
 
 void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -365,7 +364,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::buildXML(xml::Element* root) const
+void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
@@ -373,13 +372,13 @@ void ts::PMT::buildXML(xml::Element* root) const
     if (pcr_pid != PID_NULL) {
         root->setIntAttribute(u"PCR_PID", pcr_pid, true);
     }
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
         xml::Element* e = root->addElement(u"component");
         e->setIntAttribute(u"elementary_PID", it->first, true);
         e->setIntAttribute(u"stream_type", it->second.stream_type, true);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -388,7 +387,7 @@ void ts::PMT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::PMT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     streams.clear();
@@ -400,13 +399,13 @@ void ts::PMT::fromXML(const xml::Element* element, const DVBCharset* charset)
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        descs.fromXML(children, element, u"component", charset);
+        descs.fromXML(duck, children, element, u"component");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         PID pid = PID_NULL;
         _is_valid =
             children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
             children[index]->getIntAttribute<uint8_t>(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
-            streams[pid].descs.fromXML(children[index], charset);
+            streams[pid].descs.fromXML(duck, children[index]);
     }
 }

@@ -50,10 +50,10 @@ ts::TVCT::TVCT(uint8_t version_, bool is_current_) :
     _is_valid = true;
 }
 
-ts::TVCT::TVCT(const BinaryTable& table) :
+ts::TVCT::TVCT(DuckContext& duck, const BinaryTable& table) :
     TVCT()
 {
-    deserialize(table);
+    deserialize(duck, table);
 }
 
 ts::TVCT::~TVCT()

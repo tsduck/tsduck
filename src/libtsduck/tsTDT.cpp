@@ -59,10 +59,10 @@ ts::TDT::TDT(const Time& utc_time_) :
     _is_valid = true;
 }
 
-ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
+ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
     TDT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -70,7 +70,7 @@ ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::deserializeContent(const BinaryTable& table, const DVBCharset* charset)
+void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // This is a short table, must have only one section
     if (table.sectionCount() != 1) {
@@ -92,7 +92,7 @@ void ts::TDT::deserializeContent(const BinaryTable& table, const DVBCharset* cha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serializeContent(BinaryTable& table, const DVBCharset* charset) const
+void ts::TDT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Encode the data in MJD in the payload (5 bytes)
     uint8_t payload[MJD_SIZE];
@@ -112,7 +112,7 @@ void ts::TDT::serializeContent(BinaryTable& table, const DVBCharset* charset) co
 
 void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -132,7 +132,7 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::buildXML(xml::Element* root) const
+void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setDateTimeAttribute(u"UTC_time", utc_time);
 }
@@ -142,7 +142,7 @@ void ts::TDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(const xml::Element* element, const DVBCharset* charset)
+void ts::TDT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

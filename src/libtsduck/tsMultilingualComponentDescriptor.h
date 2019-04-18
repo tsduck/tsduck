@@ -57,16 +57,16 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        MultilingualComponentDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        MultilingualComponentDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*, const DVBCharset* = nullptr) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
 
     protected:
         // Inherited methods to analyze the prolog.
-        virtual void serializeProlog(const ByteBlockPtr& bbp, const DVBCharset* charset) const override;
-        virtual void deserializeProlog(const uint8_t*& data, size_t& size, const DVBCharset* charset) override;
+        virtual void serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const override;
+        virtual void deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size) override;
     };
 }

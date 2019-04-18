@@ -37,6 +37,7 @@
 #include "tsCASFamily.h"
 #include "tsTLVSyntax.h"
 #include "tsDVBCharset.h"
+#include "tsDuckContext.h"
 
 namespace ts {
     //!
@@ -47,34 +48,17 @@ namespace ts {
     {
     public:
         // Public fields
+        DuckContext&      duck;             //!< Reference to the associated TSDuck context.
         bool              raw_dump;         //!< Raw dump of section, no interpretation.
         uint32_t          raw_flags;        //!< Dump flags in raw mode.
         TLVSyntaxVector   tlv_syntax;       //!< TLV syntax to apply to unknown sections.
         size_t            min_nested_tlv;   //!< Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
-        PDS               default_pds;      //!< Default private data specifier when none is specified.
-        const DVBCharset* default_charset;  //!< Default DVB character set to interpret strings.
 
         //!
         //! Default constructor.
+        //! @param [in,out] d TSDuck context.
         //!
-        TablesDisplayArgs();
-
-        //!
-        //! Copy constructor.
-        //! Use default implementation, just tell the compiler we understand
-        //! the consequences of copying a pointer member.
-        //! @param [in] other The other instance to copy.
-        //!
-        TablesDisplayArgs(const TablesDisplayArgs& other) = default;
-
-        //!
-        //! Assignment operator.
-        //! Use default implementation, just tell the compiler we understand
-        //! the consequences of copying a pointer member.
-        //! @param [in] other The other instance to copy.
-        //! @return A reference to this object.
-        //!
-        TablesDisplayArgs& operator=(const TablesDisplayArgs& other) = default;
+        TablesDisplayArgs(DuckContext& d);
 
         //!
         //! Virtual destructor.
@@ -94,5 +78,11 @@ namespace ts {
         //! @return True on success, false on error in argument line.
         //!
         virtual bool load(Args& args);
+
+    private:
+        // Inaccessible operations
+        TablesDisplayArgs() = delete;
+        TablesDisplayArgs(const TablesDisplayArgs& other) = delete;
+        TablesDisplayArgs& operator=(const TablesDisplayArgs& other) = delete;
     };
 }

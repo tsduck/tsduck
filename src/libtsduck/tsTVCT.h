@@ -53,9 +53,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
         //!
-        TVCT(const BinaryTable& table);
+        TVCT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Virtual destructor.

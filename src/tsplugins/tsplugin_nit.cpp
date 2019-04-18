@@ -248,7 +248,7 @@ void ts::NITPlugin::createNewTable(BinaryTable& table)
         nit.network_id = _nit_other_id;
     }
 
-    nit.serialize(table);
+    nit.serialize(duck, table);
 }
 
 
@@ -267,7 +267,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Process the NIT.
-    NIT nit(table);
+    NIT nit(duck, table);
     if (!nit.isValid()) {
         tsp->warning(u"found invalid NIT");
         reinsert = false;
@@ -299,7 +299,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         // Remove previous network_name_descriptor, if any.
         nit.descs.removeByTag(DID_NETWORK_NAME);
         // Add a new network_name_descriptor
-        nit.descs.add(NetworkNameDescriptor(_new_netw_name));
+        nit.descs.add(duck, NetworkNameDescriptor(_new_netw_name));
     }
 
     // Process the global descriptor list
@@ -312,7 +312,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     // Reserialize modified NIT.
     nit.clearPreferredSections();
-    nit.serialize(table);
+    nit.serialize(duck, table);
 }
 
 
