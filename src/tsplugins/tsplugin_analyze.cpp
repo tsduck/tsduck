@@ -97,6 +97,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _analyzer_options()
 {
     // Define all standard analysis options.
+    duck.defineOptionsForStandards(*this);
     duck.defineOptionsForDVBCharset(*this);
     _analyzer_options.defineOptions(*this);
 

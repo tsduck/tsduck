@@ -82,6 +82,7 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     _logger()
 {
     duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
     duck.defineOptionsForDVBCharset(*this);
     _logger_options.defineOptions(*this);
     _display_options.defineOptions(*this);
