@@ -344,7 +344,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 
         args.option(u"atsc", 0);
         args.help(u"atsc",
-                  u"Assume that the transport stream is an ATSC one. ATSC are normally "
+                  u"Assume that the transport stream is an ATSC one. ATSC streams are normally "
                   u"automatically detected from their signalization. This option is only "
                   u"useful when ATSC-related stuff are found in the TS before the first "
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "

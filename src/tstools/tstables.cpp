@@ -74,6 +74,7 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true)
 {
     duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
     duck.defineOptionsForDVBCharset(*this);
     pager.defineOptions(*this);
     logger.defineOptions(*this);

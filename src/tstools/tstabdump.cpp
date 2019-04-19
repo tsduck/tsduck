@@ -86,6 +86,7 @@ Options::Options(int argc, char *argv[]) :
     no_encapsulation(false)
 {
     duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
     duck.defineOptionsForDVBCharset(*this);
     pager.defineOptions(*this);
     display.defineOptions(*this);

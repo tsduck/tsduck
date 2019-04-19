@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1192
+VERSION 3.18-1208
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --atsc to commands "tsanalyze", "tstables", "tspsi",
+    "tstabdump", "tstabcomp" and plugins "analyze", "tables", "psi".
 
 [BUG] Bug fixes:
 

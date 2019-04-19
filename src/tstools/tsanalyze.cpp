@@ -64,6 +64,7 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true)
 {
     // Define all standard analysis options.
+    duck.defineOptionsForStandards(*this);
     duck.defineOptionsForDVBCharset(*this);
     pager.defineOptions(*this);
     analysis.defineOptions(*this);

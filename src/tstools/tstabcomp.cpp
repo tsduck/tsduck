@@ -92,6 +92,7 @@ Options::Options(int argc, char *argv[]) :
     xmlTweaks(),
     defaultCharset(nullptr)
 {
+    duck.defineOptionsForStandards(*this);
     duck.defineOptionsForDVBCharset(*this);
     xmlTweaks.defineOptions(*this);
 

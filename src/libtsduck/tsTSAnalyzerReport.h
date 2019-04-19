@@ -56,6 +56,11 @@ namespace ts {
         explicit TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint = 0);
 
         //!
+        //! Virtual destructor.
+        //!
+        virtual ~TSAnalyzerReport();
+
+        //!
         //! Set the analysis options.
         //! Must be set before feeding the first packet.
         //! @param [in] opt Analysis options.

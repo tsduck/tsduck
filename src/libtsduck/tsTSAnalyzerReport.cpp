@@ -70,6 +70,10 @@ ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint) 
 {
 }
 
+ts::TSAnalyzerReport::~TSAnalyzerReport()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Set analysis options. Must be set before feeding the first packet.
