@@ -233,6 +233,9 @@ namespace ts {
         // Internal version of feedPacket.
         bool feedPacketInternal(TSPacket* pkt, bool update);
 
+        // Build the first part of an error message.
+        UString linePrefix(PID pid) const;
+
         // Unreachable constructors and operators.
         ContinuityAnalyzer(const ContinuityAnalyzer&) = delete;
         ContinuityAnalyzer& operator=(const ContinuityAnalyzer&) = delete;
