@@ -125,7 +125,7 @@ void ContinuityTest::testAnalyze()
     pkt.setPID(101); pkt.setCC(3);
     CPPUNIT_ASSERT(log.emptyMessages());
     CPPUNIT_ASSERT(!fixer.feedPacket(pkt));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo: packet: 7, PID: 0x0065, missing:  2 packets", log.getMessages());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo: packet index: 7, PID: 0x0065, missing 2 packets", log.getMessages());
     log.resetMessages();
 
     pkt.setPID(101); pkt.setCC(4);
@@ -137,7 +137,7 @@ void ContinuityTest::testAnalyze()
     pkt.setPID(101); pkt.setCC(4);
     CPPUNIT_ASSERT(log.emptyMessages());
     CPPUNIT_ASSERT(!fixer.feedPacket(pkt));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo: packet: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo: packet index: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
     log.resetMessages();
 
     pkt.setPID(101); pkt.setCC(5);
@@ -206,7 +206,7 @@ void ContinuityTest::testFix()
     pkt.setPID(101); pkt.setCC(3);
     CPPUNIT_ASSERT(log.emptyMessages());
     CPPUNIT_ASSERT(!fixer.feedPacket(pkt));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar: packet: 7, PID: 0x0065, missing:  2 packets", log.getMessages());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar: packet index: 7, PID: 0x0065, missing 2 packets", log.getMessages());
     CPPUNIT_ASSERT_EQUAL(uint8_t(1), pkt.getCC());
     log.resetMessages();
 
@@ -222,7 +222,7 @@ void ContinuityTest::testFix()
 
     pkt.setPID(101); pkt.setCC(4);
     CPPUNIT_ASSERT(!fixer.feedPacket(pkt));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar: packet: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar: packet index: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
     CPPUNIT_ASSERT_EQUAL(uint8_t(2), pkt.getCC());
     log.resetMessages();
 

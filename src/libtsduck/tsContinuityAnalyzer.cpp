@@ -161,6 +161,16 @@ int ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
 
 
 //----------------------------------------------------------------------------
+// Build the first part of an error message.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ContinuityAnalyzer::linePrefix(PID pid) const
+{
+    return UString::Format(u"%spacket index: %'d, PID: 0x%04X", {_prefix, _total_packets, pid});
+}
+
+
+//----------------------------------------------------------------------------
 // Detect error on packet.
 //----------------------------------------------------------------------------
 
@@ -196,12 +206,12 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
             // Discontinuity indicator is set, ignore any discontinuity.
             state.dup_count = 0;
         }
-        else if (cc == state.last_cc_in && pkt->hasPayload()) {
+        else if (cc == state.last_cc_in && has_payload) {
             // Duplicate packet.
             if (++state.dup_count >= 2) {
                 // The standard allows at most 2 duplicate packets.
                 if (_display_errors) {
-                    _report->log(_severity, u"%spacket: %'d, PID: 0x%04X, %d duplicate packets", {_prefix, _total_packets, pid, state.dup_count + 1});
+                    _report->log(_severity, u"%s, %d duplicate packets", {linePrefix(pid), state.dup_count + 1});
                 }
                 // There is nothing we can do to fix this.
                 _error_count++;
@@ -221,7 +231,13 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
 
             if (cc != good_cc_in) {
                 if (_display_errors) {
-                    _report->log(_severity, u"%spacket: %'d, PID: 0x%04X, missing: %2d packets", {_prefix, _total_packets, pid, MissingPackets(state.last_cc_in, cc)});
+                    // Display a specific message depending on the error.
+                    if (!has_payload && cc == ((state.last_cc_in + 1) & CC_MASK)) {
+                        _report->log(_severity, u"%s, incorrect CC increment without payload", {linePrefix(pid)});
+                    }
+                    else {
+                        _report->log(_severity, u"%s, missing %d packets", {linePrefix(pid), MissingPackets(state.last_cc_in, cc)});
+                    }
                 }
                 _error_count++;
                 result = false;
