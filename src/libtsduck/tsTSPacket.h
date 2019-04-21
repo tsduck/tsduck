@@ -167,6 +167,15 @@ namespace ts {
         }
 
         //!
+        //! Set payload_unit_start_indicator (PUSI) - 1 bit
+        //! @param [in] on The value to set.
+        //!
+        inline void setPUSI(bool on)
+        {
+            b[1] = (b[1] & ~0x40) | (on ? 0x40 : 0x00);
+        }
+
+        //!
         //! Extract transport_error_indicator (TEI) - 1 bit
         //! @return The TEI value.
         //!
@@ -192,6 +201,15 @@ namespace ts {
         }
 
         //!
+        //! Set transport_error_indicator (TEI) - 1 bit
+        //! @param [in] on The value to set.
+        //!
+        inline void setTEI(bool on)
+        {
+            b[1] = (b[1] & ~0x80) | (on ? 0x80 : 0x00);
+        }
+
+        //!
         //! Extract transport_priority - 1 bit
         //! @return The transport_priority value.
         //!
@@ -214,6 +232,15 @@ namespace ts {
         inline void setPriority()
         {
             b[1] |= 0x20;
+        }
+
+        //!
+        //! Set transport_priority - 1 bit
+        //! @param [in] on The value to set.
+        //!
+        inline void setPriority(bool on)
+        {
+            b[1] = (b[1] & ~0x20) | (on ? 0x20 : 0x00);
         }
 
         //!
