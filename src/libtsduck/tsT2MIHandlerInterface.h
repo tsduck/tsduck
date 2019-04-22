@@ -80,6 +80,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~T2MIHandlerInterface() {}
+        virtual ~T2MIHandlerInterface();
     };
 }

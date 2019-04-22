@@ -57,6 +57,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TeletextHandlerInterface() {}
+        virtual ~TeletextHandlerInterface();
     };
 }

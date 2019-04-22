@@ -36,8 +36,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TextFormatter::TextFormatter(Report& report) :
-    std::basic_ostream<char>(this),
-    std::basic_streambuf<char>(),
+    AbstractOutputStream(),
     _report(report),
     _outFile(),
     _outString(),
@@ -47,10 +46,8 @@ ts::TextFormatter::TextFormatter(Report& report) :
     _curMargin(_margin),
     _tabSize(8),
     _column(0),
-    _afterSpace(false),
-    _buffer(256, '\0')
+    _afterSpace(false)
 {
-    resetBuffer();
 }
 
 ts::TextFormatter::~TextFormatter()
@@ -183,45 +180,13 @@ ts::TextFormatter& ts::TextFormatter::setMarginSize(size_t margin)
 
 
 //----------------------------------------------------------------------------
-// This is called when buffer becomes full.
+// Implementation of AbstractOutputStream
 //----------------------------------------------------------------------------
 
-int ts::TextFormatter::overflow(int c)
+bool ts::TextFormatter::writeStreamBuffer(const void* addr, size_t size)
 {
-    // Flush content of the buffer.
-    bool ok = flushBuffer();
-
-    // Flush the character that didn't fit in buffer.
-    if (ok && c != traits_type::eof()) {
-        char ch = char(c);
-        ok = flushData(&ch, &ch + 1);
-    }
-
-    // Nothing to flush anymore.
-    resetBuffer();
-    return ok ? c : traits_type::eof();
-}
-
-
-//----------------------------------------------------------------------------
-// This function is called when the stream is flushed.
-//----------------------------------------------------------------------------
-
-int ts::TextFormatter::sync()
-{
-    const bool ok = flushBuffer();
-    resetBuffer();
-    return ok ? 0 : -1;
-}
-
-
-//----------------------------------------------------------------------------
-// Flush data to underlying output.
-//----------------------------------------------------------------------------
-
-bool ts::TextFormatter::flushData(const char* firstAddr, const char* lastAddr)
-{
-    for (const char* p = firstAddr; p < lastAddr; ++p) {
+    const char* const last = static_cast<const char*>(addr) + size;
+    for (const char* p = static_cast<const char*>(addr); p < last; ++p) {
         if (*p == '\t') {
             // Tabulations are expanded as spaces.
             while (++_column % _tabSize != 0) {
@@ -251,7 +216,7 @@ bool ts::TextFormatter::flushData(const char* firstAddr, const char* lastAddr)
 ts::TextFormatter& ts::TextFormatter::margin()
 {
     // Flush pending output.
-    sync();
+    flush();
 
     // New line if we are farther than the margin.
     // Also new line when we are no longer in the margin ("after space")
@@ -275,7 +240,7 @@ ts::TextFormatter& ts::TextFormatter::margin()
 ts::TextFormatter& ts::TextFormatter::column(size_t col)
 {
     // Flush pending output.
-    sync();
+    flush();
 
     // New line if we are farther than the target col.
     if (_column > col) {
@@ -297,7 +262,7 @@ ts::TextFormatter& ts::TextFormatter::column(size_t col)
 ts::TextFormatter& ts::TextFormatter::spaces(size_t count)
 {
     // Flush pending output.
-    sync();
+    flush();
 
     // Space after the buffer content.
     *_out << std::string(count, ' ');

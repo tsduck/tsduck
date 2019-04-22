@@ -90,7 +90,7 @@ ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Remove orphan (unreferenced) PID's", u"[options]"),
     _drop_status(TSP_DROP),
     _pass_pids(),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"stuffing", 's');
     help(u"stuffing", 
@@ -157,7 +157,7 @@ void ts::RMOrphanPlugin::addCA(const DescriptorList& dlist, TID parent_table)
 {
     // Loop on all CA descriptors
     for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
-        CADescriptor ca(*dlist[index]);
+        CADescriptor ca(duck, *dlist[index]);
         if (!ca.isValid()) {
             // Cannot deserialize a valid CA descriptor, ignore it
         }
@@ -179,13 +179,13 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     // All all PMT PID's as referenced. Intercept PMT's in demux.
-                    passPID (pat.nit_pid);
+                    passPID(pat.nit_pid);
                     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        passPID (it->second);
-                        _demux.addPID (it->second);
+                        passPID(it->second);
+                        _demux.addPID(it->second);
                     }
                 }
             }
@@ -194,28 +194,28 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
 
         case TID_CAT: {
             if (table.sourcePID() == PID_CAT) {
-                CAT cat (table);
+                CAT cat(duck, table);
                 if (cat.isValid()) {
                     // Add all EMM PID's
-                    addCA (cat.descs, TID_CAT);
+                    addCA(cat.descs, TID_CAT);
                 }
             }
             break;
         }
 
         case TID_PMT: {
-            PMT pmt (table);
+            PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Add all program-level ECM PID's
-                addCA (pmt.descs, TID_PMT);
+                addCA(pmt.descs, TID_PMT);
                 // Add service's PCR PID (usually a referenced component or null PID)
-                passPID (pmt.pcr_pid);
+                passPID(pmt.pcr_pid);
                 // Loop on all elementary streams
                 for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                     // Add component's PID
-                    passPID (it->first);
+                    passPID(it->first);
                     // Add all component-level ECM PID's
-                    addCA (it->second.descs, TID_PMT);
+                    addCA(it->second.descs, TID_PMT);
                 }
             }
             break;
@@ -234,6 +234,6 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
 
 ts::ProcessorPlugin::Status ts::RMOrphanPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    _demux.feedPacket (pkt);
-    return _pass_pids [pkt.getPID()] ? TSP_OK : _drop_status;
+    _demux.feedPacket(pkt);
+    return _pass_pids[pkt.getPID()] ? TSP_OK : _drop_status;
 }

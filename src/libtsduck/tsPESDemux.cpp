@@ -56,12 +56,12 @@ namespace {
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PESDemux::PESDemux(PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
-    SuperClass(pid_filter),
+ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
+    SuperClass(duck, pid_filter),
     _pes_handler(pes_handler),
     _pids(),
     _stream_types(),
-    _section_demux(this)
+    _section_demux(_duck, this)
 {
     // Analyze the PAT, to get the PMT's, to get the stream types.
     _section_demux.addPID(PID_PAT);
@@ -309,7 +309,7 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
     switch (table.tableId()) {
         case TID_PAT: {
             // Got a PAT, add all PMT PID's to section demux.
-            const PAT pat(table);
+            const PAT pat(_duck, table);
             if (pat.isValid()) {
                 for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
                     _section_demux.addPID(it->second);
@@ -319,7 +319,7 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
         case TID_PMT: {
             // Got a PMT, collect all stream types.
-            const PMT pmt(table);
+            const PMT pmt(_duck, table);
             if (pmt.isValid()) {
                 for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                     _stream_types[it->first] = it->second.stream_type;

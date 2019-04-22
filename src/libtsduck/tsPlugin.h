@@ -38,6 +38,7 @@
 #include "tsReport.h"
 #include "tsTSPacket.h"
 #include "tsEnumeration.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -79,7 +80,7 @@ namespace ts {
     //! ---------------------------
     //!
     //! A plugin can decide to terminate tsp on its own (returning end of
-    //! input, output error or @link ts::ProcessorPlugin::TSP_END@endlink). The termination is unconditional,
+    //! input, output error or @link ts::ProcessorPlugin::TSP_END @endlink). The termination is unconditional,
     //! regardless of the state of the other plugins.
     //!
     //! The idea behind "joint termination" is to terminate tsp when several
@@ -103,7 +104,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 8;
+        static const int API_VERSION = 10;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -112,10 +113,40 @@ namespace ts {
         BitRate bitrate() const {return _tsp_bitrate;}
 
         //!
+        //! Get total number of packets previously processed in the plugin object.
+        //! For input and output plugins, this is the number of successfully read or written packets.
+        //! For processor plugins, this is the number of packets which were submitted to the plugin
+        //! object (ie. excluding previously dropped packets but including packets which were dropped
+        //! by the current plugin).
+        //! @return The total number of packets in this plugin object.
+        //!
+        PacketCounter pluginPackets() const {return _plugin_packets;}
+
+        //!
+        //! Get total number of packets in the execution of the plugin thread.
+        //! This includes the number of extra stuffing or dropped packets.
+        //! @return The total number of packets in this plugin thread.
+        //!
+        PacketCounter totalPacketsInThread() const {return _total_packets;}
+
+        //!
         //! Check if the current plugin environment should use defaults for real-time.
         //! @return True if the current plugin environment should use defaults for real-time.
         //!
         bool realtime() const {return _use_realtime;}
+
+        //!
+        //! Set a timeout for the reception of packets by the current plugin.
+        //! For input plugins, this is the timeout for the availability of free space in input buffer.
+        //!
+        //! When the timeout is triggered, the method handlePacketTimeout() is invoked in the plugin.
+        //! If the method returns true, the application continues waiting for packets.
+        //! If the method returns false, the plugin is aborted.
+        //!
+        //! @param [in] timeout Maximum number of milliseconds to wait for packets in the buffer.
+        //! The default timeout is infinite.
+        //!
+        void setPacketTimeout(MilliSecond timeout) {_tsp_timeout = timeout;}
 
         //!
         //! Check for aborting application.
@@ -124,7 +155,7 @@ namespace ts {
         //! aborting for some reason (user interrupt for instance).
         //! @return True if the tsp application is currently aborting.
         //!
-        virtual bool aborting() const override {return _tsp_aborting;}
+        virtual bool aborting() const override;
 
         //!
         //! Activates or deactivates "joint termination".
@@ -160,6 +191,7 @@ namespace ts {
     protected:
         bool          _use_realtime;  //!< The plugin should use realtime defaults.
         BitRate       _tsp_bitrate;   //!< TSP input bitrate.
+        MilliSecond   _tsp_timeout;   //!< Timeout when waiting for packets (infinite by default).
         volatile bool _tsp_aborting;  //!< TSP is currently aborting.
 
         //!
@@ -168,7 +200,22 @@ namespace ts {
         //!
         TSP(int max_severity);
 
+        //!
+        //! Account for more processed packets in this plugin object.
+        //! @param [in] incr Add this number of processed packets in the plugin object.
+        //!
+        void addPluginPackets(size_t incr) {_plugin_packets += incr; _total_packets += incr;}
+
+        //!
+        //! Account for more processed packets in this plugin thread, but excluded from plugin object.
+        //! @param [in] incr Add this number of processed packets in the plugin thread.
+        //!
+        void addNonPluginPackets(size_t incr) {_total_packets += incr;}
+
     private:
+        PacketCounter _total_packets;   // Total processed packets in the plugin thread.
+        PacketCounter _plugin_packets;  // Total processed packets in the plugin object.
+
         // Inaccessible operations
         TSP() = delete;
         TSP(const TSP&) = delete;
@@ -202,7 +249,7 @@ namespace ts {
         //! is @link DEFAULT_STACK_USAGE @endlink (128 kB).
         //! @return The maximum stack usage in bytes for the thread executing the plugin.
         //!
-        virtual size_t stackUsage() const {return DEFAULT_STACK_USAGE;}
+        virtual size_t stackUsage() const;
 
         //!
         //! The main application invokes getOptions() only once, at application startup.
@@ -212,21 +259,21 @@ namespace ts {
         //! line errors may be reported too late.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool getOptions() {return true;}
+        virtual bool getOptions();
 
         //!
         //! The main application invokes start() to start the plugin.
         //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool start() {return true;}
+        virtual bool start();
 
         //!
         //! The main application invokes stop() to terminate the plugin.
         //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool stop() {return true;}
+        virtual bool stop();
 
         //!
         //! Get the plugin bitrate.
@@ -247,7 +294,7 @@ namespace ts {
         //!
         //! @return Plugin bitrate in bits/second. Shall return 0 on error or unknown bitrate.
         //!
-        virtual BitRate getBitrate() {return 0;}
+        virtual BitRate getBitrate();
 
         //!
         //! Tell if the plugin is a real time one.
@@ -268,13 +315,28 @@ namespace ts {
         //!
         //! @return True if the plugin usually requires real-time responsiveness.
         //!
-        virtual bool isRealTime() {return false;}
+        virtual bool isRealTime();
 
         //!
         //! Get the plugin type.
         //! @return The plugin type.
         //!
         virtual PluginType type() const = 0;
+
+        //!
+        //! Invoked when no packet could be retrieved within the specified timeout.
+        //!
+        //! For input plugins, this method is called when no space in input buffer
+        //! can be found within the specified timeout.
+        //!
+        //! @return True if the application should continue to wait, false to abort.
+        //! The default implementation aborts (but the default timeout is infinite).
+        //!
+        virtual bool handlePacketTimeout();
+
+    protected:
+        TSP*        tsp;   //!< The TSP callback structure can be directly accessed by subclasses.
+        DuckContext duck;  //!< The TSDuck context with various MPEG/DV features.
 
         //!
         //! Constructor.
@@ -284,14 +346,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         Plugin(TSP* to_tsp, const UString& description = UString(), const UString& syntax = UString());
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~Plugin() override {}
-
-    protected:
-        TSP* tsp; //!< The TSP callback structure can be directly accessed by subclasses.
 
         // Report implementation.
         virtual void writeLog(int severity, const UString& message) override;
@@ -342,7 +396,7 @@ namespace ts {
         //! @return True when the operation was properly handled. False in case
         //! of fatal error or if not supported by the plugin.
         //!
-        virtual bool abortInput() { return false; }
+        virtual bool abortInput();
 
         //!
         //! Constructor.
@@ -353,13 +407,8 @@ namespace ts {
         //!
         InputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~InputPlugin() override {}
-
         // Implementation of inherited interface.
-        virtual PluginType type() const override { return INPUT_PLUGIN; }
+        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations
@@ -413,13 +462,8 @@ namespace ts {
         //!
         OutputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~OutputPlugin() override {}
-
         // Implementation of inherited interface.
-        virtual PluginType type() const override { return OUTPUT_PLUGIN; }
+        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations
@@ -496,13 +540,8 @@ namespace ts {
         //!
         ProcessorPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~ProcessorPlugin() override {}
-
         // Implementation of inherited interface.
-        virtual PluginType type() const override { return PROCESSOR_PLUGIN; }
+        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations

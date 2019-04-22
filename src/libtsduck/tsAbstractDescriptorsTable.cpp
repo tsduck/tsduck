@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, const UChar* xml_name, uint16_t tid_ext_, uint8_t version_, bool is_current_) :
-    AbstractLongTable(tid_, xml_name, version_, is_current_),
+ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, const UChar* xml_name, Standards standards, uint16_t tid_ext_, uint8_t version_, bool is_current_) :
+    AbstractLongTable(tid_, xml_name, standards, version_, is_current_),
     descs(this),
     _tid_ext(tid_ext_)
 {
@@ -58,12 +58,12 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(const ts::AbstractDescrip
 
 }
 
-ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(tid, xml_name),
+ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table) :
+    AbstractLongTable(tid, xml_name, standards, 0, true),
     descs(this),
     _tid_ext(0xFFFF)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -71,15 +71,10 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const UChar* xml
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AbstractDescriptorsTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     descs.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -108,24 +103,15 @@ void ts::AbstractDescriptorsTable::deserialize(const BinaryTable& table, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AbstractDescriptorsTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear ();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Add all descriptors, creating several sections if necessary.
     // Make sure to create at least one section if the list is empty.
-
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number (0);
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
-    size_t start_index (0);
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
+    size_t start_index = 0;
 
     while ((section_number == 0 || start_index < descs.count()) && section_number < 256) {
 
@@ -133,15 +119,15 @@ void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharse
         start_index = descs.serialize(data, remain, start_index);
 
         // Add section in the table
-        table.addSection (new Section (_table_id,
-                                       false,  // is_private_section
-                                       _tid_ext,
-                                       version,
-                                       is_current,
-                                       uint8_t(section_number),
-                                       uint8_t(section_number), // last_section_number
-                                       payload,
-                                       data - payload));        // payload_size,
+        table.addSection(new Section(_table_id,
+                                     false,  // is_private_section
+                                     _tid_ext,
+                                     version,
+                                     is_current,
+                                     uint8_t(section_number),
+                                     uint8_t(section_number), // last_section_number
+                                     payload,
+                                     data - payload));        // payload_size,
 
         // Prepare for next section (if any)
         section_number++;
@@ -157,7 +143,7 @@ void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharse
 
 void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    display.displayDescriptorList(section.payload(), section.payloadSize(), indent, section.tableId());
+    display.displayDescriptorList(section, section.payload(), section.payloadSize(), indent);
 }
 
 
@@ -165,11 +151,11 @@ void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
+void ts::AbstractDescriptorsTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 }
 
 
@@ -177,12 +163,12 @@ void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::fromXML(const xml::Element* element)
+void ts::AbstractDescriptorsTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     _is_valid =
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(element);
+        descs.fromXML(duck, element);
 }

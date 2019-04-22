@@ -136,16 +136,23 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        EIT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        EIT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
         EIT(const EIT& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        EIT& operator=(const EIT& other) = default;
 
         //!
         //! Check if this is an "actual" EIT.
@@ -185,11 +192,15 @@ namespace ts {
         static void Fix(BinaryTable& table, FixMode mode);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual bool isValidTableId(TID tid) const override;
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         constexpr static size_t EIT_HEADER_SIZE        = LONG_SECTION_HEADER_SIZE;

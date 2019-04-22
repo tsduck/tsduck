@@ -59,18 +59,28 @@ void ts::tsp::OutputExecutor::main()
     debug(u"output thread started");
 
     PacketCounter output_packets = 0;
-    bool aborted;
+    bool aborted = false;
 
     do {
         // Wait for packets to output
-        size_t pkt_first, pkt_cnt;
-        bool input_end;
-        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted);
+        size_t pkt_first = 0;
+        size_t pkt_cnt = 0;
+        bool input_end = false;
+        bool timeout = false;
+        waitWork(pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
 
         // We ignore the returned "aborted" which comes from the "next"
-        // processor in the chaine, here the input thread. For the
-        // output thread, aborted means was interrupted by used.
+        // processor in the chain, here the input thread. For the
+        // output thread, aborted means was interrupted by user.
         aborted = _tsp_aborting;
+
+        // In case of abort on timeout, notify previous and next plugin, then exit.
+        if (timeout) {
+            // Do not transmit bitrate or input end to next (since next is input processor).
+            passPackets(0, 0, false, true);
+            aborted = true;
+            break;
+        }
 
         // Exit thread if no more packet to process
         if ((pkt_cnt == 0 && input_end) || aborted) {
@@ -79,8 +89,8 @@ void ts::tsp::OutputExecutor::main()
 
         // Check if "joint termination" agreed on a last packet to output
         const PacketCounter jt_limit = totalPacketsBeforeJointTermination();
-        if (totalPackets() + pkt_cnt > jt_limit) {
-            pkt_cnt = totalPackets() > jt_limit ? 0 : size_t (jt_limit - totalPackets());
+        if (totalPacketsInThread() + pkt_cnt > jt_limit) {
+            pkt_cnt = totalPacketsInThread() > jt_limit ? 0 : size_t (jt_limit - totalPacketsInThread());
             aborted = true;
         }
 
@@ -98,7 +108,7 @@ void ts::tsp::OutputExecutor::main()
 
             pkt += drop_cnt;
             pkt_remain -= drop_cnt;
-            addTotalPackets(drop_cnt);
+            addNonPluginPackets(drop_cnt);
 
             // Find last non-dropped packet
             size_t out_cnt;
@@ -113,7 +123,7 @@ void ts::tsp::OutputExecutor::main()
                 pkt += out_cnt;
                 pkt_remain -= out_cnt;
                 output_packets += out_cnt;
-                addTotalPackets(out_cnt);
+                addPluginPackets(out_cnt);
             }
         }
 
@@ -126,5 +136,5 @@ void ts::tsp::OutputExecutor::main()
     // Close the output processor
     _output->stop();
 
-    debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPackets(), output_packets});
+    debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPacketsInThread(), output_packets});
 }

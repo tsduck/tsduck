@@ -56,9 +56,7 @@ namespace ts {
         //!
         //! Default constructor, the variable is uninitialized.
         //!
-        Variable() noexcept : _access(nullptr)
-        {
-        }
+        Variable() noexcept : _access(nullptr) {}
 
         //!
         //! Copy constructor.
@@ -68,29 +66,19 @@ namespace ts {
         //!
         //! @param [in] other Another instance from which to build this object.
         //!
-        Variable(const Variable<T>& other) : _access(nullptr)
-        {
-            if (other._access != nullptr) {
-                _access = new(_data) T(*(other._access));
-            }
-        }
+        Variable(const Variable<T>& other);
 
         //!
         //! Constructor from a @a T instance, the variable is initialized.
         //!
         //! @param [in] obj The initial value for the variable.
         //!
-        Variable(const T& obj) : _access(new(_data) T(obj))
-        {
-        }
+        Variable(const T& obj) : _access(new(_data) T(obj)) {}
 
         //!
         //! Virtual destructor
         //!
-        virtual ~Variable()
-        {
-            reset();
-        }
+        virtual ~Variable();
 
         //!
         //! Assignment operator.
@@ -101,16 +89,7 @@ namespace ts {
         //! @param [in] other Another instance from which to assign this object.
         //! @return A reference to this object.
         //!
-        Variable<T>& operator=(const Variable<T>& other)
-        {
-            if (&other != this) {
-                reset();
-                if (other._access != nullptr) {
-                    _access = new(_data) T(*(other._access));
-                }
-            }
-            return *this;
-        }
+        Variable<T>& operator=(const Variable<T>& other);
 
         //!
         //! Assignment operator from a @a T object.
@@ -120,37 +99,21 @@ namespace ts {
         //! @param [in] obj Value from which to assign this object.
         //! @return A reference to this object.
         //!
-        Variable<T>& operator=(const T& obj)
-        {
-            reset();
-            _access = new(_data) T(obj);
-            return *this;
-        }
+        Variable<T>& operator=(const T& obj);
 
         //!
         //! Check the presence of a value.
         //!
         //! @return True if the variable is initialized, false otherwise.
         //!
-        bool set() const
-        {
-            return _access != nullptr;
-        }
+        bool set() const { return _access != nullptr; }
 
         //!
         //! Reset the value.
         //!
         //! This object becomes uninitialized if it was not already.
         //!
-        void reset()
-        {
-            if (_access != nullptr) {
-                // Safe when the destructor throws an exception
-                T* tmp = _access;
-                _access = nullptr;
-                tmp->~T();
-            }
-        }
+        void reset();
 
         //!
         //! Access the constant @a T value inside the variable.
@@ -158,15 +121,7 @@ namespace ts {
         //! @return A constant reference to the @a T value inside the variable.
         //! @throw UninitializedVariable If the variable is uninitialized.
         //!
-        const T& value() const
-        {
-            if (_access != nullptr) {
-                return *_access;
-            }
-            else {
-                throw UninitializedVariable(u"uninitialized variable");
-            }
-        }
+        const T& value() const;
 
         //!
         //! Access the @a T value inside the variable.
@@ -174,15 +129,7 @@ namespace ts {
         //! @return A reference to the @a T value inside the variable.
         //! @throw UninitializedVariable If the variable is uninitialized.
         //!
-        T& value()
-        {
-            if (_access != nullptr) {
-                return *_access;
-            }
-            else {
-                throw UninitializedVariable(u"uninitialized variable");
-            }
-        }
+        T& value();
 
         //!
         //! Get a copy of the @a T value inside the variable or a default value.
@@ -191,10 +138,7 @@ namespace ts {
         //! @return A copy the @a T value inside the variable if the variable is
         //! initialized, @a def otherwise.
         //!
-        T value(const T& def) const
-        {
-            return _access != nullptr ? *_access : def;
-        }
+        T value(const T& def) const;
 
         //!
         //! Equality operator.
@@ -203,10 +147,7 @@ namespace ts {
         //! @return True if both instances are initialized and
         //! contain equal values.
         //!
-        bool operator==(const Variable<T>& other) const
-        {
-            return _access != nullptr && other._access != nullptr && *_access == *other._access;
-        }
+        bool operator==(const Variable<T>& other) const;
 
         //!
         //! Unequality operator.
@@ -215,12 +156,7 @@ namespace ts {
         //! @return True if any instance is uninitialized or both
         //! are initialized with unequal values.
         //!
-        bool operator!=(const Variable<T>& other) const
-        {
-            // Note than we do not require that T provides operator!=.
-            // We just require operator==. So we use !(.. == ..).
-            return _access == nullptr || other._access == nullptr || !(*_access == *other._access);
-        }
+        bool operator!=(const Variable<T>& other) const;
 
         //!
         //! Equality operator with a @a T instance.
@@ -229,10 +165,7 @@ namespace ts {
         //! @return True if this object is initialized and its value
         //! is equal to @a obj.
         //!
-        bool operator==(const T& obj) const
-        {
-            return _access != nullptr && *_access == obj;
-        }
+        bool operator==(const T& obj) const;
 
         //!
         //! Unequality operator with a @a T instance.
@@ -241,11 +174,8 @@ namespace ts {
         //! @return True if this object is uninitialized or its value
         //! is not equal to @a obj.
         //!
-        bool operator!=(const T& obj) const
-        {
-            // Note than we do not require that T provides operator!=.
-            // We just require operator==. So we use !(.. == ..).
-            return _access == nullptr || !(*_access == obj);
-        }
+        bool operator!=(const T& obj) const;
     };
 }
+
+#include "tsVariableTemplate.h"

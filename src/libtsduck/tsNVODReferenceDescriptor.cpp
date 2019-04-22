@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNVODReferenceDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NVOD_reference_descriptor"
 #define MY_DID ts::DID_NVOD_REFERENCE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, ts::EDID::Standard(MY_DID));
@@ -54,16 +56,16 @@ ts::NVODReferenceDescriptor::Entry::Entry(uint16_t ts, uint16_t net, uint16_t sr
 }
 
 ts::NVODReferenceDescriptor::NVODReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
-ts::NVODReferenceDescriptor::NVODReferenceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::NVODReferenceDescriptor::NVODReferenceDescriptor(DuckContext& duck, const Descriptor& desc) :
     NVODReferenceDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -71,7 +73,7 @@ ts::NVODReferenceDescriptor::NVODReferenceDescriptor(const Descriptor& desc, con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::NVODReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
@@ -87,7 +89,7 @@ void ts::NVODReferenceDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::NVODReferenceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 6 == 0;
     entries.clear();
@@ -109,7 +111,7 @@ void ts::NVODReferenceDescriptor::deserialize(const Descriptor& desc, const DVBC
 
 void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 6) {
@@ -130,7 +132,7 @@ void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::buildXML(xml::Element* root) const
+void ts::NVODReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
@@ -145,7 +147,7 @@ void ts::NVODReferenceDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::fromXML(const xml::Element* element)
+void ts::NVODReferenceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

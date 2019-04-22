@@ -105,3 +105,41 @@ bool ts::TDES::decrypt (const void* cipher, size_t cipher_length,
 
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipher interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::TDES::name() const
+{
+    return u"TDES";
+}
+size_t ts::TDES::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+size_t ts::TDES::minKeySize() const
+{
+    return KEY_SIZE;
+}
+size_t ts::TDES::maxKeySize() const
+{
+    return KEY_SIZE;
+}
+bool ts::TDES::isValidKeySize (size_t size) const
+{
+    return size == KEY_SIZE;
+}
+size_t ts::TDES::minRounds() const
+{
+    return ROUNDS;
+}
+size_t ts::TDES::maxRounds() const
+{
+    return ROUNDS;
+}
+size_t ts::TDES::defaultRounds() const
+{
+    return ROUNDS;
+}

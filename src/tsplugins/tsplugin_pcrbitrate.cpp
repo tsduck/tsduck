@@ -68,7 +68,7 @@ namespace ts {
         // the results are not significantly different. We ignore new results
         // which vary only by less than the following factor.
 
-        static const BitRate REPORT_THRESHOLD = 500000; // 100 b/s on a 50 Mb/s stream
+        static constexpr BitRate REPORT_THRESHOLD = 500000; // 100 b/s on a 50 Mb/s stream
 
         // Inaccessible operations
         PCRBitratePlugin() = delete;

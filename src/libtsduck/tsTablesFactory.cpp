@@ -44,6 +44,7 @@ TS_DEFINE_SINGLETON(ts::TablesFactory);
 
 ts::TablesFactory::TablesFactory() :
     _tableIds(),
+    _tableStandards(),
     _descriptorIds(),
     _tableNames(),
     _descriptorNames(),
@@ -58,15 +59,17 @@ ts::TablesFactory::TablesFactory() :
 // Registrations.
 //----------------------------------------------------------------------------
 
-ts::TablesFactory::Register::Register(TID id, TableFactory factory)
+ts::TablesFactory::Register::Register(TID id, TableFactory factory, Standards standards)
 {
     TablesFactory::Instance()->_tableIds.insert(std::make_pair(id, factory));
+    TablesFactory::Instance()->_tableStandards[id] |= standards;
 }
 
-ts::TablesFactory::Register::Register(TID minId, TID maxId, TableFactory factory)
+ts::TablesFactory::Register::Register(TID minId, TID maxId, TableFactory factory, Standards standards)
 {
     for (TID id = minId; id <= maxId; ++id) {
         TablesFactory::Instance()->_tableIds.insert(std::make_pair(id, factory));
+        TablesFactory::Instance()->_tableStandards[id] |= standards;
     }
 }
 
@@ -112,25 +115,31 @@ ts::TablesFactory::Register::Register(const EDID& edid, DisplayDescriptorFunctio
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id) const
 {
-    std::map<TID,TableFactory>::const_iterator it = _tableIds.find(id);
+    auto it = _tableIds.find(id);
     return it != _tableIds.end() ? it->second : nullptr;
+}
+
+ts::Standards ts::TablesFactory::getTableStandards(TID id) const
+{
+    auto it = _tableStandards.find(id);
+    return it != _tableStandards.end() ? it->second : STD_NONE;
 }
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const UString& node_name) const
 {
-    std::map<UString,TableFactory>::const_iterator it = node_name.findSimilar(_tableNames);
+    auto it = node_name.findSimilar(_tableNames);
     return it != _tableNames.end() ? it->second : nullptr;
 }
 
 ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const UString& node_name) const
 {
-    std::map<UString,DescriptorFactory>::const_iterator it = node_name.findSimilar(_descriptorNames);
+    auto it = node_name.findSimilar(_descriptorNames);
     return it != _descriptorNames.end() ? it->second : nullptr;
 }
 
 ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id) const
 {
-    std::map<TID,DisplaySectionFunction>::const_iterator it = _sectionDisplays.find(id);
+    auto it = _sectionDisplays.find(id);
     return it != _sectionDisplays.end() ? it->second : nullptr;
 }
 
@@ -141,7 +150,7 @@ ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id) const
 
 bool ts::TablesFactory::isDescriptorAllowed(const UString& desc_node_name, TID table_id) const
 {
-    std::multimap<UString, TID>::const_iterator it = desc_node_name.findSimilar(_descriptorTablesIds);
+    auto it = desc_node_name.findSimilar(_descriptorTablesIds);
     if (it == _descriptorTablesIds.end()) {
         // Not a table-specific descriptor, allowed anywhere
         return true;
@@ -166,7 +175,7 @@ bool ts::TablesFactory::isDescriptorAllowed(const UString& desc_node_name, TID t
 
 ts::UString ts::TablesFactory::descriptorTables(const UString& desc_node_name) const
 {
-    std::multimap<UString, TID>::const_iterator it = desc_node_name.findSimilar(_descriptorTablesIds);
+    auto it = desc_node_name.findSimilar(_descriptorTablesIds);
     UString result;
 
     while (it != _descriptorTablesIds.end() && desc_node_name.similar(it->first)) {

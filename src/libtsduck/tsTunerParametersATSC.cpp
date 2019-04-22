@@ -33,9 +33,10 @@
 
 #include "tsTunerParametersATSC.h"
 #include "tsTunerArgs.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersATSC::DEFAULT_INVERSION;
 const ts::Modulation ts::TunerParametersATSC::DEFAULT_MODULATION;
 #endif
@@ -133,4 +134,54 @@ bool ts::TunerParametersATSC::fromArgs(const TunerArgs& tuner, Report& report)
     modulation = tuner.modulation.set() ? tuner.modulation.value() : DEFAULT_MODULATION;
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Extract tuning information from a delivery descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::TunerParametersATSC::fromDeliveryDescriptor(const Descriptor& desc)
+{
+    // No know delivery descriptor for ATSC.
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersATSC::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"atsc");
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    return e;
+}
+
+bool ts::TunerParametersATSC::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name().similar(u"atsc") &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, VSB_8) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
+}
+
+
+//----------------------------------------------------------------------------
+// Theoretical useful bitrate for QPSK or QAM modulation.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::TunerParametersATSC::theoreticalBitrate() const
+{
+    switch (modulation) {
+        case VSB_8:  return 19392658;
+        case VSB_16: return 38785317;
+        default: return 0; // unknown
+    }
 }

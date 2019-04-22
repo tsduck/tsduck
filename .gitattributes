@@ -1,6 +1,7 @@
 # Text files to always convert to native line endings on checkout.
 .gitignore text
 .gitattributes text
+.editorconfig text
 *.txt text
 *.dox text linguist-language=Doxygen
 *.md text linguist-language=MarkDown

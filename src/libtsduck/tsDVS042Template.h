@@ -55,6 +55,29 @@ ts::DVS042<CIPHER>::DVS042() :
 
 
 //----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+size_t ts::DVS042<CIPHER>::minMessageSize() const 
+{
+    return 0;
+}
+
+template<class CIPHER>
+bool ts::DVS042<CIPHER>::residueAllowed() const 
+{
+    return true;
+}
+
+template<class CIPHER>
+ts::UString ts::DVS042<CIPHER>::name() const 
+{
+    return this->algo == nullptr ? UString() : this->algo->name() + u"-DVS042";
+}
+
+
+//----------------------------------------------------------------------------
 // Set initialization vectors.
 //----------------------------------------------------------------------------
 

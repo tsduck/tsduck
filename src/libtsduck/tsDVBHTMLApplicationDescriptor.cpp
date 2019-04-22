@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBHTMLApplicationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"dvb_html_application_descriptor"
 #define MY_DID ts::DID_AIT_HTML_APP
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBHTMLApplicationDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     application_ids(),
     parameter()
 {
@@ -59,10 +61,10 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBHTMLApplicationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,14 +72,14 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DVBHTMLApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(uint8_t(application_ids.size() * sizeof(uint16_t)));
     for (size_t i = 0; i < application_ids.size(); ++i) {
         bbp->appendUInt16(application_ids[i]);
     }
-    bbp->append(parameter.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVB(parameter));
     serializeEnd(desc, bbp);
 }
 
@@ -86,7 +88,7 @@ void ts::DVBHTMLApplicationDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DVBHTMLApplicationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     application_ids.clear();
     parameter.clear();
@@ -105,7 +107,7 @@ void ts::DVBHTMLApplicationDescriptor::deserialize(const Descriptor& desc, const
                 application_ids.push_back(GetUInt16(data));
                 data += 2; size -= 2; len -= 2;
             }
-            parameter = UString::FromDVB(data, size, charset);
+            parameter = duck.fromDVB(data, size);
         }
     }
 }
@@ -117,7 +119,7 @@ void ts::DVBHTMLApplicationDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -129,7 +131,7 @@ void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display,
                 data += 2; size -= 2; len -= 2;
                 strm << margin << UString::Format(u"Application id: 0x%X (%d)", {id, id}) << std::endl;
             }
-            strm << margin << "Parameter: \"" << UString::FromDVB(data, size, display.dvbCharset()) << "\"" << std::endl;
+            strm << margin << "Parameter: \"" << display.duck().fromDVB(data, size) << "\"" << std::endl;
             size = 0;
         }
     }
@@ -142,7 +144,7 @@ void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::buildXML(xml::Element* root) const
+void ts::DVBHTMLApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"parameter", parameter);
     for (auto it = application_ids.begin(); it != application_ids.end(); ++it) {
@@ -155,7 +157,7 @@ void ts::DVBHTMLApplicationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationDescriptor::fromXML(const xml::Element* element)
+void ts::DVBHTMLApplicationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     application_ids.clear();
     parameter.clear();

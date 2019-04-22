@@ -162,8 +162,8 @@ int ts::TeletextDemux::pageBinaryToBcd(int bin)
 // Constructors and destructors.
 //-----------------------------------------------------------------------------
 
-ts::TeletextDemux::TeletextDemux(TeletextHandlerInterface* handler, const PIDSet& pidFilter) :
-    SuperClass(nullptr, pidFilter),
+ts::TeletextDemux::TeletextDemux(DuckContext& duck, TeletextHandlerInterface* handler, const PIDSet& pidFilter) :
+    SuperClass(duck, nullptr, pidFilter),
     _txtHandler(handler),
     _pids(),
     _addColors(false)

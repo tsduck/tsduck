@@ -146,7 +146,8 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
     utest::Out() << "SectionFileTest: Testing " << name << std::endl;
 
     // Convert XML reference content to binary tables.
-    ts::SectionFile xml;
+    ts::DuckContext duck;
+    ts::SectionFile xml(duck);
     CPPUNIT_ASSERT(xml.parseXML(ref_xml, CERR));
 
     // Serialize binary tables to section data.
@@ -169,7 +170,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 
 void SectionFileTest::testConfigurationFile()
 {
-    const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.xml"));
+    const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.tables.model.xml"));
     utest::Out() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     CPPUNIT_ASSERT(ts::FileExists(conf));
 }
@@ -187,10 +188,11 @@ void SectionFileTest::testGenericDescriptor()
     CPPUNIT_ASSERT_EQUAL(9, int(desc.size()));
     CPPUNIT_ASSERT_EQUAL(7, int(desc.payloadSize()));
 
+    ts::DuckContext duck;
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT(desc.toXML(root, 0, ts::TID_NULL, true) != nullptr);
+    CPPUNIT_ASSERT(desc.toXML(duck, root, 0, ts::TID_NULL, true) != nullptr);
 
     ts::UString text(doc.toString());
     utest::Out() << "SectionFileTest::testGenericDescriptor: " << text << std::endl;
@@ -219,7 +221,7 @@ void SectionFileTest::testGenericDescriptor()
     CPPUNIT_ASSERT(payload == ts::ByteBlock(descData + 2, sizeof(descData) - 2));
 
     ts::Descriptor desc2;
-    CPPUNIT_ASSERT(desc2.fromXML(children[0]));
+    CPPUNIT_ASSERT(desc2.fromXML(duck, children[0]));
     CPPUNIT_ASSERT_EQUAL(ts::DID(0x72), desc2.tag());
     CPPUNIT_ASSERT_EQUAL(size_t(7), desc2.payloadSize());
     CPPUNIT_ASSERT(ts::ByteBlock(desc2.payload(), desc2.payloadSize()) == ts::ByteBlock(descData + 2, sizeof(descData) - 2));
@@ -233,6 +235,7 @@ void SectionFileTest::testGenericShortTable()
     CPPUNIT_ASSERT(!refSection.isNull());
     CPPUNIT_ASSERT(refSection->isValid());
 
+    ts::DuckContext duck;
     ts::BinaryTable refTable;
     refTable.addSection(refSection);
     CPPUNIT_ASSERT(refTable.isValid());
@@ -241,7 +244,7 @@ void SectionFileTest::testGenericShortTable()
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT(refTable.toXML(root, true) != nullptr);
+    CPPUNIT_ASSERT(refTable.toXML(duck, root, true) != nullptr);
 
     ts::UString text(doc.toString());
     utest::Out() << "SectionFileTest::testGenericShortTable: " << text << std::endl;
@@ -265,7 +268,7 @@ void SectionFileTest::testGenericShortTable()
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
     ts::BinaryTable tab;
-    CPPUNIT_ASSERT(tab.fromXML(children[0]));
+    CPPUNIT_ASSERT(tab.fromXML(duck, children[0]));
     CPPUNIT_ASSERT(tab.isValid());
     CPPUNIT_ASSERT(tab.isShortSection());
     CPPUNIT_ASSERT_EQUAL(ts::TID(0xAB), tab.tableId());
@@ -286,6 +289,7 @@ void SectionFileTest::testGenericLongTable()
     static const uint8_t refData0[] = {0x01, 0x02, 0x03, 0x04, 0x05};
     static const uint8_t refData1[] = {0x11, 0x12, 0x13, 0x14};
 
+    ts::DuckContext duck;
     ts::BinaryTable refTable;
     refTable.addSection(new ts::Section(0xCD, true, 0x1234, 7, true, 0, 0, refData0, sizeof(refData0)));
     refTable.addSection(new ts::Section(0xCD, true, 0x1234, 7, true, 1, 1, refData1, sizeof(refData1)));
@@ -298,7 +302,7 @@ void SectionFileTest::testGenericLongTable()
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT(refTable.toXML(root, true) != nullptr);
+    CPPUNIT_ASSERT(refTable.toXML(duck, root, true) != nullptr);
 
     ts::UString text(doc.toString());
     utest::Out() << "SectionFileTest::testGenericLongTable: " << text << std::endl;
@@ -327,7 +331,7 @@ void SectionFileTest::testGenericLongTable()
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
     ts::BinaryTable tab;
-    CPPUNIT_ASSERT(tab.fromXML(children[0]));
+    CPPUNIT_ASSERT(tab.fromXML(duck, children[0]));
     CPPUNIT_ASSERT(tab.isValid());
     CPPUNIT_ASSERT(!tab.isShortSection());
     CPPUNIT_ASSERT_EQUAL(ts::TID(0xCD), tab.tableId());
@@ -361,6 +365,8 @@ void SectionFileTest::testGenericLongTable()
 
 void SectionFileTest::testBuildSections()
 {
+    ts::DuckContext duck;
+
     // Build a PAT with 2 sections.
     ts::PAT pat(7, true, 0x1234);
     CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), pat.nit_pid);
@@ -371,12 +377,12 @@ void SectionFileTest::testBuildSections()
     // Serialize the PAT.
     ts::BinaryTablePtr patBin(new(ts::BinaryTable));
     CPPUNIT_ASSERT(!patBin.isNull());
-    pat.serialize(*patBin);
+    pat.serialize(duck, *patBin);
     CPPUNIT_ASSERT(patBin->isValid());
     CPPUNIT_ASSERT_EQUAL(size_t(2), patBin->sectionCount());
 
     // Build a section file.
-    ts::SectionFile file;
+    ts::SectionFile file(duck);
     file.add(patBin);
     CPPUNIT_ASSERT_EQUAL(size_t(1), file.tables().size());
     CPPUNIT_ASSERT_EQUAL(size_t(2), file.sections().size());
@@ -398,7 +404,7 @@ void SectionFileTest::testBuildSections()
 
     ts::BinaryTablePtr tdtBin(new(ts::BinaryTable));
     CPPUNIT_ASSERT(!tdtBin.isNull());
-    tdt.serialize(*tdtBin);
+    tdt.serialize(duck, *tdtBin);
     CPPUNIT_ASSERT(tdtBin->isValid());
     CPPUNIT_ASSERT_EQUAL(size_t(1), tdtBin->sectionCount());
 
@@ -419,14 +425,14 @@ void SectionFileTest::testBuildSections()
     CPPUNIT_ASSERT(ts::FileExists(_tempFileNameXML));
 
     // Reload files.
-    ts::SectionFile binFile;
+    ts::SectionFile binFile(duck);
     binFile.setCRCValidation(ts::CRC32::CHECK);
     CPPUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin, report()));
     CPPUNIT_ASSERT_EQUAL(size_t(3), binFile.tables().size());
     CPPUNIT_ASSERT_EQUAL(size_t(5), binFile.sections().size());
     CPPUNIT_ASSERT_EQUAL(size_t(0), binFile.orphanSections().size());
 
-    ts::SectionFile xmlFile;
+    ts::SectionFile xmlFile(duck);
     CPPUNIT_ASSERT(xmlFile.loadXML(_tempFileNameXML, report()));
     CPPUNIT_ASSERT_EQUAL(size_t(3), xmlFile.tables().size());
     CPPUNIT_ASSERT_EQUAL(size_t(5), xmlFile.sections().size());
@@ -441,23 +447,23 @@ void SectionFileTest::testBuildSections()
         CPPUNIT_ASSERT(*file.sections()[i] == *xmlFile.sections()[i]);
     }
 
-    ts::PAT binPAT(*binFile.tables()[0]);
+    ts::PAT binPAT(duck, *binFile.tables()[0]);
     CPPUNIT_ASSERT(binPAT.isValid());
     CPPUNIT_ASSERT_EQUAL(uint8_t(7), binPAT.version);
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), binPAT.ts_id);
     CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), binPAT.nit_pid);
     CPPUNIT_ASSERT(binPAT.pmts == pat.pmts);
 
-    ts::PAT xmlPAT(*xmlFile.tables()[0]);
+    ts::PAT xmlPAT(duck, *xmlFile.tables()[0]);
     CPPUNIT_ASSERT(xmlPAT.isValid());
     CPPUNIT_ASSERT_EQUAL(uint8_t(7), xmlPAT.version);
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), xmlPAT.ts_id);
     CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), xmlPAT.nit_pid);
     CPPUNIT_ASSERT(xmlPAT.pmts == pat.pmts);
 
-    ts::TDT binTDT(*binFile.tables()[2]);
+    ts::TDT binTDT(duck, *binFile.tables()[2]);
     CPPUNIT_ASSERT(tdtTime == binTDT.utc_time);
 
-    ts::TDT xmlTDT(*xmlFile.tables()[2]);
+    ts::TDT xmlTDT(duck, *xmlFile.tables()[2]);
     CPPUNIT_ASSERT(tdtTime == xmlTDT.utc_time);
 }

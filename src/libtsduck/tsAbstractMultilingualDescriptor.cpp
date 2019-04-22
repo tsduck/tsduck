@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractMultilingualDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -38,8 +39,8 @@ TSDUCK_SOURCE;
 // Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute, PDS pds) :
-    AbstractDescriptor(tag, xml_name, pds),
+ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute) :
+    AbstractDescriptor(tag, xml_name, STD_DVB, 0),
     entries(),
     _xml_attribute(xml_attribute)
 {
@@ -58,23 +59,36 @@ ts::AbstractMultilingualDescriptor::Entry::Entry(const UString& lang_, const USt
 
 
 //----------------------------------------------------------------------------
+// Default implementation of prolog serialization.
+//----------------------------------------------------------------------------
+
+void ts::AbstractMultilingualDescriptor::serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const
+{
+}
+
+void ts::AbstractMultilingualDescriptor::deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AbstractMultilingualDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     // Let the subclass serialize the prolog here.
-    serializeProlog(bbp, charset);
+    serializeProlog(duck, bbp);
 
-    // Serialize the multillingual name loop.
+    // Serialize the multi-lingual name loop.
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language, charset)) {
+        if (!SerializeLanguageCode(duck, *bbp, it->language)) {
             desc.invalidate();
             return;
         }
-        bbp->append(it->name.toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(duck.toDVBWithByteLength(it->name));
     }
 
     serializeEnd(desc, bbp);
@@ -85,7 +99,7 @@ void ts::AbstractMultilingualDescriptor::serialize(Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
     const uint8_t* data = desc.payload();
@@ -93,16 +107,17 @@ void ts::AbstractMultilingualDescriptor::deserialize(const Descriptor& desc, con
     entries.clear();
 
     // Let the subclass deserialize the prolog here.
-    deserializeProlog(data, size, charset);
+    deserializeProlog(duck, data, size);
 
     // Deserialize the multillingual name loop.
     while (_is_valid && size >= 4) {
-        const UString lang(UString::FromDVB(data, 3, charset));
+        // Always default DVB character set for language code.
+        const UString lang(UString::FromDVB(data, 3));
         const size_t len = data[3];
         data += 4; size -= 4;
         _is_valid = len <= size;
         if (_is_valid) {
-            entries.push_back(Entry(lang, UString::FromDVB(data, len, charset)));
+            entries.push_back(Entry(lang, duck.fromDVB(data, len)));
             data += len; size -= len;
         }
     }
@@ -116,14 +131,14 @@ void ts::AbstractMultilingualDescriptor::deserialize(const Descriptor& desc, con
 
 void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
         const size_t len = std::min<size_t>(data[3], size - 4);
         strm << margin
-             << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
-             << ", name: \"" << UString::FromDVB(data + 4, len, display.dvbCharset()) << "\""
+             << "Language: " << UString::FromDVB(data, 3)
+             << ", name: \"" << display.duck().fromDVB(data + 4, len) << "\""
              << std::endl;
         data += 4 + len; size -= 4 + len;
     }
@@ -136,7 +151,7 @@ void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::buildXML(xml::Element* root) const
+void ts::AbstractMultilingualDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"language");
@@ -150,7 +165,7 @@ void ts::AbstractMultilingualDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::fromXML(const xml::Element* element)
+void ts::AbstractMultilingualDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

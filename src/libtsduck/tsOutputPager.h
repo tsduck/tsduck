@@ -38,16 +38,31 @@
 namespace ts {
     //!
     //! Send application output to a "pager" application such as "more" or "less".
+    //! Paging is done on stdout or stderr or both, depending on which is a terminal.
+    //! If neither stdout nor stderr are terminals, paging is not allowed.
     //! @ingroup system
     //!
     class TSDUCKDLL OutputPager : public ForkPipe
     {
     public:
         //!
+        //! Default name of the environment variable containing the pager command.
+        //! The default environment variable is @c PAGER.
+        //!
+        static const UChar* const DEFAULT_PAGER; 
+
+        //!
         //! Default constructor.
         //! @param [in] envName Name of the optional environment variable containing the pager command name.
+        //! @param [in] stdoutOnly If true, use only stdout. If false, if stdout is not a terminal but stderr
+        //! is one, then use stderr for paging.
         //!
-        OutputPager(const UString& envName = u"PAGER");
+        explicit OutputPager(const UString& envName = DEFAULT_PAGER, bool stdoutOnly = false);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~OutputPager();
 
         //!
         //! Check if we can run a pager.

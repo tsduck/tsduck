@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCAIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_identifier_descriptor"
 #define MY_DID ts::DID_CA_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,49 +49,34 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CAIdentifierDescriptor::DisplayDescriptor, ts::EDID
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
-    AbstractDescriptor (MY_DID, MY_XML_NAME),
-    casids ()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    casids()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::CAIdentifierDescriptor::CAIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    casids()
+ts::CAIdentifierDescriptor::CAIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
+    CAIdentifierDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor using a variable-length argument list.
-// Each argument is a CA_system_id. All arguments are int, not uint16_t,
-// since integer literals are int by default.
-// The end of the argument list must be marked by -1.
-//----------------------------------------------------------------------------
-
-ts::CAIdentifierDescriptor::CAIdentifierDescriptor (int casid, ...) :
-    AbstractDescriptor (MY_DID, MY_XML_NAME),
-    casids ()
+ts::CAIdentifierDescriptor::CAIdentifierDescriptor(int casid, ...) :
+    CAIdentifierDescriptor()
 {
     _is_valid = true;
     if (casid >= 0) {
-        casids.push_back (uint16_t (casid));
+        casids.push_back(uint16_t(casid));
         va_list ap;
-        va_start (ap, casid);
-        while ((casid = va_arg (ap, int)) >= 0) {
-            casids.push_back (uint16_t (casid));
+        va_start(ap, casid);
+        while ((casid = va_arg(ap, int)) >= 0) {
+            casids.push_back(uint16_t(casid));
         }
-        va_end (ap);
+        va_end(ap);
     }
 }
 
@@ -98,7 +85,7 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor (int casid, ...) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CAIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -118,7 +105,7 @@ void ts::CAIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CAIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 0;
     casids.clear();
@@ -141,7 +128,7 @@ void ts::CAIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCh
 
 void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {
@@ -158,7 +145,7 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::CAIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (size_t i = 0; i < casids.size(); ++i) {
         root->addElement(u"CA_system_id")->setIntAttribute(u"value", casids[i], true);
@@ -170,7 +157,7 @@ void ts::CAIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::CAIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     casids.clear();
     xml::ElementVector children;

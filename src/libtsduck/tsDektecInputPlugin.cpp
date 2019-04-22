@@ -40,6 +40,21 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+bool ts::DektecInputPlugin::isRealTime()
+{
+    return true;
+}
+
+size_t ts::DektecInputPlugin::stackUsage() const
+{
+    return 512 * 1024; // 512 kB
+}
+
+
+//----------------------------------------------------------------------------
 // Stubs when compiled without Dektec support.
 //----------------------------------------------------------------------------
 
@@ -692,7 +707,7 @@ bool ts::DektecInputPlugin::configureLNB()
     // encoded in the DiSEqC commands.
 
     // Enable the LNB controller.
-    Dtapi::DTAPI_RESULT status = _guts->chan.LnbEnable(false);
+    Dtapi::DTAPI_RESULT status = _guts->chan.LnbEnable(true);
     if (status != DTAPI_OK) {
         tsp->error(u"error enabling Dektec LNB controller: %s", {DektecStrError(status)});
         return false;

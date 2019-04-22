@@ -120,11 +120,11 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _drop_status(TSP_DROP),
     _drop_pids(),
     _ref_pids(),
-    _demux(this),
+    _demux(duck, this),
     _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS),
-    _eit_process(PID_EIT, tsp_)
+    _eit_process(duck, PID_EIT)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -236,7 +236,7 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -245,7 +245,7 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         }
 
         case TID_PMT: {
-            PMT pmt(table);
+            PMT pmt(duck, table);
             if (pmt.isValid()) {
                 processPMT(pmt);
             }
@@ -254,7 +254,7 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     processSDT(sdt);
                 }
@@ -288,11 +288,11 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
                 }
                 else {
                     // Modify BAT
-                    BAT bat(table);
+                    BAT bat(duck, table);
                     if (bat.isValid()) {
                         processNITBAT(bat);
                         _pzer_sdt_bat.removeSections(TID_BAT, bat.bouquet_id);
-                        _pzer_sdt_bat.addTable(bat);
+                        _pzer_sdt_bat.addTable(duck, bat);
                     }
                 }
             }
@@ -307,11 +307,11 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
                 }
                 else {
                     // Modify NIT Actual
-                    NIT nit(table);
+                    NIT nit(duck, table);
                     if (nit.isValid()) {
                         processNITBAT(nit);
                         _pzer_nit.removeSections(TID_NIT_ACT, nit.network_id);
-                        _pzer_nit.addTable(nit);
+                        _pzer_nit.addTable(duck, nit);
                     }
                 }
             }
@@ -353,7 +353,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
     }
     else {
         // Service id is currently unknown, search service by name
-        found = sdt.findService(_service);
+        found = sdt.findService(duck, _service);
         if (!found) {
             // Here, this is an error. A service can be searched by name only in current TS
             if (_ignore_absent) {
@@ -381,7 +381,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
 
     // Replace the SDT in the PID
     _pzer_sdt_bat.removeSections(TID_SDT_ACT, sdt.ts_id);
-    _pzer_sdt_bat.addTable(sdt);
+    _pzer_sdt_bat.addTable(duck, sdt);
 }
 
 
@@ -437,7 +437,7 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
 
     // Replace the PAT.in the PID
     _pzer_pat.removeSections(TID_PAT);
-    _pzer_pat.addTable(pat);
+    _pzer_pat.addTable(duck, pat);
 
     // Remove EIT's for this service.
     if (!_ignore_eit) {
@@ -485,7 +485,7 @@ void ts::SVRemovePlugin::addECMPID(const DescriptorList& dlist, PIDSet& pid_set)
 {
     // Loop on all CA descriptors
     for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
-        CADescriptor ca(*dlist[index]);
+        CADescriptor ca(duck, *dlist[index]);
         if (!ca.isValid()) {
             // Cannot deserialize a valid CA descriptor, ignore it
         }

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceAvailabilityDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"service_availability_descriptor"
 #define MY_DID ts::DID_SERVICE_AVAIL
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceAvailabilityDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceAvailabilityDescriptor, ts::EDID::Standard(MY_DID));
@@ -43,26 +45,21 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceAvailabilityDescriptor::DisplayDescriptor, t
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     availability(false),
     cell_ids()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor(DuckContext& duck, const Descriptor& desc) :
     ServiceAvailabilityDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,7 +67,7 @@ ts::ServiceAvailabilityDescriptor::ServiceAvailabilityDescriptor(const Descripto
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ServiceAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(availability ? 0xFF : 0x7F);
@@ -85,7 +82,7 @@ void ts::ServiceAvailabilityDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ServiceAvailabilityDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 1;
     cell_ids.clear();
@@ -109,7 +106,7 @@ void ts::ServiceAvailabilityDescriptor::deserialize(const Descriptor& desc, cons
 
 void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -130,7 +127,7 @@ void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::buildXML(xml::Element* root) const
+void ts::ServiceAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"availability", availability);
     for (auto it = cell_ids.begin(); it != cell_ids.end(); ++it) {
@@ -143,7 +140,7 @@ void ts::ServiceAvailabilityDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceAvailabilityDescriptor::fromXML(const xml::Element* element)
+void ts::ServiceAvailabilityDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     cell_ids.clear();
 

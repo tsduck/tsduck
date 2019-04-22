@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsISPAccessModeDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"ISP_access_mode_descriptor"
 #define MY_DID ts::DID_INT_ISP_ACCESS
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ISPAccessModeDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ISPAccessModeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -49,25 +51,20 @@ namespace {
 }
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(uint8_t mode) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     access_mode(mode)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(DuckContext& duck, const Descriptor& desc) :
     ISPAccessModeDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -75,7 +72,7 @@ ts::ISPAccessModeDescriptor::ISPAccessModeDescriptor(const Descriptor& desc, con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ISPAccessModeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(access_mode);
@@ -87,7 +84,7 @@ void ts::ISPAccessModeDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ISPAccessModeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -106,7 +103,7 @@ void ts::ISPAccessModeDescriptor::deserialize(const Descriptor& desc, const DVBC
 
 void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -122,7 +119,7 @@ void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::buildXML(xml::Element* root) const
+void ts::ISPAccessModeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntEnumAttribute(AccessModeNames, u"access_mode", access_mode);
 }
@@ -132,7 +129,7 @@ void ts::ISPAccessModeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISPAccessModeDescriptor::fromXML(const xml::Element* element)
+void ts::ISPAccessModeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

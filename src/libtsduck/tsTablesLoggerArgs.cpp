@@ -41,7 +41,7 @@ const size_t ts::TablesLoggerArgs::DEFAULT_LOG_SIZE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TablesLoggerArgs::TablesLoggerArgs() :
@@ -81,6 +81,10 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     use_current(true),
     use_next(false),
     xml_tweaks()
+{
+}
+
+ts::TablesLoggerArgs::~TablesLoggerArgs()
 {
 }
 

@@ -35,6 +35,7 @@
 #pragma once
 #include "tsMPEG.h"
 #include "tsTSPacket.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     //!
@@ -149,15 +150,16 @@ namespace ts {
         //!
         //! Structure containing the global PCR analysis results.
         //!
-        struct TSDUCKDLL Status
+        struct TSDUCKDLL Status: public StringifyInterface
         {
             // Members:
-            bool          bitrate_valid;  //!< True if bitrate was evaluated.
-            BitRate       bitrate_188;    //!< The evaluated TS bitrate in bits/second based on 188-byte packets.
-            BitRate       bitrate_204;    //!< The evaluated TS bitrate in bits/second based on 204-byte packets.
-            PacketCounter packet_count;   //!< The total number of analyzed TS packets.
-            PacketCounter pcr_count;      //!< The number of analyzed  PCR's.
-            size_t        pcr_pids;       //!< The number of PID's with PCR's.
+            bool          bitrate_valid;   //!< True if bitrate was evaluated.
+            BitRate       bitrate_188;     //!< The evaluated TS bitrate in bits/second based on 188-byte packets.
+            BitRate       bitrate_204;     //!< The evaluated TS bitrate in bits/second based on 204-byte packets.
+            PacketCounter packet_count;    //!< The total number of analyzed TS packets.
+            PacketCounter pcr_count;       //!< The number of analyzed PCR's.
+            size_t        pcr_pids;        //!< The number of PID's with PCR's.
+            size_t        discontinuities; //!< The number of discontinuities.
 
             //!
             //! Default constructor.
@@ -169,6 +171,9 @@ namespace ts {
             //! @param [in] zer The PCRAnalyzer to get the status from.
             //!
             Status(const PCRAnalyzer& zer);
+
+            // Implementation of StringifyInterface.
+            virtual UString toString() const override;
         };
 
         //!
@@ -208,6 +213,7 @@ namespace ts {
         uint64_t _ts_bitrate_cnt;     // Count of computed bitrates
         size_t   _completed_pids;     // Number of PIDs with enough PCRs
         size_t   _pcr_pids;           // Number of PIDs with PCRs
+        size_t   _discontinuities;    // Number of discontinuities
         PIDAnalysis* _pid[PID_MAX];   // Per-PID stats
 
         // Unreachable constructors and operators.

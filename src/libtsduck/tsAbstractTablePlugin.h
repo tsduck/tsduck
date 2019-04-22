@@ -120,7 +120,6 @@ namespace ts {
         BitRate           _default_bitrate;  // Default bitrate of new PID.
         PID               _pid;              // PID to process.
         bool              _found;            // Found a the target table.
-        PacketCounter     _pkt_current;      // Total number of packets.
         PacketCounter     _pkt_create;       // Packet# after which a new table shall be created
         PacketCounter     _pkt_insert;       // Packet# after which a PID packet shall be inserted
         MilliSecond       _create_after_ms;  // Create a new table if none found after that time.

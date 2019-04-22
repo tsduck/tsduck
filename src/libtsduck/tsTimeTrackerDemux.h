@@ -53,9 +53,10 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pid_filter The initial set of PID's to demux.
         //!
-        TimeTrackerDemux(const PIDSet& pid_filter = NoPID);
+        TimeTrackerDemux(DuckContext& duck, const PIDSet& pid_filter = NoPID);
 
         //!
         //! Get the number of milliseconds measured on a PID.

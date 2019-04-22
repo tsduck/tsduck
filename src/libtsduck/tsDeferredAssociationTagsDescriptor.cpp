@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDeferredAssociationTagsDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"deferred_association_tags_descriptor"
 #define MY_DID ts::DID_DEFERRED_ASSOC_TAGS
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DeferredAssociationTagsDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DeferredAssociationTagsDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DeferredAssociationTagsDescriptor::DisplayDescripto
 //----------------------------------------------------------------------------
 
 ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     association_tags(),
     transport_stream_id(0),
     program_number(0),
@@ -56,10 +58,10 @@ ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor() :
     _is_valid = true;
 }
 
-ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor(DuckContext& duck, const Descriptor& desc) :
     DeferredAssociationTagsDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +69,7 @@ ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor(const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DeferredAssociationTagsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(uint8_t(association_tags.size() * sizeof(uint16_t)));
@@ -85,7 +87,7 @@ void ts::DeferredAssociationTagsDescriptor::serialize(Descriptor& desc, const DV
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DeferredAssociationTagsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     association_tags.clear();
     private_data.clear();
@@ -118,7 +120,7 @@ void ts::DeferredAssociationTagsDescriptor::deserialize(const Descriptor& desc, 
 
 void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -147,7 +149,7 @@ void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& dis
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::buildXML(xml::Element* root) const
+void ts::DeferredAssociationTagsDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"program_number", program_number, true);
@@ -164,7 +166,7 @@ void ts::DeferredAssociationTagsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DeferredAssociationTagsDescriptor::fromXML(const xml::Element* element)
+void ts::DeferredAssociationTagsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     association_tags.clear();
     private_data.clear();

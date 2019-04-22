@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetMACAddressRangeDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_MAC_address_range_descriptor"
 #define MY_DID ts::DID_INT_MAC_ADDR_RANGE
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetMACAddressRangeDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetMACAddressRangeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,16 +49,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetMACAddressRangeDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ranges()
 {
     _is_valid = true;
 }
 
-ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetMACAddressRangeDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::TargetMACAddressRangeDescriptor::Range::Range(const MACAddress& addr1, const MACAddress& addr2) :
@@ -70,7 +72,7 @@ ts::TargetMACAddressRangeDescriptor::Range::Range(const MACAddress& addr1, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetMACAddressRangeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = ranges.begin(); it != ranges.end(); ++it) {
@@ -85,7 +87,7 @@ void ts::TargetMACAddressRangeDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetMACAddressRangeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -108,7 +110,7 @@ void ts::TargetMACAddressRangeDescriptor::deserialize(const Descriptor& desc, co
 
 void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 12) {
@@ -127,7 +129,7 @@ void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::buildXML(xml::Element* root) const
+void ts::TargetMACAddressRangeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = ranges.begin(); it != ranges.end(); ++it) {
         xml::Element* e = root->addElement(u"range");
@@ -141,7 +143,7 @@ void ts::TargetMACAddressRangeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::fromXML(const xml::Element* element)
+void ts::TargetMACAddressRangeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     ranges.clear();
 
@@ -153,8 +155,8 @@ void ts::TargetMACAddressRangeDescriptor::fromXML(const xml::Element* element)
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Range range;
         _is_valid =
-                children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
-                children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
+            children[i]->getMACAttribute(range.MAC_addr_low, u"MAC_addr_low", true) &&
+            children[i]->getMACAttribute(range.MAC_addr_high, u"MAC_addr_high", true);
         if (_is_valid) {
             ranges.push_back(range);
         }

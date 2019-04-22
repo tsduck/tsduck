@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHierarchyDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"hierarchy_descriptor"
 #define MY_DID ts::DID_HIERARCHY
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HierarchyDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HierarchyDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HierarchyDescriptor::DisplayDescriptor, ts::EDID::S
 //----------------------------------------------------------------------------
 
 ts::HierarchyDescriptor::HierarchyDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     temporal_scalability(false),
     spatial_scalability(false),
     quality_scalability(false),
@@ -60,10 +62,10 @@ ts::HierarchyDescriptor::HierarchyDescriptor() :
     _is_valid = true;
 }
 
-ts::HierarchyDescriptor::HierarchyDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::HierarchyDescriptor::HierarchyDescriptor(DuckContext& duck, const Descriptor& desc) :
     HierarchyDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -71,7 +73,7 @@ ts::HierarchyDescriptor::HierarchyDescriptor(const Descriptor& desc, const DVBCh
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::HierarchyDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(0x80 |
@@ -92,7 +94,7 @@ void ts::HierarchyDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::HierarchyDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -118,7 +120,7 @@ void ts::HierarchyDescriptor::deserialize(const Descriptor& desc, const DVBChars
 
 void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -141,7 +143,7 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::buildXML(xml::Element* root) const
+void ts::HierarchyDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"temporal_scalability", temporal_scalability);
     root->setBoolAttribute(u"spatial_scalability", spatial_scalability);
@@ -158,7 +160,7 @@ void ts::HierarchyDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HierarchyDescriptor::fromXML(const xml::Element* element)
+void ts::HierarchyDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

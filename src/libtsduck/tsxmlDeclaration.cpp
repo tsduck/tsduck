@@ -50,6 +50,11 @@ ts::xml::Declaration::Declaration(Document* parent, const UString& value) :
 {
 }
 
+ts::UString ts::xml::Declaration::typeName() const
+{
+    return u"Declaration";
+}
+
 
 //----------------------------------------------------------------------------
 // Print the node.

@@ -68,7 +68,9 @@ class EMMGOptions: public ts::Args
 {
 public:
     EMMGOptions(int argc, char *argv[]);
-
+    virtual ~EMMGOptions();
+    
+    ts::DuckContext      duck;                // TSDuck execution context.    
     ts::tlv::Logger      logger;              // Message logger.
     ts::UStringVector    inputFiles;          // Input file names.
     ts::SectionPtrVector sections;            // Loaded sections from input files.
@@ -97,9 +99,13 @@ public:
     bool adjustBandwidth(uint16_t allocated);
 };
 
+// Destructor.
+EMMGOptions::~EMMGOptions() {}
+
 // Constructor.
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG", u"[options] [section-file ...]"),
+    duck(this),
     logger(ts::Severity::Debug, this),
     inputFiles(),
     sections(),
@@ -305,7 +311,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     // Load sections from input files.
     for (auto it = inputFiles.begin(); it != inputFiles.end(); ++it) {
-        ts::SectionFile file;
+        ts::SectionFile file(duck);
         file.setCRCValidation(ts::CRC32::CHECK);
         if (file.load(*it, *this)) {
             sections.insert(sections.end(), file.sections().begin(), file.sections().end());

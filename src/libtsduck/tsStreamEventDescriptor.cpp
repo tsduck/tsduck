@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsStreamEventDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stream_event_descriptor"
 #define MY_DID ts::DID_STREAM_EVENT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StreamEventDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StreamEventDescriptor, ts::EDID::Standard(MY_DID));
@@ -42,11 +44,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StreamEventDescriptor::DisplayDescriptor, ts::EDID:
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::StreamEventDescriptor::StreamEventDescriptor(uint16_t id, uint64_t npt) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     event_id(id),
     event_NPT(npt),
     private_data()
@@ -54,15 +56,10 @@ ts::StreamEventDescriptor::StreamEventDescriptor(uint16_t id, uint64_t npt) :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::StreamEventDescriptor::StreamEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::StreamEventDescriptor::StreamEventDescriptor(DuckContext& duck, const Descriptor& desc) :
     StreamEventDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,7 +67,7 @@ ts::StreamEventDescriptor::StreamEventDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::StreamEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(event_id);
@@ -84,7 +81,7 @@ void ts::StreamEventDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::StreamEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 10;
 
@@ -118,7 +115,7 @@ bool ts::StreamEventDescriptor::asciiPrivate() const
 
 void ts::StreamEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
 
     if (size >= 10) {
         const std::string margin(indent, ' ');
@@ -146,7 +143,7 @@ void ts::StreamEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::buildXML(xml::Element* root) const
+void ts::StreamEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"event_id", event_id, true);
     root->setIntAttribute(u"event_NPT", event_NPT, true);
@@ -165,7 +162,7 @@ void ts::StreamEventDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamEventDescriptor::fromXML(const xml::Element* element)
+void ts::StreamEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     UString text;
 

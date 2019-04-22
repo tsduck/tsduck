@@ -46,7 +46,7 @@ namespace ts {
     {
     public:
         // Implementation of RandomGenerator interface:
-        virtual UString name() const override { return u"SystemRandomGenerator"; }
+        virtual UString name() const override;
         virtual bool seed(const void*, size_t) override;
         virtual bool ready() const override;
         virtual bool read(void*, size_t) override;
@@ -62,7 +62,7 @@ namespace ts {
         virtual ~SystemRandomGenerator();
 
     private:
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         ::HCRYPTPROV _prov;
 #else
         int _fd;

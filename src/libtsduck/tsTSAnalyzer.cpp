@@ -45,7 +45,8 @@ const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");
 // Constructor for the TS analyzer
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
+ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, BitRate bitrate_hint) :
+    _duck(duck),
     _ts_id(0),
     _ts_id_valid(false),
     _ts_pkt_cnt(0),
@@ -80,6 +81,8 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _last_tdt(Time::Epoch),
     _first_tot(Time::Epoch),
     _last_tot(Time::Epoch),
+    _first_stt(Time::Epoch),
+    _last_stt(Time::Epoch),
     _country_code(),
     _scrambled_services_cnt(0),
     _tid_present(),
@@ -92,16 +95,11 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _preceding_suspects(0),
     _min_error_before_suspect(1),
     _max_consecutive_suspects(1),
-    _default_charset(nullptr),
-    _demux(this, this),
-    _pes_demux(this),
-    _t2mi_demux(this)
+    _demux(_duck, this, this),
+    _pes_demux(_duck, this),
+    _t2mi_demux(_duck, this)
 {
-    // Specify the PID filters to collect PSI tables.
-    // Start with all MPEG/DVB reserved PID's.
-    for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
-        _demux.addPID(pid);
-    }
+    resetSectionDemux();
 }
 
 
@@ -156,6 +154,8 @@ void ts::TSAnalyzer::reset()
     _last_tdt = Time::Epoch;
     _first_tot = Time::Epoch;
     _last_tot = Time::Epoch;
+    _first_stt = Time::Epoch;
+    _last_stt = Time::Epoch;
     _country_code.clear();
     _scrambled_services_cnt = 0;
     _tid_present.reset();
@@ -165,14 +165,28 @@ void ts::TSAnalyzer::reset()
     _ts_bitrate_cnt = 0;
     _preceding_errors = 0;
     _preceding_suspects = 0;
-    _demux.reset();
     _pes_demux.reset();
+
+    resetSectionDemux();
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the section demux.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::resetSectionDemux()
+{
+    _demux.reset();
 
     // Specify the PID filters to collect PSI tables.
     // Start with all MPEG/DVB reserved PID's.
     for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
         _demux.addPID(pid);
     }
+
+    // Also add ATSC PSIP PID.
+    _demux.addPID(PID_PSIP);
 }
 
 
@@ -319,6 +333,12 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
             description = u"SIT";
             referenced = true;
             optional = true;
+            break;
+        case PID_PSIP:
+            description = u"ATSC PSIP";
+            referenced = true;
+            optional = true;
+            carry_section = true;
             break;
         default:
             break;
@@ -520,6 +540,17 @@ void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
             etc->last_version = version;
         }
     }
+
+    // On ATSC streams, the System Time Table (STT) shall be read as a section.
+    // Due to some ATSC weirdness, they use a long-section format with always
+    // the same version number to carry an ever-changing time. As a consequence,
+    // it is reported only once as a table.
+    if (section.tableId() == TID_STT) {
+        const STT stt(_duck, section);
+        if (stt.isValid()) {
+            analyzeSTT(stt);
+        }
+    }
 }
 
 
@@ -539,44 +570,65 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
     // Process specific tables
     switch (tid) {
         case TID_PAT: {
-            PAT pat(table);
+            const PAT pat(_duck, table);
             if (pid == PID_PAT && pat.isValid()) {
                 analyzePAT(pat);
             }
             break;
         }
         case TID_CAT: {
-            CAT cat(table);
+            const CAT cat(_duck, table);
             if (pid == PID_CAT && cat.isValid()) {
                 analyzeCAT(cat);
             }
             break;
         }
         case TID_PMT: {
-            PMT pmt(table);
+            const PMT pmt(_duck, table);
             if (pmt.isValid()) {
                 analyzePMT(pid, pmt);
             }
             break;
         }
         case TID_SDT_ACT: {
-            SDT sdt(table);
+            const SDT sdt(_duck, table);
             if (sdt.isValid()) {
                 analyzeSDT(sdt);
             }
             break;
         }
         case TID_TDT: {
-            TDT tdt(table);
+            const TDT tdt(_duck, table);
             if (tdt.isValid()) {
                 analyzeTDT(tdt);
             }
             break;
         }
         case TID_TOT: {
-            TOT tot(table);
+            const TOT tot(_duck, table);
             if (tot.isValid()) {
                 analyzeTOT(tot);
+            }
+            break;
+        }
+        case TID_MGT: {
+            const MGT mgt(_duck, table);
+            if (mgt.isValid()) {
+                analyzeMGT(mgt);
+            }
+            break;
+        }
+        case TID_TVCT: {
+            const TVCT tvct(_duck, table);
+            if (tvct.isValid()) {
+                analyzeVCT(tvct);
+            }
+            break;
+        }
+        case TID_CVCT: {
+            const CVCT cvct(_duck, table);
+            if (cvct.isValid()) {
+                analyzeVCT(cvct);
             }
             break;
         }
@@ -688,15 +740,15 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
 void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 {
     // Register characteristics of all services
-    for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+    for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
 
         ServiceContextPtr svp(getService(it->first)); // it->first = map key = service id
         svp->orig_netw_id = sdt.onetw_id;
-        svp->service_type = it->second.serviceType();
+        svp->service_type = it->second.serviceType(_duck);
 
         // Replace names only if they are not empty.
-        const UString provider(it->second.providerName(_default_charset));
-        const UString name(it->second.serviceName(_default_charset));
+        const UString provider(it->second.providerName(_duck));
+        const UString name(it->second.serviceName(_duck));
         if (!provider.empty()) {
             svp->provider = provider;
         }
@@ -734,6 +786,82 @@ void ts::TSAnalyzer::analyzeTOT(const TOT& tot)
             _country_code = tot.regions[0].country;
             _first_tot = _last_tot;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ATSC MGT
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
+{
+    // Process all table types.
+    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
+
+        // The table type and its name.
+        const MGT::TableType& tab(it->second);
+        const UString name(u"ATSC " + MGT::TableTypeName(tab.table_type));
+
+        // Get the PID context.
+        const PIDContextPtr ps(getPID(tab.table_type_PID, name));
+        ps->referenced = true;
+        ps->carry_section = true;
+
+        // An ATSC PID may carry more than one table type.
+        if (ps->description != name) {
+            AppendUnique(ps->attributes, name);
+        }
+
+        // Some additional PSIP PID's shall be analyzed.
+        switch (tab.table_type) {
+            case ATSC_TTYPE_TVCT_CURRENT:
+            case ATSC_TTYPE_CVCT_CURRENT:
+                _demux.addPID(tab.table_type_PID);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ATSC TVCT (terrestrial) or CVCT (cable)
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeVCT(const VCT& vct)
+{
+    // Register characteristics of all services
+    for (auto it = vct.channels.begin(); it != vct.channels.end(); ++it) {
+        // Only keep services from this transport stream.
+        if (it->second.channel_TSID == vct.transport_stream_id) {
+            // Get or create the service with this service id ("program number" in ATSC parlance).
+            ServiceContextPtr svp(getService(it->second.program_number));
+            const UString name(it->second.short_name.toTrimmed());
+            if (!name.empty()) {
+                // Update the service name.
+                svp->name = name;
+            }
+            // Provider is a DVB concept, we replace it with major.minor with ATSC.
+            if (svp->provider.empty()) {
+                svp->provider = UString::Format(u"ATSC %d.%d", {it->second.major_channel_number, it->second.minor_channel_number});
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ATSC STT.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeSTT(const STT& stt)
+{
+    // Keep first and last time stamps
+    _last_stt = stt.utcTime();
+    if (_first_stt == Time::Epoch) {
+        _first_stt = _last_stt;
     }
 }
 

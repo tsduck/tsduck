@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAudioStreamDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"audio_stream_descriptor"
 #define MY_DID ts::DID_AUDIO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AudioStreamDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AudioStreamDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AudioStreamDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::AudioStreamDescriptor::AudioStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     free_format(false),
     ID(0),
     layer(0),
@@ -56,10 +58,10 @@ ts::AudioStreamDescriptor::AudioStreamDescriptor() :
     _is_valid = true;
 }
 
-ts::AudioStreamDescriptor::AudioStreamDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AudioStreamDescriptor::AudioStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
     AudioStreamDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +69,7 @@ ts::AudioStreamDescriptor::AudioStreamDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((free_format ? 0x80 : 0x00) |
@@ -83,7 +85,7 @@ void ts::AudioStreamDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AudioStreamDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -105,7 +107,7 @@ void ts::AudioStreamDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -122,7 +124,7 @@ void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::buildXML(xml::Element* root) const
+void ts::AudioStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"free_format", free_format);
     root->setIntAttribute(u"ID", ID);
@@ -135,7 +137,7 @@ void ts::AudioStreamDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AudioStreamDescriptor::fromXML(const xml::Element* element)
+void ts::AudioStreamDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

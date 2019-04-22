@@ -1,10 +1,12 @@
     REF_TYPE(AIT);
     REF_TYPE(BAT);
     REF_TYPE(CAT);
+    REF_TYPE(CVCT);
     REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
     REF_TYPE(INT);
+    REF_TYPE(MGT);
     REF_TYPE(NIT);
     REF_TYPE(PAT);
     REF_TYPE(PMT);
@@ -12,9 +14,11 @@
     REF_TYPE(SDT);
     REF_TYPE(SelectionInformationTable);
     REF_TYPE(SpliceInformationTable);
+    REF_TYPE(STT);
     REF_TYPE(TDT);
     REF_TYPE(TOT);
     REF_TYPE(TSDT);
+    REF_TYPE(TVCT);
 
     REF_TYPE(AACDescriptor);
     REF_TYPE(AC3Descriptor);
@@ -101,6 +105,7 @@
     REF_TYPE(PrefetchDescriptor);
     REF_TYPE(PrivateDataIndicatorDescriptor);
     REF_TYPE(PrivateDataSpecifierDescriptor);
+    REF_TYPE(ProtectionMessageDescriptor);
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
     REF_TYPE(SatelliteDeliverySystemDescriptor);

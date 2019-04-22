@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionDemux.h"
+#include "tsTablesFactory.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 
@@ -179,11 +180,11 @@ void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool pack, bool 
 //----------------------------------------------------------------------------
 
 ts::SectionDemux::PIDContext::PIDContext() :
+    pusi_pkt_index(0),
     continuity(0),
     sync(false),
     ts(),
-    tids(),
-    pusi_pkt_index(0)
+    tids()
 {
 }
 
@@ -199,10 +200,8 @@ void ts::SectionDemux::PIDContext::syncLost()
 // SectionDemux constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
-                               SectionHandlerInterface* section_handler,
-                               const PIDSet& pid_filter) :
-    SuperClass(pid_filter),
+ts::SectionDemux::SectionDemux(DuckContext& duck, TableHandlerInterface* table_handler, SectionHandlerInterface* section_handler, const PIDSet& pid_filter) :
+    SuperClass(duck, pid_filter),
     _table_handler(table_handler),
     _section_handler(section_handler),
     _pids(),
@@ -245,7 +244,6 @@ void ts::SectionDemux::feedPacket(const TSPacket& pkt)
 void ts::SectionDemux::processPacket(const TSPacket& pkt)
 {
     // Reject invalid packets
-
     if (!pkt.hasValidSync()) {
         _status.invalid_ts++;
         return;
@@ -253,41 +251,35 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
     // Get PID and reference to the PID context.
     // The PID context is created if did not exist.
-
-    PID pid = pkt.getPID();
+    const PID pid = pkt.getPID();
     PIDContext& pc(_pids[pid]);
 
-    // If TS packet is scrambled, we cannot decode it and we loose
-    // synchronization on this PID (usually, PID's carrying sections
-    // are not scrambled).
-
+    // If TS packet is scrambled, we cannot decode it and we loose synchronization
+    // on this PID (usually, PID's carrying sections are not scrambled).
     if (pkt.getScrambling()) {
         _status.scrambled++;
-        pc.syncLost ();
+        pc.syncLost();
         return;
     }
 
     // Check continuity counter on this PID (only if we have not lost
     // the synchronization on this PID).
-
     if (pc.sync) {
         // Ignore duplicate packets (same CC)
         if (pkt.getCC() == pc.continuity) {
             return;
         }
         // Check if we are still synchronized
-        if (pkt.getCC () != (pc.continuity + 1) % CC_MAX) {
+        if (pkt.getCC() != ((pc.continuity + 1) & CC_MASK)) {
             _status.discontinuities++;
-            pc.syncLost ();
+            pc.syncLost();
         }
     }
 
-    pc.continuity = pkt.getCC ();
+    pc.continuity = pkt.getCC();
 
     // Locate TS packet payload
-
-    size_t header_size = pkt.getHeaderSize ();
-
+    size_t header_size = pkt.getHeaderSize();
     if (!pkt.hasPayload () || header_size >= PKT_SIZE) {
         return;
     }
@@ -297,7 +289,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     size_t payload_size;
     PacketCounter pusi_pkt_index = pc.pusi_pkt_index;
 
-    if (pkt.getPUSI ()) {
+    if (pkt.getPUSI()) {
         // Keep track of last packet containing a PUSI in this PID
         pc.pusi_pkt_index = _packet_count;
         // Payload Unit Start Indicator (PUSI) is set.
@@ -307,9 +299,10 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         if (header_size + 3 <= PKT_SIZE &&
             pkt.b[header_size] == 0x00 &&
             pkt.b[header_size + 1] == 0x00 &&
-            pkt.b[header_size + 2] == 0x01) {
+            pkt.b[header_size + 2] == 0x01)
+        {
             // Losing sync, will skip all TS packet until next PUSI
-            pc.syncLost ();
+            pc.syncLost();
             return;
         }
         // First byte of payload is a pointer field
@@ -318,7 +311,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         payload_size = PKT_SIZE - header_size - 1;
         // Ignore packet and loose sync if inconsistent pointer field
         if (pointer_field >= payload_size) {
-            pc.syncLost ();
+            pc.syncLost();
             return;
         }
         if (pointer_field == 0) {
@@ -337,10 +330,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     }
 
     // If no previous synchronization, skip incomplete sections
-
     if (!pc.sync) {
         // If no new section in this packet, ignore it
-        if (!pkt.getPUSI ()) {
+        if (!pkt.getPUSI()) {
             return;
         }
         // Skip end of previous section
@@ -352,11 +344,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     }
 
     // Copy TS packet payload in PID context
-
-    pc.ts.append (payload, payload_size);
+    pc.ts.append(payload, payload_size);
 
     // Locate TS buffer by address and size.
-
     const uint8_t* ts_start = pc.ts.data();
     size_t ts_size = pc.ts.size();
 
@@ -378,6 +368,23 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
     while (ts_size >= 3) {
 
+        // If start of next area is 0xFF (invalid TID value), the rest of
+        // the packet is stuffing. Skip it, unless there is a PUSI later.
+
+        if (ts_start[0] == 0xFF) {
+            if (pusi_section != nullptr && ts_start < pusi_section) {
+                // We can resync at a PUSI later in the TS buffer.
+                ts_size -= (pusi_section - ts_start);
+                ts_start = pusi_section;
+                continue;
+            }
+            else {
+                // There is no PUSI later, skip the rest of the TS packet.
+                ts_size = 0;
+                break;
+            }
+        }
+
         // Get section header.
 
         bool section_ok = true;
@@ -390,11 +397,20 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         if (section_length > MAX_PRIVATE_SECTION_SIZE ||
             section_length < MIN_SHORT_SECTION_SIZE ||
-            (long_header && section_length < MIN_LONG_SECTION_SIZE)) {
-
+            (long_header && section_length < MIN_LONG_SECTION_SIZE))
+        {
             _status.inv_sect_length++;
-            pc.syncLost ();
-            return;
+            if (pusi_section != nullptr && ts_start < pusi_section) {
+                // We can resync at a PUSI later in the TS buffer.
+                ts_size -= (pusi_section - ts_start);
+                ts_start = pusi_section;
+                continue;
+            }
+            else {
+                // No way to resync now, wait for next packet with PUSI.
+                pc.syncLost();
+                return;
+            }
         }
 
         // Exit when end of section is missing. Wait for next TS packets.
@@ -443,9 +459,11 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         if (section_ok) {
 
+            // Get the list of standards which define this table id and add them in context.
+            _duck.addStandards(TablesFactory::Instance()->getTableStandards(etid.tid()));
+
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
-
             ETIDContext& tc(pc.tids[etid]);
 
             // If this is a new version of the table, reset the TID context.
@@ -521,13 +539,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         // The next section necessarily starts in current packet
         pusi_pkt_index = _packet_count;
-
-        // If start of next area is 0xFF (invalid TID value), the rest of
-        // the packet is stuffing. Skip it.
-
-        if (ts_size > 0 && ts_start[0] == 0xFF) {
-            ts_size = 0;
-        }
     }
 
     // If an incomplete section remains in the buffer, move it back to

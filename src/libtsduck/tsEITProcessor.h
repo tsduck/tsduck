@@ -64,11 +64,11 @@ namespace ts {
     public:
         //!
         //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside this object.
         //! @param [in] pid The PID containing EIT's to process.
         //! This PID is used as only input PID and output PID.
-        //! @param [in] report Where to report verbose and debug messages. Optional.
         //!
-        EITProcessor(PID pid = PID_EIT, Report* report = nullptr);
+        explicit EITProcessor(DuckContext& duck, PID pid = PID_EIT);
 
         //!
         //! Change the single PID containing EIT's to process.
@@ -204,7 +204,7 @@ namespace ts {
         void removePresentFollowing();
 
     private:
-        Report*               _report;
+        DuckContext&          _duck;
         PIDSet                _input_pids;
         PID                   _output_pid;
         SectionDemux          _demux;
@@ -227,6 +227,7 @@ namespace ts {
         virtual bool doStuffing() override;
 
         // Inaccessible operations.
+        EITProcessor() = delete;
         EITProcessor(const EITProcessor&) = delete;
         EITProcessor& operator=(const EITProcessor&) = delete;
     };

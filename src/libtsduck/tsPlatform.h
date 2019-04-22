@@ -515,22 +515,34 @@
     #if defined(UNICODE)
         #undef UNICODE                   // No unicode in TSDuck, use single byte char
     #endif
-    #define _CRT_SECURE_NO_DEPRECATE 1
-    #define _CRT_NONSTDC_NO_DEPRECATE 1
-    #define WIN32_LEAN_AND_MEAN 1        // Exclude rarely-used stuff from Windows headers
+    #if !defined(_CRT_SECURE_NO_DEPRECATE)
+        #define _CRT_SECURE_NO_DEPRECATE 1
+    #endif
+    #if !defined(_CRT_NONSTDC_NO_DEPRECATE)
+        #define _CRT_NONSTDC_NO_DEPRECATE 1
+    #endif
+    #if !defined(WIN32_LEAN_AND_MEAN)
+        #define WIN32_LEAN_AND_MEAN 1        // Exclude rarely-used stuff from Windows headers
+    #endif
 #endif
 
 // Large file system (LFS) support on Linux.
 
 #if defined(TS_LINUX) && !defined(DOXYGEN)
-    #define _LARGEFILE_SOURCE    1
-    #define _LARGEFILE64_SOURCE  1
-    #define _FILE_OFFSET_BITS   64
+    #if !defined(_LARGEFILE_SOURCE)
+        #define _LARGEFILE_SOURCE    1
+    #endif
+    #if !defined(_LARGEFILE64_SOURCE)
+        #define _LARGEFILE64_SOURCE  1
+    #endif
+    #if !defined(_FILE_OFFSET_BITS)
+        #define _FILE_OFFSET_BITS   64
+    #endif
 #endif
 
 // Enforce assertions, even in optimized mode.
 
-#ifdef NDEBUG
+#if defined(NDEBUG)
     #undef NDEBUG
 #endif
 
@@ -591,6 +603,8 @@
 #include <mpeg2data.h>
 #include <vidcap.h>
 #include <Wincrypt.h>  // Cryptographic services
+#include <WinInet.h>
+#include <Shellapi.h>
 
 #else
 
@@ -629,6 +643,13 @@
 #if defined(TS_MAC)
 #include <sys/mman.h>
 #include <libproc.h>
+#endif
+
+#if !defined(TS_NO_PCSC) // PC/SC support not inhibited by user.
+#include <winscard.h>
+#if defined(TS_LINUX)
+#include <PCSC/reader.h>
+#endif
 #endif
 
 #include <string>
@@ -683,59 +704,59 @@
 // as macros, breaking C++ visibility rules.
 
 #if defined(min)
-#undef min
+    #undef min
 #endif
 
 #if defined(max)
-#undef max
+    #undef max
 #endif
 
 #if defined(TRUE)
-#undef TRUE
+    #undef TRUE
 #endif
 
 #if defined(FALSE)
-#undef FALSE
+    #undef FALSE
 #endif
 
 #if defined(MAYBE)
-#undef MAYBE
+    #undef MAYBE
 #endif
 
 #if defined(IGNORE)
-#undef IGNORE
+    #undef IGNORE
 #endif
 
 #if defined(CHECK)
-#undef CHECK
+    #undef CHECK
 #endif
 
 #if defined(COMPUTE)
-#undef COMPUTE
+    #undef COMPUTE
 #endif
 
 #if defined(INFO)
-#undef INFO
+    #undef INFO
 #endif
 
 #if defined(ERROR)
-#undef ERROR
+    #undef ERROR
 #endif
 
 #if defined(Yield)
-#undef Yield
+    #undef Yield
 #endif
 
 #if defined(CreateDirectory)
-#undef CreateDirectory
+    #undef CreateDirectory
 #endif
 
 #if defined(DeleteFile)
-#undef DeleteFile
+    #undef DeleteFile
 #endif
 
 #if defined(ALTERNATE)
-#undef ALTERNATE
+    #undef ALTERNATE
 #endif
 
 // For platforms not supporting large files:
@@ -759,13 +780,13 @@
 // But fails to report this by defining HAVE_INT_STRERROR_R.
 
 #if defined(TS_MAC) && !defined(HAVE_INT_STRERROR_R) && !defined(DOXYGEN)
-#define HAVE_INT_STRERROR_R 1
+    #define HAVE_INT_STRERROR_R 1
 #endif
 
 // On macOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
 
 #if defined(TS_MAC) && !defined(SA_ONESHOT) && !defined(DOXYGEN)
-#define SA_ONESHOT SA_RESETHAND
+    #define SA_ONESHOT SA_RESETHAND
 #endif
 
 
@@ -2331,7 +2352,7 @@ namespace ts {
     //! Must be a constant value in the range 0..31.
     //! @return The value of @a word left-rotated by @a i bits.
     //!
-    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i) {return XX;}
+    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i) {return XX;}
 
     //!
     //! Inlined function performing 32-bit right-rotate.
@@ -2417,7 +2438,7 @@ namespace ts {
 
 #elif defined(TS_POWERPC)
 
-    TSDUCKDLL inline uint32_t ROL (uint32_t word, int i)
+    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i)
     {
         asm ("rotlw %0,%0,%2"
              :"=r" (word)
@@ -2425,7 +2446,7 @@ namespace ts {
         return word;
     }
 
-    TSDUCKDLL inline uint32_t ROR (uint32_t word, int i)
+    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i)
     {
         asm ("rotlw %0,%0,%2"
              :"=r" (word)
@@ -2433,7 +2454,7 @@ namespace ts {
         return word;
     }
 
-    TSDUCKDLL inline uint32_t ROLc (uint32_t word, const int i)
+    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i)
     {
 #if defined(DEBUG)
         return ROL (word, i);
@@ -2445,7 +2466,7 @@ namespace ts {
 #endif
     }
 
-    TSDUCKDLL inline uint32_t RORc (uint32_t word, const int i)
+    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i)
     {
 #if defined(DEBUG)
         return ROR (word, i);
@@ -2461,22 +2482,22 @@ namespace ts {
 
     // Rotates the hard way
 
-    TSDUCKDLL inline uint32_t ROL (uint32_t word, int i)
+    TSDUCKDLL inline uint32_t ROL(uint32_t word, int i)
     {
         return ((word << (i&31)) | ((word&0xFFFFFFFFUL) >>(32-(i&31)))) & 0xFFFFFFFFUL;
     }
 
-    TSDUCKDLL inline uint32_t ROR (uint32_t word, int i)
+    TSDUCKDLL inline uint32_t ROR(uint32_t word, int i)
     {
         return (((word&0xFFFFFFFFUL) >>(i&31)) | (word << (32-(i&31)))) & 0xFFFFFFFFUL;
     }
 
-    TSDUCKDLL inline uint32_t ROLc (uint32_t word, const int i)
+    TSDUCKDLL inline uint32_t ROLc(uint32_t word, const int i)
     {
         return ((word << (i&31)) | ((word&0xFFFFFFFFUL) >>(32-(i&31)))) & 0xFFFFFFFFUL;
     }
 
-    TSDUCKDLL inline uint32_t RORc (uint32_t word, const int i)
+    TSDUCKDLL inline uint32_t RORc(uint32_t word, const int i)
     {
         return (((word&0xFFFFFFFFUL) >>(i&31)) | (word << (32-(i&31)))) & 0xFFFFFFFFUL;
     }
@@ -2492,7 +2513,7 @@ namespace ts {
     //! Can be positive (left-rotate) or negative (right-rotate).
     //! @return The value of @a word left-rotated by @a i bits.
     //!
-    TSDUCKDLL inline uint64_t ROL64 (uint64_t word, int i) {return XX;}
+    TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i) {return XX;}
 
     //!
     //! Inlined function performing 64-bit left-rotate with a constant value in the range 0..63 for index.
@@ -2510,7 +2531,7 @@ namespace ts {
     //! Must be a constant value in the range 0..63.
     //! @return The value of @a word left-rotated by @a i bits.
     //!
-    TSDUCKDLL inline uint64_t ROL64c (uint64_t word, const int i) {return XX;}
+    TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i) {return XX;}
 
     //!
     //! Inlined function performing 64-bit right-rotate.
@@ -2520,7 +2541,7 @@ namespace ts {
     //! Can be positive (right-rotate) or negative (left-rotate).
     //! @return The value of @a word right-rotated by @a i bits.
     //!
-    TSDUCKDLL inline uint64_t ROR64 (uint64_t word, int i) {return XX;}
+    TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i) {return XX;}
 
     //!
     //! Inlined function performing 64-bit right-rotate with a constant value in the range 0..63 for index.
@@ -2538,11 +2559,11 @@ namespace ts {
     //! Must be a constant value in the range 0..63.
     //! @return The value of @a word right-rotated by @a i bits.
     //!
-    TSDUCKDLL inline uint64_t ROR64c (uint64_t word, const int i) {return XX;}
+    TSDUCKDLL inline uint64_t ROR64c(uint64_t word, const int i) {return XX;}
 
 #elif defined(TS_GCC) && defined(TS_X86_64)
 
-    TSDUCKDLL inline uint64_t ROL64 (uint64_t word, int i)
+    TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i)
     {
         asm ("rolq %%cl,%0"
              :"=r" (word)
@@ -2550,7 +2571,7 @@ namespace ts {
         return word;
     }
 
-    TSDUCKDLL inline uint64_t ROR64 (uint64_t word, int i)
+    TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i)
     {
         asm ("rorq %%cl,%0"
              :"=r" (word)
@@ -2558,10 +2579,10 @@ namespace ts {
         return word;
     }
 
-    TSDUCKDLL inline uint64_t ROL64c (uint64_t word, const int i)
+    TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i)
     {
 #if defined(DEBUG) || defined(TS_LLVM)
-        return ROL64 (word, i);
+        return ROL64(word, i);
 #else
         asm ("rolq %2,%0"
              :"=r" (word)
@@ -2570,10 +2591,10 @@ namespace ts {
 #endif
     }
 
-    TSDUCKDLL inline uint64_t ROR64c (uint64_t word, const int i)
+    TSDUCKDLL inline uint64_t ROR64c(uint64_t word, const int i)
     {
 #if defined(DEBUG) || defined(TS_LLVM)
-        return ROR64 (word, i);
+        return ROR64(word, i);
 #else
         asm ("rorq %2,%0"
              :"=r" (word)
@@ -2584,24 +2605,24 @@ namespace ts {
 
 #else
 
-    TSDUCKDLL inline uint64_t ROL64 (uint64_t word, int i)
+    TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i)
     {
-        return (word << (i&63)) | ((word & TS_UCONST64 (0xFFFFFFFFFFFFFFFF)) >>(64-(i&63)));
+        return (word << (i&63)) | ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(64-(i&63)));
     }
 
-    TSDUCKDLL inline uint64_t ROR64 (uint64_t word, int i)
+    TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i)
     {
-        return ((word & TS_UCONST64 (0xFFFFFFFFFFFFFFFF)) >>(i&63)) | (word << (64-(i&63)));
+        return ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(i&63)) | (word << (64-(i&63)));
     }
 
-    TSDUCKDLL inline uint64_t ROL64c (uint64_t word, const int i)
+    TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i)
     {
-        return (word << (i&63)) | ((word & TS_UCONST64 (0xFFFFFFFFFFFFFFFF)) >>(64-(i&63)));
+        return (word << (i&63)) | ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(64-(i&63)));
     }
 
-    TSDUCKDLL inline uint64_t ROR64c (uint64_t word, const int i)
+    TSDUCKDLL inline uint64_t ROR64c(uint64_t word, const int i)
     {
-        return ((word & TS_UCONST64 (0xFFFFFFFFFFFFFFFF)) >>(i&63)) | (word << (64-(i&63)));
+        return ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >>(i&63)) | (word << (64-(i&63)));
     }
 
 #endif
@@ -2616,7 +2637,7 @@ namespace ts {
     #pragma intrinsic(_ReadWriteBarrier)
 #endif
 
-#if defined (DOXYGEN) /* documentation only */
+#if defined(DOXYGEN) /* documentation only */
     //!
     //! To be defined to implement memory barrier as a no-operation.
     //!
@@ -2971,7 +2992,7 @@ namespace ts {
 //!
 #define TS_SOCKET_ERR_NOTCONN platform_specific
 
-#elif defined (TS_WINDOWS)
+#elif defined(TS_WINDOWS)
 
 #define TS_SOCKET_T             ::SOCKET
 #define TS_SOCKET_T_INVALID     INVALID_SOCKET
@@ -3085,7 +3106,7 @@ namespace ts {
     //! This constant shall be used by convention to express an infinite
     //! number of sub-quantities of seconds.
     //!
-    constexpr SubSecond Infinite = TS_CONST64 (0x7FFFFFFFFFFFFFFF);
+    constexpr SubSecond Infinite = TS_CONST64(0x7FFFFFFFFFFFFFFF);
     //!
     //! Number of nanoseconds per second
     //!

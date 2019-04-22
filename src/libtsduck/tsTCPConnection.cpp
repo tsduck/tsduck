@@ -35,6 +35,19 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Default implementations of handlers.
+//----------------------------------------------------------------------------
+
+void ts::TCPConnection::handleConnected(Report& report)
+{
+}
+
+void ts::TCPConnection::handleDisconnected(Report& report)
+{
+}
+
+
+//----------------------------------------------------------------------------
 // This method is used by specific subclass to declare that the socket
 // has just become connected.
 //----------------------------------------------------------------------------
@@ -50,7 +63,7 @@ void ts::TCPConnection::declareConnected(Report& report)
         }
         _is_connected = true;
     }
-    handleConnected (report);
+    handleConnected(report);
 }
 
 
@@ -58,10 +71,10 @@ void ts::TCPConnection::declareConnected(Report& report)
 // Declare that the socket has just become disconnected.
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::declareDisconnected (Report& report)
+void ts::TCPConnection::declareDisconnected(Report& report)
 {
     {
-        Guard lock (_mutex);
+        Guard lock(_mutex);
         if (_is_connected) {
             _is_connected = false;
         }
@@ -69,7 +82,7 @@ void ts::TCPConnection::declareDisconnected (Report& report)
             return;
         }
     }
-    handleDisconnected (report);
+    handleDisconnected(report);
 }
 
 
@@ -77,10 +90,10 @@ void ts::TCPConnection::declareDisconnected (Report& report)
 // Invoked when socket is closed()
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::handleClosed (Report& report)
+void ts::TCPConnection::handleClosed(Report& report)
 {
-    declareDisconnected (report);
-    SuperClass::handleClosed (report);
+    declareDisconnected(report);
+    SuperClass::handleClosed(report);
 }
 
 
@@ -88,11 +101,11 @@ void ts::TCPConnection::handleClosed (Report& report)
 // Get connected peer.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::getPeer (SocketAddress& peer, Report& report) const
+bool ts::TCPConnection::getPeer(SocketAddress& peer, Report& report) const
 {
     ::sockaddr sock_addr;
     TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
-    TS_ZERO (sock_addr);
+    TS_ZERO(sock_addr);
     if (::getpeername(getSocket(), &sock_addr, &len) != 0) {
         report.error(u"error getting socket peer: " + SocketErrorCodeMessage());
         return false;
@@ -114,13 +127,13 @@ ts::UString ts::TCPConnection::peerName() const
 
 bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
 {
-    const char* data = reinterpret_cast <const char*> (buffer);
+    const char* data = reinterpret_cast <const char*>(buffer);
     size_t remain = size;
 
     while (remain > 0) {
         TS_SOCKET_SSIZE_T gone = ::send(getSocket(), TS_SENDBUF_T(data), int(remain), 0);
         if (gone > 0) {
-            assert (size_t (gone) <= remain);
+            assert(size_t(gone) <= remain);
             data += gone;
             remain -= gone;
         }
@@ -146,11 +159,11 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
 // (in case of user-interrupt, return, otherwise retry).
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::receive (void* data,             // Buffers address
-                                   size_t max_size,        // Buffer size
-                                   size_t& ret_size,       // Received message size
-                                   const AbortInterface* abort,
-                                   Report& report)
+bool ts::TCPConnection::receive(void* data,             // Buffers address
+                                size_t max_size,        // Buffer size
+                                size_t& ret_size,       // Received message size
+                                const AbortInterface* abort,
+                                Report& report)
 {
     // Clear returned values
     ret_size = 0;
@@ -177,9 +190,9 @@ bool ts::TCPConnection::receive (void* data,             // Buffers address
         }
 #endif
         else {
-            Guard lock (_mutex);
+            Guard lock(_mutex);
             if (isOpen()) {
-                report.error(u"error receiving data from socket: " + SocketErrorCodeMessage (err_code));
+                report.error(u"error receiving data from socket: " + SocketErrorCodeMessage(err_code));
             }
             return false;
         }
@@ -192,17 +205,17 @@ bool ts::TCPConnection::receive (void* data,             // Buffers address
 // Receive data until buffer is full.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::receive (void* buffer, size_t size, const AbortInterface* abort, Report& report)
+bool ts::TCPConnection::receive(void* buffer, size_t size, const AbortInterface* abort, Report& report)
 {
-    char* data = reinterpret_cast <char*> (buffer);
+    char* data = reinterpret_cast<char*>(buffer);
     size_t remain = size;
 
     while (remain > 0) {
         size_t got;
-        if (!receive (data, remain, got, abort, report)) {
+        if (!receive(data, remain, got, abort, report)) {
             return false;
         }
-        assert (got <= remain);
+        assert(got <= remain);
         data += got;
         remain -= got;
     }
@@ -229,7 +242,7 @@ bool ts::TCPConnection::connect(const SocketAddress& addr, Report& report)
             declareConnected(report);
             return true;
         }
-#if !defined (TS_WINDOWS)
+#if !defined(TS_WINDOWS)
         else if (errno == EINTR) {
             // Ignore signal, retry
             report.debug(u"connect() interrupted by signal, retrying");

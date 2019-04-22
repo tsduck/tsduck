@@ -62,6 +62,17 @@ namespace ts {
         TS_DECLARE_EXCEPTION(AdaptationFieldError);
 
         //!
+        //! Default constructor.
+        //!
+        TSPacket() = default;
+
+        //!
+        //! Copy constructor.
+        //! @param [in] p Other packet to copy.
+        //!
+        TSPacket(const TSPacket& p) = default;
+
+        //!
         //! Assigment operator.
         //! @param [in] p Other packet to copy.
         //! @return A reference to this object.
@@ -156,6 +167,15 @@ namespace ts {
         }
 
         //!
+        //! Set payload_unit_start_indicator (PUSI) - 1 bit
+        //! @param [in] on The value to set.
+        //!
+        inline void setPUSI(bool on)
+        {
+            b[1] = (b[1] & ~0x40) | (on ? 0x40 : 0x00);
+        }
+
+        //!
         //! Extract transport_error_indicator (TEI) - 1 bit
         //! @return The TEI value.
         //!
@@ -181,6 +201,15 @@ namespace ts {
         }
 
         //!
+        //! Set transport_error_indicator (TEI) - 1 bit
+        //! @param [in] on The value to set.
+        //!
+        inline void setTEI(bool on)
+        {
+            b[1] = (b[1] & ~0x80) | (on ? 0x80 : 0x00);
+        }
+
+        //!
         //! Extract transport_priority - 1 bit
         //! @return The transport_priority value.
         //!
@@ -203,6 +232,15 @@ namespace ts {
         inline void setPriority()
         {
             b[1] |= 0x20;
+        }
+
+        //!
+        //! Set transport_priority - 1 bit
+        //! @param [in] on The value to set.
+        //!
+        inline void setPriority(bool on)
+        {
+            b[1] = (b[1] & ~0x20) | (on ? 0x20 : 0x00);
         }
 
         //!
@@ -351,6 +389,26 @@ namespace ts {
         }
 
         //!
+        //! Clear discontinuity_indicator - 1 bit
+        //!
+        inline void clearDiscontinuityIndicator()
+        {
+            if (getAFSize() > 0) {
+                b[5] &= ~0x80;
+            }
+        }
+
+        //!
+        //! Set discontinuity_indicator - 1 bit
+        //!
+        inline void setDiscontinuityIndicator()
+        {
+            if (getAFSize() > 0) {
+                b[5] |= 0x80;
+            }
+        }
+
+        //!
         //! Check if packet has a random_access_indicator set - 1 bit
         //! @return True if packet has a random_access_indicator set.
         //!
@@ -397,13 +455,13 @@ namespace ts {
 
         //!
         //! Get the PCR - 42 bits.
-        //! @return The PCR or 0 if not found.
+        //! @return The PCR or INVALID_PCR if not found.
         //!
         uint64_t getPCR() const;
 
         //!
         //! Get the OPCR - 42 bits.
-        //! @return The OPCR or 0 if not found.
+        //! @return The OPCR or INVALID_PCR if not found.
         //!
         uint64_t getOPCR() const;
 

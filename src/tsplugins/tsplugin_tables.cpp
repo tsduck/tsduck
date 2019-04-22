@@ -48,6 +48,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         TablesPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
@@ -75,39 +76,39 @@ TSPLUGIN_DECLARE_PROCESSOR(tables, ts::TablesPlugin)
 
 ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Collect PSI/SI Tables", u"[options]"),
-    _display_options(),
+    _display_options(duck),
     _logger_options(),
-    _display(_display_options, *tsp),
+    _display(_display_options),
     _logger()
 {
+    duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
+    duck.defineOptionsForDVBCharset(*this);
     _logger_options.defineOptions(*this);
     _display_options.defineOptions(*this);
 }
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Start /stop methods
 //----------------------------------------------------------------------------
+
+bool ts::TablesPlugin::getOptions()
+{
+    // Decode command line options.
+    return duck.loadOptions(*this) && _logger_options.load(*this) && _display_options.load(*this);
+}
 
 bool ts::TablesPlugin::start()
 {
-    // Decode command line options.
-    if (!_logger_options.load(*this) || !_display_options.load(*this)) {
-        return false;
-    }
-
     // Create the logger.
-    _logger = new TablesLogger(_logger_options, _display, *tsp);
+    _logger = new TablesLogger(_logger_options, _display);
     return !_logger->hasErrors();
 }
 
-
-//----------------------------------------------------------------------------
-// Stop method
-//----------------------------------------------------------------------------
-
 bool ts::TablesPlugin::stop()
 {
+    // Cleanup the logger.
     _logger->close();
     _logger.clear();
     return true;

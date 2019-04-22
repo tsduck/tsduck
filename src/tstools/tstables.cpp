@@ -32,8 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsInputRedirector.h"
 #include "tsTablesLogger.h"
+#include "tsPagerArgs.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -50,29 +52,45 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
+    ts::DuckContext       duck;     // TSDuck execution context.
     ts::UString           infile;   // Input file name.
     ts::TablesLoggerArgs  logger;   // Table logging options.
     ts::TablesDisplayArgs display;  // Table formatting options.
+    ts::PagerArgs         pager;    // Output paging options.
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Collect PSI/SI tables from an MPEG transport stream", u"[options] [filename]"),
+    duck(this),
     infile(),
     logger(),
-    display()
+    display(duck),
+    pager(true, true)
 {
-    option(u"", 0, STRING, 0, 1);
-    help(u"", u"Input MPEG capture file (standard input if omitted).");
-
+    duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
+    duck.defineOptionsForDVBCharset(*this);
+    pager.defineOptions(*this);
     logger.defineOptions(*this);
     display.defineOptions(*this);
 
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"Input MPEG capture file (standard input if omitted).");
+
     analyze(argc, argv);
 
-    infile = value(u"");
+    duck.loadOptions(*this);
+    pager.load(*this);
     logger.load(*this);
     display.load(*this);
+
+    infile = value(u"");
 
     exitOnError();
 }
@@ -84,11 +102,14 @@ Options::Options(int argc, char *argv[]) :
 
 int MainCode(int argc, char *argv[])
 {
-    Options opt (argc, argv);
+    Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
-    ts::TablesDisplay display(opt.display, opt);
-    ts::TablesLogger logger(opt.logger, display, opt);
+    ts::TablesDisplay display(opt.display);
+    ts::TablesLogger logger(opt.logger, display);
     ts::TSPacket pkt;
+
+    // Redirect display on pager process or stdout only.
+    opt.duck.setOutput(&opt.pager.output(opt), false);
 
     // Read all packets in the file and pass them to the logger
     while (!logger.completed() && pkt.read(std::cin, true, opt)) {

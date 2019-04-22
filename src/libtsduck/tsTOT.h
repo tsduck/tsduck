@@ -62,16 +62,23 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TOT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        TOT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
         TOT(const TOT& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        TOT& operator=(const TOT& other) = default;
 
         //!
         //! Get the local time according to a region description.
@@ -89,17 +96,17 @@ namespace ts {
         static UString timeOffsetFormat(int minutes);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
+    protected:
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+
     private:
-        //!
-        //! Add descriptors, filling regions from local_time_offset_descriptor's.
-        //! @param [in] dlist Descriptor list to add.
-        //!
-        void addDescriptors(const DescriptorList& dlist);
+        // Add descriptors, filling regions from local_time_offset_descriptor's.
+        void addDescriptors(DuckContext& duck, const DescriptorList& dlist);
     };
 }

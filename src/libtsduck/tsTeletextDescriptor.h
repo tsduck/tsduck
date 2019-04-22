@@ -115,16 +115,16 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TeletextDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        TeletextDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
 
     protected:
@@ -133,8 +133,9 @@ namespace ts {
         //! This is used by subclasses which have exactly the same structure as a teletext_descriptor.
         //! @param [in] tag Descriptor tag.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        TeletextDescriptor(DID tag, const UChar* xml_name, PDS pds = 0);
+        TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds);
     };
 }

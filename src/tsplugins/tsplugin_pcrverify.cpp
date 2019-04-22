@@ -80,9 +80,9 @@ namespace ts {
         PIDContext    _stats[PID_MAX];   // Per-PID statistics
 
         // PCR units per micro-second
-        static const int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
-        static const int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
-        static const int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
+        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
+        static constexpr int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
+        static constexpr int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
 
         // Inaccessible operations
         PCRVerifyPlugin() = delete;
@@ -95,9 +95,9 @@ TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_PROCESSOR(pcrverify, ts::PCRVerifyPlugin)
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
-const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX_US;
-const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
+constexpr int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
+constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX_US;
+constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 #endif
 
 

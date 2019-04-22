@@ -110,13 +110,14 @@ void TableTest::tearDown()
 
 void TableTest::testAssignPMT()
 {
+    ts::DuckContext duck;
     ts::PMT pmt1(1, true, 27, 1001);
-    pmt1.descs.add(ts::CADescriptor(0x1234, 2002));
+    pmt1.descs.add(duck, ts::CADescriptor(0x1234, 2002));
     pmt1.streams[3003].stream_type = 45;
-    pmt1.streams[3003].descs.add(ts::AVCVideoDescriptor());
+    pmt1.streams[3003].descs.add(duck, ts::AVCVideoDescriptor());
     pmt1.streams[4004].stream_type = 149;
-    pmt1.streams[4004].descs.add(ts::AC3Descriptor());
-    pmt1.streams[4004].descs.add(ts::CADescriptor());
+    pmt1.streams[4004].descs.add(duck, ts::AC3Descriptor());
+    pmt1.streams[4004].descs.add(duck, ts::CADescriptor());
 
     const ts::PMT pmt2(pmt1);
 
@@ -151,13 +152,14 @@ void TableTest::testAssignPMT()
 
 void TableTest::testCopyPMT()
 {
+    ts::DuckContext duck;
     ts::PMT pmt1(1, true, 27, 1001);
-    pmt1.descs.add(ts::CADescriptor(0x1234, 2002));
+    pmt1.descs.add(duck, ts::CADescriptor(0x1234, 2002));
     pmt1.streams[3003].stream_type = 45;
-    pmt1.streams[3003].descs.add(ts::AVCVideoDescriptor());
+    pmt1.streams[3003].descs.add(duck, ts::AVCVideoDescriptor());
     pmt1.streams[4004].stream_type = 149;
-    pmt1.streams[4004].descs.add(ts::AC3Descriptor());
-    pmt1.streams[4004].descs.add(ts::CADescriptor());
+    pmt1.streams[4004].descs.add(duck, ts::AC3Descriptor());
+    pmt1.streams[4004].descs.add(duck, ts::CADescriptor());
 
     ts::PMT pmt2;
     pmt2 = pmt1;
@@ -193,9 +195,10 @@ void TableTest::testCopyPMT()
 
 void TableTest::testAIT()
 {
+    ts::DuckContext duck;
     ts::ApplicationIdentifier id;
     ts::AIT ait1;
-    ait1.applications[id].descs.add(ts::CADescriptor());
+    ait1.applications[id].descs.add(duck, ts::CADescriptor());
     CPPUNIT_ASSERT_EQUAL(size_t(1), ait1.applications.size());
     CPPUNIT_ASSERT(ait1.applications.begin()->first == id);
     CPPUNIT_ASSERT(ait1.applications.begin()->second.descs.table() == &ait1);
@@ -214,8 +217,9 @@ void TableTest::testAIT()
 
 void TableTest::testBAT()
 {
+    ts::DuckContext duck;
     ts::BAT bat1;
-    bat1.transports[ts::TransportStreamId(1, 2)].descs.add(ts::CADescriptor());
+    bat1.transports[ts::TransportStreamId(1, 2)].descs.add(duck, ts::CADescriptor());
     CPPUNIT_ASSERT(bat1.descs.table() == &bat1);
     CPPUNIT_ASSERT_EQUAL(size_t(1), bat1.transports.size());
     CPPUNIT_ASSERT(bat1.transports.begin()->first == ts::TransportStreamId(1, 2));
@@ -250,8 +254,9 @@ void TableTest::testCAT()
 
 void TableTest::testEIT()
 {
+    ts::DuckContext duck;
     ts::EIT eit1;
-    eit1.events[1].descs.add(ts::CADescriptor());
+    eit1.events[1].descs.add(duck, ts::CADescriptor());
     CPPUNIT_ASSERT_EQUAL(size_t(1), eit1.events.size());
     CPPUNIT_ASSERT(eit1.events.begin()->first == 1);
     CPPUNIT_ASSERT(eit1.events.begin()->second.descs.table() == &eit1);
@@ -270,8 +275,9 @@ void TableTest::testEIT()
 
 void TableTest::testNIT()
 {
+    ts::DuckContext duck;
     ts::NIT nit1;
-    nit1.transports[ts::TransportStreamId(1, 2)].descs.add(ts::CADescriptor());
+    nit1.transports[ts::TransportStreamId(1, 2)].descs.add(duck, ts::CADescriptor());
     CPPUNIT_ASSERT(nit1.descs.table() == &nit1);
     CPPUNIT_ASSERT_EQUAL(size_t(1), nit1.transports.size());
     CPPUNIT_ASSERT(nit1.transports.begin()->first == ts::TransportStreamId(1, 2));
@@ -293,8 +299,9 @@ void TableTest::testNIT()
 
 void TableTest::testSDT()
 {
+    ts::DuckContext duck;
     ts::SDT sdt1;
-    sdt1.services[1].descs.add(ts::CADescriptor());
+    sdt1.services[1].descs.add(duck, ts::CADescriptor());
     CPPUNIT_ASSERT_EQUAL(size_t(1), sdt1.services.size());
     CPPUNIT_ASSERT(sdt1.services.begin()->first == 1);
     CPPUNIT_ASSERT(sdt1.services.begin()->second.descs.table() == &sdt1);
@@ -313,8 +320,9 @@ void TableTest::testSDT()
 
 void TableTest::testTOT()
 {
+    ts::DuckContext duck;
     ts::TOT tot1;
-    tot1.descs.add(ts::CADescriptor());
+    tot1.descs.add(duck, ts::CADescriptor());
     CPPUNIT_ASSERT(tot1.descs.table() == &tot1);
     CPPUNIT_ASSERT_EQUAL(size_t(1), tot1.descs.count());
     CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_CA), tot1.descs[0]->tag());
@@ -347,11 +355,12 @@ void TableTest::testTSDT()
 void TableTest::testCleanupPrivateDescriptors()
 {
     // Issue #87 non-regression.
+    ts::DuckContext duck;
     ts::DescriptorList dlist(nullptr);
-    dlist.add(ts::EacemPreferredNameIdentifierDescriptor());
-    dlist.add(ts::LogicalChannelNumberDescriptor());
-    dlist.add(ts::ServiceDescriptor());
-    dlist.add(ts::EutelsatChannelNumberDescriptor());
+    dlist.add(duck, ts::EacemPreferredNameIdentifierDescriptor());
+    dlist.add(duck, ts::LogicalChannelNumberDescriptor());
+    dlist.add(duck, ts::ServiceDescriptor());
+    dlist.add(duck, ts::EutelsatChannelNumberDescriptor());
 
     CPPUNIT_ASSERT_EQUAL(size_t(4), dlist.count());
     dlist.removeInvalidPrivateDescriptors();

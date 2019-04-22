@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsTSFileInput.h"
+#include "tsContinuityAnalyzer.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
@@ -54,18 +55,17 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        TSFileInput   _file;               // Input file
-        bool          _terminate;          // Terminate processing after last new packet.
-        bool          _update_cc;          // Ignore continuity counters.
-        bool          _check_pid_conflict; // Check new PIDs in TS
-        PIDSet        _ts_pids;            // PID's on original TS
-        uint8_t       _cc[PID_MAX];        // Continuity counters in new PID's
-        bool          _force_pid;          // PID value to force
-        PID           _force_pid_value;    // PID value to force
-        BitRate       _bitrate;            // Target bitrate for inserted packets
-        PacketCounter _inter_pkt;          // # TS packets between 2 new PID packets
-        PacketCounter _pid_next_pkt;       // Next time to insert a packet
-        PacketCounter _packet_count;       // TS packet counter
+        TSFileInput   _file;                  // Input file
+        bool          _terminate;             // Terminate processing after last new packet.
+        bool          _update_cc;             // Ignore continuity counters.
+        bool          _check_pid_conflict;    // Check new PIDs in TS
+        PIDSet        _ts_pids;               // PID's on original TS
+        bool          _force_pid;             // PID value to force
+        PID           _force_pid_value;       // PID value to force
+        BitRate       _bitrate;               // Target bitrate for inserted packets
+        PacketCounter _inter_pkt;             // # TS packets between 2 new PID packets
+        PacketCounter _pid_next_pkt;          // Next time to insert a packet
+        PacketCounter _packet_count;          // TS packet counter
         uint64_t      _inter_time;            // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
         uint64_t      _min_pts;               // Start only inserting packets when this PTS has been passed
         PID           _pts_pid;               // defines the PID of min-pts setting
@@ -75,6 +75,7 @@ namespace ts {
         uint64_t      _inserted_packet_count; // counts inserted packets
         uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
+        ContinuityAnalyzer _cc_fixer;         // To fix continuity counters in mux'ed PID's
 
         // Inaccessible operations
         MuxPlugin() = delete;
@@ -98,7 +99,6 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _update_cc(false),
     _check_pid_conflict(false),
     _ts_pids(),
-    _cc(),
     _force_pid(false),
     _force_pid_value(PID_NULL),
     _bitrate(0),
@@ -113,7 +113,8 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _max_insert_count(0),
     _inserted_packet_count(0),
     _youngest_pts(0),
-    _pts_last_inserted(0)
+    _pts_last_inserted(0),
+    _cc_fixer(AllPIDs, tsp)
 {
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Input binary file containing 188-byte transport packets.");
@@ -227,7 +228,6 @@ bool ts::MuxPlugin::start()
     _pts_last_inserted = 0;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
-    TS_ZERO (_cc);
 
     // Convert --inter-time from milliseconds to PTS units.
     _inter_time = _inter_time * 90;
@@ -245,6 +245,11 @@ bool ts::MuxPlugin::start()
     // For min/max pts option, we need to wait until a packet with PTS was reached.
     if (_min_pts > 0 ) {
         _pts_range_ok = false;
+    }
+
+    // Configure the continuity counter fixing.
+    if (_update_cc) {
+        _cc_fixer.setGenerator(true);
     }
 
     return _file.open(value(u""),
@@ -380,8 +385,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, bool& fl
         return TSP_END;
     }
     if (_update_cc) {
-        pkt.setCC(_cc[pid]);
-        _cc[pid] = (_cc[pid] + 1) & CC_MASK;
+        _cc_fixer.feedPacket(pkt);
     }
 
     // Next insertion point

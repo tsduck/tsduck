@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TSAnalyzerOptions() {}
+        virtual ~TSAnalyzerOptions();
 
         // Full analysis options:
         bool ts_analysis;            //!< Option -\-ts-analysis
@@ -85,9 +85,6 @@ namespace ts {
         uint64_t suspect_min_error_count;  //!< Option -\-suspect-min-error-count
         uint64_t suspect_max_consecutive;  //!< Option -\-suspect-max-consecutive
 
-        // Table analysis options
-        const DVBCharset* default_charset;  //!< Option -\-default-charset
-
         //!
         //! Define command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
@@ -100,12 +97,5 @@ namespace ts {
         //! @param [in,out] args Command line arguments.
         //!
         virtual void load(Args& args);
-
-        //! @cond doxygen
-        // Copy constructor and assignment operator.
-        // Use default implementation, just tell the compiler we understand the consequences of copying a pointer member.
-        TSAnalyzerOptions(const TSAnalyzerOptions& other) = default;
-        TSAnalyzerOptions& operator=(const TSAnalyzerOptions& other) = default;
-        //! @endcond
     };
 }

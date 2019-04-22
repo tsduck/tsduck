@@ -245,3 +245,12 @@ ts::tsswitch::Options::Options(int argc, char *argv[]) :
     // Final checking
     exitOnError();
 }
+
+
+//----------------------------------------------------------------------------
+// Destructor.
+//----------------------------------------------------------------------------
+
+ts::tsswitch::Options::~Options()
+{
+}

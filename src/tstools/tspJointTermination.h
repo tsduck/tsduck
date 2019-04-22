@@ -59,33 +59,15 @@ namespace ts {
                              const ThreadAttributes& attributes,
                              Mutex& global_mutex);
 
-            //!
-            //! Destructor
-            //!
-            virtual ~JointTermination() {}
-
             // Implementation of "joint termination", inherited from TSP.
             virtual void useJointTermination(bool on) override;
             virtual void jointTerminate() override;
-            virtual bool useJointTermination() const override {return _use_jt;}
-            virtual bool thisJointTerminated() const override {return _jt_completed;}
+            virtual bool useJointTermination() const override;
+            virtual bool thisJointTerminated() const override;
 
         protected:
             Mutex&         _global_mutex; //!< Reference to the TSP global mutex.
             const Options* _options;      //!< TSP options.
-
-            //!
-            //! Account for more processed packets in this plugin.
-            //! @param [in] incr Add this number of processed packets.
-            //! @return New total number of processed packets.
-            //!
-            PacketCounter addTotalPackets(size_t incr) {return _total_packets += incr;}
-
-            //!
-            //! Get total number of processed packets.
-            //! @return The total number of processed packets in this plugin.
-            //!
-            PacketCounter totalPackets() const {return _total_packets;}
 
             //!
             //! Get the packet number after which the "joint termination" must be applied.
@@ -95,12 +77,10 @@ namespace ts {
             PacketCounter totalPacketsBeforeJointTermination() const;
 
         private:
-            PacketCounter _total_packets;   // Total processed packets
-            bool          _use_jt;          // Use "joint termination"
-            bool          _jt_completed;    // Completed, for "joint termination"
+            bool _use_jt;        // Use "joint termination"
+            bool _jt_completed;  // Completed, for "joint termination"
 
-            // The following static private data must be accessed exclusively under the
-            // protection of the global mutex.
+            // The following static private data must be accessed exclusively under the protection of the global mutex.
             static int           _jt_users;         // Nb plugins using "joint termination"
             static int           _jt_remaining;     // Nb pluging using jt but not yet completed
             static PacketCounter _jt_hightest_pkt;  // Highest pkt# for completed jt plugins

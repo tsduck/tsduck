@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTimeShiftedServiceDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"time_shifted_service_descriptor"
 #define MY_DID ts::DID_TIME_SHIFT_SERVICE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, ts::EDID::Standard(MY_DID));
@@ -42,25 +44,20 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TimeShiftedServiceDescriptor::DisplayDescriptor, ts
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     reference_service_id(0)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
     TimeShiftedServiceDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +65,7 @@ ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(reference_service_id);
@@ -80,7 +77,7 @@ void ts::TimeShiftedServiceDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 2;
 
@@ -97,7 +94,7 @@ void ts::TimeShiftedServiceDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::TimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -114,7 +111,7 @@ void ts::TimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::buildXML(xml::Element* root) const
+void ts::TimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"reference_service_id", reference_service_id, true);
 }
@@ -124,7 +121,7 @@ void ts::TimeShiftedServiceDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::fromXML(const xml::Element* element)
+void ts::TimeShiftedServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

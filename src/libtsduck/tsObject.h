@@ -57,9 +57,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~Object()
-        {
-        }
+        virtual ~Object();
 
         //!
         //! Store a safe pointer to an Object in a static thread-safe repository.

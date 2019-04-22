@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCarouselIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"carousel_identifier_descriptor"
 #define MY_DID ts::DID_CAROUSEL_IDENTIFIER
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CarouselIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CarouselIdentifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,17 +49,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CarouselIdentifierDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     carousel_id(0),
     private_data()
 {
     _is_valid = true;
 }
 
-ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     CarouselIdentifierDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +67,7 @@ ts::CarouselIdentifierDescriptor::CarouselIdentifierDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CarouselIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(carousel_id);
@@ -78,7 +80,7 @@ void ts::CarouselIdentifierDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CarouselIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -98,7 +100,7 @@ void ts::CarouselIdentifierDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -118,7 +120,7 @@ void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::CarouselIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"carousel_id", carousel_id, true);
     if (!private_data.empty()) {
@@ -131,7 +133,7 @@ void ts::CarouselIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CarouselIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::CarouselIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

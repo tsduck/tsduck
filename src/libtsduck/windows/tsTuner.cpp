@@ -856,41 +856,68 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
             // first get IDVBTuningSpace interface of tuning space (may not support it)
             ComPtr<::IDVBTuningSpace> dvb_tspace;
             dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, debug_report);
-            if (dvb_tspace.isNull()) {
+            if (!dvb_tspace.isNull()) {
+
+                // Get DVB system type
+                ::DVBSystemType systype;
+                hr = dvb_tspace->get_SystemType(&systype);
+                if (!ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
+                    continue;
+                }
+                report.debug(u"DVB system type is %d for tuning space \"%s\"", { systype, fname });
+
+                // Check if DVB system type matches our tuner type.
+                switch (systype) {
+                    case ::DVB_Satellite:
+                        tspace_found = true;
+                        _tuner_type = ts::DVB_S;
+                        _delivery_systems.set(DS_DVB_S);
+                        // No way to check if DS_DVB_S2 is supported
+                        break;
+                    case ::DVB_Terrestrial:
+                        tspace_found = true;
+                        _tuner_type = ts::DVB_T;
+                        _delivery_systems.set(DS_DVB_T);
+                        break;
+                    case ::DVB_Cable:
+                        tspace_found = true;
+                        _tuner_type = ts::DVB_C;
+                        _delivery_systems.set(DS_DVB_C);
+                        break;
+                    default:
+                        // Not a kind of tuning space we support.
+                        break;
+                }
+            }
+            else {
                 // Not a DVB tuning space, silently ignore it.
                 report.debug(u"tuning space \"%s\" does not support IID_IDVBTuningSpace interface", {fname});
-                continue;
             }
 
-            // Get DVB system type
-            ::DVBSystemType systype;
-            hr = dvb_tspace->get_SystemType(&systype);
-            if (!ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
-                continue;
-            }
-            report.debug(u"DVB system type is %d for tuning space \"%s\"", {systype, fname});
+            // Check if this is a tuning space we can support by getting its ATSC network type:
+            // first get IATSCTuningSpace interface of tuning space (may not support it)
+            ComPtr<::IATSCTuningSpace> atsc_tspace;
+            atsc_tspace.queryInterface(tspace.pointer(), ::IID_IATSCTuningSpace, debug_report);
+            if (!atsc_tspace.isNull()) {
 
-            // Check if DVB system type matches our tuner type.
-            switch (systype) {
-                case ::DVB_Satellite:
+                // Get ATSC network type
+                ::GUID nettype;
+                hr = atsc_tspace->get__NetworkType(&nettype);
+                if (!ComSuccess(hr, u"cannot get ATSC network type from tuning space \"" + fname + u"\"", report)) {
+                    continue;
+                }
+                report.debug(u"ATSC network type is \"%s\" for tuning space \"%s\"", { GetTuningSpaceNetworkType(tspace.pointer(), report), fname });
+
+                // Check if ATSC network type matches our tuner type.
+                if (nettype == CLSID_ATSCNetworkProvider) {
                     tspace_found = true;
-                    _tuner_type = ts::DVB_S;
-                    _delivery_systems.set(DS_DVB_S);
-                    // No way to check if DS_DVB_S2 is supported
-                    break;
-                case ::DVB_Terrestrial:
-                    tspace_found = true;
-                    _tuner_type = ts::DVB_T;
-                    _delivery_systems.set(DS_DVB_T);
-                    break;
-                case ::DVB_Cable:
-                    tspace_found = true;
-                    _tuner_type = ts::DVB_C;
-                    _delivery_systems.set(DS_DVB_C);
-                    break;
-                default:
-                    // Not a king of tuning space we support.
-                    break;
+                    _tuner_type = ts::ATSC;
+                    _delivery_systems.set(DS_ATSC);
+                }
+            }
+            else {
+                // Not an ATSC tuning space, silently ignore it.
+                report.debug(u"tuning space \"%s\" does not support IID_IATSCTuningSpace interface", {fname});
             }
         }
     }

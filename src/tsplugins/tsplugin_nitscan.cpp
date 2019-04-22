@@ -35,7 +35,8 @@
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
-#include "tsTunerUtils.h"
+#include "tsSysUtils.h"
+#include "tsChannelFile.h"
 #include "tsPAT.h"
 #include "tsNIT.h"
 TSDUCK_SOURCE;
@@ -51,6 +52,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         NITScanPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
@@ -71,6 +73,11 @@ namespace ts {
         PID           _nit_pid;         // PID for the NIT (default: read PAT)
         size_t        _nit_count;       // Number of analyzed NIT's
         SectionDemux  _demux;           // Section demux
+        ChannelFile   _channels;        // Channel database
+        UString       _channel_file;    // Name of channel configuration file.
+        bool          _save_channel_file;     // Save a fresh new version of channel configuration file.
+        bool          _update_channel_file;   // Update previous content of channel configuration file.
+        bool          _default_channel_file;  // Use default channel configuration file.
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -110,7 +117,12 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _network_id(0),
     _nit_pid(PID_NULL),
     _nit_count(0),
-    _demux(this)
+    _demux(duck, this),
+    _channels(),
+    _channel_file(),
+    _save_channel_file(false),
+    _update_channel_file(false),
+    _default_channel_file(false)
 {
     option(u"all-nits", 'a');
     help(u"all-nits",
@@ -127,9 +139,8 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     help(u"dvb-options",
          u"The characteristics of each transponder are formatted as a list of "
          u"command-line options for the tsp plugin \"dvb\" such as --frequency, "
-         u"--symbol-rate, etc. By default, the tuning information are formatted "
-         u"as Linux DVB \"zap\" configuration files as used by the standard "
-         u"utilities \"szap\", \"czap\" and \"tzap\".");
+         u"--symbol-rate, etc. This is the default when no --save-channels or "
+         u"--update-channels is specified.");
 
     option(u"network-id", 'n', UINT16);
     help(u"network-id",
@@ -147,10 +158,24 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
          u"is analyzed to get the PID of the NIT. DVB-compliant networks should "
          u"use PID 16 (0x0010) for the NIT and signal it in the PAT.");
 
+    option(u"save-channels", 0, STRING);
+    help(u"save-channels", u"filename",
+         u"Save the description of all transport streams in the specified XML file. "
+         u"If the file name is \"-\", use the default tuning configuration file. "
+         u"See also option --update-channels.");
+
     option(u"terminate", 't');
     help(u"terminate",
          u"Stop the packet transmission after the first NIT is analyzed. "
          u"Should be specified when tsp is used only to scan the NIT.");
+
+    option(u"update-channels", 0, STRING);
+    help(u"update-channels", u"filename",
+         u"Update the description of all transport streams in the specified XML file. "
+         u"The content of each transport stream is preserved, only the tuning information is updated. "
+         u"If the file does not exist, it is created. "
+         u"If the file name is \"-\", use the default tuning configuration file. "
+         u"See also option --save-channels.");
 
     option(u"variable", 'v', STRING, 0, 1, 0, 0, true);
     help(u"variable", u"prefix",
@@ -162,10 +187,10 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::NITScanPlugin::start()
+bool ts::NITScanPlugin::getOptions()
 {
     // Get option values
     _output_name = value(u"output-file");
@@ -180,6 +205,39 @@ bool ts::NITScanPlugin::start()
     _use_variable = present(u"variable");
     _variable_prefix = value(u"variable", u"TS");
 
+    _save_channel_file = present(u"save-channels");
+    _update_channel_file = present(u"update-channels");
+    _channel_file = _update_channel_file ? value(u"update-channels") : value(u"save-channels");
+    _default_channel_file = (_save_channel_file || _update_channel_file) && (_channel_file.empty() || _channel_file == u"-");
+
+    if (_save_channel_file && _update_channel_file) {
+        tsp->error(u"--save-channels and --update-channels are mutually exclusive");
+        return false;
+    }
+    else if (_default_channel_file) {
+        // Use default channel file.
+        _channel_file = ChannelFile::DefaultFileName();
+    }
+
+    // Default is --dvb-options.
+    _dvb_options = _dvb_options || (!_save_channel_file && !_update_channel_file);
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::NITScanPlugin::start()
+{
+    // Pre-load the existing channel file.
+    _channels.clear();
+    if (_update_channel_file && !_channel_file.empty() && FileExists(_channel_file) && !_channels.load(_channel_file, *tsp)) {
+        return false;
+    }
+
     // Initialize the demux. When the NIT PID is specified, filter this one,
     // otherwise the PAT is filtered to get the NIT PID.
     _demux.reset();
@@ -188,8 +246,8 @@ bool ts::NITScanPlugin::start()
     // Initialize other states
     _nit_count = 0;
 
-    // Create the output file.
-    if (_output_name.empty()) {
+    // Create the output file for --dvb-options.
+    if (_output_name.empty() || !_dvb_options) {
         _output = &std::cout;
     }
     else {
@@ -216,6 +274,12 @@ bool ts::NITScanPlugin::stop()
         _output_stream.close();
     }
 
+    // Save channels file. Create intermediate directories when it is the default file.
+    if (!_channel_file.empty()) {
+        tsp->verbose(u"saving %s", {_channel_file});
+        _channels.save(_channel_file, _default_channel_file, *tsp);
+    }
+
     return true;
 }
 
@@ -230,7 +294,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                const PAT pat(table);
+                const PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -240,7 +304,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_NIT_ACT: {
             if (table.sourcePID() == _nit_pid) {
-                const NIT nit(table);
+                const NIT nit(duck, table);
                 if (nit.isValid()) {
                     processNIT(nit);
                 }
@@ -250,7 +314,7 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_NIT_OTH: {
             if (table.sourcePID() == _nit_pid) {
-                const NIT nit(table);
+                const NIT nit(duck, table);
                 if (nit.isValid() && (_all_nits || (_nit_other && _network_id == nit.network_id))) {
                     processNIT(nit);
                 }
@@ -304,27 +368,43 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
         // Loop on all descriptors for the current TS
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
-            TunerParametersPtr tp(DecodeDeliveryDescriptor(*dlist[i]));
+            TunerParametersPtr tp(TunerParameters::FromDeliveryDescriptor(*dlist[i]));
             if (!tp.isNull()) {
-                // Optional comment
-                if (_use_comment) {
-                    *_output << _comment_prefix
-                             << UString::Format(u"TS id: %d (0x%X), original network id: %d (0x%X), from NIT v%d on network id: %d (0x%X)",
-                                                {tsid.transport_stream_id, tsid.transport_stream_id,
-                                                 tsid.original_network_id, tsid.original_network_id,
-                                                 nit.version,
-                                                 nit.network_id, nit.network_id})
-                             << std::endl;
+
+                // Output --dvb-options.
+                if (_dvb_options) {
+                    // Optional comment
+                    if (_use_comment) {
+                        *_output << _comment_prefix
+                                 << UString::Format(u"TS id: %d (0x%X), original network id: %d (0x%X), from NIT v%d on network id: %d (0x%X)",
+                                                    {tsid.transport_stream_id, tsid.transport_stream_id,
+                                                     tsid.original_network_id, tsid.original_network_id,
+                                                     nit.version,
+                                                     nit.network_id, nit.network_id})
+                                 << std::endl;
+                    }
+                    // Output the tuning information, optionally in a variable definition.
+                    if (_use_variable) {
+                        *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
+                    }
+                    *_output << tp->toPluginOptions(true);
+                    if (_use_variable) {
+                        *_output << "\"";
+                    }
+                    *_output << std::endl;
                 }
-                // Output the tuning information, optionally in a variable definition.
-                if (_use_variable) {
-                    *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
+
+                // Fill the channel database.
+                if (_save_channel_file || _update_channel_file) {
+                    // Get or create network description in channel database.
+                    // Use tuner type from delivery descriptor.
+                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, tp->tunerType()));
+                    // Get or create TS description in channel database.
+                    ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
+                    // Do not reset services in TS, keep existing if any, just update tuning info.
+                    ts->onid = tsid.original_network_id;
+                    ts->tune = tp;
                 }
-                *_output << (_dvb_options ? tp->toPluginOptions(true) : tp->toZapFormat());
-                if (_use_variable) {
-                    *_output << "\"";
-                }
-                *_output << std::endl;
             }
         }
     }

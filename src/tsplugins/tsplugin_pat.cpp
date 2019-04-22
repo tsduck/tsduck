@@ -158,7 +158,7 @@ bool ts::PATPlugin::start()
 void ts::PATPlugin::createNewTable(BinaryTable& table)
 {
     PAT pat;
-    pat.serialize(table);
+    pat.serialize(duck, table);
 }
 
 
@@ -176,7 +176,7 @@ void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Process the PAT.
-    PAT pat(table);
+    PAT pat(duck, table);
     if (!pat.isValid()) {
         tsp->warning(u"found invalid PAT");
         reinsert = false;
@@ -203,5 +203,5 @@ void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Reserialize modified PAT.
-    pat.serialize(table);
+    pat.serialize(duck, table);
 }

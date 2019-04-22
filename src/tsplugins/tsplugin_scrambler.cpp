@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  DVB-CSA or ATIS-IDSA Scrambler
+//  DVB-CSA, DVB-CISSA or ATIS-IDSA Scrambler
 //
 //----------------------------------------------------------------------------
 
@@ -235,7 +235,7 @@ TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
 
 ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]"),
-    _service(this, *tsp),
+    _service(duck, this),
     _use_service(false),
     _component_level(false),
     _scramble_audio(false),
@@ -433,6 +433,8 @@ bool ts::ScramblerPlugin::start()
     _partial_clear = 0;
     _update_pmt = false;
     _delay_start = 0;
+    _current_cw = 0;
+    _current_ecm = 0;
 
     // Initialize ECMG.
     if (_need_ecm) {
@@ -460,8 +462,6 @@ bool ts::ScramblerPlugin::start()
             tsp->debug(u"crypto-period duration: %'d ms, delay start: %'d ms", {_ecmg_args.cp_duration, _delay_start});
 
             // Create first and second crypto-periods
-            _current_cw = 0;
-            _current_ecm = 0;
             _cp[0].initCycle(this, 0);
             if (!_cp[0].initScramblerKey()) {
                 return false;
@@ -555,7 +555,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
     // Add a scrambling_descriptor in the PMT for scrambling other than DVB-CSA2.
     if (_scrambling.scramblingType() != SCRAMBLING_DVB_CSA2) {
         _update_pmt = true;
-        pmt.descs.add(ScramblingDescriptor(_scrambling.scramblingType()));
+        pmt.descs.add(duck, ScramblingDescriptor(_scrambling.scramblingType()));
     }
 
     // With ECM generation, modify the PMT
@@ -571,13 +571,13 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
             // Add a CA_descriptor in each scrambled component
             for (PMT::StreamMap::iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
                 if (_scrambled_pids.test(it->first)) {
-                    it->second.descs.add(ca_desc);
+                    it->second.descs.add(duck, ca_desc);
                 }
             }
         }
         else {
             // Add one single CA_descriptor at program level
-            pmt.descs.add(ca_desc);
+            pmt.descs.add(duck, ca_desc);
         }
     }
 
@@ -585,7 +585,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table)
     if (_update_pmt) {
         _pzer_pmt.removeSections(TID_PMT, pmt.service_id);
         _pzer_pmt.setPID(_service.getPMTPID());
-        _pzer_pmt.addTable(pmt);
+        _pzer_pmt.addTable(duck, pmt);
     }
 
     // Next crypto-period.
@@ -680,8 +680,23 @@ bool ts::ScramblerPlugin::tryExitDegradedMode()
 
 bool ts::ScramblerPlugin::changeCW()
 {
-    // Allowed to change CW only if not in degraded mode
-    if (!inDegradedMode()) {
+    if (_scrambling.hasFixedCW()) {
+        // A list of fixed CW was loaded from a file.
+
+        // Point to next crypto-period
+        _current_cw = (_current_cw + 1) & 0x01;
+
+        // Determine new transition point.
+        if (_need_cp) {
+            _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
+        }
+
+        // Set next crypto-period key.
+        return _scrambling.setEncryptParity(int(_current_cw));
+    }
+    else if (!inDegradedMode()) {
+        // Random CW and ECM generation at each crypto-period.
+        // Allowed to change CW only if not in degraded mode.
 
         // Point to next crypto-period
         _current_cw = (_current_cw + 1) & 0x01;
@@ -915,11 +930,12 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
         // Synchronous ECM generation
         ecmgscs::ECMResponse response;
         if (!_plugin->_ecmg.generateECM(_cp_number,
-                                           _cw_current,
-                                           _cw_next,
-                                           _plugin->_ecmg_args.access_criteria,
-                                           uint16_t(_plugin->_ecmg_args.cp_duration / 100),
-                                           response)) {
+                                        _cw_current,
+                                        _cw_next,
+                                        _plugin->_ecmg_args.access_criteria,
+                                        uint16_t(_plugin->_ecmg_args.cp_duration / 100),
+                                        response))
+        {
             // Error, message already reported
             _plugin->_abort = true;
         }
@@ -930,11 +946,12 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
     else {
         // Asynchronous ECM generation
         if (!_plugin->_ecmg.submitECM(_cp_number,
-                                         _cw_current,
-                                         _cw_next,
-                                         _plugin->_ecmg_args.access_criteria,
-                                         uint16_t(_plugin->_ecmg_args.cp_duration / 100),
-                                         this)) {
+                                      _cw_current,
+                                      _cw_next,
+                                      _plugin->_ecmg_args.access_criteria,
+                                      uint16_t(_plugin->_ecmg_args.cp_duration / 100),
+                                      this))
+        {
             // Error, message already reported
             _plugin->_abort = true;
         }
@@ -987,7 +1004,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
 // Get next ECM packet
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket (TSPacket& pkt)
+void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket(TSPacket& pkt)
 {
     if (!_ecm_ok || _ecm.size() == 0) {
         // No ECM, return a null packet

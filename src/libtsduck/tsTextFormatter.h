@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractOutputStream.h"
 #include "tsNullReport.h"
 #include "tsAlgorithm.h"
 
@@ -42,31 +43,12 @@ namespace ts {
     //! @ingroup cpp
     //!
     //! This class is used to format XML documents or other types of structured text output.
-    //! If is a subclass of <code>std::ostream</code> and can be used as any output stream.
+    //! It is a subclass of <code>std::ostream</code> and can be used as any output stream.
     //! It also defines additional I/O manipulators to handle indentation.
     //!
-    class TSDUCKDLL TextFormatter:
-        public std::basic_ostream<char>,     // Public base
-        private std::basic_streambuf<char>   // Internally use a streambuf
+    class TSDUCKDLL TextFormatter: public AbstractOutputStream
     {
     public:
-        //!
-        //! Explicit reference to the public superclass.
-        //!
-        typedef std::basic_ostream<char> SuperClass;
-
-        // These types are declared by std::basic_ostream and are inherited.
-        // But the same names are also declared by the private base class basic_streambuf.
-        // Because of this conflict, they are hidden. We restore here the visibility
-        // of the names which are inherited by the public base class.
-#if !defined(DOXYGEN)
-        typedef SuperClass::char_type char_type;
-        typedef SuperClass::traits_type traits_type;
-        typedef SuperClass::int_type int_type;
-        typedef SuperClass::pos_type pos_type;
-        typedef SuperClass::off_type off_type;
-#endif
-
         //!
         //! Constructor.
         //! @param [in,out] report Where to report errors.
@@ -204,6 +186,10 @@ namespace ts {
             return*this;
         }
 
+    protected:
+        // Implementation of AbstractOutputStream
+        virtual bool writeStreamBuffer(const void* addr, size_t size) override;
+
     private:
         Report&            _report;      // Where to report errors.
         std::ofstream      _outFile;     // Own stream when output to a file we created.
@@ -215,31 +201,6 @@ namespace ts {
         size_t             _tabSize;     // Tabulation size in characters.
         size_t             _column;      // Current column in line, starting at 0.
         bool               _afterSpace;  // After initial spaces in line.
-        std::string        _buffer;      // Internal buffer for std::streambuf
-
-        // Inherited from std::basic_streambuf<char>.
-        // This is called when buffer becomes full.
-        // If buffer is not used, then this is called every time when characters are put to stream.
-        virtual int overflow(int c = traits_type::eof()) override;
-
-        // Inherited from std::basic_streambuf<char>.
-        // This function is called when stream is flushed, for example when std::endl is put to stream.
-        virtual int sync() override;
-
-        // Flush all data in buffer to underlying output.
-        bool flushBuffer()
-        {
-            return flushData(pbase(), pptr());
-        }
-
-        // Flush data to underlying output.
-        bool flushData(const char* firstAddr, const char* lastAddr);
-
-        // Reset buffer, make it fully available to std::streambuf.
-        void resetBuffer()
-        {
-            setp(&_buffer[0], &_buffer[0] + _buffer.size());
-        }
 
         // Inaccessible operations.
         TextFormatter(const TextFormatter&) = delete;

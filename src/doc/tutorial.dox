@@ -555,11 +555,11 @@ the @e isValid() method.
 
 Sample deserialization:
 ~~~~
-void someFunction(const ts::BinaryTable& table)
+void someFunction(ts::DuckContext& duck, const ts::BinaryTable& table)
 {
     ts::PMT pmt;
     if (table.isValid() && table.tableId() == ts::TID_PMT) {
-        pmt.deserialize(table);
+        pmt.deserialize(duck, table);
         if (pmt.isValid()) {
             processPMT(pmt);
         }
@@ -571,9 +571,9 @@ The deserialization can also be done in the constructor.
 And the validity and _table_id_ checking is done anyway in the deserialization.
 So, the previous code can be simplified as:
 ~~~~
-void someFunction(const ts::BinaryTable& table)
+void someFunction(ts::DuckContext& duck, const ts::BinaryTable& table)
 {
-    ts::PMT pmt(table);
+    ts::PMT pmt(duck, table);
     if (pmt.isValid()) {
         processPMT(pmt);
     }
@@ -582,6 +582,8 @@ void someFunction(const ts::BinaryTable& table)
 
 Sample serialization:
 ~~~~
+ts::DuckContext duck;
+
 ts::PMT pmt;
 pmt.version = 12;
 pmt.service_id = 0x1234;
@@ -589,8 +591,12 @@ pmt.service_id = 0x1234;
 pmt.streams[0x345].stream_type = ts::ST_AVC_AUDIO;
 
 ts::BinaryTable table;
-pmt.serialize(table);
+pmt.serialize(duck, table);
 ~~~~
+
+Note that an instance of the class ts::DuckContext can store various information
+about the way to interpret incorrect signalization or preferences. Its default
+value is appropriate for a standard PSI/SI processing.
 
 Finally, specialized classes for tables and descriptors can be converted
 to and from XML using the methods @e toXML() and @e fromXML().

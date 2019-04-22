@@ -56,12 +56,15 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
+    ts::DuckContext       duck;            // Execution context.
     ts::UStringVector     infiles;         // Input file names.
     ts::UString           outfile;         // Output file path.
     bool                  outdir;          // Output name is a directory.
     bool                  compile;         // Explicit compilation.
     bool                  decompile;       // Explicit decompilation.
+    bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
     bool                  xmlModel;        // Display XML model instead of compilation.
     ts::xml::TweaksArgs   xmlTweaks;       // XML formatting options.
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
@@ -72,17 +75,25 @@ private:
     Options& operator=(const Options&) = delete;
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"PSI/SI tables compiler", u"[options] filename ..."),
+    duck(this),
     infiles(),
     outfile(),
     outdir(false),
     compile(false),
     decompile(false),
+    packAndFlush(false),
     xmlModel(false),
     xmlTweaks(),
     defaultCharset(nullptr)
 {
+    duck.defineOptionsForStandards(*this);
+    duck.defineOptionsForDVBCharset(*this);
     xmlTweaks.defineOptions(*this);
 
     option(u"", 0, STRING);
@@ -101,19 +112,11 @@ Options::Options(int argc, char *argv[]) :
          u"Decompile all files as binary files into XML files. This is the default "
          u"for .bin files.");
 
-    option(u"default-charset", 0, STRING);
-    help(u"default-charset", u"name",
-         u"Default DVB character set to use. The available table names are " +
-         ts::UString::Join(ts::DVBCharset::GetAllNames()) + u".\n\n"
-         u"With --compile, this character set is used to encode strings. If a "
-         u"given string cannot be encoded with this character set or if this option "
-         u"is not specified, an appropriate character set is automatically selected.\n\n"
-         u"With --decompile, this character set is used to interpret DVB strings "
-         u"without explicit character table code. According to DVB standard ETSI EN "
-         u"300 468, the default DVB character set is ISO-6937. However, some bogus "
-         u"signalization may assume that the default character set is different, "
-         u"typically the usual local character table for the region. This option "
-         u"forces a non-standard character table.");
+    option(u"pack-and-flush");
+    help(u"pack-and-flush",
+         u"When loading a binary file for decompilation, pack incomplete tables, "
+         u"ignoring missing sections, and flush them. "
+         u"Use with care because this may create inconsistent tables.");
 
     option(u"output", 'o', STRING);
     help(u"output", u"filepath",
@@ -132,13 +135,16 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadOptions(*this);
+    xmlTweaks.load(*this);
+
     getValues(infiles, u"");
     getValue(outfile, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
+    packAndFlush = present(u"pack-and-flush");
     xmlModel = present(u"xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
-    xmlTweaks.load(*this);
 
     if (!infiles.empty() && xmlModel) {
         error(u"do not specify input files with --xml-model");
@@ -167,7 +173,7 @@ Options::Options(int argc, char *argv[]) :
 bool DisplayModel(Options& opt)
 {
     // Locate the model file.
-    const ts::UString inName(ts::SearchConfigurationFile(u"tsduck.xml"));
+    const ts::UString inName(ts::SearchConfigurationFile(u"tsduck.tables.model.xml"));
     if (inName.empty()) {
         opt.error(u"XML model file not found");
         return false;
@@ -179,7 +185,7 @@ bool DisplayModel(Options& opt)
     if (opt.outdir) {
         // Specified output is a directory, add default name.
         outName.push_back(ts::PathSeparator);
-        outName.append(u"tsduck.xml");
+        outName.append(u"tsduck.tables.model.xml");
     }
     if (!outName.empty()) {
         opt.verbose(u"saving model file to %s", {outName});
@@ -215,9 +221,8 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
         outname += ts::PathSeparator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
     }
 
-    ts::SectionFile file;
+    ts::SectionFile file(opt.duck);
     file.setTweaks(opt.xmlTweaks.tweaks());
-    file.setDefaultCharset(opt.defaultCharset);
     file.setCRCValidation(ts::CRC32::CHECK);
 
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
@@ -243,7 +248,16 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
     else {
         // Load binary sections and save XML file.
         opt.verbose(u"Decompiling %s to %s", {infile, outname});
-        return file.loadBinary(infile, report) && file.saveXML(outname, report);
+        if (!file.loadBinary(infile, report)) {
+            return false;
+        }
+        if (opt.packAndFlush) {
+            const size_t packed = file.packOrphanSections();
+            if (packed > 0) {
+                opt.verbose(u"Packed %d incomplete tables, may be invalid", {packed});
+            }
+        }
+        return file.saveXML(outname, report);
     }
 }
 

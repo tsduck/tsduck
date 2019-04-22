@@ -147,16 +147,16 @@ void NamesTest::tearDown()
 
 void NamesTest::testConfigFile()
 {
-    utest::Out() << "NamesTest: DVB configuration file: " << ts::NamesDVB::Instance().configurationFile() << std::endl
-                 << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance().configurationFile() << std::endl;
+    utest::Out() << "NamesTest: DVB configuration file: " << ts::NamesDVB::Instance()->configurationFile() << std::endl
+                 << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
 
-    CPPUNIT_ASSERT(!ts::NamesDVB::Instance().configurationFile().empty());
-    CPPUNIT_ASSERT(ts::FileExists(ts::NamesDVB::Instance().configurationFile()));
-    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::NamesDVB::Instance().errorCount());
+    CPPUNIT_ASSERT(!ts::NamesDVB::Instance()->configurationFile().empty());
+    CPPUNIT_ASSERT(ts::FileExists(ts::NamesDVB::Instance()->configurationFile()));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::NamesDVB::Instance()->errorCount());
 
-    CPPUNIT_ASSERT(!ts::NamesOUI::Instance().configurationFile().empty());
-    CPPUNIT_ASSERT(ts::FileExists(ts::NamesOUI::Instance().configurationFile()));
-    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::NamesOUI::Instance().errorCount());
+    CPPUNIT_ASSERT(!ts::NamesOUI::Instance()->configurationFile().empty());
+    CPPUNIT_ASSERT(ts::FileExists(ts::NamesOUI::Instance()->configurationFile()));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::NamesOUI::Instance()->errorCount());
 }
 
 void NamesTest::testTID()

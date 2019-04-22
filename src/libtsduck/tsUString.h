@@ -154,12 +154,12 @@ namespace ts {
         //!
         //! Size in bytes of the so-called "UTF-8 Byte Order Mark".
         //!
-        static const size_type UTF8_BOM_SIZE = 3;
+        static constexpr size_type UTF8_BOM_SIZE = 3;
 
         //!
         //! Maximum size in bytes of an UTF-8 encoded character.
         //!
-        static const size_type UTF8_CHAR_MAX_SIZE = 4;
+        static constexpr size_type UTF8_CHAR_MAX_SIZE = 4;
 
         //!
         //! Default separator string for groups of thousands, a comma.
@@ -174,7 +174,7 @@ namespace ts {
         //!
         //! Default line width for the Hexa() family of methods.
         //!
-        static const size_type DEFAULT_HEXA_LINE_WIDTH = 78;
+        static constexpr size_type DEFAULT_HEXA_LINE_WIDTH = 78;
 
         //!
         //! Flags for the Hexa() family of methods.
@@ -752,6 +752,36 @@ namespace ts {
         UString toUpper() const;
 
         //!
+        //! Combine all possible diacritical marks.
+        //! All sequences of two characters, letter and non-spacing diacritical marks,
+        //! which can be grouped into once single precombined character are substituted
+        //! with this precombined character.
+        //!
+        void combineDiacritical();
+
+        //!
+        //! Return a string with all possible diacritical marks combined.
+        //! @return A string where all sequences of two characters, letter and non-spacing
+        //! diacritical marks, which can be grouped into once single precombined character
+        //! have been substituted with this precombined character.
+        //!
+        UString toCombinedDiacritical() const;
+
+        //!
+        //! Decompose all precombined characters.
+        //! All precombined characters are replaced by two characters, the base letter and
+        //! the non-spacing diacritical mark.
+        //!
+        void decomposeDiacritical();
+
+        //!
+        //! Return a string with all precombined characters decomposed.
+        //! @return A string where all precombined characters are replaced by two characters,
+        //! the base letter and the non-spacing diacritical mark.
+        //!
+        UString toDecomposedDiacritical() const;
+
+        //!
         //! Remove all occurences of a substring.
         //! @param [in] substr Substring to remove.
         //!
@@ -1238,6 +1268,16 @@ namespace ts {
         //!
         template <class CONTAINER>
         typename CONTAINER::const_iterator findSimilar(const CONTAINER& container) const;
+
+        //!
+        //! Save this string into a file, in UTF-8 format.
+        //! @param [in] fileName The name of the text file where to save this string.
+        //! @param [in] append If true, append this string at the end of the file.
+        //! If false (the default), overwrite the file if it already existed.
+        //! @param [in] enforceLastLineFeed If true and this string does not end with a line feed, force a final line feed.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        bool save(const UString& fileName, bool append = false, bool enforceLastLineFeed = false) const;
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.

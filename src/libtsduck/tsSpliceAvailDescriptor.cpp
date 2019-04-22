@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSpliceAvailDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -37,6 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_avail_descriptor"
 #define MY_DID ts::DID_SPLICE_AVAIL
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceAvailDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SpliceAvailDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,17 +50,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceAvailDescriptor::DisplayDescriptor, ts::EDID:
 //----------------------------------------------------------------------------
 
 ts::SpliceAvailDescriptor::SpliceAvailDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(SPLICE_ID_CUEI),
     provider_avail_id(0)
 {
     _is_valid = true;
 }
 
-ts::SpliceAvailDescriptor::SpliceAvailDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SpliceAvailDescriptor::SpliceAvailDescriptor(DuckContext& duck, const Descriptor& desc) :
     SpliceAvailDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +68,7 @@ ts::SpliceAvailDescriptor::SpliceAvailDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceAvailDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SpliceAvailDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(identifier);
@@ -79,7 +81,7 @@ void ts::SpliceAvailDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceAvailDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SpliceAvailDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -99,15 +101,13 @@ void ts::SpliceAvailDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::SpliceAvailDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 8) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
-        strm << std::endl
-             << margin << UString::Format(u"Provider id: 0x%X", {GetUInt32(data + 4)})
-             << std::endl;
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
+        strm << std::endl << margin << UString::Format(u"Provider id: 0x%X", {GetUInt32(data + 4)}) << std::endl;
         data += 8; size -= 8;
     }
 
@@ -119,7 +119,7 @@ void ts::SpliceAvailDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceAvailDescriptor::buildXML(xml::Element* root) const
+void ts::SpliceAvailDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"identifier", identifier, true);
     root->setIntAttribute(u"provider_avail_id", provider_avail_id, true);
@@ -130,7 +130,7 @@ void ts::SpliceAvailDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceAvailDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceAvailDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

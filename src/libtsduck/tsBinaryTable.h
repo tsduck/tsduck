@@ -33,6 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDefinedByStandards.h"
+#include "tsDuckContext.h"
 #include "tsSection.h"
 #include "tsUString.h"
 #include "tsTablesPtr.h"
@@ -54,7 +56,7 @@ namespace ts {
     //! the first section is added. Subsequent sections must have the
     //! same properties.
     //!
-    class TSDUCKDLL BinaryTable
+    class TSDUCKDLL BinaryTable : public AbstractDefinedByStandards
     {
     public:
         //!
@@ -291,21 +293,24 @@ namespace ts {
         //! This method converts the table to XML.
         //! If the table has a specialized implementation, generate a specialized XML structure.
         //! Otherwise, generate a \<generic_short_table> or \<generic_long_table> node.
+        //! @param [in,out] duck TSDuck execution environment.
         //! @param [in,out] parent The parent node for the XML representation.
         //! @param [in] forceGeneric Force a generic table node even if the table can be specialized.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return The new XML element or zero if the table is not valid.
         //!
-        xml::Element* toXML(xml::Element* parent, bool forceGeneric = false, const DVBCharset* charset = nullptr) const;
+        xml::Element* toXML(DuckContext& duck, xml::Element* parent, bool forceGeneric = false) const;
 
         //!
         //! This method converts an XML node as a binary table.
+        //! @param [in,out] duck TSDuck execution environment.
         //! @param [in] node The root of the XML descriptor.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True if the XML element name is a valid table name, false otherwise.
         //! If the name is valid but the content is incorrect, true is returned and this object is invalidated.
         //!
-        bool fromXML(const xml::Element* node, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, const xml::Element* node);
+
+        // Implementation of AbstractDefinedByStandards
+        virtual Standards definingStandards() const override;
 
     private:
         BinaryTable(const BinaryTable& table) = delete;

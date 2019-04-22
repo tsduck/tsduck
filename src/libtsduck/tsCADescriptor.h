@@ -66,10 +66,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        CADescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        CADescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Decode a command-line CA_descriptor and fills this object with it.
@@ -83,13 +83,13 @@ namespace ts {
 
         //!
         //! Static method to decode command-line CA_descriptor and add them in a descriptor list.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside this object.
         //! @param [in,out] dlist Descriptor list. The new CA descriptors are added in the list.
         //! @param [in] values List of CA descriptors in command-line form: casid/pid[/private-data]
-        //! @param [in,out] report Where to report errors (typically badly formed parameters).
         //! @return True on success, false on error.
         //! @see fromCommmandLine()
         //!
-        static bool AddFromCommandLine(DescriptorList& dlist, const UStringVector& values, Report& report = NULLREP);
+        static bool AddFromCommandLine(DuckContext& duck, DescriptorList& dlist, const UStringVector& values);
 
         //!
         //! Static method to search a CA_descriptor by ECM/EMM PID in a descriptor list.
@@ -110,10 +110,10 @@ namespace ts {
         static size_t SearchByCAS(const DescriptorList& dlist, uint16_t casid, size_t start_index = 0);
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
     };
 

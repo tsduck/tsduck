@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSpliceTimeDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_time_descriptor"
 #define MY_DID ts::DID_SPLICE_TIME
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceTimeDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SpliceTimeDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceTimeDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::SpliceTimeDescriptor::SpliceTimeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(SPLICE_ID_CUEI),
     TAI_seconds(0),
     TAI_ns(0),
@@ -56,10 +58,10 @@ ts::SpliceTimeDescriptor::SpliceTimeDescriptor() :
     _is_valid = true;
 }
 
-ts::SpliceTimeDescriptor::SpliceTimeDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SpliceTimeDescriptor::SpliceTimeDescriptor(DuckContext& duck, const Descriptor& desc) :
     SpliceTimeDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +69,7 @@ ts::SpliceTimeDescriptor::SpliceTimeDescriptor(const Descriptor& desc, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SpliceTimeDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(identifier);
@@ -82,7 +84,7 @@ void ts::SpliceTimeDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SpliceTimeDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -104,7 +106,7 @@ void ts::SpliceTimeDescriptor::deserialize(const Descriptor& desc, const DVBChar
 
 void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 16) {
@@ -112,7 +114,7 @@ void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         const uint32_t ns = GetUInt32(data + 10);
         const uint16_t off = GetUInt16(data + 14);
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
              << margin
              << UString::Format(u"TAI: %'d seconds (%s) + %'d ns, UTC offset: %'d", {tai, Time::UnixTimeToUTC(uint32_t(tai)).format(Time::DATE | Time::TIME), ns, off})
@@ -128,7 +130,7 @@ void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::buildXML(xml::Element* root) const
+void ts::SpliceTimeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"identifier", identifier, true);
     root->setIntAttribute(u"TAI_seconds", TAI_seconds, false);
@@ -141,7 +143,7 @@ void ts::SpliceTimeDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceTimeDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceTimeDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

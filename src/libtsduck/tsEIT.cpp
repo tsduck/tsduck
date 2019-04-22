@@ -43,9 +43,10 @@
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"EIT"
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::EIT, MY_XML_NAME);
-TS_ID_TABLE_RANGE_FACTORY(ts::EIT, ts::TID_EIT_MIN, ts::TID_EIT_MAX);
+TS_ID_TABLE_RANGE_FACTORY(ts::EIT, ts::TID_EIT_MIN, ts::TID_EIT_MAX, MY_STD);
 TS_ID_SECTION_RANGE_DISPLAY(ts::EIT::DisplaySection, ts::TID_EIT_MIN, ts::TID_EIT_MAX);
 
 
@@ -61,7 +62,7 @@ ts::EIT::EIT(bool is_actual_,
              uint16_t service_id_,
              uint16_t ts_id_,
              uint16_t onetw_id_) :
-    AbstractLongTable(ComputeTableId(is_actual_, is_pf_, eits_index_), MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(ComputeTableId(is_actual_, is_pf_, eits_index_), MY_XML_NAME, MY_STD, version_, is_current_),
     service_id(service_id_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
@@ -71,15 +72,15 @@ ts::EIT::EIT(bool is_actual_,
     _is_valid = true;
 }
 
-ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
+ts::EIT::EIT(DuckContext& duck, const BinaryTable& table) :
+    AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME, MY_STD, 0, true),  // TID will be updated by deserialize()
     service_id(0),
     ts_id(0),
     onetw_id(0),
     last_table_id(0),
     events(this)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -101,6 +102,16 @@ ts::EIT::Event::Event(const AbstractTable* table) :
     running_status(0),
     CA_controlled(false)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This  method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::EIT::isValidTableId(TID tid) const
+{
+    return tid >= TID_EIT_PF_ACT && tid <= TID_EIT_S_OTH_MAX;
 }
 
 
@@ -154,24 +165,14 @@ void ts::EIT::setActual(bool is_actual)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::EIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     service_id = 0;
     ts_id = 0;
     onetw_id = 0;
     last_table_id = _table_id;
     events.clear();
-
-    if (!table.isValid()) {
-        return;
-    }
-
-    // Check table id.
-    if ((_table_id = table.tableId()) < TID_EIT_MIN || _table_id > TID_EIT_MAX) {
-        return;
-    }
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -234,16 +235,8 @@ void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::EIT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Inside an EIT, events shall be sorted in start time order.
     // Build a list of events in order of start time.
     std::list<const Event*> ordered_events;
@@ -497,7 +490,7 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 
 void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -538,7 +531,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << UString::Format(u"Duration: %02d:%02d:%02d", {hour, min, sec}) << std::endl
              << margin << "Running status: " << names::RunningStatus(run) << std::endl
              << margin << "CA mode: " << (ca_mode ? "controlled" : "free") << std::endl;
-        display.displayDescriptorList(data, loop_length, indent, section.tableId());
+        display.displayDescriptorList(section, data, loop_length, indent);
         data += loop_length; size -= loop_length;
     }
 
@@ -550,7 +543,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::buildXML(xml::Element* root) const
+void ts::EIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (isPresentFollowing()) {
         root->setAttribute(u"type", u"pf");
@@ -573,7 +566,7 @@ void ts::EIT::buildXML(xml::Element* root) const
         e->setTimeAttribute(u"duration", it->second.duration);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
         e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -582,7 +575,7 @@ void ts::EIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::fromXML(const xml::Element* element)
+void ts::EIT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     events.clear();
 
@@ -607,7 +600,7 @@ void ts::EIT::fromXML(const xml::Element* element)
             children[i]->getTimeAttribute(event.duration, u"duration", true) &&
             children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
             children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-            event.descs.fromXML(children[i]);
+            event.descs.fromXML(duck, children[i]);
     }
 }
 

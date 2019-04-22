@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDataBroadcastIdDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -41,6 +42,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
 #define MY_DID ts::DID_DATA_BROADCAST_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, ts::EDID::Standard(MY_DID));
@@ -52,7 +54,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastIdDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     data_broadcast_id(id),
     private_data()
 {
@@ -64,12 +66,12 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     data_broadcast_id(0),
     private_data()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -77,7 +79,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -96,7 +98,7 @@ void ts::DataBroadcastIdDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DataBroadcastIdDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2;
 
@@ -115,7 +117,7 @@ void ts::DataBroadcastIdDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -163,7 +165,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
 void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
     if (size > 0) {
-        display.out() << std::string(indent, ' ') << "Data Broadcast selector:" << std::endl
+        display.duck().out() << std::string(indent, ' ') << "Data Broadcast selector:" << std::endl
                       << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
         data += size; size = 0;
     }
@@ -177,7 +179,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& displa
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     // OUI_data_length:
@@ -254,7 +256,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, c
 {
     // Fixed length: 2 bytes.
     if (size >= 2) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         strm << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
                                           {(data[0] >> 5) & 0x07, (data[0] >> 4) & 0x01, (data[0] & 0x08) == 0 ? 8 : 32})
@@ -273,7 +275,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, c
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     // platform_id_data_length:
@@ -320,7 +322,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::buildXML(xml::Element* root) const
+void ts::DataBroadcastIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"data_broadcast_id", data_broadcast_id, true);
     if (!private_data.empty()) {
@@ -333,7 +335,7 @@ void ts::DataBroadcastIdDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::fromXML(const xml::Element* element)
+void ts::DataBroadcastIdDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

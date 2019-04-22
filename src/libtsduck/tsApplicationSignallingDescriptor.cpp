@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationSignallingDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"application_signalling_descriptor"
 #define MY_DID ts::DID_APPLI_SIGNALLING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, ts::EDID::Standard(MY_DID));
@@ -51,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationSignallingDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
@@ -62,11 +64,11 @@ ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -74,7 +76,7 @@ ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor(const Descr
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ApplicationSignallingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -91,7 +93,7 @@ void ts::ApplicationSignallingDescriptor::serialize(Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ApplicationSignallingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 0;
     entries.clear();
@@ -112,7 +114,7 @@ void ts::ApplicationSignallingDescriptor::deserialize(const Descriptor& desc, co
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::buildXML(xml::Element* root) const
+void ts::ApplicationSignallingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"application");
@@ -126,7 +128,7 @@ void ts::ApplicationSignallingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSignallingDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationSignallingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 
@@ -153,7 +155,7 @@ void ts::ApplicationSignallingDescriptor::fromXML(const xml::Element* element)
 
 void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 3) {

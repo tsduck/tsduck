@@ -34,9 +34,11 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerArgs.h"
 #include "tsEnumeration.h"
+#include "tsxmlElement.h"
+#include "tsBCD.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersDVBC::DEFAULT_INVERSION;
 const uint32_t ts::TunerParametersDVBC::DEFAULT_SYMBOL_RATE;
 const ts::InnerFEC ts::TunerParametersDVBC::DEFAULT_INNER_FEC;
@@ -76,99 +78,6 @@ void ts::TunerParametersDVBC::copy(const TunerParameters& obj)
         this->inner_fec = other->inner_fec;
         this->modulation = other->modulation;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Values as encoded in zap format
-//----------------------------------------------------------------------------
-
-namespace {
-
-    const ts::Enumeration ZapModulationEnum({
-         {u"QPSK",     ts::QPSK},
-         {u"QAM_AUTO", ts::QAM_AUTO},
-         {u"QAM_16",   ts::QAM_16},
-         {u"QAM_32",   ts::QAM_32},
-         {u"QAM_64",   ts::QAM_64},
-         {u"QAM_128",  ts::QAM_128},
-         {u"QAM_256",  ts::QAM_256},
-    });
-
-    const ts::Enumeration ZapSpectralInversionEnum({
-         {u"INVERSION_OFF",  ts::SPINV_OFF},
-         {u"INVERSION_ON",   ts::SPINV_ON},
-         {u"INVERSION_AUTO", ts::SPINV_AUTO},
-    });
-
-    const ts::Enumeration ZapInnerFECEnum({
-         {u"FEC_NONE", ts::FEC_NONE},
-         {u"FEC_AUTO", ts::FEC_AUTO},
-         {u"FEC_1/2",  ts::FEC_1_2},
-         {u"FEC_2/3",  ts::FEC_2_3},
-         {u"FEC_3/4",  ts::FEC_3_4},
-         {u"FEC_4/5",  ts::FEC_4_5},
-         {u"FEC_5/6",  ts::FEC_5_6},
-         {u"FEC_6/7",  ts::FEC_6_7},
-         {u"FEC_7/8",  ts::FEC_7_8},
-         {u"FEC_8/9",  ts::FEC_8_9},
-    });
-}
-
-
-//----------------------------------------------------------------------------
-// Format the tuner parameters according to the Linux DVB "zap" format
-// Expected format: "freq:inv:symrate:conv:mod"
-//    With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,
-//    INVERSION_ON, INVERSION_AUTO), symrate = symbol rate in sym/s, conv =
-//    convolutional rate (one of FEC_NONE, FEC_1_2, FEC_2_3, FEC_3_4,
-//    FEC_4_5, FEC_5_6, FEC_6_7, FEC_7_8, FEC_8_9, FEC_AUTO), mod = modulation
-//    (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128, QAM_256, QAM_AUTO).
-//----------------------------------------------------------------------------
-
-ts::UString ts::TunerParametersDVBC::toZapFormat() const
-{
-    return UString::Format(u"%d:%s:%d:%s:%s",
-                           {frequency,
-                            ZapSpectralInversionEnum.name(inversion),
-                            symbol_rate,
-                            ZapInnerFECEnum.name(inner_fec),
-                            ZapModulationEnum.name(modulation)});
-}
-
-
-//----------------------------------------------------------------------------
-// Decode a Linux DVB "zap" specification and set the corresponding values
-//----------------------------------------------------------------------------
-
-bool ts::TunerParametersDVBC::fromZapFormat(const UString& zap)
-{
-    UStringVector values;
-    zap.split(values, u':', true);
-
-    uint64_t freq = 0;
-    int inv = 0;
-    uint32_t symrate = 0;
-    int fec = 0;
-    int mod = 0;
-
-    if (values.size() != 5 ||
-        !values[0].toInteger(freq) ||
-        (inv = ZapSpectralInversionEnum.value(values[1])) == Enumeration::UNKNOWN ||
-        !values[2].toInteger(symrate) ||
-        (fec = ZapInnerFECEnum.value(values[3])) == Enumeration::UNKNOWN ||
-        (mod = ZapModulationEnum.value(values[4])) == Enumeration::UNKNOWN)
-    {
-        return false;
-    }
-
-    frequency = freq;
-    inversion = SpectralInversion(inv);
-    symbol_rate = symrate;
-    inner_fec = InnerFEC(fec);
-    modulation = Modulation(mod);
-
-    return true;
 }
 
 
@@ -246,4 +155,86 @@ bool ts::TunerParametersDVBC::fromArgs(const TunerArgs& tuner, Report& report)
     modulation = tuner.modulation.set() ? tuner.modulation.value() : DEFAULT_MODULATION;
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Extract tuning information from a delivery descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::TunerParametersDVBC::fromDeliveryDescriptor(const Descriptor& desc)
+{
+    if (!desc.isValid() || desc.tag() != DID_CABLE_DELIVERY || desc.payloadSize() < 11) {
+        return false;
+    }
+
+    const uint8_t* data = desc.payload();
+    frequency = uint64_t(DecodeBCD(data, 8)) * 100;
+    symbol_rate = DecodeBCD(data + 7, 7) * 100;
+
+    switch (data[10] & 0x0F) {
+        case 1:  inner_fec = FEC_1_2; break;
+        case 2:  inner_fec = FEC_2_3; break;
+        case 3:  inner_fec = FEC_3_4; break;
+        case 4:  inner_fec = FEC_5_6; break;
+        case 5:  inner_fec = FEC_7_8; break;
+        case 6:  inner_fec = FEC_8_9; break;
+        case 7:  inner_fec = FEC_3_5; break;
+        case 8:  inner_fec = FEC_4_5; break;
+        case 9:  inner_fec = FEC_9_10; break;
+        case 15: inner_fec = FEC_NONE; break;
+        default: inner_fec = FEC_AUTO; break;
+    }
+
+    switch (data[6]) {
+        case 1:  modulation = QAM_16; break;
+        case 2:  modulation = QAM_32; break;
+        case 3:  modulation = QAM_64; break;
+        case 4:  modulation = QAM_128; break;
+        case 5:  modulation = QAM_256; break;
+        default: modulation = QAM_AUTO; break;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersDVBC::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"dvbc");
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setIntAttribute(u"symbolrate", symbol_rate, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (inner_fec != FEC_AUTO) {
+        e->setEnumAttribute(InnerFECEnum, u"FEC", inner_fec);
+    }
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    return e;
+}
+
+bool ts::TunerParametersDVBC::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name().similar(u"dvbc") &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntAttribute<uint32_t>(symbol_rate, u"symbolrate", false, 6900000) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+        elem->getIntEnumAttribute(inner_fec, InnerFECEnum, u"FEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO);
+}
+
+
+//----------------------------------------------------------------------------
+// Standard computation of bitrate.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::TunerParametersDVBC::theoreticalBitrate() const
+{
+    return TheoreticalBitrateForModulation(modulation, inner_fec, symbol_rate);
 }

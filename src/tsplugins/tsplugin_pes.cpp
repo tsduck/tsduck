@@ -129,7 +129,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _hexa_bpl(0),
     _min_payload(0),
     _max_payload(0),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"audio-attributes", 'a');
     help(u"audio-attributes", u"Display audio attributes.");
@@ -205,7 +205,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     help(u"start-code", u"Dump all start codes in PES packet payload.");
 
     option(u"trace-packets", 't');
-    help(u"trace-packets", u"race all PES packets.");
+    help(u"trace-packets", u"Trace all PES packets.");
 
     option(u"sei-type", 0, UINT32);
     help(u"sei-type",
@@ -380,9 +380,15 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
     // Report packet description
     if (_trace_packets) {
-        out << UString::Format(u"* PID 0x%X, stream_id %s, size: %d bytes (header: %d, payload: %d)",
-                               {pkt.getSourcePID(), names::StreamId(pkt.getStreamId(), names::FIRST), pkt.size(), pkt.headerSize(), pkt.payloadSize()})
-            << std::endl;
+        UString line(UString::Format(u"PID 0x%X, stream_id %s, size: %d bytes (header: %d, payload: %d)",
+                                     {pkt.getSourcePID(),
+                                      names::StreamId(pkt.getStreamId(), names::FIRST),
+                                      pkt.size(), pkt.headerSize(), pkt.payloadSize()}));
+        const size_t spurious = pkt.spuriousDataSize();
+        if (spurious > 0) {
+            line.append(UString::Format(u", %d spurious trailing bytes", {spurious}));
+        }
+        out << "* " << line << std::endl;
         if (lastDump(out)) {
             return;
         }

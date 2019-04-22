@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetSmartcardDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_smartcard_descriptor"
 #define MY_DID ts::DID_INT_SMARTCARD
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSmartcardDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,17 +52,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSmartcardDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     super_CA_system_id(0),
     private_data()
 {
     _is_valid = true;
 }
 
-ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetSmartcardDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +70,7 @@ ts::TargetSmartcardDescriptor::TargetSmartcardDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetSmartcardDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(super_CA_system_id);
@@ -81,7 +83,7 @@ void ts::TargetSmartcardDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetSmartcardDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -104,7 +106,7 @@ void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 {
     if (size >= 4) {
         const uint32_t id = GetUInt32(data);
-        display.out() << UString::Format(u"%*sSuper CAS Id: 0x%X (%d)", {indent, u"", id, id})
+        display.duck().out() << UString::Format(u"%*sSuper CAS Id: 0x%X (%d)", {indent, u"", id, id})
                       << std::endl
                       << UString::Format(u"%*sPrivate data (%d bytes): %s", {indent, u"", size - 4, UString::Dump(data + 4, size - 4, UString::SINGLE_LINE)})
                       << std::endl;
@@ -119,7 +121,7 @@ void ts::TargetSmartcardDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::buildXML(xml::Element* root) const
+void ts::TargetSmartcardDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"super_CA_system_id", super_CA_system_id, true);
     if (!private_data.empty()) {
@@ -132,7 +134,7 @@ void ts::TargetSmartcardDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSmartcardDescriptor::fromXML(const xml::Element* element)
+void ts::TargetSmartcardDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     private_data.clear();
 

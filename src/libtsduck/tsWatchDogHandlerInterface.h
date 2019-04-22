@@ -43,7 +43,7 @@ namespace ts {
     //! Expiration handler interface for general-purpose timeout watchdog.
     //! @ingroup thread
     //!
-    class WatchDogHandlerInterface
+    class TSDUCKDLL WatchDogHandlerInterface
     {
     public:
         //!
@@ -56,6 +56,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~WatchDogHandlerInterface() {}
+        virtual ~WatchDogHandlerInterface();
     };
 }

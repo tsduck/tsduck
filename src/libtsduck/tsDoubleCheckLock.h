@@ -109,7 +109,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        DoubleCheckLock() : _mutex(), _changed(false) {}
+        DoubleCheckLock();
 
         //!
         //! Check if the shared data have been marked as "changed".
@@ -134,12 +134,13 @@ namespace ts {
             //!
             //! @param [in,out] lock Associated DoubleCheckLock.
             //!
-            Writer(DoubleCheckLock& lock) :
-                Guard(lock._mutex)
-            {
-                assert(isLocked());
-                lock._changed = true;
-            }
+            Writer(DoubleCheckLock& lock);
+
+            //!
+            //! Virtual destructor
+            //!
+            virtual ~Writer();
+
         private:
             Writer(const Writer&) = delete;
             Writer& operator=(const Writer&) = delete;
@@ -156,12 +157,13 @@ namespace ts {
             //!
             //! @param [in,out] lock Associated DoubleCheckLock.
             //!
-            Reader(DoubleCheckLock& lock) :
-                Guard(lock._mutex)
-            {
-                assert(isLocked());
-                lock._changed = false;
-            }
+            Reader(DoubleCheckLock& lock);
+
+            //!
+            //! Virtual destructor
+            //!
+            virtual ~Reader();
+
         private:
             Reader(const Reader&) = delete;
             Reader& operator=(const Reader&) = delete;

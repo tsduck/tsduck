@@ -36,11 +36,11 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::StandaloneTableDemux::StandaloneTableDemux(const PIDSet& pid_filter) :
-    SectionDemux(this, nullptr, pid_filter),
+ts::StandaloneTableDemux::StandaloneTableDemux(DuckContext& duck, const PIDSet& pid_filter) :
+    SectionDemux(duck, this, nullptr, pid_filter),
     _tables()
 {
 }

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Running Status Table (RST)
-//
-//----------------------------------------------------------------------------
 
 #include "tsRST.h"
 #include "tsBinaryTable.h"
@@ -40,9 +36,10 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"RST"
 #define MY_TID ts::TID_RST
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::RST, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::RST, MY_TID);
+TS_ID_TABLE_FACTORY(ts::RST, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::RST::DisplaySection, MY_TID);
 
 
@@ -61,26 +58,20 @@ const ts::Enumeration ts::RST::RunningStatusNames({
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::RST::RST() :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     events()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
-ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(MY_TID, MY_XML_NAME),
-    events()
+ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
+    RST()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -88,14 +79,13 @@ ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::RST::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     events.clear();
 
     // This is a short table, must have only one section
-    if (!table.isValid() || table.tableId() != _table_id || table.sectionCount() != 1) {
+    if (table.sectionCount() != 1) {
         return;
     }
 
@@ -126,16 +116,8 @@ void ts::RST::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::RST::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section
     uint8_t payload[MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
@@ -165,7 +147,7 @@ void ts::RST::serialize(BinaryTable& table, const DVBCharset* charset) const
 
 void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -197,7 +179,7 @@ void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::buildXML(xml::Element* root) const
+void ts::RST::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EventList::const_iterator it = events.begin(); it != events.end(); ++it) {
         xml::Element* e = root->addElement(u"event");
@@ -214,7 +196,7 @@ void ts::RST::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::fromXML(const xml::Element* element)
+void ts::RST::fromXML(DuckContext& duck, const xml::Element* element)
 {
     events.clear();
 

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultilingualNetworkNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 
@@ -41,7 +42,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualNetworkNameDescriptor::DisplayDescripto
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
@@ -50,13 +51,12 @@ ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultilingualNetworkNameDescriptor::MultilingualNetworkNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualNetworkNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
+}
+
+ts::MultilingualNetworkNameDescriptor::~MultilingualNetworkNameDescriptor()
+{
 }

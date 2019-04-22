@@ -61,10 +61,11 @@ namespace ts {
 
         //!
         //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] mpe_handler The object to invoke when MPE information is found.
         //! @param [in] pid_filter The set of MPE PID's to demux.
         //!
-        MPEDemux(MPEHandlerInterface* mpe_handler = nullptr, const PIDSet& pid_filter = NoPID);
+        explicit MPEDemux(DuckContext& duck, MPEHandlerInterface* mpe_handler = nullptr, const PIDSet& pid_filter = NoPID);
 
         //!
         //! Destructor.
@@ -128,6 +129,7 @@ namespace ts {
         std::set<uint32_t>   _int_tags;   // Set of service_id / component_tag from the INT.
 
         // Inacessible operations
+        MPEDemux() = delete;
         MPEDemux(const MPEDemux&) = delete;
         MPEDemux& operator=(const MPEDemux&) = delete;
     };

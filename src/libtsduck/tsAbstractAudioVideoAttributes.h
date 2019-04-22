@@ -49,12 +49,12 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        AbstractAudioVideoAttributes() : _is_valid(false) {}
+        AbstractAudioVideoAttributes();
 
         //!
         //! Virtual destructor
         //!
-        virtual ~AbstractAudioVideoAttributes() {}
+        virtual ~AbstractAudioVideoAttributes();
 
         //!
         //! Check if the values in the object are valid.

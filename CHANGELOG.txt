@@ -2,11 +2,90 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.16-1074
+VERSION 3.18-1210
+
+[NEW] New commands and plugins:
+
+  * Added input plugin "craft" to build specifically crafted packets.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --atsc to commands "tsanalyze", "tstables", "tspsi",
+    "tstabdump", "tstabcomp" and plugins "analyze", "tables", "psi".
+
+[BUG] Bug fixes:
+
+  * Fixed an issue while reading XML files: leading and trailing spaces were
+    removed by default inside all text nodes.
+  * Fixed input plugin "dektec": with satellite receivers, the LNB was not
+    properly enabled.
+
+-------------------------------------------------------------------------------
+
+VERSION 3.17-1189
+
+[IMP] Improvements on existing commands and plugins:
+
+  * In commands "tsanalyze", "tsdump", "tspsi", "tstabdump", "tstables", the
+    display is now sent through a pager application (less/more) when the output
+    device is a terminal. Added option --no-pager to disable this.
+  * In the input plugin "hls", after loading a master playlist, if the selected
+    media playlist is not found, try next one, etc.
+  * Added option --evaluate-pcr-offset to plugin "pcrextract".
+  * Added option --dvb-cissa to plugins "scrambler" and "descrambler".
+  * Added options --pid and --tag to plugin "bitrate_monitor". The plugin can
+    now also monitor the bitrate of the complete TS and can detect zero bitrate
+    on the transport stream.
+  * Added option --start-media-sequence to output plugin "hls".
+  * Added option --pack-and-flush to "tstabcomp".
+  * In various analysis commands and plugins, ATSC signalization is now known.
+  * General list of improvements regarding tuners and scanning:
+    - Added region-specific UHF/VHF frequency layouts in various commands and
+      plugins. Added option --hf-band-region to plugins "dvb", "dektec" and
+      commands "tsterinfo", "tsscan". Added option --default-region to command
+      "tsterinfo".
+    - The command "tsscan" can now perform VHF band scanning: added option
+      --vhf-band. Offsets are no longer used by default: added option
+      --use-offsets.
+    - In plugin "dvb" and command "tsscan": Added --guard-interval values
+      "1/128", "19/128", "19/256". Added --transmission-mode values "1K",
+      "2K-interleaved", "4K-interleaved", "16K", "32K". Added --modulation
+      values "16-APSK", "32-APSK" (DVB-S2). The option --channel-transponder
+      now accepts ATSC channel ids (major.minor).
+    - The old "zap" format which was inherited from some Linux scanning tools
+      is no longer supported by TSDuck. Instead, a more generic and portable
+      XML format is used. See the user's guide for more details. Impact:
+      . In plugin "dvb" and command "tsscan": Added option --tuning-file,
+        removed options --tune and --zap-config-file.
+      . In plugin "nitscan" and command "tsscan", added options --save-channels
+        and --update-channels.
+
+[BUG] Bug fixes:
+
+  * Fixed support for ATSC tuners on Windows.
+  * In plugin "scrambler", fixed a crypto-period issue with option --cw-file
+    and more than one CW.
+  * Now accept to demux probably incorrect section muxing when a TS packet is
+    such that 1) PUSI is set, 2) start of payload before the pointer field is
+    unused (do not contain a valid section) and 3) starts with FF. This is a
+    probably incorrect muxing which has been found on at least one satellite
+    transponder.
+  * Fixed bitrate computation based on PCR's. Null packets uselessly reset the
+    bitrate computation and introduced a small bias. New computed values can be
+    slightly different but more accurate.
+  * Fixed various discrepancies in adjustment of continuity counters.
+  * The option --default-charset was not always correctly used when compiling
+    tables from XML.
+
+-------------------------------------------------------------------------------
+
+VERSION 3.16-1108
 
 [NEW] New commands and plugins:
 
   * Added input plugin "hls" to receive HTTP Live Streaming (HLS).
+  * Added output plugin "hls" to generate HLS media segments and playlists.
+  * Added plugin "pcradjust" to adjust PCR's according to a constant bitrate.
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -20,6 +99,9 @@ VERSION 3.16-1074
   * In plugin "rmsplice", immediate splice events are no longer ignored.
   * Added PES encapsulation mode in plugin "encap" (added option --pes-mode,
     added optional value in option --pack).
+  * Added option --threshold4 in plugin "limit". The packet selection strategy
+    was changed.
+  * Added option --enforce-burst in output plugin "ip".
   * Implement guidelines from ETSI TR 101 211 when compiling EIT's.
   * In XML descriptions of NIT and BAT, it is now possible to specify a
     preferred section index for each TS.
@@ -31,6 +113,10 @@ VERSION 3.16-1074
     PID's (including EIT's).
   * On Linux with BusyBox environment, the --help options (and other paged
     commands) no longer fail due to unsupported option for less.
+  * The order of combining diacritical characters was incorrectly handled in
+    DVB tables with the default character set.
+  * In plugin "scrambler" with option --cw-file, there was a crash at the end
+    of the first crypto-period. This was a regression.
 
 -------------------------------------------------------------------------------
 

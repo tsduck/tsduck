@@ -43,7 +43,7 @@
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
-#if defined (DEBUG)
+#if defined(DEBUG)
 #define TRACE(...) _report.log(__VA_ARGS__)
 #else
 #define TRACE(...)

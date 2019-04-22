@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsExtendedEventDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"extended_event_descriptor"
 #define MY_DID ts::DID_EXTENDED_EVENT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,11 +49,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ExtendedEventDescriptor::DisplayDescriptor, ts::EDI
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     descriptor_number(0),
     last_descriptor_number(0),
     language_code(),
@@ -61,20 +63,10 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::ExtendedEventDescriptor::ExtendedEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    descriptor_number(0),
-    last_descriptor_number(0),
-    language_code(),
-    entries(),
-    text()
+ts::ExtendedEventDescriptor::ExtendedEventDescriptor(DuckContext& duck, const Descriptor& desc) :
+    ExtendedEventDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -100,7 +92,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
             len = uint8_t(size);
         }
         if (tag == MY_DID && len >= 4) {
-            const UString lang(UString::FromDVB(data + 1, 3, charset));
+            const UString lang(UString::FromDVB(data + 1, 3));
             SizeMap::iterator it(desc_last.find(lang));
             if (it == desc_last.end()) {
                 desc_last[lang] = 0;
@@ -124,7 +116,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
             len = uint8_t(size);
         }
         if (tag == MY_DID && len >= 4) {
-            const UString lang(UString::FromDVB(data + 1, 3, charset));
+            const UString lang(UString::FromDVB(data + 1, 3));
             data[0] = ((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
             desc_index[lang]++;
         }
@@ -138,7 +130,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
 // is too long and add them in a descriptor list.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCharset* charset) const
+void ts::ExtendedEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList& dlist) const
 {
     // Common data in all descriptors.
     ExtendedEventDescriptor eed;
@@ -175,8 +167,8 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
 
         // Insert as many item entries as possible
         while (it != entries.end()) {
-            const ByteBlock desc(it->item_description.toDVBWithByteLength(0, NPOS, charset));
-            const ByteBlock item(it->item.toDVBWithByteLength(0, NPOS, charset));
+            const ByteBlock desc(duck.toDVBWithByteLength(it->item_description));
+            const ByteBlock item(duck.toDVBWithByteLength(it->item));
             if (desc.size() + item.size() > remain) {
                 break;
             }
@@ -189,8 +181,8 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
         if (it != entries.end() && eed.entries.size() == 0) {
             Entry entry(*it);
             uint8_t* addr = buffer;
-            const size_t desc_size = entry.item_description.toDVBWithByteLength(addr, remain, 0, NPOS, charset);
-            const size_t item_size = entry.item.toDVBWithByteLength(addr, remain, 0, NPOS, charset);
+            const size_t desc_size = duck.toDVBWithByteLength(entry.item_description, addr, remain);
+            const size_t item_size = duck.toDVBWithByteLength(entry.item, addr, remain);
             assert(desc_size <= entry.item_description.length());
             assert(item_size <= entry.item.length());
             entry.item_description.resize(desc_size);
@@ -204,12 +196,12 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
 
         // Insert as much as possible of extended description
         uint8_t* addr = buffer;
-        const size_t text_size = text.toDVBWithByteLength(addr, remain, text_index, NPOS, charset);
+        const size_t text_size = duck.toDVBWithByteLength(text, addr, remain, text_index);
         eed.text = text.substr(text_index, text_size);
         text_index += text_size;
 
         // Descriptor ready, add it in list
-        dlist.add(eed);
+        dlist.add(duck, eed);
         desc_count++;
     }
 }
@@ -219,12 +211,12 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ExtendedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt8((descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -235,15 +227,15 @@ void ts::ExtendedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 
     // Serialize all entries.
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->append(it->item_description.toDVBWithByteLength(0, NPOS, charset));
-        bbp->append(it->item.toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(duck.toDVBWithByteLength(it->item_description));
+        bbp->append(duck.toDVBWithByteLength(it->item));
     }
 
     // Update length_of_items
     (*bbp)[length_index] = uint8_t(bbp->size() - length_index - 1);
 
     // Final text
-    bbp->append(text.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(duck.toDVBWithByteLength(text));
     serializeEnd(desc, bbp);
 }
 
@@ -252,7 +244,7 @@ void ts::ExtendedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ExtendedEventDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 5)) {
         return;
@@ -263,7 +255,7 @@ void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBC
 
     descriptor_number = data[0] >> 4;
     last_descriptor_number = data[0] & 0x0F;
-    language_code = UString::FromDVB(data + 1, 3, charset);
+    language_code = UString::FromDVB(data + 1, 3);
     size_t items_length = data[4];
     data += 5; size -= 5;
     _is_valid = items_length < size;
@@ -276,8 +268,8 @@ void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBC
     entries.clear();
     while (items_length >= 2) {
         Entry entry;
-        entry.item_description = UString::FromDVBWithByteLength(data, items_length, charset);
-        entry.item = UString::FromDVBWithByteLength(data, items_length, charset);
+        entry.item_description = duck.fromDVBWithByteLength(data, items_length);
+        entry.item = duck.fromDVBWithByteLength(data, items_length);
         entries.push_back(entry);
     }
 
@@ -285,7 +277,7 @@ void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBC
         return;
     }
 
-    text = UString::FromDVBWithByteLength(data, size, charset);
+    text = duck.fromDVBWithByteLength(data, size);
     _is_valid = size == 0;
 }
 
@@ -296,12 +288,12 @@ void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBC
 
 void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 5) {
         const uint8_t desc_num = data[0];
-        const UString lang(UString::FromDVB(data + 1, 3, display.dvbCharset()));
+        const UString lang(UString::FromDVB(data + 1, 3));
         size_t length = data[4];
         data += 5; size -= 5;
         if (length > size) {
@@ -312,11 +304,11 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
              << margin << "Language: " << lang << std::endl;
         size -= length;
         while (length > 0) {
-            const UString description(UString::FromDVBWithByteLength(data, length, display.dvbCharset()));
-            const UString item(UString::FromDVBWithByteLength(data, length, display.dvbCharset()));
+            const UString description(display.duck().fromDVBWithByteLength(data, length));
+            const UString item(display.duck().fromDVBWithByteLength(data, length));
             strm << margin << "\"" << description << "\" : \"" << item << "\"" << std::endl;
         }
-        const UString text(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
+        const UString text(display.duck().fromDVBWithByteLength(data, size));
         strm << margin << "Text: \"" << text << "\"" << std::endl;
         data += length; size -= length;
     }
@@ -329,7 +321,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::buildXML(xml::Element* root) const
+void ts::ExtendedEventDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"descriptor_number", descriptor_number, false);
     root->setIntAttribute(u"last_descriptor_number", last_descriptor_number, false);
@@ -348,7 +340,7 @@ void ts::ExtendedEventDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::fromXML(const xml::Element* element)
+void ts::ExtendedEventDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     language_code.clear();
     text.clear();

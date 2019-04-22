@@ -141,7 +141,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _previous_mc_ttl(0),
     _datagram_count(0),
     _outfile(),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"append", 'a');
     help(u"append",

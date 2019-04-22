@@ -48,6 +48,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         PSIPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
@@ -75,39 +76,40 @@ TSPLUGIN_DECLARE_PROCESSOR(psi, ts::PSIPlugin)
 
 ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extract PSI Information", u"[options]"),
-    _display_options(),
+    _display_options(duck),
     _logger_options(),
-    _display(_display_options, *tsp),
+    _display(_display_options),
     _logger()
 {
+    duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
+    duck.defineOptionsForDVBCharset(*this);
     _logger_options.defineOptions(*this);
     _display_options.defineOptions(*this);
 }
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Start / stop methods
 //----------------------------------------------------------------------------
 
-bool ts::PSIPlugin::start()
+bool ts::PSIPlugin::getOptions()
 {
     // Decode command line options.
-    if (!_logger_options.load(*this) || !_display_options.load(*this)) {
-        return false;
-    }
-
-    // Create the logger.
-    _logger = new PSILogger(_logger_options, _display, *tsp);
-    return !_logger->hasErrors();
+    return duck.loadOptions(*this) && _logger_options.load(*this) && _display_options.load(*this);
 }
 
 
-//----------------------------------------------------------------------------
-// Stop method
-//----------------------------------------------------------------------------
+bool ts::PSIPlugin::start()
+{
+    // Create the logger.
+    _logger = new PSILogger(_logger_options, _display);
+    return !_logger->hasErrors();
+}
 
 bool ts::PSIPlugin::stop()
 {
+    // Cleanup the logger.
     _logger.clear();
     return true;
 }

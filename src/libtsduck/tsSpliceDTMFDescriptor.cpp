@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSpliceDTMFDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -37,6 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_DTMF_descriptor"
 #define MY_DID ts::DID_SPLICE_DTMF
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceDTMFDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SpliceDTMFDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceDTMFDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(SPLICE_ID_CUEI),
     preroll(0),
     DTMF()
@@ -56,10 +58,10 @@ ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor() :
     _is_valid = true;
 }
 
-ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(DuckContext& duck, const Descriptor& desc) :
     SpliceDTMFDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,14 +69,14 @@ ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(const Descriptor& desc, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SpliceDTMFDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    const ByteBlock binDTMF(DTMF.toDVB(0, NPOS, charset));
+    const ByteBlock binDTMF(duck.toDVB(DTMF));
     if (_is_valid && binDTMF.size() <= DTMF_MAX_SIZE) {
         ByteBlockPtr bbp(serializeStart());
         bbp->appendUInt32(identifier);
         bbp->appendUInt8(preroll);
-        bbp->append(uint8_t((DTMF.size() << 5) | 0x1F));
+        bbp->append(uint8_t((binDTMF.size() << 5) | 0x1F));
         bbp->append(binDTMF);
         serializeEnd(desc, bbp);
     }
@@ -88,7 +90,7 @@ void ts::SpliceDTMFDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SpliceDTMFDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -101,7 +103,7 @@ void ts::SpliceDTMFDescriptor::deserialize(const Descriptor& desc, const DVBChar
         const size_t len = (GetUInt8(data + 5) >> 5) & 0x07;
         _is_valid = len + 6 == size;
         if (_is_valid) {
-            DTMF = UString::FromDVB(data + 6, len, charset);
+            DTMF = duck.fromDVB(data + 6, len);
         }
     }
 }
@@ -113,12 +115,12 @@ void ts::SpliceDTMFDescriptor::deserialize(const Descriptor& desc, const DVBChar
 
 void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
              << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {GetUInt8(data + 4)})
              << std::endl;
@@ -128,7 +130,7 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         if (len > size) {
             len = size;
         }
-        strm << margin << "DTMF: \"" << UString::FromDVB(data, len, display.dvbCharset()) << "\"" << std::endl;
+        strm << margin << "DTMF: \"" << display.duck().fromDVB(data, len) << "\"" << std::endl;
         data += len; size -= len;
     }
 
@@ -140,7 +142,7 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::buildXML(xml::Element* root) const
+void ts::SpliceDTMFDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"identifier", identifier, true);
     root->setIntAttribute(u"preroll", preroll);
@@ -152,7 +154,7 @@ void ts::SpliceDTMFDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceDTMFDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceDTMFDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

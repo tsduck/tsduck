@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDirectShowUtils.h"
+#include "tsHFBand.h"
 #include "tsMediaTypeUtils.h"
 #include "tsWinUtils.h"
 #include "tsMemoryUtils.h"
@@ -232,13 +233,28 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
     }
     assert(!tune_request.isNull());
 
+    // Report to use when errors shall be reported in debug mode only
+    Report& debug_report(report.debug() ? report : NULLREP);
+
     // If this is a DVB tuning space, get DVB interface of tune request and set ids to wildcards.
     ComPtr<::IDVBTuneRequest> dvb_request;
-    dvb_request.queryInterface(tune_request.pointer(), ::IID_IDVBTuneRequest, report);
+    dvb_request.queryInterface(tune_request.pointer(), ::IID_IDVBTuneRequest, debug_report);
     if (!dvb_request.isNull() &&
         (!PUT(dvb_request, ONID, -1) ||
          !PUT(dvb_request, TSID, -1) ||
-         !PUT(dvb_request, SID, -1))) {
+         !PUT(dvb_request, SID, -1)))
+    {
+        return false;
+    }
+
+    // If this is an ATSC tuning space, get ATSC interface of tune request and set channel and
+    // minor channel to wildcards.
+    ComPtr<::IATSCChannelTuneRequest> atsc_request;
+    atsc_request.queryInterface(tune_request.pointer(), ::IID_IATSCChannelTuneRequest, debug_report);
+    if (!atsc_request.isNull() &&
+        (!PUT(atsc_request, Channel, -1) ||
+         !PUT(atsc_request, MinorChannel, -1)))
+    {
         return false;
     }
 
@@ -271,6 +287,7 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
     const TunerParametersDVBS* dvb_s = dynamic_cast<const TunerParametersDVBS*>(&params);
     const TunerParametersDVBT* dvb_t = dynamic_cast<const TunerParametersDVBT*>(&params);
     const TunerParametersDVBC* dvb_c = dynamic_cast<const TunerParametersDVBC*>(&params);
+    const TunerParametersATSC* atsc = dynamic_cast<const TunerParametersATSC*>(&params);
 
     // Create the locator depending on the type.
     if (dvb_s != 0) {
@@ -281,6 +298,9 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
     }
     else if (dvb_c != 0) {
         return CreateLocatorDVBC(locator, *dvb_c, report);
+    }
+    else if (atsc != 0) {
+        return CreateLocatorATSC(locator, *atsc, report);
     }
     else {
         report.error(u"cannot convert %s parameters to DirectShow tuning parameters", {TunerTypeEnum.name(params.tunerType())});
@@ -435,5 +455,56 @@ bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParame
     }
 
     locator.assign(loc); // loc and loc2 are two interfaces of the same object
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Create an IDigitalLocator object for ATSC parameters
+// Return true on success, false on errors
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParametersATSC& params, Report& report)
+{
+    ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
+
+    // It seems that with DirectShow, the CarrierFrequency must be set to -1
+    // for ATSC tuning to work and the physicalChannel used instead. This means
+    // we need to take the frequency and map it to the corresponding HF channel
+    // using the global HF band region.
+
+    const HFBand* uhf = HFBand::GetBand(u"", HFBand::UHF);
+    const HFBand* vhf = HFBand::GetBand(u"", HFBand::VHF);
+    long physical_channel;
+    if (uhf->inBand(params.frequency)) {
+        physical_channel = uhf->channelNumber(params.frequency);
+    }
+    else if (vhf->inBand(params.frequency)) {
+        physical_channel = vhf->channelNumber(params.frequency);
+    }
+    else {
+        report.error(u"frequency %d is in neither the UHF nor VHF band", {params.frequency});
+        return false;
+    }
+
+    report.debug(u"mapped frequency %d to physical channel %d", {params.frequency, physical_channel});
+	
+    if (loc.isNull() ||
+        !CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+		!CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
+        !PUT(loc, CarrierFrequency, -1) ||
+        !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+        !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+        !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+        !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
+        !PUT(loc, SymbolRate, -1) ||
+        !PUT(loc, PhysicalChannel, physical_channel) ||
+        !PUT(loc, TSID, -1))
+    {
+        return false;
+    }
+
+    locator.assign(loc);
     return true;
 }

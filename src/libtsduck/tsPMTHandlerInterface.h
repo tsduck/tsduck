@@ -52,6 +52,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~PMTHandlerInterface() {}
+        virtual ~PMTHandlerInterface();
     };
 }

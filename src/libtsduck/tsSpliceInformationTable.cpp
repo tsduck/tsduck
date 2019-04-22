@@ -37,9 +37,10 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_information_table"
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
 
 
@@ -48,7 +49,7 @@ TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::SpliceInformationTable::SpliceInformationTable() :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     protocol_version(0),
     pts_adjustment(0),
     tier(0x0FFF),
@@ -117,10 +118,10 @@ void ts::SpliceInformationTable::adjustPTS()
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::SpliceInformationTable::SpliceInformationTable(const BinaryTable& table, const DVBCharset* charset) :
+ts::SpliceInformationTable::SpliceInformationTable(DuckContext& duck, const BinaryTable& table) :
     SpliceInformationTable()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -128,13 +129,13 @@ ts::SpliceInformationTable::SpliceInformationTable(const BinaryTable& table, con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SpliceInformationTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     clear();
 
     // This is a short table, must have only one section
-    if (!table.isValid() || table.tableId() != _table_id || table.sectionCount() != 1) {
+    if (table.sectionCount() != 1) {
         return;
     }
 
@@ -225,16 +226,8 @@ void ts::SpliceInformationTable::deserialize(const BinaryTable& table, const DVB
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SpliceInformationTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section header.
     ByteBlockPtr bb(new ByteBlock);
     bb->appendUInt8(MY_TID);
@@ -304,7 +297,7 @@ void ts::SpliceInformationTable::serialize(BinaryTable& table, const DVBCharset*
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::buildXML(xml::Element* root) const
+void ts::SpliceInformationTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"protocol_version", protocol_version, false);
     root->setIntAttribute(u"pts_adjustment", pts_adjustment, false);
@@ -320,11 +313,11 @@ void ts::SpliceInformationTable::buildXML(xml::Element* root) const
             break;
         }
         case SPLICE_SCHEDULE: {
-            splice_schedule.toXML(root);
+            splice_schedule.toXML(duck, root);
             break;
         }
         case SPLICE_INSERT: {
-            splice_insert.toXML(root);
+            splice_insert.toXML(duck, root);
             break;
         }
         case SPLICE_TIME_SIGNAL: {
@@ -348,7 +341,7 @@ void ts::SpliceInformationTable::buildXML(xml::Element* root) const
         }
     }
 
-    descs.toXML(root);
+    descs.toXML(duck, root);
 }
 
 
@@ -356,7 +349,7 @@ void ts::SpliceInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceInformationTable::fromXML(const xml::Element* element)
+void ts::SpliceInformationTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
     xml::ElementVector command;
@@ -366,7 +359,7 @@ void ts::SpliceInformationTable::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(protocol_version, u"protocol_version", false, 0) &&
         element->getIntAttribute<uint64_t>(pts_adjustment, u"pts_adjustment", false, 0) &&
         element->getIntAttribute<uint16_t>(tier, u"tier", false, 0x0FFF, 0, 0x0FFF) &&
-        descs.fromXML(command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
+        descs.fromXML(duck, command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
 
     if (!_is_valid && command.size() != 1) {
         _is_valid = false;
@@ -381,12 +374,12 @@ void ts::SpliceInformationTable::fromXML(const xml::Element* element)
         }
         else if (cmd->name() == u"splice_schedule") {
             splice_command_type = SPLICE_SCHEDULE;
-            splice_schedule.fromXML(cmd);
+            splice_schedule.fromXML(duck, cmd);
             _is_valid = splice_schedule.isValid();
         }
         else if (cmd->name() == u"splice_insert") {
             splice_command_type = SPLICE_INSERT;
-            splice_insert.fromXML(cmd);
+            splice_insert.fromXML(duck, cmd);
             _is_valid = splice_insert.isValid();
         }
         else if (cmd->name() == u"time_signal") {
@@ -417,7 +410,7 @@ void ts::SpliceInformationTable::fromXML(const xml::Element* element)
 
 void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -533,7 +526,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
             if (dl_length > size) {
                 dl_length = size;
             }
-            display.displayDescriptorList(data, dl_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, dl_length, indent);
             data += dl_length; size -= dl_length;
         }
     }

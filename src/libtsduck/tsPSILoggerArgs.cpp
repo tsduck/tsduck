@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::PSILoggerArgs::PSILoggerArgs() :
@@ -48,6 +48,10 @@ ts::PSILoggerArgs::PSILoggerArgs() :
     output(),
     use_current(true),
     use_next(false)
+{
+}
+
+ts::PSILoggerArgs::~PSILoggerArgs()
 {
 }
 

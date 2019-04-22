@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTerrestrialDeliverySystemDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -73,7 +74,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T, MY_XML_NAME),
     centre_frequency(0),
     bandwidth(0),
@@ -88,7 +89,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(con
     transmission_mode(0),
     other_frequency(false)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -96,7 +97,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     uint8_t data[13];
     data[0] = _tag;
@@ -125,7 +126,7 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize(Descriptor& desc, const 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TerrestrialDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;
 
@@ -153,7 +154,7 @@ void ts::TerrestrialDeliverySystemDescriptor::deserialize(const Descriptor& desc
 
 void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 11) {
@@ -289,7 +290,7 @@ namespace {
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::buildXML(xml::Element* root) const
+void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"centre_frequency", 10 * uint64_t(centre_frequency), false);
     root->setIntEnumAttribute(BandwidthNames, u"bandwidth", bandwidth);
@@ -310,7 +311,7 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::fromXML(const xml::Element* element)
+void ts::TerrestrialDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     uint64_t frequency = 0;
     _is_valid =

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsInputRedirector.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
@@ -49,19 +50,24 @@ class Options: public ts::Args
 {
 public:
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
-    bool        no_tdt;   // Do not try to get a TDT
-    bool        no_tot;   // Do not try to get a TOT
-    bool        all;      // Report all tables, not only the first one.
-    ts::UString infile;   // Input file name
+    ts::DuckContext       duck;     // TSDuck execution context.    
+    bool                  no_tdt;   // Do not try to get a TDT
+    bool                  no_tot;   // Do not try to get a TOT
+    bool                  all;      // Report all tables, not only the first one.
+    ts::UString           infile;   // Input file name
+    ts::TablesDisplayArgs display;  // Table formatting options (all default values, nothing on command line).
 };
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]"),
+    duck(this),
     no_tdt(false),
     no_tot(false),
     all(false),
-    infile()
+    infile(),
+    display(duck)
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
@@ -85,6 +91,10 @@ Options::Options(int argc, char *argv[]) :
     exitOnError();
 }
 
+Options::~Options()
+{
+}
+
 
 //----------------------------------------------------------------------------
 //  Table handler: receives TOT and TDT
@@ -102,7 +112,7 @@ public:
     // Constructor
     TableHandler(Options& opt) :
         _opt(opt),
-        _display(ts::TablesDisplayArgs(), _opt),
+        _display(ts::TablesDisplayArgs(_opt.duck)),
         _tdt_ok(opt.no_tdt),
         _tot_ok(opt.no_tot)
     {
@@ -136,7 +146,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
                 _display.displayTable(table) << std::endl;
                 break;
             }
-            ts::TDT tdt(table);
+            ts::TDT tdt(_opt.duck, table);
             if (!tdt.isValid()) {
                 break;
             }
@@ -153,7 +163,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
                 _display.displayTable(table) << std::endl;
                 break;
             }
-            ts::TOT tot(table);
+            ts::TOT tot(_opt.duck, table);
             if (!tot.isValid()) {
                 break;
             }
@@ -193,7 +203,7 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
     TableHandler handler(opt);
-    ts::SectionDemux demux(&handler);
+    ts::SectionDemux demux(opt.duck, &handler);
     ts::InputRedirector input(opt.infile, opt);
     ts::TSPacket pkt;
 

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHEVCTimingAndHRDDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"HEVC_timing_and_HRD_descriptor"
 #define MY_DID ts::DID_MPEG_EXTENSION
 #define MY_EDID ts::MPEG_EDID_HEVC_TIM_HRD
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HEVCTimingAndHRDDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HEVCTimingAndHRDDescriptor, ts::EDID::ExtensionMPEG(MY_EDID));
@@ -43,11 +45,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor, ts::
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     hrd_management_valid(false),
     N_90khz(),
     K_90khz(),
@@ -56,15 +58,10 @@ ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(DuckContext& duck, const Descriptor& desc) :
     HEVCTimingAndHRDDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,7 +69,7 @@ ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::HEVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -95,7 +92,7 @@ void ts::HEVCTimingAndHRDDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::HEVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -144,7 +141,7 @@ void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& display, D
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -179,7 +176,7 @@ void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::buildXML(xml::Element* root) const
+void ts::HEVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"hrd_management_valid", hrd_management_valid);
     root->setOptionalIntAttribute(u"N_90khz", N_90khz);
@@ -192,7 +189,7 @@ void ts::HEVCTimingAndHRDDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::fromXML(const xml::Element* element)
+void ts::HEVCTimingAndHRDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

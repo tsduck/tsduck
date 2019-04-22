@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTimeSliceFECIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"time_slice_fec_identifier_descriptor"
 #define MY_DID ts::DID_TIME_SLICE_FEC_ID
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TimeSliceFECIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TimeSliceFECIdentifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -42,11 +44,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     time_slicing(false),
     mpe_fec(0),
     frame_size(0),
@@ -58,10 +60,10 @@ ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor() :
     _is_valid = true;
 }
 
-ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
     TimeSliceFECIdentifierDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -69,7 +71,7 @@ ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor(const Des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TimeSliceFECIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((time_slicing ? 0x80 : 0x00) |
@@ -88,7 +90,7 @@ void ts::TimeSliceFECIdentifierDescriptor::serialize(Descriptor& desc, const DVB
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeSliceFECIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     id_selector_bytes.clear();
 
@@ -113,7 +115,7 @@ void ts::TimeSliceFECIdentifierDescriptor::deserialize(const Descriptor& desc, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::TimeSliceFECIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"time_slicing", time_slicing);
     root->setIntAttribute(u"mpe_fec", mpe_fec, true);
@@ -131,7 +133,7 @@ void ts::TimeSliceFECIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::TimeSliceFECIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     id_selector_bytes.clear();
 
@@ -153,7 +155,7 @@ void ts::TimeSliceFECIdentifierDescriptor::fromXML(const xml::Element* element)
 
 void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {

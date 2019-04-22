@@ -116,8 +116,8 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
     _output(nullptr),
     _cas_args(),
     _analyze_pids(),
-    _analyze_demux(nullptr, this),  // this one intercepts all sections for stuffing analysis
-    _psi_demux(this, nullptr),      // this one is used for PSI parsing
+    _analyze_demux(duck, nullptr, this),  // this one intercepts all sections for stuffing analysis
+    _psi_demux(duck, this, nullptr),      // this one is used for PSI parsing
     _total(),
     _pid_contexts()
 {
@@ -248,7 +248,7 @@ void ts::StuffAnalyzePlugin::handleTable(SectionDemux& demux, const BinaryTable&
 
         case TID_PAT: {
             // Add all PMT PID's to PSI demux.
-            PAT pat(table);
+            PAT pat(duck, table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
                 for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
                     _psi_demux.addPID(it->second);
@@ -259,7 +259,7 @@ void ts::StuffAnalyzePlugin::handleTable(SectionDemux& demux, const BinaryTable&
 
         case TID_CAT: {
             // Analyze stuffing on all required EMM PID's.
-            CAT cat(table);
+            CAT cat(duck, table);
             if (cat.isValid() && table.sourcePID() == PID_CAT) {
                 PIDSet pids;
                 _cas_args.addMatchingPIDs(pids, cat, *tsp);
@@ -271,7 +271,7 @@ void ts::StuffAnalyzePlugin::handleTable(SectionDemux& demux, const BinaryTable&
 
         case TID_PMT: {
             // Analyze stuffing on all required EMM PID's.
-            PMT pmt(table);
+            PMT pmt(duck, table);
             if (pmt.isValid()) {
                 PIDSet pids;
                 _cas_args.addMatchingPIDs(pids, pmt, *tsp);

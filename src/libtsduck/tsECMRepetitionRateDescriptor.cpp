@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsECMRepetitionRateDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsNames.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ECM_repetition_rate_descriptor"
 #define MY_DID ts::DID_ECM_REPETITION_RATE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ECMRepetitionRateDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ECMRepetitionRateDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ECMRepetitionRateDescriptor::DisplayDescriptor, ts:
 //----------------------------------------------------------------------------
 
 ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     CA_system_id(0),
     ECM_repetition_rate(0),
     private_data()
@@ -55,10 +57,10 @@ ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor() :
     _is_valid = true;
 }
 
-ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor(DuckContext& duck, const Descriptor& desc) :
     ECMRepetitionRateDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +68,7 @@ ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor(const Descriptor& b
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ECMRepetitionRateDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(CA_system_id);
@@ -80,7 +82,7 @@ void ts::ECMRepetitionRateDescriptor::serialize(Descriptor& desc, const DVBChars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ECMRepetitionRateDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     private_data.clear();
 
@@ -101,7 +103,7 @@ void ts::ECMRepetitionRateDescriptor::deserialize(const Descriptor& desc, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::buildXML(xml::Element* root) const
+void ts::ECMRepetitionRateDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"ECM_repetition_rate", ECM_repetition_rate, false);
@@ -115,7 +117,7 @@ void ts::ECMRepetitionRateDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::fromXML(const xml::Element* element)
+void ts::ECMRepetitionRateDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     private_data.clear();
 
@@ -133,7 +135,7 @@ void ts::ECMRepetitionRateDescriptor::fromXML(const xml::Element* element)
 
 void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {

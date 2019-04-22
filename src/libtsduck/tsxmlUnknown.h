@@ -59,7 +59,7 @@ namespace ts {
             explicit Unknown(Node* parent, const UString& text = UString());
 
             // Inherited from xml::Node.
-            virtual UString typeName() const override { return u"Unknown"; }
+            virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 
         protected:

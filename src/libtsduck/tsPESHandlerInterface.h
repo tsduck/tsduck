@@ -56,7 +56,7 @@ namespace ts {
         //! @param [in,out] demux A reference to the PES demux.
         //! @param [in] packet The demultiplexed PES packet.
         //!
-        virtual void handlePESPacket(PESDemux& demux, const PESPacket& packet) {}
+        virtual void handlePESPacket(PESDemux& demux, const PESPacket& packet);
 
         //!
         //! This hook is invoked when a video start code is encountered.
@@ -66,7 +66,7 @@ namespace ts {
         //! @param [in] offset Offset of the start code (00 00 01 xx) in the PES packet payload
         //! @param [in] size Size of the video payload (up to next start code).
         //!
-        virtual void handleVideoStartCode(PESDemux& demux, const PESPacket& packet, uint8_t start_code, size_t offset, size_t size) {}
+        virtual void handleVideoStartCode(PESDemux& demux, const PESPacket& packet, uint8_t start_code, size_t offset, size_t size);
 
         //!
         //! This hook is invoked when new video attributes are found in a video PID.
@@ -74,7 +74,7 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] attr Video attributes.
         //!
-        virtual void handleNewVideoAttributes(PESDemux& demux, const PESPacket& packet, const VideoAttributes& attr) {}
+        virtual void handleNewVideoAttributes(PESDemux& demux, const PESPacket& packet, const VideoAttributes& attr);
 
         //!
         //! This hook is invoked when an AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") is found.
@@ -84,7 +84,7 @@ namespace ts {
         //! @param [in] offset Offset of the start code (00 00 01 xx) in the PES packet payload.
         //! @param [in] size Size of the video payload (up to next start code).
         //!
-        virtual void handleAVCAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size) {}
+        virtual void handleAVCAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size);
 
         //!
         //! This hook is invoked when an AVC SEI (Supplemental Enhancement Information) is found.
@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in] offset Offset of the SEI payload in the PES packet payload.
         //! @param [in] size Size of the SEI payload.
         //!
-        virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size) {}
+        virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size);
 
         //!
         //! This hook is invoked when new AVC attributes are found in a video PID
@@ -102,7 +102,7 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] attr Video attributes.
         //!
-        virtual void handleNewAVCAttributes(PESDemux& demux, const PESPacket& packet, const AVCAttributes& attr) {}
+        virtual void handleNewAVCAttributes(PESDemux& demux, const PESPacket& packet, const AVCAttributes& attr);
 
         //!
         //! This hook is invoked when new audio attributes are found in an audio PID
@@ -110,7 +110,7 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] attr Audio attributes.
         //!
-        virtual void handleNewAudioAttributes(PESDemux& demux, const PESPacket& packet, const AudioAttributes& attr) {}
+        virtual void handleNewAudioAttributes(PESDemux& demux, const PESPacket& packet, const AudioAttributes& attr);
 
         //!
         //! This hook is invoked when new AC-3 attributes are found in an audio PID
@@ -118,11 +118,11 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //! @param [in] attr Audio attributes.
         //!
-        virtual void handleNewAC3Attributes(PESDemux& demux, const PESPacket& packet, const AC3Attributes& attr) {}
+        virtual void handleNewAC3Attributes(PESDemux& demux, const PESPacket& packet, const AC3Attributes& attr);
 
         //!
         //! Virtual destructor.
         //!
-        virtual ~PESHandlerInterface() {}
+        virtual ~PESHandlerInterface();
     };
 }

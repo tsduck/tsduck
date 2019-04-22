@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ForkPipe::ForkPipe() :
+    AbstractOutputStream(),
     _in_mode(STDIN_PIPE),
     _out_mode(KEEP_BOTH),
     _is_open(false),
@@ -70,10 +71,19 @@ ts::ForkPipe::ForkPipe() :
     IgnorePipeSignal();
 }
 
-
 ts::ForkPipe::~ForkPipe()
 {
     close(NULLREP);
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of AbstractOutputStream
+//----------------------------------------------------------------------------
+
+bool ts::ForkPipe::writeStreamBuffer(const void* addr, size_t size)
+{
+    return write(addr, size, NULLREP);
 }
 
 
@@ -446,6 +456,11 @@ bool ts::ForkPipe::close(Report& report)
         return false;
     }
 
+    // Flush the output buffer, if any.
+    if (_in_pipe) {
+        flush(); // from std::basic_ostream
+    }
+
     bool result = true;
 
 #if defined(TS_WINDOWS)
@@ -636,7 +651,7 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
 
     ErrorCode error_code = SYS_SUCCESS;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     char* data = reinterpret_cast<char*>(addr);
     ::DWORD remain = ::DWORD(max_size);

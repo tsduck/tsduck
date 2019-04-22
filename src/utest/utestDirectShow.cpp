@@ -33,9 +33,8 @@
 
 #include "tsPlatform.h"
 TSDUCK_SOURCE;
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
-#include "tsTunerUtils.h"
 #include "tsDirectShowTest.h"
 #include "tsWinUtils.h"
 #include "utestCppUnitTest.h"

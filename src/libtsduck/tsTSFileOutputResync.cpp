@@ -38,17 +38,34 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::TSFileOutputResync::TSFileOutputResync() :
+    TSFileOutput(),
+    _ccFixer(AllPIDs)
+{
+    // Continuity counters are generated regardless of previous values.
+    _ccFixer.setGenerator(true);
+}
+
+ts::TSFileOutputResync::~TSFileOutputResync()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Open method
 //----------------------------------------------------------------------------
 
 bool ts::TSFileOutputResync::open(const UString& filename, bool append, bool keep, Report& report)
 {
-    // Invoke superclass for actual file opening
+    // Invoke superclass for actual file opening.
     const bool ok = TSFileOutput::open(filename, append, keep, report);
 
-    // Reset all continuity counters to a known state
+    // Reset continuity counters.
     if (ok) {
-        TS_ZERO(_cc);
+        _ccFixer.reset();
     }
 
     return ok;
@@ -63,12 +80,7 @@ bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report
 {
     // Update continuity counters
     for (size_t n = 0; n < packet_count; ++n) {
-        const PID pid = buffer[n].getPID();
-        if (buffer[n].hasPayload()) {
-            // ISO 13818-1 says "do not increment CC when no payload is present"
-            _cc[pid] = (_cc[pid] + 1) & CC_MASK;
-        }
-        buffer[n].setCC(_cc[pid]);
+        _ccFixer.feedPacket(buffer[n]);
     }
 
     // Invoke superclass
@@ -80,7 +92,7 @@ bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report
 // Write packets, force PID value
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, PID pid, Report& report)
+bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, PID pid, Report& report)
 {
     for (size_t n = 0; n < packet_count; ++n) {
         buffer[n].setPID(pid);

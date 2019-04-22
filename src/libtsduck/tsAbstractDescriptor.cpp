@@ -32,18 +32,23 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Protected constructor for subclasses.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, PDS pds) :
-    AbstractSignalization(xml_name),
+ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
+    AbstractSignalization(xml_name, standards),
     _tag(tag),
     _required_pds(pds)
+{
+}
+
+ts::AbstractDescriptor::~AbstractDescriptor()
 {
 }
 
@@ -52,13 +57,13 @@ ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, PDS p
 // Deserialize from a descriptor list.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptor::deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset)
+void ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index)
 {
     if (index > dlist.count()) {
         invalidate();
     }
     else {
-        deserialize(*dlist[index], charset);
+        deserialize(duck, *dlist[index]);
     }
 }
 

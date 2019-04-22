@@ -96,31 +96,31 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        SSULinkageDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Constructor from a linkage_descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc A linkage_descriptor to convert.
         //! The data_broadcast_id must be 0x000A.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const LinkageDescriptor& desc, const DVBCharset* charset = nullptr);
+        SSULinkageDescriptor(DuckContext& duck, const LinkageDescriptor& desc);
 
         //!
         //! Convert to a linkage_descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] desc A linkage_descriptor to convert.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void toLinkageDescriptor(LinkageDescriptor& desc, const DVBCharset* charset = nullptr) const;
+        void toLinkageDescriptor(DuckContext& duck, LinkageDescriptor& desc) const;
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual xml::Element* toXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual xml::Element* toXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
     };
 }

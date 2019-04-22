@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsT2MIDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -37,6 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"T2MI_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_T2MI
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -44,11 +46,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::T2MIDescriptor::DisplayDescriptor, ts::EDID::Extens
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::T2MIDescriptor::T2MIDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     t2mi_stream_id(0),
     num_t2mi_streams_minus_one(0),
     pcr_iscr_common_clock_flag(false),
@@ -57,14 +59,10 @@ ts::T2MIDescriptor::T2MIDescriptor() :
     _is_valid = true;
 }
 
-ts::T2MIDescriptor::T2MIDescriptor(const Descriptor& bin, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    t2mi_stream_id(0),
-    num_t2mi_streams_minus_one(0),
-    pcr_iscr_common_clock_flag(false),
-    reserved()
+ts::T2MIDescriptor::T2MIDescriptor(DuckContext& duck, const Descriptor& desc) :
+    T2MIDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,7 +70,7 @@ ts::T2MIDescriptor::T2MIDescriptor(const Descriptor& bin, const DVBCharset* char
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::T2MIDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -88,7 +86,7 @@ void ts::T2MIDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::T2MIDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -108,7 +106,7 @@ void ts::T2MIDescriptor::deserialize(const Descriptor& desc, const DVBCharset* c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::buildXML(xml::Element* root) const
+void ts::T2MIDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"t2mi_stream_id", t2mi_stream_id, true);
     root->setIntAttribute(u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
@@ -123,7 +121,7 @@ void ts::T2MIDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::fromXML(const xml::Element* element)
+void ts::T2MIDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -145,7 +143,7 @@ void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, cons
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 3) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         strm << margin << "T2-MI stream id: " << int(data[0] & 0x07)
              << ", T2-MI stream count: " << int((data[1] & 0x07) + 1)

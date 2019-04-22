@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+#include "tsHFBand.h"
 #include "tsTime.h"
 #include "tsSysUtils.h"
 #include "tsSignalAllocator.h"
@@ -1421,14 +1422,14 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     getFrontendStatus(status, report);
 
     // Read current tuning parameters
-    TunerParameters* params = TunerParameters::Factory(_tuner_type);
-    if (params != nullptr && !getCurrentTuning(*params, false, report)) {
-        params = nullptr;
+    TunerParametersPtr params(TunerParameters::Factory(_tuner_type));
+    if (!params.isNull() && !getCurrentTuning(*params, false, report)) {
+        params.clear();
     }
-    const TunerParametersDVBS* params_dvbs = dynamic_cast <const TunerParametersDVBS*>(params);
-    const TunerParametersDVBC* params_dvbc = dynamic_cast <const TunerParametersDVBC*>(params);
-    const TunerParametersDVBT* params_dvbt = dynamic_cast <const TunerParametersDVBT*>(params);
-    const TunerParametersATSC* params_atsc = dynamic_cast <const TunerParametersATSC*>(params);
+    const TunerParametersDVBS* params_dvbs = dynamic_cast <const TunerParametersDVBS*>(params.pointer());
+    const TunerParametersDVBC* params_dvbc = dynamic_cast <const TunerParametersDVBC*>(params.pointer());
+    const TunerParametersDVBT* params_dvbt = dynamic_cast <const TunerParametersDVBT*>(params.pointer());
+    const TunerParametersATSC* params_atsc = dynamic_cast <const TunerParametersATSC*>(params.pointer());
 
     // Read Bit Error Rate
     uint32_t ber = 0;
@@ -1476,12 +1477,15 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbc->frequency), u"Hz");
     }
     if (params_dvbt != nullptr) {
+        // Get UHF and VHF band descriptions in the default region.
+        const HFBand* uhf = HFBand::GetBand(u"", HFBand::UHF);
+        const HFBand* vhf = HFBand::GetBand(u"", HFBand::VHF);
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbt->frequency), u"Hz");
-        if (UHF::InBand(params_dvbt->frequency)) {
-            Display(strm, margin, u"  UHF channel", UString::Decimal(UHF::Channel(params_dvbt->frequency)), u"");
+        if (uhf->inBand(params_dvbt->frequency, true)) {
+            Display(strm, margin, u"  UHF channel", UString::Decimal(uhf->channelNumber(params_dvbt->frequency)), u"");
         }
-        else if (VHF::InBand(params_dvbt->frequency)) {
-            Display(strm, margin, u"  VHF channel", UString::Decimal(VHF::Channel(params_dvbt->frequency)), u"");
+        else if (vhf->inBand(params_dvbt->frequency, true)) {
+            Display(strm, margin, u"  VHF channel", UString::Decimal(vhf->channelNumber(params_dvbt->frequency)), u"");
         }
     }
     if (params_atsc != nullptr) {

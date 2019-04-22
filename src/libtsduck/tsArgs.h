@@ -450,28 +450,28 @@ namespace ts {
         //!
         //! @param [in] description A short one-line description, e.g. "Wonderful File Copier".
         //!
-        virtual void setDescription(const UString& description) {_description = description;}
+        virtual void setDescription(const UString& description);
 
         //!
         //! Set the syntax of the command.
         //!
         //! @param [in] syntax A short one-line syntax summary, e.g. "[options] filename ...".
         //!
-        virtual void setSyntax(const UString& syntax) {_syntax = syntax;}
+        virtual void setSyntax(const UString& syntax);
 
         //!
         //! Set the introduction or preamble text for help description.
         //!
         //! @param [in] intro Introduction text.
         //!
-        virtual void setIntro(const UString& intro) {_intro = intro;}
+        virtual void setIntro(const UString& intro);
 
         //!
         //! Set the option flags of the command.
         //!
         //! @param [in] flags Define various options, a combination of or'ed values from @link Flags @endlink.
         //!
-        virtual void setFlags(int flags) {_flags = flags;}
+        virtual void setFlags(int flags);
 
         //!
         //! Get the description of the command.

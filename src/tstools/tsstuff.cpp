@@ -50,6 +50,7 @@ static const uint64_t DEFAULT_MIN_INTERVAL   = 100;              // milliseconds
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::BitRate target_bitrate;
     ts::PID     reference_pid;
@@ -66,7 +67,10 @@ struct Options: public ts::Args
     ts::UString output_file;
 };
 
-// Constructor
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Add stuffing to a transport stream to reach a target bitrate", u"[options] [input-file]"),
     target_bitrate(0),
@@ -190,7 +194,7 @@ class Stuffer
 public:
     // Constructor
     Stuffer (Options&);
-    virtual ~Stuffer() {}
+    virtual ~Stuffer();
 
     // Process the content
     void stuff();
@@ -229,7 +233,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-// Stuffer constructor
+// Stuffer constructors and destructors.
 //-----------------------------------------------------------------------------
 
 Stuffer::Stuffer(Options& opt) :
@@ -242,6 +246,10 @@ Stuffer::Stuffer(Options& opt) :
     _current_residue_packets(0),
     _remaining_stuff_count(0),
     _additional_bits(0)
+{
+}
+
+Stuffer::~Stuffer()
 {
 }
 

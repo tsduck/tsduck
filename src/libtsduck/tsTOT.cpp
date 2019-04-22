@@ -43,9 +43,10 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"TOT"
 #define MY_TID ts::TID_TOT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::TOT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::TOT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::TOT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, MY_TID);
 
 
@@ -54,7 +55,7 @@ TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::TOT::TOT(const Time& utc_time_) :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     utc_time(utc_time_),
     regions(),
     descs(this)
@@ -62,10 +63,10 @@ ts::TOT::TOT(const Time& utc_time_) :
     _is_valid = true;
 }
 
-ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
+ts::TOT::TOT(DuckContext& duck, const BinaryTable& table) :
     TOT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 ts::TOT::TOT(const TOT& other) :
@@ -102,7 +103,7 @@ ts::UString ts::TOT::timeOffsetFormat(int minutes)
 // Add descriptors, filling regions from local_time_offset_descriptor's.
 //----------------------------------------------------------------------------
 
-void ts::TOT::addDescriptors(const DescriptorList& dlist)
+void ts::TOT::addDescriptors(DuckContext& duck, const DescriptorList& dlist)
 {
     // Loop on all descriptors.
     for (size_t index = 0; index < dlist.count(); ++index) {
@@ -113,7 +114,7 @@ void ts::TOT::addDescriptors(const DescriptorList& dlist)
             }
             else {
                 // Decode local_time_offset_descriptor in the list of regions.
-                LocalTimeOffsetDescriptor lto(*dlist[index]);
+                LocalTimeOffsetDescriptor lto(duck, *dlist[index]);
                 if (lto.isValid()) {
                     regions.insert(regions.end(), lto.regions.begin(), lto.regions.end());
                 }
@@ -127,10 +128,9 @@ void ts::TOT::addDescriptors(const DescriptorList& dlist)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::TOT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     regions.clear();
     descs.clear();
 
@@ -141,13 +141,8 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Reference to single section
     const Section& sect(*table.sectionAt(0));
-    const uint8_t* data(sect.payload());
-    size_t remain(sect.payloadSize());
-
-    // Abort if not a TOT
-    if (sect.tableId() != MY_TID) {
-        return;
-    }
+    const uint8_t* data = sect.payload();
+    size_t remain = sect.payloadSize();
 
     // A TOT section is a short section with a CRC32.
     // Normally, only long sections have a CRC32.
@@ -179,7 +174,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
     // Build a descriptor list.
     DescriptorList dlist(nullptr);
     dlist.add(data, length);
-    addDescriptors(dlist);
+    addDescriptors(duck, dlist);
 
     _is_valid = true;
 }
@@ -189,16 +184,8 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::TOT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section
     uint8_t payload [MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
@@ -217,12 +204,12 @@ void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
         lto.regions.push_back(*it);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
-            dlist.add(lto);
+            dlist.add(duck, lto);
             lto.regions.clear();
         }
     }
     if (!lto.regions.empty()) {
-        dlist.add(lto);
+        dlist.add(duck, lto);
     }
 
     // Append the "other" descriptors to the list
@@ -259,7 +246,7 @@ void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
 
 void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -278,7 +265,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             if (length > size) {
                 length = size;
             }
-            display.displayDescriptorList(data, length, indent, section.tableId());
+            display.displayDescriptorList(section, data, length, indent);
             data += length; size -= length;
         }
 
@@ -306,7 +293,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::buildXML(xml::Element* root) const
+void ts::TOT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setDateTimeAttribute(u"UTC_time", utc_time);
 
@@ -317,17 +304,17 @@ void ts::TOT::buildXML(xml::Element* root) const
         lto.regions.push_back(*it);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
             // The descriptor is full, flush it in the list.
-            lto.toXML(root);
+            lto.toXML(duck, root);
             lto.regions.clear();
         }
     }
     if (!lto.regions.empty()) {
         // The descriptor is not empty, flush it in the list.
-        lto.toXML(root);
+        lto.toXML(duck, root);
     }
 
     // Add other descriptors.
-    descs.toXML(root);
+    descs.toXML(duck, root);
 }
 
 
@@ -335,7 +322,7 @@ void ts::TOT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::fromXML(const xml::Element* element)
+void ts::TOT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     regions.clear();
     descs.clear();
@@ -345,8 +332,8 @@ void ts::TOT::fromXML(const xml::Element* element)
     _is_valid =
         checkXMLName(element) &&
         element->getDateTimeAttribute(utc_time, u"UTC_time", true) &&
-        orig.fromXML(element);
+        orig.fromXML(duck, element);
 
     // Then, split local_time_offset_descriptor and others.
-    addDescriptors(orig);
+    addDescriptors(duck, orig);
 }

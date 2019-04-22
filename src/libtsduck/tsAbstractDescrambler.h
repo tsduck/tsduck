@@ -59,7 +59,6 @@ namespace ts {
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
         virtual bool start() override;
         virtual bool stop() override;
-        virtual BitRate getBitrate() override {return 0;}
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     protected:
@@ -252,7 +251,6 @@ namespace ts {
         bool               _synchronous;       // Synchronous ECM deciphering.
         TSScrambling       _scrambling;        // Default descrambling (used with fixed control words).
         PIDSet             _pids;              // Explicit PID's to descramble.
-        PacketCounter      _packet_count;      // Packet counter in TS.
         ServiceDiscovery   _service;           // Service to descramble (by name, id or none).
         size_t             _stack_usage;       // Stack usage for ECM deciphering.
         SectionDemux       _demux;             // Section demux to extract ECM's.

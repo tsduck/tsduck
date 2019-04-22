@@ -121,7 +121,7 @@ bool ts::CATPlugin::start()
     UStringVector cadescs;
     getValues(cadescs, u"add-ca-descriptor");
     _add_descs.clear();
-    if (!CADescriptor::AddFromCommandLine(_add_descs, cadescs, *tsp)) {
+    if (!CADescriptor::AddFromCommandLine(duck, _add_descs, cadescs)) {
         return false;
     }
 
@@ -137,7 +137,7 @@ bool ts::CATPlugin::start()
 void ts::CATPlugin::createNewTable(BinaryTable& table)
 {
     CAT cat;
-    cat.serialize(table);
+    cat.serialize(duck, table);
 }
 
 
@@ -155,7 +155,7 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Process the CAT.
-    CAT cat(table);
+    CAT cat(duck, table);
     if (!cat.isValid()) {
         tsp->warning(u"found invalid CAT");
         reinsert = false;
@@ -165,7 +165,7 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Remove descriptors
     for (size_t index = cat.descs.search(DID_CA); index < cat.descs.count(); index = cat.descs.search(DID_CA, index)) {
         bool remove_it = false;
-        const CADescriptor desc(*(cat.descs[index]));
+        const CADescriptor desc(duck, *(cat.descs[index]));
         if (desc.isValid()) {
             for (size_t i = 0; !remove_it && i < _remove_casid.size(); ++i) {
                 remove_it = desc.cas_id == _remove_casid[i];
@@ -191,5 +191,5 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     cat.descs.add(_add_descs);
 
     // Reserialize modified CAT.
-    cat.serialize(table);
+    cat.serialize(duck, table);
 }

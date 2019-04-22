@@ -85,8 +85,8 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
         return false;
     }
     for (size_t i = 0; i < _list.size(); ++i) {
-        const DescriptorPtr& desc1 (_list[i].desc);
-        const DescriptorPtr& desc2 (other._list[i].desc);
+        const DescriptorPtr& desc1(_list[i].desc);
+        const DescriptorPtr& desc2(other._list[i].desc);
         if (desc1.isNull() || desc2.isNull() || *desc1 != *desc2) {
             return false;
         }
@@ -101,13 +101,13 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
 
 void ts::DescriptorList::add(const DescriptorPtr& desc)
 {
-    PDS pds;
+    PDS pds = 0;
 
     // Determine which PDS to associate with the descriptor
     if (desc->tag() == DID_PRIV_DATA_SPECIF) {
         // This descriptor defines a new "private data specifier".
         // The PDS is the only thing in the descriptor payload.
-        pds = desc->payloadSize() < 4 ? 0 : GetUInt32 (desc->payload());
+        pds = desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload());
     }
     else if (_list.empty()) {
         // First descriptor in the list
@@ -119,7 +119,7 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
     }
 
     // Add the descriptor in the list
-    _list.push_back (Element (desc, pds));
+    _list.push_back(Element(desc, pds));
 }
 
 
@@ -127,11 +127,11 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add(const AbstractDescriptor& desc)
+void ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 {
     DescriptorPtr pd(new Descriptor);
     CheckNonNull(pd.pointer());
-    desc.serialize(*pd);
+    desc.serialize(duck, *pd);
     if (pd->isValid()) {
         add(pd);
     }
@@ -159,7 +159,7 @@ void ts::DescriptorList::add(const void* data, size_t size)
 // Prepare removal of a private_data_specifier descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::prepareRemovePDS (const ElementVector::iterator& it)
+bool ts::DescriptorList::prepareRemovePDS(const ElementVector::iterator& it)
 {
     // Eliminate invalid cases
     if (it == _list.end() || it->desc->tag() != DID_PRIV_DATA_SPECIF) {
@@ -196,10 +196,15 @@ bool ts::DescriptorList::prepareRemovePDS (const ElementVector::iterator& it)
 // Add a private_data_specifier if necessary at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::addPrivateDataSpecifier (PDS pds)
+void ts::DescriptorList::addPrivateDataSpecifier(PDS pds)
 {
     if (pds != 0 && (_list.size() == 0 || _list[_list.size() - 1].pds != pds)) {
-        add (PrivateDataSpecifierDescriptor (pds));
+        // Build a private_data_specifier_descriptor
+        uint8_t data[6];
+        data[0] = DID_PRIV_DATA_SPECIF;
+        data[1] = 4;
+        PutUInt32(data + 2, pds);
+        add(DescriptorPtr(new Descriptor(data, sizeof(data))));
     }
 }
 
@@ -232,7 +237,7 @@ size_t ts::DescriptorList::removeInvalidPrivateDescriptors()
 // Remove the descriptor at the specified index in the list.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::removeByIndex (size_t index)
+bool ts::DescriptorList::removeByIndex(size_t index)
 {
     // Check index validity
     if (index >= _list.size()) {
@@ -240,12 +245,12 @@ bool ts::DescriptorList::removeByIndex (size_t index)
     }
 
     // Private_data_specifier descriptor can be removed under certain conditions only
-    if (_list[index].desc->tag() == DID_PRIV_DATA_SPECIF && !prepareRemovePDS (_list.begin() + index)) {
+    if (_list[index].desc->tag() == DID_PRIV_DATA_SPECIF && !prepareRemovePDS(_list.begin() + index)) {
         return false;
     }
 
     // Remove the specified descriptor
-    _list.erase (_list.begin() + index);
+    _list.erase(_list.begin() + index);
     return true;
 }
 
@@ -282,7 +287,7 @@ size_t ts::DescriptorList::binarySize() const
 {
     size_t size = 0;
 
-    for (int i = 0; i < int (_list.size()); ++i) {
+    for (int i = 0; i < int(_list.size()); ++i) {
         size += _list[i].desc->size();
     }
 
@@ -342,9 +347,12 @@ size_t ts::DescriptorList::serialize(ByteBlock& bb, size_t start) const
 // Same as Serialize, but prepend a 2-byte length field before the list.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t start, uint8_t reserved_bits) const
+size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t start, uint16_t reserved_bits, size_t length_bits) const
 {
-    assert (size >= 2);
+    assert(size >= 2);
+
+    // Not more than 16 bits in the length field.
+    length_bits = std::min<size_t>(length_bits, 16);
 
     // Reserve space for descriptor list length
     uint8_t* length_addr = addr;
@@ -352,11 +360,11 @@ size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t 
     size -= 2;
 
     // Insert descriptor list
-    size_t result (serialize(addr, size, start));
+    size_t result = serialize(addr, size, start);
 
     // Update length
-    size_t length (addr - length_addr - 2);
-    PutUInt16 (length_addr, uint16_t (length | (uint16_t(reserved_bits) << 12)));
+    size_t length = addr - length_addr - 2;
+    PutUInt16(length_addr, uint16_t(length | (reserved_bits << length_bits)));
 
     return result;
 }
@@ -367,7 +375,7 @@ size_t ts::DescriptorList::lengthSerialize(uint8_t*& addr, size_t& size, size_t 
 // specified index.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::search (DID tag, size_t start_index, PDS pds) const
+size_t ts::DescriptorList::search(DID tag, size_t start_index, PDS pds) const
 {
     bool check_pds = pds != 0 && tag >= 0x80;
     size_t index = start_index;
@@ -376,6 +384,29 @@ size_t ts::DescriptorList::search (DID tag, size_t start_index, PDS pds) const
         index++;
     }
 
+    return index;
+}
+
+
+//----------------------------------------------------------------------------
+// Search a descriptor with the specified extended tag.
+//----------------------------------------------------------------------------
+
+size_t ts::DescriptorList::search(const ts::EDID& edid, size_t start_index) const
+{
+    // If the EDID is table-specific, check that we are in the same table.
+    // In the case the table of the descriptor list is unknown, assume that the table matches.
+    const TID tid = edid.tableId();
+    if (edid.isTableSpecific() && _table != nullptr && _table->tableId() != tid) {
+        // No the same table, cannot match.
+        return _list.size();
+    }
+
+    // Now search in the list.
+    size_t index = start_index;
+    while (index < _list.size() && _list[index].desc->edid(_list[index].pds, tid) != edid) {
+        index++;
+    }
     return index;
 }
 
@@ -475,11 +506,11 @@ size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_
 // This method converts a descriptor list to XML.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) const
+bool ts::DescriptorList::toXML(DuckContext& duck, xml::Element* parent) const
 {
     bool success = true;
     for (size_t index = 0; index < _list.size(); ++index) {
-        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, tableId() , false, charset) == nullptr) {
+        if (_list[index].desc.isNull() || _list[index].desc->toXML(duck, parent, _list[index].pds, tableId() , false) == nullptr) {
             success = false;
         }
     }
@@ -491,20 +522,20 @@ bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) 
 // These methods decode an XML list of descriptors.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset)
+bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers)
 {
     UStringList allowed;
     allowedOthers.split(allowed);
-    return fromXML(others, parent, allowed, charset);
+    return fromXML(duck, others, parent, allowed);
 }
 
-bool ts::DescriptorList::fromXML(const xml::Element* parent)
+bool ts::DescriptorList::fromXML(DuckContext& duck, const xml::Element* parent)
 {
     xml::ElementVector others;
-    return fromXML(others, parent, UStringList());
+    return fromXML(duck, others, parent, UStringList());
 }
 
-bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)
+bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers)
 {
     bool success = true;
     clear();
@@ -517,7 +548,7 @@ bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element*
         CheckNonNull(bin.pointer());
 
         // Try to analyze the XML element.
-        if (bin->fromXML(node, tableId(), charset)) {
+        if (bin->fromXML(duck, node, tableId())) {
             // The XML tag is a valid descriptor name.
             if (bin->isValid()) {
                 add(bin);

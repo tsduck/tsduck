@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsStuffingDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"stuffing_descriptor"
 #define MY_DID ts::DID_STUFFING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StuffingDescriptor::DisplayDescriptor, ts::EDID::St
 //----------------------------------------------------------------------------
 
 ts::StuffingDescriptor::StuffingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stuffing()
 {
     _is_valid = true;
@@ -58,10 +60,10 @@ ts::StuffingDescriptor::StuffingDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::StuffingDescriptor::StuffingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::StuffingDescriptor::StuffingDescriptor(DuckContext& duck, const Descriptor& desc) :
     StuffingDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -69,7 +71,7 @@ ts::StuffingDescriptor::StuffingDescriptor(const Descriptor& desc, const DVBChar
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::StuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->append(stuffing);
@@ -81,7 +83,7 @@ void ts::StuffingDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::StuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
@@ -97,7 +99,7 @@ void ts::StuffingDescriptor::deserialize(const Descriptor& desc, const DVBCharse
 
 void ts::StuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     strm << margin << "Stuffing data, " << size << " bytes" << std::endl
          << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
@@ -108,7 +110,7 @@ void ts::StuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::buildXML(xml::Element* root) const
+void ts::StuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (!stuffing.empty()) {
         root->addHexaText(stuffing);
@@ -120,7 +122,7 @@ void ts::StuffingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::fromXML(const xml::Element* element)
+void ts::StuffingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     stuffing.clear();
     _is_valid = checkXMLName(element) && element->getHexaText(stuffing, 0, 255);

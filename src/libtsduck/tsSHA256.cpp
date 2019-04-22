@@ -250,3 +250,21 @@ bool ts::SHA256::getHash (void* hash, size_t bufsize, size_t* retsize)
     }
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of Hash interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SHA256::name() const 
+{
+    return u"SHA-256";
+}
+size_t ts::SHA256::hashSize() const 
+{
+    return HASH_SIZE;
+}
+size_t ts::SHA256::blockSize() const 
+{
+    return BLOCK_SIZE;
+}

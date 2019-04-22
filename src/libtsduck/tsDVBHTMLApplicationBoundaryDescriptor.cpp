@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBHTMLApplicationBoundaryDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"dvb_html_application_boundary_descriptor"
 #define MY_DID ts::DID_AIT_HTML_APP_BOUND
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationBoundaryDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationBoundaryDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescri
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     label(),
     regular_expression()
 {
@@ -59,10 +61,10 @@ ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor()
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBHTMLApplicationBoundaryDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,11 +72,11 @@ ts::DVBHTMLApplicationBoundaryDescriptor::DVBHTMLApplicationBoundaryDescriptor(c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationBoundaryDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DVBHTMLApplicationBoundaryDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(label.toDVBWithByteLength(0, NPOS, charset));
-    bbp->append(regular_expression.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVBWithByteLength(label));
+    bbp->append(duck.toDVB(regular_expression));
     serializeEnd(desc, bbp);
 }
 
@@ -83,7 +85,7 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::serialize(Descriptor& desc, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     label.clear();
     regular_expression.clear();
@@ -97,8 +99,8 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(const Descriptor& des
         const size_t len = data[0];
         _is_valid = len + 1 <= size;
         if (_is_valid) {
-            label = UString::FromDVB(data + 1, len, charset);
-            regular_expression = UString::FromDVB(data + 1 + len, size - len - 1, charset);
+            label = duck.fromDVB(data + 1, len);
+            regular_expression = duck.fromDVB(data + 1 + len, size - len - 1);
         }
     }
 }
@@ -110,13 +112,13 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::deserialize(const Descriptor& des
 
 void ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Label: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl
-             << margin << "Regexp: \"" << UString::FromDVB(data + 1 + len, size - len - 1, display.dvbCharset()) << "\"" << std::endl;
+        strm << margin << "Label: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl
+             << margin << "Regexp: \"" << display.duck().fromDVB(data + 1 + len, size - len - 1) << "\"" << std::endl;
         size = 0;
     }
 
@@ -128,7 +130,7 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationBoundaryDescriptor::buildXML(xml::Element* root) const
+void ts::DVBHTMLApplicationBoundaryDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"label", label);
     root->setAttribute(u"regular_expression", regular_expression);
@@ -139,7 +141,7 @@ void ts::DVBHTMLApplicationBoundaryDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationBoundaryDescriptor::fromXML(const xml::Element* element)
+void ts::DVBHTMLApplicationBoundaryDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

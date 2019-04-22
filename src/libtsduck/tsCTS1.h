@@ -62,11 +62,11 @@ namespace ts {
         CTS1() : CipherChainingTemplate<CIPHER>(1, 1, 2) {}
 
         // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const override {return this->block_size + 1;}
-        virtual bool residueAllowed() const override {return true;}
+        virtual size_t minMessageSize() const override;
+        virtual bool residueAllowed() const override;
 
         // Implementation of BlockCipher interface.
-        virtual UString name() const override {return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS1";}
+        virtual UString name() const override;
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
                              size_t* cipher_length = nullptr) override;

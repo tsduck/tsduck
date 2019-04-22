@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCOM.h"
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
 #endif
 TSDUCK_SOURCE;

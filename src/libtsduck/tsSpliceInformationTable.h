@@ -72,10 +72,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SpliceInformationTable(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        SpliceInformationTable(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Clear all fields.
@@ -88,10 +88,7 @@ namespace ts {
         void adjustPTS();
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
         //!
@@ -102,5 +99,11 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool ExtractSpliceInsert(SpliceInsert& command, const Section& section);
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

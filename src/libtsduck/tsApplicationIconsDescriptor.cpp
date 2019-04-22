@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationIconsDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -37,6 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"application_icons_descriptor"
 #define MY_DID ts::DID_AIT_APP_ICONS
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationIconsDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationIconsDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -48,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationIconsDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     icon_locator(),
     icon_flags(0),
     reserved_future_use()
@@ -61,10 +63,10 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(DuckContext& duck, const Descriptor& desc) :
     ApplicationIconsDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,10 +74,10 @@ ts::ApplicationIconsDescriptor::ApplicationIconsDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ApplicationIconsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(icon_locator.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(duck.toDVBWithByteLength(icon_locator));
     bbp->appendUInt16(icon_flags);
     bbp->append(reserved_future_use);
     serializeEnd(desc, bbp);
@@ -86,7 +88,7 @@ void ts::ApplicationIconsDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ApplicationIconsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     icon_locator.clear();
     reserved_future_use.clear();
@@ -97,7 +99,7 @@ void ts::ApplicationIconsDescriptor::deserialize(const Descriptor& desc, const D
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 1 && size >= size_t(data[0]) + 3;
 
     if (_is_valid) {
-        icon_locator = UString::FromDVBWithByteLength(data, size, charset);
+        icon_locator = duck.fromDVBWithByteLength(data, size);
         assert(size >= 2);
         icon_flags = GetUInt16(data);
         reserved_future_use.copy(data + 2, size - 2);
@@ -111,11 +113,11 @@ void ts::ApplicationIconsDescriptor::deserialize(const Descriptor& desc, const D
 
 void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size > 0) {
-        strm << margin << "Icon locator: \"" << UString::FromDVBWithByteLength(data, size, display.dvbCharset()) << "\"" << std::endl;
+        strm << margin << "Icon locator: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
         if (size >= 2) {
             const uint16_t flags = GetUInt16(data);
             strm << margin << UString::Format(u"Icon flags: 0x%X", {flags}) << std::endl;
@@ -137,7 +139,7 @@ void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::buildXML(xml::Element* root) const
+void ts::ApplicationIconsDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"icon_locator", icon_locator);
     root->setIntAttribute(u"icon_flags", icon_flags, true);
@@ -151,7 +153,7 @@ void ts::ApplicationIconsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ApplicationIconsDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationIconsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     icon_locator.clear();
     reserved_future_use.clear();

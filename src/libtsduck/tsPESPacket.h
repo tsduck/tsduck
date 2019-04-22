@@ -107,11 +107,7 @@ namespace ts {
         //! @param [in] content_size Size in bytes of the packet.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        void reload(const void* content, size_t content_size, PID source_pid = PID_NULL)
-        {
-            _source_pid = source_pid;
-            initialize(new ByteBlock(content, content_size));
-        }
+        void reload(const void* content, size_t content_size, PID source_pid = PID_NULL);
 
         //!
         //! Reload from full binary content.
@@ -119,11 +115,7 @@ namespace ts {
         //! @param [in] content Binary packet data.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        void reload(const ByteBlock& content, PID source_pid = PID_NULL)
-        {
-            _source_pid = source_pid;
-            initialize(new ByteBlock(content));
-        }
+        void reload(const ByteBlock& content, PID source_pid = PID_NULL);
 
         //!
         //! Reload from full binary content.
@@ -133,11 +125,7 @@ namespace ts {
         //! Do not modify the referenced ByteBlock from outside the PESPacket.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
-        {
-            _source_pid = source_pid;
-            initialize(content_ptr);
-        }
+        void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL);
 
         //!
         //! Clear packet content.
@@ -275,12 +263,7 @@ namespace ts {
         //! Set the stream id of the PES packet.
         //! @param [in] sid The stream id of the PES packet.
         //!
-        void setStreamId(uint8_t sid)
-        {
-            if (_is_valid) {
-                (*_data)[3] = sid;
-            }
-        }
+        void setStreamId(uint8_t sid);
 
         //!
         //! Check if the packet has a long header.
@@ -306,10 +289,7 @@ namespace ts {
         //! Size of the binary content of the packet.
         //! @return Size of the binary content of the packet.
         //!
-        size_t size() const
-        {
-            return _data->size();
-        }
+        size_t size() const;
 
         //!
         //! Access to the PES header of the packet.
@@ -344,7 +324,16 @@ namespace ts {
         //!
         size_t payloadSize() const
         {
-            return _is_valid ? _data->size() - _header_size : 0;
+            return _is_valid ? size() - _header_size : 0;
+        }
+
+        //!
+        //! Number of spurious data bytes after the packet.
+        //! @return Size of the spurious data bytes after the packet.
+        //!
+        size_t spuriousDataSize() const
+        {
+            return _is_valid ? _data->size() - size() : 0;
         }
 
         //!

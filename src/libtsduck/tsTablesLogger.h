@@ -57,9 +57,8 @@ namespace ts {
         //! Constructor.
         //! @param [in] options Table logging options.
         //! @param [in,out] display Object to display tables and sections.
-        //! @param [in,out] report Where to log errors.
         //!
-        TablesLogger(const TablesLoggerArgs& options, TablesDisplay& display, Report& report);
+        TablesLogger(const TablesLoggerArgs& options, TablesDisplay& display);
 
         //!
         //! Destructor.
@@ -138,6 +137,7 @@ namespace ts {
     private:
         const TablesLoggerArgs&  _opt;
         TablesDisplay&           _display;
+        DuckContext&             _duck;
         Report&                  _report;
         bool                     _abort;
         bool                     _exit;

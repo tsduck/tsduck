@@ -32,20 +32,24 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TSP::TSP(int max_severity) :
     Report(max_severity),
     _use_realtime(false),
     _tsp_bitrate(0),
-    _tsp_aborting(false)
+    _tsp_timeout(Infinite),
+    _tsp_aborting(false),
+    _total_packets(0),
+    _plugin_packets(0)
 {
 }
 
 ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& syntax) :
     Args(description, syntax, NO_DEBUG | NO_VERBOSE | NO_VERSION | NO_CONFIG_FILE),
-    tsp(to_tsp)
+    tsp(to_tsp),
+    duck(to_tsp)
 {
 }
 
@@ -86,3 +90,67 @@ const ts::Enumeration ts::PluginTypeNames({
     {u"packet processor", ts::PROCESSOR_PLUGIN},
 });
 
+
+//----------------------------------------------------------------------------
+// Default implementations of virtual methods.
+//----------------------------------------------------------------------------
+
+bool ts::TSP::aborting() const
+{
+    return _tsp_aborting;
+}
+
+size_t ts::Plugin::stackUsage() const
+{
+    return DEFAULT_STACK_USAGE;
+}
+
+bool ts::Plugin::getOptions()
+{
+    return true;
+}
+
+bool ts::Plugin::start()
+{
+    return true;
+}
+
+bool ts::Plugin::stop()
+{
+    return true;
+}
+
+ts::BitRate ts::Plugin::getBitrate()
+{
+    return 0;
+}
+
+bool ts::Plugin::isRealTime()
+{
+    return false;
+}
+
+bool ts::Plugin::handlePacketTimeout()
+{
+    return false;
+}
+
+bool ts::InputPlugin::abortInput()
+{
+    return false;
+}
+
+ts::PluginType ts::InputPlugin::type() const
+{
+    return INPUT_PLUGIN;
+}
+
+ts::PluginType ts::OutputPlugin::type() const
+{
+    return OUTPUT_PLUGIN;
+}
+
+ts::PluginType ts::ProcessorPlugin::type() const
+{
+    return PROCESSOR_PLUGIN;
+}

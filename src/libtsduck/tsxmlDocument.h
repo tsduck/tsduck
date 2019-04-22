@@ -137,7 +137,7 @@ namespace ts {
             //! Get a constant reference to the global XML parsing and formatting tweaks for the document.
             //! @return A constant reference to the global XML tweaks.
             //!
-            virtual const Tweaks& tweaks() const override { return _tweaks; }
+            virtual const Tweaks& tweaks() const override;
 
             //!
             //! Set the global XML parsing and formatting tweaks for the document.
@@ -155,7 +155,7 @@ namespace ts {
             virtual UString toString() const override;
 
             // Inherited from xml::Node.
-            virtual UString typeName() const override { return u"Document"; }
+            virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
             virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
 

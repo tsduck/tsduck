@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsContentDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"content_descriptor"
 #define MY_DID ts::DID_CONTENT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ContentDescriptor, ts::EDID::Standard(MY_DID));
@@ -51,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ContentDescriptor::DisplayDescriptor, ts::EDID::Sta
 //----------------------------------------------------------------------------
 
 ts::ContentDescriptor::ContentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
@@ -62,11 +64,11 @@ ts::ContentDescriptor::ContentDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::ContentDescriptor::ContentDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -74,7 +76,7 @@ ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc, const DVBCharse
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ContentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -95,7 +97,7 @@ void ts::ContentDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ContentDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 0;
     entries.clear();
@@ -117,7 +119,7 @@ void ts::ContentDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 
 void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {
@@ -135,7 +137,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::buildXML(xml::Element* root) const
+void ts::ContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"content");
@@ -150,7 +152,7 @@ void ts::ContentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::fromXML(const xml::Element* element)
+void ts::ContentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

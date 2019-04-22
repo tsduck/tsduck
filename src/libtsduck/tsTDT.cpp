@@ -41,33 +41,28 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"TDT"
 #define MY_TID ts::TID_TDT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::TDT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::TDT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::TDT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::TDT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TDT::TDT(const Time& utc_time_) :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     utc_time(utc_time_)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
-ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(MY_TID, MY_XML_NAME),
-    utc_time()
+ts::TDT::TDT(DuckContext& duck, const BinaryTable& table) :
+    TDT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -75,11 +70,8 @@ ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::TDT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
-    // Clear table content
-    _is_valid = false;
-
     // This is a short table, must have only one section
     if (table.sectionCount() != 1) {
         return;
@@ -87,17 +79,12 @@ void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Reference to single section
     const Section& sect(*table.sectionAt(0));
-    const uint8_t* data(sect.payload());
-    size_t remain(sect.payloadSize());
 
-    // Abort if not a TDT
-    if (sect.tableId() != MY_TID || remain < MJD_SIZE) {
-        return;
+    // Get UTC time.
+    if (sect.payloadSize() >= MJD_SIZE) {
+        DecodeMJD(sect.payload(), MJD_SIZE, utc_time);
+        _is_valid = true;
     }
-
-    // Get UTC time
-    DecodeMJD(data, MJD_SIZE, utc_time);
-    _is_valid = true;
 }
 
 
@@ -105,16 +92,8 @@ void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::TDT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Encode the data in MJD in the payload (5 bytes)
     uint8_t payload[MJD_SIZE];
     EncodeMJD(utc_time, payload, MJD_SIZE);
@@ -133,7 +112,7 @@ void ts::TDT::serialize(BinaryTable& table, const DVBCharset* charset) const
 
 void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -153,7 +132,7 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::buildXML(xml::Element* root) const
+void ts::TDT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setDateTimeAttribute(u"UTC_time", utc_time);
 }
@@ -163,7 +142,7 @@ void ts::TDT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(const xml::Element* element)
+void ts::TDT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

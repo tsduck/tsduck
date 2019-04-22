@@ -52,14 +52,15 @@ namespace ts {
         //! Constructor for subclasses.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] version_ Table version number.
         //! @param [in] is_current_ True if table is current, false if table is next.
         //!
-        AbstractLongTable(TID tid, const UChar* xml_name, uint8_t version_ = 0, bool is_current_ = true) :
-            AbstractTable(tid, xml_name),
-            version(version_),
-            is_current(is_current_)
-        {
-        }
+        AbstractLongTable(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_);
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~AbstractLongTable();
     };
 }

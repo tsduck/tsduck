@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsDescriptor.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -79,28 +80,19 @@ namespace ts {
         //! Check if the descriptor list is empty.
         //! @return True if the descriptor list is empty.
         //!
-        bool empty() const
-        {
-            return _list.empty();
-        }
+        bool empty() const { return _list.empty(); }
 
         //!
         //! Get the number of descriptors in the list (same as count()).
         //! @return The number of descriptors in the list.
         //!
-        size_t size() const
-        {
-            return _list.size();
-        }
+        size_t size() const { return _list.size(); }
 
         //!
         //! Get the number of descriptors in the list (same as size()).
         //! @return The number of descriptors in the list.
         //!
-        size_t count() const
-        {
-            return _list.size();
-        }
+        size_t count() const { return _list.size(); }
 
         //!
         //! Get the table id of the parent table.
@@ -161,9 +153,10 @@ namespace ts {
 
         //!
         //! Add one descriptor at end of list
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc The descriptor to add.
         //!
-        void add(const AbstractDescriptor& desc);
+        void add(DuckContext& duck, const AbstractDescriptor& desc);
 
         //!
         //! Add another list of descriptors at end of list.
@@ -233,10 +226,7 @@ namespace ts {
         //!
         //! Clear the content of the descriptor list.
         //!
-        void clear()
-        {
-            _list.clear();
-        }
+        void clear() { _list.clear(); }
 
         //!
         //! Search a descriptor with the specified tag.
@@ -248,6 +238,14 @@ namespace ts {
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
         size_t search(DID tag, size_t start_index = 0, PDS pds = 0) const;
+
+        //!
+        //! Search a descriptor with the specified extended tag.
+        //! @param [in] edid Extended tag of descriptor to search.
+        //! @param [in] start_index Start searching at this index.
+        //! @return The index of the descriptor in the list or count() if no such descriptor is found.
+        //!
+        size_t search(const EDID& edid, size_t start_index = 0) const;
 
         //!
         //! Search a language descriptor for the specified language.
@@ -319,6 +317,7 @@ namespace ts {
         //!
         //! Same as serialize(), but prepend a 2-byte length field before the descriptor list.
         //! The 2-byte length field has 4 reserved bits and 12 bits for the length of the descriptor list.
+        //! In fact, the number of bits in the length can be set in @a length_bits.
         //! @param [in,out] addr Address of the memory area where the descriptors
         //! are serialized. Upon return, @a addr is updated to contain the next
         //! address in memory, after the last serialized byte.
@@ -327,51 +326,52 @@ namespace ts {
         //! of the buffer. Descriptors are written one by one until either the end
         //! of the list or until one descriptor does not fit.
         //! @param [in] start Start serializing at this index in the descriptor list.
-        //! @param [in] reserved_bits Upper 4 bits of the length field.
+        //! @param [in] reserved_bits Value of the upper bits of the length field.
+        //! @param [in] length_bits Number of meaningful bits in the length field.
         //! @return The index of the first descriptor that could not be serialized
         //! (or count() if all descriptors were serialized). In the first case,
         //! the returned index can be used as @a start parameter to serialized the
         //! rest of the list (in another section for instance).
         //!
-        size_t lengthSerialize(uint8_t*& addr, size_t& size, size_t start = 0, uint8_t reserved_bits = 0x0F) const;
+        size_t lengthSerialize(uint8_t*& addr, size_t& size, size_t start = 0, uint16_t reserved_bits = 0x000F, size_t length_bits = 12) const;
 
         //!
         //! This method converts a descriptor list to XML.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the XML descriptors.
-        //! @param [in] charset If not zero, default character set to use.
         //! @return True on success, false on error.
         //!
-        bool toXML(xml::Element* parent, const DVBCharset* charset = nullptr) const;
+        bool toXML(DuckContext& duck, xml::Element* parent) const;
 
         //!
         //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in] parent The XML element containing all descriptors.
         //! @param [in] allowedOthers A list of allowed element names inside @a parent which are not descriptors.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers);
 
         //!
         //! This method decodes an XML list of descriptors.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in] parent The XML element containing all descriptors.
         //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent which are not descriptors.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset = nullptr);
+        bool fromXML(DuckContext& duck, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers);
 
         //!
         //! This method decodes an XML list of descriptors.
-        //! @param [in] parent The XML element containing all descriptors.
-        //! All children must be valid descriptors.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] parent The XML element containing all descriptors. All children must be valid descriptors.
         //! @return True on success, false on error.
         //!
-        bool fromXML(const xml::Element* parent);
+        bool fromXML(DuckContext& duck, const xml::Element* parent);
 
     private:
         // Each entry contains a descriptor and its corresponding private data specifier.
