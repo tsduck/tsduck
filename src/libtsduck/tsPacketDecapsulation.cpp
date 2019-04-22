@@ -104,7 +104,10 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     // However, it's good to overcome the fragmentation!
     size_t pesFragment = 0;
 
-     // Differentiate whether it's a plain encapsulation or a PES encapsulation
+    // Used to distinguish between ASYNC and SYNC PES encapsulation.
+    bool pesSync = false;
+
+    // Differentiate whether it's a plain encapsulation or a PES encapsulation
     if (!pkt.getTEI() && pkt.isClear() && pkt.hasPayload()) { // General checks
 
         if (pkt.getPUSI() && pktIndex < (PKT_SIZE - 9) &&
@@ -115,13 +118,17 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             // PES header found, continue...
             pktIndex += 3;
 
-             // Check for correct Type Signature of the PES packet
-            if (pkt.b[pktIndex++] != 0xBD) {
+            // Check for correct Type Signature of the PES packet
+            if (pkt.b[pktIndex] != 0xBD && pkt.b[pktIndex] != 0xFC) {
                 return lostSync(pkt, u"invalid PES packet, type differs");
             }
-            // Private Stream 1 found, continue...
+            else if (pkt.b[pktIndex] == 0xFC) {
+                pesSync = true;
+            }
+            // (ASYNC=Private Stream 1 || SYNC=Metadata Stream) found, continue...
+            pktIndex++;
 
-            // Check for PES Size (2 bytes) and valid Flags
+            // Check for PES Size (2 bytes)
             if (pkt.b[pktIndex++] != 0x00) {
                 return lostSync(pkt, u"invalid PES packet, size incompatible");
             }
@@ -133,11 +140,16 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
             if (pes_size > 255 || pes_size < 18) {
                 return lostSync(pkt, u"invalid PES packet, wrong size");
             }
-            if (pkt.b[pktIndex] != 0x80 && pkt.b[pktIndex] != 0x84) {
+
+            // Check for valid flags
+            if ((pkt.b[pktIndex]   != 0x80 && pkt.b[pktIndex]   != 0x84) ||
+                (pkt.b[pktIndex+1] != 0x80 && pkt.b[pktIndex+1] != 0x00)) {
                 return lostSync(pkt, u"invalid PES packet, incorrect flags");
             }
             pktIndex++; // Ignore these flags
             pktIndex++; // Ignore these flags
+
+            // Check remaining header
             size_t header_size = pkt.b[pktIndex++]; // PES optional header size (1 byte)
             if (header_size > 0) {
                 // Advance up to the end of the PES header
@@ -145,6 +157,17 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
                 pesFragment = header_size; // When fragmentation appears in the outer packet, this offset is added to checks.
             }
             // PES header OK!
+
+            // Check Metadata AU Header (5 bytes), only in Synchronous mode.
+            if (pesSync) {
+               if (pkt.b[pktIndex] != 0x00 || pkt.b[pktIndex+2] != 0xDF) {
+                   return lostSync(pkt, u"invalid PES packet, SYNC Metadata Header incorrect");
+               }
+               if (pkt.b[pktIndex+3] != 0x00 || pkt.b[pktIndex+4] > 206) {
+                   return lostSync(pkt, u"invalid PES packet, SYNC AU cell data size incompatible");
+               }
+               pktIndex += 5;
+            }
 
             // Start reading KLVA data...
             if (pktIndex > PKT_SIZE - 18) {
