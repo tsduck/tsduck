@@ -35,7 +35,8 @@ TSDUCK_SOURCE;
 // Constructor / destructor.
 //----------------------------------------------------------------------------
 
-ts::AbstractDemux::AbstractDemux(const PIDSet& pid_filter) :
+ts::AbstractDemux::AbstractDemux(DuckContext& duck, const PIDSet& pid_filter) :
+    _duck(duck),
     _pid_filter(pid_filter),
     _packet_count(0),
     _in_handler(false),
@@ -90,6 +91,16 @@ void ts::AbstractDemux::removePID(PID pid)
         _pid_filter.reset(pid);
         resetPID(pid);
     }
+}
+
+size_t ts::AbstractDemux::pidCount() const
+{
+    return _pid_filter.count();
+}
+
+bool ts::AbstractDemux::hasPID(PID pid) const
+{
+    return pid < _pid_filter.size() && _pid_filter.test(pid);
 }
 
 

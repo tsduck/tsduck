@@ -58,6 +58,14 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
     {u"Eutelsat",  ts::PDS_EUTELSAT},
 });
 
+const ts::Enumeration ts::StandardsEnum({
+    {u"MPEG", ts::STD_MPEG},
+    {u"DVB",  ts::STD_DVB},
+    {u"SCTE", ts::STD_SCTE},
+    {u"ATSC", ts::STD_ATSC},
+    {u"ISDB", ts::STD_ISDB},
+});
+
 
 //----------------------------------------------------------------------------
 // Check if an ST value indicates a PES stream

@@ -38,9 +38,20 @@
 #pragma once
 #include <string>
 #include <ostream>
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/TestFixture.h>
 #include <cppunit/TestAssert.h>
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 
 //!
 //! @hideinitializer

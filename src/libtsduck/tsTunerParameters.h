@@ -38,6 +38,8 @@
 #include "tsModulation.h"
 #include "tsSafePtr.h"
 #include "tsException.h"
+#include "tsDescriptor.h"
+#include "tsxml.h"
 
 namespace ts {
 
@@ -83,10 +85,7 @@ namespace ts {
         //! @param [out] param2 Modulation-specific paramter 2.
         //! @return True on success, false on error (includes unsupported operation).
         //!
-        virtual bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
-        {
-            return false;
-        }
+        virtual bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const;
 
         //!
         //! Format a short description (frequency and essential parameters).
@@ -95,12 +94,6 @@ namespace ts {
         //! @return A description string.
         //!
         virtual UString shortDescription(int strength = -1, int quality = -1) const = 0;
-
-        //!
-        //! Format the tuner parameters according to the Linux DVB "zap" format.
-        //! @return A string in Linux DVB "zap" format.
-        //!
-        virtual UString toZapFormat() const = 0;
 
         //!
         //! Format the tuner parameters as a list of options for the "dvb" tsp plugin.
@@ -112,6 +105,13 @@ namespace ts {
         virtual UString toPluginOptions(bool no_local = false) const = 0;
 
         //!
+        //! This method converts this object to XML.
+        //! @param [in,out] parent The parent node for the new XML tree.
+        //! @return The new XML element.
+        //!
+        virtual xml::Element* toXML(xml::Element* parent) const = 0;
+
+        //!
         //! Display a description of the modulation paramters on a stream, line by line.
         //! @param [in,out] strm Where to display the parameters.
         //! @param [in] margin Left margin to display.
@@ -119,30 +119,6 @@ namespace ts {
         //! When true, display all parameters.
         //!
         virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const = 0;
-
-        //!
-        //! Decode a Linux DVB "zap" specification.
-        //! And set the corresponding values in the tuner parameters.
-        //! @param [in] zap A line of a Linux DVB "zap" file.
-        //! @return True on success, false on unsupported format.
-        //!
-        virtual bool fromZapFormat(const UString& zap) = 0;
-
-        //!
-        //! Expected number of fields (separated by ':') in a Linux DVB "zap" specification.
-        //! @return Expected number of fields in a Linux DVB "zap" specification.
-        //!
-        virtual size_t zapFieldCount() const = 0;
-
-        //!
-        //! Extract options from a TunerArgs, applying defaults when necessary.
-        //! Parameters with irrelevant values (auto, none, etc) are not displayed.
-        //! @param [in] args Tuner arguments.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error (missing mandatory parameter,
-        //! inconsistent values, etc.).
-        //!
-        bool fromTunerArgs(const TunerArgs& args, Report& report);
 
         //!
         //! Exception thrown when assigning incompatible parameter types.
@@ -159,16 +135,45 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~TunerParameters() {}
+        virtual ~TunerParameters();
 
         //!
         //! Allocate a TunerParameters of the appropriate subclass, based on a tuner type.
         //! @param [in] type Tuner type.
-        //! @return A newly allocated instance of a subclass of TunerParameters.
-        //! The parameters have their default values. Return zero if there is no
+        //! @return A safe pointer to a newly allocated instance of a subclass of TunerParameters.
+        //! The parameters have their default values. Return a null pointer if there is no
         //! implementation of the parameters for the given tuner type.
         //!
-        static TunerParameters* Factory(TunerType type);
+        static TunerParametersPtr Factory(TunerType type);
+
+        //!
+        //! Extract options from a TunerArgs, applying defaults when necessary.
+        //! Parameters with irrelevant values (auto, none, etc) are not displayed.
+        //! @param [in] type Tuner type.
+        //! @param [in] args Tuner arguments.
+        //! @param [in,out] report Where to report errors.
+        //! @return A safe pointer to tuning parameters or a null pointer on error
+        //! (missing mandatory parameter, inconsistent values, etc.).
+        //!
+        static TunerParametersPtr FromTunerArgs(TunerType type, const TunerArgs& args, Report& report);
+
+        //!
+        //! Allocate a TunerParameters of the appropriate subclass from a delivery system descriptor.
+        //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+        //! @return A safe pointer to a newly allocated tuner parameters object of the appropriate class.
+        //! Return a null pointer if the descriptor was not correctly analyzed or is not
+        //! a delivery system descriptor.
+        //!
+        static TunerParametersPtr FromDeliveryDescriptor(const Descriptor& desc);
+
+        //!
+        //! Allocate a TunerParameters of the appropriate subclass from an XML element.
+        //! @param [in] element XML element to convert.
+        //! @return A safe pointer to a newly allocated tuner parameters object of the appropriate class.
+        //! Return a null pointer if the descriptor was not correctly analyzed or is not
+        //! a delivery system descriptor.
+        //!
+        static TunerParametersPtr FromXML(const xml::Element* element);
 
     protected:
         //!
@@ -193,6 +198,20 @@ namespace ts {
         //! inconsistent values, etc.).
         //!
         virtual bool fromArgs(const TunerArgs& args, Report& report) = 0;
+
+        //!
+        //! Subclass-specific part of FromDeliveryDescriptor().
+        //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+        //! @return True on success, false on error.
+        //!
+        virtual bool fromDeliveryDescriptor(const Descriptor& desc) = 0;
+
+        //!
+        //! This abstract method fills in this object from an XML structure.
+        //! @param [in] element XML element to convert.
+        //! @return True on success, false on error.
+        //!
+        virtual bool fromXML(const xml::Element* element) = 0;
 
         //!
         //! Theoretical useful bitrate for QPSK or QAM modulation.

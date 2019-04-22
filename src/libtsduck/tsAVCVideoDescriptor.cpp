@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAVCVideoDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -39,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AVC_video_descriptor"
 #define MY_DID ts::DID_AVC_VIDEO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID::St
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     profile_idc(0),
     constraint_set0(false),
     constraint_set1(false),
@@ -68,10 +70,10 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::AVCVideoDescriptor::AVCVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
     AVCVideoDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -79,7 +81,7 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc, const DVBChar
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::AVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     uint8_t data[6];
     data[0] = _tag;
@@ -105,7 +107,7 @@ void ts::AVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::AVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 
@@ -129,7 +131,7 @@ void ts::AVCVideoDescriptor::deserialize(const Descriptor& desc, const DVBCharse
 
 void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -164,7 +166,7 @@ void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::buildXML(xml::Element* root) const
+void ts::AVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"profile_idc", profile_idc, true);
     root->setBoolAttribute(u"constraint_set0", constraint_set0);
@@ -181,7 +183,7 @@ void ts::AVCVideoDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::fromXML(const xml::Element* element)
+void ts::AVCVideoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

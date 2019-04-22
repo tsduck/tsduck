@@ -110,7 +110,7 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
     _descramble(false),
     _service(),
     _scrambled(),
-    _demux(this),
+    _demux(duck, this),
     _ecb(),
     _cbc(),
     _cts1(),
@@ -279,31 +279,31 @@ bool ts::AESPlugin::start()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::AESPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::AESPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
-                    processPAT (pat);
+                    processPAT(pat);
                 }
             }
             break;
         }
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
-                    processSDT (sdt);
+                    processSDT(sdt);
                 }
             }
             break;
         }
         case TID_PMT: {
-            PMT pmt (table);
-            if (pmt.isValid() && _service.hasId (pmt.service_id)) {
-                processPMT (pmt);
+            PMT pmt(duck, table);
+            if (pmt.isValid() && _service.hasId(pmt.service_id)) {
+                processPMT(pmt);
             }
             break;
         }
@@ -321,12 +321,12 @@ void ts::AESPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 //  all descriptors for the service).
 //----------------------------------------------------------------------------
 
-void ts::AESPlugin::processSDT (SDT& sdt)
+void ts::AESPlugin::processSDT(SDT& sdt)
 {
     // Look for the service by name
     assert (_service.hasName());
     uint16_t service_id;
-    if (!sdt.findService (_service.getName(), service_id)) {
+    if (!sdt.findService(duck, _service.getName(), service_id)) {
         tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;

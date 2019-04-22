@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCIAncillaryDataDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -37,6 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"CI_ancillary_data_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_CI_ANCILLARY_DATA
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CIAncillaryDataDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CIAncillaryDataDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -48,16 +50,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CIAncillaryDataDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ancillary_data()
 {
     _is_valid = true;
 }
 
-ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     CIAncillaryDataDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +67,7 @@ ts::CIAncillaryDataDescriptor::CIAncillaryDataDescriptor(const Descriptor& bin, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CIAncillaryDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -78,7 +80,7 @@ void ts::CIAncillaryDataDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CIAncillaryDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -94,7 +96,7 @@ void ts::CIAncillaryDataDescriptor::deserialize(const Descriptor& desc, const DV
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::buildXML(xml::Element* root) const
+void ts::CIAncillaryDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (!ancillary_data.empty()) {
         root->addElement(u"ancillary_data")->addHexaText(ancillary_data);
@@ -106,7 +108,7 @@ void ts::CIAncillaryDataDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::fromXML(const xml::Element* element)
+void ts::CIAncillaryDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -124,7 +126,7 @@ void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DI
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size > 0) {

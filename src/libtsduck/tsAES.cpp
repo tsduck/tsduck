@@ -1065,7 +1065,7 @@ bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
         rk[4] = GetUInt32 (key + 16);
         rk[5] = GetUInt32 (key + 20);
         for (;;) {
-#if defined (TS_MSC)
+#if defined(TS_MSC)
             temp = _eK[rk - _eK + 5];
 #else
             temp = rk[5];
@@ -1089,7 +1089,7 @@ bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
         rk[6] = GetUInt32 (key + 24);
         rk[7] = GetUInt32 (key + 28);
         for (;;) {
-#if defined (TS_MSC)
+#if defined(TS_MSC)
             temp = _eK[rk - _eK + 7];
 #else
             temp = rk[7];
@@ -1433,4 +1433,42 @@ bool ts::AES::decrypt(const void* cipher, size_t cipher_length,
 ts::AES::AES() :
     _Nr(0)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipher interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::AES::name() const
+{
+    return u"AES";
+}
+size_t ts::AES::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+size_t ts::AES::minKeySize() const
+{
+    return MIN_KEY_SIZE;
+}
+size_t ts::AES::maxKeySize() const
+{
+    return MAX_KEY_SIZE;
+}
+bool ts::AES::isValidKeySize (size_t size) const
+{
+    return size == 16 || size == 24 || size == 32;
+}
+size_t ts::AES::minRounds() const
+{
+    return MIN_ROUNDS;
+}
+size_t ts::AES::maxRounds() const
+{
+    return MAX_ROUNDS;
+}
+size_t ts::AES::defaultRounds() const
+{
+    return DEFAULT_ROUNDS;
 }

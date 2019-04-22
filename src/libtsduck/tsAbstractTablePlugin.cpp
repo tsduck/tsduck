@@ -48,7 +48,6 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     _default_bitrate(default_bitrate),
     _pid(pid),
     _found(false),
-    _pkt_current(0),
     _pkt_create(0),
     _pkt_insert(0),
     _create_after_ms(0),
@@ -57,7 +56,7 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     _incr_version(false),
     _set_version(false),
     _new_version(0),
-    _demux(this),
+    _demux(duck, this),
     _pzer(pid)
 {
     option(u"bitrate", 'b', POSITIVE);
@@ -138,9 +137,7 @@ bool ts::AbstractTablePlugin::start()
 
     // Reset other states
     _found = false;
-    _pkt_current = 0;
-    _pkt_create = 0;
-    _pkt_insert = 0;
+    _pkt_create = _pkt_insert = tsp->pluginPackets();
 
     return true;
 }
@@ -200,32 +197,31 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
 {
     const PID pid = pkt.getPID();
 
-    // Count packets
-    _pkt_current++;
-
     // Filter incoming sections
     _demux.feedPacket(pkt);
 
     // Determine when a new table shall be created. Executed only once, when the bitrate is known
     if (!_found && _create_after_ms > 0 && _pkt_create == 0) {
         const BitRate ts_bitrate = tsp->bitrate();
-        _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
-        tsp->debug(u"will create %s after %'d packets, %'d ms (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms, ts_bitrate});
+        if (ts_bitrate > 0) {
+            _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
+            tsp->debug(u"will create %s after %'d packets, %'d ms (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms, ts_bitrate});
+        }
     }
 
     // Create a new table when necessary.
-    if (!_found && _pkt_create > 0 && _pkt_current >= _pkt_create) {
+    if (!_found && _pkt_create > 0 && tsp->pluginPackets() >= _pkt_create) {
         // Let the subclass create a new empty table.
         BinaryTable table;
         createNewTable(table);
         // Process it as if it comes from the TS.
         handleTable(_demux, table);
         // Insert first packet as soon as possible
-        _pkt_insert = _pkt_current;
+        _pkt_insert = tsp->pluginPackets();
     }
 
     // Insertion of packets from the input PID.
-    if (pid == PID_NULL && _pkt_insert > 0 && _pkt_current >= _pkt_insert) {
+    if (pid == PID_NULL && _pkt_insert > 0 && tsp->pluginPackets() >= _pkt_insert) {
         // It is time to replace stuffing by a created table packet.
         _pzer.getNextPacket(pkt);
         // Next insertion point.

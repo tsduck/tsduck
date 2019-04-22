@@ -110,7 +110,7 @@ ts::TimePlugin::TimePlugin (TSP* tsp_) :
     _use_tdt(false),
     _last_time(Time::Epoch),
     _status_names({{u"pass", TSP_OK}, {u"stop", TSP_END}, {u"drop", TSP_DROP}, {u"null", TSP_NULL}}),
-    _demux(this),
+    _demux(duck, this),
     _events(),
     _next_index(0)
 {
@@ -255,7 +255,7 @@ void ts::TimePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
     if (table.tableId() == TID_TDT) {
         if (table.sourcePID() == PID_TDT) {
             // Use TDT as clock reference
-            TDT tdt(table);
+            TDT tdt(duck, table);
             if (tdt.isValid()) {
                 _last_time = tdt.utc_time;
             }

@@ -84,7 +84,7 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     assert((char*)(_base + elem_count) <= _locked_base + _locked_size);
     assert(_locked_size % page_size == 0);
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // Windows implementation.
 
@@ -128,7 +128,7 @@ ts::ResidentBuffer<T>::~ResidentBuffer()
 {
     // Unlock from physical memory
     if (_is_locked) {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         ::VirtualUnlock(_locked_base, _locked_size);
 #else
         ::munlock(_locked_base, _locked_size);

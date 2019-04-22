@@ -275,7 +275,7 @@ namespace ts {
     //!
     //! Integer type for process identifier
     //!
-#if defined (DOXYGEN)
+#if defined(DOXYGEN)
     typedef platform_specific ProcessId;
 #elif defined(TS_WINDOWS)
     typedef ::DWORD ProcessId;
@@ -300,9 +300,10 @@ namespace ts {
     //!
     //! Create a directory
     //! @param [in] path A directory path.
+    //! @param [in] intermediate When true, also create intermediate directories.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode CreateDirectory(const UString& path);
+    TSDUCKDLL ErrorCode CreateDirectory(const UString& path, bool intermediate = false);
 
     //!
     //! Return the name of a directory for temporary files.

@@ -55,11 +55,10 @@ namespace ts {
         IDSA();
 
         // Implementation of BlockCipher interface.
-        virtual UString name() const override {return u"ATIS-IDSA";}
+        virtual UString name() const override;
 
     private:
-        // The IV are defined by the standard and not modifiable.
-        virtual bool setIV(const void* iv_, size_t iv_length) override { return DVS042<AES>::setIV(iv_, iv_length); }
-        virtual bool setShortIV(const void* iv_, size_t iv_length) override { return DVS042<AES>::setShortIV(iv_, iv_length); }
+        virtual bool setIV(const void* iv_, size_t iv_length) override;
+        virtual bool setShortIV(const void* iv_, size_t iv_length) override;
     };
 }

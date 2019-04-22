@@ -36,9 +36,10 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"discontinuity_information_table"
 #define MY_TID ts::TID_DIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::DiscontinuityInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::DiscontinuityInformationTable::DisplaySection, MY_TID);
 
 
@@ -47,7 +48,7 @@ TS_ID_SECTION_DISPLAY(ts::DiscontinuityInformationTable::DisplaySection, MY_TID)
 //----------------------------------------------------------------------------
 
 ts::DiscontinuityInformationTable::DiscontinuityInformationTable(bool tr) :
-    AbstractTable(MY_TID, MY_XML_NAME),
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     transition(tr)
 {
     _is_valid = true;
@@ -58,10 +59,10 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(bool tr) :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::DiscontinuityInformationTable::DiscontinuityInformationTable(const BinaryTable& table, const DVBCharset* charset) :
+ts::DiscontinuityInformationTable::DiscontinuityInformationTable(DuckContext& duck, const BinaryTable& table) :
     DiscontinuityInformationTable()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -69,29 +70,16 @@ ts::DiscontinuityInformationTable::DiscontinuityInformationTable(const BinaryTab
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::DiscontinuityInformationTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
-    // Clear table content
-    _is_valid = false;
-
-    // This is a short table, must have only one section
-    if (table.sectionCount() != 1) {
-        return;
-    }
-
     // Reference to single section
     const Section& sect(*table.sectionAt(0));
-    const uint8_t* data(sect.payload());
-    size_t remain(sect.payloadSize());
-
-    // Abort if not a DiscontinuityInformationTable
-    if (sect.tableId() != MY_TID || remain < 1) {
-        return;
-    }
 
     // Get content
-    transition = (data[0] & 0x80) != 0;
-    _is_valid = true;
+    if (sect.payloadSize() >= 1) {
+        transition = (sect.payload()[0] & 0x80) != 0;
+        _is_valid = true;
+    }
 }
 
 
@@ -99,16 +87,8 @@ void ts::DiscontinuityInformationTable::deserialize(const BinaryTable& table, co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::DiscontinuityInformationTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Encode the data in the payload
     const uint8_t payload = transition ? 0xFF : 0x7F;
 
@@ -123,7 +103,7 @@ void ts::DiscontinuityInformationTable::serialize(BinaryTable& table, const DVBC
 
 void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -140,7 +120,7 @@ void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& display, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::buildXML(xml::Element* root) const
+void ts::DiscontinuityInformationTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"transition", transition);
 }
@@ -150,7 +130,7 @@ void ts::DiscontinuityInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DiscontinuityInformationTable::fromXML(const xml::Element* element)
+void ts::DiscontinuityInformationTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

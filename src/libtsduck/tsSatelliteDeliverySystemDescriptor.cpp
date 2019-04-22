@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSatelliteDeliverySystemDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsBCD.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -70,7 +71,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(DuckContext& duck, const Descriptor& desc) :
     AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S, MY_XML_NAME),
     frequency(0),
     orbital_position(0),
@@ -82,7 +83,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const D
     symbol_rate(0),
     FEC_inner(0)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -90,7 +91,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     uint8_t data[13];
     data[0] = _tag;
@@ -114,7 +115,7 @@ void ts::SatelliteDeliverySystemDescriptor::serialize(Descriptor& desc, const DV
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SatelliteDeliverySystemDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 11)) {
         return;
@@ -189,7 +190,7 @@ namespace {
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
+void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"frequency", 10000 * uint64_t(frequency), false);
     root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", {orbital_position / 10, orbital_position % 10}));
@@ -207,7 +208,7 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element)
+void ts::SatelliteDeliverySystemDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     uint64_t freq = 0;
     uint64_t symrate = 0;
@@ -251,7 +252,7 @@ void ts::SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element)
 
 void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 11) {

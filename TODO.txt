@@ -2,6 +2,13 @@
 TSDuck - List of features to be implemented or fixed
 ====================================================
 
+* Tables refactoring:
+  - buildXML => protected
+  - (de)serialize => (de)serializeContent
+
+* Improve packet distribution in plugin "merge". Evaluate average stuffing
+  distribution, evaluate merged stream bitrate, then smoothen merged packets.
+
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
@@ -45,7 +52,6 @@ TSDuck - List of features to be implemented or fixed
   - G.3.1    DTS-HD_audio_stream_descriptor
 
   A038 (DVB SI)
-  - 6.4.1    Audio preselection descriptor
   - 6.4.6.5  S2X satellite delivery system descriptor
 
   ETSI TS 102 006 (System Software Update)
@@ -57,3 +63,28 @@ TSDuck - List of features to be implemented or fixed
   - 9.5.2.12  message_descriptor (not the same as ETSI EN 300 468, name it SSUMessageDescriptor)
   - 9.5.2.14  enhanced_message_descriptor (name it SSUEnhancedMessageDescriptor for consistency)
   - 9.5.2.15  ssu_uri_descriptor
+
+  ETSI EN 303 560 (TTML subtitling systems)
+  - 5.2.1.1  TTML subtitling descriptor
+
+  ATSC A/65 (Program and System Information Protocol)
+  - 6.4     Rating Region Table (RRT)
+  - 6.5     Event Information Table (EIT, ATSC version)
+  - 6.6     Extended Text Table (ETT)
+  - 6.7     Directed Channel Change Table (DCCT)
+  - 6.8     DCC Selection Code Table (DCCSCT)
+  - 6.9.2   caption_service_descriptor
+  - 6.9.3   content_advisory_descriptor
+  - 6.9.4   extended_channel_name_descriptor
+  - 6.9.5   service_location_descriptor
+  - 6.9.6   time_shifted_service_descriptor
+  - 6.9.7   component_name_descriptor
+  - 6.9.8   ATSC_stuffing_descriptor
+  - 6.9.10  DCC_departing_request_descriptor
+  - 6.9.11  DCC_arriving_request_descriptor
+  - 6.9.12  redistribution_control_descriptor
+  - 6.9.13  genre_descriptor
+
+  ATSC A/52 (AC-3, E-AC-3)
+  - A.4.3   ATSC_AC3_audio_descriptor
+  - G.3.5   ATSC_EAC3_audio_descriptor

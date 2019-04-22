@@ -47,15 +47,18 @@ namespace ts {
     public:
         //!
         //! Default constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the analyzer.
         //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis.
         //! It is the user-specified bitrate in bits/seconds, based on 188-byte
         //! packets. The bitrate hint is optional: if specified as zero, the
         //! analysis is based on the PCR values.
         //!
-        TSAnalyzerReport(BitRate bitrate_hint = 0) :
-            TSAnalyzer(bitrate_hint)
-        {
-        }
+        explicit TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint = 0);
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TSAnalyzerReport();
 
         //!
         //! Set the analysis options.
@@ -70,6 +73,13 @@ namespace ts {
         //! @param [in] opt Analysis options.
         //!
         void report(std::ostream& strm, const TSAnalyzerOptions& opt);
+
+        //!
+        //! General reporting method, using the specified options.
+        //! @param [in] opt Analysis options.
+        //! @return The analysis as a String.
+        //!
+        UString reportToString(const TSAnalyzerOptions& opt);
 
         //!
         //! Report formatted analysis about the global transport stream.
@@ -125,6 +135,9 @@ namespace ts {
 
         // Display list of services a PID belongs to.
         void reportServicesForPID(Grid& grid, const PIDContext&) const;
+
+        // Report a time stamp.
+        void reportTimeStamp(Grid& grid, const UString& name, const Time& value) const;
 
         // Display one normalized line of a time value.
         static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());

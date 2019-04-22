@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::SystemRandomGenerator::SystemRandomGenerator() :
@@ -60,10 +60,6 @@ ts::SystemRandomGenerator::SystemRandomGenerator() :
 }
 
 
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
 ts::SystemRandomGenerator::~SystemRandomGenerator()
 {
 #if defined(TS_WINDOWS)
@@ -77,6 +73,16 @@ ts::SystemRandomGenerator::~SystemRandomGenerator()
         _fd = -1;
     }
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of RandomGenerator interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SystemRandomGenerator::name() const
+{
+    return u"SystemRandomGenerator";
 }
 
 

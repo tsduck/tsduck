@@ -65,6 +65,11 @@ namespace ts {
         TelnetConnection(const std::string prompt = std::string());
 
         //!
+        //! Virtual destructor
+        //!
+        virtual ~TelnetConnection();
+
+        //!
         //! Send a request to the server.
         //! @param [in] str The string to send to the server.
         //! @param [in,out] report Where to report errors.

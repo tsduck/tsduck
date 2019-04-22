@@ -126,7 +126,7 @@ namespace ts {
             //!
             bool getTextChild(UString& data,
                               const UString& name,
-                              bool trim = true,
+                              bool trim = false,
                               bool required = false,
                               const UString& defValue = UString(),
                               size_t minSize = 0,
@@ -141,7 +141,7 @@ namespace ts {
             //! @param [in] maxSize Maximum allowed size for the value string.
             //! @return True on success, false on error.
             //!
-            bool getText(UString& data, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
+            bool getText(UString& data, bool trim = false, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
 
             //!
             //! Get text inside an element.
@@ -149,7 +149,7 @@ namespace ts {
             //! @param [in] trim If true, remove leading and trailing spaces.
             //! @return The content of the text children, empty if non-existent.
             //!
-            UString text(bool trim = true) const;
+            UString text(bool trim = false) const;
 
             //!
             //! Get text in a child containing hexadecimal data.
@@ -230,8 +230,9 @@ namespace ts {
             //! Set an attribute.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
+            //! @param [in] onlyIfNotEmpty When true, do not insert the attribute if @a value is empty.
             //!
-            void setAttribute(const UString& name, const UString& value);
+            void setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty = false);
 
             //!
             //! Set a bool attribute to a node.
@@ -412,6 +413,25 @@ namespace ts {
                                  INT maxValue = std::numeric_limits<INT>::max()) const;
 
             //!
+            //! Get an integer attribute of an XML element in an enum type.
+            //! @tparam ENUM An enumeration type.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr, typename INT = typename std::underlying_type<ENUM>::type>
+            bool getIntAttribute(ENUM& value,
+                                 const UString& name,
+                                 bool required = false,
+                                 ENUM defValue = 0,
+                                 INT minValue = 0,
+                                 INT maxValue = std::numeric_limits<INT>::max()) const;
+
+            //!
             //! Get an optional integer attribute of an XML element.
             //! @tparam INT An integer type.
             //! @param [out] value Returned value of the attribute. If the attribute is ot present, the variable is reset.
@@ -451,6 +471,20 @@ namespace ts {
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             bool getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required = false, INT defValue = INT(0)) const;
+
+            //!
+            //! Get an enumeration attribute of an XML element.
+            //! Integer literals and integer values are accepted in the attribute.
+            //! @tparam ENUM An enumeration type.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
+            bool getIntEnumAttribute(ENUM& value, const Enumeration& definition, const UString& name, bool required = false, ENUM defValue = ENUM(0)) const;
 
             //!
             //! Get a date/time attribute of an XML element.
@@ -517,7 +551,7 @@ namespace ts {
 
             // Inherited from xml::Node.
             virtual void clear() override;
-            virtual UString typeName() const override { return u"Element"; }
+            virtual UString typeName() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
             virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
 

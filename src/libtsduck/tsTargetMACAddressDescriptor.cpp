@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetMACAddressDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_MAC_address_descriptor"
 #define MY_DID ts::DID_INT_MAC_ADDR
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetMACAddressDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,17 +52,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetMACAddressDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     MAC_addr_mask(),
     MAC_addr()
 {
     _is_valid = true;
 }
 
-ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetMACAddressDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +70,7 @@ ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetMACAddressDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt48(MAC_addr_mask.address());
@@ -83,7 +85,7 @@ void ts::TargetMACAddressDescriptor::serialize(Descriptor& desc, const DVBCharse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetMACAddressDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -108,7 +110,7 @@ void ts::TargetMACAddressDescriptor::deserialize(const Descriptor& desc, const D
 
 void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     const char* header = "Address mask: ";
@@ -126,7 +128,7 @@ void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::buildXML(xml::Element* root) const
+void ts::TargetMACAddressDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setMACAttribute(u"MAC_addr_mask", MAC_addr_mask);
     for (auto it = MAC_addr.begin(); it != MAC_addr.end(); ++it) {
@@ -139,7 +141,7 @@ void ts::TargetMACAddressDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::fromXML(const xml::Element* element)
+void ts::TargetMACAddressDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     MAC_addr.clear();
 

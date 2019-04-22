@@ -107,7 +107,7 @@ namespace ts {
         bool    _is_loaded;
         bool    _permanent;
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         ::HMODULE _module;
 #else
         void* _dl; // dlopen/dlclose handle

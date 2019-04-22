@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! Size in bytes of an IPv6 address.
         //!
-        static const size_t BYTES = 16;
+        static constexpr size_t BYTES = 16;
 
         //!
         //! Wildcard integer value for "any IP address".

@@ -75,6 +75,13 @@ namespace ts {
         TableFactory getTableFactory(TID id) const;
 
         //!
+        //! Get the list of standards which define a given table id.
+        //! @param [in] id Table id.
+        //! @return Corresponding list of standards.
+        //!
+        Standards getTableStandards(TID id) const;
+
+        //!
         //! Get the descriptor factory for a given descriptor tag.
         //! @param [in] edid Extended descriptor id.
         //! @param [in] tid Optional table id of the table containing the descriptor.
@@ -170,18 +177,20 @@ namespace ts {
             //! The constructor registers a table factory for a given id.
             //! @param [in] id Table id for this type.
             //! @param [in] factory Function which creates a table of the appropriate type.
+            //! @param [in] standards List of standards which define this table.
             //! @see TS_ID_TABLE_FACTORY
             //!
-            Register(TID id, TableFactory factory);
+            Register(TID id, TableFactory factory, Standards standards);
 
             //!
             //! The constructor registers a table factory for a given range of ids.
             //! @param [in] minId Minimum table id for this type.
             //! @param [in] maxId Maximum table id for this type.
             //! @param [in] factory Function which creates a table of the appropriate type.
+            //! @param [in] standards List of standards which define this table.
             //! @see TS_ID_TABLE_RANGE_FACTORY
             //!
-            Register(TID minId, TID maxId, TableFactory factory);
+            Register(TID minId, TID maxId, TableFactory factory, Standards standards);
 
             //!
             //! The constructor registers a descriptor factory for a given descriptor tag.
@@ -242,6 +251,7 @@ namespace ts {
 
     private:
         std::map<TID, TableFactory>               _tableIds;
+        std::map<TID, Standards>                  _tableStandards;
         std::map<EDID, DescriptorFactory>         _descriptorIds;
         std::map<UString, TableFactory>           _tableNames;
         std::map<UString, DescriptorFactory>      _descriptorNames;
@@ -277,14 +287,14 @@ namespace ts {
 //! Registration of the table id of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_FACTORY(classname,id) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory))
+#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory), std)
 
 //!
 //! @hideinitializer
 //! Registration of a range of table ids of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER((minId), (maxId), _TS_FACTORY_NAME(_Factory))
+#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId,std) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER((minId), (maxId), _TS_FACTORY_NAME(_Factory), std)
 
 //!
 //! @hideinitializer

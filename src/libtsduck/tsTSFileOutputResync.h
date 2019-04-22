@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsTSFileOutput.h"
+#include "tsContinuityAnalyzer.h"
 
 namespace ts {
     //!
@@ -50,12 +51,12 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        TSFileOutputResync() : TSFileOutput() {}
+        TSFileOutputResync();
 
         //!
         //! Destructor.
         //!
-        virtual ~TSFileOutputResync() {}
+        virtual ~TSFileOutputResync();
 
         // Overrides TSFileOutput methods
         virtual bool open(const UString& filename, bool append, bool keep, Report& report) override;
@@ -83,7 +84,7 @@ namespace ts {
 
     private:
         // Private members
-        uint8_t _cc[PID_MAX];  // Last continuity counter per PID
+        ContinuityAnalyzer _ccFixer;
 
         // Inaccessible operations
         TSFileOutputResync(const TSFileOutputResync&) = delete;

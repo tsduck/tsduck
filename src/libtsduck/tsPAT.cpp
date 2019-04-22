@@ -40,22 +40,19 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"PAT"
 #define MY_TID ts::TID_PAT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_TABLE_FACTORY(ts::PAT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::PAT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::PAT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::PAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors
 //----------------------------------------------------------------------------
 
-ts::PAT::PAT(uint8_t  version_,
-             bool   is_current_,
-             uint16_t ts_id_,
-             PID    nit_pid_) :
-
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+ts::PAT::PAT(uint8_t version_, bool is_current_, uint16_t ts_id_, PID nit_pid_) :
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     ts_id(ts_id_),
     nit_pid(nit_pid_),
     pmts()
@@ -63,18 +60,10 @@ ts::PAT::PAT(uint8_t  version_,
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
-ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(MY_TID, MY_XML_NAME),
-    ts_id(0),
-    nit_pid(PID_NULL),
-    pmts()
+ts::PAT::PAT(DuckContext& duck, const BinaryTable& table) :
+    PAT(0, true, 0, PID_NULL)
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -82,16 +71,11 @@ ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::PAT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
-    // Clear table content
-    _is_valid = false;
+    // Clear table content.
     nit_pid = PID_NULL;
-    pmts.clear ();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
+    pmts.clear();
 
     // Loop on all sections
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -134,21 +118,13 @@ void ts::PAT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::PAT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number (0);
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Add the NIT PID in the first section
     if (nit_pid != PID_NULL) {
@@ -208,7 +184,7 @@ void ts::PAT::serialize(BinaryTable& table, const DVBCharset* charset) const
 
 void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -234,7 +210,7 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::buildXML(xml::Element* root) const
+void ts::PAT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
@@ -254,7 +230,7 @@ void ts::PAT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::fromXML(const xml::Element* element)
+void ts::PAT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     _is_valid =

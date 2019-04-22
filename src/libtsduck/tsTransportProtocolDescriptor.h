@@ -106,10 +106,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TransportProtocolDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        TransportProtocolDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Clear content.
@@ -117,15 +117,15 @@ namespace ts {
         void clear();
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
 
     private:
         // When the protocol id is a known one, try to transfer the selector bytes
         // into the appropriate structure. Return false on invalid selector bytes.
-        bool transferSelectorBytes(const DVBCharset* charset);
+        bool transferSelectorBytes(DuckContext& duck);
     };
 }

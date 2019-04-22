@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSLDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"SL_descriptor"
 #define MY_DID ts::DID_SL
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SLDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::SLDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,16 +48,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SLDescriptor::DisplayDescriptor, ts::EDID::Standard
 //----------------------------------------------------------------------------
 
 ts::SLDescriptor::SLDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ES_ID(0)
 {
     _is_valid = true;
 }
 
-ts::SLDescriptor::SLDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SLDescriptor::SLDescriptor(DuckContext& duck, const Descriptor& desc) :
     SLDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -63,7 +65,7 @@ ts::SLDescriptor::SLDescriptor(const Descriptor& desc, const DVBCharset* charset
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SLDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SLDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(ES_ID);
@@ -75,7 +77,7 @@ void ts::SLDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SLDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SLDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -94,7 +96,7 @@ void ts::SLDescriptor::deserialize(const Descriptor& desc, const DVBCharset* cha
 
 void ts::SLDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 2) {
@@ -111,7 +113,7 @@ void ts::SLDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SLDescriptor::buildXML(xml::Element* root) const
+void ts::SLDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"ES_ID", ES_ID, true);
 }
@@ -121,7 +123,7 @@ void ts::SLDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SLDescriptor::fromXML(const xml::Element* element)
+void ts::SLDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

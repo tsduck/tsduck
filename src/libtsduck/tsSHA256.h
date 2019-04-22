@@ -48,9 +48,9 @@ namespace ts {
         static const size_t BLOCK_SIZE = 64;  //!< SHA-256 block size in bytes.
 
         // Implementation of Hash interface:
-        virtual UString name() const override {return u"SHA-256";}
-        virtual size_t hashSize() const override {return HASH_SIZE;}
-        virtual size_t blockSize() const override {return BLOCK_SIZE;}
+        virtual UString name() const override;
+        virtual size_t hashSize() const override;
+        virtual size_t blockSize() const override;
         virtual bool init() override;
         virtual bool add(const void* data, size_t size) override;
         virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = nullptr) override;

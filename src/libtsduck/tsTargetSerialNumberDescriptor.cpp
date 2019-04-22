@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetSerialNumberDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_serial_number_descriptor"
 #define MY_DID ts::DID_INT_SERIAL_NUM
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetSerialNumberDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,16 +52,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetSerialNumberDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     serial_data()
 {
     _is_valid = true;
 }
 
-ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetSerialNumberDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -67,7 +69,7 @@ ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetSerialNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->append(serial_data);
@@ -79,7 +81,7 @@ void ts::TargetSerialNumberDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetSerialNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
@@ -98,7 +100,7 @@ void ts::TargetSerialNumberDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    display.out() << margin
+    display.duck().out() << margin
                   << UString::Format(u"%*sSerial number (%d bytes): %s", {indent, u"", size, UString::Dump(data, size, UString::SINGLE_LINE)})
                   << std::endl;
 }
@@ -108,7 +110,7 @@ void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::buildXML(xml::Element* root) const
+void ts::TargetSerialNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (!serial_data.empty()) {
         root->addHexaText(serial_data);
@@ -120,7 +122,7 @@ void ts::TargetSerialNumberDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::fromXML(const xml::Element* element)
+void ts::TargetSerialNumberDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     serial_data.clear();
 

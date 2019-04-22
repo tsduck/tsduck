@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -57,6 +57,6 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~ReportHandler() {}
+        virtual ~ReportHandler();
     };
 }

@@ -133,23 +133,39 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        PMT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        PMT(DuckContext& duck, const BinaryTable& table);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        PMT& operator=(const PMT& other) = default;
 
         //!
         //! Search the component PID for a given component tag.
         //! @param [in] tag Component tag to search.
-        //! @return The PID of the corresponding component of PID_NULL if not found.
+        //! @return The PID of the corresponding component or PID_NULL if not found.
         //!
         PID componentTagToPID(uint8_t tag) const;
 
+        //!
+        //! Search the first video PID in the service.
+        //! @return The first video PID or PID_NULL if none is found.
+        //!
+        PID firstVideoPID() const;
+
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

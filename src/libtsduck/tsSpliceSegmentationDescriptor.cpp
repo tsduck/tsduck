@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSpliceSegmentationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsSCTE35.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -38,6 +39,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"splice_segmentation_descriptor"
 #define MY_DID ts::DID_SPLICE_SEGMENT
 #define MY_TID ts::TID_SCTE35_SIT
+#define MY_STD ts::STD_SCTE
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SpliceSegmentationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SpliceSegmentationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -49,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SpliceSegmentationDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     identifier(SPLICE_ID_CUEI),
     segmentation_event_id(0),
     segmentation_event_cancel(false),
@@ -71,10 +73,10 @@ ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor() :
     _is_valid = true;
 }
 
-ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor(DuckContext& duck, const Descriptor& desc) :
     SpliceSegmentationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -118,7 +120,7 @@ bool ts::SpliceSegmentationDescriptor::deliveryNotRestricted() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SpliceSegmentationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(identifier);
@@ -162,7 +164,7 @@ void ts::SpliceSegmentationDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SpliceSegmentationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -256,7 +258,7 @@ void ts::SpliceSegmentationDescriptor::deserialize(const Descriptor& desc, const
 
 void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     bool ok = size >= 9;
@@ -267,7 +269,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 
     if (ok) {
         strm << margin << UString::Format(u"Identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
+        display.duck().displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl
              << margin << UString::Format(u"Segmentation event id: 0x%X, cancel: %d", {GetUInt32(data + 4), cancel})
              << std::endl;
@@ -344,7 +346,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::buildXML(xml::Element* root) const
+void ts::SpliceSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"identifier", identifier, true);
     root->setIntAttribute(u"segmentation_event_id", segmentation_event_id, true);
@@ -384,7 +386,7 @@ void ts::SpliceSegmentationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::fromXML(const xml::Element* element)
+void ts::SpliceSegmentationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     clear();
 

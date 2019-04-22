@@ -40,6 +40,29 @@
 
 
 //----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+size_t ts::CTS3<CIPHER>::minMessageSize() const
+{
+    return this->block_size + 1;
+}
+
+template<class CIPHER>
+bool ts::CTS3<CIPHER>::residueAllowed() const
+{
+    return true;
+}
+
+template<class CIPHER>
+ts::UString ts::CTS3<CIPHER>::name() const
+{
+    return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS3";
+}
+
+
+//----------------------------------------------------------------------------
 // Encryption in CTS3 mode.
 //----------------------------------------------------------------------------
 

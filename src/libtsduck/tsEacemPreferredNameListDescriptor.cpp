@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEacemPreferredNameListDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -41,6 +42,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
 #define MY_DID ts::DID_PREF_NAME_LIST
 #define MY_PDS ts::PDS_EACEM
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameListDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
@@ -56,7 +58,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor
 //----------------------------------------------------------------------------
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
     _is_valid = true;
@@ -67,11 +69,11 @@ ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     entries()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -79,18 +81,18 @@ ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor(const Des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameListDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::EacemPreferredNameListDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        if (!SerializeLanguageCode(*bbp, it1->first, charset)) {
+        if (!SerializeLanguageCode(duck, *bbp, it1->first)) {
             desc.invalidate();
             return;
         }
         bbp->appendUInt8(uint8_t(it1->second.size()));  // name_count
         for (NameByIdMap::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
             bbp->appendUInt8(it2->first);  // name_id
-            bbp->append(it2->second.toDVBWithByteLength(0, NPOS, charset));
+            bbp->append(duck.toDVBWithByteLength(it2->second));
         }
     }
     serializeEnd(desc, bbp);
@@ -101,7 +103,7 @@ void ts::EacemPreferredNameListDescriptor::serialize(Descriptor& desc, const DVB
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameListDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::EacemPreferredNameListDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
     entries.clear();
@@ -113,7 +115,7 @@ void ts::EacemPreferredNameListDescriptor::deserialize(const Descriptor& desc, c
         // Loop on languages.
         while (size >= 4) {
             // Get language and name count.
-            const UString lang(UString::FromDVB(data, 3, charset));
+            const UString lang(UString::FromDVB(data, 3));
             uint8_t count = data[3];
             data += 4; size -= 4;
 
@@ -128,7 +130,7 @@ void ts::EacemPreferredNameListDescriptor::deserialize(const Descriptor& desc, c
                 if (length > size) {
                     length = size;
                 }
-                names[id] = UString::FromDVB(data, length, charset);
+                names[id] = duck.fromDVB(data, length);
                 data += length; size -= length;
             }
         }
@@ -142,11 +144,11 @@ void ts::EacemPreferredNameListDescriptor::deserialize(const Descriptor& desc, c
 
 void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
-        const UString lang(UString::FromDVB(data, 3, display.dvbCharset()));
+        const UString lang(UString::FromDVB(data, 3));
         uint8_t count = data[3];
         data += 4; size -= 4;
 
@@ -158,7 +160,7 @@ void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp
             if (length > size) {
                 length = size;
             }
-            strm << margin << "Id: " << int(id) << ", Name: \"" << UString::FromDVB(data, length, display.dvbCharset()) << "\"" << std::endl;
+            strm << margin << "Id: " << int(id) << ", Name: \"" << display.duck().fromDVB(data, length) << "\"" << std::endl;
             data += length; size -= length;
         }
     }
@@ -171,7 +173,7 @@ void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameListDescriptor::buildXML(xml::Element* root) const
+void ts::EacemPreferredNameListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
         xml::Element* e1 = root->addElement(u"language");
@@ -189,7 +191,7 @@ void ts::EacemPreferredNameListDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameListDescriptor::fromXML(const xml::Element* element)
+void ts::EacemPreferredNameListDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children1;
     _is_valid = checkXMLName(element) && element->getChildren(children1, u"language");

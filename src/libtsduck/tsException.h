@@ -72,12 +72,29 @@ namespace ts {
     };
 }
 
+
+//
+// With clang (LLVM), we can track the use of inlined virtual tables using warning -Wweak-vtables.
+// But exceptions are ... exceptions. There is no way to declare them easily in one macro in a
+// header file without weak virtual tables. So, with clang only, we disable this warning.
+//
+#if defined(TS_LLVM) && !defined(DOXYGEN)
+#define TS_DECLARE_EXCEPTION_BEGIN _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wweak-vtables\"")
+#define TS_DECLARE_EXCEPTION_END   _Pragma("clang diagnostic pop")
+#else
+//! Internal macro for exception declaration, do not use.
+#define TS_DECLARE_EXCEPTION_BEGIN
+//! Internal macro for exception declaration, do not use.
+#define TS_DECLARE_EXCEPTION_END
+#endif
+
 //!
 //! @hideinitializer
 //! This macro declares an exception as a subclass of ts::Exception.
 //! @param [in] name Name of the exception class.
 //!
 #define TS_DECLARE_EXCEPTION(name)                                \
+    TS_DECLARE_EXCEPTION_BEGIN                                    \
     class name: public ts::Exception                              \
     {                                                             \
     public:                                                       \
@@ -100,7 +117,8 @@ namespace ts {
             ts::Exception(u ## #name, code)                       \
         {                                                         \
         }                                                         \
-    }
+    }                                                             \
+    TS_DECLARE_EXCEPTION_END
 
 //!
 //! Locate the source of the exception in the Exception constructor message string.

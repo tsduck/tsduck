@@ -68,6 +68,29 @@ ts::tsswitch::InputExecutor::~InputExecutor()
 
 
 //----------------------------------------------------------------------------
+// Implementation of TSP. We do not use "joint termination" in tsswitch.
+//----------------------------------------------------------------------------
+
+void ts::tsswitch::InputExecutor::useJointTermination(bool)
+{
+}
+
+void ts::tsswitch::InputExecutor::jointTerminate()
+{
+}
+
+bool ts::tsswitch::InputExecutor::useJointTermination() const
+{
+    return false;
+}
+
+bool ts::tsswitch::InputExecutor::thisJointTerminated() const
+{
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
 // Start input.
 //----------------------------------------------------------------------------
 
@@ -242,6 +265,7 @@ void ts::tsswitch::InputExecutor::main()
                 debug(u"received end of input from plugin");
                 break;
             }
+            addPluginPackets(inCount);
 
             // Signal the presence of received packets.
             {

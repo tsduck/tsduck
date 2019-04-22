@@ -71,7 +71,7 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 42;
+        static constexpr size_t MAX_ENTRIES = 42;
 
         // NVODReferenceDescriptor public members:
         EntryList entries;  //!< The list of service entries.
@@ -83,16 +83,16 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        NVODReferenceDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        NVODReferenceDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
     };
 }

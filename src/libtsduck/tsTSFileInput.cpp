@@ -124,7 +124,7 @@ bool ts::TSFileInput::open(const UString& filename, size_t repeat_count, uint64_
 
 bool ts::TSFileInput::openInternal (Report& report)
 {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
 
@@ -225,7 +225,7 @@ bool ts::TSFileInput::openInternal (Report& report)
 
 bool ts::TSFileInput::seekInternal(uint64_t index, Report& report)
 {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
     uint64_t where = _start_offset + index;
     ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&where));
@@ -277,7 +277,7 @@ bool ts::TSFileInput::close(Report& report)
     }
 
     if (!_filename.empty()) {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
 #else
         ::close(_fd);
@@ -317,7 +317,7 @@ size_t ts::TSFileInput::read(TSPacket* buffer, size_t max_packets, Report& repor
     // Loop on read until we get enough
     while (got_size < req_size && !_at_eof && !got_error) {
 
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         // Windows implementation
         ::DWORD insize;
         if (::ReadFile(_handle, data + got_size, ::DWORD (req_size - got_size), &insize, NULL)) {

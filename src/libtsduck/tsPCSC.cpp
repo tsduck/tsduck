@@ -334,7 +334,7 @@ const char* ts::pcsc::StrError(::LONG status)
             return "NO_SERVICE, The Smart card resource manager is not running";
         case SCARD_E_SERVICE_STOPPED:
             return "SERVICE_STOPPED, The Smart card resource manager has shut down";
-#if defined (SCARD_E_NO_READERS_AVAILABLE)
+#if defined(SCARD_E_NO_READERS_AVAILABLE)
         case SCARD_E_NO_READERS_AVAILABLE:
             return "NO_READERS_AVAILABLE, Cannot find a smart card reader";
 #endif
@@ -350,7 +350,7 @@ const char* ts::pcsc::StrError(::LONG status)
             return "RESET_CARD, The smart card has been reset, so any shared state information is invalid";
         case SCARD_W_REMOVED_CARD:
             return "REMOVED_CARD, The smart card has been removed, so that further communication is not possible";
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         case SCARD_P_SHUTDOWN:
             return "SHUTDOWN, The operation has been aborted to allow the server application to exit";
         case SCARD_E_UNEXPECTED:

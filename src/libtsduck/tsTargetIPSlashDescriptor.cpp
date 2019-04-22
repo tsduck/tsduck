@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetIPSlashDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_IP_slash_descriptor"
 #define MY_DID ts::DID_INT_IP_SLASH
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPSlashDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPSlashDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,16 +49,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPSlashDescriptor::DisplayDescriptor, ts::EDI
 //----------------------------------------------------------------------------
 
 ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     addresses()
 {
     _is_valid = true;
 }
 
-ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetIPSlashDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::TargetIPSlashDescriptor::Address::Address(const IPAddress& addr, uint8_t mask) :
@@ -70,7 +72,7 @@ ts::TargetIPSlashDescriptor::Address::Address(const IPAddress& addr, uint8_t mas
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetIPSlashDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = addresses.begin(); it != addresses.end(); ++it) {
@@ -85,7 +87,7 @@ void ts::TargetIPSlashDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetIPSlashDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -108,7 +110,7 @@ void ts::TargetIPSlashDescriptor::deserialize(const Descriptor& desc, const DVBC
 
 void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 5) {
@@ -124,7 +126,7 @@ void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::buildXML(xml::Element* root) const
+void ts::TargetIPSlashDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = addresses.begin(); it != addresses.end(); ++it) {
         xml::Element* e = root->addElement(u"address");
@@ -138,7 +140,7 @@ void ts::TargetIPSlashDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSlashDescriptor::fromXML(const xml::Element* element)
+void ts::TargetIPSlashDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     addresses.clear();
 

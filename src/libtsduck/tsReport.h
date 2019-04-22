@@ -85,7 +85,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~Report() {}
+        virtual ~Report();
 
         //!
         //! Set maximum severity level.

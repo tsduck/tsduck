@@ -26,25 +26,25 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a linkage_descriptor for system software update
-//  (linkage type 0x09).
-//
-//----------------------------------------------------------------------------
 
 #include "tsSSULinkageDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
+#define MY_XML_NAME u""   // No XML conversion.
+#define MY_DID ts::DID_LINKAGE
+#define MY_STD ts::STD_DVB
+
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -54,13 +54,8 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor with one OUI
-//----------------------------------------------------------------------------
-
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -71,41 +66,21 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
-    ts_id(0),
-    onetw_id(0),
-    service_id(0),
-    entries(),
-    private_data()
+ts::SSULinkageDescriptor::SSULinkageDescriptor(DuckContext& duck, const Descriptor& desc) :
+    SSULinkageDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a linkage_descriptor.
-//----------------------------------------------------------------------------
-
-ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
-    ts_id(0),
-    onetw_id(0),
-    service_id(0),
-    entries(),
-    private_data()
+ts::SSULinkageDescriptor::SSULinkageDescriptor(DuckContext& duck, const ts::LinkageDescriptor& desc) :
+    SSULinkageDescriptor()
 {
     _is_valid = desc.isValid() && desc.linkage_type == LINKAGE_SSU;
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        desc.serialize(bin, charset);
-        deserialize(bin, charset);
+        desc.serialize(duck, bin);
+        deserialize(duck, bin);
     }
 }
 
@@ -114,13 +89,13 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc
 // Convert to a linkage_descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::toLinkageDescriptor(ts::LinkageDescriptor& desc, const DVBCharset* charset) const
+void ts::SSULinkageDescriptor::toLinkageDescriptor(DuckContext& duck, ts::LinkageDescriptor& desc) const
 {
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        serialize(bin, charset);
-        desc.deserialize(bin, charset);
+        serialize(duck, bin);
+        desc.deserialize(duck, bin);
     }
     else {
         desc.invalidate();
@@ -132,7 +107,7 @@ void ts::SSULinkageDescriptor::toLinkageDescriptor(ts::LinkageDescriptor& desc, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SSULinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -162,7 +137,7 @@ void ts::SSULinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* cha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SSULinkageDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 8;
 
@@ -208,13 +183,13 @@ void ts::SSULinkageDescriptor::deserialize(const Descriptor& desc, const DVBChar
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::SSULinkageDescriptor::toXML(xml::Element* parent) const
+ts::xml::Element* ts::SSULinkageDescriptor::toXML(DuckContext& duck, xml::Element* parent) const
 {
     // There is no specific representation of this descriptor.
     // Convert to a linkage_descriptor.
     LinkageDescriptor desc;
-    toLinkageDescriptor(desc);
-    return desc.toXML(parent);
+    toLinkageDescriptor(duck, desc);
+    return desc.toXML(duck, parent);
 }
 
 
@@ -222,7 +197,7 @@ ts::xml::Element* ts::SSULinkageDescriptor::toXML(xml::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::fromXML(const xml::Element* element)
+void ts::SSULinkageDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPMACPlatformNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"IPMAC_platform_name_descriptor"
 #define MY_DID ts::DID_INT_PF_NAME
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::IPMACPlatformNameDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::IPMACPlatformNameDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::IPMACPlatformNameDescriptor::DisplayDescriptor, ts:
 //----------------------------------------------------------------------------
 
 ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const UString& lang, const UString& name) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     language_code(lang),
     text(name)
 {
@@ -59,10 +61,10 @@ ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const UString& lang
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACPlatformNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,11 +72,11 @@ ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const Descriptor& d
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::IPMACPlatformNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    if (SerializeLanguageCode(*bbp, language_code, charset)) {
-        bbp->append(text.toDVB(0, NPOS, charset));
+    if (SerializeLanguageCode(duck, *bbp, language_code)) {
+        bbp->append(duck.toDVB(text));
         serializeEnd(desc, bbp);
     }
     else {
@@ -87,7 +89,7 @@ void ts::IPMACPlatformNameDescriptor::serialize(Descriptor& desc, const DVBChars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::IPMACPlatformNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -95,8 +97,8 @@ void ts::IPMACPlatformNameDescriptor::deserialize(const Descriptor& desc, const 
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3;
 
     if (_is_valid) {
-        language_code = UString::FromDVB(data, 3, charset);
-        text = UString::FromDVB(data + 3, size - 3, charset);
+        language_code = UString::FromDVB(data, 3);
+        text = duck.fromDVB(data + 3, size - 3);
     }
 }
 
@@ -107,12 +109,12 @@ void ts::IPMACPlatformNameDescriptor::deserialize(const Descriptor& desc, const 
 
 void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 3) {
-        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset()) << std::endl
-             << margin << "Platform name: " << UString::FromDVB(data + 3, size - 3, display.dvbCharset()) << std::endl;
+        strm << margin << "Language: " << UString::FromDVB(data, 3) << std::endl
+             << margin << "Platform name: " << display.duck().fromDVB(data + 3, size - 3) << std::endl;
         size = 0;
     }
 
@@ -124,7 +126,7 @@ void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::buildXML(xml::Element* root) const
+void ts::IPMACPlatformNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"language_code", language_code);
     root->setAttribute(u"text", text);
@@ -135,7 +137,7 @@ void ts::IPMACPlatformNameDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::fromXML(const xml::Element* element)
+void ts::IPMACPlatformNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

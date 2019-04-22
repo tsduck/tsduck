@@ -246,14 +246,14 @@ namespace ts {
             //! @param [in] levels Number of levels to close. By default, close the complete document.
             //! If zero, no output is produced.
             //!
-            virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const {}
+            virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const;
 
             //!
             //! Check if the text shall be stuck to other elements in XML output.
             //! @return True if the text shall be stuck to other elements.
             //! False by default.
             //!
-            virtual bool stickyOutput() const { return false; }
+            virtual bool stickyOutput() const;
 
             //!
             //! Build a debug string for the node.

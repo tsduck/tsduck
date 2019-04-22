@@ -35,18 +35,20 @@
 #include "tsTunerArgs.h"
 #include "tsDektec.h"
 #include "tsEnumeration.h"
+#include "tsxmlElement.h"
+#include "tsBCD.h"
 TSDUCK_SOURCE;
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
-const ts::Polarization ts::TunerParametersDVBS::DEFAULT_POLARITY;
-const ts::SpectralInversion ts::TunerParametersDVBS::DEFAULT_INVERSION;
-const uint32_t ts::TunerParametersDVBS::DEFAULT_SYMBOL_RATE;
-const ts::InnerFEC ts::TunerParametersDVBS::DEFAULT_INNER_FEC;
-const size_t ts::TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
-const ts::DeliverySystem ts::TunerParametersDVBS::DEFAULT_DELIVERY_SYSTEM;
-const ts::Modulation ts::TunerParametersDVBS::DEFAULT_MODULATION;
-const ts::Pilot ts::TunerParametersDVBS::DEFAULT_PILOTS;
-const ts::RollOff ts::TunerParametersDVBS::DEFAULT_ROLL_OFF;
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr ts::Polarization ts::TunerParametersDVBS::DEFAULT_POLARITY;
+constexpr ts::SpectralInversion ts::TunerParametersDVBS::DEFAULT_INVERSION;
+constexpr uint32_t ts::TunerParametersDVBS::DEFAULT_SYMBOL_RATE;
+constexpr ts::InnerFEC ts::TunerParametersDVBS::DEFAULT_INNER_FEC;
+constexpr size_t ts::TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
+constexpr ts::DeliverySystem ts::TunerParametersDVBS::DEFAULT_DELIVERY_SYSTEM;
+constexpr ts::Modulation ts::TunerParametersDVBS::DEFAULT_MODULATION;
+constexpr ts::Pilot ts::TunerParametersDVBS::DEFAULT_PILOTS;
+constexpr ts::RollOff ts::TunerParametersDVBS::DEFAULT_ROLL_OFF;
 #endif
 
 
@@ -94,79 +96,6 @@ void ts::TunerParametersDVBS::copy(const TunerParameters& obj)
         this->pilots = other->pilots;
         this->roll_off = other->roll_off;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Polarity as encoded in zap format
-//----------------------------------------------------------------------------
-
-namespace {
-    const ts::Enumeration ZapPolarizationEnum({
-        {u"h", ts::POL_HORIZONTAL},
-        {u"v", ts::POL_VERTICAL},
-        {u"l", ts::POL_LEFT},
-        {u"r", ts::POL_RIGHT},
-    });
-}
-
-
-//----------------------------------------------------------------------------
-// Format the tuner parameters according to the Linux DVB "zap" format
-// Expected format: "freq:pol:satnum:symrate"
-//    With freq = frequency in MHz, pol = polarity (either v or h), satnum =
-//    satellite number, symrate = symbol rate in ksym/s.
-//----------------------------------------------------------------------------
-
-ts::UString ts::TunerParametersDVBS::toZapFormat() const
-{
-    return UString::Format(u"%d:%s:%d:%d",
-                           {frequency / 1000000,
-                            ZapPolarizationEnum.name(polarity),
-                            satellite_number,
-                            symbol_rate / 1000});
-}
-
-
-//----------------------------------------------------------------------------
-// Decode a Linux DVB "zap" specification and set the corresponding values
-//----------------------------------------------------------------------------
-
-bool ts::TunerParametersDVBS::fromZapFormat(const UString& zap)
-{
-    UStringVector values;
-    zap.split(values, u':', true);
-
-    uint64_t freq = 0;
-    int pol = 0;
-    size_t sat = 0;
-    uint32_t symrate = 0;
-
-    if (values.size() != 4 ||
-        !values[0].toInteger(freq) ||
-        ((pol = ZapPolarizationEnum.value(values[1])) != POL_HORIZONTAL && pol != POL_VERTICAL) ||
-        !values[2].toInteger(sat) ||
-        !values[3].toInteger(symrate))
-    {
-        return false;
-    }
-
-    frequency = freq * 1000000;
-    polarity = Polarization(pol);
-    satellite_number = sat;
-    symbol_rate = symrate * 1000;
-    lnb = LNB::Universal;
-    inversion = DEFAULT_INVERSION;
-    inner_fec = DEFAULT_INNER_FEC;
-
-    // DVB-S2 specific values go to default
-
-    delivery_system = DEFAULT_DELIVERY_SYSTEM;
-    modulation = DEFAULT_MODULATION;
-    pilots = DEFAULT_PILOTS;
-    roll_off = DEFAULT_ROLL_OFF;
-
-    return true;
 }
 
 
@@ -299,6 +228,129 @@ bool ts::TunerParametersDVBS::fromArgs (const TunerArgs& tuner, Report& report)
     roll_off = tuner.roll_off.set() ? tuner.roll_off.value() : DEFAULT_ROLL_OFF;
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Extract tuning information from a delivery descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::TunerParametersDVBS::fromDeliveryDescriptor(const Descriptor& desc)
+{
+    if (!desc.isValid() || desc.tag() != DID_SAT_DELIVERY || desc.payloadSize() < 11) {
+        return false;
+    }
+
+    const uint8_t* data = desc.payload();
+    frequency = uint64_t(DecodeBCD(data, 8)) * 10000;
+    symbol_rate = DecodeBCD(data + 7, 7) * 100;
+
+    // Polarity.
+    switch ((data[6] >> 5) & 0x03) {
+        case 0: polarity = POL_HORIZONTAL; break;
+        case 1: polarity = POL_VERTICAL; break;
+        case 2: polarity = POL_LEFT; break;
+        case 3: polarity = POL_RIGHT; break;
+        default: assert (false);
+    }
+
+    // Inner FEC.
+    switch (data[10] & 0x0F) {
+        case 1:  inner_fec = FEC_1_2; break;
+        case 2:  inner_fec = FEC_2_3; break;
+        case 3:  inner_fec = FEC_3_4; break;
+        case 4:  inner_fec = FEC_5_6; break;
+        case 5:  inner_fec = FEC_7_8; break;
+        case 6:  inner_fec = FEC_8_9; break;
+        case 7:  inner_fec = FEC_3_5; break;
+        case 8:  inner_fec = FEC_4_5; break;
+        case 9:  inner_fec = FEC_9_10; break;
+        case 15: inner_fec = FEC_NONE; break;
+        default: inner_fec = FEC_AUTO; break;
+    }
+
+    // Modulation type.
+    switch (data[6] & 0x03) {
+        case 0: modulation = QAM_AUTO; break;
+        case 1: modulation = QPSK; break;
+        case 2: modulation = PSK_8; break;
+        case 3: modulation = QAM_16; break;
+        default: assert(false);
+    }
+
+    // Modulation system.
+    switch ((data[6] >> 2) & 0x01) {
+        case 0:
+            delivery_system = DS_DVB_S;
+            roll_off = ROLLOFF_AUTO;
+            break;
+        case 1:
+            delivery_system = DS_DVB_S2;
+            // Roll off.
+            switch ((data[6] >> 3) & 0x03) {
+                case 0: roll_off = ROLLOFF_35; break;
+                case 1: roll_off = ROLLOFF_25; break;
+                case 2: roll_off = ROLLOFF_20; break;
+                case 3: roll_off = ROLLOFF_AUTO; break;
+                default: assert(false);
+            }
+            break;
+        default:
+            assert(false);
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to and from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::TunerParametersDVBS::toXML(xml::Element* parent) const
+{
+    xml::Element* e = parent->addElement(u"dvbs");
+    if (satellite_number != 0) {
+        e->setIntAttribute(u"satellite", satellite_number, false);
+    }
+    e->setIntAttribute(u"frequency", frequency, false);
+    e->setIntAttribute(u"symbolrate", symbol_rate, false);
+    e->setEnumAttribute(ModulationEnum, u"modulation", modulation);
+    if (delivery_system != DS_DVB_S) {
+        e->setEnumAttribute(DeliverySystemEnum, u"system", delivery_system);
+    }
+    if (polarity != POL_AUTO) {
+        e->setEnumAttribute(PolarizationEnum, u"polarity", polarity);
+    }
+    if (inversion != SPINV_AUTO) {
+        e->setEnumAttribute(SpectralInversionEnum, u"inversion", inversion);
+    }
+    if (inner_fec != FEC_AUTO) {
+        e->setEnumAttribute(InnerFECEnum, u"FEC", inner_fec);
+    }
+    if (delivery_system == DS_DVB_S2 && pilots != PILOT_AUTO) {
+        e->setEnumAttribute(PilotEnum, u"pilots", pilots);
+    }
+    if (delivery_system == DS_DVB_S2 && roll_off != ROLLOFF_AUTO) {
+        e->setEnumAttribute(RollOffEnum, u"rolloff", roll_off);
+    }
+    return e;
+}
+
+bool ts::TunerParametersDVBS::fromXML(const xml::Element* elem)
+{
+    return elem != nullptr &&
+        elem->name().similar(u"dvbs") &&
+        elem->getIntAttribute<size_t>(satellite_number, u"satellite", false, 0, 0, 3) &&
+        elem->getIntAttribute<uint64_t>(frequency, u"frequency", true) &&
+        elem->getIntAttribute<uint32_t>(symbol_rate, u"symbolrate", false, 27500000) &&
+        elem->getIntEnumAttribute(modulation, ModulationEnum, u"modulation", false, QPSK) &&
+        elem->getIntEnumAttribute(delivery_system, DeliverySystemEnum, u"system", false, DS_DVB_S) &&
+        elem->getIntEnumAttribute(inner_fec, InnerFECEnum, u"FEC", false, FEC_AUTO) &&
+        elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
+        elem->getIntEnumAttribute(polarity, PolarizationEnum, u"polarity", false, POL_AUTO) &&
+        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(pilots, PilotEnum, u"pilots", false, PILOT_AUTO)) &&
+        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(roll_off, RollOffEnum, u"rolloff", false, ROLLOFF_AUTO));
 }
 
 

@@ -37,9 +37,10 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"INT"
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::INT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::INT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::INT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::INT::DisplaySection, MY_TID);
 
 
@@ -75,7 +76,7 @@ ts::INT::Device& ts::INT::Device::operator=(const Device& other)
 //----------------------------------------------------------------------------
 
 ts::INT::INT(uint8_t version_, bool is_current_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     action_type(0),
     platform_id(0),
     processing_order(0),
@@ -105,10 +106,10 @@ ts::INT::INT(const INT& other) :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::INT::INT(const BinaryTable& table, const DVBCharset* charset) :
+ts::INT::INT(DuckContext& duck, const BinaryTable& table) :
     INT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -142,19 +143,14 @@ bool ts::INT::GetDescriptorList(DescriptorList& dlist, const uint8_t*& data, siz
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::INT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::INT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     action_type = 0;
     platform_id = 0;
     processing_order = 0;
     platform_descs.clear();
     devices.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -202,16 +198,8 @@ void ts::INT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::INT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::INT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the sections
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
@@ -337,9 +325,9 @@ void ts::INT::addSection(BinaryTable& table,
 // Display a descriptor list. Update data and remain. Return true on success.
 //----------------------------------------------------------------------------
 
-bool ts::INT::DisplayDescriptorList(TablesDisplay& display, TID tid, const uint8_t*& data, size_t& remain, int indent)
+bool ts::INT::DisplayDescriptorList(TablesDisplay& display, const Section& section, const uint8_t*& data, size_t& remain, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (remain < 2) {
@@ -358,7 +346,7 @@ bool ts::INT::DisplayDescriptorList(TablesDisplay& display, TID tid, const uint8
         strm << margin << "None" << std::endl;
     }
     else {
-        display.displayDescriptorList(data, dlength, indent, tid);
+        display.displayDescriptorList(section, data, dlength, indent);
         data += dlength; remain -= dlength;
     }
 
@@ -372,7 +360,7 @@ bool ts::INT::DisplayDescriptorList(TablesDisplay& display, TID tid, const uint8
 
 void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -396,17 +384,17 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << "Platform descriptors:" << std::endl;
 
         // Get platform descriptor loop.
-        if (DisplayDescriptorList(display, section.tableId(), data, size, indent + 2)) {
+        if (DisplayDescriptorList(display, section, data, size, indent + 2)) {
             // Get device descriptions.
             int device_index = 0;
             bool ok = true;
             while (ok && size > 0) {
                 strm << margin << "Device #" << device_index++ << std::endl
                      << margin << "  Target descriptors:" << std::endl;
-                ok = DisplayDescriptorList(display, section.tableId(), data, size, indent + 4);
+                ok = DisplayDescriptorList(display, section, data, size, indent + 4);
                 if (ok) {
                     strm << margin << "  Operational descriptors:" << std::endl;
-                    ok = DisplayDescriptorList(display, section.tableId(), data, size, indent + 4);
+                    ok = DisplayDescriptorList(display, section, data, size, indent + 4);
                 }
             }
         }
@@ -420,24 +408,24 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::INT::buildXML(xml::Element* root) const
+void ts::INT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"action_type", action_type, true);
     root->setIntAttribute(u"processing_order", processing_order, true);
     root->setIntAttribute(u"platform_id", platform_id, true);
-    platform_descs.toXML(root);
+    platform_descs.toXML(duck, root);
 
     for (DeviceList::const_iterator it = devices.begin(); it != devices.end(); ++it) {
         const Device& dev(it->second);
         if (!dev.target_descs.empty() || !dev.operational_descs.empty()) {
             xml::Element* e = root->addElement(u"device");
             if (!dev.target_descs.empty()) {
-                dev.target_descs.toXML(e->addElement(u"target"));
+                dev.target_descs.toXML(duck, e->addElement(u"target"));
             }
             if (!dev.operational_descs.empty()) {
-                dev.operational_descs.toXML(e->addElement(u"operational"));
+                dev.operational_descs.toXML(duck, e->addElement(u"operational"));
             }
         }
     }
@@ -448,7 +436,7 @@ void ts::INT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::INT::fromXML(const xml::Element* element)
+void ts::INT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     platform_descs.clear();
     devices.clear();
@@ -461,7 +449,7 @@ void ts::INT::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(action_type, u"action_type", false, 0x01) &&
         element->getIntAttribute<uint8_t>(processing_order, u"processing_order", false, 0x00) &&
         element->getIntAttribute<uint32_t>(platform_id, u"platform_id", true, 0, 0x000000, 0xFFFFFF) &&
-        platform_descs.fromXML(children, element, u"device");
+        platform_descs.fromXML(duck, children, element, u"device");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         Device& dev(devices.newEntry());
@@ -469,8 +457,8 @@ void ts::INT::fromXML(const xml::Element* element)
         xml::ElementVector operational;
         _is_valid =
             children[index]->getChildren(target, u"target", 0, 1) &&
-            (target.empty() || dev.target_descs.fromXML(target[0])) &&
+            (target.empty() || dev.target_descs.fromXML(duck, target[0])) &&
             children[index]->getChildren(operational, u"operational", 0, 1) &&
-            (operational.empty() || dev.operational_descs.fromXML(operational[0]));
+            (operational.empty() || dev.operational_descs.fromXML(duck, operational[0]));
     }
 }

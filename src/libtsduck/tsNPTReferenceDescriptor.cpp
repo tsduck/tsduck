@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNPTReferenceDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"NPT_reference_descriptor"
 #define MY_DID ts::DID_NPT_REFERENCE
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NPTReferenceDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::NPTReferenceDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::NPTReferenceDescriptor::DisplayDescriptor, ts::EDID
 //----------------------------------------------------------------------------
 
 ts::NPTReferenceDescriptor::NPTReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     post_discontinuity(false),
     content_id(0),
     STC_reference(0),
@@ -62,10 +64,10 @@ ts::NPTReferenceDescriptor::NPTReferenceDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::NPTReferenceDescriptor::NPTReferenceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::NPTReferenceDescriptor::NPTReferenceDescriptor(DuckContext& duck, const Descriptor& desc) :
     NPTReferenceDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -120,7 +122,7 @@ uint64_t ts::NPTReferenceDescriptor::nptToSTC(uint64_t npt) const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::NPTReferenceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((post_discontinuity ? 0x80 : 0x00) | (content_id & 0x7F));
@@ -136,7 +138,7 @@ void ts::NPTReferenceDescriptor::serialize(Descriptor& desc, const DVBCharset* c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::NPTReferenceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 18;
 
@@ -158,7 +160,7 @@ void ts::NPTReferenceDescriptor::deserialize(const Descriptor& desc, const DVBCh
 
 void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 18) {
@@ -180,7 +182,7 @@ void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::buildXML(xml::Element* root) const
+void ts::NPTReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"post_discontinuity", post_discontinuity);
     root->setIntAttribute(u"content_id", content_id, true);
@@ -195,7 +197,7 @@ void ts::NPTReferenceDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NPTReferenceDescriptor::fromXML(const xml::Element* element)
+void ts::NPTReferenceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -49,9 +49,9 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Where to log errors.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside this object.
         //!
-        CASMapper(Report& report);
+        CASMapper(DuckContext& duck);
 
         //!
         //! This method feeds the CAS mapper with a TS packet.
@@ -142,7 +142,7 @@ namespace ts {
         void analyzeCADescriptors(const DescriptorList& descs, bool is_ecm);
 
         // CAMapper private fields.
-        Report&           _report;
+        DuckContext&      _duck;
         SectionDemux      _demux;
         PIDDescriptionMap _pids;
 

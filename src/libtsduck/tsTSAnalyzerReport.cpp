@@ -62,6 +62,20 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint) :
+    TSAnalyzer(duck, bitrate_hint)
+{
+}
+
+ts::TSAnalyzerReport::~TSAnalyzerReport()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Set analysis options. Must be set before feeding the first packet.
 //----------------------------------------------------------------------------
 
@@ -69,7 +83,6 @@ void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerOptions& opt)
 {
     setMinErrorCountBeforeSuspect(opt.suspect_min_error_count);
     setMaxConsecutiveSuspectCount(opt.suspect_max_consecutive);
-    setDefaultCharacterSet(opt.default_charset);
 }
 
 
@@ -170,6 +183,28 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
 
 
 //----------------------------------------------------------------------------
+// General reporting method, using the specified options.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TSAnalyzerReport::reportToString(const TSAnalyzerOptions & opt)
+{
+    std::stringstream stm(std::ios::out);
+    report(stm, opt);
+    return UString::FromUTF8(stm.str());
+}
+
+
+//----------------------------------------------------------------------------
+// Report a time stamp.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzerReport::reportTimeStamp(Grid& grid, const UString& name, const Time& value) const
+{
+    grid.putLayout({{name, value == Time::Epoch ? u"Unknown" : value.format(Time::DATE | Time::TIME)}});
+}
+
+
+//----------------------------------------------------------------------------
 // Report global transport stream analysis
 //----------------------------------------------------------------------------
 
@@ -212,11 +247,19 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 
     grid.setLayout({grid.bothTruncateLeft(73, u'.')});
     grid.putLayout({{u"Broadcast time:", _duration == 0 ? u"Unknown" : UString::Format(u"%d sec (%d mn %d sec)", {_duration / 1000, _duration / 60000, (_duration / 1000) % 60})}});
-    grid.putLayout({{u"First TDT UTC time stamp:", _first_tdt == Time::Epoch ? u"Unknown" : _first_tdt.format(Time::DATE | Time::TIME)}});
-    grid.putLayout({{u"Last TDT UTC time stamp:", _last_tdt == Time::Epoch ? u"Unknown" : _last_tdt.format(Time::DATE | Time::TIME)}});
-    grid.putLayout({{u"First TOT local time stamp:", _first_tot == Time::Epoch ? u"Unknown" : _first_tot.format(Time::DATE | Time::TIME)}});
-    grid.putLayout({{u"Last TOT local time stamp:", _last_tot == Time::Epoch ? u"Unknown" : _last_tot.format(Time::DATE | Time::TIME)}});
-    grid.putLayout({{u"TOT country code:", _country_code.empty() ? u" Unknown" : _country_code}});
+    if (_first_tdt != Time::Epoch || _first_tot != Time::Epoch || !_country_code.empty()) {
+        // This looks like a DVB stream.
+        reportTimeStamp(grid, u"First TDT UTC time stamp:", _first_tdt);
+        reportTimeStamp(grid, u"Last TDT UTC time stamp:", _last_tdt);
+        reportTimeStamp(grid, u"First TOT local time stamp:", _first_tot);
+        reportTimeStamp(grid, u"Last TOT local time stamp:", _last_tot);
+        grid.putLayout({{u"TOT country code:", _country_code.empty() ? u" Unknown" : _country_code}});
+    }
+    if (_first_stt != Time::Epoch) {
+        // This looks like an ATSC stream.
+        reportTimeStamp(grid, u"First STT UTC time stamp:", _first_stt);
+        reportTimeStamp(grid, u"Last STT UTC time stamp:", _last_stt);
+    }
     grid.subSection();
 
     // Display list of services

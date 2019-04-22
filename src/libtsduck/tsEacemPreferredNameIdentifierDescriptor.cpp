@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -41,6 +42,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"eacem_preferred_name_identifier_descriptor"
 #define MY_DID ts::DID_PREF_NAME_ID
 #define MY_PDS ts::PDS_EACEM
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
@@ -56,7 +58,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDesc
 //----------------------------------------------------------------------------
 
 ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescriptor(uint8_t id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     name_id(id)
 {
     _is_valid = true;
@@ -67,11 +69,11 @@ ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescript
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     name_id(0)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -79,7 +81,7 @@ ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescript
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::EacemPreferredNameIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(name_id);
@@ -91,7 +93,7 @@ void ts::EacemPreferredNameIdentifierDescriptor::serialize(Descriptor& desc, con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::EacemPreferredNameIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
@@ -108,7 +110,7 @@ void ts::EacemPreferredNameIdentifierDescriptor::deserialize(const Descriptor& d
 
 void ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -125,7 +127,7 @@ void ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::EacemPreferredNameIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"name_id", name_id, true);
 }
@@ -135,7 +137,7 @@ void ts::EacemPreferredNameIdentifierDescriptor::buildXML(xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::EacemPreferredNameIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

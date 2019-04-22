@@ -136,7 +136,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~SocketAddress() {}
+        virtual ~SocketAddress();
 
         //!
         //! Get the port.

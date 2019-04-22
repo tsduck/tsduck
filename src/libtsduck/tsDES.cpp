@@ -1479,3 +1479,41 @@ bool ts::DES::decrypt (const void* cipher, size_t cipher_length,
 
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipher interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::DES::name() const
+{
+    return u"DES";
+}
+size_t ts::DES::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+size_t ts::DES::minKeySize() const
+{
+    return KEY_SIZE;
+}
+size_t ts::DES::maxKeySize() const
+{
+    return KEY_SIZE;
+}
+bool ts::DES::isValidKeySize (size_t size) const
+{
+    return size == KEY_SIZE;
+}
+size_t ts::DES::minRounds() const
+{
+    return ROUNDS;
+}
+size_t ts::DES::maxRounds() const
+{
+    return ROUNDS;
+}
+size_t ts::DES::defaultRounds() const
+{
+    return ROUNDS;
+}

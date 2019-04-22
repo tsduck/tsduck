@@ -65,6 +65,11 @@ namespace ts {
         DektecControl(int argc, char *argv[]);
 
         //!
+        //! Virtual destructor.
+        //!
+        virtual ~DektecControl();
+
+        //!
         //! Execute the command.
         //! @return Either EXIT_SUCCESS or EXIT_FAILURE.
         //!

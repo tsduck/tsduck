@@ -35,7 +35,6 @@
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
-#include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -52,17 +51,13 @@ public:
     virtual void tearDown() override;
 
     void testTunerArgs();
-    void testZapFiles();
     void testTunerParams();
     void testLNB();
-    void testUHF();
 
     CPPUNIT_TEST_SUITE(DVBTest);
     CPPUNIT_TEST(testTunerArgs);
-    CPPUNIT_TEST(testZapFiles);
     CPPUNIT_TEST(testTunerParams);
     CPPUNIT_TEST(testLNB);
-    CPPUNIT_TEST(testUHF);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -100,14 +95,6 @@ void DVBTest::testTunerArgs()
     utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
-void DVBTest::testZapFiles()
-{
-    utest::Out() << "DVBTest: DefaultZapFile(DVB_S): " << ts::TunerArgs::DefaultZapFile(ts::DVB_S) << std::endl
-                 << "DVBTest: DefaultZapFile(DVB_C): " << ts::TunerArgs::DefaultZapFile(ts::DVB_C) << std::endl
-                 << "DVBTest: DefaultZapFile(DVB_T): " << ts::TunerArgs::DefaultZapFile(ts::DVB_T) << std::endl
-                 << "DVBTest: DefaultZapFile(ATSC):  " << ts::TunerArgs::DefaultZapFile(ts::ATSC)  << std::endl;
-}
-
 void DVBTest::testParameters(const ts::TunerParameters& params)
 {
     utest::Out() << "DVBTest: Default TunerParameters, type: " << ts::TunerTypeEnum.name(params.tunerType()) << std::endl;
@@ -115,14 +102,9 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     ts::TunerParametersPtr ptr(ts::TunerParameters::Factory(params.tunerType()));
     CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
 
-    const ts::UString zap(params.toZapFormat());
-    utest::Out() << "DVBTest: Zap format: \"" << zap << "\"" << std::endl;
-
     const ts::UString opts(params.toPluginOptions());
     utest::Out() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
-    CPPUNIT_ASSERT(ptr->fromZapFormat(zap));
-    CPPUNIT_ASSERT(ptr->toZapFormat() == zap);
     CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
 
     ts::Args args;
@@ -133,11 +115,11 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     CPPUNIT_ASSERT(args.analyze(u"", args_vec));
 
     ts::TunerArgs tuner;
-    tuner.load(args);
-    ptr = ts::TunerParameters::Factory(params.tunerType());
+    ts::DuckContext duck;
+    tuner.load(args, duck);
+    ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
+    CPPUNIT_ASSERT(!ptr.isNull());
     CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
-    CPPUNIT_ASSERT(ptr->fromTunerArgs(tuner, args));
-    CPPUNIT_ASSERT(ptr->toZapFormat() == zap);
     CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
 }
 
@@ -183,22 +165,4 @@ void DVBTest::testLNB()
     ts::LNB lnb5(u"azerty");
     displayLNB(lnb5, u"azerty");
     CPPUNIT_ASSERT(!lnb5.isValid());
-}
-
-void DVBTest::testUHF()
-{
-    CPPUNIT_ASSERT_EQUAL(uint64_t(474000000), ts::UHF::Frequency(21, 0));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(474166666), ts::UHF::Frequency(21, 1));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(561833334), ts::UHF::Frequency(32, -1));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(858000000), ts::UHF::Frequency(69, 0));
-
-    CPPUNIT_ASSERT_EQUAL(21, ts::UHF::Channel(474000000));
-    CPPUNIT_ASSERT_EQUAL(21, ts::UHF::Channel(474166666));
-    CPPUNIT_ASSERT_EQUAL(32, ts::UHF::Channel(561833334));
-    CPPUNIT_ASSERT_EQUAL(69, ts::UHF::Channel(858000000));
-
-    CPPUNIT_ASSERT_EQUAL(0, ts::UHF::OffsetCount(474000000));
-    CPPUNIT_ASSERT_EQUAL(1, ts::UHF::OffsetCount(474166666));
-    CPPUNIT_ASSERT_EQUAL(-1, ts::UHF::OffsetCount(561833334));
-    CPPUNIT_ASSERT_EQUAL(0, ts::UHF::OffsetCount(858000000));
 }

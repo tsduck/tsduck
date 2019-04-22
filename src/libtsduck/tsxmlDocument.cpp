@@ -47,6 +47,16 @@ ts::xml::Document::Document(Report& report) :
 {
 }
 
+ts::UString ts::xml::Document::typeName() const
+{
+    return u"Document";
+}
+
+const ts::xml::Tweaks& ts::xml::Document::tweaks() const
+{
+    return _tweaks;
+}
+
 
 //----------------------------------------------------------------------------
 // Parse an XML document.

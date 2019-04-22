@@ -39,8 +39,13 @@ TSDUCK_SOURCE;
 // Configuration instances.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE_DEFINITION(ts::Names, (u"tsduck.dvb.names"), ts::NamesDVB, NamesDVB);
-TS_STATIC_INSTANCE_DEFINITION(ts::Names, (u"tsduck.oui.names"), ts::NamesOUI, NamesOUI);
+TS_DEFINE_SINGLETON(ts::NamesDVB);
+ts::NamesDVB::NamesDVB() : Names(u"tsduck.dvb.names") {}
+ts::NamesDVB::~NamesDVB() {}
+
+TS_DEFINE_SINGLETON(ts::NamesOUI);
+ts::NamesOUI::NamesOUI() : Names(u"tsduck.oui.names") {}
+ts::NamesOUI::~NamesOUI() {}
 
 
 //----------------------------------------------------------------------------
@@ -51,7 +56,7 @@ bool ts::names::HasTableSpecificName(uint8_t did, uint8_t tid)
 {
     return tid != TID_NULL &&
         did < 0x80 &&
-        NamesDVB::Instance().nameExists(u"DescriptorId", (Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did));
+        NamesDVB::Instance()->nameExists(u"DescriptorId", (Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did));
 }
 
 ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
@@ -59,15 +64,15 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
     if (did >= 0x80 && pds != 0 && pds != PDS_NULL) {
         // If this is a private descriptor, only consider the private value.
         // Do not fallback because the same value with PDS == 0 can be different.
-        return NamesDVB::Instance().nameFromSection(u"DescriptorId", (Names::Value(pds) << 8) | Names::Value(did), flags, 8);
+        return NamesDVB::Instance()->nameFromSection(u"DescriptorId", (Names::Value(pds) << 8) | Names::Value(did), flags, 8);
     }
     else if (tid != 0xFF) {
         // Could be a table-specific descriptor.
         const Names::Value fullValue = (Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did);
-        return NamesDVB::Instance().nameFromSectionWithFallback(u"DescriptorId", fullValue, Names::Value(did), flags, 8);
+        return NamesDVB::Instance()->nameFromSectionWithFallback(u"DescriptorId", fullValue, Names::Value(did), flags, 8);
     }
     else {
-        return NamesDVB::Instance().nameFromSection(u"DescriptorId", Names::Value(did), flags, 8);
+        return NamesDVB::Instance()->nameFromSection(u"DescriptorId", Names::Value(did), flags, 8);
     }
 }
 
@@ -78,157 +83,157 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
 ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
 {
     // Use version with CAS first, then without CAS.
-    return NamesDVB::Instance().nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
+    return NamesDVB::Instance()->nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
 }
 
 ts::UString ts::names::EDID(uint8_t edid, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"DVBExtendedDescriptorId", Names::Value(edid), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"DVBExtendedDescriptorId", Names::Value(edid), flags, 8);
 }
 
 ts::UString ts::names::StreamType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"StreamType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"StreamType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::Content(uint8_t x, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"ContentId", Names::Value(x), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"ContentId", Names::Value(x), flags, 8);
 }
 
 ts::UString ts::names::PrivateDataSpecifier(uint32_t pds, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"PrivateDataSpecifier", Names::Value(pds), flags, 32);
+    return NamesDVB::Instance()->nameFromSection(u"PrivateDataSpecifier", Names::Value(pds), flags, 32);
 }
 
 ts::UString ts::names::CASFamily(ts::CASFamily cas)
 {
-    return NamesDVB::Instance().nameFromSection(u"CASFamily", Names::Value(cas), NAME | DECIMAL);
+    return NamesDVB::Instance()->nameFromSection(u"CASFamily", Names::Value(cas), NAME | DECIMAL);
 }
 
 ts::UString ts::names::CASId(uint16_t id, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"CASystemId", Names::Value(id), flags, 16);
+    return NamesDVB::Instance()->nameFromSection(u"CASystemId", Names::Value(id), flags, 16);
 }
 
 ts::UString ts::names::BouquetId(uint16_t id, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"BouquetId", Names::Value(id), flags, 16);
+    return NamesDVB::Instance()->nameFromSection(u"BouquetId", Names::Value(id), flags, 16);
 }
 
 ts::UString ts::names::OriginalNetworkId(uint16_t id, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"OriginalNetworkId", Names::Value(id), flags, 16);
+    return NamesDVB::Instance()->nameFromSection(u"OriginalNetworkId", Names::Value(id), flags, 16);
 }
 
 ts::UString ts::names::NetworkId(uint16_t id, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"NetworkId", Names::Value(id), flags, 16);
+    return NamesDVB::Instance()->nameFromSection(u"NetworkId", Names::Value(id), flags, 16);
 }
 
 ts::UString ts::names::PlatformId(uint32_t id, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"PlatformId", Names::Value(id), flags, 24);
+    return NamesDVB::Instance()->nameFromSection(u"PlatformId", Names::Value(id), flags, 24);
 }
 
 ts::UString ts::names::DataBroadcastId(uint16_t id, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"DataBroadcastId", Names::Value(id), flags, 16);
+    return NamesDVB::Instance()->nameFromSection(u"DataBroadcastId", Names::Value(id), flags, 16);
 }
 
 ts::UString ts::names::OUI(uint32_t oui, Flags flags)
 {
-    return NamesOUI::Instance().nameFromSection(u"OUI", Names::Value(oui), flags, 24);
+    return NamesOUI::Instance()->nameFromSection(u"OUI", Names::Value(oui), flags, 24);
 }
 
 ts::UString ts::names::StreamId(uint8_t sid, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"StreamId", Names::Value(sid), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"StreamId", Names::Value(sid), flags, 8);
 }
 
 ts::UString ts::names::PESStartCode(uint8_t code, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"PESStartCode", Names::Value(code), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"PESStartCode", Names::Value(code), flags, 8);
 }
 
 ts::UString ts::names::AspectRatio(uint8_t ar, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"AspectRatio", Names::Value(ar), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"AspectRatio", Names::Value(ar), flags, 8);
 }
 
 ts::UString ts::names::ChromaFormat(uint8_t cf, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"ChromaFormat", Names::Value(cf), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"ChromaFormat", Names::Value(cf), flags, 8);
 }
 
 ts::UString ts::names::AVCUnitType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"AVCUnitType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"AVCUnitType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::AVCProfile(int profile, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"AVCProfile", Names::Value(profile), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"AVCProfile", Names::Value(profile), flags, 8);
 }
 
 ts::UString ts::names::ServiceType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"ServiceType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"ServiceType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::LinkageType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"LinkageType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"LinkageType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::TeletextType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"TeletextType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"TeletextType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::RunningStatus(uint8_t status, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"RunningStatus", Names::Value(status), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"RunningStatus", Names::Value(status), flags, 8);
 }
 
 ts::UString ts::names::AudioType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"AudioType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"AudioType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::SubtitlingType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"SubtitlingType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"SubtitlingType", Names::Value(type), flags, 8);
 }
 
 ts::UString ts::names::DTSSampleRateCode(uint8_t x, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"DTSSampleRate", Names::Value(x), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"DTSSampleRate", Names::Value(x), flags, 8);
 }
 
 ts::UString ts::names::DTSBitRateCode(uint8_t x, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"DTSBitRate", Names::Value(x), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"DTSBitRate", Names::Value(x), flags, 8);
 }
 
 ts::UString ts::names::DTSSurroundMode(uint8_t x, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"DTSSurroundMode", Names::Value(x), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"DTSSurroundMode", Names::Value(x), flags, 8);
 }
 
 ts::UString ts::names::DTSExtendedSurroundMode(uint8_t x, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"DTSExtendedSurroundMode", Names::Value(x), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"DTSExtendedSurroundMode", Names::Value(x), flags, 8);
 }
 
 ts::UString ts::names::ScramblingControl(uint8_t scv, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"ScramblingControl", Names::Value(scv), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"ScramblingControl", Names::Value(scv), flags, 8);
 }
 
 ts::UString ts::names::T2MIPacketType(uint8_t type, Flags flags)
 {
-    return NamesDVB::Instance().nameFromSection(u"T2MIPacketType", Names::Value(type), flags, 8);
+    return NamesDVB::Instance()->nameFromSection(u"T2MIPacketType", Names::Value(type), flags, 8);
 }
 
 
@@ -270,7 +275,7 @@ ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
         return AC3ComponentType(nType & 0x00FF, flags);
     }
     else {
-        return NamesDVB::Instance().nameFromSection(u"ComponentType", Names::Value(nType), flags | names::ALTERNATE, 16, dType);
+        return NamesDVB::Instance()->nameFromSection(u"ComponentType", Names::Value(nType), flags | names::ALTERNATE, 16, dType);
     }
 }
 
@@ -327,7 +332,7 @@ ts::Names::Names(const UString& fileName) :
     // Locate the configuration file.
     if (_configFile.empty()) {
         // Cannot load configuration, names will not be available.
-        _log.error(u"configuration file 'tsduck.names' not found");
+        _log.error(u"configuration file '%s' not found", {fileName});
         return;
     }
 
@@ -335,7 +340,7 @@ ts::Names::Names(const UString& fileName) :
     const std::string fileUTF8(_configFile.toUTF8());
     std::ifstream strm(fileUTF8.c_str());
     if (!strm) {
-        _log.error(u"error opening file " + _configFile);
+        _log.error(u"error opening file %s", {_configFile});
         return;
     }
 

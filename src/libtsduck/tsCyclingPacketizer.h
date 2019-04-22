@@ -161,11 +161,12 @@ namespace ts {
         //!
         //! Add all sections of a table into the packetizer.
         //! The contents of the sections are shared.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table A table to packetize.
         //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
         //! If zero, simply packetize sections one after the other.
         //!
-        void addTable(const AbstractTable& table, MilliSecond repetition_rate = 0);
+        void addTable(DuckContext& duck, const AbstractTable& table, MilliSecond repetition_rate = 0);
 
         //!
         //! Remove all sections with the specified table id.

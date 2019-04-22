@@ -40,9 +40,10 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"BAT"
 #define MY_TID ts::TID_BAT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::BAT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::BAT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::BAT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 
 
@@ -51,13 +52,13 @@ TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 //----------------------------------------------------------------------------
 
 ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
-    AbstractTransportListTable(MY_TID, MY_XML_NAME, id, vers, cur),
+    AbstractTransportListTable(MY_TID, MY_XML_NAME, MY_STD, id, vers, cur),
     bouquet_id(_tid_ext)
 {
 }
 
-ts::BAT::BAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTransportListTable(MY_TID, MY_XML_NAME, table, charset),
+ts::BAT::BAT(DuckContext& duck, const BinaryTable& table) :
+    AbstractTransportListTable(duck, MY_TID, MY_XML_NAME, MY_STD, table),
     bouquet_id(_tid_ext)
 {
 }
@@ -84,7 +85,7 @@ ts::BAT& ts::BAT::operator=(const BAT& other)
 
 void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -100,7 +101,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
         if (loop_length > 0) {
             strm << margin << "Bouquet information:" << std::endl;
-            display.displayDescriptorList(data, loop_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, loop_length, indent);
         }
         data += loop_length; size -= loop_length;
 
@@ -121,7 +122,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                     length = loop_length;
                 }
                 strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
-                display.displayDescriptorList(data, length, indent, section.tableId());
+                display.displayDescriptorList(section, data, length, indent);
                 data += length; size -= length; loop_length -= length;
             }
         }
@@ -135,12 +136,12 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::BAT::buildXML(xml::Element* root) const
+void ts::BAT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setIntAttribute(u"bouquet_id", bouquet_id, true);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
         xml::Element* e = root->addElement(u"transport_stream");
@@ -149,7 +150,7 @@ void ts::BAT::buildXML(xml::Element* root) const
         if (it->second.preferred_section >= 0) {
             e->setIntAttribute(u"preferred_section", it->second.preferred_section, false);
         }
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -158,7 +159,7 @@ void ts::BAT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BAT::fromXML(const xml::Element* element)
+void ts::BAT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     transports.clear();
@@ -169,14 +170,14 @@ void ts::BAT::fromXML(const xml::Element* element)
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
         element->getIntAttribute<uint16_t>(bouquet_id, u"bouquet_id", true, 0, 0x0000, 0xFFFF) &&
-        descs.fromXML(children, element, u"transport_stream");
+        descs.fromXML(duck, children, element, u"transport_stream");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         TransportStreamId ts;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].descs.fromXML(children[index]);
+            transports[ts].descs.fromXML(duck, children[index]);
         if (_is_valid && children[index]->hasAttribute(u"preferred_section")) {
             _is_valid = children[index]->getIntAttribute<int>(transports[ts].preferred_section, u"preferred_section", true, 0, 0, 255);
         }

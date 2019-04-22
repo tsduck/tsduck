@@ -38,6 +38,7 @@
 namespace ts {
     //!
     //! Representation of a DSM-CC Stream Descriptors table.
+    //!
     //! @see ISO/IEC 13818-6, ITU-T Rec. 9.2.2 and 9.2.7.
     //! @ingroup table
     //!
@@ -56,10 +57,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        DSMCCStreamDescriptorsTable(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        DSMCCStreamDescriptorsTable(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
@@ -67,9 +68,19 @@ namespace ts {
         //!
         DSMCCStreamDescriptorsTable(const DSMCCStreamDescriptorsTable& other);
 
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        DSMCCStreamDescriptorsTable& operator=(const DSMCCStreamDescriptorsTable& other);
+
         // Inherited methods
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

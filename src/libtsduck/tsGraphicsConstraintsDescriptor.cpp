@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsGraphicsConstraintsDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"graphics_constraints_descriptor"
 #define MY_DID ts::DID_AIT_GRAPHICS_CONST
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::GraphicsConstraintsDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::GraphicsConstraintsDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -43,11 +45,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::GraphicsConstraintsDescriptor::DisplayDescriptor, t
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     can_run_without_visible_ui(false),
     handles_configuration_changed(false),
     handles_externally_controlled_video(false),
@@ -56,15 +58,10 @@ ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(DuckContext& duck, const Descriptor& desc) :
     GraphicsConstraintsDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -72,7 +69,7 @@ ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor(const Descripto
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::GraphicsConstraintsDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(0xF8 |
@@ -88,7 +85,7 @@ void ts::GraphicsConstraintsDescriptor::serialize(Descriptor& desc, const DVBCha
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::GraphicsConstraintsDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     graphics_configuration.clear();
     const uint8_t* data = desc.payload();
@@ -111,7 +108,7 @@ void ts::GraphicsConstraintsDescriptor::deserialize(const Descriptor& desc, cons
 
 void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -133,7 +130,7 @@ void ts::GraphicsConstraintsDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::buildXML(xml::Element* root) const
+void ts::GraphicsConstraintsDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"can_run_without_visible_ui", can_run_without_visible_ui);
     root->setBoolAttribute(u"handles_configuration_changed", handles_configuration_changed);
@@ -148,7 +145,7 @@ void ts::GraphicsConstraintsDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::GraphicsConstraintsDescriptor::fromXML(const xml::Element* element)
+void ts::GraphicsConstraintsDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

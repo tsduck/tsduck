@@ -45,6 +45,11 @@ ts::xml::Unknown::Unknown(Node* parent, const UString& text) :
 {
 }
 
+ts::UString ts::xml::Unknown::typeName() const
+{
+    return u"Unknown";
+}
+
 
 //----------------------------------------------------------------------------
 // Print the node.

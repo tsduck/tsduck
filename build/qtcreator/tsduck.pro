@@ -44,6 +44,7 @@ SUBDIRS += \
     tsplugin_clear \
     tsplugin_continuity \
     tsplugin_count \
+    tsplugin_craft \
     tsplugin_datainject \
     tsplugin_decap \
     tsplugin_dektec \
@@ -72,6 +73,7 @@ SUBDIRS += \
     tsplugin_null \
     tsplugin_pat \
     tsplugin_pattern \
+    tsplugin_pcradjust \
     tsplugin_pcrbitrate \
     tsplugin_pcrextract \
     tsplugin_pcrverify \

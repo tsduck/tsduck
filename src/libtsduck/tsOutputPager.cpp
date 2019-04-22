@@ -31,12 +31,15 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+// Default name of the environment variable containing the pager command.
+const ts::UChar* const ts::OutputPager::DEFAULT_PAGER = u"PAGER";
+
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::OutputPager::OutputPager(const UString& envName) :
+ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly) :
     ForkPipe(),
     _hasTerminal(false),
     _outputMode(KEEP_BOTH),
@@ -45,7 +48,7 @@ ts::OutputPager::OutputPager(const UString& envName) :
     // Check if we have a terminal.
     const bool outTerm = StdOutIsTerminal();
     const bool errTerm = StdErrIsTerminal();
-    _hasTerminal = outTerm || errTerm;
+    _hasTerminal = outTerm || (!stdoutOnly && errTerm);
 
     // Check if we should redirect one output.
     if (outTerm && !errTerm) {
@@ -92,6 +95,10 @@ ts::OutputPager::OutputPager(const UString& envName) :
                     #if defined(TS_LINUX)
                         useParameters = !ResolveSymbolicLinks(exe).contain(u"busybox", CASE_INSENSITIVE);
                     #endif
+                    // Same thing with UnxUtils (sometimes spelled UnixUtils) on Windows.
+                    #if defined(TS_WINDOWS)
+                        useParameters = !exe.contain(u"unxutils", CASE_INSENSITIVE) && !exe.contain(u"unixutils", CASE_INSENSITIVE);
+                    #endif
                     // Build the command line.
                     _pagerCommand = u'"' + exe + u"\" " + (useParameters ? itPager->parameters : UString());
                 }
@@ -105,6 +112,10 @@ ts::OutputPager::OutputPager(const UString& envName) :
         _pagerCommand = u"cmd /d /q /c more";
     }
 #endif
+}
+
+ts::OutputPager::~OutputPager()
+{
 }
 
 

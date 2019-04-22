@@ -44,12 +44,17 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     bool              check_only;   // check only, do not truncate
     ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
     ts::UStringVector files;        // file names
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Truncate an MPEG transport stream file", u"[options] filename ..."),
     check_only(false),

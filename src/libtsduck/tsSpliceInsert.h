@@ -118,7 +118,7 @@ namespace ts {
         void serialize(ByteBlock& data) const;
 
         // Inherited methods
-        virtual void buildXML(xml::Element* root) const override;
-        virtual void fromXML(const xml::Element* element) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
     };
 }

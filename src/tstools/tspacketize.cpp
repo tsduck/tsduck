@@ -47,7 +47,9 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
+    ts::DuckContext           duck;
     bool                      continuous; // Continuous packetization
     ts::CyclingPacketizer::StuffingPolicy stuffing_policy;
     ts::CRC32::Validation     crc_op;     // Validate/recompute CRC32
@@ -58,8 +60,13 @@ struct Options: public ts::Args
     ts::SectionFile::FileType inType;     // Input files type
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
+    duck(this),
     continuous(false),
     stuffing_policy(ts::CyclingPacketizer::NEVER),
     crc_op(ts::CRC32::COMPUTE),
@@ -160,7 +167,7 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
     ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
-    ts::SectionFile file;
+    ts::SectionFile file(opt.duck);
     file.setCRCValidation(opt.crc_op);
 
     // Load sections

@@ -81,6 +81,11 @@ void ts::AVCHRDParameters::clear()
 // Parse a memory area. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
+bool ts::AVCHRDParameters::parse(const void* data, size_t size)
+{
+    return AbstractAVCStructure::parse(data, size);
+}
+
 bool ts::AVCHRDParameters::parse(AVCParser& parser)
 {
     clear();

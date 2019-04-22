@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -13,6 +13,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_clear.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_continuity.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_count.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_craft.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_datainject.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_decap.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_dektec.cpp" />
@@ -41,6 +42,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_null.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pat.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pattern.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pcradjust.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrbitrate.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrextract.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrverify.cpp" />

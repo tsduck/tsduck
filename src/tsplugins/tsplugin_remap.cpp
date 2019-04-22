@@ -103,7 +103,7 @@ ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
     _check_integrity(false),
     _update_psi(false),
     _pmt_ready(false),
-    _demux(this),
+    _demux(duck, this),
     _new_pids(),
     _pid_map(),
     _pzer()
@@ -275,10 +275,10 @@ void ts::RemapPlugin::processDescriptors(DescriptorList& dlist, TID table_id)
     // Process all CA descriptors in the list
     for (size_t i = dlist.search(DID_CA); i < dlist.count(); i = dlist.search(DID_CA, i + 1)) {
         const DescriptorPtr& desc(dlist[i]);
-        CADescriptor cadesc(*desc);
+        CADescriptor cadesc(duck, *desc);
         if (cadesc.isValid()) {
             cadesc.ca_pid = remap(cadesc.ca_pid);
-            cadesc.serialize(*desc);
+            cadesc.serialize(duck, *desc);
         }
     }
 }
@@ -291,7 +291,7 @@ void ts::RemapPlugin::processDescriptors(DescriptorList& dlist, TID table_id)
 void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     if (table.tableId() == TID_PAT && table.sourcePID() == PID_PAT) {
-        PAT pat(table);
+        PAT pat(duck, table);
         if (pat.isValid()) {
             // Process the PAT content
             pat.nit_pid = remap(pat.nit_pid);
@@ -307,24 +307,24 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             // Replace the PAT
             const CyclingPacketizerPtr pzer = getPacketizer(PID_PAT, true);
             pzer->removeSections(TID_PAT);
-            pzer->addTable(pat);
+            pzer->addTable(duck, pat);
         }
     }
 
     else if (table.tableId() == TID_CAT && table.sourcePID() == PID_CAT) {
-        CAT cat(table);
+        CAT cat(duck, table);
         if (cat.isValid()) {
             // Process the CAT content
             processDescriptors(cat.descs, TID_CAT);
             // Replace the CAT
             const CyclingPacketizerPtr pzer = getPacketizer(PID_CAT, true);
             pzer->removeSections(TID_CAT);
-            pzer->addTable(cat);
+            pzer->addTable(duck, cat);
         }
     }
 
     else if (table.tableId() == TID_PMT) {
-        PMT pmt(table);
+        PMT pmt(duck, table);
         if (pmt.isValid()) {
             // Process the PMT content
             processDescriptors(pmt.descs, TID_PMT);
@@ -338,7 +338,7 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             // Replace the PMT
             const CyclingPacketizerPtr pzer = getPacketizer(table.sourcePID(), true);
             pzer->removeSections(TID_PMT, pmt.service_id);
-            pzer->addTable(pmt);
+            pzer->addTable(duck, pmt);
         }
     }
 }

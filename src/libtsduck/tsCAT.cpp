@@ -39,27 +39,32 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CAT"
 #define MY_TID ts::TID_CAT
+#define MY_STD ts::STD_MPEG
 
 TS_XML_TABLE_FACTORY(ts::CAT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::CAT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::CAT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::CAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 ts::CAT::CAT(uint8_t vers, bool cur) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, 0xFFFF, vers, cur)
+    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, MY_STD, 0xFFFF, vers, cur)
 {
 }
 
-ts::CAT::CAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, table, charset)
+ts::CAT::CAT(DuckContext& duck, const BinaryTable& table) :
+    AbstractDescriptorsTable(duck, MY_TID, MY_XML_NAME, MY_STD, table)
 {
 }
 
 ts::CAT::CAT(const ts::CAT& other) :
     AbstractDescriptorsTable(other)
+{
+}
+
+ts::CAT::~CAT()
 {
 }

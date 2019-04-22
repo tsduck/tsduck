@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 
 void ts::FatalError(const char* message, size_t length)
 {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
     ::DWORD written;
     ::WriteFile(::GetStdHandle(STD_ERROR_HANDLE), message, ::DWORD(length), &written, 0);
 #else

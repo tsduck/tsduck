@@ -72,6 +72,15 @@ Bits = 8
 0xAA = Transmission Mode Support Table (ETSI EN 301 790)
 0xB0 = TIM (Terminal Information Message, ETSI EN 301 790)
 0xB1 = LL_FEC_parity_data_table (ETSI EN 301 790)
+0xC7 = MGT (ATSC)
+0xC8 = TVCT (ATSC)
+0xC9 = CVCT (ATSC)
+0xCA = RRT (ATSC)
+0xCB = EIT (ATSC)
+0xCC = ETT (ATSC)
+0xCD = STT (ATSC)
+0xD3 = DCCT (ATSC)
+0xD4 = DCCSCT (ATSC)
 0xFC = SCTE 35 Splice Information
 0xFF = Forbidden TID 0xFF
 # CAS-specific values, most significant byte is a CAS family.
@@ -262,6 +271,7 @@ Bits = 32
 0x00532D41 = Scientific Atlanta
 0x00564F4F = VOO (Tecteo)
 0x00600000 = Rhône Vision Cable
+0x41545343 = ATSC (fake PDS for ATSC descriptors)
 0x41555300 = Foxtel Management
 0x44414E59 = NDS
 0x46524549 = NDS
@@ -492,7 +502,7 @@ Bits = 8
 0xFCFFFFFFFF03 = SCTE 35 Time
 # With PDS for Canal+ / NDS France (MediaHighway).
 0x000000C080 = DTG Stream Indicator/PIO Offset Time (MediaHighway)
-0x000000C081 = Logical Channel/AC-3 Audio Stream (MediaHighway)
+0x000000C081 = Logical Channel (MediaHighway)
 0x000000C082 = Private Descriptor 2 (MediaHighway)
 0x000000C083 = Logical Channel (MediaHighway)
 0x000000C084 = PIO Logo (MediaHighway)
@@ -596,6 +606,27 @@ Bits = 8
 0x0000002888 = HD Simulcast Logical Channel Number
 # With PDS for Eutelsat.
 0x0000055F83 = Eutelsat Channel Number
+# ATSC descriptors, using the fake PDS for ATSC.
+0x4154534380 = ATSC Stuffing
+0x4154534381 = ATSC AC-3 Audio
+0x4154534385 = ATSC Program Identifier
+0x4154534386 = ATSC Caption Service
+0x4154534387 = ATSC Content Advisory
+0x415453438A = Cue Identifier (SCTE 35)
+0x41545343A0 = ATSC Extended Channel Name
+0x41545343A1 = ATSC Service Location
+0x41545343A2 = ATSC Time-Shifted Service
+0x41545343A3 = ATSC Component Name
+0x41545343A4 = ATSC Data Broadcast
+0x41545343A5 = ATSC PID Count
+0x41545343A6 = ATSC Download
+0x41545343A7 = ATSC Multiprotocol Encapsulation
+0x41545343A8 = ATSC DCC Departing Request
+0x41545343A9 = ATSC DCC Arriving Request
+0x41545343AA = ATSC Redistribution Control
+0x41545343AB = ATSC Genre
+0x41545343AD = ATSC Private Information
+0x41545343CC = ATSC E-AC-3 Audio Stream
 
 [MPEGExtendedDescriptorId]
 Bits = 8
@@ -2874,3 +2905,35 @@ Bits = 3
 2 = Preferred reproduction channel layout is two-dimensional (e.g. 5.1)
 3 = Preferred reproduction channel layout is three-dimensional
 4 = Content is pre-rendered for consumption with headphones
+
+[ATSCTableType]
+# table_type in ATSC MGT
+Bits = 16
+0x0000 = Terrestrial VCT with current_next_indicator=’1’
+0x0001 = Terrestrial VCT with current_next_indicator=’0’
+0x0002 = Cable VCT with current_next_indicator=’1’
+0x0003 = Cable VCT with current_next_indicator=’0’
+0x0004 = Channel ETT
+0x0005 = DCCSCT
+0x0100-0x017F = EIT-0 to EIT-127
+0x0200-0x027F = Event ETT-0 to event ETT-127
+0x0301-0x03FF = RRT with rating_region 1-255
+0x1400-0x14FF = DCCT with dcc_id 0x00 – 0xFF
+
+[ATSCModulationModes]
+# modulation_mode in ATSC VCT
+Bits = 8
+0x01 = Analog
+0x02 = SCTE mode 1 (64-QAM)
+0x03 = SCTE mode 2 (256-QAM)
+0x04 = ATSC 8-VSB
+0x05 = ATSC 16-VSB
+
+[ATSCServiceType]
+# service type in ATSC VCT
+Bits = 6
+0x01 = Analog Television
+0x02 = ATSC Digital Television
+0x03 = ATSC Audio
+0x04 = ATSC Data Only Service
+0x05 = ATSC Software Download Service

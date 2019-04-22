@@ -87,7 +87,7 @@ function GetSources([string]$type, [string]$subdir = "", [string]$prefix = "", [
 # Get files based on doxygen group.
 function GetGroup([string]$group, [string]$subdir = "", [string]$prefix = "", [string]$suffix)
 {
-    Get-ChildItem "$SrcDir\$subdir\*.h" -Exclude "tsAbstract*.h" | `
+    Get-ChildItem "$SrcDir\$subdir\*.h" -Exclude @("tsAbstract*.h", "tsVCT.h") | `
         Select-String -Pattern "@ingroup *$group" | `
         Select-Object -Unique Filename | `
         ForEach-Object {$prefix + ($_.Filename -replace '^ts','' -replace '\.h$','') + $suffix} | `

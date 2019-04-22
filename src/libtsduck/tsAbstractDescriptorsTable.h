@@ -47,10 +47,7 @@ namespace ts {
         DescriptorList descs; //!< List of descriptors.
 
         // Inherited methods
-        virtual void serialize(BinaryTable&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
 
     protected:
@@ -64,11 +61,12 @@ namespace ts {
         //! Constructor for subclasses.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] tid_ext Table id extension.
         //! @param [in] version Table version number.
         //! @param [in] is_current True if table is current, false if table is next.
         //!
-        AbstractDescriptorsTable(TID tid, const UChar* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
+        AbstractDescriptorsTable(TID tid, const UChar* xml_name, Standards standards, uint16_t tid_ext, uint8_t version, bool is_current);
 
         //!
         //! Copy constructor.
@@ -77,13 +75,26 @@ namespace ts {
         AbstractDescriptorsTable(const AbstractDescriptorsTable& other);
 
         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractDescriptorsTable& operator=(const AbstractDescriptorsTable& other) = default;
+
+        //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractDescriptorsTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset = nullptr);
+        AbstractDescriptorsTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table);
+
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         AbstractDescriptorsTable() = delete;

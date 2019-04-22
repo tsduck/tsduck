@@ -265,7 +265,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     _min_stable_delay(0),
     _max_file_size(0),
     _queue_size(0),
-    _service(this, *tsp_),
+    _service(duck, this),
     _inject_pid(PID_NULL),
     _pcr_pid(PID_NULL),
     _pts_pid(PID_NULL),
@@ -720,7 +720,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     tsp->debug(u"parsing section:\n%s", {UString::Dump(addr, size, UString::HEXA | UString::ASCII, 4)});
 
     // Analyze the message as a binary or XML section file.
-    SectionFile secFile;
+    SectionFile secFile(duck);
     if (!secFile.load(strm, *tsp, type)) {
         // Error loading sections, error message already reported.
         return;
@@ -780,7 +780,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         // Try to interpret the section as a SIT.
         BinaryTable table;
         table.addSection(section, false, false);
-        sit.deserialize(table);
+        sit.deserialize(_plugin->duck, table);
     }
 
     // The initial values for the member fields are set for one immediate injection.

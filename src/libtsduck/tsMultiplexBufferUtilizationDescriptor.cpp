@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultiplexBufferUtilizationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multiplex_buffer_utilization_descriptor"
 #define MY_DID ts::DID_MUX_BUF_USE
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MultiplexBufferUtilizationDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MultiplexBufferUtilizationDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,17 +49,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultiplexBufferUtilizationDescriptor::DisplayDescri
 //----------------------------------------------------------------------------
 
 ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     LTW_offset_lower_bound(),
     LTW_offset_upper_bound()
 {
     _is_valid = true;
 }
 
-ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultiplexBufferUtilizationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -65,7 +67,7 @@ ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor(c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::MultiplexBufferUtilizationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     if (LTW_offset_lower_bound.set() && LTW_offset_upper_bound.set()) {
@@ -84,7 +86,7 @@ void ts::MultiplexBufferUtilizationDescriptor::serialize(Descriptor& desc, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::MultiplexBufferUtilizationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     LTW_offset_lower_bound.reset();
     LTW_offset_upper_bound.reset();
@@ -107,7 +109,7 @@ void ts::MultiplexBufferUtilizationDescriptor::deserialize(const Descriptor& des
 
 void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -129,7 +131,7 @@ void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::buildXML(xml::Element* root) const
+void ts::MultiplexBufferUtilizationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setOptionalIntAttribute(u"LTW_offset_lower_bound", LTW_offset_lower_bound);
     root->setOptionalIntAttribute(u"LTW_offset_upper_bound", LTW_offset_upper_bound);
@@ -140,7 +142,7 @@ void ts::MultiplexBufferUtilizationDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::fromXML(const xml::Element* element)
+void ts::MultiplexBufferUtilizationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

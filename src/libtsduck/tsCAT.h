@@ -53,15 +53,27 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        CAT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        CAT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
         CAT(const CAT& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        CAT& operator=(const CAT& other) = default;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~CAT();
     };
 }

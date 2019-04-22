@@ -41,60 +41,53 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AIT"
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::AIT, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::AIT, MY_TID);
+TS_ID_TABLE_FACTORY(ts::AIT, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::AIT::DisplaySection, MY_TID);
 
 //----------------------------------------------------------------------------
 // Constructors:
 //----------------------------------------------------------------------------
 
-ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, bool test_application_)
-    : AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_)
-    , application_type(application_type_)
-    , test_application_flag(test_application_)
-    , descs(this)
-    , applications(this)
+ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, bool test_application_) :
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
+    application_type(application_type_),
+    test_application_flag(test_application_),
+    descs(this),
+    applications(this)
 {
     _is_valid = true;
 }
 
-ts::AIT::AIT(const BinaryTable& table, const DVBCharset* charset)
-    : AbstractLongTable(MY_TID, MY_XML_NAME)
-    , application_type(0)
-    , test_application_flag(false)
-    , descs(this)
-    , applications(this)
+ts::AIT::AIT(DuckContext& duck, const BinaryTable& table) :
+    AIT()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
-ts::AIT::AIT(const AIT& other)
-    : AbstractLongTable(other)
-    , application_type(other.application_type)
-    , test_application_flag(other.test_application_flag)
-    , descs(this, other.descs)
-    , applications(this, other.applications)
+ts::AIT::AIT(const AIT& other) :
+    AbstractLongTable(other),
+    application_type(other.application_type),
+    test_application_flag(other.test_application_flag),
+    descs(this, other.descs),
+    applications(this, other.applications)
 {
 }
+
 
 //----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::AIT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     application_type = 0;
     test_application_flag = false;
     descs.clear();
     applications.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections.
     for (size_t si = 0; si < table.sectionCount(); ++si) {
@@ -156,22 +149,14 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::AIT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Current limitation: only one section is serialized.
     // Extraneous descriptors are dropped.
 
     uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data(payload);
-    size_t remain(sizeof(payload));
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
 
     // Insert common descriptors list (with leading length field).
     // Provision space for 16-bit application loop length.
@@ -221,7 +206,7 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
 
 void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -240,7 +225,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Process and display "common descriptors loop"
         if (length_field > 0) {
             strm << margin << "Common descriptor loop:" << std::endl;
-            display.displayDescriptorList(data, length_field, indent, section.tableId());
+            display.displayDescriptorList(section, data, length_field, indent);
         }
         data += length_field;
         size -= length_field;
@@ -265,7 +250,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                      << ", Application id: " << UString::Format(u"%d (0x%X)", { app_id, app_id })
                      << UString::Format(u"), Control code: %d", { control_code })
                      << std::endl;
-                display.displayDescriptorList(data, length_field, indent, section.tableId());
+                display.displayDescriptorList(section, data, length_field, indent);
                 data += length_field;
                 size -= length_field;
             }
@@ -279,13 +264,13 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::buildXML(xml::Element* root) const
+void ts::AIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
     root->setBoolAttribute(u"test_application_flag", test_application_flag);
     root->setIntAttribute(u"application_type", application_type, true);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (ApplicationMap::const_iterator it = applications.begin(); it != applications.end(); ++it) {
         xml::Element* e = root->addElement(u"application");
@@ -294,7 +279,7 @@ void ts::AIT::buildXML(xml::Element* root) const
         id->setIntAttribute(u"organization_id", it->first.organization_id, true);
         id->setIntAttribute(u"application_id", it->first.application_id, true);
 
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -302,13 +287,19 @@ void ts::AIT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AIT::fromXML(const xml::Element* element)
+void ts::AIT::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     applications.clear();
 
     xml::ElementVector children;
-    _is_valid = checkXMLName(element) && element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) && element->getBoolAttribute(is_current, u"current", false, true) && element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) && element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) && descs.fromXML(children, element, u"application");
+    _is_valid =
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) &&
+        element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) &&
+        descs.fromXML(duck, children, element, u"application");
 
     // Iterate through applications
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
@@ -319,8 +310,9 @@ void ts::AIT::fromXML(const xml::Element* element)
         xml::ElementVector others;
         UStringList allowed({ u"application_identifier" });
 
-        _is_valid = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
-            application.descs.fromXML(others, children[index], allowed) &&
+        _is_valid =
+            children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) &&
+            application.descs.fromXML(duck, others, children[index], allowed) &&
             id != nullptr &&
             id->getIntAttribute<uint32_t>(identifier.organization_id, u"organization_id", true, 0, 0, 0xFFFFFFFF) &&
             id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);

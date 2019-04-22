@@ -55,7 +55,7 @@ namespace ts {
     //! and return false.
     //!
     //! @param [in] value The @c int value of an enumeration value from on the
-    //! enumeration types in file @link tsModulation.h@endlink.
+    //! enumeration types in file @link tsModulation.h @endlink.
     //! @param [in] name The name of the feature or enumeration type (eg.
     //! "FEC", "guard interval", etc.) Used to report errors.
     //! @param [in] conv The ts::Enumeration instance for the enumeration type.
@@ -145,6 +145,8 @@ namespace ts {
         QAM_256  = ::QAM_256,
         VSB_8    = ::VSB_8,
         VSB_16   = ::VSB_16,
+        APSK_16  = ::APSK_16,
+        APSK_32  = ::APSK_32,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         QPSK     = ::BDA_MOD_QPSK,
         PSK_8    = ::BDA_MOD_8PSK,
@@ -156,6 +158,8 @@ namespace ts {
         QAM_256  = ::BDA_MOD_256QAM,
         VSB_8    = ::BDA_MOD_8VSB,
         VSB_16   = ::BDA_MOD_16VSB,
+        APSK_16  = ::BDA_MOD_16APSK,
+        APSK_32  = ::BDA_MOD_32APSK,
 #else
         QPSK,       //!< QPSK (4-PSK, DVB-S).
         PSK_8,      //!< 8-PSK (DVB-S2).
@@ -167,6 +171,8 @@ namespace ts {
         QAM_256,    //!< QAM-256.
         VSB_8,      //!< VSB-8.
         VSB_16,     //!< VSB-16.
+        APSK_16,    //!< 16-APSK (DVB-S2).
+        APSK_32,    //!< 32-APSK (DVB-S2).
 #endif
     };
 
@@ -373,7 +379,7 @@ namespace ts {
         BW_8_MHZ     =  8000000,
         BW_10_MHZ    = 10000000,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        BW_AUTO      = -10,
+        BW_AUTO      = ::BDA_CHAN_BANDWITH_NOT_DEFINED,
         BW_1_712_MHZ = -11,
         BW_5_MHZ     =   5,  // values in MHz, not enum
         BW_6_MHZ     =   6,
@@ -417,18 +423,33 @@ namespace ts {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
         TM_AUTO = ::TRANSMISSION_MODE_AUTO,
         TM_2K   = ::TRANSMISSION_MODE_2K,
-        TM_4K   = -10,
+        TM_4K   = ::TRANSMISSION_MODE_4K,
         TM_8K   = ::TRANSMISSION_MODE_8K,
+        TM_2KI  = -10,
+        TM_4KI  = -11,
+        TM_1K   = ::TRANSMISSION_MODE_1K,
+        TM_16K  = ::TRANSMISSION_MODE_16K,
+        TM_32K  = ::TRANSMISSION_MODE_32K,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         TM_AUTO = ::BDA_XMIT_MODE_NOT_DEFINED,
         TM_2K   = ::BDA_XMIT_MODE_2K,
         TM_4K   = ::BDA_XMIT_MODE_4K,
         TM_8K   = ::BDA_XMIT_MODE_8K,
+        TM_2KI  = ::BDA_XMIT_MODE_2K_INTERLEAVED,
+        TM_4KI  = ::BDA_XMIT_MODE_4K_INTERLEAVED,
+        TM_1K   = ::BDA_XMIT_MODE_1K,
+        TM_16K  = ::BDA_XMIT_MODE_16K,
+        TM_32K  = ::BDA_XMIT_MODE_32K,
 #else
         TM_AUTO,  //!< Transmission mode automatically set.
         TM_2K,    //!< 2K transmission mode.
         TM_4K,    //!< 4K transmission mode.
         TM_8K,    //!< 8K transmission mode.
+        TM_2KI,   //!< 2K-interleaved transmission mode.
+        TM_4KI,   //!< 4K-interleaved transmission mode.
+        TM_1K,    //!< 1K transmission mode, DVB-T2 (use 1K FFT).
+        TM_16K,   //!< 16K transmission mode, DVB-T2 (use 16K FFT).
+        TM_32K,   //!< 32K transmission mode, DVB-T2 (use 32K FFT).
 #endif
     };
 
@@ -442,23 +463,32 @@ namespace ts {
     //!
     enum GuardInterval {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
-        GUARD_AUTO = ::GUARD_INTERVAL_AUTO,
-        GUARD_1_32 = ::GUARD_INTERVAL_1_32,
-        GUARD_1_16 = ::GUARD_INTERVAL_1_16,
-        GUARD_1_8  = ::GUARD_INTERVAL_1_8,
-        GUARD_1_4  = ::GUARD_INTERVAL_1_4,
+        GUARD_AUTO   = ::GUARD_INTERVAL_AUTO,
+        GUARD_1_32   = ::GUARD_INTERVAL_1_32,
+        GUARD_1_16   = ::GUARD_INTERVAL_1_16,
+        GUARD_1_8    = ::GUARD_INTERVAL_1_8,
+        GUARD_1_4    = ::GUARD_INTERVAL_1_4,
+        GUARD_1_128  = ::GUARD_INTERVAL_1_128,
+        GUARD_19_128 = ::GUARD_INTERVAL_19_128,
+        GUARD_19_256 = ::GUARD_INTERVAL_19_256,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        GUARD_AUTO = ::BDA_GUARD_NOT_DEFINED,
-        GUARD_1_32 = ::BDA_GUARD_1_32,
-        GUARD_1_16 = ::BDA_GUARD_1_16,
-        GUARD_1_8  = ::BDA_GUARD_1_8,
-        GUARD_1_4  = ::BDA_GUARD_1_4,
+        GUARD_AUTO   = ::BDA_GUARD_NOT_DEFINED,
+        GUARD_1_32   = ::BDA_GUARD_1_32,
+        GUARD_1_16   = ::BDA_GUARD_1_16,
+        GUARD_1_8    = ::BDA_GUARD_1_8,
+        GUARD_1_4    = ::BDA_GUARD_1_4,
+        GUARD_1_128  = ::BDA_GUARD_1_128,
+        GUARD_19_128 = ::BDA_GUARD_19_128,
+        GUARD_19_256 = ::BDA_GUARD_19_256,
 #else
-        GUARD_AUTO,  //!< Guard interval automatically set.
-        GUARD_1_32,  //!< Guard interval 1/32.
-        GUARD_1_16,  //!< Guard interval 1/16.
-        GUARD_1_8,   //!< Guard interval 1/8.
-        GUARD_1_4,   //!< Guard interval 1/4.
+        GUARD_AUTO,    //!< Guard interval automatically set.
+        GUARD_1_32,    //!< Guard interval 1/32.
+        GUARD_1_16,    //!< Guard interval 1/16.
+        GUARD_1_8,     //!< Guard interval 1/8.
+        GUARD_1_4,     //!< Guard interval 1/4.
+        GUARD_1_128,   //!< Guard interval 1/128 (DVB-T2).
+        GUARD_19_128,  //!< Guard interval 19/128 (DVB-T2).
+        GUARD_19_256,  //!< Guard interval 19/256 (DVB-T2).
 #endif
     };
 
@@ -520,128 +550,4 @@ namespace ts {
     enum PLP : uint32_t {
         PLP_DISABLE = 0xFFFFFFFF //!< Special value meaning "disable PLP selection".
     };
-
-    //!
-    //! UHF (Ultra High Frequecy) band.
-    //!
-    //! UHF channels in MHz: frequency = 306 + 8 * channel.
-    //!
-    //! 167 kHz offsets may be applied (-1, 1, 2 or 3).
-    //!
-    namespace UHF {
-
-        const uint64_t CHANNEL_BASE = 306000000;   //!< UHF band base (306 MHz).
-        const uint64_t CHANNEL_WIDTH =  8000000;   //!< UHF channel width (8 MHz).
-        const uint64_t CHANNEL_OFFSET =  166666;   //!< Optional channel offset (~167 kHz).
-
-        const int FIRST_CHANNEL = 21;  //!< First channel in UHF band.
-        const int LAST_CHANNEL  = 69;  //!< Last channel in UHF band.
-
-        //!
-        //! Compute a UHF frequency from a channel number and optional offset count.
-        //! @param [in] channel UHF channel number.
-        //! @param [in] offset_count Optional offset count (usually from -1 to +3).
-        //! @return Frequency in Hz.
-        //!
-        TSDUCKDLL inline uint64_t Frequency(int channel, int offset_count = 0)
-        {
-            return CHANNEL_BASE + uint64_t(channel) * CHANNEL_WIDTH + uint64_t(offset_count) * CHANNEL_OFFSET;
-        }
-
-        //!
-        //! Compute a UHF channel number from a frequency.
-        //! @param [in] frequency Frequency in Hz.
-        //! @return UHF channel number.
-        //!
-        TSDUCKDLL inline int Channel(uint64_t frequency)
-        {
-            return int((frequency - CHANNEL_BASE + CHANNEL_WIDTH / 2) / CHANNEL_WIDTH);
-        }
-
-        //!
-        //! Compute a UHF offset count from frequency (approximate if necessary)
-        //! @param [in] frequency Frequency in Hz.
-        //! @return Offset count (positive or negative).
-        //!
-        TSDUCKDLL int OffsetCount(uint64_t frequency);
-
-        //!
-        //! Check if a frequency is in the UHF band.
-        //! @param [in] frequency Frequency in Hz.
-        //! @param [in] min_offset Minimum allowed offset. Default: -3.
-        //! @param [in] max_offset Maximum allowed offset. Default: +3.
-        //! @return True if the frequency is in the UHF band.
-        //!
-        TSDUCKDLL inline bool InBand(uint64_t frequency, int min_offset = -3, int max_offset = 3)
-        {
-            return frequency >= Frequency(FIRST_CHANNEL, min_offset) && frequency <= Frequency(LAST_CHANNEL, max_offset);
-        }
-
-        //!
-        //! Return a human-readable description of a UHF channel.
-        //! @param [in] channel UHF channel number.
-        //! @param [in] offset UHF channel offset count. Displayed only if non-zero.
-        //! @param [in] strength Signal strength in percent. Ignored if negative.
-        //! @param [in] quality Signal quality in percent. Ignored if negative.
-        //! @return Channel description.
-        //!
-        TSDUCKDLL UString Description(int channel, int offset, int strength = -1, int quality = -1);
-    }
-
-    //!
-    //! VHF (Very High Frequency) band III.
-    //!
-    //! VHF band III channels in MHz: frequency = 142.5 + 7 * channel.
-    //!
-    //! 167 kHz offsets may be applied (-1, 1, 2 or 3).
-    //!
-    namespace VHF {
-
-        const uint64_t CHANNEL_BASE = 142500000;  //!< VHF band base (142.5 MHz).
-        const uint64_t CHANNEL_WIDTH =  7000000;  //!< VHF channel width (7 MHz).
-        const uint64_t CHANNEL_OFFSET =  166666;  //!< Optional channel offset (~167 kHz).
-
-        const int FIRST_CHANNEL =  5;    //!< First channel in VHF band III.
-        const int LAST_CHANNEL  = 12;    //!< Last channel in VHF band III.
-
-        //!
-        //! Compute a VHF frequency from a channel number and optional offset count.
-        //! @param [in] channel VHF channel number.
-        //! @param [in] offset_count Optional offset count (usually from -1 to +3).
-        //! @return Frequency in Hz.
-        //!
-        TSDUCKDLL inline uint64_t Frequency(int channel, int offset_count = 0)
-        {
-            return CHANNEL_BASE + uint64_t(channel) * CHANNEL_WIDTH + uint64_t(offset_count) * CHANNEL_OFFSET;
-        }
-
-        //!
-        //! Compute a VHF channel number from a frequency.
-        //! @param [in] frequency Frequency in Hz.
-        //! @return VHF channel number.
-        //!
-        TSDUCKDLL inline int Channel(uint64_t frequency)
-        {
-            return int((frequency - CHANNEL_BASE + CHANNEL_WIDTH / 2) / CHANNEL_WIDTH);
-        }
-
-        //!
-        //! Compute a VHF offset count from frequency (approximate if necessary)
-        //! @param [in] frequency Frequency in Hz.
-        //! @return Offset count (positive or negative).
-        //!
-        TSDUCKDLL int OffsetCount(uint64_t frequency);
-
-        //!
-        //! Check if a frequency is in the UHF band III.
-        //! @param [in] frequency Frequency in Hz.
-        //! @param [in] min_offset Minimum allowed offset. Default: -3.
-        //! @param [in] max_offset Maximum allowed offset. Default: +3.
-        //! @return True if the frequency is in the VHF band III.
-        //!
-        TSDUCKDLL inline bool InBand (uint64_t frequency, int min_offset = -3, int max_offset = 3)
-        {
-            return frequency >= Frequency (FIRST_CHANNEL, min_offset) && frequency <= Frequency (LAST_CHANNEL, max_offset);
-        }
-    }
 }

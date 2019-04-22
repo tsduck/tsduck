@@ -385,6 +385,11 @@ bool ts::UDPSocket::dropMembership(Report& report)
 // Send a message to a destination address and port.
 //----------------------------------------------------------------------------
 
+bool ts::UDPSocket::send(const void* data, size_t size, Report& report)
+{
+    return send(data, size, _default_destination, report);
+}
+
 bool ts::UDPSocket::send(const void* data, size_t size, const SocketAddress& dest, Report& report)
 {
     ::sockaddr addr;

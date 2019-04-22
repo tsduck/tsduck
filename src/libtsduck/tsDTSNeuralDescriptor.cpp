@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDTSNeuralDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -37,6 +38,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"DTS_neural_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_DTS_NEURAL
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::DTSNeuralDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::DTSNeuralDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -48,17 +50,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DTSNeuralDescriptor::DisplayDescriptor, ts::EDID::E
 //----------------------------------------------------------------------------
 
 ts::DTSNeuralDescriptor::DTSNeuralDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     config_id(0),
     additional_info()
 {
     _is_valid = true;
 }
 
-ts::DTSNeuralDescriptor::DTSNeuralDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+ts::DTSNeuralDescriptor::DTSNeuralDescriptor(DuckContext& duck, const Descriptor& desc) :
     DTSNeuralDescriptor()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -66,7 +68,7 @@ ts::DTSNeuralDescriptor::DTSNeuralDescriptor(const Descriptor& bin, const DVBCha
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DTSNeuralDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -80,7 +82,7 @@ void ts::DTSNeuralDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DTSNeuralDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -97,7 +99,7 @@ void ts::DTSNeuralDescriptor::deserialize(const Descriptor& desc, const DVBChars
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::buildXML(xml::Element* root) const
+void ts::DTSNeuralDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"config_id", config_id, true);
     if (!additional_info.empty()) {
@@ -110,7 +112,7 @@ void ts::DTSNeuralDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DTSNeuralDescriptor::fromXML(const xml::Element* element)
+void ts::DTSNeuralDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -130,7 +132,7 @@ void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     // See ts::TablesDisplay::displayDescriptorData()
 
     if (size > 0) {
-        std::ostream& strm(display.out());
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         strm << margin << UString::Format(u"Config Id: 0x%X (%d))", {data[0], data[0]}) << std::endl;
         if (size > 1) {

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultilingualServiceNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multilingual_service_name_descriptor"
 #define MY_DID ts::DID_MLINGUAL_SERVICE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualServiceNameDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualServiceNameDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualServiceNameDescriptor::DisplayDescripto
 //----------------------------------------------------------------------------
 
 ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
@@ -57,10 +59,10 @@ ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualServiceNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -80,17 +82,17 @@ ts::MultilingualServiceNameDescriptor::Entry::Entry(const UString& lang_, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::MultilingualServiceNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language, charset)) {
+        if (!SerializeLanguageCode(duck, *bbp, it->language)) {
             desc.invalidate();
             return;
         }
-        bbp->append(it->service_provider_name.toDVBWithByteLength(0, NPOS, charset));
-        bbp->append(it->service_name.toDVBWithByteLength(0, NPOS, charset));
+        bbp->append(duck.toDVBWithByteLength(it->service_provider_name));
+        bbp->append(duck.toDVBWithByteLength(it->service_name));
     }
 
     serializeEnd(desc, bbp);
@@ -101,7 +103,7 @@ void ts::MultilingualServiceNameDescriptor::serialize(Descriptor& desc, const DV
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::MultilingualServiceNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
     const uint8_t* data = desc.payload();
@@ -109,7 +111,7 @@ void ts::MultilingualServiceNameDescriptor::deserialize(const Descriptor& desc, 
     entries.clear();
 
     while (_is_valid && size >= 4) {
-        const UString lang(UString::FromDVB(data, 3, charset));
+        const UString lang(UString::FromDVB(data, 3));
         const size_t prov_len = data[3];
         data += 4; size -= 4;
         _is_valid = prov_len + 1 <= size;
@@ -117,7 +119,7 @@ void ts::MultilingualServiceNameDescriptor::deserialize(const Descriptor& desc, 
             const size_t name_len = data[prov_len];
             _is_valid = prov_len + 1 + name_len <= size;
             if (_is_valid) {
-                entries.push_back(Entry(lang, UString::FromDVB(data, prov_len, charset), UString::FromDVB(data + prov_len + 1, name_len, charset)));
+                entries.push_back(Entry(lang, duck.fromDVB(data, prov_len), duck.fromDVB(data + prov_len + 1, name_len)));
                 data += prov_len + 1 + name_len;
                 size -= prov_len + 1 + name_len;
             }
@@ -133,18 +135,18 @@ void ts::MultilingualServiceNameDescriptor::deserialize(const Descriptor& desc, 
 
 void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
         const size_t prov_len = std::min<size_t>(data[3], size - 4);
         strm << margin
-             << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
-             << ", provider: \"" << UString::FromDVB(data + 4, prov_len, display.dvbCharset()) << "\"";
+             << "Language: " << UString::FromDVB(data, 3)
+             << ", provider: \"" << display.duck().fromDVB(data + 4, prov_len) << "\"";
         data += 4 + prov_len; size -= 4 + prov_len;
         if (size >= 1) {
             const size_t name_len = std::min<size_t>(data[0], size - 1);
-            strm << ", service: \"" << UString::FromDVB(data + 1, name_len, display.dvbCharset()) << "\"";
+            strm << ", service: \"" << display.duck().fromDVB(data + 1, name_len) << "\"";
             data += 1 + name_len; size -= 1 + name_len;
         }
         strm << std::endl;
@@ -158,7 +160,7 @@ void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& dis
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::buildXML(xml::Element* root) const
+void ts::MultilingualServiceNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"language");
@@ -173,7 +175,7 @@ void ts::MultilingualServiceNameDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::fromXML(const xml::Element* element)
+void ts::MultilingualServiceNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

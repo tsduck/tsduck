@@ -88,21 +88,21 @@ namespace ts {
         static bool IsReducedCW(const uint8_t *cw);
 
         // Implementation of CipherChaining interface. Cannot set IV with DVB CSA.
-        virtual bool setIV(const void*, size_t) override { return false; }
-        virtual size_t minIVSize() const override { return 0; }
-        virtual size_t maxIVSize() const override { return 0; }
-        virtual size_t minMessageSize() const override { return 0; }
-        virtual bool residueAllowed() const override { return true; }
+        virtual bool setIV(const void*, size_t) override;
+        virtual size_t minIVSize() const override;
+        virtual size_t maxIVSize() const override;
+        virtual size_t minMessageSize() const override;
+        virtual bool residueAllowed() const override;
 
         // Implementation of BlockCipher interface.
-        virtual UString name() const override { return u"DVB-CSA2"; }
-        virtual size_t blockSize() const override { return 8; }
-        virtual size_t minKeySize() const override { return KEY_SIZE; }
-        virtual size_t maxKeySize() const override { return KEY_SIZE; }
-        virtual bool isValidKeySize(size_t size) const override { return size == KEY_SIZE; }
-        virtual size_t minRounds() const override { return 8; }
-        virtual size_t maxRounds() const override { return 8; }
-        virtual size_t defaultRounds() const override { return 8; }
+        virtual UString name() const override;
+        virtual size_t blockSize() const override;
+        virtual size_t minKeySize() const override;
+        virtual size_t maxKeySize() const override;
+        virtual bool isValidKeySize(size_t size) const override;
+        virtual size_t minRounds() const override;
+        virtual size_t maxRounds() const override;
+        virtual size_t defaultRounds() const override;
         virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
         virtual bool encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length = nullptr) override;
         virtual bool decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length = nullptr) override;

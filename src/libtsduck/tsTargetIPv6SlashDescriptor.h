@@ -82,16 +82,16 @@ namespace ts {
 
         //!
         //! Constructor from a binary descriptor.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetIPv6SlashDescriptor(const Descriptor& bin, const DVBCharset* charset = nullptr);
+        TargetIPv6SlashDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize(Descriptor&, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const Descriptor&, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
     };
 }

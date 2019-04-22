@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetIPAddressDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -35,6 +36,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_IP_address_descriptor"
 #define MY_DID ts::DID_INT_IP_ADDR
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPAddressDescriptor, MY_XML_NAME, ts::TID_INT, ts::TID_UNT);
 
@@ -50,17 +52,17 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPAddressDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     IPv4_addr_mask(),
     IPv4_addr()
 {
     _is_valid = true;
 }
 
-ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetIPAddressDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -68,7 +70,7 @@ ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor(const Descriptor& desc,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetIPAddressDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt32(IPv4_addr_mask.address());
@@ -83,7 +85,7 @@ void ts::TargetIPAddressDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetIPAddressDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -108,7 +110,7 @@ void ts::TargetIPAddressDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     const char* header = "Address mask: ";
@@ -126,7 +128,7 @@ void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::buildXML(xml::Element* root) const
+void ts::TargetIPAddressDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIPAttribute(u"IPv4_addr_mask", IPv4_addr_mask);
     for (auto it = IPv4_addr.begin(); it != IPv4_addr.end(); ++it) {
@@ -139,7 +141,7 @@ void ts::TargetIPAddressDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPAddressDescriptor::fromXML(const xml::Element* element)
+void ts::TargetIPAddressDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     IPv4_addr.clear();
 

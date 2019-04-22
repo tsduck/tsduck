@@ -47,11 +47,11 @@ namespace ts {
         //!
         //! Default report line width.
         //!
-        static const size_t DEFAULT_LINE_WIDTH = 80;
+        static constexpr size_t DEFAULT_LINE_WIDTH = 80;
         //!
         //! Default margin width.
         //!
-        static const size_t DEFAULT_MARGIN_WIDTH = 2;
+        static constexpr size_t DEFAULT_MARGIN_WIDTH = 2;
 
         //!
         //! Constructor.

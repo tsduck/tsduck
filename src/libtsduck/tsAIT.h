@@ -40,6 +40,8 @@
 namespace ts {
     //!
     //! Representation of an Application Information Table (AIT)
+    //!
+    //! @see ETSI TS 101 812, 10.4.6.
     //! @ingroup table
     //!
     class TSDUCKDLL AIT : public AbstractLongTable
@@ -102,17 +104,27 @@ namespace ts {
         AIT(const AIT& other);
 
         //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
         //!
-        AIT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        AIT& operator=(const AIT& other) = default;
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        AIT(DuckContext& duck, const BinaryTable& table);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

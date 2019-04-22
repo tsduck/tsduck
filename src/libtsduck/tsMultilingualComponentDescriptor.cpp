@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultilingualComponentDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -58,10 +59,10 @@ ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualComponentDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -69,12 +70,12 @@ ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor(const Descr
 // Serialize / deserialize the prolog (overidden methods).
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::serializeProlog(const ByteBlockPtr& bbp, const DVBCharset* charset) const
+void ts::MultilingualComponentDescriptor::serializeProlog(DuckContext& duck, const ByteBlockPtr& bbp) const
 {
     bbp->appendUInt8(component_tag);
 }
 
-void ts::MultilingualComponentDescriptor::deserializeProlog(const uint8_t*& data, size_t& size, const DVBCharset* charset)
+void ts::MultilingualComponentDescriptor::deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size)
 {
     _is_valid = _is_valid && size >= 1;
     if (_is_valid) {
@@ -91,7 +92,7 @@ void ts::MultilingualComponentDescriptor::deserializeProlog(const uint8_t*& data
 
 void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -107,9 +108,9 @@ void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization / deserialization.
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::buildXML(xml::Element* root) const
+void ts::MultilingualComponentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    AbstractMultilingualDescriptor::buildXML(root);
+    AbstractMultilingualDescriptor::buildXML(duck, root);
     root->setIntAttribute(u"component_tag", component_tag);
 }
 
@@ -118,8 +119,8 @@ void ts::MultilingualComponentDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MultilingualComponentDescriptor::fromXML(const xml::Element* element)
+void ts::MultilingualComponentDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
-    AbstractMultilingualDescriptor::fromXML(element);
+    AbstractMultilingualDescriptor::fromXML(duck, element);
     _is_valid = _is_valid && element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
 }

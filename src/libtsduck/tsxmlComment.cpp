@@ -45,6 +45,11 @@ ts::xml::Comment::Comment(Node* parent, const UString& text, bool last) :
 {
 }
 
+ts::UString ts::xml::Comment::typeName() const
+{
+    return u"Comment";
+}
+
 
 //----------------------------------------------------------------------------
 // Print the node.

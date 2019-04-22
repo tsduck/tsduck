@@ -37,16 +37,19 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TablesDisplayArgs::TablesDisplayArgs() :
+ts::TablesDisplayArgs::TablesDisplayArgs(DuckContext& d) :
+    duck(d),
     raw_dump(false),
     raw_flags(UString::HEXA),
     tlv_syntax(),
-    min_nested_tlv(0),
-    default_pds(0),
-    default_charset(nullptr)
+    min_nested_tlv(0)
+{
+}
+
+ts::TablesDisplayArgs::~TablesDisplayArgs()
 {
 }
 
@@ -61,35 +64,6 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
     args.help(u"c-style",
               u"Same as --raw-dump (no interpretation of section) but dump the "
               u"bytes in C-language style.");
-
-    args.option(u"default-charset", 0, Args::STRING);
-    args.help(u"default-charset", u"name",
-              u"Default character set to use when interpreting DVB strings without "
-              u"explicit character table code. According to DVB standard ETSI EN 300 468, "
-              u"the default DVB character set is ISO-6937. However, some bogus "
-              u"signalization may assume that the default character set is different, "
-              u"typically the usual local character table for the region. This option "
-              u"forces a non-standard character table. The available table names are " +
-              UString::Join(DVBCharset::GetAllNames()) + u".");
-
-    args.option(u"default-pds", 0, PrivateDataSpecifierEnum);
-    args.help(u"default-pds",
-              u"Default private data specifier. This option is meaningful only when the "
-              u"signalization is incorrect, when private descriptors appear in tables "
-              u"without a preceding private_data_specifier_descriptor. The specified "
-              u"value is used as private data specifier to interpret private descriptors. "
-              u"The PDS value can be an integer or one of (not case-sensitive) names.");
-
-    args.option(u"europe", 0);
-    args.help(u"europe",
-              u"A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut "
-              u"for commonly incorrect signalization on some European satellites. In that "
-              u"signalization, the character encoding is ISO-8859-15, the most common "
-              u"encoding for Latin & Western Europe languages. However, this is not the "
-              u"default DVB character set and it should be properly specified in all "
-              u"strings, which is not the case with some operators. Using this option, "
-              u"all DVB strings without explicit table code are assumed to use ISO-8859-15 "
-              u"instead of the standard ISO-6937 encoding.");
 
     args.option(u"nested-tlv", 0, Args::POSITIVE, 0, 1, 0, 0, true);
     args.help(u"nested-tlv", u"min-size",
@@ -124,7 +98,6 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
 
 bool ts::TablesDisplayArgs::load(Args& args)
 {
-    args.getIntValue(default_pds, u"default-pds");
     raw_dump = args.present(u"raw-dump");
     raw_flags = UString::HEXA;
     if (args.present(u"c-style")) {
@@ -146,18 +119,5 @@ bool ts::TablesDisplayArgs::load(Args& args)
         tlv_syntax.push_back(tlv);
     }
     std::sort(tlv_syntax.begin(), tlv_syntax.end());
-
-    // Get default character set.
-    if (args.present(u"europe")) {
-        default_charset = &DVBCharsetSingleByte::ISO_8859_15;
-    }
-    else {
-        const UString csName(args.value(u"default-charset"));
-        if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == nullptr) {
-            args.error(u"invalid character set name '%s", {csName});
-            return false;
-        }
-    }
-
     return true;
 }

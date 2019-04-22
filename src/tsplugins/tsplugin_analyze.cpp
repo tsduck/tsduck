@@ -93,10 +93,12 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _multiple_output(false),
     _metrics(),
     _next_report(0),
-    _analyzer(),
+    _analyzer(duck),
     _analyzer_options()
 {
     // Define all standard analysis options.
+    duck.defineOptionsForStandards(*this);
+    duck.defineOptionsForDVBCharset(*this);
     _analyzer_options.defineOptions(*this);
 
     option(u"interval", 'i', POSITIVE);
@@ -126,11 +128,15 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 
 bool ts::AnalyzePlugin::start()
 {
+    // Load all standard analysis options.
+    duck.loadOptions(*this);
+    _analyzer_options.load(*this);
+
     _output_name = value(u"output-file");
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
-    _analyzer_options.load(*this);
+
     _analyzer.setAnalysisOptions(_analyzer_options);
 
     // For production of multiple reports at regular intervals.

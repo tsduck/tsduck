@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a private_data_specifier_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"private_data_specifier_descriptor"
 #define MY_DID ts::DID_PRIV_DATA_SPECIF
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,26 +45,20 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataSpecifierDescriptor::DisplayDescriptor, 
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     pds(pds_)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    pds(0)
+ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(DuckContext& duck, const Descriptor& desc) :
+    PrivateDataSpecifierDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -74,7 +66,7 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descrip
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::PrivateDataSpecifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     uint8_t data[6];
     data[0] = _tag;
@@ -90,7 +82,7 @@ void ts::PrivateDataSpecifierDescriptor::serialize(Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::PrivateDataSpecifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 
@@ -106,7 +98,7 @@ void ts::PrivateDataSpecifierDescriptor::deserialize(const Descriptor& desc, con
 
 void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
@@ -135,7 +127,7 @@ namespace {
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::buildXML(xml::Element* root) const
+void ts::PrivateDataSpecifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntEnumAttribute(KnownPDS, u"private_data_specifier", pds);
 }
@@ -145,7 +137,7 @@ void ts::PrivateDataSpecifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::fromXML(const xml::Element* element)
+void ts::PrivateDataSpecifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

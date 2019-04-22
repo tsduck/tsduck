@@ -242,12 +242,12 @@ namespace ts {
 
         //!
         //! Apply requested transformations on a PMT.
+        //! @param [in,out] duck TSDuck execution environment.
         //! @param [in,out] pmt The PMT to update. All audio streams are modified according to the
         //! content of this vector of audio options.
-        //! @param [in,out] report Where to report error.
         //! @param [in] severity Severity of errors (ts::Severity::Error by default).
         //! @return True on success, false on error.
         //!
-        bool apply(PMT& pmt, Report& report, int severity = Severity::Error) const;
+        bool apply(DuckContext& duck, PMT& pmt, int severity = Severity::Error) const;
     };
 }

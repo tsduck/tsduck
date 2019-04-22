@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TCPSocket::TCPSocket() :
@@ -45,14 +45,22 @@ ts::TCPSocket::TCPSocket() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor.
-//----------------------------------------------------------------------------
-
 ts::TCPSocket::~TCPSocket()
 {
     TCPSocket::close(NULLREP);
+}
+
+
+//----------------------------------------------------------------------------
+// Default implementations of handlers.
+//----------------------------------------------------------------------------
+
+void ts::TCPSocket::handleOpened(Report& report)
+{
+}
+
+void ts::TCPSocket::handleClosed(Report& report)
+{
 }
 
 

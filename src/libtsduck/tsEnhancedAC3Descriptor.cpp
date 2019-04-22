@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEnhancedAC3Descriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"enhanced_AC3_descriptor"
 #define MY_DID ts::DID_ENHANCED_AC3
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, ts::EDID::Standard(MY_DID));
@@ -47,11 +49,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EnhancedAC3Descriptor::DisplayDescriptor, ts::EDID:
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_type(),
     bsid(),
     mainid(),
@@ -65,24 +67,10 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    component_type(),
-    bsid(),
-    mainid(),
-    asvc(),
-    mixinfoexists(false),
-    substream1(),
-    substream2(),
-    substream3(),
-    additional_info()
+ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
+    EnhancedAC3Descriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -90,7 +78,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc, const 
 // Merge inside this object missing information which can be found in other object
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::merge (const EnhancedAC3Descriptor& other)
+void ts::EnhancedAC3Descriptor::merge(const EnhancedAC3Descriptor& other)
 {
     if (!component_type.set()) {
         component_type = other.component_type;
@@ -124,7 +112,7 @@ void ts::EnhancedAC3Descriptor::merge (const EnhancedAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::EnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -171,7 +159,7 @@ void ts::EnhancedAC3Descriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::EnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
@@ -229,7 +217,7 @@ void ts::EnhancedAC3Descriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -289,7 +277,7 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::buildXML(xml::Element* root) const
+void ts::EnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"mixinfoexists", mixinfoexists);
     root->setOptionalIntAttribute(u"component_type", component_type, true);
@@ -309,7 +297,7 @@ void ts::EnhancedAC3Descriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::fromXML(const xml::Element* element)
+void ts::EnhancedAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

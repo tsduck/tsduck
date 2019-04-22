@@ -26,19 +26,25 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for DVB tuners parameters
-//
-//----------------------------------------------------------------------------
 
 #include "tsTunerParameters.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerParametersATSC.h"
-#include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
+#include "tsChannelFile.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
+
+ts::TunerParameters::~TunerParameters()
+{
+}
 
 
 //----------------------------------------------------------------------------
@@ -46,15 +52,72 @@ TSDUCK_SOURCE;
 // depending on the tuner type. The parameters have their default values.
 //----------------------------------------------------------------------------
 
-ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
+ts::TunerParametersPtr ts::TunerParameters::Factory(TunerType tuner_type)
 {
+    TunerParameters* ptr = nullptr;
     switch (tuner_type) {
-        case DVB_S: return new TunerParametersDVBS();
-        case DVB_C: return new TunerParametersDVBC();
-        case DVB_T: return new TunerParametersDVBT();
-        case ATSC:  return new TunerParametersATSC();
-        default:    assert(false); return nullptr;
+        case DVB_S: ptr = new TunerParametersDVBS(); break;
+        case DVB_C: ptr = new TunerParametersDVBC(); break;
+        case DVB_T: ptr = new TunerParametersDVBT(); break;
+        case ATSC:  ptr = new TunerParametersATSC(); break;
+        default:    assert(false); break;
     }
+    CheckNonNull(ptr);
+    return TunerParametersPtr(ptr);
+}
+
+
+//----------------------------------------------------------------------------
+// Allocate a TunerParameters from a delivery system descriptor.
+//----------------------------------------------------------------------------
+
+ts::TunerParametersPtr ts::TunerParameters::FromDeliveryDescriptor(const Descriptor& desc)
+{
+    TunerParametersPtr ptr;
+    switch (desc.tag()) {
+        case DID_SAT_DELIVERY:     ptr = new TunerParametersDVBS(); break;
+        case DID_CABLE_DELIVERY:   ptr = new TunerParametersDVBC(); break;
+        case DID_TERREST_DELIVERY: ptr = new TunerParametersDVBT(); break;
+        default: return TunerParametersPtr(); // Not a known delivery descriptor
+    }
+    CheckNonNull(ptr.pointer());
+    if (!ptr->fromDeliveryDescriptor(desc)) {
+        ptr.reset();
+    }
+    return ptr;
+}
+
+
+//----------------------------------------------------------------------------
+// Allocate a TunerParameters from an XML element.
+//----------------------------------------------------------------------------
+
+ts::TunerParametersPtr ts::TunerParameters::FromXML(const xml::Element* elem)
+{
+    if (elem == nullptr) {
+        return TunerParametersPtr();
+    }
+    TunerParametersPtr ptr;
+    if (elem->name().similar(u"atsc")) {
+        ptr = new TunerParametersATSC();
+    }
+    else if (elem->name().similar(u"dvbc")) {
+        ptr = new TunerParametersDVBC();
+    }
+    else if (elem->name().similar(u"dvbs")) {
+        ptr = new TunerParametersDVBS();
+    }
+    else if (elem->name().similar(u"dvbt")) {
+        ptr = new TunerParametersDVBT();
+    }
+    else {
+        return TunerParametersPtr(); // Not a known element
+    }
+    CheckNonNull(ptr.pointer());
+    if (!ptr->fromXML(elem)) {
+        ptr.reset();
+    }
+    return ptr;
 }
 
 
@@ -62,32 +125,35 @@ ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, Report& report)
+ts::TunerParametersPtr ts::TunerParameters::FromTunerArgs(TunerType type, const TunerArgs& args, Report& report)
 {
-    if (tuner.channel_name.set()) {
+    if (args.channel_name.set()) {
         // Use --channel-transponder option
-        // Get szap/czap/tzap configuration file name.
+
+        // Get tuning file name.
         UString file;
-        if (tuner.zap_file_name.set()) {
-            file = tuner.zap_file_name.value();
+        if (args.tuning_file_name.set()) {
+            file = args.tuning_file_name.value();
         }
-        else if ((file = TunerArgs::DefaultZapFile(_tuner_type)).empty()) {
-            report.error(u"--channel-transponder unsupported for frontend type " + TunerTypeEnum.name(_tuner_type));
-            return false;
+        if (file.empty() || file == u"-") {
+            file = ChannelFile::DefaultFileName();
         }
-        // Read tuning info from zap file
-        return GetTunerFromZapFile(tuner.channel_name.value(), file, *this, report);
-    }
-    else if (!tuner.zap_specification.set()) {
-        // No --tune specified, invoke subclass for individual tuning options
-        return fromArgs(tuner, report);
-    }
-    else if (fromZapFormat(tuner.zap_specification.value())) {
-        return true;
+
+        // Load channels file.
+        ChannelFile channels;
+        if (!channels.load(file, report)) {
+            return TunerParametersPtr();
+        }
+
+        // Retrieve tuning options.
+        return channels.serviceToTuning(type, args.channel_name.value(), false, report);
     }
     else {
-        report.error(u"invalid --tune specification");
-        return false;
+        // Allocate tuning parameters of the appropriate type
+        TunerParametersPtr params(TunerParameters::Factory(type));
+
+        // Invoke subclass for individual tuning options.
+        return params->fromArgs(args, report) ? params : TunerParametersPtr();
     }
 }
 
@@ -108,4 +174,15 @@ ts::BitRate ts::TunerParameters::TheoreticalBitrateForModulation(Modulation modu
     // 188-bit packets.
 
     return fec_div == 0 ? 0 : BitRate((uint64_t(symbol_rate) * bitpersym * fec_mul * 188) / (fec_div * 204));
+}
+
+
+//----------------------------------------------------------------------------
+// Attempt to convert the tuning parameters in modulation parameters for
+// Dektec modulator cards. Unimplemented by default.
+//----------------------------------------------------------------------------
+
+bool ts::TunerParameters::convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
+{
+    return false;
 }

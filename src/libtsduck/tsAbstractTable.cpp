@@ -28,16 +28,21 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractTable.h"
+#include "tsBinaryTable.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Protected constructor for subclasses.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name) :
-    AbstractSignalization(xml_name),
+ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name, Standards standards) :
+    AbstractSignalization(xml_name, standards),
     _table_id(tid)
+{
+}
+
+ts::AbstractTable::~AbstractTable()
 {
 }
 
@@ -63,4 +68,64 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
         descs = other.descs;
     }
     return *this;
+}
+
+
+//----------------------------------------------------------------------------
+// This method checks if a table id is valid for this object.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractTable::isValidTableId(TID tid) const
+{
+    // The default implementation checks that the TID is identical to the TID of this object.
+    return tid == _table_id;
+}
+
+
+//----------------------------------------------------------------------------
+// This method serializes a table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
+{
+    // Reinitialize table object.
+    table.clear();
+
+    // Return an empty table if this object is not valid.
+    if (!_is_valid) {
+        return;
+    }
+
+    // Call the subclass implementation.
+    serializeContent(duck, table);
+
+    // Add the standards of the serialized table into the context.
+    duck.addStandards(definingStandards());
+}
+
+
+//----------------------------------------------------------------------------
+// This method deserializes a binary table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
+{
+    // Invalidate this object.
+    // Note that deserializeContent() is still responsible for clearing specific fields.
+    _is_valid = false;
+
+    // Keep this object invalid if the binary table is invalid or has an incorrect table if for this class.
+    if (!table.isValid() || !isValidTableId(table.tableId())) {
+        return;
+    }
+
+    // Table is already checked to be compatible but can be different from current one.
+    // So, we need to update this object.
+    _table_id = table.tableId();
+
+    // Call the subclass implementation.
+    deserializeContent(duck, table);
+
+    // Add the standards of the deserialized table into the context.
+    duck.addStandards(definingStandards());
 }

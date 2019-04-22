@@ -43,12 +43,17 @@ TSDUCK_SOURCE;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
     ts::UString reader;        // Optional reader name
     uint32_t    timeout_ms;    // Timeout in milliseconds
     uint32_t    reset_action;  // Type of reset to apply
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"List or control smartcards", u"[options] [reader-name]"),
     reader(),

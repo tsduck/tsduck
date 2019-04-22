@@ -130,7 +130,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pmt, ts::PMTPlugin)
 
 ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     AbstractTablePlugin(tsp_, u"Perform various transformations on the PMT", u"[options]", u"PMT"),
-    _service(nullptr, *tsp_),
+    _service(duck, nullptr),
     _removed_pid(),
     _removed_desc(),
     _removed_stream(),
@@ -280,7 +280,7 @@ void ts::PMTPlugin::addComponentDescriptor(PID pid, const AbstractDescriptor& de
     }
 
     // Add the new descriptor.
-    _add_pid_descs[pid]->add(desc);
+    _add_pid_descs[pid]->add(duck, desc);
 }
 
 
@@ -436,11 +436,11 @@ bool ts::PMTPlugin::start()
     // Get list of descriptors to add
     UStringVector cadescs;
     getValues(cadescs, u"add-ca-descriptor");
-    if (!CADescriptor::AddFromCommandLine(_add_descs, cadescs, *tsp)) {
+    if (!CADescriptor::AddFromCommandLine(duck, _add_descs, cadescs)) {
         return false;
     }
     if (present(u"add-programinfo-id")) {
-        _add_descs.add(RegistrationDescriptor(intValue<uint32_t>(u"add-programinfo-id")));
+        _add_descs.add(duck, RegistrationDescriptor(intValue<uint32_t>(u"add-programinfo-id")));
     }
 
     // Get PMT PID or service description
@@ -474,7 +474,7 @@ void ts::PMTPlugin::createNewTable(BinaryTable& table)
         pmt.service_id = _service.getId();
     }
 
-    pmt.serialize(table);
+    pmt.serialize(duck, table);
 }
 
 
@@ -491,7 +491,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Process the PMT.
-    PMT pmt(table);
+    PMT pmt(duck, table);
     if (!pmt.isValid()) {
         tsp->warning(u"found invalid PMT");
         reinsert = false;
@@ -571,7 +571,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Modify audio languages
-    _languages.apply(pmt, *tsp);
+    _languages.apply(duck, pmt);
 
     // Modify AC-3 signaling from ATSC to DVB method
     if (_ac3_atsc2dvb) {
@@ -580,7 +580,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 smi->second.stream_type = ST_PES_PRIV;
                 if (smi->second.descs.search(DID_AC3) == smi->second.descs.count()) {
                     // No AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(AC3Descriptor());
+                    smi->second.descs.add(duck, AC3Descriptor());
                 }
             }
         }
@@ -593,7 +593,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 smi->second.stream_type = ST_PES_PRIV;
                 if (smi->second.descs.search (DID_ENHANCED_AC3) == smi->second.descs.count()) {
                     // No enhanced_AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(EnhancedAC3Descriptor());
+                    smi->second.descs.add(duck, EnhancedAC3Descriptor());
                 }
             }
         }
@@ -608,7 +608,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
             const DescriptorList& dlist(smi->second.descs);
             for (size_t i = dlist.search(DID_STREAM_ID); i < dlist.count(); i = dlist.search(DID_STREAM_ID, i + 1)) {
-                const StreamIdentifierDescriptor sid(*dlist[i]);
+                const StreamIdentifierDescriptor sid(duck, *dlist[i]);
                 if (sid.isValid()) {
                     ctags.set(sid.component_tag);
                 }
@@ -632,7 +632,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 }
             }
             // Add the stream_identifier_descriptor in the component
-            dlist.add(sid);
+            dlist.add(duck, sid);
         }
     }
 
@@ -647,7 +647,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Reserialize modified PMT.
-    pmt.serialize(table);
+    pmt.serialize(duck, table);
 }
 
 

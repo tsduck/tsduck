@@ -34,8 +34,8 @@
 
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
-OSDIR    := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
-CXXVPATH  = $(OSDIR) unix private
+OSDIR := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
+CXXVPATH = $(OSDIR) unix private
 
 # Detect the presence of the Dektec DTAPI.
 # DTAPI shall be separately downloaded using "make dtapi".
@@ -44,25 +44,16 @@ CXXVPATH  = $(OSDIR) unix private
 # DTAPI is not available for MacOS and is not downloaded, not present.
 # Similarly, it cross-compilation is required, skip DTAPI.
 
-ifeq ($(MACOS)$(NODTAPI)$(CROSS)$(CROSS_TARGET),)
-    DTAPI_ROOT := ../../dektec/LinuxSDK/DTAPI
-    ifeq ($(DTAPI_OBJECT),)
-        # No DTAPI was preset by user. Try to find one.
-        ifeq ($(shell uname -m)$(M32),x86_64)
-            DTAPI_OBJECT_NAME := DTAPI64.o
-        else
-            DTAPI_OBJECT_NAME := DTAPI.o
-        endif
-        DTAPI_OBJECT := $(lastword $(wildcard $(DTAPI_ROOT)/Lib/*/$(DTAPI_OBJECT_NAME)))
-        DTAPI_HEADER := $(wildcard $(DTAPI_ROOT)/Include/DTAPI.h)
-    endif
+ifeq ($(NODTAPI)$(CROSS)$(CROSS_TARGET),)
+    DTAPI_OBJECT := $(shell ../../dektec/dtapi-config.sh --object)
+    DTAPI_HEADER := $(shell ../../dektec/dtapi-config.sh --header)
 endif
 
 ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
     NODTAPI := true
     CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 else
-    CXXFLAGS_INCLUDES += -isystem $(DTAPI_ROOT)/Include
+    CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
 endif
 
 # With static link, we compile in a specific directory.
@@ -130,7 +121,12 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(
 .PHONY: install install-devel
 install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml $(wildcard tsduck.*.names) $(SYSROOT)$(SYSPREFIX)/bin
+	rm -f $(SYSROOT)$(SYSPREFIX)/bin/tsduck.xml $(SYSROOT)$(SYSPREFIX)/bin/tsduck.channels.xml
+	install -m 644 \
+	    $(OBJDIR)/$(SHARED_LIBTSDUCK) \
+	    $(wildcard tsduck.*.xml) \
+	    $(wildcard tsduck.*.names) \
+	    $(SYSROOT)$(SYSPREFIX)/bin
 install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)

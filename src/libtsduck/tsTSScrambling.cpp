@@ -44,6 +44,7 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _encrypt_scv(SC_CLEAR),
     _decrypt_scv(SC_CLEAR),
     _dvbcsa(),
+    _dvbcissa(),
     _idsa(),
     _scrambler{nullptr, nullptr}
 {
@@ -59,6 +60,7 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _encrypt_scv(SC_CLEAR),
     _decrypt_scv(SC_CLEAR),
     _dvbcsa(),
+    _dvbcissa(),
     _idsa(),
     _scrambler{nullptr, nullptr}
 {
@@ -78,6 +80,10 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
             case SCRAMBLING_DVB_CSA2:
                 _scrambler[0] = &_dvbcsa[0];
                 _scrambler[1] = &_dvbcsa[1];
+                break;
+            case SCRAMBLING_DVB_CISSA1:
+                _scrambler[0] = &_dvbcissa[0];
+                _scrambler[1] = &_dvbcissa[1];
                 break;
             case SCRAMBLING_ATIS_IIF_IDSA:
                 _scrambler[0] = &_idsa[0];
@@ -125,9 +131,14 @@ void ts::TSScrambling::defineOptions(Args& args) const
     args.help(u"cw-file", u"name",
               u"Specifies a text file containing the list of control words to apply. "
               u"Each line of the file must contain exactly 16 hexadecimal digits (32 "
-              u"digits with --atis-idsa). The next control word is used each time the "
+              u"digits with --atis-idsa or --dvb-cissa). The next control word is used each time the "
               u"\"scrambling_control\" changes in the TS packets header. When all control "
               u"words are used, the first one is used again, and so on.");
+
+    args.option(u"dvb-cissa");
+    args.help(u"dvb-cissa",
+              u"Use DVB-CISSA scrambling instead of DVB-CSA2 (the default). "
+              u"The control words are 16-byte long instead of 8-byte.");
 
     args.option(u"dvb-csa2");
     args.help(u"dvb-csa2", u"Use DVB-CSA2 scrambling. This is the default.");
@@ -135,7 +146,7 @@ void ts::TSScrambling::defineOptions(Args& args) const
     args.option(u"no-entropy-reduction", 'n');
     args.help(u"no-entropy-reduction",
               u"With DVB-CSA2, do not perform control word entropy reduction to 48 bits. "
-              u"Keep full 64-bit control words. Ignored with --atis-idsa.");
+              u"Keep full 64-bit control words. Ignored with --atis-idsa or --dvb-cissa.");
 }
 
 
@@ -147,11 +158,14 @@ void ts::TSScrambling::defineOptions(Args& args) const
 bool ts::TSScrambling::loadArgs(Args& args)
 {
     // Set the scrambler to use.
-    if (args.present(u"atis-idsa") + args.present(u"dvb-csa2") > 1) {
-        args.error(u"--atis-idsa and --dvb-csa2 are mutally exclusive");
+    if (args.present(u"atis-idsa") + args.present(u"dvb-cissa") + args.present(u"dvb-csa2") > 1) {
+        args.error(u"--atis-idsa, --dvb-cissa and --dvb-csa2 are mutally exclusive");
     }
     else if (args.present(u"atis-idsa")) {
         setScramblingType(SCRAMBLING_ATIS_IIF_IDSA);
+    }
+    else if (args.present(u"dvb-cissa")) {
+        setScramblingType(SCRAMBLING_DVB_CISSA1);
     }
     else {
         setScramblingType(SCRAMBLING_DVB_CSA2);
@@ -159,9 +173,9 @@ bool ts::TSScrambling::loadArgs(Args& args)
 
     // If an explicit scrambling type is given, the application should probably
     // ignore scrambling descriptors when descrambling.
-    _explicit_type = args.present(u"atis-idsa") || args.present(u"dvb-csa2");
+    _explicit_type = args.present(u"atis-idsa") || args.present(u"dvb-cissa") || args.present(u"dvb-csa2");
 
-    // Set DVB-CSA2 entropy mode regardless of --atis-idsa in case we switch later to DVB-CSA2.
+    // Set DVB-CSA2 entropy mode regardless of --atis-idsa or --dvb-cissa in case we switch later to DVB-CSA2.
     setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
 
     // Get control words as list of strings.
@@ -223,6 +237,7 @@ bool ts::TSScrambling::setNextFixedCW(int parity)
 {
     // Error if no fixed control word were provided on the command line.
     if (_cw_list.empty()) {
+        _report.error(u"no fixed CW from command line");
         return false;
     }
 
@@ -297,15 +312,26 @@ bool ts::TSScrambling::encrypt(TSPacket& pkt)
         return false;
     }
 
-    // Encrypt the packet.
-    CipherChaining* algo = _scrambler[_encrypt_scv & 1];
-
-    assert(algo != nullptr);
+    // Select scrambling algo.
     assert(_encrypt_scv == SC_EVEN_KEY || _encrypt_scv == SC_ODD_KEY);
+    CipherChaining* algo = _scrambler[_encrypt_scv & 1];
+    assert(algo != nullptr);
 
-    const bool ok = algo->encryptInPlace(pkt.getPayload(), pkt.getPayloadSize());
+    // Check if the residue shall be included in the scrambling.
+    size_t psize = pkt.getPayloadSize();
+    if (!algo->residueAllowed()) {
+        // Remove the residue from the payload.
+        assert(algo->blockSize() != 0);
+        psize -= psize % algo->blockSize();
+    }
+
+    // Encrypt the packet.
+    const bool ok = psize == 0 || algo->encryptInPlace(pkt.getPayload(), psize);
     if (ok) {
         pkt.setScrambling(_encrypt_scv);
+    }
+    else {
+        _report.error(u"packet encryption error using %s", {algo->name()});
     }
     return ok;
 }
@@ -332,13 +358,25 @@ bool ts::TSScrambling::decrypt(TSPacket& pkt)
         return false;
     }
 
-    // Decrypt the packet.
+    // Select descrambling algo.
     CipherChaining* algo = _scrambler[_decrypt_scv & 1];
     assert(algo != nullptr);
 
-    const bool ok = algo->decryptInPlace(pkt.getPayload(), pkt.getPayloadSize());
+    // Check if the residue shall be included in the scrambling.
+    size_t psize = pkt.getPayloadSize();
+    if (!algo->residueAllowed()) {
+        // Remove the residue from the payload.
+        assert(algo->blockSize() != 0);
+        psize -= psize % algo->blockSize();
+    }
+
+    // Decrypt the packet.
+    const bool ok = psize == 0 || algo->decryptInPlace(pkt.getPayload(), psize);
     if (ok) {
         pkt.setScrambling(SC_CLEAR);
+    }
+    else {
+        _report.error(u"packet decryption error using %s", {algo->name()});
     }
     return ok;
 }

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsDuckContext.h"
 #include "tsTime.h"
 #include "tsSectionFile.h"
 #include "tsTablesDisplay.h"
@@ -40,6 +41,7 @@
 #include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsSysUtils.h"
+#include "tsPagerArgs.h"
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
@@ -56,24 +58,40 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
+    virtual ~Options();
 
+    ts::DuckContext       duck;              // TSDuck execution context.
     ts::UStringVector     infiles;           // Input file names
     ts::TablesDisplayArgs display;           // Options about displaying tables
+    ts::PagerArgs         pager;             // Output paging options.
     ts::UDPReceiver       udp;               // Options about receiving UDP tables
     size_t                max_tables;        // Max number of tables to dump.
     size_t                max_invalid_udp;   // Max number of invalid UDP messages before giving up.
     bool                  no_encapsulation;  // Raw sections in UDP messages.
 };
 
+// Destructor.
+Options::~Options() {}
+
+// Constructor.
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
+    duck(this),
     infiles(),
-    display(),
+    display(duck),
+    pager(true, true),
     udp(*this, false, false),
     max_tables(0),
     max_invalid_udp(16),
     no_encapsulation(false)
 {
+    duck.defineOptionsForPDS(*this);
+    duck.defineOptionsForStandards(*this);
+    duck.defineOptionsForDVBCharset(*this);
+    pager.defineOptions(*this);
+    display.defineOptions(*this);
+    udp.defineOptions(*this);
+
     option(u"", 0, STRING);
     help(u"",
          u"Input binary section file. Several files can be specified. By default, without "
@@ -91,15 +109,14 @@ Options::Options(int argc, char *argv[]) :
          u"With --ip-udp, receive the tables as raw binary messages in UDP packets. "
          u"By default, the tables are formatted into TLV messages.");
 
-    // Additional options for display tables and to receive from UDP.
-    display.defineOptions(*this);
-    udp.defineOptions(*this);
-
     analyze(argc, argv);
 
-    getValues(infiles, u"");
+    duck.loadOptions(*this);
+    pager.load(*this);
     display.load(*this);
     udp.load(*this);
+
+    getValues(infiles, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());
     no_encapsulation = present(u"no-encapsulation");
 
@@ -127,9 +144,12 @@ bool DumpUDP(Options& opt)
     ts::SocketAddress sender;
     ts::SocketAddress destination;
     ts::ByteBlock packet(ts::IP_MAX_PACKET_SIZE);
-    ts::TablesDisplay display(opt.display, opt);
+    ts::TablesDisplay display(opt.display);
     ts::Time timestamp;
     ts::SectionPtrVector sections;
+
+    // Redirect display on pager process or stdout only.
+    opt.duck.setOutput(&opt.pager.output(opt), false);
 
     // Receive UDP packets.
     while (ok && opt.max_tables > 0) {
@@ -189,13 +209,12 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 {
     // Report file name in case of multiple files
     if (opt.verbose() && opt.infiles.size() > 1) {
-        std::cout << "* File: " << file_name << std::endl << std::endl;
+        opt.pager.output(opt) << "* File: " << file_name << std::endl << std::endl;
     }
 
     // Load all sections
     bool ok = false;
-    ts::SectionFile file;
-    file.setDefaultCharset(opt.display.default_charset);
+    ts::SectionFile file(opt.duck);
 
     if (file_name.empty()) {
         // no input file specified, use standard input
@@ -208,7 +227,8 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 
     if (ok) {
         // Display all sections.
-        ts::TablesDisplay display(opt.display, opt);
+        ts::TablesDisplay display(opt.display);
+        opt.duck.setOutput(&opt.pager.output(opt), false);
         for (ts::SectionPtrVector::const_iterator it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
             display.displaySection(**it) << std::endl;
             opt.max_tables--;
@@ -230,7 +250,7 @@ int MainCode(int argc, char *argv[])
     bool ok = true;
 
     // Dump files or network packets.
-    std::cout << std::endl;
+    opt.pager.output(opt) << std::endl;
     if (opt.udp.receiverSpecified()) {
         ok = DumpUDP(opt);
     }
@@ -238,7 +258,7 @@ int MainCode(int argc, char *argv[])
         ok = DumpFile(opt, u"");
     }
     else {
-        for (ts::UStringVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
+        for (auto it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
             ok = DumpFile(opt, *it) && ok;
         }
     }

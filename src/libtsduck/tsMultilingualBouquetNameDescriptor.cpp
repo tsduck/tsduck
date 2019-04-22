@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMultilingualBouquetNameDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 
@@ -41,7 +42,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualBouquetNameDescriptor::DisplayDescripto
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor() :
@@ -50,13 +51,12 @@ ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::MultilingualBouquetNameDescriptor::MultilingualBouquetNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     MultilingualBouquetNameDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
+}
+
+ts::MultilingualBouquetNameDescriptor::~MultilingualBouquetNameDescriptor()
+{
 }

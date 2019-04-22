@@ -48,14 +48,14 @@ namespace ts {
         static const size_t ROUNDS = 16;     //!< DES number of rounds.
 
         // Implementation of BlockCipher interface:
-        virtual UString name() const override {return u"DES";}
-        virtual size_t blockSize() const override {return BLOCK_SIZE;}
-        virtual size_t minKeySize() const override {return KEY_SIZE;}
-        virtual size_t maxKeySize() const override {return KEY_SIZE;}
-        virtual bool isValidKeySize (size_t size) const override {return size == KEY_SIZE;}
-        virtual size_t minRounds() const override {return ROUNDS;}
-        virtual size_t maxRounds() const override {return ROUNDS;}
-        virtual size_t defaultRounds() const override {return ROUNDS;}
+        virtual UString name() const override;
+        virtual size_t blockSize() const override;
+        virtual size_t minKeySize() const override;
+        virtual size_t maxKeySize() const override;
+        virtual bool isValidKeySize (size_t size) const override;
+        virtual size_t minRounds() const override;
+        virtual size_t maxRounds() const override;
+        virtual size_t defaultRounds() const override;
 
         virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
         virtual bool encrypt(const void* plain, size_t plain_length,

@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a teletext_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsTeletextDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"teletext_descriptor"
 #define MY_DID ts::DID_TELETEXT
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, ts::EDID::Standard(MY_DID));
@@ -65,23 +63,22 @@ ts::TeletextDescriptor::Entry::Entry(const UString& code, uint8_t type, uint16_t
 }
 
 ts::TeletextDescriptor::TeletextDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
-ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, PDS pds) :
-    AbstractDescriptor(tag, xml_name, pds),
+ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
+    AbstractDescriptor(tag, xml_name, standards, pds),
     entries()
 {
 }
 
-ts::TeletextDescriptor::TeletextDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    entries()
+ts::TeletextDescriptor::TeletextDescriptor(DuckContext& duck, const Descriptor& desc) :
+    TeletextDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -114,7 +111,7 @@ uint8_t ts::TeletextDescriptor::Entry::magazineNumber() const
 
 void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 5) {
@@ -123,7 +120,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const uint8_t page = data[4];
         Entry e;
         e.setFullNumber(mag, page);
-        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {UString::FromDVB(data, 3, display.dvbCharset()), type, type}) << std::endl
+        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {UString::FromDVB(data, 3), type, type}) << std::endl
              << margin << "Type: " << names::TeletextType(type) << std::endl
              << margin << "Magazine: " << int(mag) << ", page: " << int(page) << ", full page: " << e.page_number << std::endl;
         data += 5; size -= 5;
@@ -137,12 +134,12 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TeletextDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->language_code, charset)) {
+        if (!SerializeLanguageCode(duck, *bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -158,7 +155,7 @@ void ts::TeletextDescriptor::serialize(Descriptor& desc, const DVBCharset* chars
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TeletextDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     entries.clear();
 
@@ -171,7 +168,7 @@ void ts::TeletextDescriptor::deserialize(const Descriptor& desc, const DVBCharse
 
     while (size >= 5) {
         Entry entry;
-        entry.language_code = UString::FromDVB(data, 3, charset);
+        entry.language_code = UString::FromDVB(data, 3);
         entry.teletext_type = data[3] >> 3;
         entry.setFullNumber(data[3] & 0x07, data[4]);
         entries.push_back(entry);
@@ -186,7 +183,7 @@ void ts::TeletextDescriptor::deserialize(const Descriptor& desc, const DVBCharse
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::buildXML(xml::Element* root) const
+void ts::TeletextDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"teletext");
@@ -201,7 +198,7 @@ void ts::TeletextDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::fromXML(const xml::Element* element)
+void ts::TeletextDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
     xml::ElementVector children;

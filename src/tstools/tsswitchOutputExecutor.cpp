@@ -53,6 +53,29 @@ ts::tsswitch::OutputExecutor::~OutputExecutor()
 
 
 //----------------------------------------------------------------------------
+// Implementation of TSP. We do not use "joint termination" in tsswitch.
+//----------------------------------------------------------------------------
+
+void ts::tsswitch::OutputExecutor::useJointTermination(bool)
+{
+}
+
+void ts::tsswitch::OutputExecutor::jointTerminate()
+{
+}
+
+bool ts::tsswitch::OutputExecutor::useJointTermination() const
+{
+    return false;
+}
+
+bool ts::tsswitch::OutputExecutor::thisJointTerminated() const
+{
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
 // Invoked in the context of the output plugin thread.
 //----------------------------------------------------------------------------
 
@@ -76,7 +99,10 @@ void ts::tsswitch::OutputExecutor::main()
             _core.outputSent(pluginIndex, count);
 
             // Abort the whole process in case of output error.
-            if (!success) {
+            if (success) {
+                addPluginPackets(count);
+            }
+            else {
                 debug(u"stopping output plugin");
                 _core.stop(false);
                 _terminate = true;

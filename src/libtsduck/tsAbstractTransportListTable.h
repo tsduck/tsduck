@@ -84,15 +84,18 @@ namespace ts {
         DescriptorList  descs;          //!< Top-level descriptor list.
         TransportMap    transports;     //!< Map of TS descriptions, key=onid/tsid, value=descriptor_list.
 
-        // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = nullptr) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = nullptr) override;
-
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
         AbstractTransportListTable(const AbstractTransportListTable& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractTransportListTable& operator=(const AbstractTransportListTable& other) = default;
 
         //!
         //! Clear preferred section in all transport.
@@ -110,20 +113,26 @@ namespace ts {
         //! Constructor for subclasses.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] tid_ext Table id extension.
         //! @param [in] version Table version number.
         //! @param [in] is_current True if table is current, false if table is next.
         //!
-        AbstractTransportListTable(TID tid, const UChar* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
+        AbstractTransportListTable(TID tid, const UChar* xml_name, Standards standards, uint16_t tid_ext, uint8_t version, bool is_current);
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
+        //! @param [in] standards A bit mask of standards which define this structure.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractTransportListTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset);
+        AbstractTransportListTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table);
+
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
 
     private:
         typedef std::set<TransportStreamId> TransportStreamIdSet;

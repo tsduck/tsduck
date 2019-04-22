@@ -35,14 +35,13 @@ TSDUCK_SOURCE;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::ServiceDiscovery::ServiceDiscovery(PMTHandlerInterface* pmtHandler, Report& report, const DVBCharset* charset) :
+ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, PMTHandlerInterface* pmtHandler) :
     Service(),
-    _report(report),
+    _duck(duck),
     _notFound(false),
-    _charset(charset),
     _pmtHandler(pmtHandler),
     _pmt(),
-    _demux(this)
+    _demux(duck, this)
 {
     _pmt.invalidate();
 }
@@ -52,8 +51,8 @@ ts::ServiceDiscovery::ServiceDiscovery(PMTHandlerInterface* pmtHandler, Report& 
 // Constructor using a string description.
 //----------------------------------------------------------------------------
 
-ts::ServiceDiscovery::ServiceDiscovery(const UString& desc, PMTHandlerInterface* pmtHandler, Report& report, const DVBCharset* charset) :
-    ServiceDiscovery(pmtHandler, report, charset)
+ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, const UString& desc, PMTHandlerInterface* pmtHandler) :
+    ServiceDiscovery(duck, pmtHandler)
 {
     set(desc);
 }
@@ -70,13 +69,15 @@ void ts::ServiceDiscovery::set(const UString& desc)
 
     // Start to intercept tables.
     if (hasName()) {
-        // We know the service name, get SDT first, PAT later.
+        // We know the service name, get SDT (DVB) or xVCT (ATSC) first, PAT later.
         _demux.addPID(PID_SDT);
+        _demux.addPID(PID_PSIP);
     }
     else if (hasId()) {
-        // We know the service id, get PAT and SDT.
+        // We know the service id, get PAT and SDT or xVCT.
         _demux.addPID(PID_PAT);
         _demux.addPID(PID_SDT);
+        _demux.addPID(PID_PSIP);
     }
     else {
         // We have neither name nor id (desc was an empty string).
@@ -107,7 +108,7 @@ void ts::ServiceDiscovery::handleTable(SectionDemux& demux, const BinaryTable& t
     switch (table.tableId()) {
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat(table);
+                PAT pat(_duck, table);
                 if (pat.isValid()) {
                     processPAT(pat);
                 }
@@ -116,15 +117,36 @@ void ts::ServiceDiscovery::handleTable(SectionDemux& demux, const BinaryTable& t
         }
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt(table);
+                SDT sdt(_duck, table);
                 if (sdt.isValid()) {
                     processSDT(sdt);
                 }
             }
             break;
         }
+        case TID_MGT: {
+            MGT mgt(_duck, table);
+            if (mgt.isValid()) {
+                analyzeMGT(mgt);
+            }
+            break;
+        }
+        case TID_TVCT: {
+            TVCT tvct(_duck, table);
+            if (tvct.isValid()) {
+                analyzeVCT(tvct);
+            }
+            break;
+        }
+        case TID_CVCT: {
+            CVCT cvct(_duck, table);
+            if (cvct.isValid()) {
+                analyzeVCT(cvct);
+            }
+            break;
+        }
         case TID_PMT: {
-            PMT pmt(table);
+            PMT pmt(_duck, table);
             if (pmt.isValid() && hasId(pmt.service_id)) {
                 processPMT(pmt);
             }
@@ -138,7 +160,7 @@ void ts::ServiceDiscovery::handleTable(SectionDemux& demux, const BinaryTable& t
 
 
 //----------------------------------------------------------------------------
-//  This method processes a Service Description Table (SDT).
+// This method processes a Service Description Table (SDT).
 //----------------------------------------------------------------------------
 
 void ts::ServiceDiscovery::processSDT(const SDT& sdt)
@@ -153,11 +175,11 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         service_id = getId();
         srv = sdt.services.find(service_id);
         if (srv == sdt.services.end()) {
-            // Service not referenced in the SDT, not a problem.
+            // Service not referenced in the SDT, not a problem, we already know the service id.
             return;
         }
     }
-    else if (sdt.findService(getName(), service_id)) {
+    else if (sdt.findService(_duck, getName(), service_id)) {
         // Service is found by name in the SDT.
         srv = sdt.services.find(service_id);
         assert(srv != sdt.services.end());
@@ -166,7 +188,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         // Service not found by name in SDT. If we already know the service id, this is fine.
         // If we do not know the service id, then there is no way to find the service.
         if (!hasId()) {
-            _report.error(u"service \"%s\" not found in SDT", {getName()});
+            _duck.report().error(u"service \"%s\" not found in SDT", {getName()});
             _notFound = true;
         }
         return;
@@ -192,7 +214,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         _demux.resetPID(PID_PAT);
         _demux.addPID(PID_PAT);
 
-        _report.verbose(u"found service \"%s\", service id is 0x%X (%d)", {getName(), getId(), getId()});
+        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", {getName(), getId(), getId()});
     }
 
     // Now collect suitable information from the SDT.
@@ -202,14 +224,93 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
     setEITpfPresent(srv->second.EITpf_present);
     setEITsPresent(srv->second.EITs_present);
     setRunningStatus(srv->second.running_status);
-    setType(srv->second.serviceType());
-    setName(srv->second.serviceName(_charset));
-    setProvider(srv->second.providerName(_charset));
+    setTypeDVB(srv->second.serviceType(_duck));
+    setName(srv->second.serviceName(_duck));
+    setProvider(srv->second.providerName(_duck));
 }
 
 
 //----------------------------------------------------------------------------
-//  This method processes a Program Association Table (PAT).
+// This method processes an ATSC Master Guide Table (MGT)
+//----------------------------------------------------------------------------
+
+void ts::ServiceDiscovery::analyzeMGT(const MGT& mgt)
+{
+    // Process all table types.
+    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
+
+        // Intercept TVCT and CVCT, they contain the service names.
+        switch (it->second.table_type) {
+            case ATSC_TTYPE_TVCT_CURRENT:
+            case ATSC_TTYPE_CVCT_CURRENT:
+                _demux.addPID(it->second.table_type_PID);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes ATSC Terrestrial or Cable Virtual Channel Table.
+//----------------------------------------------------------------------------
+
+void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
+{
+    // Look for the service by name or by service
+    VCT::ChannelList::const_iterator srv = vct.channels.end();
+
+    if (!hasName()) {
+        // Service is known by id only.
+        assert(hasId());
+        srv = vct.findService(getId());
+        if (srv == vct.channels.end()) {
+            // Service not referenced in the VCT, not a problem, we already know the service id.
+            return;
+        }
+    }
+    else if ((srv = vct.findService(getName())) == vct.channels.end()) {
+        // Service not found by name in VCT. If we already know the service id, this is fine.
+        // If we do not know the service id, then there is no way to find the service.
+        if (!hasId()) {
+            _duck.report().error(u"service \"%s\" not found in VCT", {getName()});
+            _notFound = true;
+        }
+        return;
+    }
+
+    // If the service id was previously unknown wait for the PAT.
+    // If a service id was known but was different, we need to rescan the PAT.
+    assert(srv != vct.channels.end());
+    if (!hasId(srv->second.program_number)) {
+        if (hasId()) {
+            // The service was previously known but has changed its service id.
+            // We need to rescan the service map. The PMT is reset.
+            if (hasPMTPID()) {
+                _demux.removePID(getPMTPID());
+            }
+            _pmt.invalidate();
+        }
+
+        // We now know the service id (or new service id).
+        setId(srv->second.program_number);
+
+        // But we do not know yet the PMT PID, we must (re)scan the PAT for this.
+        clearPMTPID();
+        _demux.resetPID(PID_PAT);
+        _demux.addPID(PID_PAT);
+
+        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", {getName(), getId(), getId()});
+    }
+
+    // Now collect suitable information from the VCT.
+    srv->second.setService(*this);
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
 void ts::ServiceDiscovery::processPAT(const PAT& pat)
@@ -220,7 +321,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
         // A service id was known, locate the service in the PAT.
         it = pat.pmts.find(getId());
         if (it == pat.pmts.end()) {
-            _report.error(u"service id 0x%X (%d) not found in PAT", {getId(), getId()});
+            _duck.report().error(u"service id 0x%X (%d) not found in PAT", {getId(), getId()});
             _notFound = true;
             return;
         }
@@ -228,7 +329,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
     else {
         // If no service was specified, use the first service from the PAT.
         if (pat.pmts.empty()) {
-            _report.error(u"no service found in PAT");
+            _duck.report().error(u"no service found in PAT");
             _notFound = true;
             return;
         }
@@ -252,7 +353,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
         // Invalidate out PMT.
         _pmt.invalidate();
 
-        _report.verbose(u"found service id 0x%X (%d), PMT PID is 0x%X (%d)", {getId(), getId(), getPMTPID(), getPMTPID()});
+        _duck.report().verbose(u"found service id 0x%X (%d), PMT PID is 0x%X (%d)", {getId(), getId(), getPMTPID(), getPMTPID()});
     }
 }
 

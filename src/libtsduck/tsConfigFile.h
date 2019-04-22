@@ -65,6 +65,14 @@ namespace ts {
         explicit ConfigFile(std::istream& strm);
 
         //!
+        //! Constructor.
+        //! @param [in] filename1 A file name to read. Don't read a file if empty.
+        //! @param [in] filename2 A file name to read if @a filename1 does not exist. Don't read a file if empty.
+        //! @param [in,out] report Where to report errors.
+        //!
+        ConfigFile(const UString& filename1, const UString& filename2, Report& report = CERR);
+
+        //!
         //! System-specific style of default configuration file name.
         //!
         enum FileStyle {

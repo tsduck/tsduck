@@ -470,6 +470,7 @@ bool ts::WebRequest::downloadToApplication(WebRequestHandlerInterface* handler)
             ok = handler->handleWebStart(*this, _headerContentSize);
             if (ok) {
                 ok = download();
+                ok = handler->handleWebStop(*this) && ok;
             }
             else {
                 _report.debug(u"Web request is aborted by application before transfer");

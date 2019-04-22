@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsVBIDataDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"VBI_data_descriptor"
 #define MY_DID ts::DID_VBI_DATA
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, ts::EDID::Standard(MY_DID));
@@ -64,16 +66,16 @@ ts::VBIDataDescriptor::Service::Service(uint8_t id) :
 }
 
 ts::VBIDataDescriptor::VBIDataDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     services()
 {
     _is_valid = true;
 }
 
-ts::VBIDataDescriptor::VBIDataDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::VBIDataDescriptor::VBIDataDescriptor(DuckContext& duck, const Descriptor& desc) :
     VBIDataDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -103,7 +105,7 @@ bool ts::VBIDataDescriptor::EntryHasReservedBytes(uint8_t data_service_id)
 
 void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 2) {
@@ -137,7 +139,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::VBIDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -163,7 +165,7 @@ void ts::VBIDataDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::VBIDataDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     services.clear();
 
@@ -202,7 +204,7 @@ void ts::VBIDataDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::buildXML(xml::Element* root) const
+void ts::VBIDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (ServiceList::const_iterator it1 = services.begin(); it1 != services.end(); ++it1) {
         xml::Element* e = root->addElement(u"service");
@@ -227,7 +229,7 @@ void ts::VBIDataDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::VBIDataDescriptor::fromXML(const xml::Element* element)
+void ts::VBIDataDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     services.clear();
 

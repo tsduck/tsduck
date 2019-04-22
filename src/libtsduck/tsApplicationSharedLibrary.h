@@ -68,6 +68,11 @@ namespace ts {
                                           Report& report = NULLREP);
 
         //!
+        //! Virtual destructor.
+        //!
+        virtual ~ApplicationSharedLibrary();
+
+        //!
         //! The module name is derived from the file name without the prefix.
         //! @return The module name.
         //!

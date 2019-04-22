@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSTDDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -39,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"STD_descriptor"
 #define MY_DID ts::DID_STD
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID::Standard(MY_DID));
@@ -50,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::STDDescriptor::DisplayDescriptor, ts::EDID::Standar
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     leak_valid(leak_valid_)
 {
     _is_valid = true;
@@ -61,11 +63,11 @@ ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     leak_valid(false)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -73,7 +75,7 @@ ts::STDDescriptor::STDDescriptor(const Descriptor& desc, const DVBCharset* chars
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     uint8_t data[3];
     data[0] = _tag;
@@ -89,7 +91,7 @@ void ts::STDDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::STDDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
@@ -105,7 +107,7 @@ void ts::STDDescriptor::deserialize(const Descriptor& desc, const DVBCharset* ch
 
 void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -123,7 +125,7 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::buildXML(xml::Element* root) const
+void ts::STDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"leak_valid", leak_valid);
 }
@@ -133,7 +135,7 @@ void ts::STDDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::fromXML(const xml::Element* element)
+void ts::STDDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

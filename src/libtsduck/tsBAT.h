@@ -56,10 +56,10 @@ namespace ts {
 
         //!
         //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        BAT(const BinaryTable& table, const DVBCharset* charset = nullptr);
+        BAT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Copy constructor.
@@ -75,8 +75,11 @@ namespace ts {
         BAT& operator=(const BAT& other);
 
         // Inherited methods.
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
+
+    protected:
+        // Inherited methods.
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

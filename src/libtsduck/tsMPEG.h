@@ -220,6 +220,11 @@ namespace ts {
     constexpr uint8_t CC_MAX = 1 << CC_BITS;
 
     //!
+    //! An invalid Continuity Counter (CC) value, typically meaning "undefined".
+    //!
+    constexpr uint8_t INVALID_CC = 0xFF;
+
+    //!
     //! Size (in bits) of a section version field.
     //!
     constexpr size_t SVERSION_BITS = 5;
@@ -268,6 +273,25 @@ namespace ts {
     constexpr size_t MACROBLOCK_HEIGHT = 16;
 
     //---------------------------------------------------------------------
+    //! Bit masks for standards, used to qualify the signalization.
+    //---------------------------------------------------------------------
+
+    enum Standards : uint8_t {
+        STD_NONE = 0x00,  //!< No known standard
+        STD_MPEG = 0x01,  //!< Defined by MPEG, common to all standards
+        STD_DVB  = 0x02,  //!< Defined by ETSI/DVB.
+        STD_SCTE = 0x04,  //!< Defined by ANSI/SCTE.
+        STD_ATSC = 0x08,  //!< Defined by ATSC.
+        STD_ISDB = 0x10,  //!< Defined by ISDB.
+    };
+
+    //!
+    //! Enumeration description of standard values.
+    //! Typically using StandardsEnum::bitMaskNames().
+    //!
+    TSDUCKDLL extern const Enumeration StandardsEnum;
+
+    //---------------------------------------------------------------------
     //! Predefined PID values
     //---------------------------------------------------------------------
 
@@ -275,28 +299,39 @@ namespace ts {
 
         // Valid in all MPEG contexts:
 
-        PID_PAT       = 0x0000, //!< PID for Program Association Table PAT
-        PID_CAT       = 0x0001, //!< PID for Conditional Access Table
-        PID_TSDT      = 0x0002, //!< PID for Transport Stream Description Table
-        PID_MPEG_LAST = 0x000F, //!< Last reserved PID for MPEG.
-        PID_NULL      = 0x1FFF, //!< PID for Null packets (stuffing)
+        PID_PAT        = 0x0000, //!< PID for Program Association Table PAT
+        PID_CAT        = 0x0001, //!< PID for Conditional Access Table
+        PID_TSDT       = 0x0002, //!< PID for Transport Stream Description Table
+        PID_MPEG_LAST  = 0x000F, //!< Last reserved PID for MPEG.
 
         // Valid in DVB context:
 
-        PID_NIT       = 0x0010, //!< PID for Network Information Table
-        PID_SDT       = 0x0011, //!< PID for Service Description Table
-        PID_BAT       = 0x0011, //!< PID for Bouquet Association Table
-        PID_EIT       = 0x0012, //!< PID for Event Information Table
-        PID_RST       = 0x0013, //!< PID for Running Status Table
-        PID_TDT       = 0x0014, //!< PID for Time & Date Table
-        PID_TOT       = 0x0014, //!< PID for Time Offset Table
-        PID_NETSYNC   = 0x0015, //!< PID for Network synchronization
-        PID_RNT       = 0x0016, //!< PID for TV-Anytime
-        PID_INBSIGN   = 0x001C, //!< PID for Inband Signalling
-        PID_MEASURE   = 0x001D, //!< PID for Measurement
-        PID_DIT       = 0x001E, //!< PID for Discontinuity Information Table
-        PID_SIT       = 0x001F, //!< PID for Selection Information Table
-        PID_DVB_LAST  = 0x001F, //!< Last reserved PID for DVB.
+        PID_NIT        = 0x0010, //!< PID for Network Information Table
+        PID_SDT        = 0x0011, //!< PID for Service Description Table
+        PID_BAT        = 0x0011, //!< PID for Bouquet Association Table
+        PID_EIT        = 0x0012, //!< PID for Event Information Table
+        PID_RST        = 0x0013, //!< PID for Running Status Table
+        PID_TDT        = 0x0014, //!< PID for Time & Date Table
+        PID_TOT        = 0x0014, //!< PID for Time Offset Table
+        PID_NETSYNC    = 0x0015, //!< PID for Network synchronization
+        PID_RNT        = 0x0016, //!< PID for TV-Anytime
+        PID_INBSIGN    = 0x001C, //!< PID for Inband Signalling
+        PID_MEASURE    = 0x001D, //!< PID for Measurement
+        PID_DIT        = 0x001E, //!< PID for Discontinuity Information Table
+        PID_SIT        = 0x001F, //!< PID for Selection Information Table
+        PID_DVB_LAST   = 0x001F, //!< Last reserved PID for DVB.
+
+        // Valid in ATSC context:
+
+        PID_ATSC_FIRST = 0x1FF0, //!< First reserved PID for ATSC.
+        PID_ATSC_PAT_E = 0x1FF7, //!< PID for ATSC PAT-E
+        PID_PSIP_TS_E  = 0x1FF9, //!< PID for ATSC Program and System Information Protocol in TS-E
+        PID_PSIP       = 0x1FFB, //!< PID for ATSC Program and System Information Protocol (contains most ATSC tables)
+        PID_ATSC_LAST  = 0x1FFE, //!< Last reserved PID for ATSC.
+
+        // Valid in all MPEG contexts:
+
+        PID_NULL       = 0x1FFF, //!< PID for Null packets (stuffing)
     };
 
     //---------------------------------------------------------------------
@@ -323,6 +358,8 @@ namespace ts {
 
     //!
     //! Size in bits of a PCR (Program Clock Reference).
+    //! Warning: A PCR value is not a linear value mod 2^42.
+    //! It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).
     //!
     constexpr size_t PCR_BIT_SIZE = 42;
 
@@ -332,24 +369,22 @@ namespace ts {
     constexpr size_t PTS_DTS_BIT_SIZE = 33;
 
     //!
-    //! Mask for PCR values (wrap up at 2**42).
+    //! Scale factor for PTS and DTS values (wrap up at 2**33).
     //!
-    constexpr uint64_t PCR_MASK = TS_UCONST64(0x000003FFFFFFFFFF);
-
-    //!
-    //! Scale factor for PCR values (wrap up at 2**42).
-    //!
-    constexpr uint64_t PCR_SCALE = TS_UCONST64(0x0000040000000000);
+    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(1) << PTS_DTS_BIT_SIZE;
 
     //!
     //! Mask for PTS and DTS values (wrap up at 2**33).
     //!
-    constexpr uint64_t PTS_DTS_MASK = TS_UCONST64(0x00000001FFFFFFFF);
+    constexpr uint64_t PTS_DTS_MASK = PTS_DTS_SCALE - 1;
 
     //!
-    //! Scale factor for PTS and DTS values (wrap up at 2**33).
+    //! Scale factor for PCR values.
+    //! This is not a power of 2, it does not wrap up at a number of bits.
+    //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
+    //! The PCR_ext part is a mod 300 value.
     //!
-    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(0x0000000200000000);
+    constexpr uint64_t PCR_SCALE = PTS_DTS_SCALE * SYSTEM_CLOCK_SUBFACTOR;
 
     //!
     //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
@@ -370,11 +405,24 @@ namespace ts {
     //! Check if PCR2 follows PCR1 after wrap up.
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
-    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up at 2**42.
+    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up.
     //!
     TSDUCKDLL inline bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
     {
-        return pcr2 < pcr1 && (pcr1 - pcr2) > TS_UCONST64(0x000003F000000000);
+        return pcr2 < pcr1 && (pcr1 - pcr2) > ((4 * PCR_SCALE) / 5);
+    }
+
+    //!
+    //! Compute the PCR of a packet, based on the PCR of a previous packet.
+    //! @param [in] last_pcr PCR in a previous packet.
+    //! @param [in] distance Number of TS packets since the packet with @a last_pcr.
+    //! @param [in] bitrate Constant bitrate of the stream in bits per second.
+    //! @return The PCR of the packet which is at the specified @a distance from the packet with @a last_pcr
+    //! or INVALID_PCR if a parameter is incorrect.
+    //!
+    TSDUCKDLL inline uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
+    {
+        return (last_pcr == INVALID_PCR || bitrate == 0) ? INVALID_PCR : last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
     }
 
     //!
@@ -803,7 +851,19 @@ namespace ts {
         TID_MG_EMM_C      = 0x86, //!< Table id for MediaGuard EMM-C
         TID_MG_EMM_CG     = 0x89, //!< Table id for MediaGuard EMM-CG
 
-        // Valid in ATSC / SCTE context:
+        // Valid in ATSC context:
+
+        TID_MGT           = 0xC7, //!< Table id for Master Guide Table
+        TID_TVCT          = 0xC8, //!< Table id for Terrestrial Virtual Channel Table
+        TID_CVCT          = 0xC9, //!< Table id for Cable Virtual Channel Table
+        TID_RRT           = 0xCA, //!< Table id for Rating Region Table
+        TID_ATSC_EIT      = 0xCB, //!< Table id for Event Information Table (ATSC version)
+        TID_ETT           = 0xCC, //!< Table id for Extended Text Table
+        TID_STT           = 0xCD, //!< Table id for System Time Table
+        TID_DCCT          = 0xD3, //!< Table id for Directed Channel Change Table
+        TID_DCCSCT        = 0xD4, //!< Table id for Directed Channel Change Selection Code Table
+
+        // Valid in SCTE context:
 
         TID_SCTE35_SIT    = 0xFC, //!< Table id for SCTE 35 Splice Information Table
     };
@@ -826,6 +886,7 @@ namespace ts {
         PDS_LOGIWAYS  = 0x000000A2, //!< Private data specifier for Logiways.
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
+        PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII)
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
@@ -1031,20 +1092,26 @@ namespace ts {
 
         // Valid in ATSC / SCTE context:
 
-        DID_ATSC_STUFFING       = 0X80, //!< DID for ATSC stuffing_descriptor
-        DID_AC3_AUDIO_STREAM    = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
+        DID_ATSC_STUFFING       = 0x80, //!< DID for ATSC stuffing_descriptor
+        DID_ATSC_AC3            = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
         DID_ATSC_PID            = 0x85, //!< DID for ATSC program_identifier_descriptor
-        DID_CAPTION             = 0x86, //!< DID for ATSC caption_service_descriptor
-        DID_CONTENT_ADVIS       = 0x87, //!< DID for ATSC content_advisory_descriptor
+        DID_ATSC_CAPTION        = 0x86, //!< DID for ATSC caption_service_descriptor
+        DID_ATSC_CONTENT_ADVIS  = 0x87, //!< DID for ATSC content_advisory_descriptor
         DID_CUE_IDENTIFIER      = 0x8A, //!< DID for SCTE 35 cue_identifier_descriptor
-        DID_EXT_CHAN_NAME       = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
-        DID_SERV_LOCATION       = 0xA1, //!< DID for ATSC service_location_descriptor
+        DID_ATSC_EXT_CHAN_NAME  = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
+        DID_ATSC_SERVICE_LOC    = 0xA1, //!< DID for ATSC service_location_descriptor
         DID_ATSC_TIME_SHIFT     = 0xA2, //!< DID for ATSC time_shifted_event_descriptor
-        DID_COMPONENT_NAME      = 0xA3, //!< DID for ATSC component_name_descriptor
+        DID_ATSC_COMPONENT_NAME = 0xA3, //!< DID for ATSC component_name_descriptor
         DID_ATSC_DATA_BRDCST    = 0xA4, //!< DID for ATSC data_broadcast_descriptor
-        DID_PID_COUNT           = 0xA5, //!< DID for ATSC pid_count_descriptor
-        DID_DOWNLOAD            = 0xA6, //!< DID for ATSC download_descriptor
-        DID_MPROTO_ENCAPS       = 0xA7, //!< DID for ATSC multiprotocol_encapsulation_desc
+        DID_ATSC_PID_COUNT      = 0xA5, //!< DID for ATSC pid_count_descriptor
+        DID_ATSC_DOWNLOAD       = 0xA6, //!< DID for ATSC download_descriptor
+        DID_ATSC_MPROTO_ENCAPS  = 0xA7, //!< DID for ATSC multiprotocol_encapsulation_descriptor
+        DID_ATSC_DCC_DEPARTING  = 0xA8, //!< DID for ATSC DCC_departing_request_descriptor
+        DID_ATSC_DCC_ARRIVING   = 0xA9, //!< DID for ATSC DCC_arriving_request_descriptor
+        DID_ATSC_REDIST_CONTROL = 0xAA, //!< DID for ATSC redistribution_control_descriptor
+        DID_ATSC_GENRE          = 0xAB, //!< DID for ATSC genre_descriptor
+        DID_ATSC_PRIVATE_INFO   = 0xAD, //!< DID for ATSC private_information_descriptor
+        DID_ATSC_ENHANCED_AC3   = 0xCC, //!< DID for ATSC E-AC-3_audio_stream_descriptor
 
         // Valid after PDS_LOGIWAYS private_data_specifier
 
@@ -1425,4 +1492,39 @@ namespace ts {
         TELETEXT_DATA_UNIT_ID_CLOSED_CAPTIONS = 0xC5,  //!< Data_unit_id for Closed Caption (extension ?).
         TELETEXT_DATA_UNIT_ID_STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
     };
+
+    //---------------------------------------------------------------------
+    //! Table type in ATSC Master Guide Table (MGT)
+    //---------------------------------------------------------------------
+
+    enum : uint16_t {
+        ATSC_TTYPE_TVCT_CURRENT = 0x0000,  //!< Terrestrial VCT with current_next_indicator=’1’.
+        ATSC_TTYPE_TVCT_NEXT    = 0x0001,  //!< Terrestrial VCT with current_next_indicator=’0’.
+        ATSC_TTYPE_CVCT_CURRENT = 0x0002,  //!< Cable VCT with current_next_indicator=’1’.
+        ATSC_TTYPE_CVCT_NEXT    = 0x0003,  //!< Cable VCT with current_next_indicator=’0’.
+        ATSC_TTYPE_CETT         = 0x0004,  //!< Channel ETT.
+        ATSC_TTYPE_DCCSCT       = 0x0005,  //!< DCCSCT
+        ATSC_TTYPE_EIT_FIRST    = 0x0100,  //!< First EIT (EIT-0).
+        ATSC_TTYPE_EIT_LAST     = 0x017F,  //!< Last EIT (EIT-127).
+        ATSC_TTYPE_EETT_FIRST   = 0x0200,  //!< First Event ETT (EET-0).
+        ATSC_TTYPE_EETT_LAST    = 0x027F,  //!< Last Event ETT (ETT-127).
+        ATSC_TTYPE_RRT_FIRST    = 0x0301,  //!< First RRT (RRT with rating_region 1).
+        ATSC_TTYPE_RRT_LAST     = 0x03FF,  //!< Last RRT (RRT with rating_region 255).
+        ATSC_TTYPE_DCCT_FIRST   = 0x1400,  //!< First DCCT (DCCT with dcc_id 0x00).
+        ATSC_TTYPE_DCCT_LAST    = 0x14FF,  //!< Last DCCT (DCCT with dcc_id 0xFF).
+    };
+
+    //---------------------------------------------------------------------
+    //! Service type in ATSC Virtual Channel Table (VCT)
+    //---------------------------------------------------------------------
+
+    enum : uint8_t {
+        ATSC_STYPE_ANALOG_TV = 0x01,  //!< Analog Television
+        ATSC_STYPE_DTV       = 0x02,  //!< ATSC Digital Television
+        ATSC_STYPE_AUDIO     = 0x03,  //!< ATSC Audio
+        ATSC_STYPE_DATA      = 0x04,  //!< ATSC Data Only Service
+        ATSC_STYPE_SOFTWARE  = 0x05,  //!< ATSC Software Download Service
+    };
 }
+
+TS_FLAGS_OPERATORS(ts::Standards)

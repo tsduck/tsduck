@@ -784,6 +784,7 @@ ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
 endif
 ifdef MACOS
     COMMON_WARNINGS += -Wno-unused-command-line-argument
+    CXXFLAGS_WARNINGS += -Wweak-vtables
 else
     CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
     ifeq ($(MAIN_ARCH),arm)

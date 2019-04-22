@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSupplementaryAudioDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -41,6 +42,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"supplementary_audio_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_SUPPL_AUDIO
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
@@ -52,7 +54,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     mix_type(0),
     editorial_classification(0),
     language_code(),
@@ -61,14 +63,14 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
     _is_valid = true;
 }
 
-ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor& bin, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     mix_type(0),
     editorial_classification(0),
     language_code(),
     private_data()
 {
-    deserialize(bin, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -76,7 +78,7 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SupplementaryAudioDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -85,7 +87,7 @@ void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBChar
                      ((editorial_classification & 0x1F) << 2) |
                      0x02 |
                      (language_code.empty() ? 0x00 : 0x01));
-    if (!language_code.empty() && !SerializeLanguageCode(*bbp, language_code, charset)) {
+    if (!language_code.empty() && !SerializeLanguageCode(duck, *bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -99,7 +101,7 @@ void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBChar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SupplementaryAudioDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     language_code.clear();
     private_data.clear();
@@ -121,7 +123,7 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
             _is_valid = false;
             return;
         }
-        language_code = UString::FromDVB(data, 3, charset);
+        language_code = UString::FromDVB(data, 3);
         data += 3; size -= 3;
     }
 
@@ -133,7 +135,7 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::buildXML(xml::Element* root) const
+void ts::SupplementaryAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"mix_type", mix_type);
     root->setIntAttribute(u"editorial_classification", editorial_classification, true);
@@ -150,7 +152,7 @@ void ts::SupplementaryAudioDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::fromXML(const xml::Element* element)
+void ts::SupplementaryAudioDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -171,7 +173,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
     // with extension payload. Meaning that data points after descriptor_tag_extension.
     // See ts::TablesDisplay::displayDescriptorData()
 
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -195,7 +197,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
         }
         strm << std::endl;
         if (lang_present && size >= 3) {
-            strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset()) << std::endl;
+            strm << margin << "Language: " << UString::FromDVB(data, 3) << std::endl;
             data += 3; size -= 3;
         }
         if (size > 0) {

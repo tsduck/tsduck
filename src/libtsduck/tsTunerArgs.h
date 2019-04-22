@@ -35,6 +35,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsTunerParameters.h"
+#include "tsDuckContext.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
 #include "tsLNB.h"
@@ -63,9 +64,8 @@ namespace ts {
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         size_t                      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
 #endif
-        Variable<UString>           zap_specification;  //!< Linux DVB zap format.
         Variable<UString>           channel_name;       //!< Use transponder containing this channel.
-        Variable<UString>           zap_file_name;      //!< Where channel_name is located.
+        Variable<UString>           tuning_file_name;   //!< Where channel_name is located.
         Variable<uint64_t>          frequency;          //!< Frequency in Hz.
         Variable<Polarization>      polarity;           //!< Polarity.
         Variable<LNB>               lnb;                //!< Local dish LNB for frequency adjustment.
@@ -93,12 +93,29 @@ namespace ts {
         TunerArgs(bool info_only = false, bool allow_short_options = true);
 
         //!
+        //! Copy constructor.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //!
+        TunerArgs(const TunerArgs& other) = default;
+
+        //!
+        //! Assignment operator.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //! @return A reference to this object.
+        //!
+        TunerArgs& operator=(const TunerArgs& other) = default;
+
+        //!
         //! Check if actual tuning information is set.
         //! @return True if actual tuning information is set.
         //!
         bool hasTuningInfo() const
         {
-            return frequency.set() || zap_specification.set() || channel_name.set();
+            return frequency.set() || channel_name.set();
         }
 
         //!
@@ -116,8 +133,10 @@ namespace ts {
         //! Load arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
         //! @param [in,out] args Command line arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! Required to convert UHF/VHF channels to frequency.
         //!
-        void load(Args& args);
+        void load(Args& args, DuckContext& duck);
 
         //!
         //! Open a tuner and configure it according to the parameters in this object.
@@ -135,13 +154,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const;
-
-        //!
-        //! Default zap file name for a given tuner type.
-        //! @param [in] type Tuner type.
-        //! @return The default zap file or an empty string if there is no default.
-        //!
-        static UString DefaultZapFile(TunerType type);
 
     private:
         const bool _info_only;

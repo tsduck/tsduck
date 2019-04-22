@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCueIdentifierDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cue_identifier_descriptor"
 #define MY_DID ts::DID_CUE_IDENTIFIER
+#define MY_STD ts::STD_SCTE
 
 // The is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
 TS_XML_DESCRIPTOR_FACTORY(ts::CueIdentifierDescriptor, MY_XML_NAME);
@@ -61,17 +63,17 @@ const ts::Enumeration ts::CueIdentifierDescriptor::CueStreamTypeNames({
 //----------------------------------------------------------------------------
 
 ts::CueIdentifierDescriptor::CueIdentifierDescriptor(uint8_t type) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cue_stream_type(type)
 {
     _is_valid = true;
 }
 
-ts::CueIdentifierDescriptor::CueIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::CueIdentifierDescriptor::CueIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cue_stream_type(CUE_ALL_COMMANDS)
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -79,7 +81,7 @@ ts::CueIdentifierDescriptor::CueIdentifierDescriptor(const Descriptor& desc, con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CueIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(cue_stream_type);
@@ -91,7 +93,7 @@ void ts::CueIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CueIdentifierDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 
@@ -107,7 +109,7 @@ void ts::CueIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBC
 
 void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -132,7 +134,7 @@ void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::buildXML(xml::Element* root) const
+void ts::CueIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setEnumAttribute(CueStreamTypeNames, u"cue_stream_type", cue_stream_type);
 }
@@ -142,7 +144,7 @@ void ts::CueIdentifierDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CueIdentifierDescriptor::fromXML(const xml::Element* element)
+void ts::CueIdentifierDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

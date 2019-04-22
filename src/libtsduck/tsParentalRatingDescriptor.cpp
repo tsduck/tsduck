@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsParentalRatingDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
@@ -41,6 +42,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"parental_rating_descriptor"
 #define MY_DID ts::DID_PARENTAL_RATING
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, ts::EDID::Standard(MY_DID));
@@ -64,21 +66,21 @@ ts::ParentalRatingDescriptor::Entry::Entry(const UString& code, uint8_t rate) :
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
 }
 
-ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::ParentalRatingDescriptor::ParentalRatingDescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint8_t rate) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     entries()
 {
     _is_valid = true;
@@ -90,12 +92,12 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ParentalRatingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(*bbp, it->country_code, charset)) {
+        if (!SerializeLanguageCode(duck, *bbp, it->country_code)) {
             desc.invalidate();
             return;
         }
@@ -110,7 +112,7 @@ void ts::ParentalRatingDescriptor::serialize(Descriptor& desc, const DVBCharset*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ParentalRatingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
@@ -119,7 +121,7 @@ void ts::ParentalRatingDescriptor::deserialize(const Descriptor& desc, const DVB
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back(Entry(UString::FromDVB(data, 3, charset), data[3]));
+            entries.push_back(Entry(UString::FromDVB(data, 3), data[3]));
             data += 4;
             size -= 4;
         }
@@ -133,12 +135,12 @@ void ts::ParentalRatingDescriptor::deserialize(const Descriptor& desc, const DVB
 
 void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
         const uint8_t rating = data[3];
-        strm << margin << "Country code: " << UString::FromDVB(data, 3, display.dvbCharset())
+        strm << margin << "Country code: " << UString::FromDVB(data, 3)
              << UString::Format(u", rating: 0x%X ", {rating});
         if (rating == 0) {
             strm << "(undefined)";
@@ -161,7 +163,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::buildXML(xml::Element* root) const
+void ts::ParentalRatingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"country");
@@ -175,7 +177,7 @@ void ts::ParentalRatingDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::fromXML(const xml::Element* element)
+void ts::ParentalRatingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     entries.clear();
 

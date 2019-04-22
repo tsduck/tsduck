@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPMACGenericStreamLocationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"IPMAC_generic_stream_location_descriptor"
 #define MY_DID ts::DID_INT_GEN_STREAM_LOC
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::IPMACGenericStreamLocationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::IPMACGenericStreamLocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -55,7 +57,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     interactive_network_id(0),
     modulation_system_type(0),
     modulation_system_id(0),
@@ -70,10 +72,10 @@ ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor()
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     IPMACGenericStreamLocationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -81,7 +83,7 @@ ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor(c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::IPMACGenericStreamLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(interactive_network_id);
@@ -97,7 +99,7 @@ void ts::IPMACGenericStreamLocationDescriptor::serialize(Descriptor& desc, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::IPMACGenericStreamLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -120,7 +122,7 @@ void ts::IPMACGenericStreamLocationDescriptor::deserialize(const Descriptor& des
 
 void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 7) {
@@ -147,7 +149,7 @@ void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::buildXML(xml::Element* root) const
+void ts::IPMACGenericStreamLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"interactive_network_id", interactive_network_id, true);
     root->setIntEnumAttribute(ModulationTypeNames, u"modulation_system_type", modulation_system_type);
@@ -163,7 +165,7 @@ void ts::IPMACGenericStreamLocationDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACGenericStreamLocationDescriptor::fromXML(const xml::Element* element)
+void ts::IPMACGenericStreamLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

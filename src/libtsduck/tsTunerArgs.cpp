@@ -35,6 +35,8 @@
 #include "tsTuner.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
+#include "tsChannelFile.h"
+#include "tsHFBand.h"
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
@@ -53,9 +55,8 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
 #elif defined(TS_WINDOWS)
     demux_queue_size(Tuner::DEFAULT_SINK_QUEUE_SIZE),
 #endif
-    zap_specification(),
     channel_name(),
-    zap_file_name(),
+    tuning_file_name(),
     frequency(),
     polarity(),
     lnb(),
@@ -94,9 +95,8 @@ void ts::TunerArgs::reset()
 #elif defined(TS_WINDOWS)
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
 #endif
-    zap_specification.reset();
     channel_name.reset();
-    zap_file_name.reset();
+    tuning_file_name.reset();
     frequency.reset();
     polarity.reset();
     lnb.reset();
@@ -120,10 +120,9 @@ void ts::TunerArgs::reset()
 
 //----------------------------------------------------------------------------
 // Load arguments from command line.
-// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::TunerArgs::load(Args& args)
+void ts::TunerArgs::load(Args& args, DuckContext& duck)
 {
     reset();
 
@@ -169,11 +168,11 @@ void ts::TunerArgs::load(Args& args)
         }
         else if (args.present(u"uhf-channel")) {
             got_one = true;
-            frequency = UHF::Frequency(args.intValue<int>(u"uhf-channel", 0), args.intValue<int>(u"offset-count", 0));
+            frequency = duck.uhfBand()->frequency(args.intValue<uint32_t>(u"uhf-channel"));
         }
         else if (args.present(u"vhf-channel")) {
             got_one = true;
-            frequency = VHF::Frequency(args.intValue<int>(u"vhf-channel", 0), args.intValue<int>(u"offset-count", 0));
+            frequency = duck.vhfBand()->frequency(args.intValue<uint32_t>(u"vhf-channel"));
         }
 
         // Other individual tuning options
@@ -257,18 +256,13 @@ void ts::TunerArgs::load(Args& args)
         if (args.present(u"channel-transponder")) {
             channel_name = args.value(u"channel-transponder");
         }
-        if (args.present(u"zap-config-file")) {
-            zap_file_name = args.value(u"zap-config-file");
-        }
-
-        // Zap format tune specification
-        if (args.present(u"tune")) {
-            zap_specification = args.value(u"tune");
+        if (args.present(u"tuning-file")) {
+            tuning_file_name = args.value(u"tuning-file");
         }
 
         // Mutually exclusive methods of locating the channels
-        if (got_one + channel_name.set() + zap_specification.set() > 1) {
-            args.error(u"--tune, --channel-transponder and individual tuning options are incompatible");
+        if (got_one + channel_name.set() > 1) {
+            args.error(u"--channel-transponder and individual tuning options are incompatible");
         }
     }
 }
@@ -292,11 +286,11 @@ void ts::TunerArgs::defineOptions(Args& args) const
 
     args.option(u"device-name", _allow_short_options ? u'd' : 0, Args::STRING);
     args.help(u"device-name", u"name",
-#if defined (TS_LINUX)
+#if defined(TS_LINUX)
               u"Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]] "
               u"where A = adapter number, F = frontend number (default: 0), M = demux "
               u"number (default: 0), V = dvr number (default: 0). "
-#elif defined (TS_WINDOWS)
+#elif defined(TS_WINDOWS)
               u"Specify the DVB receiver device name. This is a DirectShow/BDA tuner "
               u"filter name (not case sensitive, blanks are ignored). "
 #endif
@@ -341,13 +335,6 @@ void ts::TunerArgs::defineOptions(Args& args) const
         args.option(u"bandwidth", 0, BandWidthEnum);
         args.help(u"bandwidth",
                   u"Used for DVB-T/T2 tuners only. The default is \"8-MHz\".");
-
-        args.option(u"channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
-        args.help(u"channel-transponder", u"name",
-                  u"Tune to the transponder containing the specified channel. The channel "
-                  u"name is not case-sensitive and blanks are ignored. The channel is searched "
-                  u"in a \"zap configuration file\" and the corresponding tuning information "
-                  u"in this file is used.");
 
         args.option(u"delivery-system", 0, DeliverySystemEnum);
         args.help(u"delivery-system",
@@ -395,12 +382,6 @@ void ts::TunerArgs::defineOptions(Args& args) const
                   u"Modulation type. "
                   u"The default is \"64-QAM\" for DVB-T/T2 and DVB-C, \"QPSK\" for DVB-S2, \"8-VSB\" for ATSC.");
 
-        args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -3, 3);
-        args.help(u"offset-count",
-                  u"Used for DVB-T tuners only. "
-                  u"Specify the number of offsets from the UHF or VHF channel. The default "
-                  u"is zero. See options --uhf-channel or --vhf-channel.");
-
         args.option(u"pilots", 0, PilotEnum);
         args.help(u"pilots",
                   u"Used for DVB-S2 tuners only. Presence of pilots frames. "
@@ -446,72 +427,46 @@ void ts::TunerArgs::defineOptions(Args& args) const
         args.help(u"transmission-mode",
                   u"Used for DVB-T tuners only. Transmission mode. The default is \"8K\".");
 
-        args.option(u"tune", 0, Args::STRING);
-        args.help(u"tune", u"string",
-                  u"Tuning options using Linux DVB \"zap\" format.\n\n"
-                  u"By default, no tuning is performed on the DVB frontend. The transponder "
-                  u"on which the frontend is currently tuned is used. There are three ways to "
-                  u"specify a new transponder: specifying individual tuning options, a global "
-                  u"tuning information string using the Linux DVB \"zap\" format, the name of "
-                  u"a channel contained in the transponder (with appropriate channel "
-                  u"configuration files).\n\n"
-                  u"The --tune string specifies all tuning information for the transponder in one string. "
-                  u"As such, this option is incompatible with the individual tuning options, "
-                  u"except \"local\" (non-transponder) options --lnb and --satellite-number. "
-                  u"The format of the parameter string depends on the DVB frontend type. "
-                  u"It is the same format as used in the Linux DVB szap/czap/tzap "
-                  u"configuration files:\n\n"
-                  u"Satellite (QPSK): \"freq:pol:satnum:symrate\". "
-                  u"With freq = frequency in MHz, pol = polarity (either v or h), satnum = "
-                  u"satellite number, symrate = symbol rate in ksym/s.\n\n"
-                  u"Cable (QAM): \"freq:inv:symrate:conv:mod\". "
-                  u"With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF, "
-                  u"INVERSION_ON, INVERSION_AUTO), symrate = symbol rate in sym/s, conv = "
-                  u"convolutional rate (one of FEC_NONE, FEC_1_2, FEC_2_3, FEC_3_4, "
-                  u"FEC_4_5, FEC_5_6, FEC_6_7, FEC_7_8, FEC_8_9, FEC_AUTO), "
-                  u"mod = modulation (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128, "
-                  u"QAM_256, QAM_AUTO).\n\n"
-                  u"Terrestrial (OFDM): \"freq:inv:bw:convhp:convlp:modu:mode:guard:hier\". "
-                  u"With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF, "
-                  u"INVERSION_ON, INVERSION_AUTO), bw = bandwidth (one of BANDWIDTH_8_MHZ, "
-                  u"BANDWIDTH_7_MHZ, BANDWIDTH_6_MHZ, BANDWIDTH_AUTO), convhp and convlp = "
-                  u"convolutional rate for high and low priority (see values in cable), "
-                  u"modu = modulation (see values in cable), mode = transmission mode "
-                  u"(one of TRANSMISSION_MODE_2K, TRANSMISSION_MODE_8K,  "
-                  u"TRANSMISSION_MODE_AUTO), guard = guard interval (one of "
-                  u"GUARD_INTERVAL_1_32, GUARD_INTERVAL_1_16, GUARD_INTERVAL_1_8, "
-                  u"GUARD_INTERVAL_1_4, GUARD_INTERVAL_AUTO), hier = hierarchy (one of "
-                  u"HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).");
-
-        args.option(u"uhf-channel", 0, Args::INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
+        // UHF/VHF frequency bands options.
+        args.option(u"uhf-channel", 0, Args::POSITIVE);
         args.help(u"uhf-channel",
-                  u"Used for DVB-T tuners only. "
-                  u"Specify the UHF channel number of the carrier. Can be used in "
-                  u"replacement to --frequency. Can be combined with an --offset-count "
-                  u"option. The resulting frequency is "
-                  u"306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).");
+                  u"Used for DVB-T or ATSC tuners only. "
+                  u"Specify the UHF channel number of the carrier. "
+                  u"Can be used in replacement to --frequency. "
+                  u"Can be combined with an --offset-count option. "
+                  u"The UHF frequency layout depends on the region, see --hf-band-region option.");
 
-        args.option(u"vhf-channel", 0, Args::INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
+        args.option(u"vhf-channel", 0, Args::POSITIVE);
         args.help(u"vhf-channel",
-                  u"Used for DVB-T tuners only. "
-                  u"Specify the VHF channel number of the carrier. Can be used in "
-                  u"replacement to --frequency. Can be combined with an --offset-count "
-                  u"option. The resulting frequency is "
-                  u"142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).");
+                  u"Used for DVB-T or ATSC tuners only. "
+                  u"Specify the VHF channel number of the carrier. "
+                  u"Can be used in replacement to --frequency. "
+                  u"Can be combined with an --offset-count option. "
+                  u"The VHF frequency layout depends on the region, see --hf-band-region option.");
 
-        args.option(u"zap-config-file", _allow_short_options ? 'z' : 0, Args::STRING);
-        args.help(u"zap-config-file",
-                  u"Zap configuration file to use for option -c or --channel-transponder. "
-                  u"The format of these text files is specified by the Linux DVB szap, czap "
-                  u"and tzap utilities. Zap config files can be created using the scandvb "
-                  u"tool (szap, czap, tzap and scandvb are part of the dvb-apps package). "
-                  u"The location of the default zap configuration file depends on the system."
+        args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -10, 10);
+        args.help(u"offset-count",
+                  u"Used for DVB-T or ATSC tuners only. "
+                  u"Specify the number of offsets from the UHF or VHF channel. "
+                  u"The default is zero. See options --uhf-channel or --vhf-channel.");
+
+        // Tuning using a channel configuration file.
+        args.option(u"channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
+        args.help(u"channel-transponder", u"name",
+                  u"Tune to the transponder containing the specified channel. The channel name "
+                  u"is not case-sensitive and blanks are ignored. The channel is searched in a "
+                  u"\"tuning file\" and the corresponding tuning information in this file is used.");
+
+        args.option(u"tuning-file", 0, Args::STRING);
+        args.help(u"tuning-file",
+                  u"Tuning configuration file to use for option -c or --channel-transponder. "
+                  u"This is an XML file. See the TSDuck user's guide for more details. "
+                  u"Tuning configuration files can be created using the tsscan utility or the nitscan plugin. "
+                  u"The location of the default tuning configuration file depends on the system."
 #if defined(TS_LINUX)
-                  u" On Linux, the default file is $HOME/.Xzap/channels.conf, where X is either 's' "
-                  u"(satellite), 'c' (cable) or 't' (terrestrial), depending on the frontend type."
+                  u" On Linux, the default file is $HOME/.tsduck.channels.xml."
 #elif defined(TS_WINDOWS)
-                  u" On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf, "
-                  u"where X is either 's', 'c' or 't'."
+                  u" On Windows, the default file is %APPDATA%\\tsduck\\channels.xml."
 #endif
                   );
     }
@@ -558,55 +513,21 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
 
 bool ts::TunerArgs::tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const
 {
-    // Allocate tuning parameters of the appropriate type
-    params = TunerParameters::Factory(tuner.tunerType());
-    assert(!params.isNull());
-
-    // Tune to transponder if some tune options were specified.
     if (hasTuningInfo()) {
-
-        // Map command line options to actual tuning parameters
-        if (!params->fromTunerArgs(*this, report)) {
+        // Tune to transponder if some tune options were specified.
+        // Map command line options to actual tuning parameters.
+        params = TunerParameters::FromTunerArgs(tuner.tunerType(), *this, report);
+        if (params.isNull()) {
             return false;
         }
-        report.debug(u"tuning to transponder " + params->toPluginOptions());
 
         // Tune to transponder
-        if (!tuner.tune(*params, report)) {
-            return false;
-        }
+        report.debug(u"tuning to transponder %s", {params->toPluginOptions()});
+        return tuner.tune(*params, report);
     }
-
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Default zap file name for a given tuner type
-//----------------------------------------------------------------------------
-
-ts::UString ts::TunerArgs::DefaultZapFile(TunerType tuner_type)
-{
-    const UChar* file = nullptr;
-
-#if defined(TS_WINDOWS)
-    const UChar* root_env = u"APPDATA";
-    switch (tuner_type) {
-        case DVB_S: file = u"\\tsduck\\szap\\channels.conf"; break;
-        case DVB_C: file = u"\\tsduck\\czap\\channels.conf"; break;
-        case DVB_T: file = u"\\tsduck\\tzap\\channels.conf"; break;
-        default: return UString();
+    else {
+        // Allocate tuning parameters of the appropriate type
+        params = TunerParameters::Factory(tuner.tunerType());
+        return true;
     }
-#else
-    const UChar* root_env = u"HOME";
-    switch (tuner_type) {
-        case DVB_S: file = u"/.szap/channels.conf"; break;
-        case DVB_C: file = u"/.czap/channels.conf"; break;
-        case DVB_T: file = u"/.tzap/channels.conf"; break;
-        default: return UString();
-    }
-#endif
-
-    const UString root_path(GetEnvironment(root_env));
-    return root_path.empty() ? UString() : UString(root_path) + UString(file);
 }

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBHTMLApplicationLocationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"dvb_html_application_location_descriptor"
 #define MY_DID ts::DID_AIT_HTML_APP_LOC
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationLocationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::DVBHTMLApplicationLocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DVBHTMLApplicationLocationDescriptor::DisplayDescri
 //----------------------------------------------------------------------------
 
 ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     physical_root(),
     initial_path()
 {
@@ -59,10 +61,10 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor()
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     DVBHTMLApplicationLocationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -70,11 +72,11 @@ ts::DVBHTMLApplicationLocationDescriptor::DVBHTMLApplicationLocationDescriptor(c
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::DVBHTMLApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(physical_root.toDVBWithByteLength(0, NPOS, charset));
-    bbp->append(initial_path.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVBWithByteLength(physical_root));
+    bbp->append(duck.toDVB(initial_path));
     serializeEnd(desc, bbp);
 }
 
@@ -83,7 +85,7 @@ void ts::DVBHTMLApplicationLocationDescriptor::serialize(Descriptor& desc, const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::DVBHTMLApplicationLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     physical_root.clear();
     initial_path.clear();
@@ -97,8 +99,8 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserialize(const Descriptor& des
         const size_t len = data[0];
         _is_valid = len + 1 <= size;
         if (_is_valid) {
-            physical_root = UString::FromDVB(data + 1, len, charset);
-            initial_path = UString::FromDVB(data + 1 + len, size - len - 1, charset);
+            physical_root = duck.fromDVB(data + 1, len);
+            initial_path = duck.fromDVB(data + 1 + len, size - len - 1);
         }
     }
 }
@@ -110,13 +112,13 @@ void ts::DVBHTMLApplicationLocationDescriptor::deserialize(const Descriptor& des
 
 void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
         size_t len = std::min<size_t>(data[0], size - 1);
-        strm << margin << "Physical root: \"" << UString::FromDVB(data + 1, len, display.dvbCharset()) << "\"" << std::endl
-             << margin << "Initial path: \"" << UString::FromDVB(data + 1 + len, size - len - 1, display.dvbCharset()) << "\"" << std::endl;
+        strm << margin << "Physical root: \"" << display.duck().fromDVB(data + 1, len) << "\"" << std::endl
+             << margin << "Initial path: \"" << display.duck().fromDVB(data + 1 + len, size - len - 1) << "\"" << std::endl;
         size = 0;
     }
 
@@ -128,7 +130,7 @@ void ts::DVBHTMLApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::buildXML(xml::Element* root) const
+void ts::DVBHTMLApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"physical_root", physical_root);
     root->setAttribute(u"initial_path", initial_path);
@@ -139,7 +141,7 @@ void ts::DVBHTMLApplicationLocationDescriptor::buildXML(xml::Element* root) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBHTMLApplicationLocationDescriptor::fromXML(const xml::Element* element)
+void ts::DVBHTMLApplicationLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

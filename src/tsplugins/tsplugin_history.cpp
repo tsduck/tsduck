@@ -126,7 +126,7 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
     _last_tdt(Time::Epoch),
     _last_tdt_pkt(0),
     _last_tdt_reported(false),
-    _demux(this),
+    _demux(duck, this),
     _cpids()
 {
     option(u"cas", 'c');
@@ -277,7 +277,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
                 report(u"PAT v%d, TS 0x%X", {table.version(), table.tableIdExtension()});
-                PAT pat(table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     // Filter all PMT PIDs
                     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -293,7 +293,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_TDT: {
             if (table.sourcePID() == PID_TDT) {
                 // Save last TDT in context
-                _last_tdt.deserialize(table);
+                _last_tdt.deserialize(duck, table);
                 _last_tdt_pkt = _current_pkt;
                 _last_tdt_reported = false;
                 // Report TDT only if --time-all
@@ -307,7 +307,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_TOT: {
             if (table.sourcePID() == PID_TOT) {
                 if (_time_all) {
-                    TOT tot(table);
+                    TOT tot(duck, table);
                     if (tot.isValid()) {
                         if (tot.regions.empty()) {
                             report(u"TOT: %s UTC", {tot.utc_time.format(Time::DATE | Time::TIME)});
@@ -323,7 +323,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_PMT: {
             report(u"PMT v%d, service 0x%X", {table.version(), table.tableIdExtension()});
-            PMT pmt(table);
+            PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Get components of the service, including ECM PID's
                 analyzeCADescriptors(pmt.descs, pmt.service_id);

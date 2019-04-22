@@ -106,7 +106,7 @@ ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
     _current_pkt(0),
     _last_clear_pkt(0),
     _clear_pids(),
-    _demux(this)
+    _demux(duck, this)
 {
     option(u"audio", 'a');
     help(u"audio",
@@ -184,7 +184,7 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(duck, table);
                 if (pat.isValid()) {
                     processPAT (pat);
                 }
@@ -194,7 +194,7 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     processSDT (sdt);
                 }
@@ -203,7 +203,7 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
         }
 
         case TID_PMT: {
-            PMT pmt (table);
+            PMT pmt(duck, table);
             if (pmt.isValid() && _service.hasId (pmt.service_id)) {
                 processPMT (pmt);
             }
@@ -213,7 +213,7 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
         case TID_TOT: {
             if (table.sourcePID() == PID_TOT) {
                 // Save last TOT
-                _last_tot.deserialize(table);
+                _last_tot.deserialize(duck, table);
             }
             break;
         }
@@ -229,19 +229,19 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
 //  This method processes a Service Description Table (SDT).
 //----------------------------------------------------------------------------
 
-void ts::ClearPlugin::processSDT (SDT& sdt)
+void ts::ClearPlugin::processSDT(SDT& sdt)
 {
     // Look for the service by name
     uint16_t service_id;
     assert (_service.hasName());
-    if (!sdt.findService (_service.getName(), service_id)) {
+    if (!sdt.findService(duck, _service.getName(), service_id)) {
         tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;
     }
 
     // Remember service id
-    _service.setId (service_id);
+    _service.setId(service_id);
     tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
 
     // No longer need to filter the SDT

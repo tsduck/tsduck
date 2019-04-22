@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTargetIPv6SlashDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"target_IPv6_slash_descriptor"
 #define MY_DID ts::DID_INT_IPV6_SLASH
 #define MY_TID ts::TID_INT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPv6SlashDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPv6SlashDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -47,16 +49,16 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPv6SlashDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::TargetIPv6SlashDescriptor::TargetIPv6SlashDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     addresses()
 {
     _is_valid = true;
 }
 
-ts::TargetIPv6SlashDescriptor::TargetIPv6SlashDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::TargetIPv6SlashDescriptor::TargetIPv6SlashDescriptor(DuckContext& duck, const Descriptor& desc) :
     TargetIPv6SlashDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 ts::TargetIPv6SlashDescriptor::Address::Address(const IPv6Address& addr, uint8_t mask) :
@@ -70,7 +72,7 @@ ts::TargetIPv6SlashDescriptor::Address::Address(const IPv6Address& addr, uint8_t
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SlashDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::TargetIPv6SlashDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     for (auto it = addresses.begin(); it != addresses.end(); ++it) {
@@ -85,7 +87,7 @@ void ts::TargetIPv6SlashDescriptor::serialize(Descriptor& desc, const DVBCharset
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SlashDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::TargetIPv6SlashDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -108,7 +110,7 @@ void ts::TargetIPv6SlashDescriptor::deserialize(const Descriptor& desc, const DV
 
 void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     while (size >= 17) {
@@ -124,7 +126,7 @@ void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SlashDescriptor::buildXML(xml::Element* root) const
+void ts::TargetIPv6SlashDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     for (auto it = addresses.begin(); it != addresses.end(); ++it) {
         xml::Element* e = root->addElement(u"address");
@@ -138,7 +140,7 @@ void ts::TargetIPv6SlashDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TargetIPv6SlashDescriptor::fromXML(const xml::Element* element)
+void ts::TargetIPv6SlashDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     addresses.clear();
 

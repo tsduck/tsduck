@@ -39,28 +39,24 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"selection_information_table"
 #define MY_TID ts::TID_SIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABLE_FACTORY(ts::SelectionInformationTable, MY_XML_NAME);
-TS_ID_TABLE_FACTORY(ts::SelectionInformationTable, MY_TID);
+TS_ID_TABLE_FACTORY(ts::SelectionInformationTable, MY_TID, MY_STD);
 TS_ID_SECTION_DISPLAY(ts::SelectionInformationTable::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SelectionInformationTable::SelectionInformationTable(uint8_t version_, bool is_current_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
     descs(this),
     services(this)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor.
-//----------------------------------------------------------------------------
 
 ts::SelectionInformationTable::SelectionInformationTable(const SelectionInformationTable& other) :
     AbstractLongTable(other),
@@ -69,15 +65,10 @@ ts::SelectionInformationTable::SelectionInformationTable(const SelectionInformat
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
-ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& table, const DVBCharset* charset) :
+ts::SelectionInformationTable::SelectionInformationTable(DuckContext& duck, const BinaryTable& table) :
     SelectionInformationTable()
 {
-    deserialize(table, charset);
+    deserialize(duck, table);
 }
 
 
@@ -85,16 +76,11 @@ ts::SelectionInformationTable::SelectionInformationTable(const BinaryTable& tabl
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
+void ts::SelectionInformationTable::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
-    _is_valid = false;
     descs.clear();
     services.clear();
-
-    if (!table.isValid() || table.tableId() != _table_id) {
-        return;
-    }
 
     // Loop on all sections, although a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
@@ -143,16 +129,8 @@ void ts::SelectionInformationTable::deserialize(const BinaryTable& table, const 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::serialize(BinaryTable& table, const DVBCharset* charset) const
+void ts::SelectionInformationTable::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
-    // Reinitialize table object
-    table.clear();
-
-    // Return an empty table if not valid
-    if (!_is_valid) {
-        return;
-    }
-
     // Build the section. Note that a Selection Information Table is not allowed
     // to use more than one section, see ETSI EN 300 468, 7.1.2.
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
@@ -198,7 +176,7 @@ void ts::SelectionInformationTable::serialize(BinaryTable& table, const DVBChars
 
 void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -214,7 +192,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
         // Process and display global descriptor list.
         if (info_length > 0) {
             strm << margin << "Global information:" << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
         }
         data += info_length; size -= info_length;
 
@@ -228,7 +206,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
                 info_length = size;
             }
             strm << margin << UString::Format(u"Service id: %d (0x%X), Status: %s", {id, id, RST::RunningStatusNames.name(rs)}) << std::endl;
-            display.displayDescriptorList(data, info_length, indent, section.tableId());
+            display.displayDescriptorList(section, data, info_length, indent);
             data += info_length; size -= info_length;
         }
     }
@@ -241,17 +219,17 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& display, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::buildXML(xml::Element* root) const
+void ts::SelectionInformationTable::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    descs.toXML(root);
+    descs.toXML(duck, root);
 
     for (auto it = services.begin(); it != services.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it->first, true);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        it->second.descs.toXML(e);
+        it->second.descs.toXML(duck, e);
     }
 }
 
@@ -260,7 +238,7 @@ void ts::SelectionInformationTable::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SelectionInformationTable::fromXML(const xml::Element* element)
+void ts::SelectionInformationTable::fromXML(DuckContext& duck, const xml::Element* element)
 {
     descs.clear();
     services.clear();
@@ -270,13 +248,13 @@ void ts::SelectionInformationTable::fromXML(const xml::Element* element)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        descs.fromXML(children, element, u"service");
+        descs.fromXML(duck, children, element, u"service");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         uint16_t id = 0;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(id, u"service_id", true) &&
             children[index]->getIntEnumAttribute<uint8_t>(services[id].running_status, RST::RunningStatusNames, u"running_status", true);
-            services[id].descs.fromXML(children[index]);
+            services[id].descs.fromXML(duck, children[index]);
     }
 }

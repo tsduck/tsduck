@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -40,6 +41,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"service_descriptor"
 #define MY_DID ts::DID_SERVICE
+#define MY_STD ts::STD_DVB
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, ts::EDID::Standard(MY_DID));
@@ -47,11 +49,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceDescriptor::DisplayDescriptor, ts::EDID::Sta
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, const UString& name) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     service_type(type),
     provider_name(provider),
     service_name(name)
@@ -59,18 +61,10 @@ ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, 
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    service_type(0),
-    provider_name(),
-    service_name()
+ts::ServiceDescriptor::ServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
+    ServiceDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -78,12 +72,12 @@ ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc, const DVBCharse
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(service_type);
-    bbp->append(provider_name.toDVBWithByteLength(0, NPOS, charset));
-    bbp->append(service_name.toDVBWithByteLength(0, NPOS, charset));
+    bbp->append(duck.toDVBWithByteLength(provider_name));
+    bbp->append(duck.toDVBWithByteLength(service_name));
     serializeEnd(desc, bbp);
 }
 
@@ -92,7 +86,7 @@ void ts::ServiceDescriptor::serialize(Descriptor& desc, const DVBCharset* charse
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3;
 
@@ -101,8 +95,8 @@ void ts::ServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset
         size_t size = desc.payloadSize();
         service_type = data[0];
         data++; size--;
-        provider_name.assign(UString::FromDVBWithByteLength(data, size, charset));
-        service_name.assign(UString::FromDVBWithByteLength(data, size, charset));
+        provider_name.assign(duck.fromDVBWithByteLength(data, size));
+        service_name.assign(duck.fromDVBWithByteLength(data, size));
         _is_valid = size == 0;
     }
 }
@@ -114,7 +108,7 @@ void ts::ServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 
 void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
@@ -124,8 +118,8 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         strm << margin << "Service type: " << names::ServiceType(stype, names::FIRST) << std::endl;
 
         // Provider and service names (data and size are updated by FromDVBWithByteLength).
-        const UString provider(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
-        const UString service(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
+        const UString provider(display.duck().fromDVBWithByteLength(data, size));
+        const UString service(display.duck().fromDVBWithByteLength(data, size));
         strm << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;
     }
 
@@ -137,7 +131,7 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::buildXML(xml::Element* root) const
+void ts::ServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"service_type", service_type, true);
     root->setAttribute(u"service_provider_name", provider_name);
@@ -149,7 +143,7 @@ void ts::ServiceDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::fromXML(const xml::Element* element)
+void ts::ServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

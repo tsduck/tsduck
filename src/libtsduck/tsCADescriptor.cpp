@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCADescriptor.h"
+#include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -42,6 +43,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_descriptor"
 #define MY_DID ts::DID_CA
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID::Standard(MY_DID));
@@ -53,7 +55,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CADescriptor::DisplayDescriptor, ts::EDID::Standard
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cas_id(cas_id_),
     ca_pid(ca_pid_),
     private_data()
@@ -66,13 +68,13 @@ ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CADescriptor::CADescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+ts::CADescriptor::CADescriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cas_id(0),
     ca_pid(PID_NULL),
     private_data()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -80,7 +82,7 @@ ts::CADescriptor::CADescriptor(const Descriptor& desc, const DVBCharset* charset
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::CADescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(cas_id);
@@ -94,7 +96,7 @@ void ts::CADescriptor::serialize(Descriptor& desc, const DVBCharset* charset) co
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::CADescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
 
@@ -114,7 +116,7 @@ void ts::CADescriptor::deserialize(const Descriptor& desc, const DVBCharset* cha
 
 void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
 
     if (size >= 4) {
         const std::string margin(indent, ' ');
@@ -143,7 +145,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::buildXML(xml::Element* root) const
+void ts::CADescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"CA_system_id", cas_id, true);
     root->setIntAttribute(u"CA_PID", ca_pid, true);
@@ -157,7 +159,7 @@ void ts::CADescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::fromXML(const xml::Element* element)
+void ts::CADescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
@@ -209,13 +211,13 @@ bool ts::CADescriptor::fromCommmandLine(const UString& value, Report& report)
 // Decode command-line CA_descriptor and add them in a descriptor list.
 //----------------------------------------------------------------------------
 
-bool ts::CADescriptor::AddFromCommandLine(DescriptorList& dlist, const UStringVector& values, Report& report)
+bool ts::CADescriptor::AddFromCommandLine(DuckContext& duck, DescriptorList& dlist, const UStringVector& values)
 {
     bool result = true;
     for (size_t i = 0; i < values.size(); ++i) {
         CADescriptor desc;
-        if (desc.fromCommmandLine(values[i], report)) {
-            dlist.add(desc);
+        if (desc.fromCommmandLine(values[i], duck.report())) {
+            dlist.add(duck, desc);
         }
         else {
             result = false;

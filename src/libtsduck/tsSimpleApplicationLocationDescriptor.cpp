@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSimpleApplicationLocationDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -36,6 +37,7 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"simple_application_location_descriptor"
 #define MY_DID ts::DID_AIT_APP_LOCATION
 #define MY_TID ts::TID_AIT
+#define MY_STD ts::STD_DVB
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::SimpleApplicationLocationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::SimpleApplicationLocationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
@@ -43,25 +45,20 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SimpleApplicationLocationDescriptor::DisplayDescrip
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     initial_path()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(DuckContext& duck, const Descriptor& desc) :
     SimpleApplicationLocationDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -69,10 +66,10 @@ ts::SimpleApplicationLocationDescriptor::SimpleApplicationLocationDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::SimpleApplicationLocationDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(initial_path.toDVB(0, NPOS, charset));
+    bbp->append(duck.toDVB(initial_path));
     serializeEnd(desc, bbp);
 }
 
@@ -81,12 +78,12 @@ void ts::SimpleApplicationLocationDescriptor::serialize(Descriptor& desc, const 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::SimpleApplicationLocationDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        initial_path = UString::FromDVB(desc.payload(), desc.payloadSize(), charset);
+        initial_path = duck.fromDVB(desc.payload(), desc.payloadSize());
     }
 }
 
@@ -97,10 +94,9 @@ void ts::SimpleApplicationLocationDescriptor::deserialize(const Descriptor& desc
 
 void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
-
-    strm << margin << "Initial path: \"" << UString::FromDVB(data, size, display.dvbCharset()) << "\"" << std::endl;
+    strm << margin << "Initial path: \"" << display.duck().fromDVB(data, size) << "\"" << std::endl;
 }
 
 
@@ -108,7 +104,7 @@ void ts::SimpleApplicationLocationDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::buildXML(xml::Element* root) const
+void ts::SimpleApplicationLocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"initial_path", initial_path);
 }
@@ -118,7 +114,7 @@ void ts::SimpleApplicationLocationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SimpleApplicationLocationDescriptor::fromXML(const xml::Element* element)
+void ts::SimpleApplicationLocationDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

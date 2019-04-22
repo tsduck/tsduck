@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHEVCVideoDescriptor.h"
+#include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -39,6 +40,7 @@ TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"HEVC_video_descriptor"
 #define MY_DID ts::DID_HEVC_VIDEO
+#define MY_STD ts::STD_MPEG
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HEVCVideoDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HEVCVideoDescriptor, ts::EDID::Standard(MY_DID));
@@ -46,11 +48,11 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HEVCVideoDescriptor::DisplayDescriptor, ts::EDID::S
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     profile_space(0),
     tier(false),
     profile_idc(0),
@@ -69,15 +71,10 @@ ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::HEVCVideoDescriptor::HEVCVideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+ts::HEVCVideoDescriptor::HEVCVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
     HEVCVideoDescriptor()
 {
-    deserialize(desc, charset);
+    deserialize(duck, desc);
 }
 
 
@@ -85,7 +82,7 @@ ts::HEVCVideoDescriptor::HEVCVideoDescriptor(const Descriptor& desc, const DVBCh
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::HEVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
@@ -113,7 +110,7 @@ void ts::HEVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* char
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::HEVCVideoDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && (desc.payloadSize() == 13 || desc.payloadSize() == 15);
 
@@ -153,7 +150,7 @@ void ts::HEVCVideoDescriptor::deserialize(const Descriptor& desc, const DVBChars
 
 void ts::HEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
+    std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
 
     if (size >= 13) {
@@ -205,7 +202,7 @@ void ts::HEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::buildXML(xml::Element* root) const
+void ts::HEVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"profile_space", profile_space, true);
     root->setBoolAttribute(u"tier_flag", tier);
@@ -228,7 +225,7 @@ void ts::HEVCVideoDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::HEVCVideoDescriptor::fromXML(const xml::Element* element)
+void ts::HEVCVideoDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&

@@ -45,12 +45,12 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::SectionFile::SectionFile() :
+ts::SectionFile::SectionFile(DuckContext& duck) :
+    _duck(duck),
     _tables(),
     _sections(),
     _orphanSections(),
     _xmlTweaks(),
-    _charset(),
     _crc_op(CRC32::IGNORE)
 {
 }
@@ -76,7 +76,7 @@ void ts::SectionFile::add(const AbstractTablePtr& table)
 {
     if (!table.isNull() && table->isValid()) {
         BinaryTablePtr bin(new BinaryTable);
-        table->serialize(*bin, _charset);
+        table->serialize(_duck, *bin);
         if (bin->isValid()) {
             add(bin);
         }
@@ -93,6 +93,8 @@ void ts::SectionFile::add(const BinaryTablePtrVector& tables)
 void ts::SectionFile::add(const BinaryTablePtr& table)
 {
     if (!table.isNull() && table->isValid()) {
+        // Add the standards from the table in the context.
+        _duck.addStandards(table->definingStandards());
         // Add the table as a whole.
         _tables.push_back(table);
         // Add all its sections (none of them is orphan).
@@ -117,6 +119,8 @@ void ts::SectionFile::add(const SectionPtrVector& sections)
 void ts::SectionFile::add(const SectionPtr& section)
 {
     if (!section.isNull() && section->isValid()) {
+        // Add the standards from the section in the context.
+        _duck.addStandards(section->definingStandards());
         // Make the section part of the global list of sections.
         _sections.push_back(section);
         // Temporary push this section in the orphan list.
@@ -124,6 +128,56 @@ void ts::SectionFile::add(const SectionPtr& section)
         // Try to build a table from the list of orphans.
         collectLastTable();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Pack all orphan sections.
+//----------------------------------------------------------------------------
+
+size_t ts::SectionFile::packOrphanSections()
+{
+    size_t createCount = 0;
+
+    // Loop on all orphan sections, locating sets of sections from the same table.
+    for (auto first = _orphanSections.begin(); first != _orphanSections.end(); ) {
+        assert(!first->isNull());
+        assert((*first)->isValid());
+
+        // Point after first section.
+        auto end = first + 1;
+
+        // A short section should be a table in itself, no need to dive further.
+        // Long sections must be grouped by tid / tid-ext.
+        if ((*first)->isLongSection()) {
+            const TID tid = (*first)->tableId();
+            const uint16_t tidExt = (*first)->tableIdExtension();
+            while (end != _orphanSections.end() && (*end)->tableId() == tid && (*end)->tableIdExtension() == tidExt) {
+                ++end;
+            }
+        }
+
+        // Build a binary table from orphan sections.
+        BinaryTablePtr table(new BinaryTable);
+        CheckNonNull(table.pointer());
+        table->addSections(first, end, true, true);
+
+        // Compress all sections to make a valid table.
+        table->packSections();
+        assert(table->isValid());
+
+        // Now we got a table.
+        _tables.push_back(table);
+        createCount++;
+
+        // Loop on next set of sections.
+        first = end;
+    }
+
+    // Clear the list of orphan sections, they are now in tables.
+    _orphanSections.clear();
+
+    return createCount;
 }
 
 
@@ -139,7 +193,7 @@ void ts::SectionFile::collectLastTable()
     }
 
     // Get a iterator to last section.
-    SectionPtrVector::iterator first = _orphanSections.end();
+    SectionPtrVector::iterator first(_orphanSections.end());
     --first;
     assert(!first->isNull());
     assert((*first)->isValid());
@@ -301,7 +355,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     xml::Document model(doc.report());
-    if (!model.load(u"tsduck.xml", true)) {
+    if (!model.load(u"tsduck.tables.model.xml", true)) {
         doc.report().error(u"Model for TSDuck XML files not found");
         return false;
     }
@@ -319,7 +373,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
         BinaryTablePtr bin(new BinaryTable);
         CheckNonNull(bin.pointer());
-        if (bin->fromXML(node) && bin->isValid()) {
+        if (bin->fromXML(_duck, node) && bin->isValid()) {
             add(bin);
         }
         else {
@@ -366,7 +420,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
     for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
         const BinaryTablePtr& table(*it);
         if (!table.isNull()) {
-            table->toXML(root, false, _charset);
+            table->toXML(_duck, root, false);
         }
     }
 

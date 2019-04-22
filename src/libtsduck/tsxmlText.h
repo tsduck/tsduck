@@ -67,8 +67,8 @@ namespace ts {
             bool isCData() const { return _isCData; }
 
             // Inherited from xml::Node.
-            virtual UString typeName() const override { return u"Text"; }
-            virtual bool stickyOutput() const override { return !_isCData; }
+            virtual UString typeName() const override;
+            virtual bool stickyOutput() const override;
             virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 
         protected:
