@@ -134,7 +134,7 @@ namespace ts {
     //! @code
     //! tsp ...
     //!     -P encap -o 7777 --pes-mode ...
-    //!     -P pmt -s 100 -a 7777/0x06 --add-programinfo-id 0x4B4C5641
+    //!     -P pmt -s 100 -a 7777/0x06 --add-programinfo-id 0x41564C4B
     //!     ...
     //! @endcode
     //! where the outer PID is 7777 and the attached service is 100.
@@ -143,7 +143,7 @@ namespace ts {
     //! @code
     //! tsp ...
     //!     -P encap -o 7777 --pes-mode ... --pcr-pid 101 --pes-offset=-50000
-    //!     -P pmt -s 100 -a 7777/0x06 --add-programinfo-id 0x4B4C5641
+    //!     -P pmt -s 100 -a 7777/0x06 --add-programinfo-id 0x41564C4B
     //!     ...
     //! @endcode
     //! where the outer PID is 7777, the pid 101 carries the PCR of the service,
