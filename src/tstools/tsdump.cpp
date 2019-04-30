@@ -35,6 +35,7 @@
 #include "tsMain.h"
 #include "tsTSPacket.h"
 #include "tsPagerArgs.h"
+#include "tsUString.h"
 TSDUCK_SOURCE;
 
 
