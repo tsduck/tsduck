@@ -51,6 +51,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
+        bool          only_with_mark;   // Check criteria only if it's marked
         int           scrambling_ctrl;  // Scrambling control value (<0: no filter)
         bool          with_payload;     // Packets with payload
         bool          with_af;          // Packets with adaptation field
@@ -60,11 +61,15 @@ namespace ts {
         bool          valid;            // Packets with valid sync byte and error ind
         bool          negate;           // Negate filter (exclude selected packets)
         bool          stuffing;         // Replace excluded packet with stuffing
+        int           every_packets;    // Number of times to trigger the condition
+        int           inplace_remap;    // Target pid when doing in-place remap
         int           min_payload;      // Minimum payload size (<0: no filter)
         int           max_payload;      // Maximum payload size (<0: no filter)
         int           min_af;           // Minimum adaptation field size (<0: no filter)
         int           max_af;           // Maximum adaptation field size (<0: no filter)
+        bool          marking_only;     // Instead of filter/process mark it only
         PacketCounter after_packets;
+        PacketCounter ok_packets;
         PIDSet        pid;              // PID values to filter
 
         // Inaccessible operations
@@ -84,6 +89,7 @@ TSPLUGIN_DECLARE_PROCESSOR(filter, ts::FilterPlugin)
 
 ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions", u"[options]"),
+    only_with_mark(false),
     scrambling_ctrl(0),
     with_payload(false),
     with_af(false),
@@ -93,13 +99,29 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     valid(false),
     negate(false),
     stuffing(false),
+    every_packets(0),
+    inplace_remap(-1),
     min_payload(0),
     max_payload(0),
     min_af(0),
     max_af(0),
+    marking_only(false),
     after_packets(0),
+    ok_packets(0),
     pid()
 {
+    option(u"only-with-mark", 'o');
+    help(u"only-with-mark", u"Requires a previous mark to check the criteria. "
+         u"If no mark, then pass the packet directly.");
+
+    option(u"mark-only", 'm');
+    help(u"mark-only", u"Instead of filter/process the packet, mark it only.");
+
+    option(u"every", 'e', INTEGER, 0, 1, 1, UNLIMITED_VALUE);
+    help(u"every",
+         u"Triggers the condition only after the number of times indicated. "
+         u"Default is 1, so each time the condition is true.");
+
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
 
@@ -167,6 +189,11 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     help(u"valid",
          u"Select valid packets. A valid packet starts with 0x47 and has "
          u"its transport_error_indicator cleared.");
+
+    option(u"in-place-process-remap", 0, INTEGER, 0, 1, 0, PID_NULL - 1);
+    help(u"in-place-process-remap",
+         u"Instead of filter out, process the packet local and pass it. "
+         u"Process to do: Remap the pid to the indicated value.");
 }
 
 
@@ -176,6 +203,8 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
 
 bool ts::FilterPlugin::start()
 {
+    only_with_mark = present(u"only-with-mark");
+    marking_only = present(u"mark-only");
     scrambling_ctrl = present(u"clear") ? 0 : intValue(u"scrambling-control", -1);
     with_payload = present(u"payload");
     with_af = present(u"adaptation-field");
@@ -185,6 +214,8 @@ bool ts::FilterPlugin::start()
     valid = present(u"valid");
     negate = present(u"negate");
     stuffing = present(u"stuffing");
+    inplace_remap = intValue<int>(u"in-place-process-remap", -1);
+    every_packets = intValue<int>(u"every", 1);
     min_payload = intValue<int>(u"min-payload-size", -1);
     max_payload = intValue<int>(u"max-payload-size", -1);
     min_af = intValue<int>(u"min-adaptation-field-size", -1);
@@ -192,6 +223,8 @@ bool ts::FilterPlugin::start()
     after_packets = intValue<PacketCounter>(u"after-packets", 0);
 
     getIntValues(pid, u"pid");
+
+    ok_packets = every_packets;
 
     return true;
 }
@@ -204,10 +237,16 @@ bool ts::FilterPlugin::start()
 ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Pass initial packets without filtering.
-
     if (after_packets > 0) {
         after_packets--;
         return TSP_OK;
+    }
+
+    if (only_with_mark) {
+        // If no Mark then pass it directly!
+        if (pkt.b[0] != 0xff) {
+            return TSP_OK;
+        }
     }
 
     // Check if the packet matches one of the selected criteria.
@@ -242,6 +281,37 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, bool&
 
     if (negate) {
         ok = !ok;
+    }
+
+    if (ok) {
+        ok_packets--;
+        if (ok_packets == 0) {
+            ok_packets = every_packets;
+        }
+        else {
+            ok = !ok;
+        }
+    }
+
+    if (marking_only) {
+        if (ok) {
+            pkt.b[0] = 0xff; //TSP_MARK;
+            return TSP_OK;
+        }
+        else {
+            pkt.b[0] = 0x47;
+            return TSP_OK;
+        }
+    }
+    else {
+        pkt.b[0] = 0x47;
+    }
+
+    if (inplace_remap >= 0) {
+        if (ok) {
+            pkt.setPID(inplace_remap);
+        }
+        return TSP_OK;
     }
 
     if (ok) {
