@@ -368,6 +368,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSwitchableReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSysInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSystemClockDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSystemMonitor.h" />
@@ -827,6 +828,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSwitchableReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSysInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSystemClockDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSystemMonitor.cpp" />

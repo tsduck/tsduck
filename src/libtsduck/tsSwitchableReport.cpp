@@ -26,22 +26,42 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsSwitchableReport.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 18
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1212
+ts::SwitchableReport::SwitchableReport(Report& delegate, bool on) :
+    Report(std::numeric_limits<int>::max()), // actual logging will be limited in delegate
+    _on(on),
+    _delegate(delegate)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Set the switch state of this object.
+//----------------------------------------------------------------------------
+
+void ts::SwitchableReport::setSwitch(bool on)
+{
+    // Volatile boolean.
+    _on = on;
+    MemoryBarrier();
+}
+
+
+//----------------------------------------------------------------------------
+// Message logging method.
+//----------------------------------------------------------------------------
+
+void ts::SwitchableReport::writeLog(int severity, const UString &msg)
+{
+    if (_on) {
+        _delegate.log(severity, msg);
+    }
+}
