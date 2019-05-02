@@ -28,20 +28,52 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  A report class which can be switched on and off at will.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 18
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1212
+#include "tsReport.h"
+
+namespace ts {
+    //!
+    //! A report class which can be switched on and off at will.
+    //! @ingroup log
+    //!
+    //! This class implements the Report interface and delegates all reporting
+    //! activities to some other instance of Report. In the meantime, from any
+    //! thread, it is possible to switch the reporting on and off. When on,
+    //! all messages are delegated to the other Report. When off, all messages
+    //! are dropped.
+    //!
+    class TSDUCKDLL SwitchableReport : public Report
+    {
+    public:
+        //!
+        //! Constructor.
+        //! @param [in,out] delegate The report to which all messages are delegated when on.
+        //! @param [in] on Initial state of the switch.
+        //!
+        SwitchableReport(Report& delegate, bool on = true);
+
+        //!
+        //! Set the switch state of this object.
+        //! @param [in] on New state of the switch. When @a on is true, all messages are
+        //! passed to the delegate. When @a on is off, all messages are dropped.
+        //!
+        void setSwitch(bool on);
+
+    protected:
+        // Report implementation.
+        virtual void writeLog(int severity, const UString& msg) override;
+
+    private:
+        volatile bool _on;
+        Report&       _delegate;
+
+        // Inaccessible operations.
+        SwitchableReport() = delete;
+        SwitchableReport(const SwitchableReport&) = delete;
+        SwitchableReport& operator=(const SwitchableReport&) = delete;
+    };
+}

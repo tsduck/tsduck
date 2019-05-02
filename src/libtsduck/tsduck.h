@@ -369,6 +369,7 @@
 #include "tsSubRipGenerator.h"
 #include "tsSubtitlingDescriptor.h"
 #include "tsSupplementaryAudioDescriptor.h"
+#include "tsSwitchableReport.h"
 #include "tsSysInfo.h"
 #include "tsSystemClockDescriptor.h"
 #include "tsSystemMonitor.h"
