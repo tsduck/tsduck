@@ -147,7 +147,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
          u"The value (positive or negative) is added to the current PCR to generate "
          u"the PTS timestamp inserted in the PES header. "
          u"The recommended values are between -90000 and +90000 (1 second). "
-         u"It requires to use the PCR option (prc-pid parameter). "
+         u"It requires to use the PCR option (--pcr-pid). "
          u"The value 0 is equivalent to use the Asynchronous PES encapsulation.");
 }
 

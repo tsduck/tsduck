@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1210
+VERSION 3.18-1218
 
 [NEW] New commands and plugins:
 
@@ -12,6 +12,7 @@ VERSION 3.18-1210
 
   * Added option --atsc to commands "tsanalyze", "tstables", "tspsi",
     "tstabdump", "tstabcomp" and plugins "analyze", "tables", "psi".
+  ° Added option --pes-offset to plugin "encap" (synchronous PES mode).
 
 [BUG] Bug fixes:
 
