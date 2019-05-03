@@ -70,15 +70,18 @@ namespace ts {
     //! When selecting the PES encapsulation the same plain elementary
     //! stream is used, but with a PES envelope. This reduces the payload
     //! size, but makes the outer encapsulation more transparent. The full
-    //! overhead is around 14% of more data.
+    //! overhead is around 14-20% of more data.
     //!
     //! The PES envelope uses a KLVA SMPTE-336M encapsulation to insert the
     //! inner payload into one private (testing) key. Each TS packet contains
     //! only one key, with a size no larger than the payload of one TS packet.
     //! So each PES packet fits into a single TS packet.
     //!
-    //! The SMPTE-336M encapsulation is the asynchronous one. So no PTS
-    //! marks are used, and the payload size is larger.
+    //! The SMPTE-336M encapsulation implemented can be either the
+    //! asynchronous (without timestamps) or the synchronous (with PTS).
+    //! The latter consumes more space (+10 bytes), and it's only useful when
+    //! it's needed to remux the encapsulated stream with an external tool
+    //! that requires to use PTS marks. No other advantages are provided.
     //!
     //! Two variant strategies are implemented. The FIXED mode uses the
     //! short (7-bit) BER encoding. This limits the PES payload to a maximum
@@ -98,17 +101,36 @@ namespace ts {
     //! is inserted in the first packet (with PUSI on). The remaining
     //! payload can be distributed in the following TS packets.
     //!
-    //! The PES envelope has an overhead of 26 or 27 bytes based on:
+    //! The PES envelope has an overhead of 26|27|36|37 bytes based on:
     //! - 9 bytes for the PES header.
+    //! - 0|5 bytes for the PTS (only in synchronous mode)
+    //! - 0|5 bytes for the Metadata AU Header (only in synchronous mode)
     //! - 16 bytes for the UL key
     //! - 1|2 bytes for the payload size (BER short or long format)
     //!
+    //! To enable the use of the Synchronous encapsulation is required
+    //! to use PCRs and provide one offset. This value (positive or negative)
+    //! will be added to the PCR to compute the PTS. Recommended values are
+    //! between -90000 and +90000 (-1,+1 second). If you use negative values
+    //! then you can restore in advance the encapsulated stream after
+    //! remuxing. However, this will be valid only if you use an external
+    //! tool to remux. If you're unsure, then don't enable it.
+    //!
+    //! A warning about the Synchronous mode:
+    //!  At start the PTS marks can't be in synch with the target pcr-pid.
+    //!  This is because the PCR value isn't readed at start. But the PTS
+    //!  is required to be in all PES packets of the encapsulation.
+    //!  So, it's recommended to discard the outcoming stream until valid
+    //!  PTS values appear in the encapsulated stream.
+    //!
     //! In order to correctly identify the encapsulated PES stream, it is
     //! recommended to include in the PMT table a format identifier
-    //! descriptor for "KLVA" (0x4B4C5641); and use the Private Type (0x06)
-    //! for the stream type.
+    //! descriptor for "KLVA" (0x4B4C5641); and use the associated metadata
+    //! for the stream type based on the selected Sync/Async mode:
+    //!  - Asynchronous mode: Private Type (0x06)
+    //!  - Synchronous mode: Metadata Type (0x15)
     //!
-    //! Example:
+    //! Example (Asynchronous):
     //! @code
     //! tsp ...
     //!     -P encap -o 7777 --pes-mode ...
@@ -116,6 +138,16 @@ namespace ts {
     //!     ...
     //! @endcode
     //! where the outer PID is 7777 and the attached service is 100.
+    //!
+    //! Example (Synchronous):
+    //! @code
+    //! tsp ...
+    //!     -P encap -o 7777 --pes-mode ... --pcr-pid 101 --pes-offset=-50000
+    //!     -P pmt -s 100 -a 7777/0x15 --add-programinfo-id 0x4B4C5641
+    //!     ...
+    //! @endcode
+    //! where the outer PID is 7777, the pid 101 carries the PCR of the service,
+    //! the attached service is 100 and the PTS is advanced around half second.
     //!
     //! @see https://impleotv.com/2017/02/17/klv-encoded-metadata-in-stanag-4609-streams/
     //!
@@ -257,10 +289,18 @@ namespace ts {
 
         //!
         //! Set PES mode.
-        //! Enbles the PES mode encapsulation (disabled by default).
+        //! Enables the PES mode encapsulation (disabled by default).
         //! @param [in] mode PES mode.
         //!
         void setPES(PESMode mode) { _pesMode = mode; }
+
+        //!
+        //! Set PES Offset.
+        //! When using the PES mode it enables the PES Synchronous encapsulation when != 0.
+        //! The offset value is used to compute the PTS of the encap stream based on the PCR.
+        //! @param [in] offset value. Use 0 for Asynchronous PES mode (default).
+        //!
+        void setPESOffset(size_t offset) { _pesOffset = offset; }
 
     private:
         typedef std::map<PID,uint8_t> PIDCCMap;  // map of continuity counters, indexed by PID
@@ -270,6 +310,7 @@ namespace ts {
         bool             _packing;         // Packing mode.
         size_t           _packDistance;    // Maximum distance between inner packets.
         PESMode          _pesMode;         // PES mode selected.
+        size_t           _pesOffset;       // PES Offset used in the Synchronous mode.
         PID              _pidOutput;       // Output PID.
         PIDSet           _pidInput;        // Input PID's to encapsulate.
         PID              _pcrReference;    // Insert PCR's based on this reference PID.
@@ -280,6 +321,7 @@ namespace ts {
         BitRate          _bitrate;         // Bitrate computed from last PCR.
         bool             _insertPCR;       // Insert a PCR in next output packet.
         uint8_t          _ccOutput;        // Continuity counter in output PID.
+        uint8_t          _ccPES;           // Continuity counter in PES ASYNC mode.
         PIDCCMap         _lastCC;          // Continuity counter by PID.
         size_t           _lateDistance;    // Distance from the last packet.
         size_t           _lateMaxPackets;  // Maximum number of packets in _latePackets.
@@ -291,6 +333,9 @@ namespace ts {
 
         // Fill packet payload with data from the first queued packet.
         void fillPacket(TSPacket& pkt, size_t& pktIndex);
+
+        // Compute the PCR distance from this packe to last PCR.
+        uint64_t getPCRDistance() { return (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec; }
 
         // Inaccessible operations.
         PacketEncapsulation(const PacketEncapsulation&) = delete;

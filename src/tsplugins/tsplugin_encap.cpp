@@ -62,6 +62,7 @@ namespace ts {
         PID                          _pidPCR;        // PCR reference PID.
         PIDSet                       _pidsInput;     // Input PID's.
         PacketEncapsulation::PESMode _pesMode;       // Enable PES mode and select type.
+        size_t                       _pesOffset;     // Offset value in PES Synchronous.
         PacketEncapsulation          _encap;         // Encapsulation engine.
 
         // Inaccessible operations
@@ -89,6 +90,7 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
     _pidPCR(PID_NULL),
     _pidsInput(),
     _pesMode(PacketEncapsulation::DISABLED),
+    _pesOffset(0),
     _encap()
 {
     option(u"ignore-errors", 'i');
@@ -138,6 +140,15 @@ ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
         {u"variable", PacketEncapsulation::VARIABLE},
     }));
     help(u"pes-mode", u"mode", u"Enable PES mode encapsulation.");
+
+    option(u"pes-offset", 0, INT32);
+    help(u"pes-offset",
+         u"Offset used in Synchronous PES mode encapsulation. "
+         u"The value (positive or negative) is added to the current PCR to generate "
+         u"the PTS timestamp inserted in the PES header. "
+         u"The recommended values are between -90000 and +90000 (1 second). "
+         u"It requires to use the PCR option (prc-pid parameter). "
+         u"The value 0 is equivalent to use the Asynchronous PES encapsulation.");
 }
 
 
@@ -154,7 +165,17 @@ bool ts::EncapPlugin::getOptions()
     _pidOutput = intValue<PID>(u"output-pid", PID_NULL);
     _pidPCR = intValue<PID>(u"pcr-pid", PID_NULL);
     _pesMode = enumValue<PacketEncapsulation::PESMode>(u"pes-mode", PacketEncapsulation::DISABLED);
+    _pesOffset = intValue<size_t>(u"pes-offset", 0);
     getIntValues(_pidsInput, u"pid");
+
+    if (_pesOffset != 0 && _pesMode == PacketEncapsulation::DISABLED) {
+        tsp->error(u"invalid use of pes-offset, it's only valid when PES mode is enabled.");
+        return false;
+    }
+    if (_pesOffset != 0 && _pidPCR == PID_NULL) {
+        tsp->error(u"invalid use of pes-offset, it's only valid when using pcr-pid.");
+        return false;
+    }
 
     return true;
 }
@@ -169,6 +190,7 @@ bool ts::EncapPlugin::start()
     _encap.reset(_pidOutput, _pidsInput, _pidPCR);
     _encap.setPacking(_pack, _packLimit);
     _encap.setPES(_pesMode);
+    _encap.setPESOffset(_pesOffset);
     _encap.setMaxBufferedPackets(_maxBuffered);
     return true;
 }
