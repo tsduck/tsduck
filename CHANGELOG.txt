@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1218
+VERSION 3.18-1219
 
 [NEW] New commands and plugins:
 
@@ -12,7 +12,9 @@ VERSION 3.18-1218
 
   * Added option --atsc to commands "tsanalyze", "tstables", "tspsi",
     "tstabdump", "tstabcomp" and plugins "analyze", "tables", "psi".
-  ° Added option --pes-offset to plugin "encap" (synchronous PES mode).
+  * Added option --pes-offset to plugin "encap" (synchronous PES mode).
+  * Added options --add-registration and --add-pid-registration to plugin
+    "pmt". The option --add-programinfo-id is now deprecated.
 
 [BUG] Bug fixes:
 
