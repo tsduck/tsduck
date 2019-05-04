@@ -37,6 +37,7 @@
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
 #include "tsEnumeration.h"
 #include "tsDuckContext.h"
 

@@ -69,10 +69,13 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
 // Initializes the buffer for all plugin executors.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
+bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadataBuffer* metadata)
 {
+    // Pre-declare buffer for input plugin.
+    initBuffer(buffer, metadata, 0, buffer->count(), false, false, 0);
+
     // Pre-load half of the buffer with packets from the input device.
-    const size_t pkt_read = receiveAndStuff(buffer->base(), buffer->count() / 2);
+    const size_t pkt_read = receiveAndStuff(0, buffer->count() / 2);
 
     if (pkt_read == 0) {
         return false; // receive error
@@ -91,15 +94,15 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
 
     // Indicate that the loaded packets are now available to the next packet processor.
     PluginExecutor* next = ringNext<PluginExecutor>();
-    next->initBuffer(buffer, 0, pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
+    next->initBuffer(buffer, metadata, 0, pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
 
     // The rest of the buffer belongs to this input processor for reading additional packets.
-    // All other processors have an implicit empty buffer (_pkt_first and _pkt_cnt are zero).
-    initBuffer(buffer, pkt_read % buffer->count(), buffer->count() - pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
+    initBuffer(buffer, metadata, pkt_read % buffer->count(), buffer->count() - pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
 
+    // All other processors have an implicit empty buffer (_pkt_first and _pkt_cnt are zero).
     // Propagate initial input bitrate to all processors
     while ((next = next->ringNext<PluginExecutor>()) != this) {
-        next->initBuffer(buffer, 0, 0, pkt_read == 0, pkt_read == 0, init_bitrate);
+        next->initBuffer(buffer, metadata, 0, 0, pkt_read == 0, pkt_read == 0, init_bitrate);
     }
 
     return true;
@@ -136,7 +139,7 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate()
         // Still no bitrate available from PCR, try DTS from video PID's.
         // If DTS are used at least once, continue to use them all the time.
         _use_dts_analyzer = _use_dts_analyzer || _dts_analyzer.bitrateIsValid();
-        // Return the bitrate from DTS. 
+        // Return the bitrate from DTS.
         return _use_dts_analyzer ? _dts_analyzer.bitrate188() : 0;
     }
 }
@@ -146,13 +149,18 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate()
 // Receive null packets.
 //----------------------------------------------------------------------------
 
-size_t ts::tsp::InputExecutor::receiveNullPackets(TSPacket* buffer, size_t max_packets)
+size_t ts::tsp::InputExecutor::receiveNullPackets(size_t index, size_t max_packets)
 {
+    TSPacket* const pkt = _buffer->base() + index;
+    TSPacketMetadata* const data = _metadata->base() + index;
+
     // Fill the buffer with null packets.
     for (size_t n = 0; n < max_packets; ++n) {
-        buffer[n] = NullPacket;
-        _pcr_analyzer.feedPacket(buffer[n]);
-        _dts_analyzer.feedPacket(buffer[n]);
+        pkt[n] = NullPacket;
+        _pcr_analyzer.feedPacket(pkt[n]);
+        _dts_analyzer.feedPacket(pkt[n]);
+        data[n].reset();
+        data[n].setInputStuffing(true);
     }
 
     // Count those packets as not coming from the real input plugin.
@@ -166,39 +174,45 @@ size_t ts::tsp::InputExecutor::receiveNullPackets(TSPacket* buffer, size_t max_p
 // checking the validity of the input.
 //----------------------------------------------------------------------------
 
-size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_packets)
+size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packets)
 {
     // If synchronization lost, report an error
     if (_in_sync_lost) {
         return 0;
     }
 
+    TSPacket* const pkt = _buffer->base() + index;
+    TSPacketMetadata* const data = _metadata->base() + index;
+
     // Invoke the plugin receive method
-    size_t count = _input->receive(buffer, max_packets);
+    size_t count = _input->receive(pkt, max_packets);
 
     // Validate sync byte (0x47) at beginning of each packet
     for (size_t n = 0; n < count; ++n) {
-        if (buffer[n].hasValidSync()) {
+        if (pkt[n].hasValidSync()) {
             // Count good packets from plugin
             addPluginPackets(1);
 
             // Include packet in bitrate analysis.
-            _pcr_analyzer.feedPacket(buffer[n]);
-            _dts_analyzer.feedPacket(buffer[n]);
+            _pcr_analyzer.feedPacket(pkt[n]);
+            _dts_analyzer.feedPacket(pkt[n]);
+
+            // Reset metadata.
+            data[n].reset();
         }
         else {
             // Report error
-            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {pluginPackets(), buffer[n].b[0], SYNC_BYTE});
+            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {pluginPackets(), pkt[n].b[0], SYNC_BYTE});
             // In debug mode, partial dump of input
             // (one packet before lost of sync and 3 packets starting at lost of sync).
             if (maxSeverity() >= 1) {
                 if (n > 0) {
-                    debug(u"content of packet before lost of synchronization:\n" +
-                          UString::Dump(buffer[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16));
+                    debug(u"content of packet before lost of synchronization:\n%s",
+                          {UString::Dump(pkt[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16)});
                 }
-                size_t dump_count = std::min<size_t>(3, count - n);
-                debug(u"data at lost of synchronization:\n" +
-                      UString::Dump(buffer[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16));
+                const size_t dump_count = std::min<size_t>(3, count - n);
+                debug(u"data at lost of synchronization:\n%s",
+                      {UString::Dump(pkt[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16)});
             }
             // Ignore subsequent packets
             count = n;
@@ -215,7 +229,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_p
 // taking into account the tsp input stuffing options.
 //----------------------------------------------------------------------------
 
-size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_packets)
+size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
 {
     size_t pkt_done = 0;              // Number of received packets in buffer
     size_t pkt_remain = max_packets;  // Remaining number of packets to read
@@ -223,17 +237,20 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
 
     // If initial stuffing not yet completed, add initial stuffing.
     while (_instuff_start_remain > 0 && pkt_remain > 0) {
-        *buffer++ = NullPacket;
+        _buffer->base()[index] = NullPacket;
+        _metadata->base()[index].reset();
+        _metadata->base()[index].setInputStuffing(true);
         _instuff_start_remain--;
+        index++;
         pkt_remain--;
         pkt_done++;
         addNonPluginPackets(1);
     }
-    
+
     // Now read real packets.
     if (_options->instuff_inpkt == 0) {
         // There is no --add-input-stuffing option, simply call the plugin
-        pkt_from_input = receiveAndValidate(buffer, pkt_remain);
+        pkt_from_input = receiveAndValidate(index, pkt_remain);
         pkt_done += pkt_from_input;
     }
     else {
@@ -241,9 +258,9 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
         while (pkt_remain > 0) {
 
             // Stuff null packets.
-            size_t count = receiveNullPackets(buffer, std::min(_instuff_nullpkt_remain, pkt_remain));
-            buffer += count;
+            size_t count = receiveNullPackets(index, std::min(_instuff_nullpkt_remain, pkt_remain));
             _instuff_nullpkt_remain -= count;
+            index += count;
             pkt_remain -= count;
             pkt_done += count;
 
@@ -252,15 +269,15 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
                 break;
             }
 
-            // Restart sequence of input packets to read after reading intermediate null packets. 
+            // Restart sequence of input packets to read after reading intermediate null packets.
             if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
                 _instuff_inpkt_remain = _options->instuff_inpkt;
             }
 
             // Read input packets from the plugin
             const size_t max_input = std::min(pkt_remain, _instuff_inpkt_remain);
-            count = receiveAndValidate(buffer, max_input);
-            buffer += count;
+            count = receiveAndValidate(index, max_input);
+            index += count;
             pkt_remain -= count;
             pkt_done += count;
             pkt_from_input += count;
@@ -332,14 +349,14 @@ void ts::tsp::InputExecutor::main()
         size_t pkt_read = 0;
 
         // Read from the plugin if not already terminated.
-        if (!plugin_completed ) {
-            pkt_read = receiveAndStuff(_buffer->base() + pkt_first, pkt_max);
+        if (!plugin_completed) {
+            pkt_read = receiveAndStuff(pkt_first, pkt_max);
             plugin_completed = pkt_read == 0;
         }
 
         // Read additional trailing stuffing after completion of the input plugin.
         if (plugin_completed && _instuff_stop_remain > 0 && pkt_read < pkt_max) {
-            const size_t count = receiveNullPackets(_buffer->base() + pkt_first + pkt_read, std::min(_instuff_stop_remain, pkt_max - pkt_read));
+            const size_t count = receiveNullPackets(pkt_first + pkt_read, std::min(_instuff_stop_remain, pkt_max - pkt_read));
             pkt_read += count;
             _instuff_stop_remain -= count;
         }
