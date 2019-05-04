@@ -83,12 +83,22 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
 
     // With a directory in name or if still not loaded, try the standard system lookup rules.
     if (!isLoaded()) {
-        // Try plain
-        load(filename);
+        // Try plain with prefix
+        load(prefix + filename);
 
-        // If not loaded, try with standard extension if filename had no extension.
-        if (!isLoaded() && suffix.empty()) {
-            load(filename + TS_SHARED_LIB_SUFFIX);
+        // If not loaded, try again without the prefix
+        if (!isLoaded()) {
+            load(filename);
+
+            // If not loaded, try with prefix and standard extension if filename had no extension.
+            if (!isLoaded() && suffix.empty()) {
+                load(filename + TS_SHARED_LIB_SUFFIX);
+
+                // If not loaded, try again without prefix
+                if (!isLoaded()) {
+                    load(prefix + filename + TS_SHARED_LIB_SUFFIX);
+                }
+            }
         }
     }
 }
