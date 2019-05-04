@@ -56,7 +56,7 @@ namespace ts {
         RMSplicePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // ------------------------------------------------------------
@@ -466,7 +466,7 @@ void ts::RMSplicePlugin::PIDState::cancelEvent(uint32_t event_id)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
     Status pktStatus = TSP_OK;

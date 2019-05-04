@@ -29,6 +29,8 @@
 
 #include "tsEITProcessor.h"
 #include "tsSection.h"
+#include "tsTime.h"
+#include "tsMJD.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -41,6 +43,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
     _duck(duck),
     _input_pids(),
     _output_pid(pid),
+    _start_time_offset(0),
     _demux(_duck, nullptr, this),
     _packetizer(pid, this),
     _sections(),
@@ -55,6 +58,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
 
 void ts::EITProcessor::reset()
 {
+    _start_time_offset = 0;
     _demux.reset();
     _packetizer.reset();
     _sections.clear();
@@ -335,16 +339,18 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
 
     // At this point, we need to keep the section.
     // Build a copy of it for insertion in the queue.
-    const SectionPtr sp(new Section(section, SHARE));
+    const SectionPtr sp(new Section(section, COPY));
     CheckNonNull(sp.pointer());
 
-    // Rename EIT's.
+    // Update the section if this is an EIT.
     if (is_eit) {
+        // Recompute CRC at end only.
+        bool modified = false;
+
+        // Rename EIT's.
         for (auto it = _renamed.begin(); it != _renamed.end(); ++it) {
             if (Match(it->first, srv_id, ts_id, net_id)) {
                 // Rename the specified fields.
-                // Recompute CRC at end only.
-                bool modified = false;
                 if (it->second.hasId()) {
                     modified = true;
                     sp->setTableIdExtension(it->second.getId(), false);
@@ -357,10 +363,35 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
                     modified = true;
                     sp->setUInt16(2, it->second.getONId(), false);
                 }
-                if (modified) {
-                    sp->recomputeCRC();
-                }
             }
+        }
+
+        // Update all events start times.
+        if (_start_time_offset != 0) {
+            uint8_t* data = const_cast<uint8_t*>(sp->payload() + 6);
+            const uint8_t* const end = sp->payload() + sp->payloadSize();
+            while (data + 12 <= end) {
+                // Update event start time.
+                Time time;
+                if (!DecodeMJD(data + 2, MJD_SIZE, time)) {
+                    _duck.report().warning(u"error decoding event start time from EIT");
+                }
+                else {
+                    time += _start_time_offset;
+                    if (!EncodeMJD(time, data + 2, MJD_SIZE)) {
+                        _duck.report().warning(u"error encoding event start time into EIT");
+                    }
+                    else {
+                        modified = true;
+                    }
+                }
+                data += 12 + (GetUInt16(data + 10) & 0x0FFF);
+            }
+        }
+
+        // Update CRC if the section was modified.
+        if (modified) {
+            sp->recomputeCRC();
         }
     }
 

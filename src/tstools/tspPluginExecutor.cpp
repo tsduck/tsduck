@@ -49,6 +49,7 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
     JointTermination(options, pl_options, attributes, global_mutex),
     RingNode(),
     _buffer(nullptr),
+    _metadata(nullptr),
     _to_do(),
     _pkt_first(0),
     _pkt_cnt(0),
@@ -63,11 +64,12 @@ ts::tsp::PluginExecutor::~PluginExecutor()
 
 
 //----------------------------------------------------------------------------
-// Set the initial state of the buffer. Must be executed in
-// synchronous environment, before starting all executor threads.
+// Set the initial state of the buffer.
+// Executed in synchronous environment, before starting all executor threads.
 //----------------------------------------------------------------------------
 
 void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
+                                         PacketMetadataBuffer* metadata,
                                          size_t        pkt_first,
                                          size_t        pkt_cnt,
                                          bool          input_end,
@@ -75,6 +77,7 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
                                          BitRate       bitrate)
 {
     _buffer = buffer;
+    _metadata = metadata;
     _pkt_first = pkt_first;
     _pkt_cnt = pkt_cnt;
     _input_end = input_end;

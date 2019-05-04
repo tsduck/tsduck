@@ -55,7 +55,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         UString       _output_name;     // Output file name
@@ -415,7 +415,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::NITScanPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::NITScanPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Filter interesting sections
     _demux.feedPacket(pkt);

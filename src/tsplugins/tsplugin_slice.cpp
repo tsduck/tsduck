@@ -50,7 +50,7 @@ namespace ts {
         // Implementation of plugin API
         SlicePlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Event description
@@ -209,7 +209,7 @@ void ts::SlicePlugin::addEvents(const UChar* option, Status status)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed PCR analyzer if necessary
     if (_use_time && !_ignore_pcr) {

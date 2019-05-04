@@ -59,7 +59,7 @@ namespace ts {
         // Implementation of plugin API
         SVRemovePlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool              _abort;          // Error (service not found, etc)
@@ -575,7 +575,7 @@ void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
 

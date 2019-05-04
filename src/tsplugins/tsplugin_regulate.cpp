@@ -53,7 +53,7 @@ namespace ts {
         RegulatePlugin(TSP*);
         virtual bool start() override;
         virtual bool isRealTime() override {return true;}
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool             _pcr_synchronous;
@@ -153,13 +153,19 @@ bool ts::RegulatePlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    bool flush = false;
+    bool bitrate_changed = false;
+
     if (_pcr_synchronous) {
         flush = _pcr_regulator.regulate(pkt);
     }
     else {
         _bitrate_regulator.regulate(tsp->bitrate(), flush, bitrate_changed);
     }
+
+    pkt_data.setFlush(flush);
+    pkt_data.setBitrateChanged(bitrate_changed);
     return TSP_OK;
 }

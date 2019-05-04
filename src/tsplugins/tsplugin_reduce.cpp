@@ -48,7 +48,7 @@ namespace ts {
         // Implementation of plugin API
         ReducePlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         int _opt_rempkt;  // rempkt parameter
@@ -106,7 +106,7 @@ bool ts::ReducePlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ReducePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::ReducePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     assert (_rem_count >= 0);
     assert (_in_count >= 0);

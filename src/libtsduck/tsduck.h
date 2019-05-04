@@ -443,6 +443,7 @@
 #include "tsTSFileOutput.h"
 #include "tsTSFileOutputResync.h"
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
 #include "tsTSPacketQueue.h"
 #include "tsTSScanner.h"
 #include "tsTSScrambling.h"

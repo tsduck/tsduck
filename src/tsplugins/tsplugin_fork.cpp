@@ -101,7 +101,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         UString        _command;       // The command to run.
@@ -332,7 +332,7 @@ bool ts::ForkPlugin::stop()
 }
 
 
-ts::ProcessorPlugin::Status ts::ForkPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::ForkPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // If packets are sent one by one, just send it.
     if (_buffer_size == 0) {

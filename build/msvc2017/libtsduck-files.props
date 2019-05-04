@@ -445,6 +445,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsTSFileOutput.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSFileOutputResync.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSPacket.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTSPacketMetadata.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSPacketQueue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSScanner.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSScrambling.h" />
@@ -897,6 +898,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTSFileOutput.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSFileOutputResync.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSPacket.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTSPacketMetadata.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSPacketQueue.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSScanner.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSScrambling.cpp" />
