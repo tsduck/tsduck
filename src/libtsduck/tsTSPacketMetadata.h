@@ -86,7 +86,20 @@ namespace ts {
         bool getInputStuffing() const { return _input_stuffing; }
 
         //!
+        //! Specify if the packet was explicitly turned into a null packet by a plugin.
+        //! @param [in] on When true, the packet was explicitly turned into a null packet by a plugin.
+        //!
+        void setNullified(bool on) { _nullified = on; }
+
+        //!
+        //! Check if the packet was explicitly turned into a null packet by a plugin.
+        //! @return True when the packet was explicitly turned into a null packet by a plugin.
+        //!
+        bool getNullified() const { return _nullified; }
+
+        //!
         //! Specify if the packet chain shall be flushed by tsp as soon as possible.
+        //! This is typically called by a packet processing plugin.
         //! @param [in] on When set to true by a packet processing plugin, the packet and all previously
         //! processed and buffered packets should be passed to the next processor as soon as possible.
         //!
@@ -101,6 +114,7 @@ namespace ts {
 
         //!
         //! Specify if the plugin has changed the transport stream bitrate.
+        //! This is typically called by a packet processing plugin.
         //! @param [in] on When set to true by a packet processing plugin, tsp should call its
         //! getBitrate() callback as soon as possible.
         //!
@@ -155,5 +169,6 @@ namespace ts {
         bool      _flush;            // Flush the packet buffer asap.
         bool      _bitrate_changed;  // Call getBitrate() callback as soon as possible.
         bool      _input_stuffing;   // Packet was artificially inserted as input stuffing.
+        bool      _nullified;        // Packet was explicitly turned into a null packet by a plugin.
     };
 }

@@ -52,7 +52,7 @@ namespace ts {
         DuplicatePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         typedef SafePtr<TSPacket> TSPacketPtr;
@@ -204,7 +204,7 @@ bool ts::DuplicatePlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::DuplicatePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Get old and new PID.
     const PID pid = pkt.getPID();

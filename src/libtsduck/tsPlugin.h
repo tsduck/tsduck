@@ -105,13 +105,13 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 10;
+        static const int API_VERSION = 11;
 
         //!
         //! Get the current input bitrate in bits/seconds.
         //! @return The current input bitrate in bits/seconds or zero if unknown.
         //!
-        BitRate bitrate() const {return _tsp_bitrate;}
+        BitRate bitrate() const { return _tsp_bitrate; }
 
         //!
         //! Get total number of packets previously processed in the plugin object.
@@ -121,20 +121,20 @@ namespace ts {
         //! by the current plugin).
         //! @return The total number of packets in this plugin object.
         //!
-        PacketCounter pluginPackets() const {return _plugin_packets;}
+        PacketCounter pluginPackets() const { return _plugin_packets; }
 
         //!
         //! Get total number of packets in the execution of the plugin thread.
         //! This includes the number of extra stuffing or dropped packets.
         //! @return The total number of packets in this plugin thread.
         //!
-        PacketCounter totalPacketsInThread() const {return _total_packets;}
+        PacketCounter totalPacketsInThread() const { return _total_packets; }
 
         //!
         //! Check if the current plugin environment should use defaults for real-time.
         //! @return True if the current plugin environment should use defaults for real-time.
         //!
-        bool realtime() const {return _use_realtime;}
+        bool realtime() const { return _use_realtime; }
 
         //!
         //! Set a timeout for the reception of packets by the current plugin.
@@ -147,7 +147,7 @@ namespace ts {
         //! @param [in] timeout Maximum number of milliseconds to wait for packets in the buffer.
         //! The default timeout is infinite.
         //!
-        void setPacketTimeout(MilliSecond timeout) {_tsp_timeout = timeout;}
+        void setPacketTimeout(MilliSecond timeout) { _tsp_timeout = timeout; }
 
         //!
         //! Check for aborting application.
@@ -523,14 +523,10 @@ namespace ts {
         //! packets of the original PID.
         //!
         //! @param [in,out] pkt The TS packet to process.
-        //! @param [in,out] flush Initially set to false. If the method sets @a flush to true,
-        //! the packet and all previously processed and buffered packets should be passed to the
-        //! next processor as soon as possible.
-        //! @param [in,out] bitrate_changed Initially set to false. If the method sets
-        //! @a bitrate_changed to true, tsp should call the getBitrate() callback as soon as possible.
+        //! @param [in,out] pkt_data TS packet metadata.
         //! @return The processing status.
         //!
-        virtual Status processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed) = 0;
+        virtual Status processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data) = 0;
 
         //!
         //! Constructor.
