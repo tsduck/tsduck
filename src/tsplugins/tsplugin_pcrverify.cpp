@@ -50,7 +50,7 @@ namespace ts {
         PCRVerifyPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of one PID
@@ -234,7 +234,7 @@ namespace {
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const size_t pid = pkt.getPID();
 

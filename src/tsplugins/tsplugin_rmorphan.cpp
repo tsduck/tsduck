@@ -55,7 +55,7 @@ namespace ts {
         // Implementation of plugin API
         RMOrphanPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         Status        _drop_status; // Status for dropped packets
@@ -232,7 +232,7 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RMOrphanPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::RMOrphanPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     _demux.feedPacket(pkt);
     return _pass_pids[pkt.getPID()] ? TSP_OK : _drop_status;

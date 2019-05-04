@@ -88,7 +88,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of one PID.
@@ -340,7 +340,7 @@ uint64_t ts::PCRAdjustPlugin::updatedPDTS(const PIDContextPtr& ctx, uint64_t ori
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Pass all packets to the demux.
     _demux.feedPacket(pkt);

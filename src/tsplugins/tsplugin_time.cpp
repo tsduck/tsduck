@@ -52,7 +52,7 @@ namespace ts {
         // Implementation of plugin API
         TimePlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Time event description
@@ -268,7 +268,7 @@ void ts::TimePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Filter sections
     _demux.feedPacket(pkt);

@@ -54,7 +54,7 @@ namespace ts {
         // Implementation of plugin API
         ClearPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool          _abort;           // Error (service not found, etc)
@@ -314,7 +314,7 @@ void ts::ClearPlugin::processPMT (PMT& pmt)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
     bool previous_pass = _pass_packets;

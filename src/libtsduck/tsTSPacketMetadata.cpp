@@ -39,7 +39,8 @@ ts::TSPacketMetadata::TSPacketMetadata() :
     _labels(0),
     _flush(false),
     _bitrate_changed(false),
-    _input_stuffing(false)
+    _input_stuffing(false),
+    _nullified(false)
 {
 }
 
@@ -54,4 +55,5 @@ void ts::TSPacketMetadata::reset()
     _flush = false;
     _bitrate_changed = false;
     _input_stuffing = false;
+    _nullified = false;
 }

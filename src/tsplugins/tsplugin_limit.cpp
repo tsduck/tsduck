@@ -59,7 +59,7 @@ namespace ts {
         // Implementation of plugin API
         LimitPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Context per PID in the TS.
@@ -347,7 +347,7 @@ void ts::LimitPlugin::addExcessBits(uint64_t bits)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     Status status = TSP_OK;
     const PID pid = pkt.getPID();

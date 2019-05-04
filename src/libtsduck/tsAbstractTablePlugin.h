@@ -50,7 +50,7 @@ namespace ts {
         // Implementation of ProcessorPlugin interface.
         // If overridden by subclass, superclass must be explicitly invoked.
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
         //!
         //! Default bitrate of new PID if a table is created.

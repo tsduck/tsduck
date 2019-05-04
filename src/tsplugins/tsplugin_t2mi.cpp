@@ -54,7 +54,7 @@ namespace ts {
         T2MIPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Set of identified PLP's in a PID (with --identify).
@@ -356,7 +356,7 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed the T2-MI demux.
     _demux.feedPacket(pkt);

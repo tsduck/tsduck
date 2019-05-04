@@ -49,7 +49,7 @@ namespace ts {
         // Implementation of plugin API
         UntilPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool           _exclude_last;     // Exclude packet which triggers the condition
@@ -156,7 +156,7 @@ bool ts::UntilPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Check if no longer check condition
     if (_transparent) {
