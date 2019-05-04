@@ -51,7 +51,7 @@ namespace ts {
         EncapPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool                         _ignoreErrors;  // Ignore encapsulation errors.
@@ -200,7 +200,7 @@ bool ts::EncapPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::EncapPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::EncapPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     if (_encap.processPacket(pkt) || _ignoreErrors || _encap.lastError().empty()) {
         return TSP_OK;

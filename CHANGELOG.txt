@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1219
+VERSION 3.18-1222
 
 [NEW] New commands and plugins:
 
@@ -15,6 +15,7 @@ VERSION 3.18-1219
   * Added option --pes-offset to plugin "encap" (synchronous PES mode).
   * Added options --add-registration and --add-pid-registration to plugin
     "pmt". The option --add-programinfo-id is now deprecated.
+  * Added option --eit to plugin "timeref".
 
 [BUG] Bug fixes:
 

@@ -96,7 +96,7 @@ namespace ts {
         FileProcessor(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
     private:
         TSFileOutput _file;
 
@@ -297,7 +297,7 @@ bool ts::FileProcessor::stop()
     return _file.close(*tsp);
 }
 
-ts::ProcessorPlugin::Status ts::FileProcessor::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::FileProcessor::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     return _file.write(&pkt, 1, *tsp) ? TSP_OK : TSP_END;
 }

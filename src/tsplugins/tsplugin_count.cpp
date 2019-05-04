@@ -51,7 +51,7 @@ namespace ts {
         CountPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // This structure is used at each --interval.
@@ -245,7 +245,7 @@ void ts::CountPlugin::report(const UChar* fmt, const std::initializer_list<ArgMi
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Check if the packet must be counted
     const PID pid = pkt.getPID();

@@ -196,12 +196,16 @@ int MainCode(int argc, char *argv[])
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets
-    ts::ResidentBuffer<ts::TSPacket> packet_buffer(opt.bufsize / ts::PKT_SIZE);
+    ts::tsp::PluginExecutor::PacketBuffer packet_buffer(opt.bufsize / ts::PKT_SIZE);
     if (!packet_buffer.isLocked()) {
         report.verbose(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
                        {packet_buffer.lockErrorCode(), ts::ErrorCodeMessage(packet_buffer.lockErrorCode())});
     }
     report.debug(u"tsp: buffer size: %'d TS packets, %'d bytes", {packet_buffer.count(), packet_buffer.count() * ts::PKT_SIZE});
+
+    // Buffer for the packet metadata.
+    // A packet and its metadata have the same index in their respective buffer.
+    ts::tsp::PluginExecutor::PacketMetadataBuffer metadata_buffer(packet_buffer.count());
 
     // Start all processors, except output, in reverse order (input last).
     // Exit application in case of error.
@@ -213,7 +217,7 @@ int MainCode(int argc, char *argv[])
 
     // Initialize packet buffer in the ring of executors.
     // Exit application in case of error.
-    if (!input->initAllBuffers(&packet_buffer)) {
+    if (!input->initAllBuffers(&packet_buffer, &metadata_buffer)) {
         return EXIT_FAILURE;
     }
 

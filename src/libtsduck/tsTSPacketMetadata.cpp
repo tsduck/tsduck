@@ -26,22 +26,34 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsTSPacketMetadata.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 18
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1224
+ts::TSPacketMetadata::TSPacketMetadata() :
+    _labels(0),
+    _flush(false),
+    _bitrate_changed(false),
+    _input_stuffing(false),
+    _nullified(false)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the content of this instance.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketMetadata::reset()
+{
+    _labels = 0;
+    _flush = false;
+    _bitrate_changed = false;
+    _input_stuffing = false;
+    _nullified = false;
+}

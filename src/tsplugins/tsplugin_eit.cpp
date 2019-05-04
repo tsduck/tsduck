@@ -57,7 +57,7 @@ namespace ts {
         EITPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of one service
@@ -449,7 +449,7 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::EITPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::EITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     _demux.feedPacket(pkt);
     return TSP_OK;

@@ -67,9 +67,10 @@ namespace ts {
             //! Must be executed in synchronous environment, before starting all executor threads.
             //!
             //! @param [out] buffer Packet buffer address.
+            //! @param [out] metadata Address of the packet metadata buffer.
             //! @return True on success, false on error.
             //!
-            bool initAllBuffers(PacketBuffer* buffer);
+            bool initAllBuffers(PacketBuffer* buffer, PacketMetadataBuffer* metadata);
 
         private:
             InputPlugin* _input;                  // Plugin API
@@ -86,13 +87,13 @@ namespace ts {
             virtual void main() override;
 
             // Receive null packets.
-            size_t receiveNullPackets(TSPacket* buffer, size_t max_packets);
+            size_t receiveNullPackets(size_t index, size_t max_packets);
 
             // Encapsulation of the plugin's receive() method, checking the validity of the input.
-            size_t receiveAndValidate(TSPacket* buffer, size_t max_packets);
+            size_t receiveAndValidate(size_t index, size_t max_packets);
 
             // Encapsulation of receiveAndValidate() method, adding tsp input stuffing options.
-            size_t receiveAndStuff(TSPacket* buffer, size_t max_packets);
+            size_t receiveAndStuff(size_t index, size_t max_packets);
 
             // Encapsulation of the plugin's getBitrate() method, taking into account the tsp input
             // stuffing options. Use PCR analysis if bitrate not otherwise available.

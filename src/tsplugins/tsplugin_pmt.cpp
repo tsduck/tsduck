@@ -59,7 +59,7 @@ namespace ts {
         // Implementation of plugin API
         PMTPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of a new component to add
@@ -680,7 +680,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // As long as the PMT PID is unknown, pass packets to the service discovery.
     if (!_service.hasPMTPID()) {
@@ -702,5 +702,5 @@ ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, bool& fl
     setPID(_service.getPMTPID());
 
     // Finally, let the superclass do the job.
-    return AbstractTablePlugin::processPacket(pkt, flush, bitrate_changed);
+    return AbstractTablePlugin::processPacket(pkt, pkt_data);
 }

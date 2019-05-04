@@ -58,7 +58,7 @@ namespace ts {
         TeletextPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         bool             _abort;      // Error (service not found, etc).
@@ -294,7 +294,7 @@ void ts::TeletextPlugin::handleTeletextMessage(TeletextDemux& demux, const Telet
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TeletextPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::TeletextPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // As long as the Teletext PID is not found, we look for the service.
     if (_pid == PID_NULL) {
