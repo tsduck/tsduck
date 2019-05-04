@@ -322,7 +322,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
             //       + 16 bytes KLVA UL key;
             //       +  1 byte with BER short mode | 2 bytes with BER long mode.
             //  and 0 when PES mode is OFF.
-            const uint8_t pes_header = _pesMode != DISABLED ? (addBytes <= 127 || pkt.getPayloadSize() <= (153+pes_sync) ? (26+pes_sync) : (27+pes_sync)) : 0;
+            const uint8_t pes_header = _pesMode != DISABLED ? (addBytes <= 127 || pkt.getPayloadSize() <= (153+pes_sync) ? (26+(const uint8_t)pes_sync) : (27+(const uint8_t)pes_sync)) : 0;
 
             // If there are less "late" bytes than the output payload size, enlarge the adaptation field
             // with stuffing. Note that if there is so few bytes in the only "late" packet, this cannot
