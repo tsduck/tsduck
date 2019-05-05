@@ -1,7 +1,5 @@
 #include "tsduck.h"
 
-#include <memory>
-
 class SimpleTSP : public ts::TSP
 {
 public:
@@ -17,7 +15,6 @@ public:
 protected:
     // Inherited from Report (via TSP)
     virtual void writeLog(int severity, const ts::UString& msg) override;
-
 };
 
 void SimpleTSP::useJointTermination(bool on)
@@ -72,40 +69,40 @@ int main(int argc, char* argv[])
 
     // Create instance of input plugin
     ts::NewInputProfile inputPluginAllocator = ts::PluginRepository::Instance()->getInput(u"file", tsp);
-    if (!inputPluginAllocator) {
+    if (inputPluginAllocator == nullptr) {
         return EXIT_FAILURE;
     }
 
-    // Using unique_ptr to allow plugin objects to self-destruct when they are no longer needed.
-    std::unique_ptr<ts::InputPlugin> inputPlugin(inputPluginAllocator(&tsp));
-    if (!inputPlugin) {
+    // Using SafePtr to allow plugin objects to self-destruct when they are no longer needed.
+    ts::SafePtr<ts::InputPlugin> inputPlugin(inputPluginAllocator(&tsp));
+    if (inputPlugin.isNull()) {
         return EXIT_FAILURE;
     }
 
     // Create instance of processor plugin
     ts::NewProcessorProfile processorPluginAllocator = ts::PluginRepository::Instance()->getProcessor(u"svrename", tsp);
-    if (!processorPluginAllocator) {
+    if (processorPluginAllocator == nullptr) {
         return EXIT_FAILURE;
     }
 
-    std::unique_ptr<ts::ProcessorPlugin> processorPlugin(processorPluginAllocator(&tsp));
-    if (!processorPlugin) {
+    ts::SafePtr<ts::ProcessorPlugin> processorPlugin(processorPluginAllocator(&tsp));
+    if (processorPlugin.isNull()) {
         return EXIT_FAILURE;
     }
 
     // Create instance of output plugin
     ts::NewOutputProfile outputPluginAllocator = ts::PluginRepository::Instance()->getOutput(u"file", tsp);
-    if (!outputPluginAllocator) {
+    if (outputPluginAllocator == nullptr) {
         return EXIT_FAILURE;
     }
 
-    std::unique_ptr<ts::OutputPlugin> outputPlugin(outputPluginAllocator(&tsp));
-    if (!outputPlugin) {
+    ts::SafePtr<ts::OutputPlugin> outputPlugin(outputPluginAllocator(&tsp));
+    if (outputPlugin.isNull()) {
         return EXIT_FAILURE;
     }
 
     // Setup and initiate input plugin
-    bool success = inputPlugin->analyze(u"myexec", {u"test_input.ts"});
+    bool success = inputPlugin->analyze(u"file", {u"test_input.ts"});
     if (!success) {
         return EXIT_FAILURE;
     }
@@ -116,7 +113,7 @@ int main(int argc, char* argv[])
     }
 
     // Setup and initiate processor plugin
-    success = processorPlugin->analyze(u"myexec", {u"1", u"--id", u"3"});
+    success = processorPlugin->analyze(u"svrename", {u"1", u"--id", u"3"});
     if (!success) {
         inputPlugin->stop();
         return EXIT_FAILURE;
@@ -129,7 +126,7 @@ int main(int argc, char* argv[])
     }
 
     // Setup and initiate output plugin
-    success = outputPlugin->analyze(u"myexec", {u"test_output.ts"});
+    success = outputPlugin->analyze(u"file", {u"test_output.ts"});
     if (!success) {
         inputPlugin->stop();
         processorPlugin->stop();
@@ -166,16 +163,16 @@ int main(int argc, char* argv[])
 
     while (1) {
         size_t packetsReceived = inputPlugin->receive(packetBuffer, BUFSIZE);
-        if (!packetsReceived)
+        if (!packetsReceived) {
             break;
+        }
 
-        bool flush = false;
-        bool bitrate_changed = false;
         bool aborted = false;
         size_t i;
         size_t startIndex = 0;
         for (i = 0; i < packetsReceived; i++) {
-            ts::ProcessorPlugin::Status processorStatus = processorPlugin->processPacket(packetBuffer[i], flush, bitrate_changed);
+            ts::TSPacketMetadata metadata;
+            ts::ProcessorPlugin::Status processorStatus = processorPlugin->processPacket(packetBuffer[i], metadata);
 
             switch (processorStatus) {
                 case ts::ProcessorPlugin::Status::TSP_OK:
@@ -192,9 +189,9 @@ int main(int argc, char* argv[])
                 case ts::ProcessorPlugin::Status::TSP_DROP: {
                     // this packet should be discarded
                     // send contiguous array of packets up till this point to output plugin
-                    size_t number_packets = i - startIndex;
-                    if (number_packets) {
-                        success = outputPlugin->send(&packetBuffer[startIndex], number_packets);
+                    const size_t numberPackets = i - startIndex;
+                    if (numberPackets) {
+                        success = outputPlugin->send(&packetBuffer[startIndex], numberPackets);
                         if (!success) {
                             aborted = true;
                             break;
@@ -216,11 +213,12 @@ int main(int argc, char* argv[])
             break;
         }
 
-        size_t number_packets = packetsReceived - startIndex;
-        if (number_packets) {
-            success = outputPlugin->send(&packetBuffer[startIndex], number_packets);
-            if (!success)
+        const size_t numberPackets = packetsReceived - startIndex;
+        if (numberPackets) {
+            success = outputPlugin->send(&packetBuffer[startIndex], numberPackets);
+            if (!success) {
                 break;
+            }
         }
     }
 
