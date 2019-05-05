@@ -3,8 +3,8 @@
 class SimpleTSP : public ts::TSP
 {
 public:
-    SimpleTSP() : TSP(ts::Severity::Verbose) { }
-    virtual ~SimpleTSP() { }
+    // Constructor, using a message log level.
+    SimpleTSP(int level) : TSP(level) {}
 
     // Implementation of "joint termination", inherited from TSP.
     virtual void useJointTermination(bool on) override;
@@ -42,7 +42,8 @@ void SimpleTSP::writeLog(int severity, const ts::UString& msg)
 
 int main(int argc, char* argv[])
 {
-    SimpleTSP tsp;
+    // Use debug output if first argument is -d.
+    SimpleTSP tsp(argc > 1 && ::strcmp(argv[1], "-d") == 0 ? ts::Severity::Debug : ts::Severity::Verbose);
 
     // Demonstrate formatting capabilities
     tsp.verbose(u"format, i=%d, s=%s", {12, "abc"});
