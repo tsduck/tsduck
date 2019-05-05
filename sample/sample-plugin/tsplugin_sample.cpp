@@ -15,14 +15,17 @@ namespace ts {
     public:
         // Implementation of plugin API
         SamplePlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual BitRate getBitrate() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        // Private fields.
-        bool          doCount;  // Option --count
+        // Command line options, stay unchanged after getOptions():
+        bool doCount;  // Option --count
+
+        // Processing data:
         PacketCounter counter;  // Actual packet counter.
 
         // Inaccessible operations
@@ -51,17 +54,23 @@ ts::SamplePlugin::SamplePlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Get command line options
+//----------------------------------------------------------------------------
+
+bool ts::SamplePlugin::getOptions()
+{
+    doCount = present(u"count");
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::SamplePlugin::start()
 {
-    // Get command line options.
-    doCount = present(u"count");
-
-    // Initialize resources.
     counter = 0;
-
     return true;
 }
 
@@ -97,11 +106,10 @@ ts::BitRate ts::SamplePlugin::getBitrate()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SamplePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SamplePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pktData)
 {
     if (doCount) {
         counter++;
     }
-
     return TSP_OK;
 }
