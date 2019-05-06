@@ -60,6 +60,8 @@ namespace ts {
         bool          with_pes;         // Packets with clear PES headers
         bool          has_pcr;          // Packets with PCR or OPCR
         bool          unit_start;       // Packets with payload unit start
+        bool          nullified;        // Packets which were nullified by a previous plugin
+        bool          input_stuffing;   // Null packets which were artificially inserted
         bool          valid;            // Packets with valid sync byte and error ind
         bool          negate;           // Negate filter (exclude selected packets)
         int           min_payload;      // Minimum payload size (<0: no filter)
@@ -98,6 +100,8 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     with_pes(false),
     has_pcr(false),
     unit_start(false),
+    nullified(false),
+    input_stuffing(false),
     valid(false),
     negate(false),
     min_payload(0),
@@ -158,6 +162,18 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     option(u"negate", 'n');
     help(u"negate", u"Negate the filter: specified packets are excluded.");
 
+    option(u"nullified");
+    help(u"nullified",
+         u"Select packets which were explicitly turned into null packets by some previous "
+         u"plugin in the chain (typically using a --stuffing option).");
+
+    option(u"input-stuffing");
+    help(u"input-stuffing",
+         u"Select packets which were articially inserted as stuffing before the input "
+         u"plugin (using tsp options --add-start-stuffing, --add-input-stuffing and "
+         u"--add-stop-stuffing). Be aware that these packets may no longer be null "
+         u"packets if some previous plugin injected data, replacing stuffing.");
+
     option(u"payload");
     help(u"payload", u"Select packets with a payload.");
 
@@ -210,6 +226,8 @@ bool ts::FilterPlugin::getOptions()
     with_pes = present(u"pes");
     has_pcr = present(u"pcr");
     unit_start = present(u"unit-start");
+    nullified = present(u"nullified");
+    input_stuffing = present(u"input-stuffing");
     valid = present(u"valid");
     negate = present(u"negate");
     getIntValue(min_payload, u"min-payload-size", -1);
@@ -267,6 +285,8 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (with_payload && pkt.hasPayload()) ||
         (with_af && pkt.hasAF()) ||
         (unit_start && pkt.getPUSI()) ||
+        (nullified && pkt_data.getNullified()) ||
+        (input_stuffing && pkt_data.getInputStuffing()) ||
         (valid && pkt.hasValidSync() && !pkt.getTEI()) ||
         (scrambling_ctrl == pkt.getScrambling()) ||
         (has_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
