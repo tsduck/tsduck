@@ -53,14 +53,24 @@ namespace ts {
         static constexpr size_t LABEL_COUNT = 32;
 
         //!
-        //! A bit mask of labels.
+        //! Maximum value for labels.
         //!
-        typedef uint32_t LabelMask;
+        static constexpr size_t LABEL_MAX = LABEL_COUNT - 1;
 
         //!
-        //! A bitmask of labels where all labels are set.
+        //! A set of labels for TS packets.
         //!
-        static constexpr LabelMask ALL_LABELS = ~(LabelMask(0));
+        typedef std::bitset<LABEL_COUNT> LabelSet;
+
+        //!
+        //! A set of labels where all labels are cleared (no label).
+        //!
+        static const LabelSet NoLabel;
+
+        //!
+        //! A set of labels where all labels are set.
+        //!
+        static const LabelSet AllLabels;
 
         //!
         //! Constructor.
@@ -131,41 +141,59 @@ namespace ts {
         //! @param [in] label The label to check.
         //! @return True if the TS packet has @a label set.
         //!
-        bool hasLabel(size_t label) const { return (_labels & (1 << label)) != 0; }
+        bool hasLabel(size_t label) const { return _labels.test(label); }
+
+        //!
+        //! Check if the TS packet has any label set.
+        //! @return True if the TS packet has any label.
+        //!
+        bool hasAnyLabel() const { return _labels.any(); }
 
         //!
         //! Check if the TS packet has any label set from a set of labels.
         //! @param [in] mask The mask of labels to check.
         //! @return True if the TS packet has any label from @a mask.
         //!
-        bool hasAnyLabel(LabelMask mask = ALL_LABELS) const { return (_labels & mask) != 0; }
+        bool hasAnyLabel(const LabelSet& mask) const;
+
+        //!
+        //! Check if the TS packet has all labels set from a set of labels.
+        //! @param [in] mask The mask of labels to check.
+        //! @return True if the TS packet has all labels from @a mask.
+        //!
+        bool hasAllLabels(const LabelSet& mask) const;
 
         //!
         //! Set a specific label for the TS packet.
         //! @param [in] label The label to set.
         //!
-        void setLabel(size_t label) { _labels |= (1 << label); }
+        void setLabel(size_t label) { _labels.set(label); }
 
         //!
         //! Set a specific set of labels for the TS packet.
         //! @param [in] mask The mask of labels to set.
         //!
-        void setAllLabels(LabelMask mask = ALL_LABELS) { _labels |= mask; }
+        void setLabels(const LabelSet& mask);
 
         //!
         //! Clear a specific label for the TS packet.
         //! @param [in] label The label to clear.
         //!
-        void clearLabel(size_t label) { _labels &= ~(1 << label); }
+        void clearLabel(size_t label) { _labels.reset(label); }
 
         //!
         //! Clear a specific set of labels for the TS packet.
         //! @param [in] mask The mask of labels to clear.
         //!
-        void clearAllLabels(LabelMask mask = ALL_LABELS) { _labels &= ~mask; }
+        void clearLabels(const LabelSet& mask);
+
+        //!
+        //! Clear all labels for the TS packet.
+        //!
+        void clearAllLabels() { _labels.reset(); }
 
     private:
-        LabelMask _labels;           // Bit mask of labels.
+        LabelSet _labels;           // Bit mask of labels.
         bool      _flush;            // Flush the packet buffer asap.
         bool      _bitrate_changed;  // Call getBitrate() callback as soon as possible.
         bool      _input_stuffing;   // Packet was artificially inserted as input stuffing.

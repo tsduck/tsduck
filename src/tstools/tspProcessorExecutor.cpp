@@ -58,6 +58,7 @@ void ts::tsp::ProcessorExecutor::main()
 {
     debug(u"packet processing thread started");
 
+    const TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
@@ -127,8 +128,17 @@ void ts::tsp::ProcessorExecutor::main()
                 // Apply the processing routine to the packet
                 pkt_data->setFlush(false);
                 pkt_data->setBitrateChanged(false);
-                const ProcessorPlugin::Status status = _processor->processPacket(*pkt, *pkt_data);
-                addPluginPackets(1);
+                ProcessorPlugin::Status status = ProcessorPlugin::TSP_OK;
+                if (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) {
+                    // Either no --only-label option or the packet has a specified label => process it.
+                    status = _processor->processPacket(*pkt, *pkt_data);
+                    addPluginPackets(1);
+                }
+                else {
+                    // Some --only-label was specified but the packet does not have any required label.
+                    // Pass the packet without submitting it to the plugin.
+                    addNonPluginPackets(1);
+                }
 
                 // Use the returned status
                 switch (status) {
