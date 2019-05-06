@@ -399,6 +399,10 @@ namespace ts {
         //!
         virtual bool abortInput();
 
+        // Implementation of inherited interface.
+        virtual PluginType type() const override;
+
+    protected:
         //!
         //! Constructor.
         //!
@@ -407,9 +411,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         InputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
-
-        // Implementation of inherited interface.
-        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations
@@ -454,6 +455,10 @@ namespace ts {
         //!
         virtual bool send(const TSPacket* buffer, size_t packet_count) = 0;
 
+        // Implementation of inherited interface.
+        virtual PluginType type() const override;
+
+    protected:
         //!
         //! Constructor.
         //!
@@ -462,9 +467,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         OutputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
-
-        // Implementation of inherited interface.
-        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations
@@ -529,6 +531,17 @@ namespace ts {
         virtual Status processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data) = 0;
 
         //!
+        //! Get the content of the --only-label options.
+        //! The value of the option is fetched each time this method is called.
+        //! @return A set of label from --only-label options.
+        //!
+        TSPacketMetadata::LabelSet getOnlyLabelOption() const;
+
+        // Implementation of inherited interface.
+        virtual PluginType type() const override;
+
+    protected:
+        //!
         //! Constructor.
         //!
         //! @param [in] tsp_ Associated callback to @c tsp executable.
@@ -536,9 +549,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         ProcessorPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
-
-        // Implementation of inherited interface.
-        virtual PluginType type() const override;
 
     private:
         // Inaccessible operations

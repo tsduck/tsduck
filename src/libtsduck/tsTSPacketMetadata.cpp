@@ -30,13 +30,16 @@
 #include "tsTSPacketMetadata.h"
 TSDUCK_SOURCE;
 
+const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::NoLabel;
+const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::AllLabels(~NoLabel);
+
 
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
 ts::TSPacketMetadata::TSPacketMetadata() :
-    _labels(0),
+    _labels(),
     _flush(false),
     _bitrate_changed(false),
     _input_stuffing(false),
@@ -51,9 +54,34 @@ ts::TSPacketMetadata::TSPacketMetadata() :
 
 void ts::TSPacketMetadata::reset()
 {
-    _labels = 0;
+    _labels.reset();
     _flush = false;
     _bitrate_changed = false;
     _input_stuffing = false;
     _nullified = false;
+}
+
+
+//----------------------------------------------------------------------------
+// Label operations
+//----------------------------------------------------------------------------
+
+bool ts::TSPacketMetadata::hasAnyLabel(const LabelSet& mask) const
+{
+    return (_labels & mask).any(); 
+}
+
+bool ts::TSPacketMetadata::hasAllLabels(const LabelSet& mask) const
+{
+    return (_labels & mask) == mask; 
+}
+
+void ts::TSPacketMetadata::setLabels(const LabelSet& mask)
+{
+    _labels |= mask;
+}
+
+void ts::TSPacketMetadata::clearLabels(const LabelSet& mask)
+{
+    _labels &= ~mask;
 }
