@@ -126,6 +126,7 @@ void ts::tsp::ProcessorExecutor::main()
             }
             else {
                 // Apply the processing routine to the packet
+                const bool was_null = pkt->getPID() == PID_NULL;
                 pkt_data->setFlush(false);
                 pkt_data->setBitrateChanged(false);
                 ProcessorPlugin::Status status = ProcessorPlugin::TSP_OK;
@@ -149,8 +150,6 @@ void ts::tsp::ProcessorExecutor::main()
                     case ProcessorPlugin::TSP_NULL:
                         // Replace the packet with a complete null packet
                         *pkt = NullPacket;
-                        pkt_data->setNullified(true);
-                        nullified_packets++;
                         break;
                     case ProcessorPlugin::TSP_DROP:
                         // Drop this packet.
@@ -169,6 +168,12 @@ void ts::tsp::ProcessorExecutor::main()
                         // Invalid status, report error and accept packet.
                         error(u"invalid packet processing status %d", {status});
                         break;
+                }
+
+                // Detect if the packet was nullified by the plugin, either by returning TSP_NULL or by overwriting the packet.
+                if (!was_null && pkt->getPID() == PID_NULL) {
+                    pkt_data->setNullified(true);
+                    nullified_packets++;
                 }
 
                 // If the packet processor has signaled a new bitrate, get it.
