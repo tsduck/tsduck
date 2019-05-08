@@ -71,8 +71,9 @@ namespace ts {
         PacketCounter after_packets;    // Number of initial packets to skip
         PacketCounter every_packets;    // Filter 1 out of this number of packets
         PIDSet        pid;              // PID values to filter
-        TSPacketMetadata::LabelSet labels;      // Select packets with any of these labels
-        TSPacketMetadata::LabelSet set_labels;  // Labels to set on filtered packets
+        TSPacketMetadata::LabelSet labels;       // Select packets with any of these labels
+        TSPacketMetadata::LabelSet set_labels;   // Labels to set on filtered packets
+        TSPacketMetadata::LabelSet reset_labels; // Labels to reset on filtered packets
 
         // Inaccessible operations
         FilterPlugin() = delete;
@@ -110,7 +111,8 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     every_packets(0),
     pid(),
     labels(),
-    set_labels()
+    set_labels(),
+    reset_labels()
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
@@ -200,6 +202,12 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Do not drop unselected packets, simply mark selected ones. "
          u"Several --set-label options may be specified.");
 
+    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"reset-label", u"label1[-label2]",
+         u"Clear the specified labels on the selected packets. "
+         u"Do not drop unselected packets, simply clear labels on selected ones. "
+         u"Several --reset-label options may be specified.");
+
     option(u"stuffing", 's');
     help(u"stuffing",
          u"Replace excluded packets with stuffing (null packets) instead "
@@ -240,10 +248,11 @@ bool ts::FilterPlugin::getOptions()
     getIntValues(pid, u"pid");
     getIntValues(labels, u"label");
     getIntValues(set_labels, u"set-label");
+    getIntValues(reset_labels, u"reset-label");
 
     // Status for unselected packets.
-    if (set_labels.any()) {
-        // Do not drop unselected packets, simply set label on selected packets.
+    if (set_labels.any() || reset_labels.any()) {
+        // Do not drop unselected packets, simply set/reset labels on selected packets.
         drop_status = TSP_OK;
     }
     else if (present(u"stuffing")) {
@@ -320,6 +329,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
 
     if (ok) {
         pkt_data.setLabels(set_labels);
+        pkt_data.clearLabels(reset_labels);
         return TSP_OK;
     }
     else {
