@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1232
+VERSION 3.18-1233
 
 [NEW] New commands and plugins:
 
@@ -13,8 +13,8 @@ VERSION 3.18-1232
   * Added option --only-label to all packet processing plugins. There is a
     new possibility to mark individual packets with a label which can be
     reused in other plugins.
-  * Added options --label, --set-label, --nullified, --input-stuffing to
-    plugin "filter".
+  * Added options --label, --set-label, --nullified, --input-stuffing, --every
+    to plugin "filter".
   * Added option --atsc to commands "tsanalyze", "tstables", "tspsi",
     "tstabdump", "tstabcomp" and plugins "analyze", "tables", "psi".
   * Added option --pes-offset to plugin "encap" (synchronous PES mode).
