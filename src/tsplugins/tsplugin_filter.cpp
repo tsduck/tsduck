@@ -69,12 +69,10 @@ namespace ts {
         int           min_af;           // Minimum adaptation field size (<0: no filter)
         int           max_af;           // Maximum adaptation field size (<0: no filter)
         PacketCounter after_packets;    // Number of initial packets to skip
+        PacketCounter every_packets;    // Filter 1 out of this number of packets
         PIDSet        pid;              // PID values to filter
         TSPacketMetadata::LabelSet labels;      // Select packets with any of these labels
         TSPacketMetadata::LabelSet set_labels;  // Labels to set on filtered packets
-
-        // Working data:
-        PacketCounter skip_packets;     // Remaining number of initial packets to skip
 
         // Inaccessible operations
         FilterPlugin() = delete;
@@ -109,10 +107,10 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     min_af(0),
     max_af(0),
     after_packets(0),
+    every_packets(0),
     pid(),
     labels(),
-    set_labels(),
-    skip_packets(0)
+    set_labels()
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
@@ -126,6 +124,9 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     help(u"clear",
          u"Select clear (unscrambled) packets. "
          u"Equivalent to --scrambling-control 0.");
+
+    option(u"every", 0, UNSIGNED);
+    help(u"every", u"count", u"Select one packet every that number of packets.");
 
     option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"label", u"label1[-label2]",
@@ -235,6 +236,7 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(min_af, u"min-adaptation-field-size", -1);
     getIntValue(max_af, u"max-adaptation-field-size", -1);
     getIntValue(after_packets, u"after-packets");
+    getIntValue(every_packets, u"every");
     getIntValues(pid, u"pid");
     getIntValues(labels, u"label");
     getIntValues(set_labels, u"set-label");
@@ -263,7 +265,6 @@ bool ts::FilterPlugin::getOptions()
 
 bool ts::FilterPlugin::start()
 {
-    skip_packets = after_packets;
     return true;
 }
 
@@ -275,8 +276,7 @@ bool ts::FilterPlugin::start()
 ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Pass initial packets without filtering.
-    if (skip_packets > 0) {
-        skip_packets--;
+    if (tsp->pluginPackets() < after_packets) {
         return TSP_OK;
     }
 
@@ -295,6 +295,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (min_af >= 0 && int (pkt.getAFSize()) >= min_af) ||
         (int (pkt.getAFSize()) <= max_af) ||
         pkt_data.hasAnyLabel(labels) ||
+        (every_packets > 0 && (tsp->pluginPackets() - after_packets) % every_packets == 0) ||
 
         // Check the presence of a PES header.
         // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
