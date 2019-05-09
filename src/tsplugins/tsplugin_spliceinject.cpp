@@ -98,7 +98,7 @@ namespace ts {
         // Splice command object as stored internally
         // ------------------------------------------
 
-        class SpliceCommand
+        class SpliceCommand : public StringifyInterface
         {
         public:
             SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec);
@@ -113,8 +113,8 @@ namespace ts {
             // A comparison function to sort commands in the queues.
             bool operator<(const SpliceCommand& other) const;
 
-            // A debug string.
-            UString toString() const;
+            // Implementation of StringifyInterface
+            virtual UString toString() const override;
 
         private:
             SpliceInjectPlugin* const _plugin;
@@ -611,7 +611,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
     for (;;) {
 
         // Get next splice command from the queue.
-        const CommandPtr cmd(_queue.peek());
+        CommandPtr cmd(_queue.peek());
         if (cmd.isNull()) {
             // No splice command available, nothing to do.
             break;
@@ -625,7 +625,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
             const bool dequeued = _queue.dequeue(cmd2, 0);
             assert(dequeued);
             assert(cmd2 == cmd);
-            tsp->verbose(u"dropping %s, obsolete, current PTS: 0x%09X", {cmd2->toString(), _last_pts});
+            tsp->verbose(u"dropping %s, obsolete, current PTS: 0x%09X", {*cmd2, _last_pts});
         }
         else {
             // Give up if the command is not immediate and not yet ready to start.
@@ -641,7 +641,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
             // Now we have a section to send.
             section = cmd->section;
-            tsp->verbose(u"injecting %s, current PTS: 0x%09X", {cmd->toString(), _last_pts});
+            tsp->verbose(u"injecting %s, current PTS: 0x%09X", {*cmd, _last_pts});
 
             // If the command must be repeated, compute next PTS and requeue.
             if (cmd->count > 1) {
@@ -649,8 +649,8 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
                 cmd->next_pts = (cmd->next_pts + cmd->interval) & PTS_DTS_MASK;
                 if (SequencedPTS(cmd->next_pts, cmd->last_pts)) {
                     // The next PTS is still in range, requeue at the next position.
+                    tsp->verbose(u"requeueing %s", {*cmd});
                     _queue.forceEnqueue(cmd);
-                    tsp->verbose(u"requeueing %s", {cmd->toString()});
                 }
             }
             break;
@@ -739,11 +739,11 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                 if (cmd.isNull() || !cmd->sit.isValid()) {
                     tsp->error(u"received invalid splice information section, ignored");
                 }
-                else if (!_queue.enqueue(cmd, 0)) {
-                    tsp->warning(u"queue overflow, dropped one section");
-                }
                 else {
-                    tsp->verbose(u"enqueued %s", {cmd->toString()});
+                    tsp->verbose(u"enqueuing %s", {*cmd});
+                    if (!_queue.enqueue(cmd, 0)) {
+                        tsp->warning(u"queue overflow, dropped one section");
+                    }
                 }
             }
         }

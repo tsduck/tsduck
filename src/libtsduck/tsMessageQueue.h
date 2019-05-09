@@ -37,6 +37,7 @@
 #include "tsSafePtr.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
+#include "tsGuardCondition.h"
 
 namespace ts {
     //!
@@ -47,7 +48,7 @@ namespace ts {
     //! access to a shared queue of generic messages.
     //!
     //! @tparam MSG The type of the messages to exchange.
-    //! @tparam MUTEX The type of mutex for synchronization (ts::Mutex by default).
+    //! @tparam MUTEX The type of mutex for synchronization of message pointers (ts::Mutex by default).
     //!
     template <typename MSG, class MUTEX = Mutex>
     class MessageQueue
@@ -106,11 +107,29 @@ namespace ts {
         //! If the queue is full, the calling thread waits until some space becomes
         //! available in the queue or the timeout expires.
         //!
-        //! @param [in] msg The message to enqueue.
+        //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
+        //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
+        //! a null pointer if the message was successfully enqueued (no timeout).
         //! @param [in] timeout Maximum time to wait in milliseconds.
         //! @return True on success, false on error (queue still full after timeout).
         //!
-        bool enqueue(const MessagePtr& msg, MilliSecond timeout = Infinite);
+        bool enqueue(MessagePtr& msg, MilliSecond timeout = Infinite);
+
+        //!
+        //! Insert a message in the queue.
+        //!
+        //! If the queue is full, the calling thread waits until some space becomes
+        //! available in the queue or the timeout expires.
+        //!
+        //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
+        //! be owned by a safe pointer. When the message is successfully enqueued, the
+        //! pointer becomes owned by a safe pointer and will be deallocated when no
+        //! longer used. In case of timeout, the object is not equeued and immediately
+        //! deallocated.
+        //! @param [in] timeout Maximum time to wait in milliseconds.
+        //! @return True on success, false on error (queue still full after timeout).
+        //!
+        bool enqueue(MSG* msg, MilliSecond timeout = Infinite);
 
         //!
         //! Insert a message in the queue, even if the queue is full.
@@ -119,9 +138,24 @@ namespace ts {
         //! This can be used to allow exceptional overflow of the queue with unique messages,
         //! to enqueue a message to instruct the consumer thread to terminate for instance.
         //!
-        //! @param [in] msg The message to enqueue.
+        //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
+        //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
+        //! a null pointer.
         //!
-        void forceEnqueue(const MessagePtr& msg);
+        void forceEnqueue(MessagePtr& msg);
+
+        //!
+        //! Insert a message in the queue, even if the queue is full.
+        //!
+        //! This method immediately inserts the message, even if the queue is full.
+        //! This can be used to allow exceptional overflow of the queue with unique messages,
+        //! to enqueue a message to instruct the consumer thread to terminate for instance.
+        //!
+        //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
+        //! be owned by a safe pointer. When the message is enqueued, the pointer becomes
+        //! owned by a safe pointer and will be deallocated when no longer used.
+        //!
+        void forceEnqueue(MSG* msg);
 
         //!
         //! Remove a message from the queue.
@@ -159,7 +193,8 @@ namespace ts {
 
         //!
         //! This virtual protected method performs placement in the message queue.
-        //! @param [in] msg The message to enqueue.
+        //! @param [in] msg The message to enqueue later. The message is not enqueued.
+        //! Its value is used to compute the place where it should be inserted.
         //! @param [in] list The content of the queue.
         //! @return An iterator to the place where @a msg shall be placed.
         //!
@@ -173,15 +208,23 @@ namespace ts {
         virtual typename MessageList::iterator dequeuePlacement(MessageList& list);
 
     private:
-        MessageQueue(const MessageQueue&) = delete;
-        MessageQueue& operator=(const MessageQueue&) = delete;
-
         // Private members.
         mutable Mutex     _mutex;        //!< Protect access to all private members
         mutable Condition _enqueued;     //!< Signaled when some message is inserted
         mutable Condition _dequeued;     //!< Signaled when some message is removed
         size_t            _maxMessages;  //!< Max number of messages in the queue
         MessageList       _queue;        //!< Actual message queue.
+
+        // Enqueue a safe pointer in the list and signal the condition.
+        // Must be executed under the protection of the lock.
+        void enqueuePtr(const MessagePtr& ptr);
+
+        // Wait for free space in the queue using a specific timeout, under the protection of the mutex.
+        bool waitFreeSpace(GuardCondition& lock, MilliSecond timeout);
+
+        // Inaccessible operations.
+        MessageQueue(const MessageQueue&) = delete;
+        MessageQueue& operator=(const MessageQueue&) = delete;
     };
 }
 
