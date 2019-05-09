@@ -786,6 +786,13 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     props.add(DTV_INVERSION, uint32_t(params.inversion));
     props.add(DTV_ROLLOFF, uint32_t(params.roll_off));
     props.add(DTV_PILOT, uint32_t(params.pilots));
+    if (params.stream_id != PLP_DISABLE) {
+#if defined(DTV_STREAM_ID)
+        props.add(DTV_STREAM_ID, uint32_t(params.stream_id));
+#else
+        report.warning(u"DVB-S2 multi-stream id selection disabled on this version of Linux");
+#endif
+    }
     props.add(DTV_TUNE);
 
     return tune(props, report);
@@ -860,7 +867,7 @@ bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 #if defined(DTV_STREAM_ID)
         props.add(DTV_STREAM_ID, uint32_t(params.plp));
 #else
-        report.warning(u"DVT-T2 PLP selection disabled on this version of Linux");
+        report.warning(u"DVB-T2 PLP selection disabled on this version of Linux");
 #endif
     }
     props.add(DTV_TUNE);
