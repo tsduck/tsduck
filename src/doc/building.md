@@ -119,7 +119,7 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 
 - Install common open source tools using Homebrew:
 ~~~~
-brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep
+brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep dos2unix
 ~~~~
 
 # Building the TSDuck binaries {#buildbin}
