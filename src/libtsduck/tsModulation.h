@@ -541,13 +541,26 @@ namespace ts {
     //!
     TSDUCKDLL extern const Enumeration HierarchyEnum;
 
+    //
+    // Representation of multistream in DVB-x2.
+    //
+    constexpr uint32_t PLP_MAX      = 0xFF;        //!< Maximum Physical Layer Pipe (PLP) value for DVB-T2.
+    constexpr uint32_t PLP_DISABLE  = 0xFFFFFFFF;  //!< Special PLP value meaning "disable PLP selection".
+    constexpr uint32_t ISI_MAX      = 0xFF;        //!< Maximum Input Stream Id (ISI) value for DVB-S2.
+    constexpr uint32_t ISI_DISABLE  = 0xFFFFFFFF;  //!< Special ISI value meaning "disable multistream selection".
+    constexpr uint32_t PLS_CODE_MAX = 0x3FFFF;     //!< Maximum Physical Layer Scrambling (PLS) code value for DVB-S2.
+
     //!
-    //! Representation of a Physical Layer Pipe (PLP) id (DVB-T2).
+    //! Physical Layer Scrambling (PLS) modes for DVB-S2.
     //!
-    //! For DVB-T2, the valid range of PLP ids is 0 to 255.
-    //! The special value PLP_DISABLE is used to disable PLP selection.
-    //!
-    enum PLP : uint32_t {
-        PLP_DISABLE = 0xFFFFFFFF //!< Special value meaning "disable PLP selection".
+    enum PLSMode {
+        PLS_ROOT  = 0,  //!< DVB-S2 PLS "ROOT" mode.
+        PLS_GOLD  = 1,  //!< DVB-S2 PLS "GOLD" mode.
+        PLS_COMBO = 2,  //!< DVB-S2 PLS "COMBO" mode.
     };
+
+    //!
+    //! Enumeration description of ts::PLSMode.
+    //!
+    TSDUCKDLL extern const Enumeration PLSModeEnum;
 }

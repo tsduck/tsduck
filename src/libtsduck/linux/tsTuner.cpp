@@ -521,7 +521,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBT(TunerParametersDVBT& params)
     params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
     params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
 #if defined(DTV_STREAM_ID)
-    params.plp = PLP(props.getByCommand(DTV_STREAM_ID));
+    params.plp = props.getByCommand(DTV_STREAM_ID);
 #endif
 
     return SYS_SUCCESS;
@@ -786,7 +786,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     props.add(DTV_INVERSION, uint32_t(params.inversion));
     props.add(DTV_ROLLOFF, uint32_t(params.roll_off));
     props.add(DTV_PILOT, uint32_t(params.pilots));
-    if (params.stream_id != PLP_DISABLE) {
+    if (params.isi != PLP_DISABLE) {
 #if defined(DTV_STREAM_ID)
         props.add(DTV_STREAM_ID, uint32_t(params.stream_id));
 #else
@@ -1535,7 +1535,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params_dvbt->guard_interval) , u"");
         Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params_dvbt->hierarchy) , u"");
         if (params_dvbt->plp != PLP_DISABLE) {
-            Display(strm, margin, u"PLP", UString::Decimal(uint32_t(params_dvbt->plp)) , u"");
+            Display(strm, margin, u"PLP", UString::Decimal(params_dvbt->plp) , u"");
         }
     }
     if (params_atsc != nullptr) {

@@ -195,6 +195,12 @@ const ts::Enumeration ts::SpectralInversionEnum({
     {u"auto", ts::SPINV_AUTO},
 });
 
+const ts::Enumeration ts::PLSModeEnum({
+    {u"ROOT",  ts::PLS_ROOT},
+    {u"GOLD",  ts::PLS_GOLD},
+    {u"COMBO", ts::PLS_COMBO},
+});
+
 
 //----------------------------------------------------------------------------
 // Compute the number of bits per symbol for a specified modulation.

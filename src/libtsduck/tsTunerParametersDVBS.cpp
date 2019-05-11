@@ -49,7 +49,9 @@ constexpr ts::DeliverySystem ts::TunerParametersDVBS::DEFAULT_DELIVERY_SYSTEM;
 constexpr ts::Modulation ts::TunerParametersDVBS::DEFAULT_MODULATION;
 constexpr ts::Pilot ts::TunerParametersDVBS::DEFAULT_PILOTS;
 constexpr ts::RollOff ts::TunerParametersDVBS::DEFAULT_ROLL_OFF;
-constexpr uint32_t ts::TunerParametersDVBS::DEFAULT_STREAM_ID;
+constexpr uint32_t ts::TunerParametersDVBS::DEFAULT_ISI;
+constexpr uint32_t ts::TunerParametersDVBS::DEFAULT_PLS_CODE;
+constexpr ts::PLSMode ts::TunerParametersDVBS::DEFAULT_PLS_MODE;
 #endif
 
 
@@ -70,7 +72,9 @@ ts::TunerParametersDVBS::TunerParametersDVBS() :
     modulation(DEFAULT_MODULATION),
     pilots(DEFAULT_PILOTS),
     roll_off(DEFAULT_ROLL_OFF),
-    stream_id(DEFAULT_STREAM_ID)
+    isi(DEFAULT_ISI),
+    pls_code(DEFAULT_PLS_CODE),
+    pls_mode(DEFAULT_PLS_MODE)
 {
 }
 
@@ -97,7 +101,9 @@ void ts::TunerParametersDVBS::copy(const TunerParameters& obj)
         this->modulation = other->modulation;
         this->pilots = other->pilots;
         this->roll_off = other->roll_off;
-        this->stream_id = other->stream_id;
+        this->isi = other->isi;
+        this->pls_code = other->pls_code;
+        this->pls_mode = other->pls_mode;
     }
 }
 
@@ -117,9 +123,14 @@ ts::UString ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
         u" --pilots " + PilotEnum.name(pilots) +
         u" --roll-off " + RollOffEnum.name(roll_off));
 
-    if (stream_id != PLP_DISABLE) {
-        //@@ TODO: Option PLP is inherited from DVB-T2, should be changed for DVB-S2.
-        options += UString::Format(u" --plp %d", {stream_id});
+    if (isi != ISI_DISABLE) {
+        options += UString::Format(u" --isi %d", {isi});
+    }
+    if (pls_code != DEFAULT_PLS_CODE) {
+        options += UString::Format(u" --pls-code %d", {pls_code});
+    }
+    if (pls_mode != DEFAULT_PLS_MODE) {
+        options += UString::Format(u" --pls-mode %d", {PLSModeEnum.name(pls_mode)});
     }
 
     if (!no_local) {
@@ -197,8 +208,10 @@ void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const UStrin
     if (inner_fec != ts::FEC_AUTO) {
         strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec) << std::endl;
     }
-    if (stream_id != PLP_DISABLE) {
-        strm << margin << "Multistream id: " << stream_id << std::endl;
+    if (isi != ISI_DISABLE) {
+        strm << margin << "Input stream id: " << isi << std::endl
+             << margin << "PLS code: " << pls_code << std::endl
+             << margin << "PLS mode: "<< PLSModeEnum.name(pls_mode) << std::endl;
     }
     if ((verbose || delivery_system != DS_DVB_S) && pilots != PILOT_AUTO) {
         strm << margin << "Pilots: " << PilotEnum.name(pilots) << std::endl;
@@ -227,17 +240,19 @@ bool ts::TunerParametersDVBS::fromArgs (const TunerArgs& tuner, Report& report)
     }
 
     frequency = tuner.frequency.value();
-    symbol_rate = tuner.symbol_rate.set() ? tuner.symbol_rate.value() : DEFAULT_SYMBOL_RATE;
-    inner_fec = tuner.inner_fec.set() ? tuner.inner_fec.value() : DEFAULT_INNER_FEC;
-    inversion = tuner.inversion.set() ? tuner.inversion.value() : DEFAULT_INVERSION;
-    polarity = tuner.polarity.set() ? tuner.polarity.value() : DEFAULT_POLARITY;
-    satellite_number = tuner.satellite_number.set() ? tuner.satellite_number.value() : DEFAULT_SATELLITE_NUMBER;
-    lnb = tuner.lnb.set() ? tuner.lnb.value() : LNB::Universal;
-    delivery_system = tuner.delivery_system.set() ? tuner.delivery_system.value() : DEFAULT_DELIVERY_SYSTEM;
-    modulation = tuner.modulation.set() ? tuner.modulation.value() : DEFAULT_MODULATION;
-    pilots = tuner.pilots.set() ? tuner.pilots.value() : DEFAULT_PILOTS;
-    roll_off = tuner.roll_off.set() ? tuner.roll_off.value() : DEFAULT_ROLL_OFF;
-    stream_id = tuner.plp.set() ? tuner.plp.value() : DEFAULT_STREAM_ID;
+    symbol_rate = tuner.symbol_rate.value(DEFAULT_SYMBOL_RATE);
+    inner_fec = tuner.inner_fec.value(DEFAULT_INNER_FEC);
+    inversion = tuner.inversion.value(DEFAULT_INVERSION);
+    polarity = tuner.polarity.value(DEFAULT_POLARITY);
+    satellite_number = tuner.satellite_number.value(DEFAULT_SATELLITE_NUMBER);
+    lnb = tuner.lnb.value(LNB::Universal);
+    delivery_system = tuner.delivery_system.value(DEFAULT_DELIVERY_SYSTEM);
+    modulation = tuner.modulation.value(DEFAULT_MODULATION);
+    pilots = tuner.pilots.value(DEFAULT_PILOTS);
+    roll_off = tuner.roll_off.value(DEFAULT_ROLL_OFF);
+    isi = tuner.isi.value(DEFAULT_ISI);
+    pls_code = tuner.pls_code.value(DEFAULT_PLS_CODE);
+    pls_mode = tuner.pls_mode.value(DEFAULT_PLS_MODE);
 
     return true;
 }
@@ -249,7 +264,7 @@ bool ts::TunerParametersDVBS::fromArgs (const TunerArgs& tuner, Report& report)
 
 bool ts::TunerParametersDVBS::fromDeliveryDescriptor(const Descriptor& desc)
 {
-    //@@ TODO: Check S2_satellite_delivery_system_descriptor to get multistream id
+    // TODO: Check S2_satellite_delivery_system_descriptor to get multistream id and PLS code. What about PLS mode?
 
     if (!desc.isValid() || desc.tag() != DID_SAT_DELIVERY || desc.payloadSize() < 11) {
         return false;
@@ -323,8 +338,6 @@ bool ts::TunerParametersDVBS::fromDeliveryDescriptor(const Descriptor& desc)
 
 ts::xml::Element* ts::TunerParametersDVBS::toXML(xml::Element* parent) const
 {
-    //@@ TODO: add multistream id
-
     xml::Element* e = parent->addElement(u"dvbs");
     if (satellite_number != 0) {
         e->setIntAttribute(u"satellite", satellite_number, false);
@@ -350,13 +363,16 @@ ts::xml::Element* ts::TunerParametersDVBS::toXML(xml::Element* parent) const
     if (delivery_system == DS_DVB_S2 && roll_off != ROLLOFF_AUTO) {
         e->setEnumAttribute(RollOffEnum, u"rolloff", roll_off);
     }
+    if (delivery_system == DS_DVB_S2 && isi != ISI_DISABLE) {
+        e->setIntAttribute(u"ISI", isi, false);
+        e->setIntAttribute(u"PLS_code", pls_code, false);
+        e->setEnumAttribute(PLSModeEnum, u"PLS_mode", pls_mode);
+    }
     return e;
 }
 
 bool ts::TunerParametersDVBS::fromXML(const xml::Element* elem)
 {
-    //@@ TODO: add multistream id
-
     return elem != nullptr &&
         elem->name().similar(u"dvbs") &&
         elem->getIntAttribute<size_t>(satellite_number, u"satellite", false, 0, 0, 3) &&
@@ -368,7 +384,10 @@ bool ts::TunerParametersDVBS::fromXML(const xml::Element* elem)
         elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
         elem->getIntEnumAttribute(polarity, PolarizationEnum, u"polarity", false, POL_AUTO) &&
         (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(pilots, PilotEnum, u"pilots", false, PILOT_AUTO)) &&
-        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(roll_off, RollOffEnum, u"rolloff", false, ROLLOFF_AUTO));
+        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(roll_off, RollOffEnum, u"rolloff", false, ROLLOFF_AUTO)) &&
+        (delivery_system == DS_DVB_S || elem->getIntAttribute<uint32_t>(isi, u"isi", false, ISI_DISABLE)) &&
+        (delivery_system == DS_DVB_S || elem->getIntAttribute<uint32_t>(pls_code, u"PLS_code", false, 0)) &&
+        (delivery_system == DS_DVB_S || elem->getIntEnumAttribute(pls_mode, PLSModeEnum, u"PLS_mode", false, PLS_ROOT));
 }
 
 
