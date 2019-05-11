@@ -83,7 +83,10 @@ namespace ts {
         Variable<DeliverySystem>    delivery_system;    //!< Delivery system (DS_DVB_*).
         Variable<Pilot>             pilots;             //!< Presence of pilots (DVB-S2 only).
         Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
-        Variable<PLP>               plp;                //!< PLP identification (DVB-T2 only).
+        Variable<uint32_t>          plp;                //!< Physical Layer Pipe (PLP) identification (DVB-T2 only).
+        Variable<uint32_t>          isi;                //!< Input Stream Id (ISI) (DVB-S2 only).
+        Variable<uint32_t>          pls_code;           //!< Physical Layer Scrambling (PLS) code (DVB-S2 only).
+        Variable<PLSMode>           pls_mode;           //!< Physical Layer Scrambling (PLS) mode (DVB-S2 only).
 
         //!
         //! Default constructor.

@@ -53,7 +53,7 @@ namespace ts {
         TransmissionMode  transmission_mode;  //!< Transmission mode.
         GuardInterval     guard_interval;     //!< Guard interval.
         Hierarchy         hierarchy;          //!< Hierarchy.
-        PLP               plp;                //!< Physical Layer Pipe (PLP) id (DVB-T2 only).
+        uint32_t          plp;                //!< Physical Layer Pipe (PLP) id (DVB-T2 only).
 
         // Default values
         static constexpr SpectralInversion DEFAULT_INVERSION         = SPINV_AUTO;      //!< Default value for inversion.
@@ -64,7 +64,7 @@ namespace ts {
         static constexpr TransmissionMode  DEFAULT_TRANSMISSION_MODE = TM_8K;           //!< Default value for transmission_mode.
         static constexpr GuardInterval     DEFAULT_GUARD_INTERVAL    = GUARD_1_32;      //!< Default value for guard_interval.
         static constexpr Hierarchy         DEFAULT_HIERARCHY         = HIERARCHY_NONE;  //!< Default value for hierarchy.
-        static constexpr PLP               DEFAULT_PLP               = PLP_DISABLE;     //!< Default value for PLP id.
+        static constexpr uint32_t          DEFAULT_PLP               = PLP_DISABLE;     //!< Default value for PLP id.
 
         //!
         //! Default constructor.

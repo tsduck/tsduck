@@ -368,7 +368,7 @@ bool ts::TunerParametersDVBT::fromXML(const xml::Element* elem)
         elem->getIntEnumAttribute(fec_lp, InnerFECEnum, u"LPFEC", false, FEC_AUTO) &&
         elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
         elem->getIntEnumAttribute(hierarchy, HierarchyEnum, u"hierarchy", false, HIERARCHY_AUTO) &&
-        elem->getIntAttribute<PLP>(plp, u"PLP", false, PLP_DISABLE, 0, 255);
+        elem->getIntAttribute<uint32_t>(plp, u"PLP", false, PLP_DISABLE, 0, 255);
 }
 
 
