@@ -294,7 +294,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
             if (addPCR) {
 
                 // Set the PCR in the adaptation field.
-                pkt.createPCR(_pcrLastValue + getPCRDistance());
+                pkt.setPCR(_pcrLastValue + getPCRDistance(), true);
 
                 // Don't insert another PCR in output PID until a PCR is found in reference PID.
                 _insertPCR = false;
@@ -306,7 +306,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
             //  PES mode 1 (SYNC) : 127+9+16+1+10 = 163 max payload
             //  PES mode 2 (any)  : no limit
             if (_pesMode == FIXED && pkt.getPayloadSize() > (153 + pes_sync)) {
-                    pkt.setPayloadSize(153 + pes_sync);
+                pkt.setPayloadSize(153 + pes_sync);
             }
 
             // How many bytes consumes de PES encapsulation, based on this calculus:

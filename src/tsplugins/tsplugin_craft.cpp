@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Plugin definition
+// Input plugin definition
 //----------------------------------------------------------------------------
 
 namespace ts {
@@ -54,11 +54,11 @@ namespace ts {
         virtual bool abortInput() override { return true; }
 
     private:
-        uint8_t       _initCC;            // continuity_counter
-        bool          _constantCC;        // Do not increment continuity counter
-        PacketCounter _maxCount;          // Number of packets to generate
-        PacketCounter _limit;             // Current max number of packets
-        TSPacket      _packet;            // Template of packet to generate
+        uint8_t       _initCC;      // continuity_counter
+        bool          _constantCC;  // Do not increment continuity counter
+        PacketCounter _maxCount;    // Number of packets to generate
+        PacketCounter _limit;       // Current max number of packets
+        TSPacket      _packet;      // Template of packet to generate
 
         // Inaccessible operations
         CraftInput() = delete;
@@ -67,12 +67,72 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(craft, ts::CraftInput)
+
+//----------------------------------------------------------------------------
+// Packet processing plugin definition
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class CraftPlugin: public ProcessorPlugin
+    {
+    public:
+        // Implementation of plugin API
+        CraftPlugin(TSP*);
+        virtual bool getOptions() override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+
+    private:
+        // Command line options:
+        bool      _setDiscontinuity;
+        bool      _clearDiscontinuity;
+        bool      _setTransportError;
+        bool      _clearTransportError;
+        bool      _setTransportPriority;
+        bool      _clearTransportPriority;
+        bool      _setESPriority;
+        bool      _clearESPriority;
+        bool      _resizePayload;
+        size_t    _payloadSize;
+        ByteBlock _payloadPattern;
+        ByteBlock _privateData;
+        bool      _clearPrivateData;
+        bool      _clearPCR;
+        uint64_t  _newPCR;
+        bool      _clearOPCR;
+        uint64_t  _newOPCR;
+        bool      _setPID;
+        PID       _newPID;
+        bool      _setPUSI;
+        bool      _clearPUSI;
+        bool      _setRandomAccess;
+        bool      _clearRandomAccess;
+        bool      _setScrambling;
+        uint8_t   _newScrambling;
+        bool      _setCC;
+        uint8_t   _newCC;
+        bool      _setSpliceCountdown;
+        bool      _clearSpliceCountdown;
+        uint8_t   _newSpliceCountdown;
+
+        // Inaccessible operations
+        CraftPlugin() = delete;
+        CraftPlugin(const CraftPlugin&) = delete;
+        CraftPlugin& operator=(const CraftPlugin&) = delete;
+    };
+}
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Plugin shared library interface
+//----------------------------------------------------------------------------
+
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_INPUT(craft, ts::CraftInput)
+TSPLUGIN_DECLARE_PROCESSOR(craft, ts::CraftPlugin)
+
+
+//----------------------------------------------------------------------------
+// Input constructor
 //----------------------------------------------------------------------------
 
 ts::CraftInput::CraftInput(TSP* tsp_) :
@@ -122,7 +182,7 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
          u"The pattern is repeated to fill the payload. The default is FF.");
 
     option(u"payload-size", 0, INTEGER, 0, 1, 0, 184);
-    help(u"payload-size",
+    help(u"payload-size", u"size",
          u"Specify the size of the packet payload in bytes. "
          u"When necessary, an adaptation field is created. "
          u"By default, the payload uses all free space in the packet.");
@@ -159,7 +219,7 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Command line options method
+// Input command line options method
 //----------------------------------------------------------------------------
 
 bool ts::CraftInput::getOptions()
@@ -193,14 +253,14 @@ bool ts::CraftInput::getOptions()
     }
 
     // The binary patterns.
-    ByteBlock _payloadPattern;
-    if (!value(u"payload-pattern", u"FF").hexaDecode(_payloadPattern) || _payloadPattern.size() == 0) {
+    ByteBlock payloadPattern;
+    if (!value(u"payload-pattern", u"FF").hexaDecode(payloadPattern) || payloadPattern.size() == 0) {
         tsp->error(u"invalid hexadecimal payload pattern");
         return false;
     }
 
-    ByteBlock _privateData;
-    if (!value(u"private-data").hexaDecode(_privateData)) {
+    ByteBlock privateData;
+    if (!value(u"private-data").hexaDecode(privateData)) {
         tsp->error(u"invalid hexadecimal private data");
         return false;
     }
@@ -213,43 +273,43 @@ bool ts::CraftInput::getOptions()
         pcr != INVALID_PCR ||
         opcr != INVALID_PCR ||
         hasSplicing ||
-        !_privateData.empty();
+        !privateData.empty();
 
     // Compute adaptation field size.
     // If an AF is needed, it needs at least 2 bytes: length and flags.
-    size_t _afSize = needAF ? 2 : 0;
+    size_t afSize = needAF ? 2 : 0;
     if (pcr != INVALID_PCR) {
-        _afSize += 6;
+        afSize += 6;
     }
     if (opcr != INVALID_PCR) {
-        _afSize += 6;
+        afSize += 6;
     }
     if (hasSplicing) {
-        _afSize += 1;
+        afSize += 1;
     }
-    if (!_privateData.empty()) {
-        _afSize += 1 + _privateData.size();
+    if (!privateData.empty()) {
+        afSize += 1 + privateData.size();
     }
 
     // Check if adaptation field and payload fit in the packet.
-    if (_afSize > 184) {
+    if (afSize > 184) {
         tsp->error(u"private data too large, cannot fit in a TS packet");
         return false;
     }
     if (fullPayload) {
         // Payload size unspecified, use the rest of the packet as payload.
-        payloadSize = 184 - _afSize;
+        payloadSize = 184 - afSize;
     }
-    else if (_afSize + payloadSize > 184) {
+    else if (afSize + payloadSize > 184) {
         tsp->error(u"payload and adaptation field too large, cannot fit in a TS packet");
         return false;
     }
     else {
         // Payload size was specified and is smaller than the rest of the packet.
         // Enlarge the adaptation field with stuffing.
-        _afSize = 184 - payloadSize;
+        afSize = 184 - payloadSize;
     }
-    assert(_afSize + payloadSize == 184);
+    assert(afSize + payloadSize == 184);
 
     // Build packet header.
     _packet.b[0] = 0x47;
@@ -261,15 +321,15 @@ bool ts::CraftInput::getOptions()
     _packet.b[2] = uint8_t(pid);
     _packet.b[3] =
         ((scrambling & 0x03) << 6) |
-        (_afSize > 0 ? 0x20 : 0x00) |
+        (afSize > 0 ? 0x20 : 0x00) |
         (payloadSize > 0 ? 0x10 : 0x00) |
         (_initCC & 0x0F);
 
     // Build adaptation field.
-    if (_afSize > 0) {
+    if (afSize > 0) {
         uint8_t* data = _packet.b + 4;
-        *data++ = uint8_t(_afSize - 1); // length field.
-        if (_afSize > 1) {
+        *data++ = uint8_t(afSize - 1); // length field.
+        if (afSize > 1) {
             // Flags byte.
             *data++ =
                 (discontinuity ? 0x80 : 0x00) |
@@ -278,7 +338,7 @@ bool ts::CraftInput::getOptions()
                 (pcr != INVALID_PCR ? 0x10 : 0x00) |
                 (opcr != INVALID_PCR ? 0x08 : 0x00) |
                 (hasSplicing ? 0x04 : 0x00) |
-                (_privateData.empty() ? 0x00 : 0x02);
+                (privateData.empty() ? 0x00 : 0x02);
             // Optional fields in the adaptation field
             if (pcr != INVALID_PCR) {
                 PutPCR(data, pcr);
@@ -291,23 +351,23 @@ bool ts::CraftInput::getOptions()
             if (hasSplicing) {
                 *data++ = spliceCountdown;
             }
-            if (!_privateData.empty()) {
-                *data++ = uint8_t(_privateData.size());
-                ::memcpy(data, _privateData.data(), _privateData.size());
-                data += _privateData.size();
+            if (!privateData.empty()) {
+                *data++ = uint8_t(privateData.size());
+                ::memcpy(data, privateData.data(), privateData.size());
+                data += privateData.size();
             }
             // Potential stuffing if a small payload size was specified.
-            ::memset(data, 0xFF, _packet.b + 4 + _afSize - data);
+            ::memset(data, 0xFF, _packet.b + 4 + afSize - data);
         }
     }
 
     // Build payload.
     if (payloadSize > 0) {
-        assert(!_payloadPattern.empty());
-        uint8_t* data = _packet.b + 4 + _afSize;
+        assert(!payloadPattern.empty());
+        uint8_t* data = _packet.b + 4 + afSize;
         while (data < _packet.b + PKT_SIZE) {
-            const size_t size = std::min<size_t>(_payloadPattern.size(), _packet.b + PKT_SIZE - data);
-            ::memcpy(data, _payloadPattern.data(), size);
+            const size_t size = std::min<size_t>(payloadPattern.size(), _packet.b + PKT_SIZE - data);
+            ::memcpy(data, payloadPattern.data(), size);
             data += size;
         }
     }
@@ -317,7 +377,7 @@ bool ts::CraftInput::getOptions()
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Input start method
 //----------------------------------------------------------------------------
 
 bool ts::CraftInput::start()
@@ -332,7 +392,7 @@ bool ts::CraftInput::start()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::CraftInput::receive (TSPacket* buffer, size_t maxPackets)
+size_t ts::CraftInput::receive(TSPacket* buffer, size_t maxPackets)
 {
     // Previous number of generated packets.
     const PacketCounter previousCount = tsp->pluginPackets();
@@ -355,4 +415,297 @@ size_t ts::CraftInput::receive (TSPacket* buffer, size_t maxPackets)
         }
     }
     return n;
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing plugin constructor
+//----------------------------------------------------------------------------
+
+ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Craft specific low-level transformations on packets", u"[options]"),
+    _setDiscontinuity(false),
+    _clearDiscontinuity(false),
+    _setTransportError(false),
+    _clearTransportError(false),
+    _setTransportPriority(false),
+    _clearTransportPriority(false),
+    _setESPriority(false),
+    _clearESPriority(false),
+    _resizePayload(false),
+    _payloadSize(0),
+    _payloadPattern(),
+    _privateData(),
+    _clearPrivateData(false),
+    _clearPCR(false),
+    _newPCR(0),
+    _clearOPCR(false),
+    _newOPCR(0),
+    _setPID(false),
+    _newPID(PID_NULL),
+    _setPUSI(false),
+    _clearPUSI(false),
+    _setRandomAccess(false),
+    _clearRandomAccess(false),
+    _setScrambling(false),
+    _newScrambling(0),
+    _setCC(false),
+    _newCC(0),
+    _setSpliceCountdown(false),
+    _clearSpliceCountdown(false),
+    _newSpliceCountdown(0)
+{
+    setIntro(u"This plugin modifies precise fields in all TS packets. "
+             u"Some operations may need space in the adaptation field. "
+             u"By default, the payload is left unmodified and a transformation is "
+             u"rejected if it needs to enlarge the adaptation field since this "
+             u"would destroy part of the existing payload. "
+             u"Enlarging the adaptation field is possible only when --payload-pattern "
+             u"is specified, in which case the payload is overwritten anyway.");
+
+    option(u"continuity-counter", 0, INTEGER, 0, 1, 0, 15);
+    help(u"continuity-counter", u"Specify the value of the continuity_counter field.");
+
+    option(u"discontinuity");
+    help(u"discontinuity", u"Set the discontinuity_indicator in the packets. Space is required in the adaptation field.");
+
+    option(u"clear-discontinuity");
+    help(u"clear-discontinuity", u"Clear the discontinuity_indicator in the packets.");
+
+    option(u"error");
+    help(u"error", u"Set the transport_error_indicator in the packets.");
+
+    option(u"clear-error");
+    help(u"clear-error", u"Clear the transport_error_indicator in the packets.");
+
+    option(u"es-priority");
+    help(u"es-priority", u"Set the elementary_stream_priority_indicator in the packets. Space is required in the adaptation field.");
+
+    option(u"clear-es-priority");
+    help(u"clear-es-priority", u"Clear the elementary_stream_priority_indicator in the packets.");
+
+    option(u"no-payload");
+    help(u"no-payload", u"Remove the payload, equivalent to --payload-size 0.");
+
+    option(u"payload-pattern", 0, STRING);
+    help(u"payload-pattern",
+         u"Overwrite the payload and specify the binary pattern to apply. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"The pattern is repeated to fill the payload.");
+
+    option(u"payload-size", 0, INTEGER, 0, 1, 0, 184);
+    help(u"payload-size", u"size",
+         u"Resize the packet payload to the specified value in bytes. "
+         u"When necessary, an adaptation field is created or enlarged. "
+         u"Without --payload-pattern, the existing payload is either shrunk or enlarged. "
+         u"When an existing payload is shrunk, the end of the payload is truncated. "
+         u"When an existing payload is enlarged, its end is padded with 0xFF bytes. ");
+
+    option(u"pcr", 0, UNSIGNED);
+    help(u"pcr", u"Set this PCR value in the packets. Space is required in the adaptation field.");
+
+    option(u"no-pcr");
+    help(u"no-pcr", u"Remove the PCR from the packets.");
+
+    option(u"opcr", 0, UNSIGNED);
+    help(u"opcr", u"Set this OPCR value in the packets. Space is required in the adaptation field.");
+
+    option(u"no-opcr");
+    help(u"no-opcr", u"Remove the OPCR from the packets.");
+
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid", u"Modify the PID to the specified value.");
+
+    option(u"priority");
+    help(u"priority", u"Set the transport_priority flag in the packets.");
+
+    option(u"clear-priority");
+    help(u"clear-priority", u"Clear the transport_priority flag in the packets.");
+
+    option(u"private-data", 0, STRING);
+    help(u"private-data",
+         u"Specify the binary content of the transport_private_data in the adaptation field. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"Space is required in the adaptation field.");
+
+    option(u"no-private-data");
+    help(u"no-private-data", u"Remove the private data from adaptation field.");
+
+    option(u"pusi");
+    help(u"pusi", u"Set the payload_unit_start_indicator in the packets.");
+
+    option(u"clear-pusi");
+    help(u"clear-pusi", u"Clear the payload_unit_start_indicator in the packets.");
+
+    option(u"random-access");
+    help(u"random-access", u"Set the random_access_indicator in the packets. Space is required in the adaptation field.");
+
+    option(u"clear-random-access");
+    help(u"clear-random-access", u"Clear the random_access_indicator in the packets.");
+
+    option(u"scrambling", 0, INTEGER, 0, 1, 0, 3);
+    help(u"scrambling", u"Specify the value of the transport_scrambling_control field.");
+
+    option(u"splice-countdown", 0, UINT8);
+    help(u"splice-countdown", u"Create a splicing point and set this splice countdown value in the packets. Space is required in the adaptation field.");
+
+    option(u"no-splice-countdown");
+    help(u"no-splice-countdown", u"Remove the splicing point from the packets.");
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing plugin get command line options.
+//----------------------------------------------------------------------------
+
+bool ts::CraftPlugin::getOptions()
+{
+    _setDiscontinuity = present(u"discontinuity");
+    _clearDiscontinuity = present(u"clear-discontinuity");
+    _setTransportError = present(u"error");
+    _clearTransportError = present(u"clear-error");
+    _setTransportPriority = present(u"priority");
+    _clearTransportPriority = present(u"clear-priority");
+    _setESPriority = present(u"es-priority");
+    _clearESPriority = present(u"clear-es-priority");
+    _resizePayload = present(u"payload-size") || present(u"no-payload");
+    _payloadSize = intValue<size_t>(u"payload-size", 0);
+    _clearPCR = present(u"no-pcr");
+    _newPCR = intValue<uint64_t>(u"pcr", INVALID_PCR);
+    _clearOPCR = present(u"no-opcr");
+    _newOPCR = intValue<uint64_t>(u"opcr", INVALID_PCR);
+    _setPID = present(u"pid");
+    _newPID = intValue<PID>(u"PID");
+    _setPUSI = present(u"pusi");
+    _clearPUSI = present(u"clear-pusi");
+    _setRandomAccess = present(u"random-access");
+    _clearRandomAccess = present(u"clear-random-access");
+    _setScrambling = present(u"scrambling");
+    _newScrambling = intValue<uint8_t>(u"scrambling");
+    _setCC = present(u"continuity-counter");
+    _newCC = intValue<uint8_t>(u"continuity-counter");
+    _setSpliceCountdown = present(u"splice-countdown");
+    _clearSpliceCountdown = present(u"no-splice-countdown");
+    _newSpliceCountdown = intValue<uint8_t>(u"splice-countdown");
+    _clearPrivateData = present(u"no-private-data");
+
+    if (!value(u"payload-pattern").hexaDecode(_payloadPattern)) {
+        tsp->error(u"invalid hexadecimal payload pattern");
+        return false;
+    }
+
+    if (!value(u"private-data").hexaDecode(_privateData)) {
+        tsp->error(u"invalid hexadecimal private data");
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing method
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    // Hack the packet header. Just overwrite a few bits in place, nothing to move.
+    if (_clearTransportError) {
+        pkt.clearTEI();
+    }
+    if (_setTransportError) {
+        pkt.setTEI();
+    }
+    if (_clearTransportPriority) {
+        pkt.clearPriority();
+    }
+    if (_setTransportPriority) {
+        pkt.setPriority();
+    }
+    if (_clearPUSI) {
+        pkt.clearPUSI();
+    }
+    if (_setPUSI) {
+        pkt.setPUSI();
+    }
+    if (_setPID) {
+        pkt.setPID(_newPID);
+    }
+    if (_setScrambling) {
+        pkt.setScrambling(_newScrambling);
+    }
+    if (_setCC) {
+        pkt.setCC(_newCC);
+    }
+
+    // Remove fields or clear bits in the adaptation field.
+    // These operations always succeed and do not change the size of the AF,
+    // they only potentially increase the stuffing part of the AF.
+    if (_clearDiscontinuity) {
+       pkt.clearDiscontinuityIndicator();
+    }
+    if (_clearRandomAccess) {
+       pkt.clearRandomAccessIndicator();
+    }
+    if (_clearESPriority) {
+       pkt.clearESPI();
+    }
+    if (_clearPCR) {
+        pkt.removePCR();
+    }
+    if (_clearOPCR) {
+        pkt.removeOPCR();
+    }
+    if (_clearSpliceCountdown) {
+        pkt.removeSpliceCountdown();
+    }
+    if (_clearPrivateData) {
+        pkt.removePrivateData();
+    }
+
+    // If the payload must be resized to a specific size, do it now.
+    if (_resizePayload && !pkt.setPayloadSize(_payloadSize, true, 0xFF)) {
+        tsp->warning(u"packet %'d: cannot resize payload to %'d bytes", {tsp->pluginPackets(), _payloadSize});
+    }
+
+    // Check if we are allowed to shrink the payload to any value.
+    // We can shrink if the payload is replaced (--payload-pattern) and with no specified size.
+    const bool canShrinkPayload = !_payloadPattern.empty() && !_resizePayload;
+
+    // Set individual flags in AF. Try to create minimal AF with flags field.
+    if (_setDiscontinuity && !pkt.setDiscontinuityIndicator(canShrinkPayload)) {
+        tsp->warning(u"packet %'d: no adaptation field to set discontinuity indicator", {tsp->pluginPackets()});
+    }
+    if (_setESPriority && !pkt.setESPI(canShrinkPayload)) {
+        tsp->warning(u"packet %'d: no adaptation field to set ES priority indicator", {tsp->pluginPackets()});
+    }
+    if (_setRandomAccess && !pkt.setRandomAccessIndicator(canShrinkPayload)) {
+        tsp->warning(u"packet %'d: no adaptation field to set random access indicator", {tsp->pluginPackets()});
+    }
+
+    // Set fields which need more space in the adaptation field.
+    if (_newPCR != INVALID_PCR && !pkt.setPCR(_newPCR, canShrinkPayload)) {
+        tsp->warning(u"packet %'d: no adaptation field to set PCR", {tsp->pluginPackets()});
+    }
+    if (_newOPCR != INVALID_PCR && !pkt.setOPCR(_newOPCR, canShrinkPayload)) {
+        tsp->warning(u"packet %'d: no adaptation field to set OPCR", {tsp->pluginPackets()});
+    }
+    if (_setSpliceCountdown && !pkt.setSpliceCountdown(_newSpliceCountdown, canShrinkPayload)) {
+        tsp->warning(u"packet %'d: no adaptation field to set splicing point countdown", {tsp->pluginPackets()});
+    }
+    if (!_privateData.empty() && !pkt.setPrivateData(_privateData, canShrinkPayload)) {
+        tsp->warning(u"packet %'d: adaptation field too short to set private data", {tsp->pluginPackets()});
+    }
+
+    // Fill payload with pattern.
+    if (!_payloadPattern.empty()) {
+        uint8_t* data = pkt.getPayload();
+        while (data < pkt.b + PKT_SIZE) {
+            const size_t size = std::min<size_t>(_payloadPattern.size(), pkt.b + PKT_SIZE - data);
+            ::memcpy(data, _payloadPattern.data(), size);
+            data += size;
+        }
+    }
+
+    return TSP_OK;
 }
