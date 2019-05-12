@@ -452,7 +452,7 @@ void ts::TSPacket::deleteFieldFromAF(size_t offset, size_t size, uint32_t flag)
 // Create or replace the splicing point countdown - 8 bits.
 //----------------------------------------------------------------------------
 
-bool ts::TSPacket::setSpliceCountdown(uint8_t count, bool shift_payload)
+bool ts::TSPacket::setSpliceCountdown(int8_t count, bool shift_payload)
 {
     size_t offset = spliceCountdownOffset();
     if (offset == 0) {
@@ -466,11 +466,11 @@ bool ts::TSPacket::setSpliceCountdown(uint8_t count, bool shift_payload)
         // Compute splicing point countdown offset.
         offset = 6 + (hasPCR() ? PCR_SIZE : 0) + (hasOPCR() ? PCR_SIZE : 0);
         // Shift the existing AF 1 byte ahead to make room for the splicing point countdown value.
-        ::memmove(b + offset, b + offset + 1, 4 + getAFSize() - offset - 1);
+        ::memmove(b + offset + 1, b + offset, 4 + getAFSize() - offset - 1);
     }
 
     // Finally write the splicing point countdown value.
-    b[offset] = count;
+    b[offset] = uint8_t(count);
     return true;
 }
 
@@ -543,7 +543,7 @@ bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
         b[5] |= 0x10;  // set PCR flag
         offset = 6;    // PCR offset in packet
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        ::memmove(b + offset, b + offset + PCR_SIZE, 4 + getAFSize() - offset - PCR_SIZE);
+        ::memmove(b + offset + PCR_SIZE, b + offset, 4 + getAFSize() - offset - PCR_SIZE);
     }
 
     // Finally write the PCR value.
@@ -565,7 +565,7 @@ bool ts::TSPacket::setOPCR(const uint64_t &opcr, bool shift_payload)
         // Compute OPCR offset.
         offset = 6 + (hasPCR() ? PCR_SIZE : 0);
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        ::memmove(b + offset, b + offset + PCR_SIZE, 4 + getAFSize() - offset - PCR_SIZE);
+        ::memmove(b + offset + PCR_SIZE, b + offset, 4 + getAFSize() - offset - PCR_SIZE);
     }
 
     // Finally write the OPCR value.

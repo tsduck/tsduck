@@ -382,8 +382,9 @@ namespace ts {
         //! that the start of its content remains the same. When the payload
         //! is shrunk, its end is truncated. When the paylaod is enlarged, it
         //! is padded with @a pad values. When @a shift_payload is false,
-        //! the data in the payload area is not modified.
-        //! @param [in] pad Byte value to use when padding the adaptation filed or payload.
+        //! the data in the memory area of the payload is not modified. In that
+        //! case, the memory is silently overwritten, losing the payload content.
+        //! @param [in] pad Byte value to use when padding the adaptation field or payload.
         //! @return True on success, false when the requested size is too large.
         //!
         bool setPayloadSize(size_t size, bool shift_payload = false, uint8_t pad = 0xFF);
@@ -572,7 +573,7 @@ namespace ts {
         //! @return True if the splicing point countdown was correctly created. False when
         //! the adaptation needed to be enlarged but could not because @a shift_payload was false.
         //!
-        bool setSpliceCountdown(uint8_t count, bool shift_payload = false);
+        bool setSpliceCountdown(int8_t count, bool shift_payload = false);
 
         //!
         //! Remove the splicing point countdown from the packet, if there is one.
