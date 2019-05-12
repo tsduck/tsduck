@@ -359,7 +359,8 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
 
     // Do we have valid private data already?
     const bool hasData = (b[5] & 0x02) != 0;
-    if (hasData && offset + 1 + b[offset] > 5 + b[4]) {
+    size_t endAF = 5 + b[4];
+    if (hasData && offset + 1 + b[offset] > endAF) {
         // Invalid previous private data, they extend beyond end of AF => invalid packet.
         return false;
     }
@@ -372,7 +373,7 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
             return false;
         }
         // Shift rest of AF upward.
-        const size_t endAF = 5 + b[4];
+        endAF = 5 + b[4];
         ::memmove(b + endNewData, b + offset, endAF - endNewData);
     }
     else {
@@ -380,7 +381,7 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
         if (endNewData < endPreviousData) {
             // New private data are shorter.
             // Move rest of AF downward.
-            const size_t endAF = 5 + b[4];
+            endAF = 5 + b[4];
             const size_t remove = endPreviousData - endNewData;
             ::memmove(b + endNewData, b + endPreviousData, endAF - endPreviousData);
             // Erase freeed space (now stuffing).
@@ -393,7 +394,7 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
                 return false; // cannot enlarge AF.
             }
             // Move rest of AF upward.
-            const size_t endAF = 5 + b[4];
+            endAF = 5 + b[4];
             ::memmove(b + endNewData, b + endPreviousData, endAF - endNewData);
         }
     }
