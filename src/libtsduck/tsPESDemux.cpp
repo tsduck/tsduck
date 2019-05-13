@@ -197,7 +197,7 @@ void ts::PESDemux::feedPacket(const TSPacket& pkt)
 void ts::PESDemux::processPacket(const TSPacket& pkt)
 {
     // Reject invalid packets
-    if (!pkt.hasValidSync ()) {
+    if (!pkt.hasValidSync()) {
         return;
     }
 
@@ -260,7 +260,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     if (!pc_exists || !pci->second.sync) {
         return;
     }
-    PIDContext& pc (pci->second);
+    PIDContext& pc(pci->second);
 
     // Ignore duplicate packets (same CC)
     if (pkt.getCC() == pc.continuity) {
@@ -269,7 +269,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // Check if we are still synchronized
     if (pkt.getCC() != (pc.continuity + 1) % CC_MAX) {
-        pc.syncLost ();
+        pc.syncLost();
         return;
     }
     pc.continuity = pkt.getCC();
@@ -296,6 +296,20 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // Last TS packet containing actual data for this PES packet
     pc.last_pkt = _packet_count;
+
+    // Check if the complete PES packet is now present (without waiting for the next PUSI).
+    if (pc.ts->size() >= 6 && pc.sync) {
+        // There is enought to get the PES packet length.
+        const size_t len = GetUInt16(pc.ts->data() + 4);
+        // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
+        // But if the PES packet size is specified, check if we have the complete PES packet.
+        if (len != 0 && pc.ts->size() >= 4 + len) {
+            // We have the complete PES packet.
+            processPESPacket(pid, pc);
+            // Reset PES buffer.
+            pc.ts->clear();
+        }
+    }
 }
 
 

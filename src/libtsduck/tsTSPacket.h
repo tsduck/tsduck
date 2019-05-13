@@ -594,10 +594,28 @@ namespace ts {
         }
 
         //!
+        //! Get size in bytes of private data from adaptation field.
+        //! @return Size in bytes of private data (not including its length field).
+        //!
+        size_t getPrivateDataSize() const;
+
+        //!
+        //! Get address of private data in adaptation field.
+        //! @return Address of private data in adaptation field or a null pointer if there is no private data.
+        //!
+        const uint8_t* getPrivateData() const;
+
+        //!
+        //! Get address of private data in adaptation field.
+        //! @return Address of private data in adaptation field or a null pointer if there is no private data.
+        //!
+        uint8_t* getPrivateData();
+
+        //!
         //! Get private data from adaptation field.
         //! @param [out] data Private data from adaptation field.
         //!
-        void getPrivateData(ByteBlock& data);
+        void getPrivateData(ByteBlock& data) const;
 
         //!
         //! Set private data in adaptation field.

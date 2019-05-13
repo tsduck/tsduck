@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1236
+VERSION 3.18-1247
 
 [NEW] New commands and plugins:
 
-  * Added input plugin "craft" to build specifically crafted packets.
+  * Added plugin "craft" as input to build specifically crafted packets and as
+    packet processor to similarly alter packets in transit.
 
 [IMP] Improvements on existing commands and plugins:
 
