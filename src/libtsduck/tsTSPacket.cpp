@@ -321,7 +321,25 @@ void ts::TSPacket::removePrivateData()
     deleteFieldFromAF(offset, offset > 0 ? 1 + b[offset] : 0, 0x02);
 }
 
-void ts::TSPacket::getPrivateData(ByteBlock& data)
+size_t ts::TSPacket::getPrivateDataSize() const
+{
+    const size_t offset = privateDataOffset();
+    return offset == 0 ? 0 : size_t(b[offset]);
+}
+
+const uint8_t* ts::TSPacket::getPrivateData() const
+{
+    const size_t offset = privateDataOffset();
+    return offset == 0 ? nullptr : b + offset + 1;
+}
+
+uint8_t* ts::TSPacket::getPrivateData()
+{
+    const size_t offset = privateDataOffset();
+    return offset == 0 ? nullptr : b + offset + 1;
+}
+
+void ts::TSPacket::getPrivateData(ByteBlock& data) const
 {
     const size_t offset = privateDataOffset();
     if (offset == 0) {
