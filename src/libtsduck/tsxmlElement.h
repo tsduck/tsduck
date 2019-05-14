@@ -41,6 +41,26 @@
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 
+// There is a bug in GCC version 6 and 7 which prevents this file from compiling
+// correctly. This is specific to GCC 6 and 7. There is no issue with GCC 4.9, 8.x, 9.x
+// as well as MSVC and clang. The error typically appears on the latest (as of 2019)
+// versions of Debian and Raspbian, as well as obsolete versions of other distros.
+//
+// The typical symptom is the error below:
+//
+// /usr/include/c++/6/type_traits: In instantiation of 'struct std::underlying_type':
+// tsxmlElement.h:426:107: required by substitution of 'template<class ENUM, typename std::enable_if<std::is_enum<_Tp>::value>::type* , class INT> bool ts::xml::Element::getIntAttribute(ENUM&, const ts::UString&, bool, ENUM, INT, INT) const [with ENUM = unsigned char; typename std::enable_if<std::is_enum<_Tp>::value>::type* = ; INT = ]'
+// tsAACDescriptor.cpp:186:88: required from here
+// /usr/include/c++/6/type_traits:2256:38: error: 'unsigned char' is not an enumeration type
+// typedef __underlying_type(_Tp) type;
+//
+// There is no other solution than switching to a fixed version of GCC.
+// See https://tsduck.io/doxy/building.html#reqraspbian
+
+#if defined(TS_GCC_ONLY) && !defined(TS_IGNORE_GCC6_BUG) && (__GNUC__ == 6 || __GNUC__ == 7)
+#error "GCC versions 6 and 7 are broken and fail to properly handle some template substitutions, use another version of GCC, see https://tsduck.io/doxy/building.html#reqraspbian"
+#endif
+
 namespace ts {
     namespace xml {
 
