@@ -34,6 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -48,32 +49,35 @@ namespace ts {
         // Implementation of plugin API
         FilterPlugin (TSP*);
         virtual bool getOptions() override;
-        virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Command line options:
-        Status        drop_status;      // Return status for unselected packets
-        int           scrambling_ctrl;  // Scrambling control value (<0: no filter)
-        bool          with_payload;     // Packets with payload
-        bool          with_af;          // Packets with adaptation field
-        bool          with_pes;         // Packets with clear PES headers
-        bool          has_pcr;          // Packets with PCR or OPCR
-        bool          unit_start;       // Packets with payload unit start
-        bool          nullified;        // Packets which were nullified by a previous plugin
-        bool          input_stuffing;   // Null packets which were artificially inserted
-        bool          valid;            // Packets with valid sync byte and error ind
-        bool          negate;           // Negate filter (exclude selected packets)
-        int           min_payload;      // Minimum payload size (<0: no filter)
-        int           max_payload;      // Maximum payload size (<0: no filter)
-        int           min_af;           // Minimum adaptation field size (<0: no filter)
-        int           max_af;           // Maximum adaptation field size (<0: no filter)
-        PacketCounter after_packets;    // Number of initial packets to skip
-        PacketCounter every_packets;    // Filter 1 out of this number of packets
-        PIDSet        pid;              // PID values to filter
-        TSPacketMetadata::LabelSet labels;       // Select packets with any of these labels
-        TSPacketMetadata::LabelSet set_labels;   // Labels to set on filtered packets
-        TSPacketMetadata::LabelSet reset_labels; // Labels to reset on filtered packets
+        Status        _drop_status;        // Return status for unselected packets
+        int           _scrambling_ctrl;    // Scrambling control value (<0: no filter)
+        bool          _with_payload;       // Packets with payload
+        bool          _with_af;            // Packets with adaptation field
+        bool          _with_pes;           // Packets with clear PES headers
+        bool          _has_pcr;            // Packets with PCR or OPCR
+        bool          _unit_start;         // Packets with payload unit start
+        bool          _nullified;          // Packets which were nullified by a previous plugin
+        bool          _input_stuffing;     // Null packets which were artificially inserted
+        bool          _valid;              // Packets with valid sync byte and error ind
+        bool          _negate;             // Negate filter (exclude selected packets)
+        int           _min_payload;        // Minimum payload size (<0: no filter)
+        int           _max_payload;        // Maximum payload size (<0: no filter)
+        int           _min_af;             // Minimum adaptation field size (<0: no filter)
+        int           _max_af;             // Maximum adaptation field size (<0: no filter)
+        PacketCounter _after_packets;      // Number of initial packets to skip
+        PacketCounter _every_packets;      // Filter 1 out of this number of packets
+        PIDSet        _pid;                // PID values to filter
+        ByteBlock     _pattern;            // Byte pattern to search.
+        bool          _search_payload;     // Search pattern in payload only.
+        bool          _use_search_offset;  // Search at specified offset only.
+        size_t        _search_offset;      // Offset where to search.
+        TSPacketMetadata::LabelSet _labels;       // Select packets with any of these labels
+        TSPacketMetadata::LabelSet _set_labels;   // Labels to set on filtered packets
+        TSPacketMetadata::LabelSet _reset_labels; // Labels to reset on filtered packets
 
         // Inaccessible operations
         FilterPlugin() = delete;
@@ -92,27 +96,31 @@ TSPLUGIN_DECLARE_PROCESSOR(filter, ts::FilterPlugin)
 
 ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions", u"[options]"),
-    drop_status(TSP_DROP),
-    scrambling_ctrl(0),
-    with_payload(false),
-    with_af(false),
-    with_pes(false),
-    has_pcr(false),
-    unit_start(false),
-    nullified(false),
-    input_stuffing(false),
-    valid(false),
-    negate(false),
-    min_payload(0),
-    max_payload(0),
-    min_af(0),
-    max_af(0),
-    after_packets(0),
-    every_packets(0),
-    pid(),
-    labels(),
-    set_labels(),
-    reset_labels()
+    _drop_status(TSP_DROP),
+    _scrambling_ctrl(0),
+    _with_payload(false),
+    _with_af(false),
+    _with_pes(false),
+    _has_pcr(false),
+    _unit_start(false),
+    _nullified(false),
+    _input_stuffing(false),
+    _valid(false),
+    _negate(false),
+    _min_payload(0),
+    _max_payload(0),
+    _min_af(0),
+    _max_af(0),
+    _after_packets(0),
+    _every_packets(0),
+    _pid(),
+    _pattern(),
+    _search_payload(false),
+    _use_search_offset(false),
+    _search_offset(0),
+    _labels(),
+    _set_labels(),
+    _reset_labels()
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
@@ -191,6 +199,27 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"PID filter: select packets with these PID values. "
          u"Several -p or --pid options may be specified.");
 
+    option(u"pattern", 0, STRING);
+    help(u"pattern",
+         u"Select packets containing the specified pattern bytes. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"By default, the packet is selected when the value is anywhere inside the packet. "
+         u"With option --search-payload, only search the pattern in the payload of the packet. "
+         u"With option --search-offset, the packet is selected only if the pattern "
+         u"is at the specified offset in the packet. "
+         u"When --search-payload and --search-offset are both specified, the packet "
+         u"is selected only if the pattern is at the specified offset in the payload.");
+
+    option(u"search-payload");
+    help(u"search-payload",
+         u"With --pattern, only search the set of bytes in the payload of the packet. "
+         u"Do not search the pattern in the header or adaptation field.");
+
+    option(u"search-offset", 0, INTEGER, 0, 1, 0, PKT_SIZE - 1);
+    help(u"search-offset",
+         u"With --pattern, only search the set of bytes at the specified offset in the packet "
+         u"(the default) or in the payload (with --search-payload).");
+
     option(u"scrambling-control", 0, INTEGER, 0, 1, 0, 3);
     help(u"scrambling-control",
          u"Select packets with the specified scrambling control value. Valid "
@@ -229,51 +258,55 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
 
 bool ts::FilterPlugin::getOptions()
 {
-    scrambling_ctrl = present(u"clear") ? 0 : intValue(u"scrambling-control", -1);
-    with_payload = present(u"payload");
-    with_af = present(u"adaptation-field");
-    with_pes = present(u"pes");
-    has_pcr = present(u"pcr");
-    unit_start = present(u"unit-start");
-    nullified = present(u"nullified");
-    input_stuffing = present(u"input-stuffing");
-    valid = present(u"valid");
-    negate = present(u"negate");
-    getIntValue(min_payload, u"min-payload-size", -1);
-    getIntValue(max_payload, u"max-payload-size", -1);
-    getIntValue(min_af, u"min-adaptation-field-size", -1);
-    getIntValue(max_af, u"max-adaptation-field-size", -1);
-    getIntValue(after_packets, u"after-packets");
-    getIntValue(every_packets, u"every");
-    getIntValues(pid, u"pid");
-    getIntValues(labels, u"label");
-    getIntValues(set_labels, u"set-label");
-    getIntValues(reset_labels, u"reset-label");
+    _scrambling_ctrl = present(u"clear") ? 0 : intValue(u"scrambling-control", -1);
+    _with_payload = present(u"payload");
+    _with_af = present(u"adaptation-field");
+    _with_pes = present(u"pes");
+    _has_pcr = present(u"pcr");
+    _unit_start = present(u"unit-start");
+    _nullified = present(u"nullified");
+    _input_stuffing = present(u"input-stuffing");
+    _valid = present(u"valid");
+    _negate = present(u"negate");
+    getIntValue(_min_payload, u"min-payload-size", -1);
+    getIntValue(_max_payload, u"max-payload-size", -1);
+    getIntValue(_min_af, u"min-adaptation-field-size", -1);
+    getIntValue(_max_af, u"max-adaptation-field-size", -1);
+    getIntValue(_after_packets, u"after-packets");
+    getIntValue(_every_packets, u"every");
+    getIntValues(_pid, u"pid");
+    getIntValues(_labels, u"label");
+    getIntValues(_set_labels, u"set-label");
+    getIntValues(_reset_labels, u"reset-label");
+    _search_payload = present(u"search-payload");
+    _use_search_offset = present(u"search-offset");
+    getIntValue(_search_offset, u"search-offset");
+
+    if (!value(u"pattern").hexaDecode(_pattern)) {
+        tsp->error(u"invalid hexadecimal pattern");
+        return false;
+    }
+
+    // Check that the pattern to search is not larger than the packet.
+    if (_pattern.size() > PKT_SIZE || (_use_search_offset && _search_offset + _pattern.size() > PKT_SIZE)) {
+        tsp->error(u"search pattern too large for TS packets");
+        return false;
+    }
 
     // Status for unselected packets.
-    if (set_labels.any() || reset_labels.any()) {
+    if (_set_labels.any() || _reset_labels.any()) {
         // Do not drop unselected packets, simply set/reset labels on selected packets.
-        drop_status = TSP_OK;
+        _drop_status = TSP_OK;
     }
     else if (present(u"stuffing")) {
         // Replace unselected packets with stuffing.
-        drop_status = TSP_NULL;
+        _drop_status = TSP_NULL;
     }
     else {
         // Drop unselected packets.
-        drop_status = TSP_DROP;
+        _drop_status = TSP_DROP;
     }
 
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Start method
-//----------------------------------------------------------------------------
-
-bool ts::FilterPlugin::start()
-{
     return true;
 }
 
@@ -285,26 +318,26 @@ bool ts::FilterPlugin::start()
 ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Pass initial packets without filtering.
-    if (tsp->pluginPackets() < after_packets) {
+    if (tsp->pluginPackets() < _after_packets) {
         return TSP_OK;
     }
 
     // Check if the packet matches one of the selected criteria.
-    bool ok = pid[pkt.getPID()] ||
-        (with_payload && pkt.hasPayload()) ||
-        (with_af && pkt.hasAF()) ||
-        (unit_start && pkt.getPUSI()) ||
-        (nullified && pkt_data.getNullified()) ||
-        (input_stuffing && pkt_data.getInputStuffing()) ||
-        (valid && pkt.hasValidSync() && !pkt.getTEI()) ||
-        (scrambling_ctrl == pkt.getScrambling()) ||
-        (has_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
-        (min_payload >= 0 && int (pkt.getPayloadSize()) >= min_payload) ||
-        (int (pkt.getPayloadSize()) <= max_payload) ||
-        (min_af >= 0 && int (pkt.getAFSize()) >= min_af) ||
-        (int (pkt.getAFSize()) <= max_af) ||
-        pkt_data.hasAnyLabel(labels) ||
-        (every_packets > 0 && (tsp->pluginPackets() - after_packets) % every_packets == 0) ||
+    bool ok = _pid[pkt.getPID()] ||
+        (_with_payload && pkt.hasPayload()) ||
+        (_with_af && pkt.hasAF()) ||
+        (_unit_start && pkt.getPUSI()) ||
+        (_nullified && pkt_data.getNullified()) ||
+        (_input_stuffing && pkt_data.getInputStuffing()) ||
+        (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||
+        (_scrambling_ctrl == pkt.getScrambling()) ||
+        (_has_pcr && (pkt.hasPCR() || pkt.hasOPCR())) ||
+        (_min_payload >= 0 && int (pkt.getPayloadSize()) >= _min_payload) ||
+        (int (pkt.getPayloadSize()) <= _max_payload) ||
+        (_min_af >= 0 && int (pkt.getAFSize()) >= _min_af) ||
+        (int (pkt.getAFSize()) <= _max_af) ||
+        pkt_data.hasAnyLabel(_labels) ||
+        (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
 
         // Check the presence of a PES header.
         // A PES header starts with the 3-byte prefix 0x000001. A packet has a PES
@@ -319,20 +352,33 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         //  0x00 : table id -> a PAT
         //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
 
-        (with_pes && pkt.hasValidSync() && !pkt.getTEI() && pkt.getPayloadSize() >= 3 &&
+        (_with_pes && pkt.hasValidSync() && !pkt.getTEI() && pkt.getPayloadSize() >= 3 &&
          (GetUInt32 (pkt.b + pkt.getHeaderSize() - 1) & 0x00FFFFFF) == 0x000001);
 
+    // Search binary patterns in packets.
+    if (!ok && !_pattern.empty()) {
+        const size_t start = _search_payload ? pkt.getHeaderSize() : 0;
+        if (start + _search_offset + _pattern.size() <= PKT_SIZE) {
+            if (_use_search_offset) {
+                ok = ::memcmp(pkt.b + start + _search_offset, _pattern.data(), _pattern.size()) == 0;
+            }
+            else {
+                ok = LocatePattern(pkt.b + start, PKT_SIZE - start, _pattern.data(), _pattern.size()) != nullptr;
+            }
+        }
+    }
+
     // Reverse selection criteria with --negate.
-    if (negate) {
+    if (_negate) {
         ok = !ok;
     }
 
     if (ok) {
-        pkt_data.setLabels(set_labels);
-        pkt_data.clearLabels(reset_labels);
+        pkt_data.setLabels(_set_labels);
+        pkt_data.clearLabels(_reset_labels);
         return TSP_OK;
     }
     else {
-        return drop_status;
+        return _drop_status;
     }
 }
