@@ -77,28 +77,33 @@ apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev li
 It has been noted that GCC 6 and 7 are broken and fail to compile TSDuck version 3.17 and higher.
 As of TSDuck version 3.17, the latest versions of the major Linux distros (Fedora, CentOS,
 Red Hat Entreprise, Ubuntu) have either older or newer versions of GCC. However, Raspbian 9.x and
-Debian 9.x (stretch) embed GCC 6.3.0, one of these buggy versions of GCC.
+Debian 9.x (stretch) embed GCC 6.x, one of these buggy versions of GCC.
 
 If you have such a broken GCC, you need to install an older or newer version of GCC.
 
 The following method has been successfully used to build TSDuck on Raspbian 9.9.
-It probably also works with Debian. First, install the version 4.9 of GCC using:
+The compiler is GCC 4.9, an older but valid version, which is available from the
+official repo.
+
+On Debian 9.x (stretch), it has been reported from users that you need to add the
+following line in file `/etc/apt/sources.list` before installing GCC 4.9:
+~~~~
+deb http://http.debian.net/debian oldstable main contrib non-free
+~~~~
+
+To install GCC 4.9:
 ~~~~
 apt install gcc-4.9 g++-4.9
 ~~~~
 
-Then, build TSDuck using the following command:
+Build TSDuck using the following command:
 ~~~~
-make GCC=gcc-4.9 CXX=g++-4.9 AR=gcc-ar-4.9 NOTEST=true
+make CC=gcc-4.9 GCC=gcc-4.9 CXX=g++-4.9 AR=gcc-ar-4.9 NOTEST=true
 ~~~~
 
 The compiler and associated tools are redirected to their version 4.9.
 The flag `NOTEST=true` is required because the version of CppUnit which
 is installed with the system is not compatible with GCC 4.9.
-
-If you chose to install a more recent version of the compiler,
-[this article](https://solarianprogrammer.com/2017/12/08/raspberry-pi-raspbian-install-gcc-compile-cpp-17-programs/)
-explains how to install GCC 8.1.0 on Raspbian.
 
 ## All Linux distros {#reqlinux}
 
