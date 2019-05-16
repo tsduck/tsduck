@@ -750,7 +750,7 @@ void ts::CraftPlugin::packPESHeader(TSPacket& pkt)
 
     // Look for the offset of the stuffing in the PES packet.
     size_t offset = 9;
-    const uint8_t PTS_DTS_flags = (pl[7] >> 6) && 0x03;
+    const uint8_t PTS_DTS_flags = (pl[7] >> 6) & 0x03;
     if (offset < headerSize && PTS_DTS_flags == 2) {
         offset += 5;  // skip PTS
     }
