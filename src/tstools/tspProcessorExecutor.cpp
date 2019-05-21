@@ -58,6 +58,7 @@ void ts::tsp::ProcessorExecutor::main()
 {
     debug(u"packet processing thread started");
 
+    const TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
@@ -113,8 +114,8 @@ void ts::tsp::ProcessorExecutor::main()
 
         while (pkt_done < pkt_cnt && !aborted) {
 
-            bool flush_request = false;
-            TSPacket* pkt = _buffer->base() + pkt_first + pkt_done;
+            TSPacket* const pkt = _buffer->base() + pkt_first + pkt_done;
+            TSPacketMetadata* const pkt_data = _metadata->base() + pkt_first + pkt_done;
 
             pkt_done++;
             pkt_flush++;
@@ -125,9 +126,20 @@ void ts::tsp::ProcessorExecutor::main()
             }
             else {
                 // Apply the processing routine to the packet
-                bool bitrate_changed = false;
-                ProcessorPlugin::Status status = _processor->processPacket(*pkt, flush_request, bitrate_changed);
-                addPluginPackets(1);
+                const bool was_null = pkt->getPID() == PID_NULL;
+                pkt_data->setFlush(false);
+                pkt_data->setBitrateChanged(false);
+                ProcessorPlugin::Status status = ProcessorPlugin::TSP_OK;
+                if (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) {
+                    // Either no --only-label option or the packet has a specified label => process it.
+                    status = _processor->processPacket(*pkt, *pkt_data);
+                    addPluginPackets(1);
+                }
+                else {
+                    // Some --only-label was specified but the packet does not have any required label.
+                    // Pass the packet without submitting it to the plugin.
+                    addNonPluginPackets(1);
+                }
 
                 // Use the returned status
                 switch (status) {
@@ -138,7 +150,6 @@ void ts::tsp::ProcessorExecutor::main()
                     case ProcessorPlugin::TSP_NULL:
                         // Replace the packet with a complete null packet
                         *pkt = NullPacket;
-                        nullified_packets++;
                         break;
                     case ProcessorPlugin::TSP_DROP:
                         // Drop this packet.
@@ -159,9 +170,15 @@ void ts::tsp::ProcessorExecutor::main()
                         break;
                 }
 
+                // Detect if the packet was nullified by the plugin, either by returning TSP_NULL or by overwriting the packet.
+                if (!was_null && pkt->getPID() == PID_NULL) {
+                    pkt_data->setNullified(true);
+                    nullified_packets++;
+                }
+
                 // If the packet processor has signaled a new bitrate, get it.
-                if (bitrate_changed) {
-                    BitRate new_bitrate = _processor->getBitrate();
+                if (pkt_data->getBitrateChanged()) {
+                    const BitRate new_bitrate = _processor->getBitrate();
                     if (new_bitrate != 0) {
                         bitrate_never_modified = false;
                         output_bitrate = new_bitrate;
@@ -173,7 +190,7 @@ void ts::tsp::ProcessorExecutor::main()
             // the next processor. Perform periodic flush to avoid waiting
             // too long before two output operations.
 
-            if (flush_request || pkt_done == pkt_cnt || (_options->max_flush_pkt > 0 && pkt_flush % _options->max_flush_pkt == 0)) {
+            if (pkt_data->getFlush() || pkt_done == pkt_cnt || (_options->max_flush_pkt > 0 && pkt_flush % _options->max_flush_pkt == 0)) {
                 aborted = !passPackets(pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }

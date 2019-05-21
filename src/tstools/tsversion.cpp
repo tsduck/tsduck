@@ -221,19 +221,18 @@ bool ListAllVersions(Options& opt)
     // Compute column widths.
     const ts::UString versionHeader(u"Version");
     const ts::UString dateHeader(u"Published");
-    const ts::UString descriptionHeader(u"Description");
     const ts::UString binariesHeader(u"Binaries");
     const ts::UString downloadsHeader(u"Downloads");
+    const ts::UString dlPerDayHeader(u"Downl/day");
 
     size_t versionWidth = versionHeader.width();
     size_t dateWidth = std::max<size_t>(dateHeader.width(), 10); // "yyyy-mm-dd"
-    size_t descriptionWidth = descriptionHeader.width();
     size_t binariesWidth = binariesHeader.width();
     size_t downloadsWidth = downloadsHeader.width();
+    size_t dlPerDayWidth = dlPerDayHeader.width();
 
-    for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
+    for (auto it = rels.begin(); it != rels.end(); ++it) {
         versionWidth = std::max(versionWidth, (*it)->version().width());
-        descriptionWidth = std::max(descriptionWidth, (*it)->versionName().width());
     }
 
     // List them all.
@@ -241,21 +240,27 @@ bool ListAllVersions(Options& opt)
               << dateHeader.toJustifiedLeft(dateWidth) << "  "
               << binariesHeader.toJustifiedRight(binariesWidth) << "  "
               << downloadsHeader.toJustifiedRight(downloadsWidth) << "  "
-              << descriptionHeader.toJustifiedLeft(descriptionWidth) << std::endl
+              << dlPerDayHeader.toJustifiedRight(downloadsWidth) << std::endl
               << ts::UString(versionWidth, u'-') << "  "
               << ts::UString(dateWidth, u'-') << "  "
               << ts::UString(binariesWidth, u'-') << "  "
               << ts::UString(downloadsWidth, u'-') << "  "
-              << ts::UString(descriptionWidth, u'-') << std::endl;
+              << ts::UString(dlPerDayWidth, u'-') << std::endl;
 
-    for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
+    ts::Time endDate(ts::Time::CurrentUTC());
+    for (auto it = rels.begin(); it != rels.end(); ++it) {
         ts::GitHubRelease::AssetList assets;
         (*it)->getAssets(assets);
+        const ts::Time startDate((*it)->publishDate());
+        const int days = int((endDate - startDate) / ts::MilliSecPerDay);
+        const int downloads = (*it)->assetDownloadCount();
+        const int dlPerDay = days <= 0 ? downloads : downloads / days;
         std::cout << (*it)->version().toJustifiedLeft(versionWidth) << "  "
-                  << (*it)->publishDate().format(ts::Time::DATE).toJustifiedLeft(dateWidth) << "  "
+                  << startDate.format(ts::Time::DATE).toJustifiedLeft(dateWidth) << "  "
                   << ts::UString::Decimal(assets.size()).toJustifiedRight(binariesWidth) << "  "
-                  << ts::UString::Decimal((*it)->assetDownloadCount()).toJustifiedRight(downloadsWidth) << "  "
-                  << (*it)->versionName() << std::endl;
+                  << ts::UString::Decimal(downloads).toJustifiedRight(downloadsWidth) << "  "
+                  << ts::UString::Decimal(dlPerDay).toJustifiedRight(dlPerDayWidth) << std::endl;
+        endDate = startDate; // for previous version
     }
     return true;
 }

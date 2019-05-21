@@ -366,6 +366,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSubRipGenerator.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
+    ../../../src/libtsduck/tsSwitchableReport.h \
     ../../../src/libtsduck/tsSysInfo.h \
     ../../../src/libtsduck/tsSystemClockDescriptor.h \
     ../../../src/libtsduck/tsSystemMonitor.h \
@@ -442,6 +443,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTSFileOutput.h \
     ../../../src/libtsduck/tsTSFileOutputResync.h \
     ../../../src/libtsduck/tsTSPacket.h \
+    ../../../src/libtsduck/tsTSPacketMetadata.h \
     ../../../src/libtsduck/tsTSPacketQueue.h \
     ../../../src/libtsduck/tsTSScanner.h \
     ../../../src/libtsduck/tsTSScrambling.h \
@@ -815,6 +817,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSubRipGenerator.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
+    ../../../src/libtsduck/tsSwitchableReport.cpp \
     ../../../src/libtsduck/tsSysInfo.cpp \
     ../../../src/libtsduck/tsSystemClockDescriptor.cpp \
     ../../../src/libtsduck/tsSystemMonitor.cpp \
@@ -883,6 +886,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTSFileOutput.cpp \
     ../../../src/libtsduck/tsTSFileOutputResync.cpp \
     ../../../src/libtsduck/tsTSPacket.cpp \
+    ../../../src/libtsduck/tsTSPacketMetadata.cpp \
     ../../../src/libtsduck/tsTSPacketQueue.cpp \
     ../../../src/libtsduck/tsTSScanner.cpp \
     ../../../src/libtsduck/tsTSScrambling.cpp \

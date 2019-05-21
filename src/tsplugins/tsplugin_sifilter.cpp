@@ -53,7 +53,7 @@ namespace ts {
         // Implementation of plugin API
         SIFilterPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         CASSelectionArgs _cas_args;    // CAS selection
@@ -251,7 +251,7 @@ void ts::SIFilterPlugin::processPAT(const PAT& pat)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SIFilterPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SIFilterPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     _demux.feedPacket(pkt);
     return _pass_pids[pkt.getPID()] ? TSP_OK : _drop_status;

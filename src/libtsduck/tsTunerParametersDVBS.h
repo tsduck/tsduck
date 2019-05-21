@@ -56,6 +56,9 @@ namespace ts {
         Modulation        modulation;         //!< QPSK for DVB-S, QPSK or PSK_8 for DVB-S2.
         Pilot             pilots;             //!< Presence of pilots (DVB-S2 only).
         RollOff           roll_off;           //!< Roll-off factor (DVB-S2 only).
+        uint32_t          isi;                //!< Input stream id (DVB-S2 only).
+        uint32_t          pls_code;           //!< Physical Layer Scrambling (PLS) code (DVB-S2 only).
+        PLSMode           pls_mode;           //!< Physical Layer Scrambling (PLS) mode (DVB-S2 only).
 
         // Default values
         static constexpr Polarization      DEFAULT_POLARITY         = POL_VERTICAL; //!< Default value for polarity.
@@ -66,8 +69,10 @@ namespace ts {
         static constexpr DeliverySystem    DEFAULT_DELIVERY_SYSTEM  = DS_DVB_S;     //!< Default value for delivery_system.
         static constexpr Modulation        DEFAULT_MODULATION       = QPSK;         //!< Default value for modulation.
         static constexpr Pilot             DEFAULT_PILOTS           = PILOT_OFF;    //!< Default value for pilots.
-        static constexpr RollOff           DEFAULT_ROLL_OFF         = ROLLOFF_35;   //!< Default value for roll_off.
-                                                                                    //!< Implied value in DVB-S, default for DVB-S2.
+        static constexpr RollOff           DEFAULT_ROLL_OFF         = ROLLOFF_35;   //!< Default value for roll_off. Implied value in DVB-S, default for DVB-S2.
+        static constexpr uint32_t          DEFAULT_ISI              = ISI_DISABLE;  //!< Default value for multistream id.
+        static constexpr uint32_t          DEFAULT_PLS_CODE         = 0;            //!< Default value for PLS code.
+        static constexpr PLSMode           DEFAULT_PLS_MODE         = PLS_ROOT;     //!< Default value for PLS mode.
 
         //!
         //! Default constructor.

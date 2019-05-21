@@ -385,7 +385,7 @@ namespace ts {
                      bool                optional = false);
 
         //!
-        //! Add the help text of an exiting option.
+        //! Add the help text of an existing option.
         //!
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] syntax String to display for the option value instead of the default "value".
@@ -396,7 +396,7 @@ namespace ts {
         Args& help(const UChar* name, const UString& syntax, const UString& text);
 
         //!
-        //! Add the help text of an exiting option.
+        //! Add the help text of an existing option.
         //!
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] text Help text. Unformatted, line breaks will be added automatically.

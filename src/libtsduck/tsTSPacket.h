@@ -38,6 +38,9 @@
 #include "tsException.h"
 
 namespace ts {
+
+    class ByteBlock;
+
     //!
     //! Basic definition of an MPEG-2 transport packet.
     //! @ingroup mpeg
@@ -77,7 +80,7 @@ namespace ts {
         //! @param [in] p Other packet to copy.
         //! @return A reference to this object.
         //!
-        inline TSPacket& operator=(const TSPacket& p)
+        TSPacket& operator=(const TSPacket& p)
         {
             ::memcpy(b, p.b, PKT_SIZE);
             return *this;
@@ -88,7 +91,7 @@ namespace ts {
         //! @param [in] p Other packet to compare.
         //! @return True is this object is equal to @a p.
         //!
-        inline bool operator==(const TSPacket& p) const
+        bool operator==(const TSPacket& p) const
         {
             return ::memcmp(b, p.b, PKT_SIZE) == 0;
         }
@@ -98,7 +101,7 @@ namespace ts {
         //! @param [in] p Other packet to compare.
         //! @return True is this object is different from @a p.
         //!
-        inline bool operator!=(const TSPacket& p) const
+        bool operator!=(const TSPacket& p) const
         {
             return ::memcmp(b, p.b, PKT_SIZE) != 0;
         }
@@ -117,7 +120,7 @@ namespace ts {
         //! Check if the sync byte is valid.
         //! @return True if the sync byte of the packet is valid.
         //!
-        inline bool hasValidSync() const
+        bool hasValidSync() const
         {
             return b[0] == SYNC_BYTE;
         }
@@ -126,7 +129,7 @@ namespace ts {
         //! Extract PID - 13 bits.
         //! @return The PID value.
         //!
-        inline PID getPID() const
+        PID getPID() const
         {
             return GetUInt16(b+1) & 0x1FFF;
         }
@@ -135,7 +138,7 @@ namespace ts {
         //! Set PID - 13 bits.
         //! @param [in] pid The new PID.
         //!
-        inline void setPID(PID pid)
+        void setPID(PID pid)
         {
             b[1] = (b[1] & 0xE0) | ((pid >> 8) & 0x1F);
             b[2] = pid & 0x00FF;
@@ -145,7 +148,7 @@ namespace ts {
         //! Extract payload_unit_start_indicator (PUSI) - 1 bit
         //! @return The PUSI value.
         //!
-        inline bool getPUSI() const
+        bool getPUSI() const
         {
             return (b[1] & 0x40) != 0;
         }
@@ -153,7 +156,7 @@ namespace ts {
         //!
         //! Clear payload_unit_start_indicator (PUSI) - 1 bit
         //!
-        inline void clearPUSI()
+        void clearPUSI()
         {
             b[1] &= ~0x40;
         }
@@ -161,7 +164,7 @@ namespace ts {
         //!
         //! Set payload_unit_start_indicator (PUSI) - 1 bit
         //!
-        inline void setPUSI()
+        void setPUSI()
         {
             b[1] |= 0x40;
         }
@@ -170,7 +173,7 @@ namespace ts {
         //! Set payload_unit_start_indicator (PUSI) - 1 bit
         //! @param [in] on The value to set.
         //!
-        inline void setPUSI(bool on)
+        void setPUSI(bool on)
         {
             b[1] = (b[1] & ~0x40) | (on ? 0x40 : 0x00);
         }
@@ -179,7 +182,7 @@ namespace ts {
         //! Extract transport_error_indicator (TEI) - 1 bit
         //! @return The TEI value.
         //!
-        inline bool getTEI() const
+        bool getTEI() const
         {
             return (b[1] & 0x80) != 0;
         }
@@ -187,7 +190,7 @@ namespace ts {
         //!
         //! Clear transport_error_indicator (TEI) - 1 bit
         //!
-        inline void clearTEI()
+        void clearTEI()
         {
             b[1] &= ~0x80;
         }
@@ -195,7 +198,7 @@ namespace ts {
         //!
         //! Set transport_error_indicator (TEI) - 1 bit
         //!
-        inline void setTEI()
+        void setTEI()
         {
             b[1] |= 0x80;
         }
@@ -204,7 +207,7 @@ namespace ts {
         //! Set transport_error_indicator (TEI) - 1 bit
         //! @param [in] on The value to set.
         //!
-        inline void setTEI(bool on)
+        void setTEI(bool on)
         {
             b[1] = (b[1] & ~0x80) | (on ? 0x80 : 0x00);
         }
@@ -213,7 +216,7 @@ namespace ts {
         //! Extract transport_priority - 1 bit
         //! @return The transport_priority value.
         //!
-        inline bool getPriority() const
+        bool getPriority() const
         {
             return (b[1] & 0x20) != 0;
         }
@@ -221,7 +224,7 @@ namespace ts {
         //!
         //! Clear transport_priority - 1 bit
         //!
-        inline void clearPriority()
+        void clearPriority()
         {
             b[1] &= ~0x20;
         }
@@ -229,7 +232,7 @@ namespace ts {
         //!
         //! Set transport_priority - 1 bit
         //!
-        inline void setPriority()
+        void setPriority()
         {
             b[1] |= 0x20;
         }
@@ -238,7 +241,7 @@ namespace ts {
         //! Set transport_priority - 1 bit
         //! @param [in] on The value to set.
         //!
-        inline void setPriority(bool on)
+        void setPriority(bool on)
         {
             b[1] = (b[1] & ~0x20) | (on ? 0x20 : 0x00);
         }
@@ -247,7 +250,7 @@ namespace ts {
         //! Extract transport_scrambling_control - 2 bits
         //! @return The transport_scrambling_control value.
         //!
-        inline uint8_t getScrambling() const
+        uint8_t getScrambling() const
         {
             return b[3] >> 6;
         }
@@ -256,7 +259,7 @@ namespace ts {
         //! Check if the packet is clear (ie not scrambled).
         //! @return True if the packet is clear.
         //!
-        inline bool isClear() const
+        bool isClear() const
         {
             return (b[3] >> 6) == 0;
         }
@@ -265,7 +268,7 @@ namespace ts {
         //! Check if the packet is scrambled.
         //! @return True if the packet is scrambled.
         //!
-        inline bool isScrambled() const
+        bool isScrambled() const
         {
             return (b[3] >> 6) != 0;
         }
@@ -274,16 +277,16 @@ namespace ts {
         //! Set transport_scrambling_control - 2 bits.
         //! @param [in] sc New transport_scrambling_control value.
         //!
-        inline void setScrambling(uint8_t sc)
+        void setScrambling(uint8_t sc)
         {
-            b[3] = (b[3] & 0x3F) | (sc << 6);
+            b[3] = (b[3] & 0x3F) | uint8_t(sc << 6);
         }
 
         //!
         //! Extract continuity_counter (CC) - 4 bits
         //! @return The CC value.
         //!
-        inline uint8_t getCC() const
+        uint8_t getCC() const
         {
             return b[3] & 0x0F;
         }
@@ -292,7 +295,7 @@ namespace ts {
         //! Set continuity_counter (CC) - 4 bits
         //! @param [in] cc New continuity_counter value.
         //!
-        inline void setCC(uint8_t cc)
+        void setCC(uint8_t cc)
         {
             b[3] = (b[3] & 0xF0) | (cc & 0x0F);
         }
@@ -301,18 +304,18 @@ namespace ts {
         //! Check if packet has an adaptation_field (AF)
         //! @return True if the packet has an adaptation_field.
         //!
-        inline bool hasAF() const
+        bool hasAF() const
         {
             return (b[3] & 0x20) != 0;
         }
 
         //!
         //! Compute adaptation_field (AF) size.
-        //! @return Size in bytes of the adaptation_field.
+        //! @return Total size in bytes of the adaptation_field, including the length field.
         //!
-        inline size_t getAFSize() const
+        size_t getAFSize() const
         {
-            return hasAF() ? size_t(b[4]) : 0;
+            return hasAF() ? size_t(b[4]) + 1 : 0;
         }
 
         //!
@@ -326,7 +329,7 @@ namespace ts {
         //! @return Size in bytes of the TS header.
         //! This is also the index of the TS payload.
         //!
-        inline size_t getHeaderSize() const
+        size_t getHeaderSize() const
         {
             return std::min(4 + (hasAF() ? (size_t(b[4]) + 1) : 0), PKT_SIZE);
         }
@@ -335,7 +338,7 @@ namespace ts {
         //! Check if packet has a payload
         //! @return True if the packet has a payload.
         //!
-        inline bool hasPayload() const
+        bool hasPayload() const
         {
             return (b[3] & 0x10) != 0;
         }
@@ -344,7 +347,7 @@ namespace ts {
         //! Get payload start address.
         //! @return The payload start address.
         //!
-        inline const uint8_t* getPayload() const
+        const uint8_t* getPayload() const
         {
             return b + getHeaderSize();
         }
@@ -353,7 +356,7 @@ namespace ts {
         //! Get payload start address.
         //! @return The payload start address.
         //!
-        inline uint8_t* getPayload()
+        uint8_t* getPayload()
         {
             return b + getHeaderSize();
         }
@@ -362,7 +365,7 @@ namespace ts {
         //! Compute payload size.
         //! @return The payload size in bytes.
         //!
-        inline size_t getPayloadSize() const
+        size_t getPayloadSize() const
         {
             return hasPayload() ? PKT_SIZE - getHeaderSize() : 0;
         }
@@ -375,82 +378,117 @@ namespace ts {
         //! This method should be used only when creating a packet from scratch,
         //! before filling the payload.
         //! @param [in] size The requested payload size.
+        //! @param [in] shift_payload If true, the payload is shifted so
+        //! that the start of its content remains the same. When the payload
+        //! is shrunk, its end is truncated. When the paylaod is enlarged, it
+        //! is padded with @a pad values. When @a shift_payload is false,
+        //! the data in the memory area of the payload is not modified. In that
+        //! case, the memory is silently overwritten, losing the payload content.
+        //! @param [in] pad Byte value to use when padding the adaptation field or payload.
         //! @return True on success, false when the requested size is too large.
         //!
-        bool setPayloadSize(size_t size);
+        bool setPayloadSize(size_t size, bool shift_payload = false, uint8_t pad = 0xFF);
 
         //!
         //! Check if packet has a discontinuity_indicator set - 1 bit
         //! @return True if packet has a discontinuity_indicator set.
         //!
-        inline bool getDiscontinuityIndicator() const
+        bool getDiscontinuityIndicator() const
         {
-            return getAFSize() > 0 ? ((b[5] & 0x80) != 0) : false;
+            return getAFSize() > 1 ? ((b[5] & 0x80) != 0) : false;
         }
 
         //!
         //! Clear discontinuity_indicator - 1 bit
         //!
-        inline void clearDiscontinuityIndicator()
+        void clearDiscontinuityIndicator()
         {
-            if (getAFSize() > 0) {
+            if (getAFSize() > 1) {
                 b[5] &= ~0x80;
             }
         }
 
         //!
         //! Set discontinuity_indicator - 1 bit
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be created.
+        //! @return True if the flag was correctly set. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
         //!
-        inline void setDiscontinuityIndicator()
+        bool setDiscontinuityIndicator(bool shift_payload = false)
         {
-            if (getAFSize() > 0) {
-                b[5] |= 0x80;
-            }
+            return setFlagsInAF(0x80, shift_payload);
         }
 
         //!
         //! Check if packet has a random_access_indicator set - 1 bit
         //! @return True if packet has a random_access_indicator set.
         //!
-        inline bool getRandomAccessIndicator() const
+        bool getRandomAccessIndicator() const
         {
-            return getAFSize() > 0 ? ((b[5] & 0x40) != 0) : false;
+            return getAFSize() > 1 ? ((b[5] & 0x40) != 0) : false;
+        }
+
+        //!
+        //! Clear random_access_indicator - 1 bit
+        //!
+        void clearRandomAccessIndicator()
+        {
+            if (getAFSize() > 1) {
+                b[5] &= ~0x40;
+            }
+        }
+
+        //!
+        //! Set random_access_indicator - 1 bit
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be created.
+        //! @return True if the flag was correctly set. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool setRandomAccessIndicator(bool shift_payload = false)
+        {
+            return setFlagsInAF(0x40, shift_payload);
         }
 
         //!
         //! Check if packet has a elementary_stream_priority_indicator (ESPI) set - 1 bit
         //! @return True if packet has an ESPI set.
         //!
-        inline bool getESPI() const
+        bool getESPI() const
         {
-            return getAFSize() > 0 ? ((b[5] & 0x20) != 0) : false;
+            return getAFSize() > 1 ? ((b[5] & 0x20) != 0) : false;
+        }
+
+        //!
+        //! Clear elementary_stream_priority_indicator (ESPI) - 1 bit
+        //!
+        void clearESPI()
+        {
+            if (getAFSize() > 1) {
+                b[5] &= ~0x20;
+            }
+        }
+
+        //!
+        //! Set elementary_stream_priority_indicator (ESPI) - 1 bit
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be created.
+        //! @return True if the flag was correctly set. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool setESPI(bool shift_payload = false)
+        {
+            return setFlagsInAF(0x20, shift_payload);
         }
 
         //!
         //! Check if packet has a Program Clock Reference (PCR)
         //! @return True if packet has a PCR.
         //!
-        inline bool hasPCR() const
+        bool hasPCR() const
         {
-            return getAFSize() > 0 && (b[5] & 0x10) != 0;
-        }
-
-        //!
-        //! Check if packet has an Original Program Clock Reference (OPCR)
-        //! @return True if packet has an OPCR.
-        //!
-        inline bool hasOPCR() const
-        {
-            return getAFSize() > 0 && (b[5] & 0x08) != 0;
-        }
-
-        //!
-        //! Check if packet has splicing point countdown
-        //! @return True if packet has a splicing point countdown.
-        //!
-        inline bool hasSpliceCountdown() const
-        {
-            return getAFSize() > 0 && (b[5] & 0x04) != 0;
+            return getAFSize() > 1 && (b[5] & 0x10) != 0;
         }
 
         //!
@@ -460,10 +498,66 @@ namespace ts {
         uint64_t getPCR() const;
 
         //!
+        //! Create or replace the PCR value - 42 bits.
+        //! @param [in] pcr The new PCR value.
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be enlarged.
+        //! @return True if the PCR was correctly created. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool setPCR(const uint64_t& pcr, bool shift_payload = false);
+
+        //!
+        //! Remove the Program Clock Reference (PCR) from the packet, if there is one.
+        //! The adaptation field size is unchanged, its stuffing part is enlarged.
+        //!
+        void removePCR()
+        {
+            deleteFieldFromAF(PCROffset(), 6, 0x10);
+        }
+
+        //!
+        //! Check if packet has an Original Program Clock Reference (OPCR)
+        //! @return True if packet has an OPCR.
+        //!
+        bool hasOPCR() const
+        {
+            return getAFSize() > 1 && (b[5] & 0x08) != 0;
+        }
+
+        //!
         //! Get the OPCR - 42 bits.
         //! @return The OPCR or INVALID_PCR if not found.
         //!
         uint64_t getOPCR() const;
+
+        //!
+        //! Create or replace the OPCR value - 42 bits.
+        //! @param [in] opcr The new OPCR value.
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be enlarged.
+        //! @return True if the OPCR was correctly created. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool setOPCR(const uint64_t& opcr, bool shift_payload = false);
+
+        //!
+        //! Remove the Original Program Clock Reference (OPCR) from the packet, if there is one.
+        //! The adaptation field size is unchanged, its stuffing part is enlarged.
+        //!
+        void removeOPCR()
+        {
+            deleteFieldFromAF(OPCROffset(), 6, 0x08);
+        }
+
+        //!
+        //! Check if packet has splicing point countdown
+        //! @return True if packet has a splicing point countdown.
+        //!
+        bool hasSpliceCountdown() const
+        {
+            return getAFSize() > 1 && (b[5] & 0x04) != 0;
+        }
 
         //!
         //! Get the splicing point countdown - 8 bits (signed).
@@ -472,28 +566,97 @@ namespace ts {
         int8_t getSpliceCountdown() const;
 
         //!
-        //! Replace the PCR value - 42 bits
-        //! @param [in] pcr The new PCR value.
-        //! @throw AdaptationFieldError if no PCR is present.
+        //! Create or replace the splicing point countdown - 8 bits.
+        //! @param [in] count The new splicing point countdown value.
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be enlarged.
+        //! @return True if the splicing point countdown was correctly created. False when
+        //! the adaptation needed to be enlarged but could not because @a shift_payload was false.
         //!
-        void setPCR(const uint64_t& pcr);
+        bool setSpliceCountdown(int8_t count, bool shift_payload = false);
 
         //!
-        //! Create or replace the PCR value - 42 bits.
-        //! If there is no PCR, the adaptation field is created or enlarged.
-        //! In this case, the start of the packet payload is overwritten.
-        //! This method should be used only when creating a packet from scratch,
-        //! before filling the payload.
-        //! @param [in] pcr The new PCR value.
+        //! Remove the splicing point countdown from the packet, if there is one.
+        //! The adaptation field size is unchanged, its stuffing part is enlarged.
         //!
-        void createPCR(const uint64_t& pcr);
+        void removeSpliceCountdown()
+        {
+            deleteFieldFromAF(spliceCountdownOffset(), 1, 0x04);
+        }
 
         //!
-        //! Replace the OPCR value - 42 bits
-        //! @param [in] opcr The new OPCR value.
-        //! @throw AdaptationFieldError if no OPCR is present.
+        //! Check if packet has private data in adaptation field.
+        //! @return True if packet has private data in adaptation field.
         //!
-        void setOPCR(const uint64_t& opcr);
+        bool hasPrivateData() const
+        {
+            return privateDataOffset() > 0;
+        }
+
+        //!
+        //! Get size in bytes of private data from adaptation field.
+        //! @return Size in bytes of private data (not including its length field).
+        //!
+        size_t getPrivateDataSize() const;
+
+        //!
+        //! Get address of private data in adaptation field.
+        //! @return Address of private data in adaptation field or a null pointer if there is no private data.
+        //!
+        const uint8_t* getPrivateData() const;
+
+        //!
+        //! Get address of private data in adaptation field.
+        //! @return Address of private data in adaptation field or a null pointer if there is no private data.
+        //!
+        uint8_t* getPrivateData();
+
+        //!
+        //! Get private data from adaptation field.
+        //! @param [out] data Private data from adaptation field.
+        //!
+        void getPrivateData(ByteBlock& data) const;
+
+        //!
+        //! Set private data in adaptation field.
+        //! @param [in] data Address of private data to set in the packet.
+        //! @param [in] size Size in bytes of private data to set in the packet.
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be created or enlarged.
+        //! @return True if the flag was correctly set. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool setPrivateData(const void* data, size_t size, bool shift_payload = false);
+
+        //!
+        //! Set private data in adaptation field.
+        //! @param [in] data Private data to set in the packet.
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be created or enlarged.
+        //! @return True if the flag was correctly set. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool setPrivateData(const ByteBlock& data, bool shift_payload = false);
+
+        //!
+        //! Remove the private data from the adaptation field, if there is one.
+        //! The adaptation field size is unchanged, its stuffing part is enlarged.
+        //!
+        void removePrivateData();
+
+        //!
+        //! Reserve some given space in the stuffing part of the adaptation field.
+        //! @param [in] size The expected stuffing size in bytes, in the adaptation field.
+        //! If the AF stuffing is already that size or larger, do nothing. Otherwise,
+        //! attempt to increase the AF size by shifting and truncating the payload.
+        //! @param [in] shift_payload If true, the payload can be shifted and
+        //! truncated when the adaptation field needs to be enlarged.
+        //! @param [in] enforce_af When true, try to create the AF anyway, even if @a size
+        //! is zero, making sure that the flags field of the AF is present.
+        //! @return True if the expected stuffing size is available. False when the adaptation
+        //! needed to be enlarged but could not because @a shift_payload was false.
+        //!
+        bool reserveStuffing(size_t size, bool shift_payload = false, bool enforce_af = false);
 
         //!
         //! Check if the packet contains the start of a clear PES header.
@@ -510,7 +673,7 @@ namespace ts {
         //! way of getting PTS and/or DTS from the TS packet if available.
         //! @return True if the packet contains a PTS.
         //!
-        inline bool hasPTS() const
+        bool hasPTS() const
         {
             return PTSOffset() > 0;
         }
@@ -520,7 +683,7 @@ namespace ts {
         //! @return True if the packet contains a DTS.
         //! @see hasPTS()
         //!
-        inline bool hasDTS() const
+        bool hasDTS() const
         {
             return DTSOffset() > 0;
         }
@@ -626,7 +789,7 @@ namespace ts {
         //! @param [in] source Address of the first contiguous TS packet to read.
         //! @param [in] count Number of TS packets to copy.
         //!
-        static inline void Copy(TSPacket* dest, const TSPacket* source, size_t count = 1)
+        static void Copy(TSPacket* dest, const TSPacket* source, size_t count = 1)
         {
             assert(dest != nullptr);
             assert(source != nullptr);
@@ -639,7 +802,7 @@ namespace ts {
         //! @param [in] source Address of the memory area to read.
         //! @param [in] count Number of TS packets to copy.
         //!
-        static inline void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1)
+        static void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1)
         {
             assert(dest != nullptr);
             assert(source != nullptr);
@@ -652,7 +815,7 @@ namespace ts {
         //! @param [in] source Address of the first contiguous TS packet to read.
         //! @param [in] count Number of TS packets to copy.
         //!
-        static inline void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1)
+        static void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1)
         {
             assert(dest != nullptr);
             assert(source != nullptr);
@@ -669,17 +832,24 @@ namespace ts {
         static void SanityCheck();
 
     private:
-        // These private methods compute the offset of PCR, OPCR, PTS, DTS.
+        // These private methods compute the offset of PCR, OPCR, etc.
         // Return 0 if there is none.
         size_t PCROffset() const;
         size_t OPCROffset() const;
         size_t PTSOffset() const;
         size_t DTSOffset() const;
         size_t spliceCountdownOffset() const;
+        size_t privateDataOffset() const;
 
         // Get or set PTS or DTS at specified offset. Return 0 if offset is zero.
         uint64_t getPDTS(size_t offset) const;
         void setPDTS(uint64_t pdts, size_t offset);
+
+        // Set flags in the adaptation field.
+        bool setFlagsInAF(uint8_t flags, bool shift_payload);
+
+        // Erase an AF field at specified offset (if not zero), clear corresponding AF flag.
+        void deleteFieldFromAF(size_t offset, size_t size, uint32_t flag);
     };
 
     //!

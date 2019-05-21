@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsGuard.h"
-#include "tsGuardCondition.h"
 #include "tsTime.h"
 
 
@@ -95,36 +94,26 @@ typename ts::MessageQueue<MSG, MUTEX>::MessageList::iterator
 
 
 //----------------------------------------------------------------------------
-// Insert a message in the queue, even if the queue is full.
+// Enqueue a safe pointer in the list and signal the condition.
+// Must be executed under the protection of the lock.
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(const MessagePtr& msg)
+void ts::MessageQueue<MSG, MUTEX>::enqueuePtr(const MessagePtr& ptr)
 {
-    Guard lock(_mutex);
-
-    // Enqueue the message
-    _queue.insert(enqueuePlacement(msg, _queue), msg);
-
-    // Signal that a message has been enqueued
+    _queue.insert(enqueuePlacement(ptr, _queue), ptr);
     _enqueued.signal();
 }
 
 
 //----------------------------------------------------------------------------
-// Insert a message in the queue with a timeout.
+// Wait for free space in the queue using a specific timeout.
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-bool ts::MessageQueue<MSG, MUTEX>::enqueue(const MessagePtr& msg, MilliSecond timeout)
+bool ts::MessageQueue<MSG, MUTEX>::waitFreeSpace(GuardCondition& lock, MilliSecond timeout)
 {
-    // Take mutex, potentially wait on dequeued condition.
-    // Note that we lock the mutex _without_ timeout. Nobody keeps the mutex longer
-    // than accessing a field. So the timeout does not apply here. The timeout applies
-    // on waiting for space in the queue.
-    GuardCondition lock(_mutex, _dequeued);
-
-    // If the queue is full, wait for the queue not being full
+    // If the queue is full, wait for the queue not being full.
     if (_maxMessages != 0 && timeout > 0) {
         Time start(Time::CurrentUTC());
         while (_queue.size() >= _maxMessages) {
@@ -148,17 +137,84 @@ bool ts::MessageQueue<MSG, MUTEX>::enqueue(const MessagePtr& msg, MilliSecond ti
     }
 
     // Now, may we enqueue the message?
-    if (_maxMessages != 0 && _queue.size() >= _maxMessages) {
-        // Queue is full
+    return _maxMessages == 0 || _queue.size() < _maxMessages;
+}
+
+
+//----------------------------------------------------------------------------
+// Insert a message in the queue with a timeout.
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::enqueue(MessagePtr& msg, MilliSecond timeout)
+{
+    // Take mutex, potentially wait on dequeued condition.
+    // Note that we lock the mutex _without_ timeout. Nobody keeps the mutex longer
+    // than accessing a field. So the timeout does not apply here. The timeout applies
+    // on waiting for space in the queue.
+    GuardCondition lock(_mutex, _dequeued);
+
+    if (waitFreeSpace(lock, timeout)) {
+        // Successfully waited for free space in the queue.
+        // Transfer ownership of the pointed object inside a code block which guarantees
+        // that the new safe pointer will be destructed before releasing the lock.
+        const MessagePtr transfered(msg.release());
+        enqueuePtr(transfered);
+        return true;
+    }
+    else {
+        // Timeout, queue still full.
         return false;
     }
+}
 
-    // Enqueue the message
-    _queue.insert(enqueuePlacement(msg, _queue), msg);
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg, MilliSecond timeout)
+{
+    // Same code template as above.
+    GuardCondition lock(_mutex, _dequeued);
 
-    // Signal that a message has been enqueued
-    _enqueued.signal();
-    return true;
+    if (waitFreeSpace(lock, timeout)) {
+        // Create a safe pointer to the pointed object inside a code block which guarantees
+        // that the safe pointer will be destructed before releasing the lock.
+        const MessagePtr ptr(msg);
+        enqueuePtr(ptr);
+        return true;
+    }
+    else {
+        // Timeout, queue still full. Deallocated the message.
+        delete msg;
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Insert a message in the queue, even if the queue is full.
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX>
+void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MessagePtr& msg)
+{
+    Guard lock(_mutex);
+    {
+        // Transfer ownership of the pointed object inside a code block which guarantees
+        // that the new safe pointer will be destructed before releasing the lock.
+        const MessagePtr transfered(msg.release());
+        enqueuePtr(transfered);
+    }
+}
+
+template <typename MSG, class MUTEX>
+void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MSG* msg)
+{
+    Guard lock(_mutex);
+    {
+        // Create a safe pointer to the pointed object inside a code block which guarantees
+        // that the safe pointer will be destructed before releasing the lock.
+        const MessagePtr ptr(msg);
+        enqueuePtr(ptr);
+    }
 }
 
 

@@ -49,7 +49,7 @@ namespace ts {
         // Implementation of plugin API
         PatternPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         uint8_t   _offset_pusi;      // Start offset in packets with PUSI
@@ -137,7 +137,7 @@ bool ts::PatternPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PatternPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PatternPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // If the packet has no payload, or not in a selected PID, leave it unmodified
     if (!pkt.hasPayload() || !_pid_list[pkt.getPID()]) {

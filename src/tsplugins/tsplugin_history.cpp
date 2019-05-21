@@ -57,7 +57,7 @@ namespace ts {
         HistoryPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of one PID
@@ -447,7 +447,7 @@ void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint1
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Make sure we know how long to wait for suspended PID
     if (_suspend_after == 0) {

@@ -52,7 +52,7 @@ namespace ts {
         MuxPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         TSFileInput   _file;                  // Input file
@@ -273,7 +273,7 @@ bool ts::MuxPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Initialization sequences (executed only once).
     if (_packet_count == 0 && _bitrate != 0) {

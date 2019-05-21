@@ -128,6 +128,12 @@ namespace ts {
             typedef ResidentBuffer<TSPacket> PacketBuffer;
 
             //!
+            //! Metadata for TS packet are accessed in a memory-resident buffer.
+            //! A packet and its metadata have the same index in their respective buffer.
+            //!
+            typedef ResidentBuffer<TSPacketMetadata> PacketMetadataBuffer;
+
+            //!
             //! Constructor.
             //! @param [in,out] options Command line options for tsp.
             //! @param [in] pl_options Command line options for this plugin.
@@ -148,6 +154,7 @@ namespace ts {
             //! Set the initial state of the buffer for this plugin.
             //! Must be executed in synchronous environment, before starting all executor threads.
             //! @param [in] buffer Address of the packet buffer.
+            //! @param [in] metadata Address of the packet metadata buffer.
             //! @param [in] pkt_first Starting index of packets area for this plugin.
             //! @param [in] pkt_cnt Size of packets area for this plugin.
             //! @param [in] input_end If true, there is no more packet after current ones.
@@ -155,6 +162,7 @@ namespace ts {
             //! @param [in] bitrate Input bitrate (set by previous packet processor).
             //!
             void initBuffer(PacketBuffer* buffer,
+                            PacketMetadataBuffer* metadata,
                             size_t        pkt_first,
                             size_t        pkt_cnt,
                             bool          input_end,
@@ -182,7 +190,8 @@ namespace ts {
             bool isRealTime() const;
 
         protected:
-            PacketBuffer* _buffer; //!< Description of shared packet buffer.
+            PacketBuffer*         _buffer;    //!< Description of shared packet buffer.
+            PacketMetadataBuffer* _metadata;  //!< Description of shared packet metadata buffer.
 
             //!
             //! Pass processed packets to the next packet processor.

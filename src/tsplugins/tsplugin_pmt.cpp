@@ -59,7 +59,7 @@ namespace ts {
         // Implementation of plugin API
         PMTPlugin(TSP*);
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
         // Description of a new component to add
@@ -107,7 +107,7 @@ namespace ts {
 
         // Decode an option "pid/value[/hexa]". Hexa is allowed only if hexa is non zero.
         template<typename INT>
-        bool decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& value, ByteBlock* hexa = nullptr);
+        bool decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& value, ByteBlock* hexa = nullptr, INT value_max = std::numeric_limits<INT>::max());
 
         // Decode options like --set-stream-identifier which add a simple descriptor in a component.
         template<typename DESCRIPTOR, typename INT>
@@ -165,14 +165,22 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
 
     option(u"add-pid", 'a', STRING, 0, UNLIMITED_COUNT);
     help(u"add-pid", u"pid/stream_type",
-         u"Add the specified PID / stream-type component in the PMT. Several "
-         u"--add-pid options may be specified to add several components.");
+         u"Add the specified PID / stream-type component in the PMT. "
+         u"Several --add-pid options may be specified to add several components.");
 
-    option(u"add-programinfo-id", 0, UINT32);
-    help(u"add-programinfo-id",
-         u"Add a registration_descriptor in the program-level descriptor list in the "
-         u"PMT. The value is the format_identifier in registration_descriptor, e.g. "
-         u"0x43554549 for CUEI.");
+    option(u"add-registration", 0, UINT32, 0, UNLIMITED_COUNT);
+    help(u"add-registration", u"id",
+         u"Add a registration_descriptor in the program-level descriptor list in the PMT. "
+         u"The value is the format_identifier in registration_descriptor, e.g. 0x43554549 for CUEI.");
+
+    option(u"add-pid-registration", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"add-pid-registration", u"pid/id",
+         u"Add a registration_descriptor in the descriptor list of the specified PID in the PMT. "
+         u"The value is the format_identifier in registration_descriptor, e.g. 0x43554549 for CUEI.");
+
+    option(u"add-programinfo-id", 0, UINT32, 0, UNLIMITED_COUNT);
+    help(u"add-programinfo-id", u"id",
+         u"A legacy synonym for --add-registration.");
 
     option(u"add-stream-identifier");
     help(u"add-stream-identifier",
@@ -289,7 +297,7 @@ void ts::PMTPlugin::addComponentDescriptor(PID pid, const AbstractDescriptor& de
 //----------------------------------------------------------------------------
 
 template<typename INT>
-bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& param, ByteBlock* hexa)
+bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& param, ByteBlock* hexa, INT value_max)
 {
     // Get the parameter string value.
     const UString str(value(parameter_name, u"", parameter_index));
@@ -308,7 +316,7 @@ bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t param
         ok = fields[0].toInteger(v1, u",") &&
              fields[1].toInteger(v2, u",") &&
              v1 < uint64_t(PID_MAX) &&
-             v2 <= uint64_t(std::numeric_limits<INT>::max());
+             v2 <= uint64_t(value_max);
         if (ok) {
             pid = PID(v1);
             param = INT(v2);
@@ -419,13 +427,14 @@ bool ts::PMTPlugin::start()
     // Get list of components to move
     opt_count = count(u"move-pid");
     for (size_t n = 0; n < opt_count; n++) {
-        const UString s(value(u"move-pid", u"", n));
-        int opid = 0, npid = 0;
-        if (!s.scan(u"%i/%i", {&opid, &npid}) || opid < 0 || opid >= PID_MAX || npid < 0 || npid >= PID_MAX) {
-            error(u"invalid \"old-PID/new-PID\" value \"%s\"", {s});
+        PID opid = PID_NULL;
+        PID npid = PID_NULL;
+        if (decodeOptionForPID(u"move-pid", n, opid, npid, nullptr, PID(PID_MAX - 1))) {
+            _moved_pid[PID(opid)] = PID(npid);
+        }
+        else {
             return false;
         }
-        _moved_pid[PID(opid)] = PID(npid);
     }
 
     // Get audio languages to set.
@@ -439,8 +448,24 @@ bool ts::PMTPlugin::start()
     if (!CADescriptor::AddFromCommandLine(duck, _add_descs, cadescs)) {
         return false;
     }
-    if (present(u"add-programinfo-id")) {
-        _add_descs.add(duck, RegistrationDescriptor(intValue<uint32_t>(u"add-programinfo-id")));
+    opt_count = count(u"add-programinfo-id");
+    for (size_t n = 0; n < opt_count; n++) {
+        _add_descs.add(duck, RegistrationDescriptor(intValue<uint32_t>(u"add-programinfo-id", 0, n)));
+    }
+    opt_count = count(u"add-registration");
+    for (size_t n = 0; n < opt_count; n++) {
+        _add_descs.add(duck, RegistrationDescriptor(intValue<uint32_t>(u"add-registration", 0, n)));
+    }
+    opt_count = count(u"add-pid-registration");
+    for (size_t n = 0; n < opt_count; n++) {
+        PID pid = PID_NULL;
+        uint32_t id = 0;
+        if (decodeOptionForPID(u"add-pid-registration", n, pid, id)) {
+            addComponentDescriptor(pid, RegistrationDescriptor(id));
+        }
+        else {
+            return false;
+        }
     }
 
     // Get PMT PID or service description
@@ -655,7 +680,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // As long as the PMT PID is unknown, pass packets to the service discovery.
     if (!_service.hasPMTPID()) {
@@ -677,5 +702,5 @@ ts::ProcessorPlugin::Status ts::PMTPlugin::processPacket(TSPacket& pkt, bool& fl
     setPID(_service.getPMTPID());
 
     // Finally, let the superclass do the job.
-    return AbstractTablePlugin::processPacket(pkt, flush, bitrate_changed);
+    return AbstractTablePlugin::processPacket(pkt, pkt_data);
 }

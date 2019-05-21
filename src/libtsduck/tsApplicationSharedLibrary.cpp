@@ -55,11 +55,10 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
     }
 
     const UString basename(BaseName(filename));
-    const UString suffix(PathSuffix(filename));
     const bool has_directory = basename != filename;
 
+    // If there is no directory in file name, use search rules in specific directories.
     if (!has_directory) {
-        // There is no directory in file name, use search rules.
         // Get a list of directories from environment variable.
         UStringList dirs;
         if (!library_path.empty()) {
@@ -81,15 +80,14 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
         }
     }
 
-    // With a directory in name or if still not loaded, try the standard system lookup rules.
-    if (!isLoaded()) {
-        // Try plain
-        load(filename);
+    // Without directory and still not loaded, try the standard system lookup rules with prefix.
+    if (!isLoaded() && !has_directory) {
+        load(AddPathSuffix(prefix + filename, TS_SHARED_LIB_SUFFIX));
+    }
 
-        // If not loaded, try with standard extension if filename had no extension.
-        if (!isLoaded() && suffix.empty()) {
-            load(filename + TS_SHARED_LIB_SUFFIX);
-        }
+    // With a directory in name or if still not loaded, try the standard system lookup rules with plain name.
+    if (!isLoaded()) {
+        load(AddPathSuffix(filename, TS_SHARED_LIB_SUFFIX));
     }
 }
 

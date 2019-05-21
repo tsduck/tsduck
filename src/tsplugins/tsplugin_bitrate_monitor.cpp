@@ -50,7 +50,7 @@ namespace ts {
         BitrateMonitorPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual Status processPacket(TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
         virtual bool handlePacketTimeout() override;
 
     private:
@@ -378,7 +378,7 @@ bool ts::BitrateMonitorPlugin::handlePacketTimeout()
 // Packet processing method.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Check time and bitrates.
     checkTime();

@@ -26,22 +26,62 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsTSPacketMetadata.h"
+TSDUCK_SOURCE;
+
+const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::NoLabel;
+const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::AllLabels(~NoLabel);
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 18
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1251
+ts::TSPacketMetadata::TSPacketMetadata() :
+    _labels(),
+    _flush(false),
+    _bitrate_changed(false),
+    _input_stuffing(false),
+    _nullified(false)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the content of this instance.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketMetadata::reset()
+{
+    _labels.reset();
+    _flush = false;
+    _bitrate_changed = false;
+    _input_stuffing = false;
+    _nullified = false;
+}
+
+
+//----------------------------------------------------------------------------
+// Label operations
+//----------------------------------------------------------------------------
+
+bool ts::TSPacketMetadata::hasAnyLabel(const LabelSet& mask) const
+{
+    return (_labels & mask).any(); 
+}
+
+bool ts::TSPacketMetadata::hasAllLabels(const LabelSet& mask) const
+{
+    return (_labels & mask) == mask; 
+}
+
+void ts::TSPacketMetadata::setLabels(const LabelSet& mask)
+{
+    _labels |= mask;
+}
+
+void ts::TSPacketMetadata::clearLabels(const LabelSet& mask)
+{
+    _labels &= ~mask;
+}

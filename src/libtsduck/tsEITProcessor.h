@@ -203,10 +203,17 @@ namespace ts {
         //!
         void removePresentFollowing();
 
+        //!
+        //! Add an offset to all start times of all events in all EIT's.
+        //! @param [in] offset The number of milliseconds to add to each start time. Can be negative.
+        //!
+        void addStartTimeOffet(MilliSecond offset) { _start_time_offset = offset; }
+
     private:
         DuckContext&          _duck;
         PIDSet                _input_pids;
         PID                   _output_pid;
+        MilliSecond           _start_time_offset;
         SectionDemux          _demux;
         Packetizer            _packetizer;
         std::list<SectionPtr> _sections;

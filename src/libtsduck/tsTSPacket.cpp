@@ -34,6 +34,7 @@
 #include "tsTSPacket.h"
 #include "tsPCR.h"
 #include "tsNames.h"
+#include "tsByteBlock.h"
 TSDUCK_SOURCE;
 
 
@@ -179,7 +180,7 @@ size_t ts::TSPacket::getAFStuffingSize() const
 // Set the payload size.
 //----------------------------------------------------------------------------
 
-bool ts::TSPacket::setPayloadSize(size_t size)
+bool ts::TSPacket::setPayloadSize(size_t size, bool shift_payload, uint8_t pad)
 {
     // Previous payload size.
     size_t plSize = getPayloadSize();
@@ -189,12 +190,17 @@ bool ts::TSPacket::setPayloadSize(size_t size)
     }
     else if (size < plSize) {
         // It is always possible to shrink the payload.
+        if (shift_payload) {
+            // Move the payload forward.
+            ::memmove(b + PKT_SIZE - size, b + PKT_SIZE - plSize, size);
+        }
         if ((b[3] & 0x20) == 0) {
             // No previous adaptation field, create one.
-            b[3] |= 0x20;
-            b[4] = 0;
+            b[3] |= 0x20; // AF presence flag.
+            b[4] = 0;     // AF size
             // We just created a 1-byte adaptation field.
             if (--plSize == size) {
+                // If that 1-byte AF is sufficient to reach the target payload size, we are done.
                 return true;
             }
         }
@@ -204,18 +210,26 @@ bool ts::TSPacket::setPayloadSize(size_t size)
             b[5] = 0; // flags
             --plSize; // payload has shrunk by one byte
         }
-        // Fill the stuffing extension with FF.
-        ::memset(b + 5 + b[4], 0xFF, plSize - size);
+        // Fill the stuffing extension with pad byte.
+        ::memset(b + 5 + b[4], pad, plSize - size);
+        // Adjust AF size.
         b[4] += uint8_t(plSize - size);
         return true;
     }
     else if (plSize + getAFStuffingSize() < size) {
-        // Payload shall be extended but cannot reach the requested size, even with all current stuffing
+        // Payload shall be extended but cannot reach the requested size, even with all current AF stuffing.
         return false;
     }
     else {
         // Payload can be be extended by removing some stuffing from adaptation field.
-        b[4] -= uint8_t(size - plSize);
+        const size_t add = size - plSize;
+        if (shift_payload) {
+            // Move the payload backward.
+            ::memmove(b + PKT_SIZE - size, b + PKT_SIZE - plSize, plSize);
+            // Fill the top part of the payload with the pad byte.
+            ::memset(b + PKT_SIZE - add , pad, add);
+        }
+        b[4] -= uint8_t(add);
         return true;
     }
 }
@@ -236,12 +250,12 @@ bool ts::TSPacket::startPES() const
 // Return 0 if there is none.
 //----------------------------------------------------------------------------
 
-size_t ts::TSPacket::PCROffset () const
+size_t ts::TSPacket::PCROffset() const
 {
     return hasPCR() && b[4] >= 7 ? 6 : 0;
 }
 
-size_t ts::TSPacket::OPCROffset () const
+size_t ts::TSPacket::OPCROffset() const
 {
     if (!hasOPCR()) {
         return 0;
@@ -275,6 +289,142 @@ size_t ts::TSPacket::spliceCountdownOffset() const
 }
 
 //----------------------------------------------------------------------------
+// Check presence and compute offset of private data in AF.
+//----------------------------------------------------------------------------
+
+size_t ts::TSPacket::privateDataOffset() const
+{
+    const size_t af = getAFSize();
+    if (af < 2 || (b[5] & 0x02) == 0) {
+        // No AF or no private data in it.
+        return 0;
+    }
+
+    // Compute offset of private data.
+    const size_t offset = 6 +                     // start of AF, after flags
+        (((b[5] & 0x10) != 0) ? PCR_SIZE : 0) +   // skip PCR
+        (((b[5] & 0x08) != 0) ? PCR_SIZE : 0) +   // skip OPCR
+        (((b[5] & 0x04) != 0) ? 1 : 0);           // skip splicing countdown
+
+    // Check that private data fit inside the AF.
+    const size_t endAF = 4 + af;
+    return offset < endAF && offset + 1 + b[offset] <= endAF ? offset : 0;
+}
+
+//----------------------------------------------------------------------------
+// Set or delete private data in adaptation field.
+//----------------------------------------------------------------------------
+
+void ts::TSPacket::removePrivateData()
+{
+    const size_t offset = privateDataOffset();
+    deleteFieldFromAF(offset, offset > 0 ? 1 + b[offset] : 0, 0x02);
+}
+
+size_t ts::TSPacket::getPrivateDataSize() const
+{
+    const size_t offset = privateDataOffset();
+    return offset == 0 ? 0 : size_t(b[offset]);
+}
+
+const uint8_t* ts::TSPacket::getPrivateData() const
+{
+    const size_t offset = privateDataOffset();
+    return offset == 0 ? nullptr : b + offset + 1;
+}
+
+uint8_t* ts::TSPacket::getPrivateData()
+{
+    const size_t offset = privateDataOffset();
+    return offset == 0 ? nullptr : b + offset + 1;
+}
+
+void ts::TSPacket::getPrivateData(ByteBlock& data) const
+{
+    const size_t offset = privateDataOffset();
+    if (offset == 0) {
+        data.clear(); // No AF
+    }
+    else {
+        data.copy(b + offset + 1, b[offset]);
+    }
+}
+
+bool ts::TSPacket::setPrivateData(const ByteBlock& data, bool shift_payload)
+{
+    return setPrivateData(data.data(), data.size(), shift_payload);
+}
+
+bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payload)
+{
+    // Filter incorrect data.
+    if (data == nullptr || size > PKT_SIZE - 7) {
+        // Min overhead outside private data: 4-byte packet header, 2-byte AF header, 1-byte data size = 7 bytes
+        return false;
+    }
+
+    // Make sure an AF is created.
+    if (!reserveStuffing(0, shift_payload, true)) {
+        return false;
+    }
+    assert(hasAF());
+
+    // Compute offset of private data.
+    const size_t offset = 6 +                     // start of AF, after flags
+        (((b[5] & 0x10) != 0) ? PCR_SIZE : 0) +   // skip PCR
+        (((b[5] & 0x08) != 0) ? PCR_SIZE : 0) +   // skip OPCR
+        (((b[5] & 0x04) != 0) ? 1 : 0);           // skip splicing countdown
+
+    // Do we have valid private data already?
+    const bool hasData = (b[5] & 0x02) != 0;
+    size_t endAF = 5 + b[4];
+    if (hasData && offset + 1 + b[offset] > endAF) {
+        // Invalid previous private data, they extend beyond end of AF => invalid packet.
+        return false;
+    }
+
+    // Make room for the new private data.
+    const size_t endNewData = offset + 1 + size;
+    if (!hasData) {
+        // No previous private data, reserve space for size and data.
+        if (!reserveStuffing(1 + size, shift_payload)) {
+            return false;
+        }
+        // Shift rest of AF upward.
+        endAF = 5 + b[4];
+        ::memmove(b + endNewData, b + offset, endAF - endNewData);
+    }
+    else {
+        const size_t endPreviousData = offset + 1 + b[offset];
+        if (endNewData < endPreviousData) {
+            // New private data are shorter.
+            // Move rest of AF downward.
+            endAF = 5 + b[4];
+            const size_t remove = endPreviousData - endNewData;
+            ::memmove(b + endNewData, b + endPreviousData, endAF - endPreviousData);
+            // Erase freeed space (now stuffing).
+            ::memset(b + endAF - remove, 0xFF, remove);
+        }
+        else if (endNewData > endPreviousData) {
+            // New private data are larger.
+            const size_t add = endNewData - endPreviousData;
+            if (!reserveStuffing(add, shift_payload)) {
+                return false; // cannot enlarge AF.
+            }
+            // Move rest of AF upward.
+            endAF = 5 + b[4];
+            ::memmove(b + endNewData, b + endPreviousData, endAF - endNewData);
+        }
+    }
+
+    // Finally write private data.
+    b[5] |= 0x02;
+    b[offset] = uint8_t(size);
+    ::memcpy(b + 1 + offset, data, size);
+    return true;
+}
+
+//----------------------------------------------------------------------------
 // Get PCR or OPCR - 42 bits
 // Return 0 if not found.
 //----------------------------------------------------------------------------
@@ -298,57 +448,147 @@ int8_t ts::TSPacket::getSpliceCountdown() const
 }
 
 //----------------------------------------------------------------------------
-// Replace PCR or OPCR - 42 bits
-// Throw exception PCRError if not present.
+// Remove the PCR or OPCR.
 //----------------------------------------------------------------------------
 
-void ts::TSPacket::setPCR(const uint64_t& pcr)
+void ts::TSPacket::deleteFieldFromAF(size_t offset, size_t size, uint32_t flag)
 {
-    const size_t offset = PCROffset();
-    if (offset == 0) {
-        throw AdaptationFieldError(u"No PCR in packet, cannot replace");
-    }
-    else {
-        PutPCR(b + offset, pcr);
-    }
-}
-
-void ts::TSPacket::setOPCR(const uint64_t& opcr)
-{
-    const size_t offset = OPCROffset();
-    if (offset == 0) {
-        throw AdaptationFieldError(u"No OPCR in packet, cannot replace");
-    }
-    else {
-        PutPCR(b + offset, opcr);
+    if (offset > 0) {
+        // A field is present at the given offset.
+        const size_t afSize = getAFSize();
+        assert(4 + afSize >= offset + size); // assert end of AF >= end of field
+        // Clear the field presence flag:
+        b[5] &= ~flag;
+        // Shift the adaptation field down. With memmove(), the memory regions may overlap.
+        ::memmove(b + offset, b + offset + size, 4 + afSize - offset - size);
+        // Overwrite the last part of the AF, becoming AF stuffing.
+        ::memset(b + 4 + afSize - size, 0xFF, size);
     }
 }
 
 //----------------------------------------------------------------------------
-// Create or replace the PCR value - 42 bits.
+// Create or replace the splicing point countdown - 8 bits.
 //----------------------------------------------------------------------------
 
-void ts::TSPacket::createPCR(const uint64_t &pcr)
+bool ts::TSPacket::setSpliceCountdown(int8_t count, bool shift_payload)
 {
-    if (!hasAF() || b[4] < 1) {
-        // No or invalid adaptation field, we need to create one.
-        b[3] |= 0x20;  // Has adaptation field.
-        b[4] = 7;      // Adaptation field size.
-        b[5] = 0x10;   // PCR flag only.
+    size_t offset = spliceCountdownOffset();
+    if (offset == 0) {
+        // Currently no splicing point countdown is present, we need to create one.
+        if (!reserveStuffing(1, shift_payload, false)) {
+            // Could not create space for splicing point countdown.
+            return false;
+        }
+        // Set splicing point countdown flag.
+        b[5] |= 0x04;
+        // Compute splicing point countdown offset.
+        offset = 6 + (hasPCR() ? PCR_SIZE : 0) + (hasOPCR() ? PCR_SIZE : 0);
+        // Shift the existing AF 1 byte ahead to make room for the splicing point countdown value.
+        ::memmove(b + offset + 1, b + offset, 4 + getAFSize() - offset - 1);
     }
-    else if ((b[5] & 0x10) == 0) {
-        // There is an adaptation field, but no PCR in it.
-        // Compute new adaptation field size:
-        const size_t size = std::min<size_t>(183, b[4] + 6);
-        b[4] = uint8_t(size);  // set new AF size
-        b[5] |= 0x10;          // set PCR flag
+
+    // Finally write the splicing point countdown value.
+    b[offset] = uint8_t(count);
+    return true;
+}
+
+//----------------------------------------------------------------------------
+// Set fields in the adaptation field.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::setFlagsInAF(uint8_t flags, bool shift_payload)
+{
+    if (reserveStuffing(0, shift_payload, true)) {
+        b[5] |= flags;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+//----------------------------------------------------------------------------
+// Enlarge adaptation field, make sure that there is at least 'size'
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::reserveStuffing(size_t size, bool shift_payload, bool enforce_af)
+{
+    const size_t af = getAFSize();
+    const size_t stuff = getAFStuffingSize();
+    const size_t payload = getPayloadSize();
+
+    // How many bytes shall we add into the AF?
+    size_t moreAF = size <= stuff ? 0 : size - stuff;
+    if (moreAF > 0 || enforce_af) {
+        // Make sure that the AF exists, with at least the flags field.
+        if (af == 0) {
+            moreAF += 2;  // no AF exists yet, need AF size byte and flags bytes
+        }
+        else if (af == 1) {
+            moreAF += 1;  // no flags byte, need to create it
+        }
+    }
+
+    if (moreAF == 0) {
+        // Nothing to add, everything is there.
+        return true;
+    }
+    else if (!shift_payload || moreAF > payload) {
+        // We are not allowed to shift the payload and/or there is not enough room in the packet.
+        return false;
+    }
+    else {
+        // Shrink payload, enlargs or create AF.
+        setPayloadSize(payload - moreAF, true);
+        return true;
+    }
+}
+
+//----------------------------------------------------------------------------
+// Create or replace the PCR or OPCR value - 42 bits.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
+{
+    size_t offset = PCROffset();
+    if (offset == 0) {
+        // Currently no PCR is present, we need to create one.
+        if (!reserveStuffing(PCR_SIZE, shift_payload, false)) {
+            // Could not create space for PCR.
+            return false;
+        }
+        // We will create a PCR:
+        b[5] |= 0x10;  // set PCR flag
+        offset = 6;    // PCR offset in packet
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        // Note that we use memmove and not memcpy because the source and destination overlap.
-        ::memmove(b + 6, b + 12, size - 7);
+        ::memmove(b + offset + PCR_SIZE, b + offset, 4 + getAFSize() - offset - PCR_SIZE);
     }
 
-    // Finally write the PCR value. The PCR is always at offset 6.
-    PutPCR(b + 6, pcr);
+    // Finally write the PCR value.
+    PutPCR(b + offset, pcr);
+    return true;
+}
+
+bool ts::TSPacket::setOPCR(const uint64_t &opcr, bool shift_payload)
+{
+    size_t offset = OPCROffset();
+    if (offset == 0) {
+        // Currently no OPCR is present, we need to create one.
+        if (!reserveStuffing(PCR_SIZE, shift_payload, false)) {
+            // Could not create space for PCR.
+            return false;
+        }
+        // Set OPCR flag.
+        b[5] |= 0x08;
+        // Compute OPCR offset.
+        offset = 6 + (hasPCR() ? PCR_SIZE : 0);
+        // Shift the existing AF 6 bytes ahead to make room for the PCR value.
+        ::memmove(b + offset + PCR_SIZE, b + offset, 4 + getAFSize() - offset - PCR_SIZE);
+    }
+
+    // Finally write the OPCR value.
+    PutPCR(b + offset, opcr);
+    return true;
 }
 
 //----------------------------------------------------------------------------
@@ -447,10 +687,6 @@ namespace {
 
 //----------------------------------------------------------------------------
 // Read packet on standard streams.
-// Return true on success, false on error.
-// On input, if check_sync is true, the sync byte of the
-// input packet is checked. If it is not valid, set the
-// failbit of the stream and return false.
 //----------------------------------------------------------------------------
 
 std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& report)
@@ -488,7 +724,6 @@ std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& re
 
 //----------------------------------------------------------------------------
 // Write packet on standard streams.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
@@ -504,9 +739,6 @@ std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
 
 //----------------------------------------------------------------------------
 // This method displays the content of a transport packet.
-// The flags indicate which part must be dumped. If DUMP_RAW or
-// DUMP_PAYLOAD is specified, flags from Hexa::Flags
-// may also be used. Indent indicates the base indentation of lines.
 //----------------------------------------------------------------------------
 
 std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t indent, size_t max_size) const

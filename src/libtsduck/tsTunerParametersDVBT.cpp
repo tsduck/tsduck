@@ -39,14 +39,14 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const ts::SpectralInversion ts::TunerParametersDVBT::DEFAULT_INVERSION;
-const ts::BandWidth ts::TunerParametersDVBT::DEFAULT_BANDWIDTH;
-const ts::InnerFEC ts::TunerParametersDVBT::DEFAULT_FEC_HP;
-const ts::InnerFEC ts::TunerParametersDVBT::DEFAULT_FEC_LP;
-const ts::Modulation ts::TunerParametersDVBT::DEFAULT_MODULATION;
-const ts::TransmissionMode ts::TunerParametersDVBT::DEFAULT_TRANSMISSION_MODE;
-const ts::GuardInterval ts::TunerParametersDVBT::DEFAULT_GUARD_INTERVAL;
-const ts::Hierarchy ts::TunerParametersDVBT::DEFAULT_HIERARCHY;
+constexpr ts::SpectralInversion ts::TunerParametersDVBT::DEFAULT_INVERSION;
+constexpr ts::BandWidth ts::TunerParametersDVBT::DEFAULT_BANDWIDTH;
+constexpr ts::InnerFEC ts::TunerParametersDVBT::DEFAULT_FEC_HP;
+constexpr ts::InnerFEC ts::TunerParametersDVBT::DEFAULT_FEC_LP;
+constexpr ts::Modulation ts::TunerParametersDVBT::DEFAULT_MODULATION;
+constexpr ts::TransmissionMode ts::TunerParametersDVBT::DEFAULT_TRANSMISSION_MODE;
+constexpr ts::GuardInterval ts::TunerParametersDVBT::DEFAULT_GUARD_INTERVAL;
+constexpr ts::Hierarchy ts::TunerParametersDVBT::DEFAULT_HIERARCHY;
 #endif
 
 
@@ -368,7 +368,7 @@ bool ts::TunerParametersDVBT::fromXML(const xml::Element* elem)
         elem->getIntEnumAttribute(fec_lp, InnerFECEnum, u"LPFEC", false, FEC_AUTO) &&
         elem->getIntEnumAttribute(inversion, SpectralInversionEnum, u"inversion", false, SPINV_AUTO) &&
         elem->getIntEnumAttribute(hierarchy, HierarchyEnum, u"hierarchy", false, HIERARCHY_AUTO) &&
-        elem->getIntAttribute<PLP>(plp, u"PLP", false, PLP_DISABLE, 0, 255);
+        elem->getIntAttribute<uint32_t>(plp, u"PLP", false, PLP_DISABLE, 0, 255);
 }
 
 

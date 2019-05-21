@@ -53,18 +53,18 @@ namespace ts {
         TransmissionMode  transmission_mode;  //!< Transmission mode.
         GuardInterval     guard_interval;     //!< Guard interval.
         Hierarchy         hierarchy;          //!< Hierarchy.
-        PLP               plp;                //!< Physical Layer Pipe (PLP) id (DVB-T2 only).
+        uint32_t          plp;                //!< Physical Layer Pipe (PLP) id (DVB-T2 only).
 
         // Default values
-        static const SpectralInversion DEFAULT_INVERSION         = SPINV_AUTO;      //!< Default value for inversion.
-        static const BandWidth         DEFAULT_BANDWIDTH         = BW_8_MHZ;        //!< Default value for bandwidth.
-        static const InnerFEC          DEFAULT_FEC_HP            = FEC_AUTO;        //!< Default value for fec_hp.
-        static const InnerFEC          DEFAULT_FEC_LP            = FEC_AUTO;        //!< Default value for fec_lp.
-        static const Modulation        DEFAULT_MODULATION        = QAM_64;          //!< Default value for modulation.
-        static const TransmissionMode  DEFAULT_TRANSMISSION_MODE = TM_8K;           //!< Default value for transmission_mode.
-        static const GuardInterval     DEFAULT_GUARD_INTERVAL    = GUARD_1_32;      //!< Default value for guard_interval.
-        static const Hierarchy         DEFAULT_HIERARCHY         = HIERARCHY_NONE;  //!< Default value for hierarchy.
-        static const PLP               DEFAULT_PLP               = PLP_DISABLE;     //!< Default value for PLP id.
+        static constexpr SpectralInversion DEFAULT_INVERSION         = SPINV_AUTO;      //!< Default value for inversion.
+        static constexpr BandWidth         DEFAULT_BANDWIDTH         = BW_8_MHZ;        //!< Default value for bandwidth.
+        static constexpr InnerFEC          DEFAULT_FEC_HP            = FEC_AUTO;        //!< Default value for fec_hp.
+        static constexpr InnerFEC          DEFAULT_FEC_LP            = FEC_AUTO;        //!< Default value for fec_lp.
+        static constexpr Modulation        DEFAULT_MODULATION        = QAM_64;          //!< Default value for modulation.
+        static constexpr TransmissionMode  DEFAULT_TRANSMISSION_MODE = TM_8K;           //!< Default value for transmission_mode.
+        static constexpr GuardInterval     DEFAULT_GUARD_INTERVAL    = GUARD_1_32;      //!< Default value for guard_interval.
+        static constexpr Hierarchy         DEFAULT_HIERARCHY         = HIERARCHY_NONE;  //!< Default value for hierarchy.
+        static constexpr uint32_t          DEFAULT_PLP               = PLP_DISABLE;     //!< Default value for PLP id.
 
         //!
         //! Default constructor.

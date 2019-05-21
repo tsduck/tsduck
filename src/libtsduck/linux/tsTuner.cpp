@@ -443,6 +443,9 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS(TunerParametersDVBS& params)
     props.add(DTV_MODULATION);
     props.add(DTV_PILOT);
     props.add(DTV_ROLLOFF);
+#if defined(DTV_STREAM_ID)
+    props.add(DTV_STREAM_ID);
+#endif
 
     if (::ioctl(_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
         return LastErrorCode();
@@ -455,6 +458,21 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS(TunerParametersDVBS& params)
     params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
     params.pilots = Pilot(props.getByCommand(DTV_PILOT));
     params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
+
+    // Use default multistream selection info in case it is undefined.
+    params.isi = ISI_DISABLE;
+    params.pls_code = TunerParametersDVBS::DEFAULT_PLS_CODE;
+    params.pls_mode = TunerParametersDVBS::DEFAULT_PLS_MODE;
+
+#if defined(DTV_STREAM_ID)
+    // With the Linux DVB API, all multistream selection info are passed in the "stream id".
+    const uint32_t id = props.getByCommand(DTV_STREAM_ID);
+    if (id != DTVProperties::UNKNOWN) {
+        params.isi = id & 0x000000FF;
+        params.pls_code = (id >> 8) & 0x0003FFFF;
+        params.pls_mode = PLSMode(id >> 26);
+    }
+#endif
 
     return SYS_SUCCESS;
 }
@@ -521,7 +539,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBT(TunerParametersDVBT& params)
     params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
     params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
 #if defined(DTV_STREAM_ID)
-    params.plp = PLP(props.getByCommand(DTV_STREAM_ID));
+    params.plp = props.getByCommand(DTV_STREAM_ID);
 #endif
 
     return SYS_SUCCESS;
@@ -786,6 +804,19 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     props.add(DTV_INVERSION, uint32_t(params.inversion));
     props.add(DTV_ROLLOFF, uint32_t(params.roll_off));
     props.add(DTV_PILOT, uint32_t(params.pilots));
+    if (params.isi != ISI_DISABLE) {
+#if defined(DTV_STREAM_ID)
+        // With the Linux DVB API, all multistream selection info are passed in the "stream id".
+        const uint32_t id =
+            (uint32_t(params.pls_mode) << 26) |
+            ((params.pls_code & 0x0003FFFF) << 8) |
+            (params.isi & 0x000000FF);
+        report.debug(u"using DVB-S2 multi-stream id 0x%X (%d)", {id, id});
+        props.add(DTV_STREAM_ID, id);
+#else
+        report.warning(u"DVB-S2 multi-stream selection disabled on this version of Linux");
+#endif
+    }
     props.add(DTV_TUNE);
 
     return tune(props, report);
@@ -860,7 +891,7 @@ bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 #if defined(DTV_STREAM_ID)
         props.add(DTV_STREAM_ID, uint32_t(params.plp));
 #else
-        report.warning(u"DVT-T2 PLP selection disabled on this version of Linux");
+        report.warning(u"DVB-T2 PLP selection disabled on this version of Linux");
 #endif
     }
     props.add(DTV_TUNE);
@@ -1528,7 +1559,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params_dvbt->guard_interval) , u"");
         Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params_dvbt->hierarchy) , u"");
         if (params_dvbt->plp != PLP_DISABLE) {
-            Display(strm, margin, u"PLP", UString::Decimal(uint32_t(params_dvbt->plp)) , u"");
+            Display(strm, margin, u"PLP", UString::Decimal(params_dvbt->plp) , u"");
         }
     }
     if (params_atsc != nullptr) {

@@ -75,6 +75,9 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     pilots(),
     roll_off(),
     plp(),
+    isi(),
+    pls_code(),
+    pls_mode(),
     _info_only(info_only),
     _allow_short_options(allow_short_options)
 {
@@ -115,6 +118,9 @@ void ts::TunerArgs::reset()
     pilots.reset();
     roll_off.reset();
     plp.reset();
+    isi.reset();
+    pls_code.reset();
+    pls_mode.reset();
 }
 
 
@@ -234,7 +240,19 @@ void ts::TunerArgs::load(Args& args, DuckContext& duck)
         }
         if (args.present(u"plp")) {
             got_one = true;
-            plp = args.enumValue<PLP>(u"plp");
+            plp = args.intValue<uint32_t>(u"plp");
+        }
+        if (args.present(u"isi")) {
+            got_one = true;
+            isi = args.intValue<uint32_t>(u"isi");
+        }
+        if (args.present(u"pls-code")) {
+            got_one = true;
+            pls_code = args.intValue<uint32_t>(u"pls-code");
+        }
+        if (args.present(u"pls-mode")) {
+            got_one = true;
+            pls_mode = args.enumValue<PLSMode>(u"pls-mode");
         }
 
         // Local options (not related to transponder)
@@ -409,6 +427,25 @@ void ts::TunerArgs::defineOptions(Args& args) const
                   u"Used for DVB-S and DVB-S2 tuners only. "
                   u"Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for "
                   u"non-DiSEqC switches. The default is 0.");
+
+        args.option(u"isi", 0, Args::UINT8);
+        args.help(u"isi",
+                  u"Used for DVB-S2 tuners only. "
+                  u"Input Stream Id (ISI) number to select, from 0 to 255. "
+                  u"The default is to keep the entire stream, without multistream selection. "
+                  u"Warning: this option is supported on Linux only.");
+
+        args.option(u"pls-code", 0, Args::INTEGER, 0, 1, 0, PLS_CODE_MAX);
+        args.help(u"pls-code",
+                  u"Used for DVB-S2 tuners only. "
+                  u"Physical Layer Scrambling (PLS) code value. With multistream only. "
+                  u"Warning: this option is supported on Linux only.");
+
+        args.option(u"pls-mode", 0, PLSModeEnum);
+        args.help(u"pls-mode", u"mode",
+                  u"Used for DVB-S2 tuners only. "
+                  u"Physical Layer Scrambling (PLS) mode. With multistream only. The default is ROOT. "
+                  u"Warning: this option is supported on Linux only.");
 
         args.option(u"spectral-inversion", 0, SpectralInversionEnum);
         args.help(u"spectral-inversion",

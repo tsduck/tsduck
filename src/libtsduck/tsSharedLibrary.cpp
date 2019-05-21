@@ -81,7 +81,7 @@ void ts::SharedLibrary::load(const UString& filename)
     }
 
     _filename = filename;
-    _report.debug(u"trying to load " + _filename);
+    _report.debug(u"trying to load \"%s\"", {_filename});
 
 #if defined(TSDUCK_STATIC)
     _error = u"statically linked application";
