@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Grid
+//  TSUnit test suite for class ts::Grid
 //
 //----------------------------------------------------------------------------
 
 #include "tsGrid.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,27 +40,27 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class GridTest: public CppUnit::TestFixture
+class GridTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testNarrow();
     void testDefault();
     void testLayout();
 
-    CPPUNIT_TEST_SUITE(GridTest);
-    CPPUNIT_TEST(testNarrow);
-    CPPUNIT_TEST(testDefault);
-    CPPUNIT_TEST(testLayout);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(GridTest);
+    TSUNIT_TEST(testNarrow);
+    TSUNIT_TEST(testDefault);
+    TSUNIT_TEST(testLayout);
+    TSUNIT_TEST_END();
 
 private:
     static void cleanupEndLines(std::string& text);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(GridTest);
+TSUNIT_REGISTER(GridTest);
 
 
 //----------------------------------------------------------------------------
@@ -68,12 +68,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(GridTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void GridTest::setUp()
+void GridTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void GridTest::tearDown()
+void GridTest::afterTest()
 {
 }
 
@@ -138,8 +138,8 @@ void GridTest::testNarrow()
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    utest::Out() << "GridTest::testNarrow: " << std::endl << buffer << std::endl;
-    CPPUNIT_ASSERT_STRINGS_EQUAL(reference, buffer);
+    debug() << "GridTest::testNarrow: " << std::endl << buffer << std::endl;
+    TSUNIT_EQUAL(reference, buffer);
 }
 
 void GridTest::testDefault()
@@ -170,8 +170,8 @@ void GridTest::testDefault()
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    utest::Out() << "GridTest::testDefault: " << std::endl << buffer << std::endl;
-    CPPUNIT_ASSERT_STRINGS_EQUAL(reference, buffer);
+    debug() << "GridTest::testDefault: " << std::endl << buffer << std::endl;
+    TSUNIT_EQUAL(reference, buffer);
 }
 
 void GridTest::testLayout()
@@ -250,6 +250,6 @@ void GridTest::testLayout()
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    utest::Out() << "GridTest::testLayout: " << std::endl << buffer << std::endl;
-    CPPUNIT_ASSERT_STRINGS_EQUAL(reference, buffer);
+    debug() << "GridTest::testLayout: " << std::endl << buffer << std::endl;
+    TSUNIT_EQUAL(reference, buffer);
 }

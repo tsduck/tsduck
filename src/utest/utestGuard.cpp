@@ -27,13 +27,13 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Guard
+//  TSUnit test suite for class ts::Guard
 //
 //----------------------------------------------------------------------------
 
 #include "tsGuard.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -41,24 +41,24 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class GuardTest: public CppUnit::TestFixture
+class GuardTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testGuard();
     void testAcquireFailed();
     void testReleaseFailed();
 
-    CPPUNIT_TEST_SUITE(GuardTest);
-    CPPUNIT_TEST(testGuard);
-    CPPUNIT_TEST_EXCEPTION(testAcquireFailed, ts::Guard::GuardError);
-    CPPUNIT_TEST(testReleaseFailed);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(GuardTest);
+    TSUNIT_TEST(testGuard);
+    TSUNIT_TEST_EXCEPTION(testAcquireFailed, ts::Guard::GuardError);
+    TSUNIT_TEST(testReleaseFailed);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(GuardTest);
+TSUNIT_REGISTER(GuardTest);
 
 
 //----------------------------------------------------------------------------
@@ -116,12 +116,12 @@ namespace {
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void GuardTest::setUp()
+void GuardTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void GuardTest::tearDown()
+void GuardTest::afterTest()
 {
 }
 
@@ -134,27 +134,27 @@ void GuardTest::tearDown()
 void GuardTest::testGuard()
 {
     MutexTest mutex;
-    CPPUNIT_ASSERT(mutex.count() == 0);
+    TSUNIT_ASSERT(mutex.count() == 0);
     {
         ts::Guard gard1(mutex);
-        CPPUNIT_ASSERT(mutex.count() == 1);
+        TSUNIT_ASSERT(mutex.count() == 1);
         {
             ts::Guard gard2(mutex);
-            CPPUNIT_ASSERT(mutex.count() == 2);
+            TSUNIT_ASSERT(mutex.count() == 2);
         }
-        CPPUNIT_ASSERT(mutex.count() == 1);
+        TSUNIT_ASSERT(mutex.count() == 1);
     }
-    CPPUNIT_ASSERT(mutex.count() == 0);
+    TSUNIT_ASSERT(mutex.count() == 0);
 }
 
 // Test case: acquire() error is properly handled.
 void GuardTest::testAcquireFailed()
 {
     MutexTest mutex(false, true);
-    CPPUNIT_ASSERT(mutex.count() == 0);
+    TSUNIT_ASSERT(mutex.count() == 0);
     {
         ts::Guard gard(mutex);
-        CPPUNIT_FAIL("mutex.acquire() passed, should not get there");
+        TSUNIT_FAIL("mutex.acquire() passed, should not get there");
     }
 }
 
@@ -165,14 +165,14 @@ void GuardTest::testReleaseFailed()
         std::cerr << "FatalTest: Guard destructor should fail !" << std::endl
                   << "Unset UTEST_FATAL_CRASH_ALLOWED to skip the crash test" << std::endl;
         MutexTest mutex(true, false);
-        CPPUNIT_ASSERT(mutex.count() == 0);
+        TSUNIT_ASSERT(mutex.count() == 0);
         {
             ts::Guard gard(mutex);
-            CPPUNIT_ASSERT(mutex.count() == 1);
+            TSUNIT_ASSERT(mutex.count() == 1);
         }
-        CPPUNIT_FAIL("mutex.release() passed, should not get there");
+        TSUNIT_FAIL("mutex.release() passed, should not get there");
     }
     else {
-        utest::Out() << "FatalTest: crash test for failing Guard destructor skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
+        debug() << "FatalTest: crash test for failing Guard destructor skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
     }
 }

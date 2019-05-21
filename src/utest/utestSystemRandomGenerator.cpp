@@ -27,14 +27,14 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::SystemRandomGenerator
+//  TSUnit test suite for class ts::SystemRandomGenerator
 //
 //----------------------------------------------------------------------------
 
 #include "tsSystemRandomGenerator.h"
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsByteBlock.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -42,25 +42,25 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class SystemRandomGeneratorTest: public CppUnit::TestFixture
+class SystemRandomGeneratorTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testSystemRandomGenerator();
     void testBetterSystemRandomGenerator();
 
-    CPPUNIT_TEST_SUITE(SystemRandomGeneratorTest);
-    CPPUNIT_TEST(testSystemRandomGenerator);
-    CPPUNIT_TEST(testBetterSystemRandomGenerator);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(SystemRandomGeneratorTest);
+    TSUNIT_TEST(testSystemRandomGenerator);
+    TSUNIT_TEST(testBetterSystemRandomGenerator);
+    TSUNIT_TEST_END();
 
 private:
     void testRandom(ts::RandomGenerator& prng);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(SystemRandomGeneratorTest);
+TSUNIT_REGISTER(SystemRandomGeneratorTest);
 
 
 //----------------------------------------------------------------------------
@@ -68,12 +68,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SystemRandomGeneratorTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void SystemRandomGeneratorTest::setUp()
+void SystemRandomGeneratorTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void SystemRandomGeneratorTest::tearDown()
+void SystemRandomGeneratorTest::afterTest()
 {
 }
 
@@ -85,11 +85,11 @@ void SystemRandomGeneratorTest::tearDown()
 void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
 {
     // System PRNG are supposed to be immediately ready
-    CPPUNIT_ASSERT(prng.ready());
+    TSUNIT_ASSERT(prng.ready());
 
     // But make sure they accept to be seeded anyway
     ts::ByteBlock seed(256);
-    CPPUNIT_ASSERT(prng.seed(&seed[0], seed.size()));
+    TSUNIT_ASSERT(prng.seed(&seed[0], seed.size()));
 
     // Now, it is difficult to "test" random generator.
     // We use the following scenario:
@@ -103,22 +103,22 @@ void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
     ts::ByteBlock data1(1000, 0);
     ts::ByteBlock data2(1000, 0);
 
-    CPPUNIT_ASSERT(data1 == data2);
-    CPPUNIT_ASSERT_EQUAL(data1.size(), size_t(std::count(data1.begin(), data1.end(), 0)));
-    CPPUNIT_ASSERT_EQUAL(data2.size(), size_t(std::count(data2.begin(), data2.end(), 0)));
+    TSUNIT_ASSERT(data1 == data2);
+    TSUNIT_EQUAL(data1.size(), size_t(std::count(data1.begin(), data1.end(), 0)));
+    TSUNIT_EQUAL(data2.size(), size_t(std::count(data2.begin(), data2.end(), 0)));
 
-    CPPUNIT_ASSERT(prng.read(&data1[0], data1.size()));
-    CPPUNIT_ASSERT(prng.read(&data2[0], data2.size()));
+    TSUNIT_ASSERT(prng.read(&data1[0], data1.size()));
+    TSUNIT_ASSERT(prng.read(&data2[0], data2.size()));
 
     const size_t zero1 = std::count(data1.begin(), data1.end(), 0);
     const size_t zero2 = std::count(data2.begin(), data2.end(), 0);
 
-    utest::Out() << prng.name() << ": zeroes over " << data1.size() << " bytes: "
+    debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: "
         << zero1 << ", " << zero2 << std::endl;
 
-    CPPUNIT_ASSERT(zero1 < data1.size() / 10);
-    CPPUNIT_ASSERT(zero2 < data2.size() / 10);
-    CPPUNIT_ASSERT(data1 != data2);
+    TSUNIT_ASSERT(zero1 < data1.size() / 10);
+    TSUNIT_ASSERT(zero2 < data2.size() / 10);
+    TSUNIT_ASSERT(data1 != data2);
 }
 
 

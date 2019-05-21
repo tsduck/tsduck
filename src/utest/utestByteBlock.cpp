@@ -27,13 +27,13 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for ts::ByteBlock
+//  TSUnit test suite for ts::ByteBlock
 //
 //----------------------------------------------------------------------------
 
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -41,27 +41,27 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ByteBlockTest: public CppUnit::TestFixture
+class ByteBlockTest: public tsunit::Test
 {
 public:
     ByteBlockTest();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testAppend();
     void testFile();
 
-    CPPUNIT_TEST_SUITE(ByteBlockTest);
-    CPPUNIT_TEST(testAppend);
-    CPPUNIT_TEST(testFile);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ByteBlockTest);
+    TSUNIT_TEST(testAppend);
+    TSUNIT_TEST(testFile);
+    TSUNIT_TEST_END();
 
 private:
     ts::UString _tempFileName;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ByteBlockTest);
+TSUNIT_REGISTER(ByteBlockTest);
 
 
 //----------------------------------------------------------------------------
@@ -75,13 +75,13 @@ ByteBlockTest::ByteBlockTest() :
 }
 
 // Test suite initialization method.
-void ByteBlockTest::setUp()
+void ByteBlockTest::beforeTest()
 {
     ts::DeleteFile(_tempFileName);
 }
 
 // Test suite cleanup method.
-void ByteBlockTest::tearDown()
+void ByteBlockTest::afterTest()
 {
     ts::DeleteFile(_tempFileName);
 }
@@ -100,7 +100,7 @@ void ByteBlockTest::testAppend()
     std::string strtemp("a string");
 
     v.clear();
-    CPPUNIT_ASSERT(v.empty());
+    TSUNIT_ASSERT(v.empty());
 
     v.appendUInt8(0xAA);
     v.appendUInt16BE(0xAA55);
@@ -114,55 +114,55 @@ void ByteBlockTest::testAppend()
     v.appendUInt64LE(0x87654321AABBCCDD);
 
     size_t idx = 0;
-    CPPUNIT_ASSERT(v.size() == (1+2+4+8+2+8+1+2+4+8));
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v.size() == (1+2+4+8+2+8+1+2+4+8));
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
 
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
-    CPPUNIT_ASSERT(v[idx++] == 0x55);
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v[idx++] == 0x55);
 
-    CPPUNIT_ASSERT(v[idx++] == 0xFF);
-    CPPUNIT_ASSERT(v[idx++] == 0xCC);
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
-    CPPUNIT_ASSERT(v[idx++] == 0x55);
+    TSUNIT_ASSERT(v[idx++] == 0xFF);
+    TSUNIT_ASSERT(v[idx++] == 0xCC);
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v[idx++] == 0x55);
 
-    CPPUNIT_ASSERT(v[idx++] == 0x87);
-    CPPUNIT_ASSERT(v[idx++] == 0x65);
-    CPPUNIT_ASSERT(v[idx++] == 0x43);
-    CPPUNIT_ASSERT(v[idx++] == 0x21);
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
-    CPPUNIT_ASSERT(v[idx++] == 0xBB);
-    CPPUNIT_ASSERT(v[idx++] == 0xCC);
-    CPPUNIT_ASSERT(v[idx++] == 0xDD);
+    TSUNIT_ASSERT(v[idx++] == 0x87);
+    TSUNIT_ASSERT(v[idx++] == 0x65);
+    TSUNIT_ASSERT(v[idx++] == 0x43);
+    TSUNIT_ASSERT(v[idx++] == 0x21);
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v[idx++] == 0xBB);
+    TSUNIT_ASSERT(v[idx++] == 0xCC);
+    TSUNIT_ASSERT(v[idx++] == 0xDD);
 
-    CPPUNIT_ASSERT(v[idx++] == 0x42);
-    CPPUNIT_ASSERT(v[idx++] == 0x65);
+    TSUNIT_ASSERT(v[idx++] == 0x42);
+    TSUNIT_ASSERT(v[idx++] == 0x65);
 
-    CPPUNIT_ASSERT(v[idx++] == 'a');
-    CPPUNIT_ASSERT(v[idx++] == ' ');
-    CPPUNIT_ASSERT(v[idx++] == 's');
-    CPPUNIT_ASSERT(v[idx++] == 't');
-    CPPUNIT_ASSERT(v[idx++] == 'r');
-    CPPUNIT_ASSERT(v[idx++] == 'i');
-    CPPUNIT_ASSERT(v[idx++] == 'n');
-    CPPUNIT_ASSERT(v[idx++] == 'g');
+    TSUNIT_ASSERT(v[idx++] == 'a');
+    TSUNIT_ASSERT(v[idx++] == ' ');
+    TSUNIT_ASSERT(v[idx++] == 's');
+    TSUNIT_ASSERT(v[idx++] == 't');
+    TSUNIT_ASSERT(v[idx++] == 'r');
+    TSUNIT_ASSERT(v[idx++] == 'i');
+    TSUNIT_ASSERT(v[idx++] == 'n');
+    TSUNIT_ASSERT(v[idx++] == 'g');
 
-    CPPUNIT_ASSERT(v[idx++] == 0x3E);
-    CPPUNIT_ASSERT(v[idx++] == 0x55);
+    TSUNIT_ASSERT(v[idx++] == 0x3E);
+    TSUNIT_ASSERT(v[idx++] == 0x55);
 
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
-    CPPUNIT_ASSERT(v[idx++] == 0x55);
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
-    CPPUNIT_ASSERT(v[idx++] == 0xCC);
-    CPPUNIT_ASSERT(v[idx++] == 0xFF);
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v[idx++] == 0x55);
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v[idx++] == 0xCC);
+    TSUNIT_ASSERT(v[idx++] == 0xFF);
 
-    CPPUNIT_ASSERT(v[idx++] == 0xDD);
-    CPPUNIT_ASSERT(v[idx++] == 0xCC);
-    CPPUNIT_ASSERT(v[idx++] == 0xBB);
-    CPPUNIT_ASSERT(v[idx++] == 0xAA);
-    CPPUNIT_ASSERT(v[idx++] == 0x21);
-    CPPUNIT_ASSERT(v[idx++] == 0x43);
-    CPPUNIT_ASSERT(v[idx++] == 0x65);
-    CPPUNIT_ASSERT(v[idx++] == 0x87);
+    TSUNIT_ASSERT(v[idx++] == 0xDD);
+    TSUNIT_ASSERT(v[idx++] == 0xCC);
+    TSUNIT_ASSERT(v[idx++] == 0xBB);
+    TSUNIT_ASSERT(v[idx++] == 0xAA);
+    TSUNIT_ASSERT(v[idx++] == 0x21);
+    TSUNIT_ASSERT(v[idx++] == 0x43);
+    TSUNIT_ASSERT(v[idx++] == 0x65);
+    TSUNIT_ASSERT(v[idx++] == 0x87);
 }
 
 void ByteBlockTest::testFile()
@@ -233,12 +233,12 @@ void ByteBlockTest::testFile()
         0x82, 0xED, 0xA0, 0xDA, 0xD0, 0xB2, 0xC6,
     });
 
-    CPPUNIT_ASSERT_EQUAL(size_t(999), bb.size());
-    CPPUNIT_ASSERT(bb.saveToFile(_tempFileName));
+    TSUNIT_EQUAL(size_t(999), bb.size());
+    TSUNIT_ASSERT(bb.saveToFile(_tempFileName));
 
     ts::ByteBlock bb1;
-    CPPUNIT_ASSERT(bb1.loadFromFile(_tempFileName));
+    TSUNIT_ASSERT(bb1.loadFromFile(_tempFileName));
 
-    CPPUNIT_ASSERT_EQUAL(size_t(999), bb1.size());
-    CPPUNIT_ASSERT(bb1 == bb);
+    TSUNIT_EQUAL(size_t(999), bb1.size());
+    TSUNIT_ASSERT(bb1 == bb);
 }

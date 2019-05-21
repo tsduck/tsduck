@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for TS_STATIC_INSTANCE family of macros.
+//  TSUnit test suite for TS_STATIC_INSTANCE family of macros.
 //
 //----------------------------------------------------------------------------
 
 #include "tsStaticInstance.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,24 +40,24 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class StaticInstanceTest: public CppUnit::TestFixture
+class StaticInstanceTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testNoInitializer();
     void testInitializerTwoArgs();
     void testWithNamespace();
 
-    CPPUNIT_TEST_SUITE (StaticInstanceTest);
-    CPPUNIT_TEST (testNoInitializer);
-    CPPUNIT_TEST (testInitializerTwoArgs);
-    CPPUNIT_TEST (testWithNamespace);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(StaticInstanceTest);
+    TSUNIT_TEST(testNoInitializer);
+    TSUNIT_TEST(testInitializerTwoArgs);
+    TSUNIT_TEST(testWithNamespace);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (StaticInstanceTest);
+TSUNIT_REGISTER(StaticInstanceTest);
 
 
 //----------------------------------------------------------------------------
@@ -65,12 +65,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (StaticInstanceTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void StaticInstanceTest::setUp()
+void StaticInstanceTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void StaticInstanceTest::tearDown()
+void StaticInstanceTest::afterTest()
 {
 }
 
@@ -84,15 +84,15 @@ TS_STATIC_INSTANCE(std::string, (), Foo1)
 
 void StaticInstanceTest::testNoInitializer()
 {
-    utest::Out() << "StaticInstanceTest: Foo1::Instance() = \"" << Foo1::Instance() << "\"" << std::endl;
+    debug() << "StaticInstanceTest: Foo1::Instance() = \"" << Foo1::Instance() << "\"" << std::endl;
 
     // Check the value
-    CPPUNIT_ASSERT(Foo1::Instance().empty());
+    TSUNIT_ASSERT(Foo1::Instance().empty());
 
     // Check that this is a singleton
     std::string* p1(&Foo1::Instance());
     std::string* p2(&Foo1::Instance());
-    CPPUNIT_ASSERT(p1 == p2);
+    TSUNIT_ASSERT(p1 == p2);
 }
 
 // Static instance, initializer with two parameters
@@ -100,15 +100,15 @@ TS_STATIC_INSTANCE(std::string, (4, '='), Foo2)
 
 void StaticInstanceTest::testInitializerTwoArgs()
 {
-    utest::Out() << "StaticInstanceTest: Foo2::Instance() = \"" << Foo2::Instance() << "\"" << std::endl;
+    debug() << "StaticInstanceTest: Foo2::Instance() = \"" << Foo2::Instance() << "\"" << std::endl;
 
     // Check the value
-    CPPUNIT_ASSERT_EQUAL(std::string("===="), Foo2::Instance());
+    TSUNIT_EQUAL(std::string("===="), Foo2::Instance());
 
     // Check that this is a singleton
     std::string* p1(&Foo2::Instance());
     std::string* p2(&Foo2::Instance());
-    CPPUNIT_ASSERT(p1 == p2);
+    TSUNIT_ASSERT(p1 == p2);
 }
 
 // Static instance with separate declaration and definition, initializer with one parameter
@@ -121,13 +121,13 @@ TS_STATIC_INSTANCE_DEFINITION(std::string, ("this is Foo3"), ts::foo::Foo3, Foo3
 
 void StaticInstanceTest::testWithNamespace()
 {
-    utest::Out() << "StaticInstanceTest: ts::foo::Foo3::Instance() = \"" << ts::foo::Foo3::Instance() << "\"" << std::endl;
+    debug() << "StaticInstanceTest: ts::foo::Foo3::Instance() = \"" << ts::foo::Foo3::Instance() << "\"" << std::endl;
 
     // Check the value
-    CPPUNIT_ASSERT_EQUAL(std::string("this is Foo3"), ts::foo::Foo3::Instance());
+    TSUNIT_EQUAL(std::string("this is Foo3"), ts::foo::Foo3::Instance());
 
     // Check that this is a singleton
     std::string* p1(&ts::foo::Foo3::Instance());
     std::string* p2(&ts::foo::Foo3::Instance());
-    CPPUNIT_ASSERT(p1 == p2);
+    TSUNIT_ASSERT(p1 == p2);
 }

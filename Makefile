@@ -31,7 +31,7 @@
 #
 #  Additional options which can be defined:
 #
-#  - NOTEST  : No unitary test, remove dependency to CppUnit.
+#  - NOTEST  : Do not build unitary tests.
 #  - NODTAPI : No Dektec support, remove dependency to DTAPI.
 #  - NOCURL  : No HTTP support, remove dependency to libcurl.
 #  - NOPCSC  : No smartcard support, remove dependency to pcsc-lite.

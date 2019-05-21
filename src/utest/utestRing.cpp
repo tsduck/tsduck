@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::RingNode
+//  TSUnit test suite for class ts::RingNode
 //
 //----------------------------------------------------------------------------
 
 #include "tsRingNode.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,22 +40,22 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class RingTest: public CppUnit::TestFixture
+class RingTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testRingNode();
     void testSwap();
 
-    CPPUNIT_TEST_SUITE(RingTest);
-    CPPUNIT_TEST(testRingNode);
-    CPPUNIT_TEST(testSwap);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(RingTest);
+    TSUNIT_TEST(testRingNode);
+    TSUNIT_TEST(testSwap);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(RingTest);
+TSUNIT_REGISTER(RingTest);
 
 
 //----------------------------------------------------------------------------
@@ -63,12 +63,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RingTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void RingTest::setUp()
+void RingTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void RingTest::tearDown()
+void RingTest::afterTest()
 {
 }
 
@@ -93,61 +93,61 @@ void RingTest::testRingNode()
     R r3(3);
     R r4(4);
 
-    CPPUNIT_ASSERT(r1.ringAlone());
-    CPPUNIT_ASSERT(r1.ringSize() == 1);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r1);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r1);
+    TSUNIT_ASSERT(r1.ringAlone());
+    TSUNIT_ASSERT(r1.ringSize() == 1);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r1);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r1);
 
     r2.ringInsertAfter(&r1);
     r3.ringInsertAfter(&r2);
     r4.ringInsertAfter(&r3);
 
-    CPPUNIT_ASSERT(!r1.ringAlone());
-    CPPUNIT_ASSERT(!r4.ringAlone());
-    CPPUNIT_ASSERT(r1.ringSize() == 4);
-    CPPUNIT_ASSERT(r4.ringSize() == 4);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r2);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r4);
+    TSUNIT_ASSERT(!r1.ringAlone());
+    TSUNIT_ASSERT(!r4.ringAlone());
+    TSUNIT_ASSERT(r1.ringSize() == 4);
+    TSUNIT_ASSERT(r4.ringSize() == 4);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r2);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r4);
 
     r4.ringRemove();
 
-    CPPUNIT_ASSERT(!r1.ringAlone());
-    CPPUNIT_ASSERT(r4.ringAlone());
-    CPPUNIT_ASSERT(r1.ringSize() == 3);
-    CPPUNIT_ASSERT(r4.ringSize() == 1);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r2);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
-    CPPUNIT_ASSERT(r4.ringNext<R>() == &r4);
-    CPPUNIT_ASSERT(r4.ringPrevious<R>() == &r4);
+    TSUNIT_ASSERT(!r1.ringAlone());
+    TSUNIT_ASSERT(r4.ringAlone());
+    TSUNIT_ASSERT(r1.ringSize() == 3);
+    TSUNIT_ASSERT(r4.ringSize() == 1);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r2);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
+    TSUNIT_ASSERT(r4.ringNext<R>() == &r4);
+    TSUNIT_ASSERT(r4.ringPrevious<R>() == &r4);
 
     {
         R r5(5);
         r5.ringInsertBefore(&r1);
 
-        CPPUNIT_ASSERT(r1.ringSize() == 4);
-        CPPUNIT_ASSERT(r5.ringSize() == 4);
-        CPPUNIT_ASSERT(r1.ringNext<R>() == &r2);
-        CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r5);
+        TSUNIT_ASSERT(r1.ringSize() == 4);
+        TSUNIT_ASSERT(r5.ringSize() == 4);
+        TSUNIT_ASSERT(r1.ringNext<R>() == &r2);
+        TSUNIT_ASSERT(r1.ringPrevious<R>() == &r5);
     }
 
     // After this point, coverity is lost.
     // It does not realize that r5 removed itself from the r1-r3 ring in its detructor.
 
-    CPPUNIT_ASSERT(r1.ringSize() == 3);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r2);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
+    TSUNIT_ASSERT(r1.ringSize() == 3);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r2);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
 
     r2.ringRemove();
 
-    CPPUNIT_ASSERT(r1.ringSize() == 2);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r3);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
+    TSUNIT_ASSERT(r1.ringSize() == 2);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r3);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
 
     r3.ringRemove();
 
-    CPPUNIT_ASSERT(r1.ringSize() == 1);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r1);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r1);
+    TSUNIT_ASSERT(r1.ringSize() == 1);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r1);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r1);
 
     // Coverity false positive:
     //   CID 158192 (#1-2 of 2): Pointer to local outside scope (RETURN_LOCAL)
@@ -170,48 +170,48 @@ void RingTest::testSwap()
     r5.ringInsertAfter(&r4);
     r6.ringInsertAfter(&r5);
 
-    CPPUNIT_ASSERT_EQUAL(size_t(1), r1.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), r2.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), r3.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r4.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r5.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r6.ringSize());
+    TSUNIT_EQUAL(size_t(1), r1.ringSize());
+    TSUNIT_EQUAL(size_t(2), r2.ringSize());
+    TSUNIT_EQUAL(size_t(2), r3.ringSize());
+    TSUNIT_EQUAL(size_t(3), r4.ringSize());
+    TSUNIT_EQUAL(size_t(3), r5.ringSize());
+    TSUNIT_EQUAL(size_t(3), r6.ringSize());
 
     // Swap r1 and r4: {r4}, {r2, r3}, {r1, r5, r6]
     r1.ringSwap(&r4);
 
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r1.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), r2.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), r3.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), r4.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r5.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r6.ringSize());
+    TSUNIT_EQUAL(size_t(3), r1.ringSize());
+    TSUNIT_EQUAL(size_t(2), r2.ringSize());
+    TSUNIT_EQUAL(size_t(2), r3.ringSize());
+    TSUNIT_EQUAL(size_t(1), r4.ringSize());
+    TSUNIT_EQUAL(size_t(3), r5.ringSize());
+    TSUNIT_EQUAL(size_t(3), r6.ringSize());
 
-    CPPUNIT_ASSERT(r4.ringNext<R>() == &r4);
-    CPPUNIT_ASSERT(r4.ringPrevious<R>() == &r4);
+    TSUNIT_ASSERT(r4.ringNext<R>() == &r4);
+    TSUNIT_ASSERT(r4.ringPrevious<R>() == &r4);
 
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r5);
-    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r6);
-    CPPUNIT_ASSERT(r6.ringNext<R>() == &r1);
-    CPPUNIT_ASSERT(r5.ringPrevious<R>() == &r1);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r5);
+    TSUNIT_ASSERT(r1.ringPrevious<R>() == &r6);
+    TSUNIT_ASSERT(r6.ringNext<R>() == &r1);
+    TSUNIT_ASSERT(r5.ringPrevious<R>() == &r1);
 
     // Swap r3 and r5: {r4}, {r2, r5}, {r1, r3, r6]
     r3.ringSwap(&r5);
 
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r1.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), r2.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r3.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), r4.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), r5.ringSize());
-    CPPUNIT_ASSERT_EQUAL(size_t(3), r6.ringSize());
+    TSUNIT_EQUAL(size_t(3), r1.ringSize());
+    TSUNIT_EQUAL(size_t(2), r2.ringSize());
+    TSUNIT_EQUAL(size_t(3), r3.ringSize());
+    TSUNIT_EQUAL(size_t(1), r4.ringSize());
+    TSUNIT_EQUAL(size_t(2), r5.ringSize());
+    TSUNIT_EQUAL(size_t(3), r6.ringSize());
 
-    CPPUNIT_ASSERT(r3.ringNext<R>() == &r6);
-    CPPUNIT_ASSERT(r3.ringPrevious<R>() == &r1);
-    CPPUNIT_ASSERT(r1.ringNext<R>() == &r3);
-    CPPUNIT_ASSERT(r6.ringPrevious<R>() == &r3);
+    TSUNIT_ASSERT(r3.ringNext<R>() == &r6);
+    TSUNIT_ASSERT(r3.ringPrevious<R>() == &r1);
+    TSUNIT_ASSERT(r1.ringNext<R>() == &r3);
+    TSUNIT_ASSERT(r6.ringPrevious<R>() == &r3);
 
-    CPPUNIT_ASSERT(r5.ringNext<R>() == &r2);
-    CPPUNIT_ASSERT(r5.ringPrevious<R>() == &r2);
-    CPPUNIT_ASSERT(r2.ringNext<R>() == &r5);
-    CPPUNIT_ASSERT(r2.ringPrevious<R>() == &r5);
+    TSUNIT_ASSERT(r5.ringNext<R>() == &r2);
+    TSUNIT_ASSERT(r5.ringPrevious<R>() == &r2);
+    TSUNIT_ASSERT(r2.ringNext<R>() == &r5);
+    TSUNIT_ASSERT(r2.ringPrevious<R>() == &r5);
 }

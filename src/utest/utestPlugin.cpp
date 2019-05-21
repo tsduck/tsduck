@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::PluginSharedLibrary
+//  TSUnit test suite for class ts::PluginSharedLibrary
 //
 //----------------------------------------------------------------------------
 
 #include "tsPluginSharedLibrary.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,27 +40,27 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class PluginTest: public CppUnit::TestFixture
+class PluginTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testInput();
     void testOutput();
     void testProcessor();
 
-    CPPUNIT_TEST_SUITE(PluginTest);
-    CPPUNIT_TEST(testInput);
-    CPPUNIT_TEST(testOutput);
-    CPPUNIT_TEST(testProcessor);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(PluginTest);
+    TSUNIT_TEST(testInput);
+    TSUNIT_TEST(testOutput);
+    TSUNIT_TEST(testProcessor);
+    TSUNIT_TEST_END();
 
 private:
     static void display(const ts::PluginSharedLibrary& lib);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(PluginTest);
+TSUNIT_REGISTER(PluginTest);
 
 
 //----------------------------------------------------------------------------
@@ -68,12 +68,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PluginTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void PluginTest::setUp()
+void PluginTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void PluginTest::tearDown()
+void PluginTest::afterTest()
 {
 }
 
@@ -84,7 +84,7 @@ void PluginTest::tearDown()
 
 void PluginTest::display(const ts::PluginSharedLibrary& lib)
 {
-    utest::Out() << "* File: " << lib.fileName() << std::endl
+    debug() << "* File: " << lib.fileName() << std::endl
                  << "  isLoaded: " << lib.isLoaded() << std::endl
                  << "  input: " << ts::UString::YesNo(lib.new_input != nullptr) << std::endl
                  << "  output: " << ts::UString::YesNo(lib.new_output != nullptr) << std::endl
@@ -96,10 +96,10 @@ void PluginTest::testInput()
     ts::PluginSharedLibrary plugin(u"null");
     display(plugin);
 
-    CPPUNIT_ASSERT(plugin.isLoaded());
-    CPPUNIT_ASSERT(plugin.new_input != nullptr);
-    CPPUNIT_ASSERT(plugin.new_output == nullptr);
-    CPPUNIT_ASSERT(plugin.new_processor == nullptr);
+    TSUNIT_ASSERT(plugin.isLoaded());
+    TSUNIT_ASSERT(plugin.new_input != nullptr);
+    TSUNIT_ASSERT(plugin.new_output == nullptr);
+    TSUNIT_ASSERT(plugin.new_processor == nullptr);
 }
 
 void PluginTest::testOutput()
@@ -107,10 +107,10 @@ void PluginTest::testOutput()
     ts::PluginSharedLibrary plugin(u"drop");
     display(plugin);
 
-    CPPUNIT_ASSERT(plugin.isLoaded());
-    CPPUNIT_ASSERT(plugin.new_input == nullptr);
-    CPPUNIT_ASSERT(plugin.new_output != nullptr);
-    CPPUNIT_ASSERT(plugin.new_processor == nullptr);
+    TSUNIT_ASSERT(plugin.isLoaded());
+    TSUNIT_ASSERT(plugin.new_input == nullptr);
+    TSUNIT_ASSERT(plugin.new_output != nullptr);
+    TSUNIT_ASSERT(plugin.new_processor == nullptr);
 }
 
 void PluginTest::testProcessor()
@@ -118,8 +118,8 @@ void PluginTest::testProcessor()
     ts::PluginSharedLibrary plugin(u"skip");
     display(plugin);
 
-    CPPUNIT_ASSERT(plugin.isLoaded());
-    CPPUNIT_ASSERT(plugin.new_input == nullptr);
-    CPPUNIT_ASSERT(plugin.new_output == nullptr);
-    CPPUNIT_ASSERT(plugin.new_processor != nullptr);
+    TSUNIT_ASSERT(plugin.isLoaded());
+    TSUNIT_ASSERT(plugin.new_input == nullptr);
+    TSUNIT_ASSERT(plugin.new_output == nullptr);
+    TSUNIT_ASSERT(plugin.new_processor != nullptr);
 }

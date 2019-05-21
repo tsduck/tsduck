@@ -27,14 +27,14 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for Monotonic class.
+//  TSUnit test suite for Monotonic class.
 //
 //----------------------------------------------------------------------------
 
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -42,29 +42,29 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class MonotonicTest: public CppUnit::TestFixture
+class MonotonicTest: public tsunit::Test
 {
 public:
     MonotonicTest();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testArithmetic();
     void testSysWait();
     void testWait();
 
-    CPPUNIT_TEST_SUITE(MonotonicTest);
-    CPPUNIT_TEST(testArithmetic);
-    CPPUNIT_TEST(testSysWait);
-    CPPUNIT_TEST(testWait);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(MonotonicTest);
+    TSUNIT_TEST(testArithmetic);
+    TSUNIT_TEST(testSysWait);
+    TSUNIT_TEST(testWait);
+    TSUNIT_TEST_END();
 private:
     ts::NanoSecond  _nsPrecision;
     ts::MilliSecond _msPrecision;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(MonotonicTest);
+TSUNIT_REGISTER(MonotonicTest);
 
 
 //----------------------------------------------------------------------------
@@ -79,17 +79,17 @@ MonotonicTest::MonotonicTest() :
 }
 
 // Test suite initialization method.
-void MonotonicTest::setUp()
+void MonotonicTest::beforeTest()
 {
     _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
     _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
 
     // Request 2 milliseconds as system time precision.
-    utest::Out() << "MonotonicTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
+    debug() << "MonotonicTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
-void MonotonicTest::tearDown()
+void MonotonicTest::afterTest()
 {
 }
 
@@ -101,23 +101,23 @@ void MonotonicTest::testArithmetic()
 {
     ts::Monotonic m1, m2;
 
-    CPPUNIT_ASSERT(m1 == m2);
+    TSUNIT_ASSERT(m1 == m2);
     m1.getSystemTime();
-    CPPUNIT_ASSERT(m1 != m2);
+    TSUNIT_ASSERT(m1 != m2);
     m2 = m1;
-    CPPUNIT_ASSERT(m1 == m2);
+    TSUNIT_ASSERT(m1 == m2);
 
     m2 += 100; // nanoseconds
-    CPPUNIT_ASSERT(m1 < m2);
-    CPPUNIT_ASSERT(m1 - m2 == -100);
+    TSUNIT_ASSERT(m1 < m2);
+    TSUNIT_ASSERT(m1 - m2 == -100);
 
     m2 -= 100; // nanoseconds
-    CPPUNIT_ASSERT(m1 == m2);
-    CPPUNIT_ASSERT(m1 - m2 == 0);
+    TSUNIT_ASSERT(m1 == m2);
+    TSUNIT_ASSERT(m1 - m2 == 0);
 
     m2 -= 100; // nanoseconds
-    CPPUNIT_ASSERT(m1 > m2);
-    CPPUNIT_ASSERT(m1 - m2 == 100);
+    TSUNIT_ASSERT(m1 > m2);
+    TSUNIT_ASSERT(m1 - m2 == 100);
 }
 
 void MonotonicTest::testSysWait()
@@ -135,8 +135,8 @@ void MonotonicTest::testSysWait()
     check1 += 100 * ts::NanoSecPerMilliSec - _nsPrecision;
     check2 += 150 * ts::NanoSecPerMilliSec;
 
-    CPPUNIT_ASSERT(end >= check1);
-    CPPUNIT_ASSERT(end < check2);
+    TSUNIT_ASSERT(end >= check1);
+    TSUNIT_ASSERT(end < check2);
 }
 
 void MonotonicTest::testWait()
@@ -150,6 +150,6 @@ void MonotonicTest::testWait()
 
     const ts::Time end(ts::Time::CurrentLocalTime());
 
-    CPPUNIT_ASSERT(end >= start + 100 - _msPrecision);
-    CPPUNIT_ASSERT(end < start + 150);
+    TSUNIT_ASSERT(end >= start + 100 - _msPrecision);
+    TSUNIT_ASSERT(end < start + 150);
 }

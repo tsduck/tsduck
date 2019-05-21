@@ -27,13 +27,13 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::ConfigFile
+//  TSUnit test suite for class ts::ConfigFile
 //
 //----------------------------------------------------------------------------
 
 #include "tsConfigFile.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -41,22 +41,22 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ConfigTest: public CppUnit::TestFixture
+class ConfigTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testDefaultFile();
     void testFile();
 
-    CPPUNIT_TEST_SUITE(ConfigTest);
-    CPPUNIT_TEST(testDefaultFile);
-    CPPUNIT_TEST(testFile);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ConfigTest);
+    TSUNIT_TEST(testDefaultFile);
+    TSUNIT_TEST(testFile);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ConfigTest);
+TSUNIT_REGISTER(ConfigTest);
 
 
 //----------------------------------------------------------------------------
@@ -64,12 +64,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ConfigTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void ConfigTest::setUp()
+void ConfigTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void ConfigTest::tearDown()
+void ConfigTest::afterTest()
 {
 }
 
@@ -81,8 +81,8 @@ void ConfigTest::tearDown()
 namespace {
     void displayConfig(const ts::ConfigFile& config, const std::string& title)
     {
-        utest::Out() << "*** " << title << " ***" << std::endl
-                     << "Section count: " << config.sectionCount() << std::endl;
+        tsunit::Test::debug() << "*** " << title << " ***" << std::endl
+            << "Section count: " << config.sectionCount() << std::endl;
 
         ts::UStringVector secnames;
         config.getSectionNames(secnames);
@@ -90,37 +90,37 @@ namespace {
         for (size_t sec = 0; sec < secnames.size(); ++sec) {
 
             const ts::ConfigSection& section(config.section(secnames[sec]));
-            utest::Out() << "   Section \"" << secnames[sec] << "\", entryCount() = " << section.entryCount() << std::endl;
+            tsunit::Test::debug() << "   Section \"" << secnames[sec] << "\", entryCount() = " << section.entryCount() << std::endl;
 
             ts::UStringVector entnames;
             section.getEntryNames(entnames);
 
             for (size_t ent = 0; ent < entnames.size(); ++ent) {
                 size_t val_count(section.valueCount(entnames[ent]));
-                utest::Out() << "      Entry \"" << entnames[ent] << "\", valueCount() = " << val_count;
+                tsunit::Test::debug() << "      Entry \"" << entnames[ent] << "\", valueCount() = " << val_count;
                 for (size_t val = 0; val < val_count; ++val) {
-                    utest::Out() << ", [" << val << "] = \"" << section.value(entnames[ent], val) << "\"";
+                    tsunit::Test::debug() << ", [" << val << "] = \"" << section.value(entnames[ent], val) << "\"";
                 }
-                utest::Out() << std::endl;
+                tsunit::Test::debug() << std::endl;
             }
         }
 
-        utest::Out() << "*** " << title << " (Save) ***" << std::endl << config;
+        tsunit::Test::debug() << "*** " << title << " (Save) ***" << std::endl << config;
     }
 }
 
 void ConfigTest::testDefaultFile()
 {
-    utest::Out() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName() << "\"" << std::endl
-                 << "ConfigTest: DefaultFileName(UNIX_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) << "\"" << std::endl
-                 << "ConfigTest: DefaultFileName(WINDOWS_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE) << "\"" << std::endl;
+    debug() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName() << "\"" << std::endl
+            << "ConfigTest: DefaultFileName(UNIX_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) << "\"" << std::endl
+            << "ConfigTest: DefaultFileName(WINDOWS_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE) << "\"" << std::endl;
 
-    CPPUNIT_ASSERT(!ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE).empty());
-    CPPUNIT_ASSERT(!ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE).empty());
-    CPPUNIT_ASSERT(ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) !=
-                   ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE));
-    CPPUNIT_ASSERT(ts::ConfigFile::DefaultFileName() == ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) ||
-                   ts::ConfigFile::DefaultFileName() == ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE));
+    TSUNIT_ASSERT(!ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE).empty());
+    TSUNIT_ASSERT(!ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE).empty());
+    TSUNIT_ASSERT(ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) !=
+                  ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE));
+    TSUNIT_ASSERT(ts::ConfigFile::DefaultFileName() == ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) ||
+                  ts::ConfigFile::DefaultFileName() == ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE));
 }
 
 void ConfigTest::testFile()
@@ -155,7 +155,7 @@ void ConfigTest::testFile()
     ts::ConfigFile config(input);
     displayConfig(config, "Default config file content");
 
-    CPPUNIT_ASSERT_EQUAL(size_t(4), config.sectionCount());
+    TSUNIT_EQUAL(size_t(4), config.sectionCount());
 
     ts::UStringVector names1;
     config.getSectionNames(names1);
@@ -163,33 +163,33 @@ void ConfigTest::testFile()
 
     ts::UStringVector names2;
     ts::UString(u", Section222, Section333, SectionBoo").split(names2);
-    CPPUNIT_ASSERT(names1 == names2);
+    TSUNIT_ASSERT(names1 == names2);
 
-    CPPUNIT_ASSERT_EQUAL(size_t(2), config[u""].entryCount());
-    CPPUNIT_ASSERT_EQUAL(size_t(0), config[u"Section222"].entryCount());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), config[u"Section333"].entryCount());
-    CPPUNIT_ASSERT_EQUAL(size_t(0), config[u"Section444"].entryCount());
-    CPPUNIT_ASSERT_EQUAL(size_t(5), config[u"SectionBoo"].entryCount());
+    TSUNIT_EQUAL(size_t(2), config[u""].entryCount());
+    TSUNIT_EQUAL(size_t(0), config[u"Section222"].entryCount());
+    TSUNIT_EQUAL(size_t(1), config[u"Section333"].entryCount());
+    TSUNIT_EQUAL(size_t(0), config[u"Section444"].entryCount());
+    TSUNIT_EQUAL(size_t(5), config[u"SectionBoo"].entryCount());
 
-    CPPUNIT_ASSERT_EQUAL(size_t(1), config[u""].valueCount(u"foo"));
-    CPPUNIT_ASSERT_EQUAL(size_t(4), config[u""].valueCount(u"azerty"));
-    CPPUNIT_ASSERT_EQUAL(size_t(0), config[u""].valueCount(u"nonexistent"));
-    CPPUNIT_ASSERT_EQUAL(size_t(2), config[u"SectionBoo"].valueCount(u"foo"));
+    TSUNIT_EQUAL(size_t(1), config[u""].valueCount(u"foo"));
+    TSUNIT_EQUAL(size_t(4), config[u""].valueCount(u"azerty"));
+    TSUNIT_EQUAL(size_t(0), config[u""].valueCount(u"nonexistent"));
+    TSUNIT_EQUAL(size_t(2), config[u"SectionBoo"].valueCount(u"foo"));
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze", config[u"SectionBoo"].value(u"bar"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dfv", config[u"SectionBoo"].value(u"foo"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dfv", config[u"SectionBoo"].value(u"foo", 0));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ff",  config[u"SectionBoo"].value(u"foo", 1));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"",    config[u"SectionBoo"].value(u"foo", 2));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"def", config[u"SectionBoo"].value(u"foo", 2, u"def"));
+    TSUNIT_EQUAL(u"aze", config[u"SectionBoo"].value(u"bar"));
+    TSUNIT_EQUAL(u"dfv", config[u"SectionBoo"].value(u"foo"));
+    TSUNIT_EQUAL(u"dfv", config[u"SectionBoo"].value(u"foo", 0));
+    TSUNIT_EQUAL(u"ff",  config[u"SectionBoo"].value(u"foo", 1));
+    TSUNIT_EQUAL(u"",    config[u"SectionBoo"].value(u"foo", 2));
+    TSUNIT_EQUAL(u"def", config[u"SectionBoo"].value(u"foo", 2, u"def"));
 
-    CPPUNIT_ASSERT_EQUAL(43, config[u""].value<int>(u"azerty", 3));
-    CPPUNIT_ASSERT_EQUAL(23, config[u""].value<int>(u"azerty", 2));
-    CPPUNIT_ASSERT_EQUAL(0,  config[u""].value<int>(u"azerty", 1));
+    TSUNIT_EQUAL(43, config[u""].value<int>(u"azerty", 3));
+    TSUNIT_EQUAL(23, config[u""].value<int>(u"azerty", 2));
+    TSUNIT_EQUAL(0,  config[u""].value<int>(u"azerty", 1));
 
     config.reset();
     displayConfig(config, "Config after Reset()");
 
-    CPPUNIT_ASSERT_EQUAL(size_t(0), config.sectionCount());
-    CPPUNIT_ASSERT_EQUAL(size_t(0), config[u""].entryCount());
+    TSUNIT_EQUAL(size_t(0), config.sectionCount());
+    TSUNIT_EQUAL(size_t(0), config[u""].entryCount());
 }

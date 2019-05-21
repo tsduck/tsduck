@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for utilities in class ts::BitStream
+//  TSUnit test suite for utilities in class ts::BitStream
 //
 //----------------------------------------------------------------------------
 
 #include "tsBitStream.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,11 +40,11 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class BitStreamTest: public CppUnit::TestFixture
+class BitStreamTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testConstructors();
     void testAssignment();
@@ -57,21 +57,21 @@ public:
     void testReadBit();
     void testRead();
 
-    CPPUNIT_TEST_SUITE (BitStreamTest);
-    CPPUNIT_TEST (testConstructors);
-    CPPUNIT_TEST (testAssignment);
-    CPPUNIT_TEST (testReset);
-    CPPUNIT_TEST (testSeek);
-    CPPUNIT_TEST (testByteAligned);
-    CPPUNIT_TEST (testSkip);
-    CPPUNIT_TEST (testBack);
-    CPPUNIT_TEST (testSkipToNextByte);
-    CPPUNIT_TEST (testReadBit);
-    CPPUNIT_TEST (testRead);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(BitStreamTest);
+    TSUNIT_TEST(testConstructors);
+    TSUNIT_TEST(testAssignment);
+    TSUNIT_TEST(testReset);
+    TSUNIT_TEST(testSeek);
+    TSUNIT_TEST(testByteAligned);
+    TSUNIT_TEST(testSkip);
+    TSUNIT_TEST(testBack);
+    TSUNIT_TEST(testSkipToNextByte);
+    TSUNIT_TEST(testReadBit);
+    TSUNIT_TEST(testRead);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(BitStreamTest);
+TSUNIT_REGISTER(BitStreamTest);
 
 
 //----------------------------------------------------------------------------
@@ -79,12 +79,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(BitStreamTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void BitStreamTest::setUp()
+void BitStreamTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void BitStreamTest::tearDown()
+void BitStreamTest::afterTest()
 {
 }
 
@@ -119,24 +119,24 @@ namespace {
 void BitStreamTest::testConstructors()
 {
     ts::BitStream bs1;
-    CPPUNIT_ASSERT(!bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 0);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(!bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 0);
+    TSUNIT_ASSERT(bs1.endOfStream());
 
-    CPPUNIT_ASSERT(sizeof(_bytes) <= 7 + 83);
+    TSUNIT_ASSERT(sizeof(_bytes) <= 7 + 83);
 
     ts::BitStream bs2 (_bytes, 83, 7);
-    CPPUNIT_ASSERT(bs2.isAssociated());
-    CPPUNIT_ASSERT(bs2.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs2.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs2.endOfStream());
+    TSUNIT_ASSERT(bs2.isAssociated());
+    TSUNIT_ASSERT(bs2.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs2.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs2.endOfStream());
 
     ts::BitStream bs3 (bs2);
-    CPPUNIT_ASSERT(bs3.isAssociated());
-    CPPUNIT_ASSERT(bs3.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs3.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs3.endOfStream());
+    TSUNIT_ASSERT(bs3.isAssociated());
+    TSUNIT_ASSERT(bs3.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs3.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs3.endOfStream());
 }
 
 void BitStreamTest::testAssignment()
@@ -144,17 +144,17 @@ void BitStreamTest::testAssignment()
     ts::BitStream bs1 (_bytes, 83, 7);
     ts::BitStream bs2;
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs2 = bs1;
 
-    CPPUNIT_ASSERT(bs2.isAssociated());
-    CPPUNIT_ASSERT(bs2.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs2.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs2.endOfStream());
+    TSUNIT_ASSERT(bs2.isAssociated());
+    TSUNIT_ASSERT(bs2.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs2.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs2.endOfStream());
 
     // Returned value ignored on purpose, we just want to move on in the bitstream.
     // coverity[CHECKED_RETURN]
@@ -162,15 +162,15 @@ void BitStreamTest::testAssignment()
     // coverity[CHECKED_RETURN]
     bs2.readBit();
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
-    CPPUNIT_ASSERT(bs2.isAssociated());
-    CPPUNIT_ASSERT(bs2.currentBitOffset() == 2);
-    CPPUNIT_ASSERT(bs2.remainingBitCount() == 81);
-    CPPUNIT_ASSERT(!bs2.endOfStream());
+    TSUNIT_ASSERT(bs2.isAssociated());
+    TSUNIT_ASSERT(bs2.currentBitOffset() == 2);
+    TSUNIT_ASSERT(bs2.remainingBitCount() == 81);
+    TSUNIT_ASSERT(!bs2.endOfStream());
 }
 
 void BitStreamTest::testReset()
@@ -179,77 +179,77 @@ void BitStreamTest::testReset()
 
     bs1.reset (_bytes, 83, 7);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 }
 
 void BitStreamTest::testSeek()
 {
     ts::BitStream bs1 (_bytes, 83, 7);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.seek (48);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 48);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 35);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 48);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 35);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.seek (150);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 0);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 0);
+    TSUNIT_ASSERT(bs1.endOfStream());
 
     bs1.seek (83);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 0);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 0);
+    TSUNIT_ASSERT(bs1.endOfStream());
 
     bs1.seek (82);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 82);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 1);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 82);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 1);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.seek (0);
 
-    CPPUNIT_ASSERT(bs1.isAssociated());
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.isAssociated());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 }
 
 void BitStreamTest::testByteAligned()
 {
     ts::BitStream bs1 (_bytes, 83, 7);
 
-    CPPUNIT_ASSERT(!bs1.byteAligned());
+    TSUNIT_ASSERT(!bs1.byteAligned());
 
     // Returned value ignored on purpose, we just want to move on in the bitstream.
     // coverity[CHECKED_RETURN]
     bs1.readBit();
-    CPPUNIT_ASSERT(bs1.byteAligned());
+    TSUNIT_ASSERT(bs1.byteAligned());
 
     // coverity[CHECKED_RETURN]
     bs1.readBit();
-    CPPUNIT_ASSERT(!bs1.byteAligned());
+    TSUNIT_ASSERT(!bs1.byteAligned());
 
     bs1.seek (16);
-    CPPUNIT_ASSERT(!bs1.byteAligned());
+    TSUNIT_ASSERT(!bs1.byteAligned());
 
     bs1.seek (25);
-    CPPUNIT_ASSERT(bs1.byteAligned());
+    TSUNIT_ASSERT(bs1.byteAligned());
 }
 
 void BitStreamTest::testSkip()
@@ -257,29 +257,29 @@ void BitStreamTest::testSkip()
     ts::BitStream bs1 (_bytes, 83, 7);
 
     bs1.skip (5);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 5);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 78);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 5);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 78);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.skip (42);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 47);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 36);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 47);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 36);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.skip (40);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 0);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 0);
+    TSUNIT_ASSERT(bs1.endOfStream());
 
     bs1.seek (70);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 70);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 13);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 70);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 13);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.seek (83);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 0);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 0);
+    TSUNIT_ASSERT(bs1.endOfStream());
 }
 
 void BitStreamTest::testBack()
@@ -287,24 +287,24 @@ void BitStreamTest::testBack()
     ts::BitStream bs1 (_bytes, 83, 7);
 
     bs1.seek (83);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 0);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 0);
+    TSUNIT_ASSERT(bs1.endOfStream());
 
     bs1.back (13);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 70);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 13);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 70);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 13);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.back (55);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 15);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 68);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 15);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 68);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.back (30);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 0);
-    CPPUNIT_ASSERT(bs1.remainingBitCount() == 83);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 0);
+    TSUNIT_ASSERT(bs1.remainingBitCount() == 83);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 }
 
 void BitStreamTest::testSkipToNextByte()
@@ -312,19 +312,19 @@ void BitStreamTest::testSkipToNextByte()
     ts::BitStream bs1 (_bytes, 83, 7);
 
     bs1.skipToNextByte();
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 1);
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 1);
 
     bs1.skipToNextByte();
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 9);
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 9);
 
     bs1.seek (75);
     bs1.skipToNextByte();
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 81);
-    CPPUNIT_ASSERT(!bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 81);
+    TSUNIT_ASSERT(!bs1.endOfStream());
 
     bs1.skipToNextByte();
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.endOfStream());
 }
 
 void BitStreamTest::testReadBit()
@@ -335,103 +335,103 @@ void BitStreamTest::testReadBit()
     ts::BitStream bs1 (_bytes, 83, 7);
 
     // Offset 0
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
     // Offset 10
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
     // Offset 20
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
     // Offset 30
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
     // Offset 40
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
     // Offset 50
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
     // Offset 60
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
     // Offset 70
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
     // Offset 80
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 1);
     // End of stream
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit() == 0);
-    CPPUNIT_ASSERT(bs1.readBit(0) == 0);
-    CPPUNIT_ASSERT(bs1.readBit(1) == 1);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit() == 0);
+    TSUNIT_ASSERT(bs1.readBit(0) == 0);
+    TSUNIT_ASSERT(bs1.readBit(1) == 1);
 }
 
 void BitStreamTest::testRead()
@@ -442,32 +442,32 @@ void BitStreamTest::testRead()
     ts::BitStream bs1 (_bytes, 83, 7);
 
     // 00101
-    CPPUNIT_ASSERT(bs1.read<int>(5) == 0x5);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 5);
+    TSUNIT_ASSERT(bs1.read<int>(5) == 0x5);
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 5);
 
     // 000101010010010
-    CPPUNIT_ASSERT(bs1.read<uint16_t>(15) == 0xA92);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 20);
+    TSUNIT_ASSERT(bs1.read<uint16_t>(15) == 0xA92);
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 20);
 
     // Important: Due to a code generation bug in Microsoft Visual C++ 2010,
     // the default value (second parameter of BitStream::read)
     // must be explicitly provided when instantiated on 64-bit integer types.
 
     // 100110101010001010101010101100101011101101000011010010110101
-    CPPUNIT_ASSERT(bs1.read<uint64_t>(60, 0) == TS_UCONST64(0x9AA2AAB2BB434B5));
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 80);
+    TSUNIT_ASSERT(bs1.read<uint64_t>(60, 0) == TS_UCONST64(0x9AA2AAB2BB434B5));
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 80);
 
-    CPPUNIT_ASSERT(bs1.read<int32_t>(8) == 0); // after eof
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 80);
+    TSUNIT_ASSERT(bs1.read<int32_t>(8) == 0); // after eof
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 80);
 
-    CPPUNIT_ASSERT(bs1.read<int32_t>(8, 0) == 0); // after eof
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 80);
+    TSUNIT_ASSERT(bs1.read<int32_t>(8, 0) == 0); // after eof
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 80);
 
-    CPPUNIT_ASSERT(bs1.read<int32_t>(8, -1) == -1); // after eof
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 80);
+    TSUNIT_ASSERT(bs1.read<int32_t>(8, -1) == -1); // after eof
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 80);
 
     // 001
-    CPPUNIT_ASSERT(bs1.read<int32_t>(3) == 1);
-    CPPUNIT_ASSERT(bs1.currentBitOffset() == 83);
-    CPPUNIT_ASSERT(bs1.endOfStream());
+    TSUNIT_ASSERT(bs1.read<int32_t>(3) == 1);
+    TSUNIT_ASSERT(bs1.currentBitOffset() == 83);
+    TSUNIT_ASSERT(bs1.endOfStream());
 }

@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for tsUserInterrupt.h
+//  TSUnit test suite for tsUserInterrupt.h
 //
 //  Since the purpose of this test is to interrupt the application, we don't do
 //  it blindly! The interrupt is effective only if the environment variable
@@ -37,7 +37,7 @@
 
 #include "tsUserInterrupt.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -45,20 +45,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class InterruptTest: public CppUnit::TestFixture
+class InterruptTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testInterrupt();
 
-    CPPUNIT_TEST_SUITE(InterruptTest);
-    CPPUNIT_TEST(testInterrupt);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(InterruptTest);
+    TSUNIT_TEST(testInterrupt);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(InterruptTest);
+TSUNIT_REGISTER(InterruptTest);
 
 
 //----------------------------------------------------------------------------
@@ -66,12 +66,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterruptTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void InterruptTest::setUp()
+void InterruptTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void InterruptTest::tearDown()
+void InterruptTest::afterTest()
 {
 }
 
@@ -99,7 +99,7 @@ void InterruptTest::testInterrupt()
         TestHandler handler;
         ts::UserInterrupt ui(&handler, true, true);
 
-        CPPUNIT_ASSERT(ui.isActive());
+        TSUNIT_ASSERT(ui.isActive());
         std::cerr << "* Established one-shot handler" << std::endl;
         for (;;) {
             std::cerr << "* Press Ctrl+C..." << std::endl;
@@ -107,6 +107,6 @@ void InterruptTest::testInterrupt()
         }
     }
     else {
-        utest::Out() << "InterruptTest: interrupt test skipped, define UTEST_INTERRUPT_ALLOWED to force it" << std::endl;
+        debug() << "InterruptTest: interrupt test skipped, define UTEST_INTERRUPT_ALLOWED to force it" << std::endl;
     }
 }

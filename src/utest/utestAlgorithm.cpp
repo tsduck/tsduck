@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for utilities in tsAlgorithm.h
+//  TSUnit test suite for utilities in tsAlgorithm.h
 //
 //----------------------------------------------------------------------------
 
 #include "tsAlgorithm.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 #include <cstdarg>
 TSDUCK_SOURCE;
 
@@ -48,20 +48,20 @@ namespace {
 // The test fixture
 //----------------------------------------------------------------------------
 
-class AlgorithmTest: public CppUnit::TestFixture
+class AlgorithmTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testEnumerateCombinations();
 
-    CPPUNIT_TEST_SUITE (AlgorithmTest);
-    CPPUNIT_TEST (testEnumerateCombinations);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(AlgorithmTest);
+    TSUNIT_TEST(testEnumerateCombinations);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (AlgorithmTest);
+TSUNIT_REGISTER(AlgorithmTest);
 
 
 //----------------------------------------------------------------------------
@@ -69,12 +69,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (AlgorithmTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void AlgorithmTest::setUp()
+void AlgorithmTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void AlgorithmTest::tearDown()
+void AlgorithmTest::afterTest()
 {
 }
 
@@ -135,9 +135,9 @@ namespace {
         // Used as predicate for EnumerateCombinations.
         bool operator() (const IdSet& s)
         {
-            utest::Out() << "AlgorithmTest: combination: " << s << std::endl;
-            CPPUNIT_ASSERT_EQUAL(size_t(1), _collection.erase (s));
-            CPPUNIT_ASSERT(!_found);
+            tsunit::Test::debug() << "AlgorithmTest: combination: " << s << std::endl;
+            TSUNIT_EQUAL(1, _collection.erase(s));
+            TSUNIT_ASSERT(!_found);
             _found = s == _last;
             return !_found;
         }
@@ -169,15 +169,15 @@ void AlgorithmTest::testEnumerateCombinations()
     collection.insert (Set (2, 4, 5, 0));
     collection.insert (Set (3, 4, 5, 0));
 
-    utest::Out() << "AlgorithmTest: 3-elements combinations in " << values
+    debug() << "AlgorithmTest: 3-elements combinations in " << values
                  << " containing " << fixed
                  << " ending search at " << end << std::endl;
 
     bool completed = ts::EnumerateCombinations (values, fixed, 3, RemoveIdSet (collection, end));
 
-    utest::Out() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
-    CPPUNIT_ASSERT(completed);
-    CPPUNIT_ASSERT(collection.size() == 0);
+    debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
+    TSUNIT_ASSERT(completed);
+    TSUNIT_ASSERT(collection.size() == 0);
 
     // Enumerate all (5,3) combinations containing {2, 4}
 
@@ -189,15 +189,15 @@ void AlgorithmTest::testEnumerateCombinations()
     collection.insert (Set (2, 3, 4, 0));
     collection.insert (Set (2, 4, 5, 0));
 
-    utest::Out() << "AlgorithmTest: 3-elements combinations in " << values
+    debug() << "AlgorithmTest: 3-elements combinations in " << values
                  << " containing " << fixed
                  << " ending search at " << end << std::endl;
 
     completed = ts::EnumerateCombinations (values, fixed, 3, RemoveIdSet (collection, end));
 
-    utest::Out() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
-    CPPUNIT_ASSERT(completed);
-    CPPUNIT_ASSERT(collection.size() == 0);
+    debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
+    TSUNIT_ASSERT(completed);
+    TSUNIT_ASSERT(collection.size() == 0);
 
     // Enumerate all (5,3) combinations, stopping at {2, 3, 5}
 
@@ -216,12 +216,12 @@ void AlgorithmTest::testEnumerateCombinations()
     collection.insert (Set (2, 4, 5, 0));
     collection.insert (Set (3, 4, 5, 0));
 
-    utest::Out() << "AlgorithmTest: 3-elements combinations in " << values
+    debug() << "AlgorithmTest: 3-elements combinations in " << values
                  << " containing " << fixed
                  << " ending search at " << end << std::endl;
 
     completed = ts::EnumerateCombinations (values, fixed, 3, RemoveIdSet (collection, end));
 
-    utest::Out() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
-    CPPUNIT_ASSERT(!completed);
+    debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
+    TSUNIT_ASSERT(!completed);
 }

@@ -4,6 +4,8 @@
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\utest\tsunit.cpp" />
+    <ClCompile Include="..\..\src\utest\utestTSUnitThread.cpp" />
     <ClCompile Include="..\..\src\utest\dependenciesForStaticLib.cpp" />
     <ClCompile Include="..\..\src\utest\utest.cpp" />
     <ClCompile Include="..\..\src\utest\utestAlgorithm.cpp" />
@@ -13,9 +15,6 @@
     <ClCompile Include="..\..\src\utest\utestChannels.cpp" />
     <ClCompile Include="..\..\src\utest\utestConfig.cpp" />
     <ClCompile Include="..\..\src\utest\utestContinuity.cpp" />
-    <ClCompile Include="..\..\src\utest\utestCppUnitMain.cpp" />
-    <ClCompile Include="..\..\src\utest\utestCppUnitTest.cpp" />
-    <ClCompile Include="..\..\src\utest\utestCppUnitThread.cpp" />
     <ClCompile Include="..\..\src\utest\utestCrypto.cpp" />
     <ClCompile Include="..\..\src\utest\utestDemux.cpp" />
     <ClCompile Include="..\..\src\utest\utestDirectShow.cpp" />
@@ -62,6 +61,8 @@
     <ClCompile Include="..\..\src\utest\utestSectionFile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\utest\tsunit.h" />
+    <ClInclude Include="..\..\src\utest\utestTSUnitThread.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_aes.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_aes_chain.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_atis_idsa.h" />
@@ -75,9 +76,6 @@
     <ClInclude Include="..\..\src\utest\crypto\tv_sha512.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_tdes.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_tdes_cbc.h" />
-    <ClInclude Include="..\..\src\utest\utestCppUnitMain.h" />
-    <ClInclude Include="..\..\src\utest\utestCppUnitTest.h" />
-    <ClInclude Include="..\..\src\utest\utestCppUnitThread.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2FFD7D6C-F3BF-4ED6-8593-20AC70A83AC1}</ProjectGuid>
@@ -92,7 +90,6 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props" />
     <Import Project="msvc-use-tsducklib.props" />
-    <Import Project="$(CppUnitRoot)\CppUnit.props" />
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
 </Project>

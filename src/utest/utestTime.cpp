@@ -27,13 +27,13 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Time
+//  TSUnit test suite for class ts::Time
 //
 //----------------------------------------------------------------------------
 
 #include "tsTime.h"
 #include "tsCASDate.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -41,11 +41,11 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class TimeTest: public CppUnit::TestFixture
+class TimeTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testTime();
     void testFormat();
@@ -60,23 +60,23 @@ public:
     void testDaylightSavingTime();
     void testCAS();
 
-    CPPUNIT_TEST_SUITE(TimeTest);
-    CPPUNIT_TEST(testTime);
-    CPPUNIT_TEST(testFormat);
-    CPPUNIT_TEST(testOperators);
-    CPPUNIT_TEST(testLocalTime);
-    CPPUNIT_TEST(testThisNext);
-    CPPUNIT_TEST(testFields);
-    CPPUNIT_TEST(testFieldsValid);
-    CPPUNIT_TEST(testDecode);
-    CPPUNIT_TEST(testEpoch);
-    CPPUNIT_TEST(testUnixTime);
-    CPPUNIT_TEST(testDaylightSavingTime);
-    CPPUNIT_TEST(testCAS);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(TimeTest);
+    TSUNIT_TEST(testTime);
+    TSUNIT_TEST(testFormat);
+    TSUNIT_TEST(testOperators);
+    TSUNIT_TEST(testLocalTime);
+    TSUNIT_TEST(testThisNext);
+    TSUNIT_TEST(testFields);
+    TSUNIT_TEST(testFieldsValid);
+    TSUNIT_TEST(testDecode);
+    TSUNIT_TEST(testEpoch);
+    TSUNIT_TEST(testUnixTime);
+    TSUNIT_TEST(testDaylightSavingTime);
+    TSUNIT_TEST(testCAS);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (TimeTest);
+TSUNIT_REGISTER(TimeTest);
 
 
 //----------------------------------------------------------------------------
@@ -84,12 +84,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (TimeTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void TimeTest::setUp()
+void TimeTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void TimeTest::tearDown()
+void TimeTest::afterTest()
 {
 }
 
@@ -100,25 +100,25 @@ void TimeTest::tearDown()
 void TimeTest::testTime()
 {
     ts::Time t1;
-    utest::Out() << "TimeTest: Default constructor: " << t1 << std::endl;
-    CPPUNIT_ASSERT(t1 == ts::Time::Epoch);
+    debug() << "TimeTest: Default constructor: " << t1 << std::endl;
+    TSUNIT_ASSERT(t1 == ts::Time::Epoch);
 }
 
 void TimeTest::testFormat()
 {
     ts::Time t1 (2006, 7, 24, 10, 25, 12, 20);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006/07/24 10:25:12.020", t1.format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006/07/24 10:25:12.020", t1.format(ts::Time::ALL));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006", t1.format(ts::Time::YEAR));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"07", t1.format(ts::Time::MONTH));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"24", t1.format(ts::Time::DAY));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006/07/24", t1.format(ts::Time::DATE));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"10", t1.format(ts::Time::HOUR));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"25", t1.format(ts::Time::MINUTE));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"12", t1.format(ts::Time::SECOND));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"10:25:12", t1.format(ts::Time::TIME));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"020", t1.format(ts::Time::MILLISECOND));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"24 10:25", t1.format(ts::Time::DAY | ts::Time::HOUR | ts::Time::MINUTE));
+    TSUNIT_EQUAL(u"2006/07/24 10:25:12.020", t1.format());
+    TSUNIT_EQUAL(u"2006/07/24 10:25:12.020", t1.format(ts::Time::ALL));
+    TSUNIT_EQUAL(u"2006", t1.format(ts::Time::YEAR));
+    TSUNIT_EQUAL(u"07", t1.format(ts::Time::MONTH));
+    TSUNIT_EQUAL(u"24", t1.format(ts::Time::DAY));
+    TSUNIT_EQUAL(u"2006/07/24", t1.format(ts::Time::DATE));
+    TSUNIT_EQUAL(u"10", t1.format(ts::Time::HOUR));
+    TSUNIT_EQUAL(u"25", t1.format(ts::Time::MINUTE));
+    TSUNIT_EQUAL(u"12", t1.format(ts::Time::SECOND));
+    TSUNIT_EQUAL(u"10:25:12", t1.format(ts::Time::TIME));
+    TSUNIT_EQUAL(u"020", t1.format(ts::Time::MILLISECOND));
+    TSUNIT_EQUAL(u"24 10:25", t1.format(ts::Time::DAY | ts::Time::HOUR | ts::Time::MINUTE));
 }
 
 void TimeTest::testOperators()
@@ -129,61 +129,61 @@ void TimeTest::testOperators()
     ts::Time t4;
     t4 = t2;
 
-    CPPUNIT_ASSERT(t1 == t3);
-    CPPUNIT_ASSERT(!(t1 != t3));
-    CPPUNIT_ASSERT(t2 == t4);
-    CPPUNIT_ASSERT(t1 <= t3);
-    CPPUNIT_ASSERT(t1 <= t2);
-    CPPUNIT_ASSERT(t1 >= t3);
-    CPPUNIT_ASSERT(t2 >= t1);
-    CPPUNIT_ASSERT(t1 < t2);
-    CPPUNIT_ASSERT(t2 > t1);
-    CPPUNIT_ASSERT(t1 + 1 == t2);
-    CPPUNIT_ASSERT(t2 - 1 == t1);
-    CPPUNIT_ASSERT(t2 - t1 == 1);
-    CPPUNIT_ASSERT(t1 - t2 == -1);
+    TSUNIT_ASSERT(t1 == t3);
+    TSUNIT_ASSERT(!(t1 != t3));
+    TSUNIT_ASSERT(t2 == t4);
+    TSUNIT_ASSERT(t1 <= t3);
+    TSUNIT_ASSERT(t1 <= t2);
+    TSUNIT_ASSERT(t1 >= t3);
+    TSUNIT_ASSERT(t2 >= t1);
+    TSUNIT_ASSERT(t1 < t2);
+    TSUNIT_ASSERT(t2 > t1);
+    TSUNIT_ASSERT(t1 + 1 == t2);
+    TSUNIT_ASSERT(t2 - 1 == t1);
+    TSUNIT_ASSERT(t2 - t1 == 1);
+    TSUNIT_ASSERT(t1 - t2 == -1);
 
     t3 += 1;
-    CPPUNIT_ASSERT(t3 == t2);
+    TSUNIT_ASSERT(t3 == t2);
 
     t3 -= 1;
-    CPPUNIT_ASSERT(t3 == t1);
+    TSUNIT_ASSERT(t3 == t1);
 }
 
 void TimeTest::testLocalTime()
 {
     const ts::Time t (2012, 8, 24, 10, 25, 12, 100);
 
-    CPPUNIT_ASSERT(t.localToUTC().UTCToLocal() == t);
-    CPPUNIT_ASSERT(t.UTCToLocal().localToUTC() == t);
+    TSUNIT_ASSERT(t.localToUTC().UTCToLocal() == t);
+    TSUNIT_ASSERT(t.UTCToLocal().localToUTC() == t);
 
     const ts::Time nowUtc (ts::Time::CurrentUTC());
     const ts::Time nowLocal (ts::Time::CurrentLocalTime());
 
-    utest::Out() << "TimeTest: Current local time: " << nowLocal << std::endl;
-    utest::Out() << "TimeTest: Current UTC time: " << nowUtc << std::endl;
-    utest::Out() << "TimeTest: Local time offset: " << (nowLocal - nowUtc) / ts::MilliSecPerSec << " seconds" << std::endl;
-    utest::Out() << "TimeTest: Julian Epoch offset: " << ts::Time::JulianEpochOffset / ts::MilliSecPerDay << " days" << std::endl;
+    debug() << "TimeTest: Current local time: " << nowLocal << std::endl;
+    debug() << "TimeTest: Current UTC time: " << nowUtc << std::endl;
+    debug() << "TimeTest: Local time offset: " << (nowLocal - nowUtc) / ts::MilliSecPerSec << " seconds" << std::endl;
+    debug() << "TimeTest: Julian Epoch offset: " << ts::Time::JulianEpochOffset / ts::MilliSecPerDay << " days" << std::endl;
 
-    CPPUNIT_ASSERT(nowUtc > ts::Time::Epoch);
-    CPPUNIT_ASSERT(nowUtc < ts::Time::Apocalypse);
-    CPPUNIT_ASSERT(nowLocal > ts::Time::Epoch);
-    CPPUNIT_ASSERT(nowLocal < ts::Time::Apocalypse);
-    CPPUNIT_ASSERT(std::abs(nowUtc - nowLocal) < ts::MilliSecPerDay);
+    TSUNIT_ASSERT(nowUtc > ts::Time::Epoch);
+    TSUNIT_ASSERT(nowUtc < ts::Time::Apocalypse);
+    TSUNIT_ASSERT(nowLocal > ts::Time::Epoch);
+    TSUNIT_ASSERT(nowLocal < ts::Time::Apocalypse);
+    TSUNIT_ASSERT(std::abs(nowUtc - nowLocal) < ts::MilliSecPerDay);
 }
 
 void TimeTest::testThisNext()
 {
     const ts::Time t (2012, 8, 24, 10, 25, 12, 100);
 
-    CPPUNIT_ASSERT(t.thisHour()  == ts::Time (2012, 8, 24, 10, 0, 0, 0));
-    CPPUNIT_ASSERT(t.nextHour()  == ts::Time (2012, 8, 24, 11, 0, 0, 0));
-    CPPUNIT_ASSERT(t.thisDay()   == ts::Time (2012, 8, 24,  0, 0, 0, 0));
-    CPPUNIT_ASSERT(t.nextDay()   == ts::Time (2012, 8, 25,  0, 0, 0, 0));
-    CPPUNIT_ASSERT(t.thisMonth() == ts::Time (2012, 8,  1,  0, 0, 0, 0));
-    CPPUNIT_ASSERT(t.nextMonth() == ts::Time (2012, 9,  1,  0, 0, 0, 0));
-    CPPUNIT_ASSERT(t.thisYear()  == ts::Time (2012, 1,  1,  0, 0, 0, 0));
-    CPPUNIT_ASSERT(t.nextYear()  == ts::Time (2013, 1,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisHour()  == ts::Time (2012, 8, 24, 10, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextHour()  == ts::Time (2012, 8, 24, 11, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisDay()   == ts::Time (2012, 8, 24,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextDay()   == ts::Time (2012, 8, 25,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisMonth() == ts::Time (2012, 8,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextMonth() == ts::Time (2012, 9,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.thisYear()  == ts::Time (2012, 1,  1,  0, 0, 0, 0));
+    TSUNIT_ASSERT(t.nextYear()  == ts::Time (2013, 1,  1,  0, 0, 0, 0));
 }
 
 void TimeTest::testFields()
@@ -199,32 +199,32 @@ void TimeTest::testFields()
     f2.second = 12;
     f2.millisecond = 100;
 
-    CPPUNIT_ASSERT(f1 == f2);
-    CPPUNIT_ASSERT(!(f1 != f2));
+    TSUNIT_ASSERT(f1 == f2);
+    TSUNIT_ASSERT(!(f1 != f2));
 
     ts::Time t1 (2012, 8, 24, 10, 25, 12, 100);
     ts::Time t2 (f2);
-    CPPUNIT_ASSERT(t1 == t2);
+    TSUNIT_ASSERT(t1 == t2);
 
     ts::Time::Fields f3 (t1);
-    CPPUNIT_ASSERT(f3 == f1);
+    TSUNIT_ASSERT(f3 == f1);
 }
 
 void TimeTest::testFieldsValid()
 {
-    CPPUNIT_ASSERT(ts::Time::Fields(2012, 8, 24, 10, 25, 12, 100).isValid());
-    CPPUNIT_ASSERT(ts::Time::Fields(2017, 2, 28, 0, 0, 0, 0).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2017, 2, 29, 0, 0, 0, 0).isValid());
-    CPPUNIT_ASSERT(ts::Time::Fields(1996, 2, 29, 0, 0, 0, 0).isValid());
-    CPPUNIT_ASSERT(ts::Time::Fields(2000, 2, 29, 0, 0, 0, 0).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2100, 2, 29, 0, 0, 0, 0).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(1960, 8, 24, 10, 25, 12, 100).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 13, 24, 10, 25, 12, 100).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 4, 31, 10, 25, 12, 100).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 24, 25, 12, 100).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 66, 12, 100).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 89, 100).isValid());
-    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 12, 1100).isValid());
+    TSUNIT_ASSERT(ts::Time::Fields(2012, 8, 24, 10, 25, 12, 100).isValid());
+    TSUNIT_ASSERT(ts::Time::Fields(2017, 2, 28, 0, 0, 0, 0).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2017, 2, 29, 0, 0, 0, 0).isValid());
+    TSUNIT_ASSERT(ts::Time::Fields(1996, 2, 29, 0, 0, 0, 0).isValid());
+    TSUNIT_ASSERT(ts::Time::Fields(2000, 2, 29, 0, 0, 0, 0).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2100, 2, 29, 0, 0, 0, 0).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(1960, 8, 24, 10, 25, 12, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2012, 13, 24, 10, 25, 12, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2012, 4, 31, 10, 25, 12, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 24, 25, 12, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 66, 12, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 89, 100).isValid());
+    TSUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 12, 1100).isValid());
 }
 
 void TimeTest::testDecode()
@@ -232,50 +232,50 @@ void TimeTest::testDecode()
     ts::Time t;
     ts::Time::Fields f;
 
-    CPPUNIT_ASSERT(t.decode(u" 2017-12-02 17:28:46"));
+    TSUNIT_ASSERT(t.decode(u" 2017-12-02 17:28:46"));
     f = ts::Time::Fields(t);
-    CPPUNIT_ASSERT_EQUAL(2017, f.year);
-    CPPUNIT_ASSERT_EQUAL(12, f.month);
-    CPPUNIT_ASSERT_EQUAL(2, f.day);
-    CPPUNIT_ASSERT_EQUAL(17, f.hour);
-    CPPUNIT_ASSERT_EQUAL(28, f.minute);
-    CPPUNIT_ASSERT_EQUAL(46, f.second);
-    CPPUNIT_ASSERT_EQUAL(0, f.millisecond);
+    TSUNIT_EQUAL(2017, f.year);
+    TSUNIT_EQUAL(12, f.month);
+    TSUNIT_EQUAL(2, f.day);
+    TSUNIT_EQUAL(17, f.hour);
+    TSUNIT_EQUAL(28, f.minute);
+    TSUNIT_EQUAL(46, f.second);
+    TSUNIT_EQUAL(0, f.millisecond);
 
-    CPPUNIT_ASSERT(!t.decode(u" 2017-00-02 17:28:46"));
-    CPPUNIT_ASSERT(!t.decode(u" 2017-12-40 17:28:46"));
-    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 46:28:46"));
-    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 17:67:46"));
-    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 17:28:345"));
-    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 17:28:46", ts::Time::YEAR | ts::Time::MONTH));
+    TSUNIT_ASSERT(!t.decode(u" 2017-00-02 17:28:46"));
+    TSUNIT_ASSERT(!t.decode(u" 2017-12-40 17:28:46"));
+    TSUNIT_ASSERT(!t.decode(u" 2017-12-02 46:28:46"));
+    TSUNIT_ASSERT(!t.decode(u" 2017-12-02 17:67:46"));
+    TSUNIT_ASSERT(!t.decode(u" 2017-12-02 17:28:345"));
+    TSUNIT_ASSERT(!t.decode(u" 2017-12-02 17:28:46", ts::Time::YEAR | ts::Time::MONTH));
 
-    CPPUNIT_ASSERT(t.decode(u" 2017 / 12 x 02 ", ts::Time::YEAR | ts::Time::MINUTE | ts::Time::MILLISECOND));
+    TSUNIT_ASSERT(t.decode(u" 2017 / 12 x 02 ", ts::Time::YEAR | ts::Time::MINUTE | ts::Time::MILLISECOND));
     f = ts::Time::Fields(t);
-    CPPUNIT_ASSERT_EQUAL(2017, f.year);
-    CPPUNIT_ASSERT_EQUAL(1, f.month);
-    CPPUNIT_ASSERT_EQUAL(1, f.day);
-    CPPUNIT_ASSERT_EQUAL(0, f.hour);
-    CPPUNIT_ASSERT_EQUAL(12, f.minute);
-    CPPUNIT_ASSERT_EQUAL(0, f.second);
-    CPPUNIT_ASSERT_EQUAL(2, f.millisecond);
+    TSUNIT_EQUAL(2017, f.year);
+    TSUNIT_EQUAL(1, f.month);
+    TSUNIT_EQUAL(1, f.day);
+    TSUNIT_EQUAL(0, f.hour);
+    TSUNIT_EQUAL(12, f.minute);
+    TSUNIT_EQUAL(0, f.second);
+    TSUNIT_EQUAL(2, f.millisecond);
 }
 
 void TimeTest::testEpoch()
 {
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
+    TSUNIT_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
 }
 
 void TimeTest::testUnixTime()
 {
-    utest::Out()
+    debug()
         << "TimeTest: UNIX Epoch at " << ((ts::Time::UnixEpoch - ts::Time::Epoch) / ts::MilliSecPerDay) << " days from Epoch" << std::endl
         << "TimeTest: UNIX Epoch: " << ts::Time::UnixEpoch << std::endl
         << "TimeTest: " << ts::Time(2018, 4, 13, 12, 54, 34) << " is "
         << ((ts::Time(2018, 4, 13, 12, 54, 34) - ts::Time::Epoch) / ts::MilliSecPerDay) << " days from Epoch" << std::endl
         << "          and " << (1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
 
-    CPPUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074));
+    TSUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
+    TSUNIT_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074));
 }
 
 void TimeTest::testDaylightSavingTime()
@@ -306,130 +306,130 @@ void TimeTest::testDaylightSavingTime()
     // At some point, some of these tests used to fail, depending on the system local time.
     // The bug has been fixed but we now try all times in these two critical days.
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 00:00:00.000", ts::Time(2018, 3, 25,  0,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 00:30:00.000", ts::Time(2018, 3, 25,  0, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 01:00:00.000", ts::Time(2018, 3, 25,  1,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 01:30:00.000", ts::Time(2018, 3, 25,  1, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 01:59:59.000", ts::Time(2018, 3, 25,  1, 59, 59).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 02:00:00.000", ts::Time(2018, 3, 25,  2,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 02:30:00.000", ts::Time(2018, 3, 25,  2, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 03:00:00.000", ts::Time(2018, 3, 25,  3,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 03:30:00.000", ts::Time(2018, 3, 25,  3, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 04:00:00.000", ts::Time(2018, 3, 25,  4,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 04:30:00.000", ts::Time(2018, 3, 25,  4, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 05:00:00.000", ts::Time(2018, 3, 25,  5,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 05:30:00.000", ts::Time(2018, 3, 25,  5, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 06:00:00.000", ts::Time(2018, 3, 25,  6,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 06:30:00.000", ts::Time(2018, 3, 25,  6, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 07:00:00.000", ts::Time(2018, 3, 25,  7,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 07:30:00.000", ts::Time(2018, 3, 25,  7, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 08:00:00.000", ts::Time(2018, 3, 25,  8,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 08:30:00.000", ts::Time(2018, 3, 25,  8, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 09:00:00.000", ts::Time(2018, 3, 25,  9,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 09:30:00.000", ts::Time(2018, 3, 25,  9, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 10:00:00.000", ts::Time(2018, 3, 25, 10,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 10:30:00.000", ts::Time(2018, 3, 25, 10, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 11:00:00.000", ts::Time(2018, 3, 25, 11,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 11:30:00.000", ts::Time(2018, 3, 25, 11, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 12:00:00.000", ts::Time(2018, 3, 25, 12,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 12:30:00.000", ts::Time(2018, 3, 25, 12, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 13:00:00.000", ts::Time(2018, 3, 25, 13,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 13:30:00.000", ts::Time(2018, 3, 25, 13, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 14:00:00.000", ts::Time(2018, 3, 25, 14,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 14:30:00.000", ts::Time(2018, 3, 25, 14, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 15:00:00.000", ts::Time(2018, 3, 25, 15,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 15:30:00.000", ts::Time(2018, 3, 25, 15, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 16:00:00.000", ts::Time(2018, 3, 25, 16,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 16:30:00.000", ts::Time(2018, 3, 25, 16, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 17:00:00.000", ts::Time(2018, 3, 25, 17,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 17:30:00.000", ts::Time(2018, 3, 25, 17, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 18:00:00.000", ts::Time(2018, 3, 25, 18,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 18:30:00.000", ts::Time(2018, 3, 25, 18, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 19:00:00.000", ts::Time(2018, 3, 25, 19,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 19:30:00.000", ts::Time(2018, 3, 25, 19, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 20:00:00.000", ts::Time(2018, 3, 25, 20,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 20:30:00.000", ts::Time(2018, 3, 25, 20, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 21:00:00.000", ts::Time(2018, 3, 25, 21,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 21:30:00.000", ts::Time(2018, 3, 25, 21, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 22:00:00.000", ts::Time(2018, 3, 25, 22,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 22:30:00.000", ts::Time(2018, 3, 25, 22, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 23:00:00.000", ts::Time(2018, 3, 25, 23,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2018/03/25 23:30:00.000", ts::Time(2018, 3, 25, 23, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 00:00:00.000", ts::Time(2018, 3, 25,  0,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 00:30:00.000", ts::Time(2018, 3, 25,  0, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 01:00:00.000", ts::Time(2018, 3, 25,  1,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 01:30:00.000", ts::Time(2018, 3, 25,  1, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 01:59:59.000", ts::Time(2018, 3, 25,  1, 59, 59).format());
+    TSUNIT_EQUAL(u"2018/03/25 02:00:00.000", ts::Time(2018, 3, 25,  2,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 02:30:00.000", ts::Time(2018, 3, 25,  2, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 03:00:00.000", ts::Time(2018, 3, 25,  3,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 03:30:00.000", ts::Time(2018, 3, 25,  3, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 04:00:00.000", ts::Time(2018, 3, 25,  4,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 04:30:00.000", ts::Time(2018, 3, 25,  4, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 05:00:00.000", ts::Time(2018, 3, 25,  5,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 05:30:00.000", ts::Time(2018, 3, 25,  5, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 06:00:00.000", ts::Time(2018, 3, 25,  6,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 06:30:00.000", ts::Time(2018, 3, 25,  6, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 07:00:00.000", ts::Time(2018, 3, 25,  7,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 07:30:00.000", ts::Time(2018, 3, 25,  7, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 08:00:00.000", ts::Time(2018, 3, 25,  8,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 08:30:00.000", ts::Time(2018, 3, 25,  8, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 09:00:00.000", ts::Time(2018, 3, 25,  9,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 09:30:00.000", ts::Time(2018, 3, 25,  9, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 10:00:00.000", ts::Time(2018, 3, 25, 10,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 10:30:00.000", ts::Time(2018, 3, 25, 10, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 11:00:00.000", ts::Time(2018, 3, 25, 11,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 11:30:00.000", ts::Time(2018, 3, 25, 11, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 12:00:00.000", ts::Time(2018, 3, 25, 12,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 12:30:00.000", ts::Time(2018, 3, 25, 12, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 13:00:00.000", ts::Time(2018, 3, 25, 13,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 13:30:00.000", ts::Time(2018, 3, 25, 13, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 14:00:00.000", ts::Time(2018, 3, 25, 14,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 14:30:00.000", ts::Time(2018, 3, 25, 14, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 15:00:00.000", ts::Time(2018, 3, 25, 15,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 15:30:00.000", ts::Time(2018, 3, 25, 15, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 16:00:00.000", ts::Time(2018, 3, 25, 16,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 16:30:00.000", ts::Time(2018, 3, 25, 16, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 17:00:00.000", ts::Time(2018, 3, 25, 17,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 17:30:00.000", ts::Time(2018, 3, 25, 17, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 18:00:00.000", ts::Time(2018, 3, 25, 18,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 18:30:00.000", ts::Time(2018, 3, 25, 18, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 19:00:00.000", ts::Time(2018, 3, 25, 19,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 19:30:00.000", ts::Time(2018, 3, 25, 19, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 20:00:00.000", ts::Time(2018, 3, 25, 20,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 20:30:00.000", ts::Time(2018, 3, 25, 20, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 21:00:00.000", ts::Time(2018, 3, 25, 21,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 21:30:00.000", ts::Time(2018, 3, 25, 21, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 22:00:00.000", ts::Time(2018, 3, 25, 22,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 22:30:00.000", ts::Time(2018, 3, 25, 22, 30,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 23:00:00.000", ts::Time(2018, 3, 25, 23,  0,  0).format());
+    TSUNIT_EQUAL(u"2018/03/25 23:30:00.000", ts::Time(2018, 3, 25, 23, 30,  0).format());
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 00:00:00.000", ts::Time(2017, 10, 29,  0,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 00:30:00.000", ts::Time(2017, 10, 29,  0, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 01:00:00.000", ts::Time(2017, 10, 29,  1,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 01:30:00.000", ts::Time(2017, 10, 29,  1, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 01:59:59.000", ts::Time(2017, 10, 29,  1, 59, 59).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 02:00:00.000", ts::Time(2017, 10, 29,  2,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 02:30:00.000", ts::Time(2017, 10, 29,  2, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 03:00:00.000", ts::Time(2017, 10, 29,  3,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 03:30:00.000", ts::Time(2017, 10, 29,  3, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 04:00:00.000", ts::Time(2017, 10, 29,  4,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 04:30:00.000", ts::Time(2017, 10, 29,  4, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 05:00:00.000", ts::Time(2017, 10, 29,  5,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 05:30:00.000", ts::Time(2017, 10, 29,  5, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 06:00:00.000", ts::Time(2017, 10, 29,  6,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 06:30:00.000", ts::Time(2017, 10, 29,  6, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 07:00:00.000", ts::Time(2017, 10, 29,  7,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 07:30:00.000", ts::Time(2017, 10, 29,  7, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 08:00:00.000", ts::Time(2017, 10, 29,  8,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 08:30:00.000", ts::Time(2017, 10, 29,  8, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 09:00:00.000", ts::Time(2017, 10, 29,  9,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 09:30:00.000", ts::Time(2017, 10, 29,  9, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 10:00:00.000", ts::Time(2017, 10, 29, 10,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 10:30:00.000", ts::Time(2017, 10, 29, 10, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 11:00:00.000", ts::Time(2017, 10, 29, 11,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 11:30:00.000", ts::Time(2017, 10, 29, 11, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 12:00:00.000", ts::Time(2017, 10, 29, 12,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 12:30:00.000", ts::Time(2017, 10, 29, 12, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 13:00:00.000", ts::Time(2017, 10, 29, 13,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 13:30:00.000", ts::Time(2017, 10, 29, 13, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 14:00:00.000", ts::Time(2017, 10, 29, 14,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 14:30:00.000", ts::Time(2017, 10, 29, 14, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 15:00:00.000", ts::Time(2017, 10, 29, 15,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 15:30:00.000", ts::Time(2017, 10, 29, 15, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 16:00:00.000", ts::Time(2017, 10, 29, 16,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 16:30:00.000", ts::Time(2017, 10, 29, 16, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 17:00:00.000", ts::Time(2017, 10, 29, 17,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 17:30:00.000", ts::Time(2017, 10, 29, 17, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 18:00:00.000", ts::Time(2017, 10, 29, 18,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 18:30:00.000", ts::Time(2017, 10, 29, 18, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 19:00:00.000", ts::Time(2017, 10, 29, 19,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 19:30:00.000", ts::Time(2017, 10, 29, 19, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 20:00:00.000", ts::Time(2017, 10, 29, 20,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 20:30:00.000", ts::Time(2017, 10, 29, 20, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 21:00:00.000", ts::Time(2017, 10, 29, 21,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 21:30:00.000", ts::Time(2017, 10, 29, 21, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 22:00:00.000", ts::Time(2017, 10, 29, 22,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 22:30:00.000", ts::Time(2017, 10, 29, 22, 30,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 23:00:00.000", ts::Time(2017, 10, 29, 23,  0,  0).format());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2017/10/29 23:30:00.000", ts::Time(2017, 10, 29, 23, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 00:00:00.000", ts::Time(2017, 10, 29,  0,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 00:30:00.000", ts::Time(2017, 10, 29,  0, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 01:00:00.000", ts::Time(2017, 10, 29,  1,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 01:30:00.000", ts::Time(2017, 10, 29,  1, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 01:59:59.000", ts::Time(2017, 10, 29,  1, 59, 59).format());
+    TSUNIT_EQUAL(u"2017/10/29 02:00:00.000", ts::Time(2017, 10, 29,  2,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 02:30:00.000", ts::Time(2017, 10, 29,  2, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 03:00:00.000", ts::Time(2017, 10, 29,  3,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 03:30:00.000", ts::Time(2017, 10, 29,  3, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 04:00:00.000", ts::Time(2017, 10, 29,  4,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 04:30:00.000", ts::Time(2017, 10, 29,  4, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 05:00:00.000", ts::Time(2017, 10, 29,  5,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 05:30:00.000", ts::Time(2017, 10, 29,  5, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 06:00:00.000", ts::Time(2017, 10, 29,  6,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 06:30:00.000", ts::Time(2017, 10, 29,  6, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 07:00:00.000", ts::Time(2017, 10, 29,  7,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 07:30:00.000", ts::Time(2017, 10, 29,  7, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 08:00:00.000", ts::Time(2017, 10, 29,  8,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 08:30:00.000", ts::Time(2017, 10, 29,  8, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 09:00:00.000", ts::Time(2017, 10, 29,  9,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 09:30:00.000", ts::Time(2017, 10, 29,  9, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 10:00:00.000", ts::Time(2017, 10, 29, 10,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 10:30:00.000", ts::Time(2017, 10, 29, 10, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 11:00:00.000", ts::Time(2017, 10, 29, 11,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 11:30:00.000", ts::Time(2017, 10, 29, 11, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 12:00:00.000", ts::Time(2017, 10, 29, 12,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 12:30:00.000", ts::Time(2017, 10, 29, 12, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 13:00:00.000", ts::Time(2017, 10, 29, 13,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 13:30:00.000", ts::Time(2017, 10, 29, 13, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 14:00:00.000", ts::Time(2017, 10, 29, 14,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 14:30:00.000", ts::Time(2017, 10, 29, 14, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 15:00:00.000", ts::Time(2017, 10, 29, 15,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 15:30:00.000", ts::Time(2017, 10, 29, 15, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 16:00:00.000", ts::Time(2017, 10, 29, 16,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 16:30:00.000", ts::Time(2017, 10, 29, 16, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 17:00:00.000", ts::Time(2017, 10, 29, 17,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 17:30:00.000", ts::Time(2017, 10, 29, 17, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 18:00:00.000", ts::Time(2017, 10, 29, 18,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 18:30:00.000", ts::Time(2017, 10, 29, 18, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 19:00:00.000", ts::Time(2017, 10, 29, 19,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 19:30:00.000", ts::Time(2017, 10, 29, 19, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 20:00:00.000", ts::Time(2017, 10, 29, 20,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 20:30:00.000", ts::Time(2017, 10, 29, 20, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 21:00:00.000", ts::Time(2017, 10, 29, 21,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 21:30:00.000", ts::Time(2017, 10, 29, 21, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 22:00:00.000", ts::Time(2017, 10, 29, 22,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 22:30:00.000", ts::Time(2017, 10, 29, 22, 30,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 23:00:00.000", ts::Time(2017, 10, 29, 23,  0,  0).format());
+    TSUNIT_EQUAL(u"2017/10/29 23:30:00.000", ts::Time(2017, 10, 29, 23, 30,  0).format());
 }
 
 void TimeTest::testCAS()
 {
-    CPPUNIT_ASSERT_EQUAL(1980, ts::ViaccessDate::MIN_YEAR);
-    CPPUNIT_ASSERT_EQUAL(1990, ts::MediaGuardDate::MIN_YEAR);
-    CPPUNIT_ASSERT_EQUAL(2000, ts::SafeAccessDate::MIN_YEAR);
+    TSUNIT_EQUAL(1980, ts::ViaccessDate::MIN_YEAR);
+    TSUNIT_EQUAL(1990, ts::MediaGuardDate::MIN_YEAR);
+    TSUNIT_EQUAL(2000, ts::SafeAccessDate::MIN_YEAR);
 
-    CPPUNIT_ASSERT_EQUAL(2107, ts::ViaccessDate::MAX_YEAR);
-    CPPUNIT_ASSERT_EQUAL(2117, ts::MediaGuardDate::MAX_YEAR);
-    CPPUNIT_ASSERT_EQUAL(2127, ts::SafeAccessDate::MAX_YEAR);
+    TSUNIT_EQUAL(2107, ts::ViaccessDate::MAX_YEAR);
+    TSUNIT_EQUAL(2117, ts::MediaGuardDate::MAX_YEAR);
+    TSUNIT_EQUAL(2127, ts::SafeAccessDate::MAX_YEAR);
 
     ts::MediaGuardDate md(1999, 2, 28);
-    CPPUNIT_ASSERT(md.isValid());
-    CPPUNIT_ASSERT_EQUAL(1999, md.year());
-    CPPUNIT_ASSERT_EQUAL(2, md.month());
-    CPPUNIT_ASSERT_EQUAL(28, md.day());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1999-02-28", md.toString());
+    TSUNIT_ASSERT(md.isValid());
+    TSUNIT_EQUAL(1999, md.year());
+    TSUNIT_EQUAL(2, md.month());
+    TSUNIT_EQUAL(28, md.day());
+    TSUNIT_EQUAL(u"1999-02-28", md.toString());
 
     ts::Time t(md);
     ts::Time::Fields f(t);
-    CPPUNIT_ASSERT_EQUAL(1999, f.year);
-    CPPUNIT_ASSERT_EQUAL(2, f.month);
-    CPPUNIT_ASSERT_EQUAL(28, f.day);
+    TSUNIT_EQUAL(1999, f.year);
+    TSUNIT_EQUAL(2, f.month);
+    TSUNIT_EQUAL(28, f.day);
     
     md.invalidate();
-    CPPUNIT_ASSERT(!md.isValid());
+    TSUNIT_ASSERT(!md.isValid());
 }

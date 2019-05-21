@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Enumeration
+//  TSUnit test suite for class ts::Enumeration
 //
 //----------------------------------------------------------------------------
 
 #include "tsEnumeration.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,11 +40,11 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class EnumerationTest: public CppUnit::TestFixture
+class EnumerationTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testEnumeration();
     void testName();
@@ -53,17 +53,17 @@ public:
     void testNameList();
     void testIterators();
 
-    CPPUNIT_TEST_SUITE(EnumerationTest);
-    CPPUNIT_TEST(testEnumeration);
-    CPPUNIT_TEST(testName);
-    CPPUNIT_TEST(testNames);
-    CPPUNIT_TEST(testValue);
-    CPPUNIT_TEST(testNameList);
-    CPPUNIT_TEST(testIterators);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(EnumerationTest);
+    TSUNIT_TEST(testEnumeration);
+    TSUNIT_TEST(testName);
+    TSUNIT_TEST(testNames);
+    TSUNIT_TEST(testValue);
+    TSUNIT_TEST(testNameList);
+    TSUNIT_TEST(testIterators);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(EnumerationTest);
+TSUNIT_REGISTER(EnumerationTest);
 
 
 //----------------------------------------------------------------------------
@@ -71,12 +71,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(EnumerationTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void EnumerationTest::setUp()
+void EnumerationTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void EnumerationTest::tearDown()
+void EnumerationTest::afterTest()
 {
 }
 
@@ -91,31 +91,31 @@ void EnumerationTest::testEnumeration()
     ts::Enumeration e1;
     ts::Enumeration e2({});
 
-    CPPUNIT_ASSERT(e1.size() == 0);
-    CPPUNIT_ASSERT(e2.size() == 0);
-    CPPUNIT_ASSERT(e1 == e2);
+    TSUNIT_ASSERT(e1.size() == 0);
+    TSUNIT_ASSERT(e2.size() == 0);
+    TSUNIT_ASSERT(e1 == e2);
 
     ts::Enumeration e3({{u"FirstElement", -1},
                         {u"SecondElement", 7},
                         {u"FirstRepetition", 47},
                         {u"OtherValue", -123}});
 
-    CPPUNIT_ASSERT(e3.size() == 4);
+    TSUNIT_ASSERT(e3.size() == 4);
 
     ts::Enumeration e4(e3);
-    CPPUNIT_ASSERT(e4.size() == 4);
-    CPPUNIT_ASSERT(e3 == e4);
-    CPPUNIT_ASSERT(e3 != e1);
+    TSUNIT_ASSERT(e4.size() == 4);
+    TSUNIT_ASSERT(e3 == e4);
+    TSUNIT_ASSERT(e3 != e1);
 
     e3.add(u"AddedElement", 458);
-    CPPUNIT_ASSERT(e3.size() == 5);
-    CPPUNIT_ASSERT(e3 != e4);
-    CPPUNIT_ASSERT(e3 != e1);
+    TSUNIT_ASSERT(e3.size() == 5);
+    TSUNIT_ASSERT(e3 != e4);
+    TSUNIT_ASSERT(e3 != e1);
 
     e1 = e3;
-    CPPUNIT_ASSERT(e1.size() == 5);
-    CPPUNIT_ASSERT(e1 == e3);
-    CPPUNIT_ASSERT(e1 != e2);
+    TSUNIT_ASSERT(e1.size() == 5);
+    TSUNIT_ASSERT(e1 == e3);
+    TSUNIT_ASSERT(e1 != e2);
 }
 
 void EnumerationTest::testName()
@@ -126,18 +126,18 @@ void EnumerationTest::testName()
                         {u"OtherValue", -123},
                         {u"AddedElement", 458}});
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FirstElement", e1.name(-1));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"SecondElement", e1.name(7));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FirstRepetition", e1.name(47));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"OtherValue", e1.name(-123));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AddedElement", e1.name(458));
+    TSUNIT_EQUAL(u"FirstElement", e1.name(-1));
+    TSUNIT_EQUAL(u"SecondElement", e1.name(7));
+    TSUNIT_EQUAL(u"FirstRepetition", e1.name(47));
+    TSUNIT_EQUAL(u"OtherValue", e1.name(-123));
+    TSUNIT_EQUAL(u"AddedElement", e1.name(458));
 
-    CPPUNIT_ASSERT(e1.size() == 5);
+    TSUNIT_ASSERT(e1.size() == 5);
     e1.add(u"Other7", 7);
-    CPPUNIT_ASSERT(e1.size() == 6);
+    TSUNIT_ASSERT(e1.size() == 6);
 
     const ts::UString v7(e1.name(7));
-    CPPUNIT_ASSERT(v7 == u"SecondElement" || v7 == u"Other7");
+    TSUNIT_ASSERT(v7 == u"SecondElement" || v7 == u"Other7");
 }
 
 void EnumerationTest::testNames()
@@ -149,16 +149,16 @@ void EnumerationTest::testNames()
                         {u"AddedElement", 458}});
 
     std::vector<int> vec;
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", e1.names(vec));
+    TSUNIT_EQUAL(u"", e1.names(vec));
 
     vec.push_back(7);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"SecondElement", e1.names(vec));
+    TSUNIT_EQUAL(u"SecondElement", e1.names(vec));
 
     vec.push_back(458);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"SecondElement, AddedElement", e1.names(vec));
+    TSUNIT_EQUAL(u"SecondElement, AddedElement", e1.names(vec));
 
     vec.push_back(432);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"SecondElement, AddedElement, 432", e1.names(vec));
+    TSUNIT_EQUAL(u"SecondElement, AddedElement, 432", e1.names(vec));
 }
 
 void EnumerationTest::testValue()
@@ -169,32 +169,32 @@ void EnumerationTest::testValue()
                         {u"OtherValue", -123},
                         {u"AddedElement", 458}});
 
-    CPPUNIT_ASSERT(e1.value(u"FirstElement") == -1);
-    CPPUNIT_ASSERT(e1.value(u"SecondElement") == 7);
-    CPPUNIT_ASSERT(e1.value(u"FirstRepetition") == 47);
-    CPPUNIT_ASSERT(e1.value(u"OtherValue") == -123);
-    CPPUNIT_ASSERT(e1.value(u"AddedElement") == 458);
+    TSUNIT_ASSERT(e1.value(u"FirstElement") == -1);
+    TSUNIT_ASSERT(e1.value(u"SecondElement") == 7);
+    TSUNIT_ASSERT(e1.value(u"FirstRepetition") == 47);
+    TSUNIT_ASSERT(e1.value(u"OtherValue") == -123);
+    TSUNIT_ASSERT(e1.value(u"AddedElement") == 458);
 
-    CPPUNIT_ASSERT(e1.value(u"FirstElement", true) == -1);
-    CPPUNIT_ASSERT(e1.value(u"FirstElement", false) == -1);
-    CPPUNIT_ASSERT(e1.value(u"firste") == ts::Enumeration::UNKNOWN);
-    CPPUNIT_ASSERT(e1.value(u"firste", true) == ts::Enumeration::UNKNOWN);
-    CPPUNIT_ASSERT(e1.value(u"firste", false) == -1);
+    TSUNIT_ASSERT(e1.value(u"FirstElement", true) == -1);
+    TSUNIT_ASSERT(e1.value(u"FirstElement", false) == -1);
+    TSUNIT_ASSERT(e1.value(u"firste") == ts::Enumeration::UNKNOWN);
+    TSUNIT_ASSERT(e1.value(u"firste", true) == ts::Enumeration::UNKNOWN);
+    TSUNIT_ASSERT(e1.value(u"firste", false) == -1);
 
-    CPPUNIT_ASSERT(e1.value(u"FirstElem") == -1);
-    CPPUNIT_ASSERT(e1.value(u"FirstE") == -1);
-    CPPUNIT_ASSERT(e1.value(u"First") == ts::Enumeration::UNKNOWN);
+    TSUNIT_ASSERT(e1.value(u"FirstElem") == -1);
+    TSUNIT_ASSERT(e1.value(u"FirstE") == -1);
+    TSUNIT_ASSERT(e1.value(u"First") == ts::Enumeration::UNKNOWN);
 
-    CPPUNIT_ASSERT(e1.size() == 5);
+    TSUNIT_ASSERT(e1.size() == 5);
     e1.add(u"FirstRepetition", 48);
-    CPPUNIT_ASSERT(e1.size() == 6);
+    TSUNIT_ASSERT(e1.size() == 6);
 
     const int vFirstRepetition = e1.value(u"FirstRepetition");
-    CPPUNIT_ASSERT(vFirstRepetition == 47 || vFirstRepetition == 48);
+    TSUNIT_ASSERT(vFirstRepetition == 47 || vFirstRepetition == 48);
 
-    CPPUNIT_ASSERT(e1.value(u"1") == 1);
-    CPPUNIT_ASSERT(e1.value(u"0x10") == 16);
-    CPPUNIT_ASSERT(e1.value(u"x10") == ts::Enumeration::UNKNOWN);
+    TSUNIT_ASSERT(e1.value(u"1") == 1);
+    TSUNIT_ASSERT(e1.value(u"0x10") == 16);
+    TSUNIT_ASSERT(e1.value(u"x10") == ts::Enumeration::UNKNOWN);
 }
 
 void EnumerationTest::testNameList()
@@ -213,14 +213,14 @@ void EnumerationTest::testNameList()
     ref.push_back(u"AddedElement");
 
     const ts::UString list(e1.nameList());
-    utest::Out() << "EnumerationTest: e1.nameList() = \"" << list << "\"" << std::endl;
+    debug() << "EnumerationTest: e1.nameList() = \"" << list << "\"" << std::endl;
 
     ts::UStringVector value;
     list.split(value);
 
     std::sort(ref.begin(), ref.end());
     std::sort(value.begin(), value.end());
-    CPPUNIT_ASSERT(value == ref);
+    TSUNIT_ASSERT(value == ref);
 }
 
 void EnumerationTest::testIterators()
@@ -243,5 +243,5 @@ void EnumerationTest::testIterators()
         value.insert(std::make_pair(it->first, it->second));
     }
 
-    CPPUNIT_ASSERT(value == ref);
+    TSUNIT_ASSERT(value == ref);
 }

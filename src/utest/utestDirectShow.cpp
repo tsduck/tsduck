@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for tsDirectShowUtils.h (Windows only)
+//  TSUnit test suite for tsDirectShowUtils.h (Windows only)
 //
 //----------------------------------------------------------------------------
 
@@ -37,27 +37,27 @@ TSDUCK_SOURCE;
 
 #include "tsDirectShowTest.h"
 #include "tsWinUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 
 
 //----------------------------------------------------------------------------
 // The test fixture
 //----------------------------------------------------------------------------
 
-class DirectShowTest: public CppUnit::TestFixture
+class DirectShowTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testDevices();
 
-    CPPUNIT_TEST_SUITE(DirectShowTest);
-    CPPUNIT_TEST(testDevices);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(DirectShowTest);
+    TSUNIT_TEST(testDevices);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DirectShowTest);
+TSUNIT_REGISTER(DirectShowTest);
 
 
 //----------------------------------------------------------------------------
@@ -65,13 +65,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DirectShowTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void DirectShowTest::setUp()
+void DirectShowTest::beforeTest()
 {
-    CPPUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"CoInitializeEx", CERR));
+    TSUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"CoInitializeEx", CERR));
 }
 
 // Test suite cleanup method.
-void DirectShowTest::tearDown()
+void DirectShowTest::afterTest()
 {
     ::CoUninitialize();
 }
@@ -83,7 +83,7 @@ void DirectShowTest::tearDown()
 
 void DirectShowTest::testDevices()
 {
-    ts::DirectShowTest test(utest::Out(), CERR);
+    ts::DirectShowTest test(debug(), CERR);
     test.runTest(ts::DirectShowTest::ENUMERATE_DEVICES);
 }
 

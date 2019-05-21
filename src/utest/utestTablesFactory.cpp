@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for ts::TablesFactory.
+//  TSUnit test suite for ts::TablesFactory.
 //
 //----------------------------------------------------------------------------
 
 #include "tsTablesFactory.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,20 +40,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class TablesFactoryTest: public CppUnit::TestFixture
+class TablesFactoryTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testRegistrations();
 
-    CPPUNIT_TEST_SUITE(TablesFactoryTest);
-    CPPUNIT_TEST(testRegistrations);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(TablesFactoryTest);
+    TSUNIT_TEST(testRegistrations);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(TablesFactoryTest);
+TSUNIT_REGISTER(TablesFactoryTest);
 
 
 //----------------------------------------------------------------------------
@@ -61,12 +61,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TablesFactoryTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void TablesFactoryTest::setUp()
+void TablesFactoryTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void TablesFactoryTest::tearDown()
+void TablesFactoryTest::afterTest()
 {
 }
 
@@ -80,15 +80,15 @@ void TablesFactoryTest::testRegistrations()
     ts::UStringList names;
 
     ts::TablesFactory::Instance()->getRegisteredTableNames(names);
-    utest::Out() << "TablesFactoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
+    debug() << "TablesFactoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
 
-    CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::UString(u"PAT").containSimilar(names));
-    CPPUNIT_ASSERT(ts::UString(u"PMT").containSimilar(names));
+    TSUNIT_ASSERT(!names.empty());
+    TSUNIT_ASSERT(ts::UString(u"PAT").containSimilar(names));
+    TSUNIT_ASSERT(ts::UString(u"PMT").containSimilar(names));
 
     ts::TablesFactory::Instance()->getRegisteredDescriptorNames(names);
-    utest::Out() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
+    debug() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
 
-    CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::UString(u"ca_descriptor").containSimilar(names));
+    TSUNIT_ASSERT(!names.empty());
+    TSUNIT_ASSERT(ts::UString(u"ca_descriptor").containSimilar(names));
 }

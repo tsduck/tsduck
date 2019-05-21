@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Mutex
+//  TSUnit test suite for class ts::Mutex
 //
 //  Note that is is difficult to test mutexes without threads. This test suite
 //  is partial. More mutex tests are available in test suite ThreadTest.
@@ -35,7 +35,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMutex.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -43,20 +43,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class MutexTest: public CppUnit::TestFixture
+class MutexTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testRecursion();
 
-    CPPUNIT_TEST_SUITE (MutexTest);
-    CPPUNIT_TEST (testRecursion);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(MutexTest);
+    TSUNIT_TEST(testRecursion);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (MutexTest);
+TSUNIT_REGISTER(MutexTest);
 
 
 //----------------------------------------------------------------------------
@@ -64,12 +64,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (MutexTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void MutexTest::setUp()
+void MutexTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void MutexTest::tearDown()
+void MutexTest::afterTest()
 {
 }
 
@@ -82,16 +82,16 @@ void MutexTest::testRecursion()
 {
     ts::Mutex mutex;
 
-    CPPUNIT_ASSERT(!mutex.release());
+    TSUNIT_ASSERT(!mutex.release());
 
-    CPPUNIT_ASSERT(mutex.acquire());
-    CPPUNIT_ASSERT(mutex.acquire());
-    CPPUNIT_ASSERT(mutex.acquire());
+    TSUNIT_ASSERT(mutex.acquire());
+    TSUNIT_ASSERT(mutex.acquire());
+    TSUNIT_ASSERT(mutex.acquire());
 
-    CPPUNIT_ASSERT(mutex.release());
-    CPPUNIT_ASSERT(mutex.release());
-    CPPUNIT_ASSERT(mutex.release());
+    TSUNIT_ASSERT(mutex.release());
+    TSUNIT_ASSERT(mutex.release());
+    TSUNIT_ASSERT(mutex.release());
 
-    CPPUNIT_ASSERT(!mutex.release());
-    CPPUNIT_ASSERT(!mutex.release());
+    TSUNIT_ASSERT(!mutex.release());
+    TSUNIT_ASSERT(!mutex.release());
 }

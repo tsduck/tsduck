@@ -27,14 +27,14 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::DVBCSA2
+//  TSUnit test suite for class ts::DVBCSA2
 //
 //----------------------------------------------------------------------------
 
 #include "tsDVBCSA2.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -42,20 +42,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ScramblingTest: public CppUnit::TestFixture
+class ScramblingTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testScrambling();
 
-    CPPUNIT_TEST_SUITE(ScramblingTest);
-    CPPUNIT_TEST(testScrambling);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ScramblingTest);
+    TSUNIT_TEST(testScrambling);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ScramblingTest);
+TSUNIT_REGISTER(ScramblingTest);
 
 
 //----------------------------------------------------------------------------
@@ -63,12 +63,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ScramblingTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void ScramblingTest::setUp()
+void ScramblingTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void ScramblingTest::tearDown()
+void ScramblingTest::afterTest()
 {
 }
 
@@ -179,7 +179,7 @@ void ScramblingTest::testScrambling()
     ts::DVBCSA2 scrambler;
     ts::TSPacket pkt;
 
-    utest::Out() << "ScramblingTest: " << count << " test vectors" << std::endl;
+    debug() << "ScramblingTest: " << count << " test vectors" << std::endl;
 
     for (size_t ti = 0; ti < count; ++ti, ++vec) {
 
@@ -187,27 +187,27 @@ void ScramblingTest::testScrambling()
         const size_t payload_size = vec->plain.getPayloadSize();
         const uint8_t scv = vec->cipher.getScrambling();
 
-        utest::Out() << "ScramblingTest: " << ti << ", header: " << header_size <<
+        debug() << "ScramblingTest: " << ti << ", header: " << header_size <<
               " byte, payload: " << payload_size <<
               " bytes, PID: " << vec->plain.getPID() <<
               ", scrambling: " << ts::names::ScramblingControl(scv) << std::endl;
 
-        CPPUNIT_ASSERT(header_size == vec->cipher.getHeaderSize());
-        CPPUNIT_ASSERT(payload_size == vec->cipher.getPayloadSize());
-        CPPUNIT_ASSERT(header_size + payload_size == ts::PKT_SIZE);
-        CPPUNIT_ASSERT(scv == ts::SC_EVEN_KEY || scv == ts::SC_ODD_KEY);
-        CPPUNIT_ASSERT(vec->plain.getScrambling() == ts::SC_CLEAR);
+        TSUNIT_ASSERT(header_size == vec->cipher.getHeaderSize());
+        TSUNIT_ASSERT(payload_size == vec->cipher.getPayloadSize());
+        TSUNIT_ASSERT(header_size + payload_size == ts::PKT_SIZE);
+        TSUNIT_ASSERT(scv == ts::SC_EVEN_KEY || scv == ts::SC_ODD_KEY);
+        TSUNIT_ASSERT(vec->plain.getScrambling() == ts::SC_CLEAR);
 
-        CPPUNIT_ASSERT(scrambler.setKey(scv == ts::SC_EVEN_KEY ? vec->cw_even : vec->cw_odd, sizeof(vec->cw_even)));
+        TSUNIT_ASSERT(scrambler.setKey(scv == ts::SC_EVEN_KEY ? vec->cw_even : vec->cw_odd, sizeof(vec->cw_even)));
 
         // Descrambling test
         pkt = vec->cipher;
-        CPPUNIT_ASSERT(scrambler.decryptInPlace(pkt.b + header_size, payload_size));
-        CPPUNIT_ASSERT(::memcmp (pkt.b + header_size, vec->plain.b + header_size, payload_size) == 0);
+        TSUNIT_ASSERT(scrambler.decryptInPlace(pkt.b + header_size, payload_size));
+        TSUNIT_ASSERT(::memcmp (pkt.b + header_size, vec->plain.b + header_size, payload_size) == 0);
 
         // Scrambling test
         pkt = vec->plain;
-        CPPUNIT_ASSERT(scrambler.encryptInPlace(pkt.b + header_size, payload_size));
-        CPPUNIT_ASSERT(::memcmp(pkt.b + header_size, vec->cipher.b + header_size, payload_size) == 0);
+        TSUNIT_ASSERT(scrambler.encryptInPlace(pkt.b + header_size, payload_size));
+        TSUNIT_ASSERT(::memcmp(pkt.b + header_size, vec->cipher.b + header_size, payload_size) == 0);
     }
 }

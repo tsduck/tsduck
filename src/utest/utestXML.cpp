@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for XML classes.
+//  TSUnit test suite for XML classes.
 //
 //----------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -45,13 +45,13 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class XMLTest: public CppUnit::TestFixture
+class XMLTest: public tsunit::Test
 {
 public:
     XMLTest();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testDocument();
     void testInvalid();
@@ -63,24 +63,24 @@ public:
     void testTweaks();
     void testChannels();
 
-    CPPUNIT_TEST_SUITE(XMLTest);
-    CPPUNIT_TEST(testDocument);
-    CPPUNIT_TEST(testInvalid);
-    CPPUNIT_TEST(testFileBOM);
-    CPPUNIT_TEST(testValidation);
-    CPPUNIT_TEST(testCreation);
-    CPPUNIT_TEST(testKeepOpen);
-    CPPUNIT_TEST(testEscape);
-    CPPUNIT_TEST(testTweaks);
-    CPPUNIT_TEST(testChannels);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(XMLTest);
+    TSUNIT_TEST(testDocument);
+    TSUNIT_TEST(testInvalid);
+    TSUNIT_TEST(testFileBOM);
+    TSUNIT_TEST(testValidation);
+    TSUNIT_TEST(testCreation);
+    TSUNIT_TEST(testKeepOpen);
+    TSUNIT_TEST(testEscape);
+    TSUNIT_TEST(testTweaks);
+    TSUNIT_TEST(testChannels);
+    TSUNIT_TEST_END();
 
 private:
     ts::UString _tempFileName;
     ts::Report& report();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(XMLTest);
+TSUNIT_REGISTER(XMLTest);
 
 
 //----------------------------------------------------------------------------
@@ -94,20 +94,20 @@ XMLTest::XMLTest() :
 }
 
 // Test suite initialization method.
-void XMLTest::setUp()
+void XMLTest::beforeTest()
 {
     ts::DeleteFile(_tempFileName);
 }
 
 // Test suite cleanup method.
-void XMLTest::tearDown()
+void XMLTest::afterTest()
 {
     ts::DeleteFile(_tempFileName);
 }
 
 ts::Report& XMLTest::report()
 {
-    if (utest::DebugMode()) {
+    if (tsunit::Test::debugMode()) {
         return CERR;
     }
     else {
@@ -132,58 +132,58 @@ void XMLTest::testDocument()
         u"</root>\n";
 
     ts::xml::Document doc(report());
-    CPPUNIT_ASSERT(doc.parse(document));
-    CPPUNIT_ASSERT(doc.hasChildren());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), doc.childrenCount());
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_ASSERT(doc.hasChildren());
+    TSUNIT_EQUAL(size_t(2), doc.childrenCount());
 
     ts::xml::Element* root = doc.rootElement();
-    CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT(root->hasChildren());
-    CPPUNIT_ASSERT_EQUAL(size_t(4), root->childrenCount());
-    CPPUNIT_ASSERT(root->hasAttribute(u"attr1"));
-    CPPUNIT_ASSERT(root->hasAttribute(u"AttR1"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"root", root->name());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"val1", root->attribute(u"attr1").value());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"val1", root->attribute(u"AtTr1").value());
-    CPPUNIT_ASSERT(!root->hasAttribute(u"nonexistent"));
-    CPPUNIT_ASSERT(!root->attribute(u"nonexistent", true).isValid());
-    CPPUNIT_ASSERT(root->attribute(u"nonexistent", true).value().empty());
-    CPPUNIT_ASSERT(root->attribute(u"nonexistent", true).name().empty());
+    TSUNIT_ASSERT(root != nullptr);
+    TSUNIT_ASSERT(root->hasChildren());
+    TSUNIT_EQUAL(size_t(4), root->childrenCount());
+    TSUNIT_ASSERT(root->hasAttribute(u"attr1"));
+    TSUNIT_ASSERT(root->hasAttribute(u"AttR1"));
+    TSUNIT_EQUAL(u"root", root->name());
+    TSUNIT_EQUAL(u"val1", root->attribute(u"attr1").value());
+    TSUNIT_EQUAL(u"val1", root->attribute(u"AtTr1").value());
+    TSUNIT_ASSERT(!root->hasAttribute(u"nonexistent"));
+    TSUNIT_ASSERT(!root->attribute(u"nonexistent", true).isValid());
+    TSUNIT_ASSERT(root->attribute(u"nonexistent", true).value().empty());
+    TSUNIT_ASSERT(root->attribute(u"nonexistent", true).name().empty());
 
     ts::xml::Element* elem = root->firstChildElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT(elem->hasChildren());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node1", elem->name());
-    CPPUNIT_ASSERT(elem->hasAttribute(u"a1"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"v1", elem->attribute(u"a1").value());
-    CPPUNIT_ASSERT(elem->hasAttribute(u"a2"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"v2", elem->attribute(u"a2").value());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Text in node1", elem->text());
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_ASSERT(elem->hasChildren());
+    TSUNIT_EQUAL(u"node1", elem->name());
+    TSUNIT_ASSERT(elem->hasAttribute(u"a1"));
+    TSUNIT_EQUAL(u"v1", elem->attribute(u"a1").value());
+    TSUNIT_ASSERT(elem->hasAttribute(u"a2"));
+    TSUNIT_EQUAL(u"v2", elem->attribute(u"a2").value());
+    TSUNIT_EQUAL(u"Text in node1", elem->text());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT(elem->hasChildren());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node2", elem->name());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"x1", elem->attribute(u"b1").value());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Text in node2", elem->text());
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_ASSERT(elem->hasChildren());
+    TSUNIT_EQUAL(u"node2", elem->name());
+    TSUNIT_EQUAL(u"x1", elem->attribute(u"b1").value());
+    TSUNIT_EQUAL(u"Text in node2", elem->text());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT(!elem->hasChildren());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node3", elem->name());
-    CPPUNIT_ASSERT(elem->hasAttribute(u"foo"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar", elem->attribute(u"foo").value());
-    CPPUNIT_ASSERT(elem->text().empty());
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_ASSERT(!elem->hasChildren());
+    TSUNIT_EQUAL(u"node3", elem->name());
+    TSUNIT_ASSERT(elem->hasAttribute(u"foo"));
+    TSUNIT_EQUAL(u"bar", elem->attribute(u"foo").value());
+    TSUNIT_ASSERT(elem->text().empty());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT(!elem->hasChildren());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node4", elem->name());
-    CPPUNIT_ASSERT(!elem->hasAttribute(u"foo"));
-    CPPUNIT_ASSERT(elem->text().empty());
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_ASSERT(!elem->hasChildren());
+    TSUNIT_EQUAL(u"node4", elem->name());
+    TSUNIT_ASSERT(!elem->hasAttribute(u"foo"));
+    TSUNIT_ASSERT(elem->text().empty());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem == nullptr);
+    TSUNIT_ASSERT(elem == nullptr);
 }
 
 void XMLTest::testInvalid()
@@ -196,8 +196,8 @@ void XMLTest::testInvalid()
 
     ts::ReportBuffer<> rep;
     ts::xml::Document doc(rep);
-    CPPUNIT_ASSERT(!doc.parse(xmlContent));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.getMessages());
+    TSUNIT_ASSERT(!doc.parse(xmlContent));
+    TSUNIT_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.getMessages());
 }
 
 void XMLTest::testFileBOM()
@@ -220,32 +220,32 @@ void XMLTest::testFileBOM()
     const ts::UString childText1(u"\n    f<>\n  ");
     const ts::UString childText2(u"f<>");
 
-    CPPUNIT_ASSERT(fileData.saveToFile(_tempFileName, &report()));
+    TSUNIT_ASSERT(fileData.saveToFile(_tempFileName, &report()));
 
     ts::xml::Document doc(report());
-    CPPUNIT_ASSERT(doc.load(_tempFileName));
+    TSUNIT_ASSERT(doc.load(_tempFileName));
 
     ts::xml::Element* root = doc.rootElement();
-    CPPUNIT_ASSERT_EQUAL(size_t(2), doc.childrenCount());
-    CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT_EQUAL(size_t(1), root->childrenCount());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(rootName, root->name());
+    TSUNIT_EQUAL(size_t(2), doc.childrenCount());
+    TSUNIT_ASSERT(root != nullptr);
+    TSUNIT_EQUAL(size_t(1), root->childrenCount());
+    TSUNIT_EQUAL(rootName, root->name());
 
     ts::xml::Element* elem = root->firstChildElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(childName, elem->name());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(childAttrName, elem->attribute(childAttrName).name());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(childAttrValue, elem->attribute(childAttrName).value());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(childText1, elem->text(false));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(childText2, elem->text(true));
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_EQUAL(childName, elem->name());
+    TSUNIT_EQUAL(childAttrName, elem->attribute(childAttrName).name());
+    TSUNIT_EQUAL(childAttrValue, elem->attribute(childAttrName).value());
+    TSUNIT_EQUAL(childText1, elem->text(false));
+    TSUNIT_EQUAL(childText2, elem->text(true));
 
-    CPPUNIT_ASSERT(ts::DeleteFile(_tempFileName) == ts::SYS_SUCCESS);
+    TSUNIT_ASSERT(ts::DeleteFile(_tempFileName) == ts::SYS_SUCCESS);
 }
 
 void XMLTest::testValidation()
 {
     ts::xml::Document model(report());
-    CPPUNIT_ASSERT(model.load(u"tsduck.tables.model.xml"));
+    TSUNIT_ASSERT(model.load(u"tsduck.tables.model.xml"));
 
     const ts::UString xmlContent(
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -268,8 +268,8 @@ void XMLTest::testValidation()
         u"</tsduck>");
 
     ts::xml::Document doc(report());
-    CPPUNIT_ASSERT(doc.parse(xmlContent));
-    CPPUNIT_ASSERT(doc.validate(model));
+    TSUNIT_ASSERT(doc.parse(xmlContent));
+    TSUNIT_ASSERT(doc.validate(model));
 }
 
 void XMLTest::testCreation()
@@ -280,34 +280,34 @@ void XMLTest::testCreation()
     ts::xml::Element* subchild2 = nullptr;
 
     ts::xml::Element* root = doc.initialize(u"theRoot");
-    CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT_EQUAL(size_t(0), doc.depth());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), root->depth());
+    TSUNIT_ASSERT(root != nullptr);
+    TSUNIT_EQUAL(size_t(0), doc.depth());
+    TSUNIT_EQUAL(size_t(1), root->depth());
 
-    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
-    CPPUNIT_ASSERT_EQUAL(size_t(2), child1->depth());
+    TSUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
+    TSUNIT_EQUAL(size_t(2), child1->depth());
     child1->setAttribute(u"str", u"a string");
     child1->setIntAttribute(u"int", -47);
-    CPPUNIT_ASSERT(child1->addElement(u"subChild1") != nullptr);
-    CPPUNIT_ASSERT((subchild2 = child1->addElement(u"subChild2")) != nullptr);
+    TSUNIT_ASSERT(child1->addElement(u"subChild1") != nullptr);
+    TSUNIT_ASSERT((subchild2 = child1->addElement(u"subChild2")) != nullptr);
     subchild2->setIntAttribute(u"int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
 
-    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
-    CPPUNIT_ASSERT(child2->addElement(u"fooBar") != nullptr);
+    TSUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
+    TSUNIT_ASSERT(child2->addElement(u"fooBar") != nullptr);
 
     ts::UString str;
-    CPPUNIT_ASSERT(child1->getAttribute(str, u"str", true));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a string", str);
+    TSUNIT_ASSERT(child1->getAttribute(str, u"str", true));
+    TSUNIT_EQUAL(u"a string", str);
 
     int i;
-    CPPUNIT_ASSERT(child1->getIntAttribute(i, u"int", true));
-    CPPUNIT_ASSERT_EQUAL(-47, i);
+    TSUNIT_ASSERT(child1->getIntAttribute(i, u"int", true));
+    TSUNIT_EQUAL(-47, i);
 
     int64_t i64;
-    CPPUNIT_ASSERT(subchild2->getIntAttribute(i64, u"int64", true));
-    CPPUNIT_ASSERT_EQUAL(TS_CONST64(0x7FFFFFFFFFFFFFFF), i64);
+    TSUNIT_ASSERT(subchild2->getIntAttribute(i64, u"int64", true));
+    TSUNIT_EQUAL(TS_CONST64(0x7FFFFFFFFFFFFFFF), i64);
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<theRoot>\n"
         u"  <child1 str=\"a string\" int=\"-47\">\n"
@@ -338,18 +338,18 @@ void XMLTest::testKeepOpen()
         u"</root>\n";
 
     ts::xml::Document doc(report());
-    CPPUNIT_ASSERT(doc.parse(document));
+    TSUNIT_ASSERT(doc.parse(document));
 
     ts::xml::Element* root = doc.rootElement();
-    CPPUNIT_ASSERT(root != nullptr);
+    TSUNIT_ASSERT(root != nullptr);
 
     ts::xml::Element* node2 = root->findFirstChild(u"NODE2");
-    CPPUNIT_ASSERT(node2 != nullptr);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node2", node2->name());
+    TSUNIT_ASSERT(node2 != nullptr);
+    TSUNIT_EQUAL(u"node2", node2->name());
 
     ts::TextFormatter out(report());
     node2->print(out.setString());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<node2>\n"
         u"  <node21>\n"
         u"    <node211/>\n"
@@ -359,7 +359,7 @@ void XMLTest::testKeepOpen()
         out.toString());
 
     node2->print(out.setString(), true);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<node2>\n"
         u"  <node21>\n"
         u"    <node211/>\n"
@@ -368,7 +368,7 @@ void XMLTest::testKeepOpen()
         out.toString());
 
     node2->printClose(out, 1);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<node2>\n"
         u"  <node21>\n"
         u"    <node211/>\n"
@@ -385,19 +385,19 @@ void XMLTest::testEscape()
     ts::xml::Element* child2 = nullptr;
 
     ts::xml::Element* root = doc.initialize(u"theRoot");
-    CPPUNIT_ASSERT(root != nullptr);
-    CPPUNIT_ASSERT_EQUAL(size_t(0), doc.depth());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), root->depth());
+    TSUNIT_ASSERT(root != nullptr);
+    TSUNIT_EQUAL(size_t(0), doc.depth());
+    TSUNIT_EQUAL(size_t(1), root->depth());
 
-    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
-    CPPUNIT_ASSERT_EQUAL(size_t(2), child1->depth());
+    TSUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
+    TSUNIT_EQUAL(size_t(2), child1->depth());
     child1->setAttribute(u"str", u"ab&<>'\"cd");
 
-    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
-    CPPUNIT_ASSERT(child2->addText(u"text<&'\">text") != nullptr);
+    TSUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
+    TSUNIT_ASSERT(child2->addText(u"text<&'\">text") != nullptr);
 
     const ts::UString text(doc.toString());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<theRoot>\n"
         u"  <child1 str=\"ab&amp;&lt;&gt;&apos;&quot;cd\"/>\n"
@@ -406,44 +406,44 @@ void XMLTest::testEscape()
         text);
 
     ts::xml::Document doc2(report());
-    CPPUNIT_ASSERT(doc2.parse(text));
-    CPPUNIT_ASSERT(doc2.hasChildren());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), doc2.childrenCount());
+    TSUNIT_ASSERT(doc2.parse(text));
+    TSUNIT_ASSERT(doc2.hasChildren());
+    TSUNIT_EQUAL(size_t(2), doc2.childrenCount());
 
     ts::xml::Element* root2 = doc2.rootElement();
-    CPPUNIT_ASSERT(root2 != nullptr);
-    CPPUNIT_ASSERT(root2->hasChildren());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), root2->childrenCount());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"theRoot", root2->name());
+    TSUNIT_ASSERT(root2 != nullptr);
+    TSUNIT_ASSERT(root2->hasChildren());
+    TSUNIT_EQUAL(size_t(2), root2->childrenCount());
+    TSUNIT_EQUAL(u"theRoot", root2->name());
 
     ts::xml::Element* elem = root2->firstChildElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child1", elem->name());
-    CPPUNIT_ASSERT(elem->hasAttribute(u"str"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab&<>'\"cd", elem->attribute(u"str").value());
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_EQUAL(u"child1", elem->name());
+    TSUNIT_ASSERT(elem->hasAttribute(u"str"));
+    TSUNIT_EQUAL(u"ab&<>'\"cd", elem->attribute(u"str").value());
 
     elem = elem->nextSiblingElement();
-    CPPUNIT_ASSERT(elem != nullptr);
-    CPPUNIT_ASSERT(elem->hasChildren());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"child2", elem->name());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"text<&'\">text", elem->text());
+    TSUNIT_ASSERT(elem != nullptr);
+    TSUNIT_ASSERT(elem->hasChildren());
+    TSUNIT_EQUAL(u"child2", elem->name());
+    TSUNIT_EQUAL(u"text<&'\">text", elem->text());
 }
 
 void XMLTest::testTweaks()
 {
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"root");
-    CPPUNIT_ASSERT(root != nullptr);
+    TSUNIT_ASSERT(root != nullptr);
     root->setAttribute(u"a1", u"foo");
     root->setAttribute(u"a2", u"ab&<>'\"cd");
     root->setAttribute(u"a3", u"ef\"gh");
     root->setAttribute(u"a4", u"ij'kl");
-    CPPUNIT_ASSERT(root->addText(u"text<&'\">text") != nullptr);
+    TSUNIT_ASSERT(root->addText(u"text<&'\">text") != nullptr);
 
     ts::xml::Tweaks tweaks; // default values
     doc.setTweaks(tweaks);
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<root a1=\"foo\" a2=\"ab&amp;&lt;&gt;&apos;&quot;cd\" a3=\"ef&quot;gh\" a4=\"ij&apos;kl\">text&lt;&amp;'\"&gt;text</root>\n",
         doc.toString());
@@ -452,7 +452,7 @@ void XMLTest::testTweaks()
     tweaks.strictTextNodeFormatting = true;
     doc.setTweaks(tweaks);
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<root a1=\"foo\" a2=\"ab&amp;&lt;&gt;&apos;&quot;cd\" a3=\"ef&quot;gh\" a4=\"ij&apos;kl\">text&lt;&amp;&apos;&quot;&gt;text</root>\n",
         doc.toString());
@@ -461,7 +461,7 @@ void XMLTest::testTweaks()
     tweaks.strictTextNodeFormatting = true;
     doc.setTweaks(tweaks);
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<root a1=\"foo\" a2=\"ab&amp;<>'&quot;cd\" a3='ef\"gh' a4=\"ij'kl\">text&lt;&amp;&apos;&quot;&gt;text</root>\n",
         doc.toString());
@@ -470,7 +470,7 @@ void XMLTest::testTweaks()
     tweaks.strictTextNodeFormatting = false;
     doc.setTweaks(tweaks);
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<root a1=\"foo\" a2=\"ab&amp;<>'&quot;cd\" a3='ef\"gh' a4=\"ij'kl\">text&lt;&amp;'\"&gt;text</root>\n",
         doc.toString());
@@ -479,5 +479,5 @@ void XMLTest::testTweaks()
 void XMLTest::testChannels()
 {
     ts::xml::Document model(report());
-    CPPUNIT_ASSERT(model.load(u"tsduck.channels.model.xml"));
+    TSUNIT_ASSERT(model.load(u"tsduck.channels.model.xml"));
 }

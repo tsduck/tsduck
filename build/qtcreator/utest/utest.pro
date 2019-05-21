@@ -2,17 +2,17 @@ CONFIG += libtsduck
 include(../tsduck.pri)
 TEMPLATE = app
 TARGET = utest
-LIBS += -lcppunit
 QMAKE_POST_LINK += cp ../tsplugin_drop/tsplugin_drop.so . $$escape_expand(\\n\\t)
 QMAKE_POST_LINK += cp ../tsplugin_null/tsplugin_null.so . $$escape_expand(\\n\\t)
 QMAKE_POST_LINK += cp ../tsplugin_skip/tsplugin_skip.so . $$escape_expand(\\n\\t)
 
 HEADERS += \
-    ../../../src/utest/utestCppUnitMain.h \
-    ../../../src/utest/utestCppUnitTest.h \
-    ../../../src/utest/utestCppUnitThread.h
+    ../../../src/utest/tsunit.h \
+    ../../../src/utest/tsunitThread.h
 
 SOURCES += \
+    ../../../src/utest/tsunit.cpp \
+    ../../../src/utest/tsunitThread.cpp \
     ../../../src/utest/utest.cpp \
     ../../../src/utest/utestAlgorithm.cpp \
     ../../../src/utest/utestArgs.cpp \
@@ -21,8 +21,6 @@ SOURCES += \
     ../../../src/utest/utestChannels.cpp \
     ../../../src/utest/utestConfig.cpp \
     ../../../src/utest/utestContinuity.cpp \
-    ../../../src/utest/utestCppUnitMain.cpp \
-    ../../../src/utest/utestCppUnitTest.cpp \
     ../../../src/utest/utestCrypto.cpp \
     ../../../src/utest/utestDemux.cpp \
     ../../../src/utest/utestDirectShow.cpp \
@@ -67,8 +65,7 @@ SOURCES += \
     ../../../src/utest/utestWebRequest.cpp \
     ../../../src/utest/utestXML.cpp \
     ../../../src/utest/utestHLS.cpp \
-    ../../../src/utest/utestHFBand.cpp \
-    ../../../src/utest/utestCppUnitThread.cpp
+    ../../../src/utest/utestHFBand.cpp
 
 DISTFILES += \
     ../../../src/utest/tables/ts2headers.sh \

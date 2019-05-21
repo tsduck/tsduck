@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for tsFatal.h
+//  TSUnit test suite for tsFatal.h
 //
 //  Since the purpose of this test is to crash the application, we don't do
 //  it blindly! The crash is effective only if the environment variable
@@ -37,7 +37,7 @@
 
 #include "tsFatal.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -45,22 +45,22 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class FatalTest: public CppUnit::TestFixture
+class FatalTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testWithoutCrash();
     void testCrash();
 
-    CPPUNIT_TEST_SUITE(FatalTest);
-    CPPUNIT_TEST(testWithoutCrash);
-    CPPUNIT_TEST(testCrash);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(FatalTest);
+    TSUNIT_TEST(testWithoutCrash);
+    TSUNIT_TEST(testCrash);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(FatalTest);
+TSUNIT_REGISTER(FatalTest);
 
 
 //----------------------------------------------------------------------------
@@ -68,12 +68,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(FatalTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void FatalTest::setUp()
+void FatalTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void FatalTest::tearDown()
+void FatalTest::afterTest()
 {
 }
 
@@ -96,9 +96,9 @@ void FatalTest::testCrash()
         std::cerr << "FatalTest: CheckNonNull(0) : should fail !" << std::endl
                   << "Unset UTEST_FATAL_CRASH_ALLOWED to skip the crash test" << std::endl;
         ts::CheckNonNull(nullptr);
-        CPPUNIT_FAIL("Should not get there, should have crashed");
+        TSUNIT_FAIL("Should not get there, should have crashed");
     }
     else {
-        utest::Out() << "FatalTest: crash test skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
+        debug() << "FatalTest: crash test skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
     }
 }

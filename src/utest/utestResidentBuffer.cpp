@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::ResidentBuffer
+//  TSUnit test suite for class ts::ResidentBuffer
 //
 //----------------------------------------------------------------------------
 
 #include "tsResidentBuffer.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,20 +40,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ResidentBufferTest: public CppUnit::TestFixture
+class ResidentBufferTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testResidentBuffer();
 
-    CPPUNIT_TEST_SUITE(ResidentBufferTest);
-    CPPUNIT_TEST(testResidentBuffer);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ResidentBufferTest);
+    TSUNIT_TEST(testResidentBuffer);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ResidentBufferTest);
+TSUNIT_REGISTER(ResidentBufferTest);
 
 
 //----------------------------------------------------------------------------
@@ -61,12 +61,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ResidentBufferTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void ResidentBufferTest::setUp()
+void ResidentBufferTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void ResidentBufferTest::tearDown()
+void ResidentBufferTest::afterTest()
 {
 }
 
@@ -81,9 +81,9 @@ void ResidentBufferTest::testResidentBuffer()
 
     ts::ResidentBuffer<uint8_t> buf(buf_size);
 
-    utest::Out() << "ResidentBufferTest: isLocked() = " << buf.isLocked()
+    debug() << "ResidentBufferTest: isLocked() = " << buf.isLocked()
                  << ", requested size = " << buf_size << ", count() = " << buf.count() << std::endl;
 
-    CPPUNIT_ASSERT(buf.isLocked());
-    CPPUNIT_ASSERT(buf.count() >= buf_size);
+    TSUNIT_ASSERT(buf.isLocked());
+    TSUNIT_ASSERT(buf.count() >= buf_size);
 }
