@@ -541,6 +541,12 @@ void tsunit::TestExceptionWrapper<TEST,EXCEP,T1,T2>::run()
     }
 }
 
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+
 template<typename T>
 std::string tsunit::toStringImpl(T value, const char* format)
 {
@@ -549,6 +555,10 @@ std::string tsunit::toStringImpl(T value, const char* format)
     buf[sizeof(buf) - 1] = '\0';
     return std::string(buf);
 }
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 template<typename ETYPE,
          typename ATYPE,
