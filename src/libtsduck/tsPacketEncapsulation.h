@@ -318,6 +318,7 @@ namespace ts {
         PacketCounter    _currentPacket;   // Total TS packets since last reset.
         PacketCounter    _pcrLastPacket;   // Packet index of last PCR in reference PID.
         uint64_t         _pcrLastValue;    // Last PCR value in reference PID.
+        uint64_t         _ptsPrevious;     // Previous PTS value in PES ASYNC mode.
         BitRate          _bitrate;         // Bitrate computed from last PCR.
         bool             _insertPCR;       // Insert a PCR in next output packet.
         uint8_t          _ccOutput;        // Continuity counter in output PID.
