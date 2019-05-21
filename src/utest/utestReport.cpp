@@ -27,14 +27,14 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for subclasses of ts::Report
+//  TSUnit test suite for subclasses of ts::Report
 //
 //----------------------------------------------------------------------------
 
 #include "tsReportBuffer.h"
 #include "tsReportFile.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -42,13 +42,13 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ReportTest: public CppUnit::TestFixture
+class ReportTest: public tsunit::Test
 {
 public:
     ReportTest();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testSeverity();
     void testString();
@@ -56,19 +56,19 @@ public:
     void testByName();
     void testByStream();
 
-    CPPUNIT_TEST_SUITE(ReportTest);
-    CPPUNIT_TEST(testSeverity);
-    CPPUNIT_TEST(testString);
-    CPPUNIT_TEST(testPrintf);
-    CPPUNIT_TEST(testByName);
-    CPPUNIT_TEST(testByStream);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ReportTest);
+    TSUNIT_TEST(testSeverity);
+    TSUNIT_TEST(testString);
+    TSUNIT_TEST(testPrintf);
+    TSUNIT_TEST(testByName);
+    TSUNIT_TEST(testByStream);
+    TSUNIT_TEST_END();
 
 private:
     ts::UString _fileName;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ReportTest);
+TSUNIT_REGISTER(ReportTest);
 
 
 //----------------------------------------------------------------------------
@@ -82,13 +82,13 @@ ReportTest::ReportTest() :
 }
 
 // Test suite initialization method.
-void ReportTest::setUp()
+void ReportTest::beforeTest()
 {
     _fileName = ts::TempFile();
 }
 
 // Test suite cleanup method.
-void ReportTest::tearDown()
+void ReportTest::afterTest()
 {
     // Returned value ignored on purpose, end of test, temporary file may not even exists.
     // coverity[CHECKED_RETURN]
@@ -104,24 +104,24 @@ void ReportTest::tearDown()
 void ReportTest::testSeverity()
 {
     ts::ReportBuffer<> log1;
-    CPPUNIT_ASSERT(log1.maxSeverity() == ts::Severity::Info);
-    CPPUNIT_ASSERT(!log1.debug());
-    CPPUNIT_ASSERT(!log1.verbose());
+    TSUNIT_ASSERT(log1.maxSeverity() == ts::Severity::Info);
+    TSUNIT_ASSERT(!log1.debug());
+    TSUNIT_ASSERT(!log1.verbose());
 
     ts::ReportBuffer<> log2(ts::Severity::Verbose);
-    CPPUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Verbose);
-    CPPUNIT_ASSERT(!log2.debug());
-    CPPUNIT_ASSERT(log2.verbose());
+    TSUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Verbose);
+    TSUNIT_ASSERT(!log2.debug());
+    TSUNIT_ASSERT(log2.verbose());
 
     log2.setMaxSeverity(4);
-    CPPUNIT_ASSERT(log2.maxSeverity() == 4);
-    CPPUNIT_ASSERT(log2.debug());
-    CPPUNIT_ASSERT(log2.verbose());
+    TSUNIT_ASSERT(log2.maxSeverity() == 4);
+    TSUNIT_ASSERT(log2.debug());
+    TSUNIT_ASSERT(log2.verbose());
 
     log2.setMaxSeverity(ts::Severity::Warning);
-    CPPUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Warning);
-    CPPUNIT_ASSERT(!log2.debug());
-    CPPUNIT_ASSERT(!log2.verbose());
+    TSUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Warning);
+    TSUNIT_ASSERT(!log2.debug());
+    TSUNIT_ASSERT(!log2.verbose());
 }
 
 // Log sequence for testString
@@ -155,11 +155,11 @@ namespace {
 void ReportTest::testString()
 {
     ts::ReportBuffer<> log;
-    CPPUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.emptyMessages());
 
     _testStringSequence(log, ts::Severity::Debug);
-    CPPUNIT_ASSERT(!log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1\n"
+    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_EQUAL(u"1\n"
                                   u"Debug: 2\n"
                                   u"Debug: 3\n"
                                   u"Warning: 4\n"
@@ -170,8 +170,8 @@ void ReportTest::testString()
                                   log.getMessages());
 
     _testStringSequence(log, ts::Severity::Info);
-    CPPUNIT_ASSERT(!log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1\n"
+    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_EQUAL(u"1\n"
                                   u"Warning: 4\n"
                                   u"5\n"
                                   u"FATAL ERROR: 6\n"
@@ -180,29 +180,29 @@ void ReportTest::testString()
                                   log.getMessages());
 
     _testStringSequence(log, ts::Severity::Warning);
-    CPPUNIT_ASSERT(!log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Warning: 4\n"
+    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_EQUAL(u"Warning: 4\n"
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
                                   log.getMessages());
 
     _testStringSequence(log, ts::Severity::Error);
-    CPPUNIT_ASSERT(!log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FATAL ERROR: 6\n"
+    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
                                   log.getMessages());
 
     _testStringSequence(log, ts::Severity::Fatal);
-    CPPUNIT_ASSERT(!log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FATAL ERROR: 6\n"
+    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7",
                                   log.getMessages());
 
     _testStringSequence(log, ts::Severity::Fatal - 1);
-    CPPUNIT_ASSERT(log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", log.getMessages());
+    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_EQUAL(u"", log.getMessages());
 }
 
 // Log sequence for testPrintf
@@ -229,7 +229,7 @@ void ReportTest::testPrintf()
     ts::ReportBuffer<> log;
 
     _testPrintfSequence(log, ts::Severity::Debug);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1\n"
+    TSUNIT_EQUAL(u"1\n"
                                   u"Debug: 2\n"
                                   u"Debug: 3\n"
                                   u"Warning: 4\n"
@@ -240,7 +240,7 @@ void ReportTest::testPrintf()
                                   log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Info);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1\n"
+    TSUNIT_EQUAL(u"1\n"
                                   u"Warning: 4\n"
                                   u"5\n"
                                   u"FATAL ERROR: 6\n"
@@ -249,26 +249,26 @@ void ReportTest::testPrintf()
                                   log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Warning);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Warning: 4\n"
+    TSUNIT_EQUAL(u"Warning: 4\n"
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
                                   log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Error);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FATAL ERROR: 6\n"
+    TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
                                   log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Fatal);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FATAL ERROR: 6\n"
+    TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7",
                                   log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Fatal - 1);
-    CPPUNIT_ASSERT(log.emptyMessages());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", log.getMessages());
+    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_EQUAL(u"", log.getMessages());
 }
 
 // Test case: log file by name
@@ -286,7 +286,7 @@ void ReportTest::testByName()
 
     ts::UStringVector value;
     ts::UString::Load(value, _fileName);
-    CPPUNIT_ASSERT(value == ref);
+    TSUNIT_ASSERT(value == ref);
 
     {
         ts::ReportFile<> log(_fileName, true, false);
@@ -298,24 +298,24 @@ void ReportTest::testByName()
     ref.push_back(u"Error: error 2");
 
     ts::UString::Load(value, _fileName);
-    CPPUNIT_ASSERT(value == ref);
+    TSUNIT_ASSERT(value == ref);
 }
 
 // Test case: log file on open stream
 void ReportTest::testByStream()
 {
     std::ofstream stream(_fileName.toUTF8().c_str());
-    CPPUNIT_ASSERT(stream.is_open());
+    TSUNIT_ASSERT(stream.is_open());
 
     {
         ts::ReportFile<> log(stream);
         log.info(u"info 1");
         log.error(u"error 1");
     }
-    CPPUNIT_ASSERT(stream.is_open());
+    TSUNIT_ASSERT(stream.is_open());
 
     stream.close();
-    CPPUNIT_ASSERT(!stream.is_open());
+    TSUNIT_ASSERT(!stream.is_open());
 
     ts::UStringVector ref;
     ref.push_back(u"info 1");
@@ -323,5 +323,5 @@ void ReportTest::testByStream()
 
     ts::UStringVector value;
     ts::UString::Load(value, _fileName);
-    CPPUNIT_ASSERT(value == ref);
+    TSUNIT_ASSERT(value == ref);
 }

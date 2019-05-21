@@ -26,47 +26,45 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#define UTEST_CPPUNITTEST_CPP 1
-#include "utestCppUnitTest.h"
-#include <iostream>
-
-
-//----------------------------------------------------------------------------
-// Output file stream used to report debug messages.
+//!
+//!  @file
+//!  Thread wrapper for TSUnit.
+//!
 //----------------------------------------------------------------------------
 
-namespace {
-    std::ofstream _debugStream;
-}
+#pragma once
+#include "tsThread.h"
 
-//----------------------------------------------------------------------------
-// This static method checks if debug mode is active (ie if debug messages are displayed).
-//----------------------------------------------------------------------------
+namespace utest {
+    //!
+    //! TSUnit wrapper for thread main code.
+    //!
+    //! TSUnit is not designed for multi-threading. Any assertion failure in a thread
+    //! produces unspecified results, typically a crash of the application, and there
+    //! is no error message about the failing display. This class is a wrapper
+    //! around the main code of a thread. In case of assertion failure, a TSUnit
+    //! error is displayed and the application properly exits.
+    //!
+    class TSUnitThread : public ts::Thread
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        TSUnitThread();
 
-bool utest::DebugMode()
-{
-    return !_debugStream.is_open();
-}
+        //!
+        //! Constructor from specified attributes.
+        //! @param [in] attributes The set of attributes.
+        //!
+        TSUnitThread(const ts::ThreadAttributes& attributes);
 
+        //!
+        //! Actual test code (thread main code).
+        //!
+        virtual void test() = 0;
 
-//----------------------------------------------------------------------------
-// This static method returns a reference to the actual output file
-// stream used to report debug messages.
-//----------------------------------------------------------------------------
-
-std::ofstream& utest::DebugStream()
-{
-    return _debugStream;
-}
-
-
-//----------------------------------------------------------------------------
-// This static method returns a reference to an output stream
-// which can be used by unitary tests to log messages.
-//----------------------------------------------------------------------------
-
-std::ostream& utest::Out()
-{
-    return _debugStream.is_open() ? _debugStream : std::cerr;
+        // Implementation of thread interface.
+        virtual void main() override;
+    };
 }

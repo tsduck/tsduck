@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::WebRequest.
+//  TSUnit test suite for class ts::WebRequest.
 //
 //  Warning: these tests fail if there is no Internet connection or if
 //  a proxy is required.
@@ -39,7 +39,7 @@
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -47,13 +47,13 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class WebRequestTest: public CppUnit::TestFixture
+class WebRequestTest: public tsunit::Test
 {
 public:
     WebRequestTest();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testGitHub();
     void testGoogle();
@@ -62,14 +62,14 @@ public:
     void testNonExistentHost();
     void testInvalidURL();
 
-    CPPUNIT_TEST_SUITE(WebRequestTest);
-    CPPUNIT_TEST(testGitHub);
-    CPPUNIT_TEST(testGoogle);
-    CPPUNIT_TEST(testReadMeFile);
-    CPPUNIT_TEST(testNoRedirection);
-    CPPUNIT_TEST(testNonExistentHost);
-    CPPUNIT_TEST(testInvalidURL);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(WebRequestTest);
+    TSUNIT_TEST(testGitHub);
+    TSUNIT_TEST(testGoogle);
+    TSUNIT_TEST(testReadMeFile);
+    TSUNIT_TEST(testNoRedirection);
+    TSUNIT_TEST(testNonExistentHost);
+    TSUNIT_TEST(testInvalidURL);
+    TSUNIT_TEST_END();
 
 private:
     ts::UString _tempFileName;
@@ -77,7 +77,7 @@ private:
     void testURL(const ts::UString& url, bool expectRedirection, bool expectSSL, bool expectTextContent, bool expectInvariant);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (WebRequestTest);
+TSUNIT_REGISTER(WebRequestTest);
 
 
 //----------------------------------------------------------------------------
@@ -91,20 +91,20 @@ WebRequestTest::WebRequestTest() :
 }
 
 // Test suite initialization method.
-void WebRequestTest::setUp()
+void WebRequestTest::beforeTest()
 {
     ts::DeleteFile(_tempFileName);
 }
 
 // Test suite cleanup method.
-void WebRequestTest::tearDown()
+void WebRequestTest::afterTest()
 {
     ts::DeleteFile(_tempFileName);
 }
 
 ts::Report& WebRequestTest::report()
 {
-    if (utest::DebugMode()) {
+    if (tsunit::Test::debugMode()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
         return CERR;
     }
@@ -125,82 +125,82 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     // Test binary download
     ts::ByteBlock data;
     request.setURL(url);
-    CPPUNIT_ASSERT(request.downloadBinaryContent(data));
+    TSUNIT_ASSERT(request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testURL:" << std::endl
+    debug() << "WebRequestTest::testURL:" << std::endl
                  << "    Original URL: " << request.originalURL() << std::endl
                  << "    Final URL: " << request.finalURL() << std::endl
                  << "    HTTP status: " << request.httpStatus() << std::endl
                  << "    Content size: " << request.contentSize() << std::endl;
 
-    CPPUNIT_ASSERT(!data.empty());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(url, request.originalURL());
-    CPPUNIT_ASSERT(!request.finalURL().empty());
+    TSUNIT_ASSERT(!data.empty());
+    TSUNIT_EQUAL(url, request.originalURL());
+    TSUNIT_ASSERT(!request.finalURL().empty());
     if (expectRedirection) {
-        CPPUNIT_ASSERT(request.finalURL() != request.originalURL());
+        TSUNIT_ASSERT(request.finalURL() != request.originalURL());
     }
     if (expectSSL) {
-        CPPUNIT_ASSERT(request.finalURL().startWith(u"https:"));
+        TSUNIT_ASSERT(request.finalURL().startWith(u"https:"));
     }
 
     // Reset URL's.
     request.setURL(ts::UString());
-    CPPUNIT_ASSERT(request.originalURL().empty());
-    CPPUNIT_ASSERT(request.finalURL().empty());
+    TSUNIT_ASSERT(request.originalURL().empty());
+    TSUNIT_ASSERT(request.finalURL().empty());
 
     // Test text download.
     if (expectTextContent) {
         ts::UString text;
         request.setURL(url);
-        CPPUNIT_ASSERT(request.downloadTextContent(text));
+        TSUNIT_ASSERT(request.downloadTextContent(text));
 
         if (text.size() < 2048) {
-            utest::Out() << "WebRequestTest::testURL: downloaded text: " << text << std::endl;
+            debug() << "WebRequestTest::testURL: downloaded text: " << text << std::endl;
         }
 
-        CPPUNIT_ASSERT(!text.empty());
-        CPPUNIT_ASSERT_USTRINGS_EQUAL(url, request.originalURL());
-        CPPUNIT_ASSERT(!request.finalURL().empty());
+        TSUNIT_ASSERT(!text.empty());
+        TSUNIT_EQUAL(url, request.originalURL());
+        TSUNIT_ASSERT(!request.finalURL().empty());
         if (expectRedirection) {
-            CPPUNIT_ASSERT(request.finalURL() != request.originalURL());
+            TSUNIT_ASSERT(request.finalURL() != request.originalURL());
         }
         if (expectSSL) {
-            CPPUNIT_ASSERT(request.finalURL().startWith(u"https:"));
+            TSUNIT_ASSERT(request.finalURL().startWith(u"https:"));
         }
 
         // Reset URL's.
         request.setURL(ts::UString());
-        CPPUNIT_ASSERT(request.originalURL().empty());
-        CPPUNIT_ASSERT(request.finalURL().empty());
+        TSUNIT_ASSERT(request.originalURL().empty());
+        TSUNIT_ASSERT(request.finalURL().empty());
     }
 
     // Test file download
     request.setURL(url);
-    CPPUNIT_ASSERT(!ts::FileExists(_tempFileName));
-    CPPUNIT_ASSERT(request.downloadFile(_tempFileName));
-    CPPUNIT_ASSERT(ts::FileExists(_tempFileName));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(url, request.originalURL());
-    CPPUNIT_ASSERT(!request.finalURL().empty());
+    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(request.downloadFile(_tempFileName));
+    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_EQUAL(url, request.originalURL());
+    TSUNIT_ASSERT(!request.finalURL().empty());
     if (expectRedirection) {
-        CPPUNIT_ASSERT(request.finalURL() != request.originalURL());
+        TSUNIT_ASSERT(request.finalURL() != request.originalURL());
     }
     if (expectSSL) {
-        CPPUNIT_ASSERT(request.finalURL().startWith(u"https:"));
+        TSUNIT_ASSERT(request.finalURL().startWith(u"https:"));
     }
 
     // Load downloaded file.
     ts::ByteBlock fileContent;
-    CPPUNIT_ASSERT(fileContent.loadFromFile(_tempFileName, 10000000, &report()));
-    utest::Out() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
-    CPPUNIT_ASSERT(!fileContent.empty());
+    TSUNIT_ASSERT(fileContent.loadFromFile(_tempFileName, 10000000, &report()));
+    debug() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
+    TSUNIT_ASSERT(!fileContent.empty());
     if (expectInvariant) {
-        CPPUNIT_ASSERT(fileContent == data);
+        TSUNIT_ASSERT(fileContent == data);
     }
 
     // Reset URL's.
     request.setURL(ts::UString());
-    CPPUNIT_ASSERT(request.originalURL().empty());
-    CPPUNIT_ASSERT(request.finalURL().empty());
+    TSUNIT_ASSERT(request.originalURL().empty());
+    TSUNIT_ASSERT(request.finalURL().empty());
 
     // Test with application callback.
     class Transfer : public ts::WebRequestHandlerInterface
@@ -212,7 +212,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 
         virtual bool handleWebStart(const ts::WebRequest& req, size_t size) override
         {
-            utest::Out() << "WebRequestTest::handleWebStart: size: " << size << std::endl;
+            debug() << "WebRequestTest::handleWebStart: size: " << size << std::endl;
             return true;
         }
 
@@ -225,11 +225,11 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 
     Transfer transfer;
     request.setURL(url);
-    CPPUNIT_ASSERT(request.downloadToApplication(&transfer));
-    utest::Out() << "WebRequestTest::testURL: downloaded size by callback: " << transfer.data.size() << std::endl;
-    CPPUNIT_ASSERT(!transfer.data.empty());
+    TSUNIT_ASSERT(request.downloadToApplication(&transfer));
+    debug() << "WebRequestTest::testURL: downloaded size by callback: " << transfer.data.size() << std::endl;
+    TSUNIT_ASSERT(!transfer.data.empty());
     if (expectInvariant) {
-        CPPUNIT_ASSERT(transfer.data == data);
+        TSUNIT_ASSERT(transfer.data == data);
     }
 }
 
@@ -272,17 +272,17 @@ void WebRequestTest::testNoRedirection()
     request.setAutoRedirect(false);
 
     ts::ByteBlock data;
-    CPPUNIT_ASSERT(request.downloadBinaryContent(data));
+    TSUNIT_ASSERT(request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testNoRedirection:" << std::endl
+    debug() << "WebRequestTest::testNoRedirection:" << std::endl
         << "    Original URL: " << request.originalURL() << std::endl
         << "    Final URL: " << request.finalURL() << std::endl
         << "    HTTP status: " << request.httpStatus() << std::endl
         << "    Content size: " << request.contentSize() << std::endl;
 
-    CPPUNIT_ASSERT_EQUAL(3, request.httpStatus() / 100);
-    CPPUNIT_ASSERT(!request.finalURL().empty());
-    CPPUNIT_ASSERT(request.finalURL() != request.originalURL());
+    TSUNIT_EQUAL(3, request.httpStatus() / 100);
+    TSUNIT_ASSERT(!request.finalURL().empty());
+    TSUNIT_ASSERT(request.finalURL() != request.originalURL());
 }
 
 void WebRequestTest::testNonExistentHost()
@@ -292,9 +292,9 @@ void WebRequestTest::testNonExistentHost()
 
     ts::ByteBlock data;
     request.setURL(u"http://non.existent.fake-domain/");
-    CPPUNIT_ASSERT(!request.downloadBinaryContent(data));
+    TSUNIT_ASSERT(!request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testNonExistentHost: " << rep.getMessages() << std::endl;
+    debug() << "WebRequestTest::testNonExistentHost: " << rep.getMessages() << std::endl;
 }
 
 void WebRequestTest::testInvalidURL()
@@ -304,7 +304,7 @@ void WebRequestTest::testInvalidURL()
 
     ts::ByteBlock data;
     request.setURL(u"pouette://tagada/tsoin/tsoin");
-    CPPUNIT_ASSERT(!request.downloadBinaryContent(data));
+    TSUNIT_ASSERT(!request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testInvalidURL: " << rep.getMessages() << std::endl;
+    debug() << "WebRequestTest::testInvalidURL: " << rep.getMessages() << std::endl;
 }

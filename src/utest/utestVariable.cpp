@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Variable
+//  TSUnit test suite for class ts::Variable
 //
 //----------------------------------------------------------------------------
 
 #include "tsVariable.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,24 +40,24 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class VariableTest: public CppUnit::TestFixture
+class VariableTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testElementaryType();
     void testClass();
     void testUninitialized();
 
-    CPPUNIT_TEST_SUITE(VariableTest);
-    CPPUNIT_TEST(testElementaryType);
-    CPPUNIT_TEST(testClass);
-    CPPUNIT_TEST_EXCEPTION(testUninitialized, ts::UninitializedVariable);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(VariableTest);
+    TSUNIT_TEST(testElementaryType);
+    TSUNIT_TEST(testClass);
+    TSUNIT_TEST_EXCEPTION(testUninitialized, ts::UninitializedVariable);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(VariableTest);
+TSUNIT_REGISTER(VariableTest);
 
 
 //----------------------------------------------------------------------------
@@ -65,12 +65,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(VariableTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void VariableTest::setUp()
+void VariableTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void VariableTest::tearDown()
+void VariableTest::afterTest()
 {
 }
 
@@ -85,58 +85,58 @@ void VariableTest::testElementaryType()
     typedef ts::Variable<int> IntVariable;
 
     IntVariable v1;
-    CPPUNIT_ASSERT(!v1.set());
+    TSUNIT_ASSERT(!v1.set());
 
     IntVariable v2(v1);
-    CPPUNIT_ASSERT(!v2.set());
+    TSUNIT_ASSERT(!v2.set());
 
     v2 = 1;
-    CPPUNIT_ASSERT(v2.set());
-    CPPUNIT_ASSERT(v2.value() == 1);
+    TSUNIT_ASSERT(v2.set());
+    TSUNIT_ASSERT(v2.value() == 1);
 
     IntVariable v3(v2);
-    CPPUNIT_ASSERT(v3.set());
+    TSUNIT_ASSERT(v3.set());
 
     IntVariable v4(2);
-    CPPUNIT_ASSERT(v4.set());
+    TSUNIT_ASSERT(v4.set());
 
     v4 = v1;
-    CPPUNIT_ASSERT(!v4.set());
+    TSUNIT_ASSERT(!v4.set());
 
     v4 = v2;
-    CPPUNIT_ASSERT(v4.set());
+    TSUNIT_ASSERT(v4.set());
 
     v4.reset();
-    CPPUNIT_ASSERT(!v4.set());
+    TSUNIT_ASSERT(!v4.set());
 
     v4.reset();
-    CPPUNIT_ASSERT(!v4.set());
+    TSUNIT_ASSERT(!v4.set());
 
     v1 = 1;
     v2.reset();
-    CPPUNIT_ASSERT(v1.set());
-    CPPUNIT_ASSERT(!v2.set());
-    CPPUNIT_ASSERT(v1.value() == 1);
-    CPPUNIT_ASSERT(v1.value(2) == 1);
-    CPPUNIT_ASSERT(v2.value(2) == 2);
+    TSUNIT_ASSERT(v1.set());
+    TSUNIT_ASSERT(!v2.set());
+    TSUNIT_ASSERT(v1.value() == 1);
+    TSUNIT_ASSERT(v1.value(2) == 1);
+    TSUNIT_ASSERT(v2.value(2) == 2);
 
     v1 = 1;
     v2 = 1;
     v3 = 3;
     v4.reset();
     IntVariable v5;
-    CPPUNIT_ASSERT(v1.set());
-    CPPUNIT_ASSERT(v2.set());
-    CPPUNIT_ASSERT(v3.set());
-    CPPUNIT_ASSERT(!v4.set());
-    CPPUNIT_ASSERT(!v5.set());
-    CPPUNIT_ASSERT(v1 == v2);
-    CPPUNIT_ASSERT(v1 != v3);
-    CPPUNIT_ASSERT(v1 != v4);
-    CPPUNIT_ASSERT(v4 != v5);
-    CPPUNIT_ASSERT(v1 == 1);
-    CPPUNIT_ASSERT(v1 != 2);
-    CPPUNIT_ASSERT(v4 != 1);
+    TSUNIT_ASSERT(v1.set());
+    TSUNIT_ASSERT(v2.set());
+    TSUNIT_ASSERT(v3.set());
+    TSUNIT_ASSERT(!v4.set());
+    TSUNIT_ASSERT(!v5.set());
+    TSUNIT_ASSERT(v1 == v2);
+    TSUNIT_ASSERT(v1 != v3);
+    TSUNIT_ASSERT(v1 != v4);
+    TSUNIT_ASSERT(v4 != v5);
+    TSUNIT_ASSERT(v1 == 1);
+    TSUNIT_ASSERT(v1 != 2);
+    TSUNIT_ASSERT(v4 != 1);
 }
 
 // A class which identifies each instance by an explicit value.
@@ -172,83 +172,83 @@ void VariableTest::testClass()
 {
     typedef ts::Variable<TestData> TestVariable;
 
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
     {
         TestVariable v1;
-        CPPUNIT_ASSERT(!v1.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+        TSUNIT_ASSERT(!v1.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 
         TestVariable v2(v1);
-        CPPUNIT_ASSERT(!v2.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+        TSUNIT_ASSERT(!v2.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 
         v2 = TestData(1);
-        CPPUNIT_ASSERT(v2.set());
-        CPPUNIT_ASSERT(v2.value().v() == 1);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+        TSUNIT_ASSERT(v2.set());
+        TSUNIT_ASSERT(v2.value().v() == 1);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
         TestVariable v3(v2);
-        CPPUNIT_ASSERT(v3.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(v3.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         TestVariable v4(TestData(2));
-        CPPUNIT_ASSERT(v4.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(v4.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
 
         v4 = v1;
-        CPPUNIT_ASSERT(!v4.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(!v4.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         v4 = v2;
-        CPPUNIT_ASSERT(v4.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(v4.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
 
         v4.reset();
-        CPPUNIT_ASSERT(!v4.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(!v4.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         v4.reset();
-        CPPUNIT_ASSERT(!v4.set());
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(!v4.set());
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         v1 = TestData(1);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
         v2.reset();
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
-        CPPUNIT_ASSERT(v1.set());
-        CPPUNIT_ASSERT(!v2.set());
-        CPPUNIT_ASSERT(v1.value().v() == 1);
-        CPPUNIT_ASSERT(v1.value(TestData(2)).v() == 1);
-        CPPUNIT_ASSERT(v2.value(TestData(2)).v() == 2);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(v1.set());
+        TSUNIT_ASSERT(!v2.set());
+        TSUNIT_ASSERT(v1.value().v() == 1);
+        TSUNIT_ASSERT(v1.value(TestData(2)).v() == 1);
+        TSUNIT_ASSERT(v2.value(TestData(2)).v() == 2);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         v1 = TestData(1);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
         v2 = TestData(1);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
         v3 = TestData(3);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
         v4.reset();
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
         TestVariable v5;
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
-        CPPUNIT_ASSERT(v1.set());
-        CPPUNIT_ASSERT(v2.set());
-        CPPUNIT_ASSERT(v3.set());
-        CPPUNIT_ASSERT(!v4.set());
-        CPPUNIT_ASSERT(!v5.set());
-        CPPUNIT_ASSERT(v1 == v2);
-        CPPUNIT_ASSERT(v1 != v3);
-        CPPUNIT_ASSERT(v1 != v4);
-        CPPUNIT_ASSERT(v4 != v5);
-        CPPUNIT_ASSERT(v1.value().v() == 1);
-        CPPUNIT_ASSERT(v1 == TestData(1));
-        CPPUNIT_ASSERT(v1 != TestData(2));
-        CPPUNIT_ASSERT(v4 != TestData(1));
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_ASSERT(v1.set());
+        TSUNIT_ASSERT(v2.set());
+        TSUNIT_ASSERT(v3.set());
+        TSUNIT_ASSERT(!v4.set());
+        TSUNIT_ASSERT(!v5.set());
+        TSUNIT_ASSERT(v1 == v2);
+        TSUNIT_ASSERT(v1 != v3);
+        TSUNIT_ASSERT(v1 != v4);
+        TSUNIT_ASSERT(v4 != v5);
+        TSUNIT_ASSERT(v1.value().v() == 1);
+        TSUNIT_ASSERT(v1 == TestData(1));
+        TSUNIT_ASSERT(v1 != TestData(2));
+        TSUNIT_ASSERT(v4 != TestData(1));
+        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
     }
     // Check that the destructor of variable properly destroys the contained object
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 }
 
 // Test case: fail on uninitialized variable
@@ -256,5 +256,5 @@ void VariableTest::testUninitialized()
 {
     ts::Variable<int> vi;
     TS_UNUSED int i = vi.value();
-    CPPUNIT_FAIL("variable is not initialized, should not get there");
+    TSUNIT_FAIL("variable is not initialized, should not get there");
 }

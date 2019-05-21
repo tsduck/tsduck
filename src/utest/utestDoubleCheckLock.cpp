@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::DoubleCheckLock
+//  TSUnit test suite for class ts::DoubleCheckLock
 //
 //----------------------------------------------------------------------------
 
 #include "tsDoubleCheckLock.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,20 +40,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class DoubleCheckLockTest: public CppUnit::TestFixture
+class DoubleCheckLockTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testDoubleCheckLock();
 
-    CPPUNIT_TEST_SUITE (DoubleCheckLockTest);
-    CPPUNIT_TEST (testDoubleCheckLock);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(DoubleCheckLockTest);
+    TSUNIT_TEST(testDoubleCheckLock);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (DoubleCheckLockTest);
+TSUNIT_REGISTER(DoubleCheckLockTest);
 
 
 //----------------------------------------------------------------------------
@@ -61,12 +61,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (DoubleCheckLockTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void DoubleCheckLockTest::setUp()
+void DoubleCheckLockTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void DoubleCheckLockTest::tearDown()
+void DoubleCheckLockTest::afterTest()
 {
 }
 
@@ -80,14 +80,14 @@ void DoubleCheckLockTest::testDoubleCheckLock()
     TS_UNUSED int data = 0;
     ts::DoubleCheckLock lock;
 
-    CPPUNIT_ASSERT(!lock.changed());
+    TSUNIT_ASSERT(!lock.changed());
 
     // Writer
     {
         ts::DoubleCheckLock::Writer guard(lock);
         data = 1;
     }
-    CPPUNIT_ASSERT(lock.changed());
+    TSUNIT_ASSERT(lock.changed());
 
     // Reader
     bool reader = false;
@@ -95,13 +95,13 @@ void DoubleCheckLockTest::testDoubleCheckLock()
         ts::DoubleCheckLock::Reader guard(lock);
         reader = true;
     }
-    CPPUNIT_ASSERT(reader);
-    CPPUNIT_ASSERT(!lock.changed());
+    TSUNIT_ASSERT(reader);
+    TSUNIT_ASSERT(!lock.changed());
 
     // Reader
     if (lock.changed()) {
         ts::DoubleCheckLock::Reader guard(lock);
-        CPPUNIT_FAIL("should not get there, data not updated");
+        TSUNIT_FAIL("should not get there, data not updated");
     }
-    CPPUNIT_ASSERT(!lock.changed());
+    TSUNIT_ASSERT(!lock.changed());
 }

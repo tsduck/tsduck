@@ -27,32 +27,32 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for DVBCharset and subclasses.
+//  TSUnit test suite for DVBCharset and subclasses.
 //
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharset.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
 // The test fixture
 //----------------------------------------------------------------------------
 
-class DVBCharsetTest: public CppUnit::TestFixture
+class DVBCharsetTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testRepository();
 
-    CPPUNIT_TEST_SUITE(DVBCharsetTest);
-    CPPUNIT_TEST(testRepository);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(DVBCharsetTest);
+    TSUNIT_TEST(testRepository);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DVBCharsetTest);
+TSUNIT_REGISTER(DVBCharsetTest);
 
 
 //----------------------------------------------------------------------------
@@ -60,12 +60,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DVBCharsetTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void DVBCharsetTest::setUp()
+void DVBCharsetTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void DVBCharsetTest::tearDown()
+void DVBCharsetTest::afterTest()
 {
 }
 
@@ -76,6 +76,6 @@ void DVBCharsetTest::tearDown()
 
 void DVBCharsetTest::testRepository()
 {
-    utest::Out() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::DVBCharset::GetAllNames()) << std::endl;
-    CPPUNIT_ASSERT_EQUAL(size_t(17), ts::DVBCharset::GetAllNames().size());
+    debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::DVBCharset::GetAllNames()) << std::endl;
+    TSUNIT_EQUAL(size_t(17), ts::DVBCharset::GetAllNames().size());
 }

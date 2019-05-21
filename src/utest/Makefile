@@ -39,8 +39,6 @@ default: execs $(OBJDIR)/setenv.sh
 .PHONY: execs
 execs: $(OBJDIR)/utest $(OBJDIR)/utest_static
 
-LDLIBS := -lcppunit $(LDLIBS)
-
 # Build two versions of the test executable.
 # 1) Using shared object. Skip the module which create static references.
 $(OBJDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)

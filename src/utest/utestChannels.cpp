@@ -27,13 +27,13 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for ts::DuckChannels class.
+//  TSUnit test suite for ts::DuckChannels class.
 //
 //----------------------------------------------------------------------------
 
 #include "tsChannelFile.h"
 #include "tsNullReport.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -41,20 +41,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ChannelsTest: public CppUnit::TestFixture
+class ChannelsTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testText();
 
-    CPPUNIT_TEST_SUITE(ChannelsTest);
-    CPPUNIT_TEST(testText);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ChannelsTest);
+    TSUNIT_TEST(testText);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ChannelsTest);
+TSUNIT_REGISTER(ChannelsTest);
 
 
 //----------------------------------------------------------------------------
@@ -62,12 +62,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ChannelsTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void ChannelsTest::setUp()
+void ChannelsTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void ChannelsTest::tearDown()
+void ChannelsTest::afterTest()
 {
 }
 
@@ -116,113 +116,113 @@ void ChannelsTest::testText()
         u"";
 
     ts::ChannelFile channels;
-    CPPUNIT_ASSERT(channels.parse(document));
-    CPPUNIT_ASSERT_EQUAL(size_t(4), channels.networkCount());
+    TSUNIT_ASSERT(channels.parse(document));
+    TSUNIT_EQUAL(size_t(4), channels.networkCount());
 
     ts::ChannelFile::NetworkPtr net;
     ts::ChannelFile::TransportStreamPtr ts;
     ts::ChannelFile::ServicePtr srv;
 
-    CPPUNIT_ASSERT(channels.searchService(net, ts, srv, u"foochannel", false));
+    TSUNIT_ASSERT(channels.searchService(net, ts, srv, u"foochannel", false));
 
-    CPPUNIT_ASSERT(!net.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), net->id);
-    CPPUNIT_ASSERT_EQUAL(ts::ATSC, net->type);
+    TSUNIT_ASSERT(!net.isNull());
+    TSUNIT_EQUAL(uint16_t(0x1234), net->id);
+    TSUNIT_EQUAL(ts::ATSC, net->type);
 
-    CPPUNIT_ASSERT(!ts.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x5678), ts->id);
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x9ABC), ts->onid);
-    CPPUNIT_ASSERT(!ts->tune.isNull());
+    TSUNIT_ASSERT(!ts.isNull());
+    TSUNIT_EQUAL(uint16_t(0x5678), ts->id);
+    TSUNIT_EQUAL(uint16_t(0x9ABC), ts->onid);
+    TSUNIT_ASSERT(!ts->tune.isNull());
     const ts::TunerParametersATSC* atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
-    CPPUNIT_ASSERT(atsc != nullptr);
-    CPPUNIT_ASSERT_EQUAL(uint64_t(123456), atsc->frequency);
-    CPPUNIT_ASSERT_EQUAL(ts::VSB_16, atsc->modulation);
+    TSUNIT_ASSERT(atsc != nullptr);
+    TSUNIT_EQUAL(uint64_t(123456), atsc->frequency);
+    TSUNIT_EQUAL(ts::VSB_16, atsc->modulation);
 
-    CPPUNIT_ASSERT(!srv.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(2), srv->id);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Channel", srv->name);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Provider", srv->provider);
-    CPPUNIT_ASSERT(srv->lcn.set());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(23), srv->lcn.value());
-    CPPUNIT_ASSERT(srv->pmtPID.set());
-    CPPUNIT_ASSERT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
-    CPPUNIT_ASSERT(srv->type.set());
-    CPPUNIT_ASSERT_EQUAL(uint8_t(0x12), srv->type.value());
-    CPPUNIT_ASSERT(srv->cas.set());
-    CPPUNIT_ASSERT(srv->cas.value());
+    TSUNIT_ASSERT(!srv.isNull());
+    TSUNIT_EQUAL(uint16_t(2), srv->id);
+    TSUNIT_EQUAL(u"Foo Channel", srv->name);
+    TSUNIT_EQUAL(u"Foo Provider", srv->provider);
+    TSUNIT_ASSERT(srv->lcn.set());
+    TSUNIT_EQUAL(uint16_t(23), srv->lcn.value());
+    TSUNIT_ASSERT(srv->pmtPID.set());
+    TSUNIT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
+    TSUNIT_ASSERT(srv->type.set());
+    TSUNIT_EQUAL(uint8_t(0x12), srv->type.value());
+    TSUNIT_ASSERT(srv->cas.set());
+    TSUNIT_ASSERT(srv->cas.value());
 
-    CPPUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DVB_S, u"foochannel", false));
+    TSUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DVB_S, u"foochannel", false));
 
-    CPPUNIT_ASSERT(!net.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x8753), net->id);
-    CPPUNIT_ASSERT_EQUAL(ts::DVB_S, net->type);
+    TSUNIT_ASSERT(!net.isNull());
+    TSUNIT_EQUAL(uint16_t(0x8753), net->id);
+    TSUNIT_EQUAL(ts::DVB_S, net->type);
 
-    CPPUNIT_ASSERT(!ts.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x8793), ts->id);
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x5896), ts->onid);
-    CPPUNIT_ASSERT(!ts->tune.isNull());
+    TSUNIT_ASSERT(!ts.isNull());
+    TSUNIT_EQUAL(uint16_t(0x8793), ts->id);
+    TSUNIT_EQUAL(uint16_t(0x5896), ts->onid);
+    TSUNIT_ASSERT(!ts->tune.isNull());
     const ts::TunerParametersDVBS* dvbs = dynamic_cast<const ts::TunerParametersDVBS*>(ts->tune.pointer());
-    CPPUNIT_ASSERT(dvbs != nullptr);
-    CPPUNIT_ASSERT_EQUAL(uint64_t(8523698), dvbs->frequency);
-    CPPUNIT_ASSERT_EQUAL(uint32_t(1237418), dvbs->symbol_rate);
-    CPPUNIT_ASSERT_EQUAL(ts::PSK_8, dvbs->modulation);
-    CPPUNIT_ASSERT_EQUAL(ts::DS_DVB_S2, dvbs->delivery_system);
-    CPPUNIT_ASSERT_EQUAL(ts::POL_HORIZONTAL, dvbs->polarity);
-    CPPUNIT_ASSERT_EQUAL(ts::FEC_7_8, dvbs->inner_fec);
-    CPPUNIT_ASSERT_EQUAL(ts::PILOT_ON, dvbs->pilots);
-    CPPUNIT_ASSERT_EQUAL(ts::ROLLOFF_35, dvbs->roll_off);
+    TSUNIT_ASSERT(dvbs != nullptr);
+    TSUNIT_EQUAL(uint64_t(8523698), dvbs->frequency);
+    TSUNIT_EQUAL(uint32_t(1237418), dvbs->symbol_rate);
+    TSUNIT_EQUAL(ts::PSK_8, dvbs->modulation);
+    TSUNIT_EQUAL(ts::DS_DVB_S2, dvbs->delivery_system);
+    TSUNIT_EQUAL(ts::POL_HORIZONTAL, dvbs->polarity);
+    TSUNIT_EQUAL(ts::FEC_7_8, dvbs->inner_fec);
+    TSUNIT_EQUAL(ts::PILOT_ON, dvbs->pilots);
+    TSUNIT_EQUAL(ts::ROLLOFF_35, dvbs->roll_off);
 
-    CPPUNIT_ASSERT(!srv.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x4591), srv->id);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Channel", srv->name);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", srv->provider);
-    CPPUNIT_ASSERT(!srv->lcn.set());
-    CPPUNIT_ASSERT(!srv->pmtPID.set());
-    CPPUNIT_ASSERT(!srv->type.set());
-    CPPUNIT_ASSERT(!srv->cas.set());
+    TSUNIT_ASSERT(!srv.isNull());
+    TSUNIT_EQUAL(uint16_t(0x4591), srv->id);
+    TSUNIT_EQUAL(u"Foo Channel", srv->name);
+    TSUNIT_EQUAL(u"", srv->provider);
+    TSUNIT_ASSERT(!srv->lcn.set());
+    TSUNIT_ASSERT(!srv->pmtPID.set());
+    TSUNIT_ASSERT(!srv->type.set());
+    TSUNIT_ASSERT(!srv->cas.set());
 
-    CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false, NULLREP));
-    CPPUNIT_ASSERT(net.isNull());
-    CPPUNIT_ASSERT(ts.isNull());
-    CPPUNIT_ASSERT(srv.isNull());
+    TSUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false, NULLREP));
+    TSUNIT_ASSERT(net.isNull());
+    TSUNIT_ASSERT(ts.isNull());
+    TSUNIT_ASSERT(srv.isNull());
 
     // Search by ATSC major.minor
-    CPPUNIT_ASSERT(channels.searchService(net, ts, srv, u"1.4", false));
+    TSUNIT_ASSERT(channels.searchService(net, ts, srv, u"1.4", false));
 
-    CPPUNIT_ASSERT(!net.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), net->id);
-    CPPUNIT_ASSERT_EQUAL(ts::ATSC, net->type);
+    TSUNIT_ASSERT(!net.isNull());
+    TSUNIT_EQUAL(uint16_t(0x1234), net->id);
+    TSUNIT_EQUAL(ts::ATSC, net->type);
 
-    CPPUNIT_ASSERT(!ts.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x5678), ts->id);
-    CPPUNIT_ASSERT_EQUAL(uint16_t(0x9ABC), ts->onid);
-    CPPUNIT_ASSERT(!ts->tune.isNull());
+    TSUNIT_ASSERT(!ts.isNull());
+    TSUNIT_EQUAL(uint16_t(0x5678), ts->id);
+    TSUNIT_EQUAL(uint16_t(0x9ABC), ts->onid);
+    TSUNIT_ASSERT(!ts->tune.isNull());
     atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
-    CPPUNIT_ASSERT(atsc != nullptr);
-    CPPUNIT_ASSERT_EQUAL(uint64_t(123456), atsc->frequency);
-    CPPUNIT_ASSERT_EQUAL(ts::VSB_16, atsc->modulation);
+    TSUNIT_ASSERT(atsc != nullptr);
+    TSUNIT_EQUAL(uint64_t(123456), atsc->frequency);
+    TSUNIT_EQUAL(ts::VSB_16, atsc->modulation);
 
-    CPPUNIT_ASSERT(!srv.isNull());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(2), srv->id);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Channel", srv->name);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Foo Provider", srv->provider);
-    CPPUNIT_ASSERT(srv->lcn.set());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(23), srv->lcn.value());
-    CPPUNIT_ASSERT(srv->pmtPID.set());
-    CPPUNIT_ASSERT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
-    CPPUNIT_ASSERT(srv->type.set());
-    CPPUNIT_ASSERT_EQUAL(uint8_t(0x12), srv->type.value());
-    CPPUNIT_ASSERT(srv->cas.set());
-    CPPUNIT_ASSERT(srv->cas.value());
-    CPPUNIT_ASSERT(srv->atscMajorId.set());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(1), srv->atscMajorId.value());
-    CPPUNIT_ASSERT(srv->atscMinorId.set());
-    CPPUNIT_ASSERT_EQUAL(uint16_t(4), srv->atscMinorId.value());
+    TSUNIT_ASSERT(!srv.isNull());
+    TSUNIT_EQUAL(uint16_t(2), srv->id);
+    TSUNIT_EQUAL(u"Foo Channel", srv->name);
+    TSUNIT_EQUAL(u"Foo Provider", srv->provider);
+    TSUNIT_ASSERT(srv->lcn.set());
+    TSUNIT_EQUAL(uint16_t(23), srv->lcn.value());
+    TSUNIT_ASSERT(srv->pmtPID.set());
+    TSUNIT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
+    TSUNIT_ASSERT(srv->type.set());
+    TSUNIT_EQUAL(uint8_t(0x12), srv->type.value());
+    TSUNIT_ASSERT(srv->cas.set());
+    TSUNIT_ASSERT(srv->cas.value());
+    TSUNIT_ASSERT(srv->atscMajorId.set());
+    TSUNIT_EQUAL(uint16_t(1), srv->atscMajorId.value());
+    TSUNIT_ASSERT(srv->atscMinorId.set());
+    TSUNIT_EQUAL(uint16_t(4), srv->atscMinorId.value());
 
-    CPPUNIT_ASSERT(!channels.searchService(net, ts, srv, u"1.5", false, NULLREP));
-    CPPUNIT_ASSERT(net.isNull());
-    CPPUNIT_ASSERT(ts.isNull());
-    CPPUNIT_ASSERT(srv.isNull());
+    TSUNIT_ASSERT(!channels.searchService(net, ts, srv, u"1.5", false, NULLREP));
+    TSUNIT_ASSERT(net.isNull());
+    TSUNIT_ASSERT(ts.isNull());
+    TSUNIT_ASSERT(srv.isNull());
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(document, channels.toXML());
+    TSUNIT_EQUAL(document, channels.toXML());
 }

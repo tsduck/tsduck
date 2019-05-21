@@ -27,14 +27,14 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for tlv namespace.
+//  TSUnit test suite for tlv namespace.
 //
 //----------------------------------------------------------------------------
 
 #include "tsECMGSCS.h"
 #include "tsEMMGMUX.h"
 #include "tstlvMessageFactory.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -42,26 +42,26 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class TagLengthValueTest: public CppUnit::TestFixture
+class TagLengthValueTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testECMG();
     void testEMMG();
     void testECMGError();
     void testEMMGError();
 
-    CPPUNIT_TEST_SUITE(TagLengthValueTest);
-    CPPUNIT_TEST(testECMG);
-    CPPUNIT_TEST(testEMMG);
-    CPPUNIT_TEST(testECMGError);
-    CPPUNIT_TEST(testEMMGError);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(TagLengthValueTest);
+    TSUNIT_TEST(testECMG);
+    TSUNIT_TEST(testEMMG);
+    TSUNIT_TEST(testECMGError);
+    TSUNIT_TEST(testEMMGError);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(TagLengthValueTest);
+TSUNIT_REGISTER(TagLengthValueTest);
 
 
 //----------------------------------------------------------------------------
@@ -69,12 +69,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TagLengthValueTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void TagLengthValueTest::setUp()
+void TagLengthValueTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void TagLengthValueTest::tearDown()
+void TagLengthValueTest::afterTest()
 {
 }
 
@@ -147,40 +147,40 @@ void TagLengthValueTest::testECMG()
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    utest::Out() << "TagLengthValueTest::testECMG: serialized:" << std::endl
+    debug() << "TagLengthValueTest::testECMG: serialized:" << std::endl
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
-    CPPUNIT_ASSERT_EQUAL(sizeof(refData), data->size());
-    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(sizeof(refData), data->size());
+    TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::ecmgscs::Protocol::Instance());
     ts::tlv::MessagePtr msg(fac.factory());
-    CPPUNIT_ASSERT(!msg.isNull());
-    CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::ecmgscs::Tags::channel_status), msg->tag());
+    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_EQUAL(ts::tlv::TAG(ts::ecmgscs::Tags::channel_status), msg->tag());
     ts::ecmgscs::ChannelStatus* ptr = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != nullptr);
-    CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.section_TSpkt_flag, ptr->section_TSpkt_flag);
-    CPPUNIT_ASSERT_EQUAL(refMessage.has_AC_delay_start, ptr->has_AC_delay_start);
-    CPPUNIT_ASSERT_EQUAL(refMessage.AC_delay_start, ptr->AC_delay_start);
-    CPPUNIT_ASSERT_EQUAL(refMessage.has_AC_delay_stop, ptr->has_AC_delay_stop);
-    CPPUNIT_ASSERT_EQUAL(refMessage.AC_delay_stop, ptr->AC_delay_stop);
-    CPPUNIT_ASSERT_EQUAL(refMessage.delay_start, ptr->delay_start);
-    CPPUNIT_ASSERT_EQUAL(refMessage.delay_stop, ptr->delay_stop);
-    CPPUNIT_ASSERT_EQUAL(refMessage.has_transition_delay_start, ptr->has_transition_delay_start);
-    CPPUNIT_ASSERT_EQUAL(refMessage.transition_delay_start, ptr->transition_delay_start);
-    CPPUNIT_ASSERT_EQUAL(refMessage.has_transition_delay_stop, ptr->has_transition_delay_stop);
-    CPPUNIT_ASSERT_EQUAL(refMessage.transition_delay_stop, ptr->transition_delay_stop);
-    CPPUNIT_ASSERT_EQUAL(refMessage.ECM_rep_period, ptr->ECM_rep_period);
-    CPPUNIT_ASSERT_EQUAL(refMessage.max_streams, ptr->max_streams);
-    CPPUNIT_ASSERT_EQUAL(refMessage.min_CP_duration, ptr->min_CP_duration);
-    CPPUNIT_ASSERT_EQUAL(refMessage.lead_CW, ptr->lead_CW);
-    CPPUNIT_ASSERT_EQUAL(refMessage.CW_per_msg, ptr->CW_per_msg);
-    CPPUNIT_ASSERT_EQUAL(refMessage.max_comp_time, ptr->max_comp_time);
+    TSUNIT_ASSERT(ptr != nullptr);
+    TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
+    TSUNIT_EQUAL(refMessage.section_TSpkt_flag, ptr->section_TSpkt_flag);
+    TSUNIT_EQUAL(refMessage.has_AC_delay_start, ptr->has_AC_delay_start);
+    TSUNIT_EQUAL(refMessage.AC_delay_start, ptr->AC_delay_start);
+    TSUNIT_EQUAL(refMessage.has_AC_delay_stop, ptr->has_AC_delay_stop);
+    TSUNIT_EQUAL(refMessage.AC_delay_stop, ptr->AC_delay_stop);
+    TSUNIT_EQUAL(refMessage.delay_start, ptr->delay_start);
+    TSUNIT_EQUAL(refMessage.delay_stop, ptr->delay_stop);
+    TSUNIT_EQUAL(refMessage.has_transition_delay_start, ptr->has_transition_delay_start);
+    TSUNIT_EQUAL(refMessage.transition_delay_start, ptr->transition_delay_start);
+    TSUNIT_EQUAL(refMessage.has_transition_delay_stop, ptr->has_transition_delay_stop);
+    TSUNIT_EQUAL(refMessage.transition_delay_stop, ptr->transition_delay_stop);
+    TSUNIT_EQUAL(refMessage.ECM_rep_period, ptr->ECM_rep_period);
+    TSUNIT_EQUAL(refMessage.max_streams, ptr->max_streams);
+    TSUNIT_EQUAL(refMessage.min_CP_duration, ptr->min_CP_duration);
+    TSUNIT_EQUAL(refMessage.lead_CW, ptr->lead_CW);
+    TSUNIT_EQUAL(refMessage.CW_per_msg, ptr->CW_per_msg);
+    TSUNIT_EQUAL(refMessage.max_comp_time, ptr->max_comp_time);
 
     const ts::UString str(refMessage.dump(2));
-    utest::Out() << "TagLengthValueTest::testECMG: dump" << std::endl << str << std::endl;
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(refString, str);
+    debug() << "TagLengthValueTest::testECMG: dump" << std::endl << str << std::endl;
+    TSUNIT_EQUAL(refString, str);
 }
 
 void TagLengthValueTest::testEMMG()
@@ -214,27 +214,27 @@ void TagLengthValueTest::testEMMG()
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    utest::Out() << "TagLengthValueTest::testEMMG: serialized:" << std::endl
+    debug() << "TagLengthValueTest::testEMMG: serialized:" << std::endl
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
-    CPPUNIT_ASSERT_EQUAL(sizeof(refData), data->size());
-    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(sizeof(refData), data->size());
+    TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::emmgmux::Protocol::Instance());
     ts::tlv::MessagePtr msg(fac.factory());
-    CPPUNIT_ASSERT(!msg.isNull());
-    CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_BW_allocation), msg->tag());
+    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_BW_allocation), msg->tag());
     ts::emmgmux::StreamBWAllocation* ptr = dynamic_cast<ts::emmgmux::StreamBWAllocation*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != nullptr);
-    CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.stream_id, ptr->stream_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.client_id, ptr->client_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.has_bandwidth, ptr->has_bandwidth);
-    CPPUNIT_ASSERT_EQUAL(refMessage.bandwidth, ptr->bandwidth);
+    TSUNIT_ASSERT(ptr != nullptr);
+    TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
+    TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
+    TSUNIT_EQUAL(refMessage.client_id, ptr->client_id);
+    TSUNIT_EQUAL(refMessage.has_bandwidth, ptr->has_bandwidth);
+    TSUNIT_EQUAL(refMessage.bandwidth, ptr->bandwidth);
 
     const ts::UString str(refMessage.dump(2));
-    utest::Out() << "TagLengthValueTest::testEMMG: dump" << std::endl << str << std::endl;
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(refString, str);
+    debug() << "TagLengthValueTest::testEMMG: dump" << std::endl << str << std::endl;
+    TSUNIT_EQUAL(refString, str);
 }
 
 void TagLengthValueTest::testECMGError()
@@ -269,26 +269,26 @@ void TagLengthValueTest::testECMGError()
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    utest::Out() << "TagLengthValueTest::testECMGError: serialized:" << std::endl
+    debug() << "TagLengthValueTest::testECMGError: serialized:" << std::endl
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
-    CPPUNIT_ASSERT_EQUAL(sizeof(refData), data->size());
-    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(sizeof(refData), data->size());
+    TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::ecmgscs::Protocol::Instance());
     ts::tlv::MessagePtr msg(fac.factory());
-    CPPUNIT_ASSERT(!msg.isNull());
-    CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::ecmgscs::Tags::stream_error), msg->tag());
+    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_EQUAL(ts::tlv::TAG(ts::ecmgscs::Tags::stream_error), msg->tag());
     ts::ecmgscs::StreamError* ptr = dynamic_cast<ts::ecmgscs::StreamError*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != nullptr);
-    CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.stream_id, ptr->stream_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.error_status, ptr->error_status);
-    CPPUNIT_ASSERT_EQUAL(refMessage.error_information, ptr->error_information);
+    TSUNIT_ASSERT(ptr != nullptr);
+    TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
+    TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
+    TSUNIT_ASSERT(refMessage.error_status == ptr->error_status);
+    TSUNIT_ASSERT(refMessage.error_information == ptr->error_information);
 
     const ts::UString str(refMessage.dump(2));
-    utest::Out() << "TagLengthValueTest::testECMGError: dump" << std::endl << str << std::endl;
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(refString, str);
+    debug() << "TagLengthValueTest::testECMGError: dump" << std::endl << str << std::endl;
+    TSUNIT_EQUAL(refString, str);
 }
 
 void TagLengthValueTest::testEMMGError()
@@ -326,24 +326,24 @@ void TagLengthValueTest::testEMMGError()
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    utest::Out() << "TagLengthValueTest::testEMMGError: serialized:" << std::endl
+    debug() << "TagLengthValueTest::testEMMGError: serialized:" << std::endl
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
-    CPPUNIT_ASSERT_EQUAL(sizeof(refData), data->size());
-    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(sizeof(refData), data->size());
+    TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::emmgmux::Protocol::Instance());
     ts::tlv::MessagePtr msg(fac.factory());
-    CPPUNIT_ASSERT(!msg.isNull());
-    CPPUNIT_ASSERT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_error), msg->tag());
+    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_error), msg->tag());
     ts::emmgmux::StreamError* ptr = dynamic_cast<ts::emmgmux::StreamError*>(msg.pointer());
-    CPPUNIT_ASSERT(ptr != nullptr);
-    CPPUNIT_ASSERT_EQUAL(refMessage.channel_id, ptr->channel_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.stream_id, ptr->stream_id);
-    CPPUNIT_ASSERT_EQUAL(refMessage.error_status, ptr->error_status);
-    CPPUNIT_ASSERT_EQUAL(refMessage.error_information, ptr->error_information);
+    TSUNIT_ASSERT(ptr != nullptr);
+    TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
+    TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
+    TSUNIT_ASSERT(refMessage.error_status == ptr->error_status);
+    TSUNIT_ASSERT(refMessage.error_information == ptr->error_information);
 
     const ts::UString str(refMessage.dump(2));
-    utest::Out() << "TagLengthValueTest::testEMMGError: dump" << std::endl << str << std::endl;
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(refString, str);
+    debug() << "TagLengthValueTest::testEMMGError: dump" << std::endl << str << std::endl;
+    TSUNIT_EQUAL(refString, str);
 }

@@ -27,13 +27,13 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::SafePtr (safe pointer)
+//  TSUnit test suite for class ts::SafePtr (safe pointer)
 //
 //----------------------------------------------------------------------------
 
 #include "tsSafePtr.h"
 #include "tsMutex.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -41,26 +41,26 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class SafePtrTest: public CppUnit::TestFixture
+class SafePtrTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testSafePtr();
     void testDowncast();
     void testUpcast();
     void testChangeMutex();
 
-    CPPUNIT_TEST_SUITE (SafePtrTest);
-    CPPUNIT_TEST (testSafePtr);
-    CPPUNIT_TEST (testDowncast);
-    CPPUNIT_TEST (testUpcast);
-    CPPUNIT_TEST (testChangeMutex);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(SafePtrTest);
+    TSUNIT_TEST(testSafePtr);
+    TSUNIT_TEST(testDowncast);
+    TSUNIT_TEST(testUpcast);
+    TSUNIT_TEST(testChangeMutex);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (SafePtrTest);
+TSUNIT_REGISTER(SafePtrTest);
 
 
 //----------------------------------------------------------------------------
@@ -104,12 +104,12 @@ namespace {
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void SafePtrTest::setUp()
+void SafePtrTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void SafePtrTest::tearDown()
+void SafePtrTest::afterTest()
 {
 }
 
@@ -123,190 +123,190 @@ void SafePtrTest::testSafePtr()
 {
     TestDataPtr p1;
 
-    CPPUNIT_ASSERT(p1.isNull() == true);
-    CPPUNIT_ASSERT(p1.count() == 1);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(p1.isNull() == true);
+    TSUNIT_ASSERT(p1.count() == 1);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 
     p1.reset (new TestData (12));
 
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p1.count() == 1);
-    CPPUNIT_ASSERT((*p1).value() == 12);
-    CPPUNIT_ASSERT(p1->value() == 12);
-    CPPUNIT_ASSERT(p1.pointer()->value() == 12);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p1.count() == 1);
+    TSUNIT_ASSERT((*p1).value() == 12);
+    TSUNIT_ASSERT(p1->value() == 12);
+    TSUNIT_ASSERT(p1.pointer()->value() == 12);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     TestDataPtr p2 (p1);
 
-    CPPUNIT_ASSERT(p1.count() == 2);
-    CPPUNIT_ASSERT(p2.count() == 2);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == false);
-    CPPUNIT_ASSERT(p1->value() == 12);
-    CPPUNIT_ASSERT(p2->value() == 12);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.count() == 2);
+    TSUNIT_ASSERT(p2.count() == 2);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == false);
+    TSUNIT_ASSERT(p1->value() == 12);
+    TSUNIT_ASSERT(p2->value() == 12);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     {
         TestDataPtr p3 (p2);
 
-        CPPUNIT_ASSERT(p1.count() == 3);
-        CPPUNIT_ASSERT(p2.count() == 3);
-        CPPUNIT_ASSERT(p3.count() == 3);
-        CPPUNIT_ASSERT(p1.isNull() == false);
-        CPPUNIT_ASSERT(p2.isNull() == false);
-        CPPUNIT_ASSERT(p3.isNull() == false);
-        CPPUNIT_ASSERT(p1->value() == 12);
-        CPPUNIT_ASSERT(p2->value() == 12);
-        CPPUNIT_ASSERT(p3->value() == 12);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+        TSUNIT_ASSERT(p1.count() == 3);
+        TSUNIT_ASSERT(p2.count() == 3);
+        TSUNIT_ASSERT(p3.count() == 3);
+        TSUNIT_ASSERT(p1.isNull() == false);
+        TSUNIT_ASSERT(p2.isNull() == false);
+        TSUNIT_ASSERT(p3.isNull() == false);
+        TSUNIT_ASSERT(p1->value() == 12);
+        TSUNIT_ASSERT(p2->value() == 12);
+        TSUNIT_ASSERT(p3->value() == 12);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 1);
     }
 
-    CPPUNIT_ASSERT(p1.count() == 2);
-    CPPUNIT_ASSERT(p2.count() == 2);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == false);
-    CPPUNIT_ASSERT(p1->value() == 12);
-    CPPUNIT_ASSERT(p2->value() == 12);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.count() == 2);
+    TSUNIT_ASSERT(p2.count() == 2);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == false);
+    TSUNIT_ASSERT(p1->value() == 12);
+    TSUNIT_ASSERT(p2->value() == 12);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     TestDataPtr p3;
 
-    CPPUNIT_ASSERT(p1.count() == 2);
-    CPPUNIT_ASSERT(p2.count() == 2);
-    CPPUNIT_ASSERT(p3.count() == 1);
-    CPPUNIT_ASSERT((p1 == p3) == false);
-    CPPUNIT_ASSERT((p1 != p3) == true);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == false);
-    CPPUNIT_ASSERT(p3.isNull() == true);
-    CPPUNIT_ASSERT(p1->value() == 12);
-    CPPUNIT_ASSERT(p2->value() == 12);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.count() == 2);
+    TSUNIT_ASSERT(p2.count() == 2);
+    TSUNIT_ASSERT(p3.count() == 1);
+    TSUNIT_ASSERT((p1 == p3) == false);
+    TSUNIT_ASSERT((p1 != p3) == true);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == false);
+    TSUNIT_ASSERT(p3.isNull() == true);
+    TSUNIT_ASSERT(p1->value() == 12);
+    TSUNIT_ASSERT(p2->value() == 12);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     p3 = p1;
 
-    CPPUNIT_ASSERT(p1.count() == 3);
-    CPPUNIT_ASSERT(p2.count() == 3);
-    CPPUNIT_ASSERT(p3.count() == 3);
-    CPPUNIT_ASSERT((p1 == p3) == true);
-    CPPUNIT_ASSERT((p1 != p3) == false);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == false);
-    CPPUNIT_ASSERT(p3.isNull() == false);
-    CPPUNIT_ASSERT(p1->value() == 12);
-    CPPUNIT_ASSERT(p2->value() == 12);
-    CPPUNIT_ASSERT(p3->value() == 12);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.count() == 3);
+    TSUNIT_ASSERT(p2.count() == 3);
+    TSUNIT_ASSERT(p3.count() == 3);
+    TSUNIT_ASSERT((p1 == p3) == true);
+    TSUNIT_ASSERT((p1 != p3) == false);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == false);
+    TSUNIT_ASSERT(p3.isNull() == false);
+    TSUNIT_ASSERT(p1->value() == 12);
+    TSUNIT_ASSERT(p2->value() == 12);
+    TSUNIT_ASSERT(p3->value() == 12);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     {
         TestData* tmp = new TestData (27);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
         p2.reset (tmp);
     }
 
-    CPPUNIT_ASSERT(p1.count() == 3);
-    CPPUNIT_ASSERT(p2.count() == 3);
-    CPPUNIT_ASSERT(p3.count() == 3);
-    CPPUNIT_ASSERT((p1 == p2) == true);
-    CPPUNIT_ASSERT((p1 == p3) == true);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == false);
-    CPPUNIT_ASSERT(p3.isNull() == false);
-    CPPUNIT_ASSERT(p1->value() == 27);
-    CPPUNIT_ASSERT(p2->value() == 27);
-    CPPUNIT_ASSERT(p3->value() == 27);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.count() == 3);
+    TSUNIT_ASSERT(p2.count() == 3);
+    TSUNIT_ASSERT(p3.count() == 3);
+    TSUNIT_ASSERT((p1 == p2) == true);
+    TSUNIT_ASSERT((p1 == p3) == true);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == false);
+    TSUNIT_ASSERT(p3.isNull() == false);
+    TSUNIT_ASSERT(p1->value() == 27);
+    TSUNIT_ASSERT(p2->value() == 27);
+    TSUNIT_ASSERT(p3->value() == 27);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     p2 = new TestData (41);
 
-    CPPUNIT_ASSERT(p1.count() == 2);
-    CPPUNIT_ASSERT(p2.count() == 1);
-    CPPUNIT_ASSERT(p3.count() == 2);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == false);
-    CPPUNIT_ASSERT(p3.isNull() == false);
-    CPPUNIT_ASSERT(p1->value() == 27);
-    CPPUNIT_ASSERT(p2->value() == 41);
-    CPPUNIT_ASSERT(p3->value() == 27);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+    TSUNIT_ASSERT(p1.count() == 2);
+    TSUNIT_ASSERT(p2.count() == 1);
+    TSUNIT_ASSERT(p3.count() == 2);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == false);
+    TSUNIT_ASSERT(p3.isNull() == false);
+    TSUNIT_ASSERT(p1->value() == 27);
+    TSUNIT_ASSERT(p2->value() == 41);
+    TSUNIT_ASSERT(p3->value() == 27);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
     {
         // Object pointed by p2 no longer managed but still valid
         TestData* px = p2.release ();
 
-        CPPUNIT_ASSERT(p1.count() == 2);
-        CPPUNIT_ASSERT(p2.count() == 1);
-        CPPUNIT_ASSERT(p3.count() == 2);
-        CPPUNIT_ASSERT(p1.isNull() == false);
-        CPPUNIT_ASSERT(p2.isNull() == true);
-        CPPUNIT_ASSERT(p3.isNull() == false);
-        CPPUNIT_ASSERT(p1->value() == 27);
-        CPPUNIT_ASSERT(px->value() == 41);
-        CPPUNIT_ASSERT(p3->value() == 27);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(p1.count() == 2);
+        TSUNIT_ASSERT(p2.count() == 1);
+        TSUNIT_ASSERT(p3.count() == 2);
+        TSUNIT_ASSERT(p1.isNull() == false);
+        TSUNIT_ASSERT(p2.isNull() == true);
+        TSUNIT_ASSERT(p3.isNull() == false);
+        TSUNIT_ASSERT(p1->value() == 27);
+        TSUNIT_ASSERT(px->value() == 41);
+        TSUNIT_ASSERT(p3->value() == 27);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         // Now explicitly deallocate object (was no longer managed)
         delete px;
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 1);
     }
 
     p3 = new TestData(76);
 
-    CPPUNIT_ASSERT(p1.count() == 1);
-    CPPUNIT_ASSERT(p2.count() == 1);
-    CPPUNIT_ASSERT(p3.count() == 1);
-    CPPUNIT_ASSERT(p1.isNull() == false);
-    CPPUNIT_ASSERT(p2.isNull() == true);
-    CPPUNIT_ASSERT(p3.isNull() == false);
-    CPPUNIT_ASSERT(p1->value() == 27);
-    CPPUNIT_ASSERT(p3->value() == 76);
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+    TSUNIT_ASSERT(p1.count() == 1);
+    TSUNIT_ASSERT(p2.count() == 1);
+    TSUNIT_ASSERT(p3.count() == 1);
+    TSUNIT_ASSERT(p1.isNull() == false);
+    TSUNIT_ASSERT(p2.isNull() == true);
+    TSUNIT_ASSERT(p3.isNull() == false);
+    TSUNIT_ASSERT(p1->value() == 27);
+    TSUNIT_ASSERT(p3->value() == 76);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
     {
         TestDataPtr p4 (p1);
 
-        CPPUNIT_ASSERT(p1.count() == 2);
-        CPPUNIT_ASSERT(p2.count() == 1);
-        CPPUNIT_ASSERT(p3.count() == 1);
-        CPPUNIT_ASSERT(p4.count() == 2);
-        CPPUNIT_ASSERT(p1.isNull() == false);
-        CPPUNIT_ASSERT(p2.isNull() == true);
-        CPPUNIT_ASSERT(p3.isNull() == false);
-        CPPUNIT_ASSERT(p4.isNull() == false);
-        CPPUNIT_ASSERT(p1->value() == 27);
-        CPPUNIT_ASSERT(p3->value() == 76);
-        CPPUNIT_ASSERT(p4->value() == 27);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(p1.count() == 2);
+        TSUNIT_ASSERT(p2.count() == 1);
+        TSUNIT_ASSERT(p3.count() == 1);
+        TSUNIT_ASSERT(p4.count() == 2);
+        TSUNIT_ASSERT(p1.isNull() == false);
+        TSUNIT_ASSERT(p2.isNull() == true);
+        TSUNIT_ASSERT(p3.isNull() == false);
+        TSUNIT_ASSERT(p4.isNull() == false);
+        TSUNIT_ASSERT(p1->value() == 27);
+        TSUNIT_ASSERT(p3->value() == 76);
+        TSUNIT_ASSERT(p4->value() == 27);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         p1 = nullptr;
 
-        CPPUNIT_ASSERT(p1.count() == 1);
-        CPPUNIT_ASSERT(p2.count() == 1);
-        CPPUNIT_ASSERT(p3.count() == 1);
-        CPPUNIT_ASSERT(p4.count() == 1);
-        CPPUNIT_ASSERT(p1.isNull() == true);
-        CPPUNIT_ASSERT(p2.isNull() == true);
-        CPPUNIT_ASSERT(p3.isNull() == false);
-        CPPUNIT_ASSERT(p4.isNull() == false);
-        CPPUNIT_ASSERT(p3->value() == 76);
-        CPPUNIT_ASSERT(p4->value() == 27);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_ASSERT(p1.count() == 1);
+        TSUNIT_ASSERT(p2.count() == 1);
+        TSUNIT_ASSERT(p3.count() == 1);
+        TSUNIT_ASSERT(p4.count() == 1);
+        TSUNIT_ASSERT(p1.isNull() == true);
+        TSUNIT_ASSERT(p2.isNull() == true);
+        TSUNIT_ASSERT(p3.isNull() == false);
+        TSUNIT_ASSERT(p4.isNull() == false);
+        TSUNIT_ASSERT(p3->value() == 76);
+        TSUNIT_ASSERT(p4->value() == 27);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
 
         p3 = nullptr;
 
-        CPPUNIT_ASSERT(p1.count() == 1);
-        CPPUNIT_ASSERT(p2.count() == 1);
-        CPPUNIT_ASSERT(p3.count() == 1);
-        CPPUNIT_ASSERT(p4.count() == 1);
-        CPPUNIT_ASSERT(p1.isNull() == true);
-        CPPUNIT_ASSERT(p2.isNull() == true);
-        CPPUNIT_ASSERT(p3.isNull() == true);
-        CPPUNIT_ASSERT(p4.isNull() == false);
-        CPPUNIT_ASSERT(p4->value() == 27);
-        CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+        TSUNIT_ASSERT(p1.count() == 1);
+        TSUNIT_ASSERT(p2.count() == 1);
+        TSUNIT_ASSERT(p3.count() == 1);
+        TSUNIT_ASSERT(p4.count() == 1);
+        TSUNIT_ASSERT(p1.isNull() == true);
+        TSUNIT_ASSERT(p2.isNull() == true);
+        TSUNIT_ASSERT(p3.isNull() == true);
+        TSUNIT_ASSERT(p4.isNull() == false);
+        TSUNIT_ASSERT(p4->value() == 27);
+        TSUNIT_ASSERT(TestData::InstanceCount() == 1);
     }
 
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 }
 
 // Two subclasses to test downcasts.
@@ -332,58 +332,58 @@ namespace {
 // Test case: check downcasts
 void SafePtrTest::testDowncast()
 {
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
     TestDataPtr p (new SubTestData2 (666));
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-    CPPUNIT_ASSERT(!p.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(!p.isNull());
 
     SubTestData1Ptr p1 (p.downcast<SubTestData1>());
-    CPPUNIT_ASSERT(p1.isNull());
-    CPPUNIT_ASSERT(!p.isNull());
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p1.isNull());
+    TSUNIT_ASSERT(!p.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     SubTestData2Ptr p2 (p.downcast<SubTestData2>());
-    CPPUNIT_ASSERT(!p2.isNull());
-    CPPUNIT_ASSERT(p.isNull());
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-    CPPUNIT_ASSERT(p2->value() == 666);
+    TSUNIT_ASSERT(!p2.isNull());
+    TSUNIT_ASSERT(p.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p2->value() == 666);
 
     p2.clear();
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 }
 
 // Test case: check upcasts
 void SafePtrTest::testUpcast()
 {
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
     SubTestData1Ptr p1 (new SubTestData1 (777));
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-    CPPUNIT_ASSERT(!p1.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(!p1.isNull());
 
     TestDataPtr p (p1.upcast<TestData>());
-    CPPUNIT_ASSERT(!p.isNull());
-    CPPUNIT_ASSERT(p1.isNull());
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-    CPPUNIT_ASSERT(p->value() == 777);
+    TSUNIT_ASSERT(!p.isNull());
+    TSUNIT_ASSERT(p1.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(p->value() == 777);
 
     p.clear();
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 }
 
 // Test case: check mutex type change
 void SafePtrTest::testChangeMutex()
 {
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
     ts::SafePtr<TestData,ts::NullMutex> pn (new TestData (888));
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-    CPPUNIT_ASSERT(!pn.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(!pn.isNull());
 
     ts::SafePtr<TestData,ts::Mutex> pt (pn.changeMutex<ts::Mutex>());
-    CPPUNIT_ASSERT(!pt.isNull());
-    CPPUNIT_ASSERT(pn.isNull());
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-    CPPUNIT_ASSERT(pt->value() == 888);
+    TSUNIT_ASSERT(!pt.isNull());
+    TSUNIT_ASSERT(pn.isNull());
+    TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+    TSUNIT_ASSERT(pt->value() == 888);
 
     pt.clear();
-    CPPUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
 }

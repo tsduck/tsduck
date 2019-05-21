@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::ThreadAttributes
+//  TSUnit test suite for class ts::ThreadAttributes
 //
 //  Note on Linux: The standard test suite will run with the default
 //  scheduling policy for which there is only one possible priority.
@@ -44,7 +44,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsThreadAttributes.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -52,24 +52,24 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ThreadAttributesTest: public CppUnit::TestFixture
+class ThreadAttributesTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testStackSize();
     void testDeleteWhenTerminated();
     void testPriority();
 
-    CPPUNIT_TEST_SUITE (ThreadAttributesTest);
-    CPPUNIT_TEST (testStackSize);
-    CPPUNIT_TEST (testDeleteWhenTerminated);
-    CPPUNIT_TEST (testPriority);
-    CPPUNIT_TEST_SUITE_END ();
+    TSUNIT_TEST_BEGIN(ThreadAttributesTest);
+    TSUNIT_TEST(testStackSize);
+    TSUNIT_TEST(testDeleteWhenTerminated);
+    TSUNIT_TEST(testPriority);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ThreadAttributesTest);
+TSUNIT_REGISTER(ThreadAttributesTest);
 
 
 //----------------------------------------------------------------------------
@@ -77,12 +77,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (ThreadAttributesTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void ThreadAttributesTest::setUp()
+void ThreadAttributesTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void ThreadAttributesTest::tearDown()
+void ThreadAttributesTest::afterTest()
 {
 }
 
@@ -94,43 +94,43 @@ void ThreadAttributesTest::tearDown()
 void ThreadAttributesTest::testStackSize()
 {
     ts::ThreadAttributes attr;
-    CPPUNIT_ASSERT(attr.getStackSize() == 0); // default value
-    CPPUNIT_ASSERT(attr.setStackSize(123456).getStackSize() == 123456);
+    TSUNIT_ASSERT(attr.getStackSize() == 0); // default value
+    TSUNIT_ASSERT(attr.setStackSize(123456).getStackSize() == 123456);
 }
 
 void ThreadAttributesTest::testDeleteWhenTerminated()
 {
     ts::ThreadAttributes attr;
-    CPPUNIT_ASSERT(attr.getDeleteWhenTerminated() == false); // default value
-    CPPUNIT_ASSERT(attr.setDeleteWhenTerminated(true).getDeleteWhenTerminated() == true);
-    CPPUNIT_ASSERT(attr.setDeleteWhenTerminated(false).getDeleteWhenTerminated() == false);
+    TSUNIT_ASSERT(attr.getDeleteWhenTerminated() == false); // default value
+    TSUNIT_ASSERT(attr.setDeleteWhenTerminated(true).getDeleteWhenTerminated() == true);
+    TSUNIT_ASSERT(attr.setDeleteWhenTerminated(false).getDeleteWhenTerminated() == false);
 }
 
 void ThreadAttributesTest::testPriority()
 {
-    utest::Out()
+    debug()
         << "ThreadAttributesTest: GetMinimumPriority() = " << ts::ThreadAttributes::GetMinimumPriority() << std::endl
         << "ThreadAttributesTest: GetNormalPriority()  = " << ts::ThreadAttributes::GetNormalPriority() << std::endl
         << "ThreadAttributesTest: GetMaximumPriority() = " << ts::ThreadAttributes::GetMaximumPriority() << std::endl;
 
-    CPPUNIT_ASSERT(ts::ThreadAttributes::GetMinimumPriority() <= ts::ThreadAttributes::GetNormalPriority());
-    CPPUNIT_ASSERT(ts::ThreadAttributes::GetNormalPriority() <= ts::ThreadAttributes::GetMaximumPriority());
+    TSUNIT_ASSERT(ts::ThreadAttributes::GetMinimumPriority() <= ts::ThreadAttributes::GetNormalPriority());
+    TSUNIT_ASSERT(ts::ThreadAttributes::GetNormalPriority() <= ts::ThreadAttributes::GetMaximumPriority());
 
     ts::ThreadAttributes attr;
-    CPPUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetNormalPriority()); // default value
+    TSUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetNormalPriority()); // default value
 
     attr.setPriority (ts::ThreadAttributes::GetMinimumPriority());
-    CPPUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMinimumPriority());
+    TSUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMinimumPriority());
 
     attr.setPriority (ts::ThreadAttributes::GetMinimumPriority() - 1);
-    CPPUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMinimumPriority());
+    TSUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMinimumPriority());
 
     attr.setPriority (ts::ThreadAttributes::GetMaximumPriority());
-    CPPUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMaximumPriority());
+    TSUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMaximumPriority());
 
     attr.setPriority (ts::ThreadAttributes::GetMaximumPriority() + 1);
-    CPPUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMaximumPriority());
+    TSUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetMaximumPriority());
 
     attr.setPriority (ts::ThreadAttributes::GetNormalPriority());
-    CPPUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetNormalPriority());
+    TSUNIT_ASSERT(attr.getPriority() == ts::ThreadAttributes::GetNormalPriority());
 }

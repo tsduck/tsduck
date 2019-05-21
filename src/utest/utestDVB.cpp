@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for DVB classes
+//  TSUnit test suite for DVB classes
 //
 //----------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -44,28 +44,28 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class DVBTest: public CppUnit::TestFixture
+class DVBTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testTunerArgs();
     void testTunerParams();
     void testLNB();
 
-    CPPUNIT_TEST_SUITE(DVBTest);
-    CPPUNIT_TEST(testTunerArgs);
-    CPPUNIT_TEST(testTunerParams);
-    CPPUNIT_TEST(testLNB);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(DVBTest);
+    TSUNIT_TEST(testTunerArgs);
+    TSUNIT_TEST(testTunerParams);
+    TSUNIT_TEST(testLNB);
+    TSUNIT_TEST_END();
 
 private:
     static void displayLNB(const ts::LNB& lnb, const ts::UString& name);
     static void testParameters(const ts::TunerParameters& params);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DVBTest);
+TSUNIT_REGISTER(DVBTest);
 
 
 //----------------------------------------------------------------------------
@@ -73,12 +73,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DVBTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void DVBTest::setUp()
+void DVBTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void DVBTest::tearDown()
+void DVBTest::afterTest()
 {
 }
 
@@ -92,35 +92,35 @@ void DVBTest::testTunerArgs()
     ts::Args args(u"Test tuner", u"[options]");
     ts::TunerArgs tuner_args;
     tuner_args.defineOptions(args);
-    utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
+    debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
 void DVBTest::testParameters(const ts::TunerParameters& params)
 {
-    utest::Out() << "DVBTest: Default TunerParameters, type: " << ts::TunerTypeEnum.name(params.tunerType()) << std::endl;
+    debug() << "DVBTest: Default TunerParameters, type: " << ts::TunerTypeEnum.name(params.tunerType()) << std::endl;
 
     ts::TunerParametersPtr ptr(ts::TunerParameters::Factory(params.tunerType()));
-    CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
+    TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());
 
     const ts::UString opts(params.toPluginOptions());
-    utest::Out() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
+    debug() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
-    CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
+    TSUNIT_ASSERT(ptr->toPluginOptions() == opts);
 
     ts::Args args;
     ts::TunerArgs tuner_args;
     tuner_args.defineOptions(args);
     ts::UStringVector args_vec;
     opts.split(args_vec, u' ');
-    CPPUNIT_ASSERT(args.analyze(u"", args_vec));
+    TSUNIT_ASSERT(args.analyze(u"", args_vec));
 
     ts::TunerArgs tuner;
     ts::DuckContext duck;
     tuner.load(args, duck);
     ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
-    CPPUNIT_ASSERT(!ptr.isNull());
-    CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
-    CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
+    TSUNIT_ASSERT(!ptr.isNull());
+    TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());
+    TSUNIT_ASSERT(ptr->toPluginOptions() == opts);
 }
 
 void DVBTest::testTunerParams()
@@ -132,7 +132,7 @@ void DVBTest::testTunerParams()
 
 void DVBTest::displayLNB(const ts::LNB& lnb, const ts::UString& name)
 {
-    utest::Out() << "DVBTest: Test LNB: " << name << std::endl
+    debug() << "DVBTest: Test LNB: " << name << std::endl
                  << "  convert to string: " << lnb << std::endl
                  << "  hasHighBand: " << lnb.hasHighBand() << std::endl
                  << "  lowFrequency: " << lnb.lowFrequency() << std::endl
@@ -148,21 +148,21 @@ void DVBTest::testLNB()
 {
     ts::LNB lnb1;
     displayLNB(lnb1, u"universal LNB");
-    CPPUNIT_ASSERT(lnb1.isValid());
+    TSUNIT_ASSERT(lnb1.isValid());
 
     ts::LNB lnb2(u"9000,10000,11000");
     displayLNB(lnb2, u"9000,10000,11000");
-    CPPUNIT_ASSERT(lnb2.isValid());
+    TSUNIT_ASSERT(lnb2.isValid());
 
     ts::LNB lnb3(u"9500");
     displayLNB(lnb3, u"9500");
-    CPPUNIT_ASSERT(lnb3.isValid());
+    TSUNIT_ASSERT(lnb3.isValid());
 
     ts::LNB lnb4(u"9500,10000");
     displayLNB(lnb4, u"9500,10000");
-    CPPUNIT_ASSERT(!lnb4.isValid());
+    TSUNIT_ASSERT(!lnb4.isValid());
 
     ts::LNB lnb5(u"azerty");
     displayLNB(lnb5, u"azerty");
-    CPPUNIT_ASSERT(!lnb5.isValid());
+    TSUNIT_ASSERT(!lnb5.isValid());
 }

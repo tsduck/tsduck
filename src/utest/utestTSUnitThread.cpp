@@ -26,46 +26,48 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Thread wrapper for CppUnit.
-//!
+
+#include "utestTSUnitThread.h"
+
+
+//----------------------------------------------------------------------------
+// Constructors
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "utestCppUnitTest.h"
-#include "tsThread.h"
+utest::TSUnitThread::TSUnitThread() :
+    ts::Thread()
+{
+}
 
-namespace utest {
-    //!
-    //! CppUnit wrapper for thread main code.
-    //!
-    //! CppUnit is not designed for multi-threading. Any assertion failure in a thread
-    //! produces unspecified results, typically a crash of the application, and there
-    //! is no error message about the failing display. This class is a wrapper
-    //! around the main code of a thread. In case of assertion failure, a CppUnit
-    //! error is displayed and the application properly exits.
-    //!
-    class CppUnitThread : public ts::Thread
-    {
-    public:
-        //!
-        //! Default constructor.
-        //!
-        CppUnitThread();
+utest::TSUnitThread::TSUnitThread(const ts::ThreadAttributes& attributes) :
+    ts::Thread(attributes)
+{
+}
 
-        //!
-        //! Constructor from specified attributes.
-        //! @param [in] attributes The set of attributes.
-        //!
-        CppUnitThread(const ts::ThreadAttributes& attributes);
 
-        //!
-        //! Actual test code (thread main code).
-        //!
-        virtual void test() = 0;
+//----------------------------------------------------------------------------
+// TSUnit wrapper for thread main code.
+//----------------------------------------------------------------------------
 
-        // Implementation of thread interface.
-        virtual void main() override;
-    };
+void utest::TSUnitThread::main()
+{
+    try {
+        // Execute the real test.
+        test();
+    }
+    catch (const std::exception& e) {
+        std::cerr << std::endl
+                  << "*** Terminating exception in a thread, aborting" << std::endl
+                  << "*** " << e.what() << std::endl
+                  << std::endl;
+        // Exit application.
+        ::exit(EXIT_FAILURE);
+    }
+    catch (...) {
+        std::cerr << std::endl
+                  << "*** Unknown kind of exception in a thread, aborting" << std::endl
+                  << std::endl;
+        // Exit application.
+        ::exit(EXIT_FAILURE);
+    }
 }

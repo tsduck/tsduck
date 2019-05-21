@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for JSON classes.
+//  TSUnit test suite for JSON classes.
 //
 //----------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@
 #include "tsjsonArray.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -50,22 +50,22 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class JsonTest: public CppUnit::TestFixture
+class JsonTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testSimple();
     void testGitHub();
 
-    CPPUNIT_TEST_SUITE(JsonTest);
-    CPPUNIT_TEST(testSimple);
-    CPPUNIT_TEST(testGitHub);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(JsonTest);
+    TSUNIT_TEST(testSimple);
+    TSUNIT_TEST(testGitHub);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (JsonTest);
+TSUNIT_REGISTER(JsonTest);
 
 
 //----------------------------------------------------------------------------
@@ -73,12 +73,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION (JsonTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void JsonTest::setUp()
+void JsonTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void JsonTest::tearDown()
+void JsonTest::afterTest()
 {
 }
 
@@ -90,31 +90,31 @@ void JsonTest::tearDown()
 void JsonTest::testSimple()
 {
     ts::json::ValuePtr jv;
-    CPPUNIT_ASSERT(!ts::json::Parse(jv, u"", NULLREP));
-    CPPUNIT_ASSERT(jv.isNull());
+    TSUNIT_ASSERT(!ts::json::Parse(jv, u"", NULLREP));
+    TSUNIT_ASSERT(jv.isNull());
 
-    CPPUNIT_ASSERT(ts::json::Parse(jv, u" null  ", CERR));
-    CPPUNIT_ASSERT(!jv.isNull());
-    CPPUNIT_ASSERT(jv->isNull());
+    TSUNIT_ASSERT(ts::json::Parse(jv, u" null  ", CERR));
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv->isNull());
 
-    CPPUNIT_ASSERT(!ts::json::Parse(jv, u"   false  true  ", NULLREP));
-    CPPUNIT_ASSERT(!jv.isNull());
-    CPPUNIT_ASSERT(jv->isFalse());
+    TSUNIT_ASSERT(!ts::json::Parse(jv, u"   false  true  ", NULLREP));
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv->isFalse());
 
-    CPPUNIT_ASSERT(ts::json::Parse(jv, u"[ true, {\"ab\":67, \"foo\" : \"bar\"} ]", CERR));
-    CPPUNIT_ASSERT(!jv.isNull());
-    CPPUNIT_ASSERT(jv->isArray());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), jv->size());
-    CPPUNIT_ASSERT(jv->at(0).isTrue());
-    CPPUNIT_ASSERT(jv->at(1).isObject());
-    CPPUNIT_ASSERT(jv->at(2).isNull());
-    CPPUNIT_ASSERT(jv->at(2).value(u"jjj").at(3424).isNull());
-    CPPUNIT_ASSERT_EQUAL(size_t(2), jv->at(1).size());
-    CPPUNIT_ASSERT_EQUAL(TS_CONST64(67), jv->at(1).value(u"ab").toInteger());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar", jv->at(1).value(u"foo").toString());
-    CPPUNIT_ASSERT(jv->at(1).value(u"ss").isNull());
+    TSUNIT_ASSERT(ts::json::Parse(jv, u"[ true, {\"ab\":67, \"foo\" : \"bar\"} ]", CERR));
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv->isArray());
+    TSUNIT_EQUAL(size_t(2), jv->size());
+    TSUNIT_ASSERT(jv->at(0).isTrue());
+    TSUNIT_ASSERT(jv->at(1).isObject());
+    TSUNIT_ASSERT(jv->at(2).isNull());
+    TSUNIT_ASSERT(jv->at(2).value(u"jjj").at(3424).isNull());
+    TSUNIT_EQUAL(size_t(2), jv->at(1).size());
+    TSUNIT_EQUAL(TS_CONST64(67), jv->at(1).value(u"ab").toInteger());
+    TSUNIT_EQUAL(u"bar", jv->at(1).value(u"foo").toString());
+    TSUNIT_ASSERT(jv->at(1).value(u"ss").isNull());
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"[\n"
         u"  true,\n"
         u"  {\n"
@@ -361,16 +361,16 @@ void JsonTest::testGitHub()
         u"}\n";
 
     ts::json::ValuePtr jv;
-    CPPUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
-    CPPUNIT_ASSERT(!jv.isNull());
-    CPPUNIT_ASSERT(jv->isObject());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"v3.5-419", jv->value(u"tag_name").toString());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"https://api.github.com/repos/tsduck/tsduck/tarball/v3.5-419", jv->value(u"tarball_url").toString());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"lelegard", jv->value(u"author").value(u"login").toString());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"tsduck-devel-3.5-419.fc27.x86_64.rpm", jv->value(u"assets").at(1).value(u"name").toString());
+    TSUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv->isObject());
+    TSUNIT_EQUAL(u"v3.5-419", jv->value(u"tag_name").toString());
+    TSUNIT_EQUAL(u"https://api.github.com/repos/tsduck/tsduck/tarball/v3.5-419", jv->value(u"tarball_url").toString());
+    TSUNIT_EQUAL(u"lelegard", jv->value(u"author").value(u"login").toString());
+    TSUNIT_EQUAL(u"tsduck-devel-3.5-419.fc27.x86_64.rpm", jv->value(u"assets").at(1).value(u"name").toString());
 
     // Same as input but names are sorted in objects.
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+    TSUNIT_EQUAL(
         u"{\n"
         u"  \"assets\": [\n"
         u"    {\n"

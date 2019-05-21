@@ -15,8 +15,6 @@ on Windows and Linux. macOS can only support files and IP for TS input and outpu
   allows the download of the latest version of Visual Studio but offers no way to
   download a specific previous version.
 
-- CppUnit binary libraries. Download [here](https://sourceforge.net/projects/cppunit-msvc/files/).
-
 - Doxygen for Windows. Download [here](http://www.doxygen.org/download.html).
 
 - Graphviz for Windows (used by Doxygen to generate graphs and diagrams).
@@ -37,40 +35,40 @@ on Windows and Linux. macOS can only support files and IP for TS input and outpu
 
 - Setup for a TSDuck native build:
 ~~~~
-dnf install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel rpmdevtools
+dnf install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools
 ~~~~
 
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
 ~~~~
-dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686 libcurl-devel.i686
+dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686
 ~~~~
 
 ## Red Hat Entreprise Linux, CentOS {#reqrhel}
 
 - Setup for a TSDuck native build:
 ~~~~
-yum install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel rpmdevtools
+yum install gcc-c++ doxygen dos2unix graphviz curl pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools
 ~~~~
 
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
 ~~~~
-yum install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686 libcurl-devel.i686
+yum install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686
 ~~~~
 
 ## Ubuntu, Debian, Raspbian {#requbuntu}
 
 - Setup for a TSDuck native build:
 ~~~~
-apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcppunit-dev libcurl3 libcurl3-dev
+apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl3 libcurl3-dev
 ~~~~
 
 - Starting with Ubuntu 18.04, `libcurl3` has been replaced by `libcurl4` and the installation commmand becomes:
 ~~~~
-apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcppunit-dev libcurl4 libcurl4-openssl-dev
+apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev libcurl4 libcurl4-openssl-dev
 ~~~~
 
 - It is not possible to build 32-bit TSDuck on 64-bit Ubuntu system (command `make m32`) because
-  there is no 32-bit cross-compiled package for pcsc and cppunit on Ubuntu 64-bit.
+  there is no 32-bit cross-compiled package for pcsc on Ubuntu 64-bit.
 
 ## Specific GCC requirement on Raspian and Debian {#reqraspbian}
 
@@ -96,14 +94,11 @@ To install GCC 4.9:
 apt install gcc-4.9 g++-4.9
 ~~~~
 
-Build TSDuck using the following command:
-~~~~
-make CC=gcc-4.9 GCC=gcc-4.9 CXX=g++-4.9 AR=gcc-ar-4.9 NOTEST=true
-~~~~
-
+Build TSDuck using the following command.
 The compiler and associated tools are redirected to their version 4.9.
-The flag `NOTEST=true` is required because the version of CppUnit which
-is installed with the system is not compatible with GCC 4.9.
+~~~~
+make CC=gcc-4.9 GCC=gcc-4.9 CXX=g++-4.9 AR=gcc-ar-4.9
+~~~~
 
 ## All Linux distros {#reqlinux}
 
@@ -124,7 +119,7 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 
 - Install common open source tools using Homebrew:
 ~~~~
-brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep dos2unix
+brew install pcsc-lite doxygen graphviz gnu-sed grep dos2unix
 ~~~~
 
 # Building the TSDuck binaries {#buildbin}
@@ -153,16 +148,16 @@ but it will report an error when used).
 
 The following `make` variables can be defined:
 
-- `NOTEST`  : No unitary test, remove dependency to `CppUnit`.
+- `NOTEST`  : Do not build unitary tests.
 - `NODTAPI` : No Dektec support, remove dependency to `DTAPI`.
 - `NOCURL`  : No HTTP support, remove dependency to `libcurl`.
 - `NOPCSC`  : No smartcard support, remove dependency to `pcsc-lite`.
 - `NOTELETEXT` : No Teletext support, remove teletext handling code.
 
 The following command, for instance, builds TSDuck without dependency
-to `CppUnit`, `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
+to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
 ~~~
-make NOTEST=1 NOPCSC=1 NOCURL=1 NODTAPI=1
+make NOPCSC=1 NOCURL=1 NODTAPI=1
 ~~~
 
 # Building the TSDuck installers {#buildinst}

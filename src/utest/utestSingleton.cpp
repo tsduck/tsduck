@@ -27,12 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for singletons.
+//  TSUnit test suite for singletons.
 //
 //----------------------------------------------------------------------------
 
 #include "tsSingletonManager.h"
-#include "utestCppUnitTest.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -40,20 +40,20 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class SingletonTest: public CppUnit::TestFixture
+class SingletonTest: public tsunit::Test
 {
 public:
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testSingleton();
 
-    CPPUNIT_TEST_SUITE(SingletonTest);
-    CPPUNIT_TEST(testSingleton);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(SingletonTest);
+    TSUNIT_TEST(testSingleton);
+    TSUNIT_TEST_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(SingletonTest);
+TSUNIT_REGISTER(SingletonTest);
 
 
 //----------------------------------------------------------------------------
@@ -61,12 +61,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SingletonTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void SingletonTest::setUp()
+void SingletonTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void SingletonTest::tearDown()
+void SingletonTest::afterTest()
 {
 }
 
@@ -85,7 +85,7 @@ namespace {
 
     Singleton::Singleton()
     {
-        utest::Out() << "SingletonTest: constructor of the singleton" << std::endl;
+        tsunit::Test::debug() << "SingletonTest: constructor of the singleton" << std::endl;
     }
 }
 
@@ -98,5 +98,5 @@ void SingletonTest::testSingleton()
     // Check that this is a singleton
     Singleton* p1(Singleton::Instance());
     Singleton* p2(Singleton::Instance());
-    CPPUNIT_ASSERT(p1 == p2);
+    TSUNIT_ASSERT(p1 == p2);
 }

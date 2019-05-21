@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for class ts::Thread
+//  TSUnit test suite for class ts::Thread
 //
 //  This is also a test suite for classes ts::Mutex and ts::Condition
 //  which are difficult to test independently of threads.
@@ -42,7 +42,8 @@
 #include "tsTime.h"
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
-#include "utestCppUnitThread.h"
+#include "utestTSUnitThread.h"
+#include "tsunit.h"
 TSDUCK_SOURCE;
 
 
@@ -50,13 +51,13 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class ThreadTest: public CppUnit::TestFixture
+class ThreadTest: public tsunit::Test
 {
 public:
     ThreadTest();
 
-    virtual void setUp() override;
-    virtual void tearDown() override;
+    virtual void beforeTest() override;
+    virtual void afterTest() override;
 
     void testAttributes();
     void testTermination();
@@ -65,20 +66,20 @@ public:
     void testMutexTimeout();
     void testCondition();
 
-    CPPUNIT_TEST_SUITE(ThreadTest);
-    CPPUNIT_TEST(testAttributes);
-    CPPUNIT_TEST(testTermination);
-    CPPUNIT_TEST(testDeleteWhenTerminated);
-    CPPUNIT_TEST(testMutexRecursion);
-    CPPUNIT_TEST(testMutexTimeout);
-    CPPUNIT_TEST(testCondition);
-    CPPUNIT_TEST_SUITE_END();
+    TSUNIT_TEST_BEGIN(ThreadTest);
+    TSUNIT_TEST(testAttributes);
+    TSUNIT_TEST(testTermination);
+    TSUNIT_TEST(testDeleteWhenTerminated);
+    TSUNIT_TEST(testMutexRecursion);
+    TSUNIT_TEST(testMutexTimeout);
+    TSUNIT_TEST(testCondition);
+    TSUNIT_TEST_END();
 private:
     ts::NanoSecond  _nsPrecision;
     ts::MilliSecond _msPrecision;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
+TSUNIT_REGISTER(ThreadTest);
 
 
 //----------------------------------------------------------------------------
@@ -93,17 +94,17 @@ ThreadTest::ThreadTest() :
 }
 
 // Test suite initialization method.
-void ThreadTest::setUp()
+void ThreadTest::beforeTest()
 {
     _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
     _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
 
     // Request 2 milliseconds as system time precision.
-    utest::Out() << "ThreadTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
+    debug() << "ThreadTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
-void ThreadTest::tearDown()
+void ThreadTest::afterTest()
 {
 }
 
@@ -116,16 +117,16 @@ void ThreadTest::tearDown()
 // Test case: Constructor with attributes
 //
 namespace {
-    class ThreadConstructor: public utest::CppUnitThread
+    class ThreadConstructor: public utest::TSUnitThread
     {
     public:
         explicit ThreadConstructor(const ts::ThreadAttributes& attributes) :
-            utest::CppUnitThread(attributes)
+            utest::TSUnitThread(attributes)
         {
         }
         virtual void test() override
         {
-            CPPUNIT_FAIL("ThreadConstructor should not have started");
+            TSUNIT_FAIL("ThreadConstructor should not have started");
         }
     };
 }
@@ -136,11 +137,11 @@ void ThreadTest::testAttributes()
     ThreadConstructor thread(ts::ThreadAttributes().setStackSize(123456).setPriority(prio));
     ts::ThreadAttributes attr;
     thread.getAttributes (attr);
-    CPPUNIT_ASSERT(attr.getPriority() == prio);
-    CPPUNIT_ASSERT(attr.getStackSize() == 123456);
+    TSUNIT_ASSERT(attr.getPriority() == prio);
+    TSUNIT_ASSERT(attr.getStackSize() == 123456);
 
     ts::ThreadAttributes attr2;
-    CPPUNIT_ASSERT(thread.setAttributes(attr2));
+    TSUNIT_ASSERT(thread.setAttributes(attr2));
 }
 
 //
@@ -148,7 +149,7 @@ void ThreadTest::testAttributes()
 // The will slow down our test suites by 200 ms.
 //
 namespace {
-    class ThreadTermination: public utest::CppUnitThread
+    class ThreadTermination: public utest::TSUnitThread
     {
     private:
         volatile bool&  _report;
@@ -156,7 +157,7 @@ namespace {
         ts::MilliSecond _msPrecision;
     public:
         ThreadTermination (volatile bool& report, ts::MilliSecond delay, ts::MilliSecond msPrecision) :
-            utest::CppUnitThread(ts::ThreadAttributes().setStackSize(1000000)),
+            utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000)),
             _report(report),
             _delay(delay),
             _msPrecision(msPrecision)
@@ -168,12 +169,12 @@ namespace {
         }
         virtual void test() override
         {
-            CPPUNIT_ASSERT(isCurrentThread());
+            TSUNIT_ASSERT(isCurrentThread());
             const ts::Time before (ts::Time::CurrentUTC());
             ts::SleepThread(_delay);
             const ts::Time after (ts::Time::CurrentUTC());
-            utest::Out() << "ThreadTest::ThreadTermination: delay = " << _delay << ", after - before = " << (after - before) << std::endl;
-            CPPUNIT_ASSERT(after >= before + _delay - _msPrecision);
+            tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay << ", after - before = " << (after - before) << std::endl;
+            TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
             _report = true;
         }
     };
@@ -185,12 +186,12 @@ void ThreadTest::testTermination()
     const ts::Time before(ts::Time::CurrentUTC());
     {
         ThreadTermination thread(report, 200, _msPrecision);
-        CPPUNIT_ASSERT(thread.start());
-        CPPUNIT_ASSERT(!thread.isCurrentThread());
+        TSUNIT_ASSERT(thread.start());
+        TSUNIT_ASSERT(!thread.isCurrentThread());
     }
     const ts::Time after(ts::Time::CurrentUTC());
-    CPPUNIT_ASSERT(after >= before + 200 - _msPrecision);
-    CPPUNIT_ASSERT(report);
+    TSUNIT_ASSERT(after >= before + 200 - _msPrecision);
+    TSUNIT_ASSERT(report);
 }
 
 
@@ -199,7 +200,7 @@ void ThreadTest::testTermination()
 // properly cleanup the thread.
 //
 namespace {
-    class ThreadDeleteWhenTerminated: public utest::CppUnitThread
+    class ThreadDeleteWhenTerminated: public utest::TSUnitThread
     {
     private:
         volatile bool&  _report;
@@ -207,7 +208,7 @@ namespace {
         ts::MilliSecond _msPrecision;
     public:
         ThreadDeleteWhenTerminated (volatile bool& report, ts::MilliSecond delay, ts::MilliSecond msPrecision) :
-            utest::CppUnitThread(ts::ThreadAttributes().setStackSize(1000000).setDeleteWhenTerminated(true)),
+            utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000).setDeleteWhenTerminated(true)),
             _report(report),
             _delay(delay),
             _msPrecision(msPrecision)
@@ -215,7 +216,7 @@ namespace {
         }
         virtual ~ThreadDeleteWhenTerminated()
         {
-            utest::Out() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
+            tsunit::Test::debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
             _report = true;
         }
         virtual void test() override
@@ -223,7 +224,7 @@ namespace {
             const ts::Time before(ts::Time::CurrentUTC());
             ts::SleepThread(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
-            CPPUNIT_ASSERT(after >= before + _delay - _msPrecision);
+            TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
         }
     };
 }
@@ -233,17 +234,17 @@ void ThreadTest::testDeleteWhenTerminated()
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
     ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, 100, _msPrecision);
-    CPPUNIT_ASSERT(thread->start());
+    TSUNIT_ASSERT(thread->start());
     int counter = 100;
     while (!report && counter-- > 0) {
         ts::SleepThread(20);
     }
     const ts::Time after(ts::Time::CurrentUTC());
     if (counter > 0) {
-        utest::Out() << "ThreadTest: ThreadDeleteWhenTerminated deleted after " << (after - before) << " milliseconds" << std::endl;
+        debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted after " << (after - before) << " milliseconds" << std::endl;
     }
     else {
-        CPPUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {after - before}).toUTF8());
+        TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {after - before}).toUTF8());
     }
 }
 
@@ -254,25 +255,25 @@ void ThreadTest::testMutexRecursion()
 {
     ts::Mutex mutex;
 
-    CPPUNIT_ASSERT(!mutex.release());
+    TSUNIT_ASSERT(!mutex.release());
 
-    CPPUNIT_ASSERT(mutex.acquire());
-    CPPUNIT_ASSERT(mutex.acquire());
-    CPPUNIT_ASSERT(mutex.acquire());
+    TSUNIT_ASSERT(mutex.acquire());
+    TSUNIT_ASSERT(mutex.acquire());
+    TSUNIT_ASSERT(mutex.acquire());
 
-    CPPUNIT_ASSERT(mutex.release());
-    CPPUNIT_ASSERT(mutex.release());
-    CPPUNIT_ASSERT(mutex.release());
+    TSUNIT_ASSERT(mutex.release());
+    TSUNIT_ASSERT(mutex.release());
+    TSUNIT_ASSERT(mutex.release());
 
-    CPPUNIT_ASSERT(!mutex.release());
-    CPPUNIT_ASSERT(!mutex.release());
+    TSUNIT_ASSERT(!mutex.release());
+    TSUNIT_ASSERT(!mutex.release());
 }
 
 //
 // Test case: Check mutex timeout
 //
 namespace {
-    class TestThreadMutexTimeout: public utest::CppUnitThread
+    class TestThreadMutexTimeout: public utest::TSUnitThread
     {
     private:
         ts::Mutex& _mutex;
@@ -280,7 +281,7 @@ namespace {
         ts::Condition& _condSig;
     public:
         TestThreadMutexTimeout(ts::Mutex& mutex, ts::Mutex& mutexSig, ts::Condition& condSig) :
-            utest::CppUnitThread(),
+            utest::TSUnitThread(),
             _mutex(mutex),
             _mutexSig(mutexSig),
             _condSig(condSig)
@@ -295,11 +296,11 @@ namespace {
         {
             // Acquire the test mutex.
             ts::Guard lock1(_mutex, 0);
-            CPPUNIT_ASSERT(lock1.isLocked());
+            TSUNIT_ASSERT(lock1.isLocked());
             // Signal that we have acquired it.
             {
                 ts::GuardCondition lock2(_mutexSig, _condSig);
-                CPPUNIT_ASSERT(lock2.isLocked());
+                TSUNIT_ASSERT(lock2.isLocked());
                 lock2.signal();
             }
             // And sleep 100 ms.
@@ -319,9 +320,9 @@ void ThreadTest::testMutexTimeout()
     // Start thread and wait for it to acquire mutex.
     {
         ts::GuardCondition lock(mutexSig, condSig);
-        CPPUNIT_ASSERT(lock.isLocked());
-        CPPUNIT_ASSERT(thread.start());
-        CPPUNIT_ASSERT(lock.waitCondition());
+        TSUNIT_ASSERT(lock.isLocked());
+        TSUNIT_ASSERT(thread.start());
+        TSUNIT_ASSERT(lock.waitCondition());
     }
 
     // Now, the thread holds the mutex for 100 ms.
@@ -329,21 +330,21 @@ void ThreadTest::testMutexTimeout()
     const ts::Time dueTime1(start + 50 - _msPrecision);
     const ts::Time dueTime2(start + 100 - _msPrecision);
 
-    CPPUNIT_ASSERT(!mutex.acquire(50));
-    CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
+    TSUNIT_ASSERT(!mutex.acquire(50));
+    TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
     // The next assert may fail on a very busy system (when you compile while running
     // your tests for instance). The test process may be suspended longer than expected
     // and the final dueTime2 may have already passed.
-    CPPUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
-    CPPUNIT_ASSERT(mutex.acquire(1000));
-    CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
+    TSUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
+    TSUNIT_ASSERT(mutex.acquire(1000));
+    TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
 }
 
 //
 // Test case: Use mutex and condition
 //
 namespace {
-    class TestThreadCondition: public utest::CppUnitThread
+    class TestThreadCondition: public utest::TSUnitThread
     {
     private:
         ts::Mutex& _mutex;
@@ -351,7 +352,7 @@ namespace {
         int& _data;
     public:
         TestThreadCondition(ts::Mutex& mutex, ts::Condition& condition, int& data) :
-            utest::CppUnitThread(),
+            utest::TSUnitThread(),
             _mutex(mutex),
             _condition(condition),
             _data(data)
@@ -366,7 +367,7 @@ namespace {
         {
             {
                 ts::Guard lock(_mutex);
-                CPPUNIT_ASSERT(_data == 4);
+                TSUNIT_ASSERT(_data == 4);
             }
             while (_data > 0) {
                 ts::SleepThread(100);
@@ -388,18 +389,18 @@ void ThreadTest::testCondition()
     ts::Condition condition;
     {
         TestThreadCondition thread(mutex, condition, data);
-        CPPUNIT_ASSERT(thread.start());
+        TSUNIT_ASSERT(thread.start());
 
         ts::GuardCondition lock(mutex, condition);
         ts::Time dueTime(ts::Time::CurrentUTC() + 100 - _msPrecision);
         while (data > 0) {
             // Wait until data is decremented (timeout: 10 seconds)
             while (data == previous) {
-                CPPUNIT_ASSERT(lock.waitCondition(10000));
+                TSUNIT_ASSERT(lock.waitCondition(10000));
             }
-            CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime);
+            TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime);
             dueTime += 100;
-            CPPUNIT_ASSERT(data == previous - 1);
+            TSUNIT_ASSERT(data == previous - 1);
             previous = data;
         }
     }
