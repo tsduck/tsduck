@@ -97,14 +97,18 @@ TSUNIT_REGISTER(SectionFileTest);
 
 // Constructor.
 SectionFileTest::SectionFileTest() :
-    _tempFileNameBin(ts::TempFile(u".tmp.bin")),
-    _tempFileNameXML(ts::TempFile(u".tmp.xml"))
+    _tempFileNameBin(),
+    _tempFileNameXML()
 {
 }
 
 // Test suite initialization method.
 void SectionFileTest::beforeTest()
 {
+    if (_tempFileNameBin.empty() || _tempFileNameXML.empty()) {
+        _tempFileNameBin = ts::TempFile(u".tmp.bin");
+        _tempFileNameXML = ts::TempFile(u".tmp.xml");
+    }
     ts::DeleteFile(_tempFileNameBin);
     ts::DeleteFile(_tempFileNameXML);
 }
