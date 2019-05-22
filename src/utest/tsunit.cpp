@@ -35,7 +35,7 @@
     #define WINDOWS 1
 #endif
 
-#if defined(__GNUC__) && __GNUC__ < 5
+#if defined(__GNUC__) && !defined(__llvm__) && __GNUC__ < 5
     // Missing codecvt support in GCC 4.x
     #define NOCODECVT
     #include <iconv.h>
