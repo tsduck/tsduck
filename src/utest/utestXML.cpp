@@ -89,13 +89,16 @@ TSUNIT_REGISTER(XMLTest);
 
 // Constructor.
 XMLTest::XMLTest() :
-    _tempFileName(ts::TempFile(u".tmp.xml"))
+    _tempFileName()
 {
 }
 
 // Test suite initialization method.
 void XMLTest::beforeTest()
 {
+    if (_tempFileName.empty()) {
+        _tempFileName = ts::TempFile(u".tmp.xml");
+    }
     ts::DeleteFile(_tempFileName);
 }
 

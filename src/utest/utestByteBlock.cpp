@@ -70,13 +70,16 @@ TSUNIT_REGISTER(ByteBlockTest);
 
 // Constructor.
 ByteBlockTest::ByteBlockTest() :
-    _tempFileName(ts::TempFile(u".tmp.xml"))
+    _tempFileName()
 {
 }
 
 // Test suite initialization method.
 void ByteBlockTest::beforeTest()
 {
+    if (_tempFileName.empty()) {
+        _tempFileName = ts::TempFile(u".tmp.xml");
+    }
     ts::DeleteFile(_tempFileName);
 }
 

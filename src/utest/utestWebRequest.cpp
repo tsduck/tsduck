@@ -86,13 +86,16 @@ TSUNIT_REGISTER(WebRequestTest);
 
 // Constructor.
 WebRequestTest::WebRequestTest() :
-    _tempFileName(ts::TempFile())
+    _tempFileName()
 {
 }
 
 // Test suite initialization method.
 void WebRequestTest::beforeTest()
 {
+    if (_tempFileName.empty()) {
+        _tempFileName = ts::TempFile();
+    }
     ts::DeleteFile(_tempFileName);
 }
 
