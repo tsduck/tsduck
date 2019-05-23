@@ -235,8 +235,8 @@ void NetworkingTest::testIPv6Address()
 
     TSUNIT_ASSERT(!ts::IPv6Address::AnyAddress.hasAddress());
     TSUNIT_ASSERT(ts::IPv6Address::LocalHost.hasAddress());
-    TSUNIT_EQUAL(TS_UCONST64(0), ts::IPv6Address::LocalHost.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(1), ts::IPv6Address::LocalHost.interfaceIdentifier());
+    TSUNIT_EQUAL(0, ts::IPv6Address::LocalHost.networkPrefix());
+    TSUNIT_EQUAL(1, ts::IPv6Address::LocalHost.interfaceIdentifier());
 
     TSUNIT_ASSERT(!a1.resolve(u":", NULLREP));
     TSUNIT_ASSERT(!a1.hasAddress());
@@ -687,7 +687,7 @@ void NetworkingTest::testIPHeader()
     };
 
     TSUNIT_EQUAL(sizeof(reference_header), ts::IPHeaderSize(reference_header, sizeof(reference_header)));
-    TSUNIT_EQUAL(uint16_t(0x328B), ts::IPHeaderChecksum(reference_header, sizeof(reference_header)));
+    TSUNIT_EQUAL(0x328B, ts::IPHeaderChecksum(reference_header, sizeof(reference_header)));
     TSUNIT_ASSERT(ts::VerifyIPHeaderChecksum(reference_header, sizeof(reference_header)));
 
     uint8_t header[sizeof(reference_header)];
@@ -697,9 +697,9 @@ void NetworkingTest::testIPHeader()
     header[ts::IPv4_CHECKSUM_OFFSET] = 0x00;
     header[ts::IPv4_CHECKSUM_OFFSET + 1] = 0x00;
     TSUNIT_ASSERT(!ts::VerifyIPHeaderChecksum(header, sizeof(header)));
-    TSUNIT_EQUAL(uint16_t(0x328B), ts::IPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_EQUAL(0x328B, ts::IPHeaderChecksum(header, sizeof(header)));
 
     TSUNIT_ASSERT(ts::UpdateIPHeaderChecksum(header, sizeof(header)));
     TSUNIT_ASSERT(ts::VerifyIPHeaderChecksum(header, sizeof(header)));
-    TSUNIT_EQUAL(uint16_t(0x328B), ts::IPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_EQUAL(0x328B, ts::IPHeaderChecksum(header, sizeof(header)));
 }

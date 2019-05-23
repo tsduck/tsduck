@@ -77,5 +77,5 @@ void DVBCharsetTest::afterTest()
 void DVBCharsetTest::testRepository()
 {
     debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::DVBCharset::GetAllNames()) << std::endl;
-    TSUNIT_EQUAL(size_t(17), ts::DVBCharset::GetAllNames().size());
+    TSUNIT_EQUAL(17, ts::DVBCharset::GetAllNames().size());
 }

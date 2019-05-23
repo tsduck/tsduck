@@ -236,12 +236,12 @@ void ByteBlockTest::testFile()
         0x82, 0xED, 0xA0, 0xDA, 0xD0, 0xB2, 0xC6,
     });
 
-    TSUNIT_EQUAL(size_t(999), bb.size());
+    TSUNIT_EQUAL(999, bb.size());
     TSUNIT_ASSERT(bb.saveToFile(_tempFileName));
 
     ts::ByteBlock bb1;
     TSUNIT_ASSERT(bb1.loadFromFile(_tempFileName));
 
-    TSUNIT_EQUAL(size_t(999), bb1.size());
+    TSUNIT_EQUAL(999, bb1.size());
     TSUNIT_ASSERT(bb1 == bb);
 }

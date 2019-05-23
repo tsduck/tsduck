@@ -237,7 +237,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     for (size_t pi = 0; pi < ref_packets_size / ts::PKT_SIZE; ++pi) {
         demux.feedPacket(ref_pkt[pi]);
     }
-    TSUNIT_EQUAL(size_t(1), demux.tableCount());
+    TSUNIT_EQUAL(1, demux.tableCount());
 
     // Compare contents of reference sections and demuxed sections.
 
@@ -417,7 +417,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     for (ts::TSPacketVector::const_iterator it = packets.begin(); it != packets.end(); ++it) {
         demux2.feedPacket(*it);
     }
-    TSUNIT_EQUAL(size_t(1), demux2.tableCount());
+    TSUNIT_EQUAL(1, demux2.tableCount());
 
     const ts::BinaryTable& table3(*demux2.tableAt(0));
     if (table2 != table3) {

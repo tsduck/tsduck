@@ -117,7 +117,7 @@ void ChannelsTest::testText()
 
     ts::ChannelFile channels;
     TSUNIT_ASSERT(channels.parse(document));
-    TSUNIT_EQUAL(size_t(4), channels.networkCount());
+    TSUNIT_EQUAL(4, channels.networkCount());
 
     ts::ChannelFile::NetworkPtr net;
     ts::ChannelFile::TransportStreamPtr ts;
@@ -126,45 +126,45 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(channels.searchService(net, ts, srv, u"foochannel", false));
 
     TSUNIT_ASSERT(!net.isNull());
-    TSUNIT_EQUAL(uint16_t(0x1234), net->id);
+    TSUNIT_EQUAL(0x1234, net->id);
     TSUNIT_EQUAL(ts::ATSC, net->type);
 
     TSUNIT_ASSERT(!ts.isNull());
-    TSUNIT_EQUAL(uint16_t(0x5678), ts->id);
-    TSUNIT_EQUAL(uint16_t(0x9ABC), ts->onid);
+    TSUNIT_EQUAL(0x5678, ts->id);
+    TSUNIT_EQUAL(0x9ABC, ts->onid);
     TSUNIT_ASSERT(!ts->tune.isNull());
     const ts::TunerParametersATSC* atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
     TSUNIT_ASSERT(atsc != nullptr);
-    TSUNIT_EQUAL(uint64_t(123456), atsc->frequency);
+    TSUNIT_EQUAL(123456, atsc->frequency);
     TSUNIT_EQUAL(ts::VSB_16, atsc->modulation);
 
     TSUNIT_ASSERT(!srv.isNull());
-    TSUNIT_EQUAL(uint16_t(2), srv->id);
+    TSUNIT_EQUAL(2, srv->id);
     TSUNIT_EQUAL(u"Foo Channel", srv->name);
     TSUNIT_EQUAL(u"Foo Provider", srv->provider);
     TSUNIT_ASSERT(srv->lcn.set());
-    TSUNIT_EQUAL(uint16_t(23), srv->lcn.value());
+    TSUNIT_EQUAL(23, srv->lcn.value());
     TSUNIT_ASSERT(srv->pmtPID.set());
-    TSUNIT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
+    TSUNIT_EQUAL(0x0789, srv->pmtPID.value());
     TSUNIT_ASSERT(srv->type.set());
-    TSUNIT_EQUAL(uint8_t(0x12), srv->type.value());
+    TSUNIT_EQUAL(0x12, srv->type.value());
     TSUNIT_ASSERT(srv->cas.set());
     TSUNIT_ASSERT(srv->cas.value());
 
     TSUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DVB_S, u"foochannel", false));
 
     TSUNIT_ASSERT(!net.isNull());
-    TSUNIT_EQUAL(uint16_t(0x8753), net->id);
+    TSUNIT_EQUAL(0x8753, net->id);
     TSUNIT_EQUAL(ts::DVB_S, net->type);
 
     TSUNIT_ASSERT(!ts.isNull());
-    TSUNIT_EQUAL(uint16_t(0x8793), ts->id);
-    TSUNIT_EQUAL(uint16_t(0x5896), ts->onid);
+    TSUNIT_EQUAL(0x8793, ts->id);
+    TSUNIT_EQUAL(0x5896, ts->onid);
     TSUNIT_ASSERT(!ts->tune.isNull());
     const ts::TunerParametersDVBS* dvbs = dynamic_cast<const ts::TunerParametersDVBS*>(ts->tune.pointer());
     TSUNIT_ASSERT(dvbs != nullptr);
-    TSUNIT_EQUAL(uint64_t(8523698), dvbs->frequency);
-    TSUNIT_EQUAL(uint32_t(1237418), dvbs->symbol_rate);
+    TSUNIT_EQUAL(8523698, dvbs->frequency);
+    TSUNIT_EQUAL(1237418, dvbs->symbol_rate);
     TSUNIT_EQUAL(ts::PSK_8, dvbs->modulation);
     TSUNIT_EQUAL(ts::DS_DVB_S2, dvbs->delivery_system);
     TSUNIT_EQUAL(ts::POL_HORIZONTAL, dvbs->polarity);
@@ -173,7 +173,7 @@ void ChannelsTest::testText()
     TSUNIT_EQUAL(ts::ROLLOFF_35, dvbs->roll_off);
 
     TSUNIT_ASSERT(!srv.isNull());
-    TSUNIT_EQUAL(uint16_t(0x4591), srv->id);
+    TSUNIT_EQUAL(0x4591, srv->id);
     TSUNIT_EQUAL(u"Foo Channel", srv->name);
     TSUNIT_EQUAL(u"", srv->provider);
     TSUNIT_ASSERT(!srv->lcn.set());
@@ -190,34 +190,34 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(channels.searchService(net, ts, srv, u"1.4", false));
 
     TSUNIT_ASSERT(!net.isNull());
-    TSUNIT_EQUAL(uint16_t(0x1234), net->id);
+    TSUNIT_EQUAL(0x1234, net->id);
     TSUNIT_EQUAL(ts::ATSC, net->type);
 
     TSUNIT_ASSERT(!ts.isNull());
-    TSUNIT_EQUAL(uint16_t(0x5678), ts->id);
-    TSUNIT_EQUAL(uint16_t(0x9ABC), ts->onid);
+    TSUNIT_EQUAL(0x5678, ts->id);
+    TSUNIT_EQUAL(0x9ABC, ts->onid);
     TSUNIT_ASSERT(!ts->tune.isNull());
     atsc = dynamic_cast<const ts::TunerParametersATSC*>(ts->tune.pointer());
     TSUNIT_ASSERT(atsc != nullptr);
-    TSUNIT_EQUAL(uint64_t(123456), atsc->frequency);
+    TSUNIT_EQUAL(123456, atsc->frequency);
     TSUNIT_EQUAL(ts::VSB_16, atsc->modulation);
 
     TSUNIT_ASSERT(!srv.isNull());
-    TSUNIT_EQUAL(uint16_t(2), srv->id);
+    TSUNIT_EQUAL(2, srv->id);
     TSUNIT_EQUAL(u"Foo Channel", srv->name);
     TSUNIT_EQUAL(u"Foo Provider", srv->provider);
     TSUNIT_ASSERT(srv->lcn.set());
-    TSUNIT_EQUAL(uint16_t(23), srv->lcn.value());
+    TSUNIT_EQUAL(23, srv->lcn.value());
     TSUNIT_ASSERT(srv->pmtPID.set());
     TSUNIT_EQUAL(ts::PID(0x0789), srv->pmtPID.value());
     TSUNIT_ASSERT(srv->type.set());
-    TSUNIT_EQUAL(uint8_t(0x12), srv->type.value());
+    TSUNIT_EQUAL(0x12, srv->type.value());
     TSUNIT_ASSERT(srv->cas.set());
     TSUNIT_ASSERT(srv->cas.value());
     TSUNIT_ASSERT(srv->atscMajorId.set());
-    TSUNIT_EQUAL(uint16_t(1), srv->atscMajorId.value());
+    TSUNIT_EQUAL(1, srv->atscMajorId.value());
     TSUNIT_ASSERT(srv->atscMinorId.set());
-    TSUNIT_EQUAL(uint16_t(4), srv->atscMinorId.value());
+    TSUNIT_EQUAL(4, srv->atscMinorId.value());
 
     TSUNIT_ASSERT(!channels.searchService(net, ts, srv, u"1.5", false, NULLREP));
     TSUNIT_ASSERT(net.isNull());

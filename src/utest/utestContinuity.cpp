@@ -143,10 +143,10 @@ void ContinuityTest::testAnalyze()
     pkt.setPID(101); pkt.setCC(5);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
 
-    TSUNIT_EQUAL(ts::PacketCounter(12), fixer.totalPackets());
-    TSUNIT_EQUAL(ts::PacketCounter(12), fixer.processedPackets());
-    TSUNIT_EQUAL(ts::PacketCounter(2), fixer.errorCount());
-    TSUNIT_EQUAL(ts::PacketCounter(0), fixer.fixCount());
+    TSUNIT_EQUAL(12, fixer.totalPackets());
+    TSUNIT_EQUAL(12, fixer.processedPackets());
+    TSUNIT_EQUAL(2, fixer.errorCount());
+    TSUNIT_EQUAL(0, fixer.fixCount());
 }
 
 void ContinuityTest::testFix()
@@ -177,62 +177,62 @@ void ContinuityTest::testFix()
 
     pkt.setPID(100); pkt.setCC(5);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(5), pkt.getCC());
+    TSUNIT_EQUAL(5, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(13);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(13), pkt.getCC());
+    TSUNIT_EQUAL(13, pkt.getCC());
 
     pkt.setPID(100); pkt.setCC(6);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(6), pkt.getCC());
+    TSUNIT_EQUAL(6, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(14);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(14), pkt.getCC());
+    TSUNIT_EQUAL(14, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(14);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(14), pkt.getCC());
+    TSUNIT_EQUAL(14, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(15);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(15), pkt.getCC());
+    TSUNIT_EQUAL(15, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(0);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(0), pkt.getCC());
+    TSUNIT_EQUAL(0, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(3);
     TSUNIT_ASSERT(log.emptyMessages());
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
     TSUNIT_EQUAL(u"bar: packet index: 7, PID: 0x0065, missing 2 packets", log.getMessages());
-    TSUNIT_EQUAL(uint8_t(1), pkt.getCC());
+    TSUNIT_EQUAL(1, pkt.getCC());
     log.resetMessages();
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(2), pkt.getCC());
+    TSUNIT_EQUAL(2, pkt.getCC());
     TSUNIT_ASSERT(log.emptyMessages());
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(uint8_t(2), pkt.getCC());
+    TSUNIT_EQUAL(2, pkt.getCC());
     TSUNIT_ASSERT(log.emptyMessages());
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
     TSUNIT_EQUAL(u"bar: packet index: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
-    TSUNIT_EQUAL(uint8_t(2), pkt.getCC());
+    TSUNIT_EQUAL(2, pkt.getCC());
     log.resetMessages();
 
     pkt.setPID(101); pkt.setCC(5);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
     TSUNIT_ASSERT(log.emptyMessages());
-    TSUNIT_EQUAL(uint8_t(3), pkt.getCC());
+    TSUNIT_EQUAL(3, pkt.getCC());
 
-    TSUNIT_EQUAL(ts::PacketCounter(12), fixer.totalPackets());
-    TSUNIT_EQUAL(ts::PacketCounter(12), fixer.processedPackets());
-    TSUNIT_EQUAL(ts::PacketCounter(2), fixer.errorCount());
-    TSUNIT_EQUAL(ts::PacketCounter(5), fixer.fixCount());
+    TSUNIT_EQUAL(12, fixer.totalPackets());
+    TSUNIT_EQUAL(12, fixer.processedPackets());
+    TSUNIT_EQUAL(2, fixer.errorCount());
+    TSUNIT_EQUAL(5, fixer.fixCount());
 }

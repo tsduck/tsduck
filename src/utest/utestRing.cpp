@@ -170,22 +170,22 @@ void RingTest::testSwap()
     r5.ringInsertAfter(&r4);
     r6.ringInsertAfter(&r5);
 
-    TSUNIT_EQUAL(size_t(1), r1.ringSize());
-    TSUNIT_EQUAL(size_t(2), r2.ringSize());
-    TSUNIT_EQUAL(size_t(2), r3.ringSize());
-    TSUNIT_EQUAL(size_t(3), r4.ringSize());
-    TSUNIT_EQUAL(size_t(3), r5.ringSize());
-    TSUNIT_EQUAL(size_t(3), r6.ringSize());
+    TSUNIT_EQUAL(1, r1.ringSize());
+    TSUNIT_EQUAL(2, r2.ringSize());
+    TSUNIT_EQUAL(2, r3.ringSize());
+    TSUNIT_EQUAL(3, r4.ringSize());
+    TSUNIT_EQUAL(3, r5.ringSize());
+    TSUNIT_EQUAL(3, r6.ringSize());
 
     // Swap r1 and r4: {r4}, {r2, r3}, {r1, r5, r6]
     r1.ringSwap(&r4);
 
-    TSUNIT_EQUAL(size_t(3), r1.ringSize());
-    TSUNIT_EQUAL(size_t(2), r2.ringSize());
-    TSUNIT_EQUAL(size_t(2), r3.ringSize());
-    TSUNIT_EQUAL(size_t(1), r4.ringSize());
-    TSUNIT_EQUAL(size_t(3), r5.ringSize());
-    TSUNIT_EQUAL(size_t(3), r6.ringSize());
+    TSUNIT_EQUAL(3, r1.ringSize());
+    TSUNIT_EQUAL(2, r2.ringSize());
+    TSUNIT_EQUAL(2, r3.ringSize());
+    TSUNIT_EQUAL(1, r4.ringSize());
+    TSUNIT_EQUAL(3, r5.ringSize());
+    TSUNIT_EQUAL(3, r6.ringSize());
 
     TSUNIT_ASSERT(r4.ringNext<R>() == &r4);
     TSUNIT_ASSERT(r4.ringPrevious<R>() == &r4);
@@ -198,12 +198,12 @@ void RingTest::testSwap()
     // Swap r3 and r5: {r4}, {r2, r5}, {r1, r3, r6]
     r3.ringSwap(&r5);
 
-    TSUNIT_EQUAL(size_t(3), r1.ringSize());
-    TSUNIT_EQUAL(size_t(2), r2.ringSize());
-    TSUNIT_EQUAL(size_t(3), r3.ringSize());
-    TSUNIT_EQUAL(size_t(1), r4.ringSize());
-    TSUNIT_EQUAL(size_t(2), r5.ringSize());
-    TSUNIT_EQUAL(size_t(3), r6.ringSize());
+    TSUNIT_EQUAL(3, r1.ringSize());
+    TSUNIT_EQUAL(2, r2.ringSize());
+    TSUNIT_EQUAL(3, r3.ringSize());
+    TSUNIT_EQUAL(1, r4.ringSize());
+    TSUNIT_EQUAL(2, r5.ringSize());
+    TSUNIT_EQUAL(3, r6.ringSize());
 
     TSUNIT_ASSERT(r3.ringNext<R>() == &r6);
     TSUNIT_ASSERT(r3.ringPrevious<R>() == &r1);

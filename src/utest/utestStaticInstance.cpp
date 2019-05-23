@@ -103,7 +103,7 @@ void StaticInstanceTest::testInitializerTwoArgs()
     debug() << "StaticInstanceTest: Foo2::Instance() = \"" << Foo2::Instance() << "\"" << std::endl;
 
     // Check the value
-    TSUNIT_EQUAL(std::string("===="), Foo2::Instance());
+    TSUNIT_EQUAL("====", Foo2::Instance());
 
     // Check that this is a singleton
     std::string* p1(&Foo2::Instance());
@@ -124,7 +124,7 @@ void StaticInstanceTest::testWithNamespace()
     debug() << "StaticInstanceTest: ts::foo::Foo3::Instance() = \"" << ts::foo::Foo3::Instance() << "\"" << std::endl;
 
     // Check the value
-    TSUNIT_EQUAL(std::string("this is Foo3"), ts::foo::Foo3::Instance());
+    TSUNIT_EQUAL("this is Foo3", ts::foo::Foo3::Instance());
 
     // Check that this is a singleton
     std::string* p1(&ts::foo::Foo3::Instance());

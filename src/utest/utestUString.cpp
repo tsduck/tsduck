@@ -342,40 +342,40 @@ void UStringTest::testSurrogate()
 
 void UStringTest::testWidth()
 {
-    TSUNIT_EQUAL(size_t(0), ts::UString().width());
-    TSUNIT_EQUAL(size_t(3), ts::UString(u"ABC").width());
-    TSUNIT_EQUAL(size_t(3), (u"A" + ts::UString({ts::ACUTE_ACCENT}) + u"BC").width());
-    TSUNIT_EQUAL(size_t(2), ts::UString({MATH_A1, MATH_A2, MATH_B1, MATH_B2}).width());
+    TSUNIT_EQUAL(0, ts::UString().width());
+    TSUNIT_EQUAL(3, ts::UString(u"ABC").width());
+    TSUNIT_EQUAL(3, (u"A" + ts::UString({ts::ACUTE_ACCENT}) + u"BC").width());
+    TSUNIT_EQUAL(2, ts::UString({MATH_A1, MATH_A2, MATH_B1, MATH_B2}).width());
 }
 
 void UStringTest::testDisplayPosition()
 {
-    TSUNIT_EQUAL(size_t(0), ts::UString().displayPosition(0));
-    TSUNIT_EQUAL(size_t(0), ts::UString().displayPosition(5));
-    TSUNIT_EQUAL(size_t(0), ts::UString().displayPosition(6, 7, ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(2), ts::UString(u"ABCDE").displayPosition(2));
+    TSUNIT_EQUAL(0, ts::UString().displayPosition(0));
+    TSUNIT_EQUAL(0, ts::UString().displayPosition(5));
+    TSUNIT_EQUAL(0, ts::UString().displayPosition(6, 7, ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(2, ts::UString(u"ABCDE").displayPosition(2));
 
     const ts::UString s({u'A', ts::ACUTE_ACCENT, u'B', u'C', u'D', u'E'});
-    TSUNIT_EQUAL(size_t(6), s.size());
-    TSUNIT_EQUAL(size_t(6), s.length());
-    TSUNIT_EQUAL(size_t(5), s.width());
-    TSUNIT_EQUAL(size_t(3), s.displayPosition(2));
-    TSUNIT_EQUAL(size_t(2), s.displayPosition(1));
-    TSUNIT_EQUAL(size_t(0), s.displayPosition(0));
-    TSUNIT_EQUAL(size_t(5), s.displayPosition(4));
-    TSUNIT_EQUAL(size_t(6), s.displayPosition(5));
-    TSUNIT_EQUAL(size_t(6), s.displayPosition(6));
-    TSUNIT_EQUAL(size_t(6), s.displayPosition(7));
-    TSUNIT_EQUAL(size_t(6), s.displayPosition(8));
-    TSUNIT_EQUAL(size_t(6), s.displayPosition(0, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(5), s.displayPosition(1, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(4), s.displayPosition(2, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(3), s.displayPosition(3, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(2), s.displayPosition(4, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(0), s.displayPosition(5, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(0), s.displayPosition(6, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(0), s.displayPosition(7, s.length(), ts::RIGHT_TO_LEFT));
-    TSUNIT_EQUAL(size_t(0), s.displayPosition(8, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(6, s.size());
+    TSUNIT_EQUAL(6, s.length());
+    TSUNIT_EQUAL(5, s.width());
+    TSUNIT_EQUAL(3, s.displayPosition(2));
+    TSUNIT_EQUAL(2, s.displayPosition(1));
+    TSUNIT_EQUAL(0, s.displayPosition(0));
+    TSUNIT_EQUAL(5, s.displayPosition(4));
+    TSUNIT_EQUAL(6, s.displayPosition(5));
+    TSUNIT_EQUAL(6, s.displayPosition(6));
+    TSUNIT_EQUAL(6, s.displayPosition(7));
+    TSUNIT_EQUAL(6, s.displayPosition(8));
+    TSUNIT_EQUAL(6, s.displayPosition(0, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(5, s.displayPosition(1, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(4, s.displayPosition(2, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(3, s.displayPosition(3, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(2, s.displayPosition(4, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(0, s.displayPosition(5, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(0, s.displayPosition(6, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(0, s.displayPosition(7, s.length(), ts::RIGHT_TO_LEFT));
+    TSUNIT_EQUAL(0, s.displayPosition(8, s.length(), ts::RIGHT_TO_LEFT));
 }
 
 void UStringTest::testTrim()
@@ -636,7 +636,7 @@ void UStringTest::testSplit()
 {
     ts::UStringVector v1;
     ts::UString(u"az, ,  fr,  ze ,t").split(v1);
-    TSUNIT_EQUAL(size_t(5), v1.size());
+    TSUNIT_EQUAL(5, v1.size());
     TSUNIT_EQUAL(u"az", v1[0]);
     TSUNIT_EQUAL(u"", v1[1]);
     TSUNIT_EQUAL(u"fr", v1[2]);
@@ -646,7 +646,7 @@ void UStringTest::testSplit()
     ts::UStringVector v2;
     const ts::UString s2(u"az, ,  fr,  ze ,t");
     s2.split(v2);
-    TSUNIT_EQUAL(size_t(5), v2.size());
+    TSUNIT_EQUAL(5, v2.size());
     TSUNIT_EQUAL(u"az", v2[0]);
     TSUNIT_EQUAL(u"", v2[1]);
     TSUNIT_EQUAL(u"fr", v2[2]);
@@ -655,7 +655,7 @@ void UStringTest::testSplit()
 
     ts::UStringVector v3;
     ts::UString(u"az, ,  fr,  ze ,t").split(v3, ts::COMMA, false);
-    TSUNIT_EQUAL(size_t(5), v3.size());
+    TSUNIT_EQUAL(5, v3.size());
     TSUNIT_EQUAL(u"az", v3[0]);
     TSUNIT_EQUAL(u" ", v3[1]);
     TSUNIT_EQUAL(u"  fr", v3[2]);
@@ -664,7 +664,7 @@ void UStringTest::testSplit()
 
     ts::UStringVector v4;
     ts::UString(u"az, ,  fr,  ze ,t").split(v4, ts::UChar('z'), false);
-    TSUNIT_EQUAL(size_t(3), v4.size());
+    TSUNIT_EQUAL(3, v4.size());
     TSUNIT_EQUAL(u"a", v4[0]);
     TSUNIT_EQUAL(u", ,  fr,  ", v4[1]);
     TSUNIT_EQUAL(u"e ,t", v4[2]);
@@ -674,7 +674,7 @@ void UStringTest::testSplitShellStyle()
 {
     ts::UStringVector v;
     ts::UString(u" qfdjh qf f'az ef ' df\"nn'\\\"ju\" ").splitShellStyle(v);
-    TSUNIT_EQUAL(size_t(4), v.size());
+    TSUNIT_EQUAL(4, v.size());
     TSUNIT_EQUAL(u"qfdjh", v[0]);
     TSUNIT_EQUAL(u"qf", v[1]);
     TSUNIT_EQUAL(u"faz ef ", v[2]);
@@ -1002,10 +1002,10 @@ void UStringTest::testToInteger()
     TSUNIT_EQUAL(0, i);
 
     TSUNIT_ASSERT(ts::UString(u"123").toInteger(ui32));
-    TSUNIT_EQUAL(uint32_t(123), ui32);
+    TSUNIT_EQUAL(123, ui32);
 
     TSUNIT_ASSERT(!ts::UString(u"-123").toInteger(ui32));
-    TSUNIT_EQUAL(uint32_t(0), ui32);
+    TSUNIT_EQUAL(0, ui32);
 
     TSUNIT_ASSERT(ts::UString(u"0").toInteger(ui64));
     TSUNIT_EQUAL(TS_UCONST64(0), ui64);
@@ -1320,12 +1320,12 @@ void UStringTest::testArgMixIn()
 
 void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list)
 {
-    TSUNIT_EQUAL(size_t(0), list.size());
+    TSUNIT_EQUAL(0, list.size());
 }
 
 void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list)
 {
-    TSUNIT_EQUAL(size_t(14), list.size());
+    TSUNIT_EQUAL(14, list.size());
 
     std::initializer_list<ts::ArgMixIn>::const_iterator it = list.begin();
 
@@ -1341,11 +1341,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(4), it->size());
-    TSUNIT_EQUAL(int32_t(12), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(12), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(12), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(12), it->toUInt64());
+    TSUNIT_EQUAL(4, it->size());
+    TSUNIT_EQUAL(12, it->toInt32());
+    TSUNIT_EQUAL(12, it->toUInt32());
+    TSUNIT_EQUAL(12, it->toInt64());
+    TSUNIT_EQUAL(12, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1364,11 +1364,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(1), it->size());
-    TSUNIT_EQUAL(int32_t(23), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(23), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(23), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(23), it->toUInt64());
+    TSUNIT_EQUAL(1, it->size());
+    TSUNIT_EQUAL(23, it->toInt32());
+    TSUNIT_EQUAL(23, it->toUInt32());
+    TSUNIT_EQUAL(23, it->toInt64());
+    TSUNIT_EQUAL(23, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1387,9 +1387,9 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(2), it->size());
-    TSUNIT_EQUAL(int32_t(-432), it->toInt32());
-    TSUNIT_EQUAL(int64_t(-432), it->toInt64());
+    TSUNIT_EQUAL(2, it->size());
+    TSUNIT_EQUAL(-432, it->toInt32());
+    TSUNIT_EQUAL(-432, it->toInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1408,9 +1408,9 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(8), it->size());
-    TSUNIT_EQUAL(int32_t(-99), it->toInt32());
-    TSUNIT_EQUAL(int64_t(-99), it->toInt64());
+    TSUNIT_EQUAL(8, it->size());
+    TSUNIT_EQUAL(-99, it->toInt32());
+    TSUNIT_EQUAL(-99, it->toInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1429,11 +1429,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("foo", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1452,11 +1452,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("ok", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("ok", it->toString());
@@ -1475,11 +1475,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"bar", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1498,11 +1498,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"an UString", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1521,11 +1521,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("ok 2", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("ok 2", it->toString());
@@ -1544,11 +1544,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"an UString 2", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1567,11 +1567,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
-    TSUNIT_EQUAL(int32_t(8), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(8), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(8), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(8), it->toUInt64());
+    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, it->size());
+    TSUNIT_EQUAL(8, it->toInt32());
+    TSUNIT_EQUAL(8, it->toUInt32());
+    TSUNIT_EQUAL(8, it->toInt64());
+    TSUNIT_EQUAL(8, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1590,11 +1590,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(2), it->size());
-    TSUNIT_EQUAL(int32_t(48), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(48), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(48), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(48), it->toUInt64());
+    TSUNIT_EQUAL(2, it->size());
+    TSUNIT_EQUAL(48, it->toInt32());
+    TSUNIT_EQUAL(48, it->toUInt32());
+    TSUNIT_EQUAL(48, it->toInt64());
+    TSUNIT_EQUAL(48, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1613,11 +1613,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
-    TSUNIT_EQUAL(size_t(1), it->size());
-    TSUNIT_EQUAL(int32_t(4), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(4), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(4), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(4), it->toUInt64());
+    TSUNIT_EQUAL(1, it->size());
+    TSUNIT_EQUAL(4, it->toInt32());
+    TSUNIT_EQUAL(4, it->toUInt32());
+    TSUNIT_EQUAL(4, it->toInt64());
+    TSUNIT_EQUAL(4, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1636,11 +1636,11 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(it->isUString());
-    TSUNIT_EQUAL(size_t(0), it->size());
-    TSUNIT_EQUAL(int32_t(0), it->toInt32());
-    TSUNIT_EQUAL(uint32_t(0), it->toUInt32());
-    TSUNIT_EQUAL(int64_t(0), it->toInt64());
-    TSUNIT_EQUAL(uint64_t(0), it->toUInt64());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"10.20.30.40:12345", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
@@ -1772,22 +1772,22 @@ void UStringTest::testArgMixOut()
 
     testArgMixOutCalled({&i8, &u8, &i16, &u16, &i32, &u32, &i64, &u64, &sz, &e1, &e2});
 
-    TSUNIT_EQUAL(int8_t(-1), i8);
-    TSUNIT_EQUAL(uint8_t(24), u8);
-    TSUNIT_EQUAL(int16_t(-431), i16);
-    TSUNIT_EQUAL(uint16_t(440), u16);
-    TSUNIT_EQUAL(int32_t(-123455), i32);
-    TSUNIT_EQUAL(uint32_t(987655), u32);
+    TSUNIT_EQUAL(-1, i8);
+    TSUNIT_EQUAL(24, u8);
+    TSUNIT_EQUAL(-431, i16);
+    TSUNIT_EQUAL(440, u16);
+    TSUNIT_EQUAL(-123455, i32);
+    TSUNIT_EQUAL(987655, u32);
     TSUNIT_EQUAL(TS_CONST64(-1234567890122), i64);
     TSUNIT_EQUAL(TS_UCONST64(9876543210658), u64);
-    TSUNIT_EQUAL(size_t(9), sz);
+    TSUNIT_EQUAL(9, sz);
     TSUNIT_EQUAL(E12, e1);
     TSUNIT_EQUAL(E21, e2);
 }
 
 void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list)
 {
-    TSUNIT_EQUAL(size_t(11), list.size());
+    TSUNIT_EQUAL(11, list.size());
 
     int32_t  i32 = 0;
     uint32_t u32 = 0;
@@ -1813,55 +1813,55 @@ void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>
     // int8_t   i8  = -2;
     TSUNIT_ASSERT(it->isSigned());
     TSUNIT_ASSERT(!it->isUnsigned());
-    TSUNIT_EQUAL(size_t(1), it->size());
-    TSUNIT_EQUAL(int32_t(-2), i32 = it->toInt32());
+    TSUNIT_EQUAL(1, it->size());
+    TSUNIT_EQUAL(-2, i32 = it->toInt32());
     TSUNIT_ASSERT(it->storeInteger(++i32));
     ++it;
 
     // uint8_t  u8  = 23;
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
-    TSUNIT_EQUAL(size_t(1), it->size());
-    TSUNIT_EQUAL(uint32_t(23), u32 = it->toUInt32());
+    TSUNIT_EQUAL(1, it->size());
+    TSUNIT_EQUAL(23, u32 = it->toUInt32());
     TSUNIT_ASSERT(it->storeInteger(++u32));
     ++it;
 
     // int16_t  i16 = -432;
     TSUNIT_ASSERT(it->isSigned());
     TSUNIT_ASSERT(!it->isUnsigned());
-    TSUNIT_EQUAL(size_t(2), it->size());
-    TSUNIT_EQUAL(int32_t(-432), i32 = it->toInt32());
+    TSUNIT_EQUAL(2, it->size());
+    TSUNIT_EQUAL(-432, i32 = it->toInt32());
     TSUNIT_ASSERT(it->storeInteger(++i32));
     ++it;
 
     // uint16_t u16 = 439;
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
-    TSUNIT_EQUAL(size_t(2), it->size());
-    TSUNIT_EQUAL(uint32_t(439), u32 = it->toUInt32());
+    TSUNIT_EQUAL(2, it->size());
+    TSUNIT_EQUAL(439, u32 = it->toUInt32());
     TSUNIT_ASSERT(it->storeInteger(++u32));
     ++it;
 
     // int32_t  i32 = -123456;
     TSUNIT_ASSERT(it->isSigned());
     TSUNIT_ASSERT(!it->isUnsigned());
-    TSUNIT_EQUAL(size_t(4), it->size());
-    TSUNIT_EQUAL(int32_t(-123456), i32 = it->toInt32());
+    TSUNIT_EQUAL(4, it->size());
+    TSUNIT_EQUAL(-123456, i32 = it->toInt32());
     TSUNIT_ASSERT(it->storeInteger(++i32));
     ++it;
 
     // uint32_t u32 = 987654;
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
-    TSUNIT_EQUAL(size_t(4), it->size());
-    TSUNIT_EQUAL(uint32_t(987654), u32 = it->toUInt32());
+    TSUNIT_EQUAL(4, it->size());
+    TSUNIT_EQUAL(987654, u32 = it->toUInt32());
     TSUNIT_ASSERT(it->storeInteger(++u32));
     ++it;
 
     // int64_t  i64 = TS_CONST64(-1234567890123);
     TSUNIT_ASSERT(it->isSigned());
     TSUNIT_ASSERT(!it->isUnsigned());
-    TSUNIT_EQUAL(size_t(8), it->size());
+    TSUNIT_EQUAL(8, it->size());
     TSUNIT_EQUAL(TS_CONST64(-1234567890123), i64 = it->toInt64());
     TSUNIT_ASSERT(it->storeInteger(++i64));
     ++it;
@@ -1869,7 +1869,7 @@ void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>
     // uint64_t u64 = TS_UCONST64(9876543210657);
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
-    TSUNIT_EQUAL(size_t(8), it->size());
+    TSUNIT_EQUAL(8, it->size());
     TSUNIT_EQUAL(TS_UCONST64(9876543210657), u64 = it->toUInt64());
     TSUNIT_ASSERT(it->storeInteger(++u64));
     ++it;
@@ -1878,23 +1878,23 @@ void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
     TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
-    TSUNIT_EQUAL(uint64_t(8), u64 = it->toUInt64());
+    TSUNIT_EQUAL(8, u64 = it->toUInt64());
     TSUNIT_ASSERT(it->storeInteger(++u64));
     ++it;
 
     // E1       e1  = E11;
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
-    TSUNIT_EQUAL(size_t(2), it->size());
-    TSUNIT_EQUAL(uint32_t(6), u32 = it->toUInt32());
+    TSUNIT_EQUAL(2, it->size());
+    TSUNIT_EQUAL(6, u32 = it->toUInt32());
     TSUNIT_ASSERT(it->storeInteger(++u32));
     ++it;
 
     // E2       e2  = E20;
     TSUNIT_ASSERT(it->isSigned());
     TSUNIT_ASSERT(!it->isUnsigned());
-    TSUNIT_EQUAL(size_t(1), it->size());
-    TSUNIT_EQUAL(int32_t(-10), i32 = it->toInt32());
+    TSUNIT_EQUAL(1, it->size());
+    TSUNIT_EQUAL(-10, i32 = it->toInt32());
     TSUNIT_ASSERT(it->storeInteger(++i32));
     ++it;
 
@@ -1913,69 +1913,69 @@ void UStringTest::testScan()
     ts::UChar uc = ts::CHAR_NULL;
 
     TSUNIT_ASSERT(ts::UString(u"").scan(count, index, u"", {}));
-    TSUNIT_EQUAL(size_t(0), count);
-    TSUNIT_EQUAL(size_t(0), index);
+    TSUNIT_EQUAL(0, count);
+    TSUNIT_EQUAL(0, index);
 
     TSUNIT_ASSERT(ts::UString(u"  ").scan(count, index, u" ", {}));
-    TSUNIT_EQUAL(size_t(0), count);
-    TSUNIT_EQUAL(size_t(2), index);
+    TSUNIT_EQUAL(0, count);
+    TSUNIT_EQUAL(2, index);
 
     TSUNIT_ASSERT(ts::UString(u" ").scan(count, index, u"   ", {}));
-    TSUNIT_EQUAL(size_t(0), count);
-    TSUNIT_EQUAL(size_t(1), index);
+    TSUNIT_EQUAL(0, count);
+    TSUNIT_EQUAL(1, index);
 
     TSUNIT_ASSERT(ts::UString(u"-133").scan(count, index, u"%d", {&i}));
-    TSUNIT_EQUAL(size_t(1), count);
-    TSUNIT_EQUAL(size_t(4), index);
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_EQUAL(4, index);
     TSUNIT_EQUAL(-133, i);
 
     TSUNIT_ASSERT(ts::UString(u"  6893  ").scan(count, index, u"%d", {&i}));
-    TSUNIT_EQUAL(size_t(1), count);
-    TSUNIT_EQUAL(size_t(8), index);
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_EQUAL(8, index);
     TSUNIT_EQUAL(6893, i);
 
     TSUNIT_ASSERT(ts::UString(u" -654 / 0x54/0x0123456789ABCDEF x 54:5  ").scan(count, index, u" %d/%d/%d%c%d:%d", {&i, &u8, &i64, &uc, &i16, &u32}));
-    TSUNIT_EQUAL(size_t(6), count);
-    TSUNIT_EQUAL(size_t(40), index);
+    TSUNIT_EQUAL(6, count);
+    TSUNIT_EQUAL(40, index);
     TSUNIT_EQUAL(-654, i);
-    TSUNIT_EQUAL(uint8_t(0x54), u8);
+    TSUNIT_EQUAL(0x54, u8);
     TSUNIT_EQUAL(TS_CONST64(0x0123456789ABCDEF), i64);
     TSUNIT_EQUAL(u'x', uc);
-    TSUNIT_EQUAL(int16_t(54), i16);
-    TSUNIT_EQUAL(uint32_t(5), u32);
+    TSUNIT_EQUAL(54, i16);
+    TSUNIT_EQUAL(5, u32);
 
     u32 = 27;
     TSUNIT_ASSERT(!ts::UString(u" 45 / 79").scan(count, index, u" %d/%d/%d", {&u8, &i16, &u32}));
-    TSUNIT_EQUAL(size_t(2), count);
-    TSUNIT_EQUAL(size_t(8), index);
-    TSUNIT_EQUAL(uint8_t(45), u8);
-    TSUNIT_EQUAL(int16_t(79), i16);
-    TSUNIT_EQUAL(uint32_t(27), u32);
+    TSUNIT_EQUAL(2, count);
+    TSUNIT_EQUAL(8, index);
+    TSUNIT_EQUAL(45, u8);
+    TSUNIT_EQUAL(79, i16);
+    TSUNIT_EQUAL(27, u32);
 
     i = 87;
     TSUNIT_ASSERT(!ts::UString(u" 67 / 657 / 46 / 78").scan(count, index, u" %d/%d/%d", {&u8, &i16, &u32, &i}));
-    TSUNIT_EQUAL(size_t(3), count);
-    TSUNIT_EQUAL(size_t(15), index);
-    TSUNIT_EQUAL(uint8_t(67), u8);
-    TSUNIT_EQUAL(int16_t(657), i16);
-    TSUNIT_EQUAL(uint32_t(46), u32);
+    TSUNIT_EQUAL(3, count);
+    TSUNIT_EQUAL(15, index);
+    TSUNIT_EQUAL(67, u8);
+    TSUNIT_EQUAL(657, i16);
+    TSUNIT_EQUAL(46, u32);
     TSUNIT_EQUAL(87, i);
 
     TSUNIT_ASSERT(!ts::UString(u" 98 / -7889 / 89 / 2 ").scan(count, index, u" %d/%d/%d", {&u8, &i16}));
-    TSUNIT_EQUAL(size_t(2), count);
-    TSUNIT_EQUAL(size_t(14), index);
-    TSUNIT_EQUAL(uint8_t(98), u8);
-    TSUNIT_EQUAL(int16_t(-7889), i16);
+    TSUNIT_EQUAL(2, count);
+    TSUNIT_EQUAL(14, index);
+    TSUNIT_EQUAL(98, u8);
+    TSUNIT_EQUAL(-7889, i16);
 
     TSUNIT_ASSERT(ts::UString(u"8/9/").scan(count, index, u" %i/%i/", {&u8, &i16}));
-    TSUNIT_EQUAL(size_t(2), count);
-    TSUNIT_EQUAL(size_t(4), index);
-    TSUNIT_EQUAL(uint8_t(8), u8);
-    TSUNIT_EQUAL(int16_t(9), i16);
+    TSUNIT_EQUAL(2, count);
+    TSUNIT_EQUAL(4, index);
+    TSUNIT_EQUAL(8, u8);
+    TSUNIT_EQUAL(9, i16);
 
     TSUNIT_ASSERT(ts::UString(u"73/-3457").scan(u" %i/%i", {&u8, &i16}));
-    TSUNIT_EQUAL(uint8_t(73), u8);
-    TSUNIT_EQUAL(int16_t(-3457), i16);
+    TSUNIT_EQUAL(73, u8);
+    TSUNIT_EQUAL(-3457, i16);
 
     TSUNIT_ASSERT(ts::UString(u"12345").scan(u"%d", {&i}));
     TSUNIT_EQUAL(12345, i);
@@ -1988,22 +1988,22 @@ void UStringTest::testScan()
 
 void UStringTest::testCommonPrefix()
 {
-    TSUNIT_EQUAL(size_t(0), ts::UString(u"").commonPrefixSize(u""));
-    TSUNIT_EQUAL(size_t(0), ts::UString(u"abc").commonPrefixSize(u"def"));
-    TSUNIT_EQUAL(size_t(1), ts::UString(u"abc").commonPrefixSize(u"a"));
-    TSUNIT_EQUAL(size_t(1), ts::UString(u"abc").commonPrefixSize(u"axyz"));
-    TSUNIT_EQUAL(size_t(2), ts::UString(u"abcd").commonPrefixSize(u"abCXYZ"));
-    TSUNIT_EQUAL(size_t(3), ts::UString(u"abcd").commonPrefixSize(u"abCXYZ", ts::CASE_INSENSITIVE));
+    TSUNIT_EQUAL(0, ts::UString(u"").commonPrefixSize(u""));
+    TSUNIT_EQUAL(0, ts::UString(u"abc").commonPrefixSize(u"def"));
+    TSUNIT_EQUAL(1, ts::UString(u"abc").commonPrefixSize(u"a"));
+    TSUNIT_EQUAL(1, ts::UString(u"abc").commonPrefixSize(u"axyz"));
+    TSUNIT_EQUAL(2, ts::UString(u"abcd").commonPrefixSize(u"abCXYZ"));
+    TSUNIT_EQUAL(3, ts::UString(u"abcd").commonPrefixSize(u"abCXYZ", ts::CASE_INSENSITIVE));
 }
 
 void UStringTest::testCommonSuffix()
 {
-    TSUNIT_EQUAL(size_t(0), ts::UString(u"").commonSuffixSize(u""));
-    TSUNIT_EQUAL(size_t(0), ts::UString(u"abc").commonSuffixSize(u"def"));
-    TSUNIT_EQUAL(size_t(1), ts::UString(u"abc").commonSuffixSize(u"c"));
-    TSUNIT_EQUAL(size_t(1), ts::UString(u"abc").commonSuffixSize(u"xyc"));
-    TSUNIT_EQUAL(size_t(2), ts::UString(u"abcd").commonSuffixSize(u"QSZBcd"));
-    TSUNIT_EQUAL(size_t(3), ts::UString(u"abcd").commonSuffixSize(u"QSZBcd", ts::CASE_INSENSITIVE));
+    TSUNIT_EQUAL(0, ts::UString(u"").commonSuffixSize(u""));
+    TSUNIT_EQUAL(0, ts::UString(u"abc").commonSuffixSize(u"def"));
+    TSUNIT_EQUAL(1, ts::UString(u"abc").commonSuffixSize(u"c"));
+    TSUNIT_EQUAL(1, ts::UString(u"abc").commonSuffixSize(u"xyc"));
+    TSUNIT_EQUAL(2, ts::UString(u"abcd").commonSuffixSize(u"QSZBcd"));
+    TSUNIT_EQUAL(3, ts::UString(u"abcd").commonSuffixSize(u"QSZBcd", ts::CASE_INSENSITIVE));
 }
 
 void UStringTest::testPrecombined()

@@ -152,11 +152,11 @@ void NamesTest::testConfigFile()
 
     TSUNIT_ASSERT(!ts::NamesDVB::Instance()->configurationFile().empty());
     TSUNIT_ASSERT(ts::FileExists(ts::NamesDVB::Instance()->configurationFile()));
-    TSUNIT_EQUAL(size_t(0), ts::NamesDVB::Instance()->errorCount());
+    TSUNIT_EQUAL(0, ts::NamesDVB::Instance()->errorCount());
 
     TSUNIT_ASSERT(!ts::NamesOUI::Instance()->configurationFile().empty());
     TSUNIT_ASSERT(ts::FileExists(ts::NamesOUI::Instance()->configurationFile()));
-    TSUNIT_EQUAL(size_t(0), ts::NamesOUI::Instance()->errorCount());
+    TSUNIT_EQUAL(0, ts::NamesOUI::Instance()->errorCount());
 }
 
 void NamesTest::testTID()

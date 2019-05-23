@@ -95,7 +95,7 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
     binTable.clear();
 
     debug() << "PacketizerTest: DemuxTable: Rebuilding " << name << std::endl;
-    TSUNIT_EQUAL(size_t(0), packets_size % ts::PKT_SIZE);
+    TSUNIT_EQUAL(0, packets_size % ts::PKT_SIZE);
 
     ts::DuckContext duck;
     ts::StandaloneTableDemux demux(duck, ts::AllPIDs);
@@ -103,7 +103,7 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
     for (size_t pi = 0; pi < packets_size / ts::PKT_SIZE; ++pi) {
         demux.feedPacket (pkt[pi]);
     }
-    TSUNIT_EQUAL(size_t(1), demux.tableCount());
+    TSUNIT_EQUAL(1, demux.tableCount());
 
     binTable = demux.tableAt(0);
     TSUNIT_ASSERT(!binTable.isNull());
@@ -151,8 +151,8 @@ void PacketizerTest::testPacketizer()
     for (int pi = 1; pi <= 40; ++pi) {
         ts::TSPacket pkt;
         pzer.getNextPacket(pkt);
-        TSUNIT_EQUAL(uint8_t(ts::SYNC_BYTE), pkt.b[0]);
-        TSUNIT_EQUAL(uint8_t(0), pkt.b[4]); // pointer field
+        TSUNIT_EQUAL(ts::SYNC_BYTE, pkt.b[0]);
+        TSUNIT_EQUAL(0, pkt.b[4]); // pointer field
         ts::TID tid = pkt.b[5];
         debug() << "PacketizerTest:   " << pi << ": " << ts::names::TID(tid) << std::endl;
         switch (tid) {
