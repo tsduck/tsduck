@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1247
+VERSION 3.18-1259
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,9 @@ VERSION 3.18-1247
     "pmt". The option --add-programinfo-id is now deprecated.
   * Added option --eit to plugin "timeref".
   * Added option --tag to plugin "count".
+  * Added options--set-label-below, --set-label-normal, --set-label-above,
+    --set-label-go-below, --set-label-go-normal, --set-label-go-above to
+    plugin "bitrate_monitor".
 
 [BUG] Bug fixes:
 
