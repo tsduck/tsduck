@@ -184,6 +184,9 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_timeref.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_trigger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\tsplugins\tsplugin_tsrename.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -70,6 +70,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_teletext.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_time.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_timeref.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_trigger.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_tsrename.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_until.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_zap.cpp" />
