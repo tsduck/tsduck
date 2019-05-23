@@ -52,6 +52,7 @@ ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInp
     _currentPacket(0),
     _pcrLastPacket(INVALID_PACKET_COUNTER),
     _pcrLastValue(INVALID_PCR),
+    _ptsPrevious(INVALID_PCR),
     _bitrate(0),
     _insertPCR(false),
     _ccOutput(0),
@@ -431,9 +432,22 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
                     pkt.b[pes_pointer-1] = uint8_t(PKT_SIZE - pes_pointer);         // PES packet length
                     pkt.b[pes_pointer-1+13] = uint8_t(PKT_SIZE - pes_pointer - 13); // AU cell data length
 
-                    // Calculate the PTS based on PCR + Offset (positive/negative).
-                    const uint64_t pts = ((_pcrLastValue + getPCRDistance()) / 300) + _pesOffset;
+                    // Calculate the PTS based on PCR + Offset (positive/negative) without wrapping up.
+                    uint64_t pts = (_pcrLastValue + getPCRDistance()) / 300;
+                    if (pts != 0 && _pcrLastValue != INVALID_PCR && _pcrLastValue != 0 &&
+                         getPCRDistance() != 0 && (_pesOffset + pts) > 0) {
+                        pts += _pesOffset;
+                    }
+                    else {
+                        pts = _ptsPrevious;
+                    }
+                    // Ensure monotonic increments
+                    if (pts <= _ptsPrevious) {
+                        pts++;
+                    }
+                    pts = pts & PTS_DTS_MASK;
                     pkt.setPTS(pts);
+                    _ptsPrevious = pts;
                 }
 
                 // >>> (V)alue
