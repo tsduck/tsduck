@@ -104,13 +104,13 @@ void JsonTest::testSimple()
     TSUNIT_ASSERT(ts::json::Parse(jv, u"[ true, {\"ab\":67, \"foo\" : \"bar\"} ]", CERR));
     TSUNIT_ASSERT(!jv.isNull());
     TSUNIT_ASSERT(jv->isArray());
-    TSUNIT_EQUAL(size_t(2), jv->size());
+    TSUNIT_EQUAL(2, jv->size());
     TSUNIT_ASSERT(jv->at(0).isTrue());
     TSUNIT_ASSERT(jv->at(1).isObject());
     TSUNIT_ASSERT(jv->at(2).isNull());
     TSUNIT_ASSERT(jv->at(2).value(u"jjj").at(3424).isNull());
-    TSUNIT_EQUAL(size_t(2), jv->at(1).size());
-    TSUNIT_EQUAL(TS_CONST64(67), jv->at(1).value(u"ab").toInteger());
+    TSUNIT_EQUAL(2, jv->at(1).size());
+    TSUNIT_EQUAL(67, jv->at(1).value(u"ab").toInteger());
     TSUNIT_EQUAL(u"bar", jv->at(1).value(u"foo").toString());
     TSUNIT_ASSERT(jv->at(1).value(u"ss").isNull());
 

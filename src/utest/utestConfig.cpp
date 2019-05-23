@@ -155,7 +155,7 @@ void ConfigTest::testFile()
     ts::ConfigFile config(input);
     displayConfig(config, "Default config file content");
 
-    TSUNIT_EQUAL(size_t(4), config.sectionCount());
+    TSUNIT_EQUAL(4, config.sectionCount());
 
     ts::UStringVector names1;
     config.getSectionNames(names1);
@@ -165,16 +165,16 @@ void ConfigTest::testFile()
     ts::UString(u", Section222, Section333, SectionBoo").split(names2);
     TSUNIT_ASSERT(names1 == names2);
 
-    TSUNIT_EQUAL(size_t(2), config[u""].entryCount());
-    TSUNIT_EQUAL(size_t(0), config[u"Section222"].entryCount());
-    TSUNIT_EQUAL(size_t(1), config[u"Section333"].entryCount());
-    TSUNIT_EQUAL(size_t(0), config[u"Section444"].entryCount());
-    TSUNIT_EQUAL(size_t(5), config[u"SectionBoo"].entryCount());
+    TSUNIT_EQUAL(2, config[u""].entryCount());
+    TSUNIT_EQUAL(0, config[u"Section222"].entryCount());
+    TSUNIT_EQUAL(1, config[u"Section333"].entryCount());
+    TSUNIT_EQUAL(0, config[u"Section444"].entryCount());
+    TSUNIT_EQUAL(5, config[u"SectionBoo"].entryCount());
 
-    TSUNIT_EQUAL(size_t(1), config[u""].valueCount(u"foo"));
-    TSUNIT_EQUAL(size_t(4), config[u""].valueCount(u"azerty"));
-    TSUNIT_EQUAL(size_t(0), config[u""].valueCount(u"nonexistent"));
-    TSUNIT_EQUAL(size_t(2), config[u"SectionBoo"].valueCount(u"foo"));
+    TSUNIT_EQUAL(1, config[u""].valueCount(u"foo"));
+    TSUNIT_EQUAL(4, config[u""].valueCount(u"azerty"));
+    TSUNIT_EQUAL(0, config[u""].valueCount(u"nonexistent"));
+    TSUNIT_EQUAL(2, config[u"SectionBoo"].valueCount(u"foo"));
 
     TSUNIT_EQUAL(u"aze", config[u"SectionBoo"].value(u"bar"));
     TSUNIT_EQUAL(u"dfv", config[u"SectionBoo"].value(u"foo"));
@@ -190,6 +190,6 @@ void ConfigTest::testFile()
     config.reset();
     displayConfig(config, "Config after Reset()");
 
-    TSUNIT_EQUAL(size_t(0), config.sectionCount());
-    TSUNIT_EQUAL(size_t(0), config[u""].entryCount());
+    TSUNIT_EQUAL(0, config.sectionCount());
+    TSUNIT_EQUAL(0, config[u""].entryCount());
 }

@@ -92,7 +92,7 @@ void VariableTest::testElementaryType()
 
     v2 = 1;
     TSUNIT_ASSERT(v2.set());
-    TSUNIT_ASSERT(v2.value() == 1);
+    TSUNIT_EQUAL(1, v2.value());
 
     IntVariable v3(v2);
     TSUNIT_ASSERT(v3.set());
@@ -116,9 +116,9 @@ void VariableTest::testElementaryType()
     v2.reset();
     TSUNIT_ASSERT(v1.set());
     TSUNIT_ASSERT(!v2.set());
-    TSUNIT_ASSERT(v1.value() == 1);
-    TSUNIT_ASSERT(v1.value(2) == 1);
-    TSUNIT_ASSERT(v2.value(2) == 2);
+    TSUNIT_EQUAL(1, v1.value());
+    TSUNIT_EQUAL(1, v1.value(2));
+    TSUNIT_EQUAL(2, v2.value(2));
 
     v1 = 1;
     v2 = 1;
@@ -172,66 +172,66 @@ void VariableTest::testClass()
 {
     typedef ts::Variable<TestData> TestVariable;
 
-    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_EQUAL(0, TestData::InstanceCount());
     {
         TestVariable v1;
         TSUNIT_ASSERT(!v1.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 0);
+        TSUNIT_EQUAL(0, TestData::InstanceCount());
 
         TestVariable v2(v1);
         TSUNIT_ASSERT(!v2.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 0);
+        TSUNIT_EQUAL(0, TestData::InstanceCount());
 
         v2 = TestData(1);
         TSUNIT_ASSERT(v2.set());
-        TSUNIT_ASSERT(v2.value().v() == 1);
-        TSUNIT_ASSERT(TestData::InstanceCount() == 1);
+        TSUNIT_EQUAL(1, v2.value().v());
+        TSUNIT_EQUAL(1, TestData::InstanceCount());
 
         TestVariable v3(v2);
         TSUNIT_ASSERT(v3.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
 
         TestVariable v4(TestData(2));
         TSUNIT_ASSERT(v4.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
 
         v4 = v1;
         TSUNIT_ASSERT(!v4.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
 
         v4 = v2;
         TSUNIT_ASSERT(v4.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
 
         v4.reset();
         TSUNIT_ASSERT(!v4.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
 
         v4.reset();
         TSUNIT_ASSERT(!v4.set());
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
 
         v1 = TestData(1);
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
         v2.reset();
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
         TSUNIT_ASSERT(v1.set());
         TSUNIT_ASSERT(!v2.set());
-        TSUNIT_ASSERT(v1.value().v() == 1);
-        TSUNIT_ASSERT(v1.value(TestData(2)).v() == 1);
-        TSUNIT_ASSERT(v2.value(TestData(2)).v() == 2);
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(1, v1.value().v());
+        TSUNIT_EQUAL(1, v1.value(TestData(2)).v());
+        TSUNIT_EQUAL(2, v2.value(TestData(2)).v());
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
 
         v1 = TestData(1);
-        TSUNIT_ASSERT(TestData::InstanceCount() == 2);
+        TSUNIT_EQUAL(2, TestData::InstanceCount());
         v2 = TestData(1);
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
         v3 = TestData(3);
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
         v4.reset();
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
         TestVariable v5;
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
         TSUNIT_ASSERT(v1.set());
         TSUNIT_ASSERT(v2.set());
         TSUNIT_ASSERT(v3.set());
@@ -241,14 +241,14 @@ void VariableTest::testClass()
         TSUNIT_ASSERT(v1 != v3);
         TSUNIT_ASSERT(v1 != v4);
         TSUNIT_ASSERT(v4 != v5);
-        TSUNIT_ASSERT(v1.value().v() == 1);
+        TSUNIT_EQUAL(1, v1.value().v());
         TSUNIT_ASSERT(v1 == TestData(1));
         TSUNIT_ASSERT(v1 != TestData(2));
         TSUNIT_ASSERT(v4 != TestData(1));
-        TSUNIT_ASSERT(TestData::InstanceCount() == 3);
+        TSUNIT_EQUAL(3, TestData::InstanceCount());
     }
     // Check that the destructor of variable properly destroys the contained object
-    TSUNIT_ASSERT(TestData::InstanceCount() == 0);
+    TSUNIT_EQUAL(0, TestData::InstanceCount());
 }
 
 // Test case: fail on uninitialized variable

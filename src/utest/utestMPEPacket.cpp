@@ -84,7 +84,7 @@ void MPEPacketTest::testSection()
     ts::Section sec(psi_mpe_sections, sizeof(psi_mpe_sections), pid, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_DSMCC_PD), sec.tableId()); // DSM-CC Private Data
+    TSUNIT_EQUAL(ts::TID_DSMCC_PD, sec.tableId()); // DSM-CC Private Data
     TSUNIT_EQUAL(pid, sec.sourcePID());
     TSUNIT_ASSERT(sec.isLongSection());
 
@@ -94,16 +94,16 @@ void MPEPacketTest::testSection()
     TSUNIT_ASSERT(mpe.destinationMACAddress() == ts::MACAddress(0x01, 0x00, 0x5E, 0x14, 0x14, 0x02));
     TSUNIT_ASSERT(mpe.destinationIPAddress() == ts::IPAddress(224, 20, 20, 2));
     TSUNIT_ASSERT(mpe.sourceIPAddress() == ts::IPAddress(192, 168, 135, 190));
-    TSUNIT_EQUAL(uint16_t(6000), mpe.sourceUDPPort());
-    TSUNIT_EQUAL(uint16_t(6000), mpe.destinationUDPPort());
-    TSUNIT_EQUAL(size_t(1468), mpe.udpMessageSize());
+    TSUNIT_EQUAL(6000, mpe.sourceUDPPort());
+    TSUNIT_EQUAL(6000, mpe.destinationUDPPort());
+    TSUNIT_EQUAL(1468, mpe.udpMessageSize());
 }
 
 void MPEPacketTest::testBuild()
 {
     ts::MPEPacket mpe;
     TSUNIT_ASSERT(!mpe.isValid());
-    TSUNIT_EQUAL(ts::PID(ts::PID_NULL), mpe.sourcePID());
+    TSUNIT_EQUAL(ts::PID_NULL, mpe.sourcePID());
 
     static const uint8_t ref[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
 
@@ -116,12 +116,12 @@ void MPEPacketTest::testBuild()
     mpe.setUDPMessage(ref, sizeof(ref));
 
     TSUNIT_ASSERT(mpe.isValid());
-    TSUNIT_EQUAL(ts::PID(765), mpe.sourcePID());
+    TSUNIT_EQUAL(765, mpe.sourcePID());
     TSUNIT_ASSERT(mpe.destinationMACAddress() == ts::MACAddress(6, 7, 8, 9, 10, 11));
     TSUNIT_ASSERT(mpe.sourceIPAddress() == ts::IPAddress(54, 59, 197, 201));
     TSUNIT_ASSERT(mpe.destinationIPAddress() == ts::IPAddress(123, 34, 45, 78));
-    TSUNIT_EQUAL(uint16_t(7920), mpe.sourceUDPPort());
-    TSUNIT_EQUAL(uint16_t(4654), mpe.destinationUDPPort());
+    TSUNIT_EQUAL(7920, mpe.sourceUDPPort());
+    TSUNIT_EQUAL(4654, mpe.destinationUDPPort());
     TSUNIT_EQUAL(sizeof(ref), mpe.udpMessageSize());
     TSUNIT_ASSERT(mpe.udpMessage() != nullptr);
     TSUNIT_EQUAL(0, ::memcmp(mpe.udpMessage(), ref, mpe.udpMessageSize()));
@@ -132,12 +132,12 @@ void MPEPacketTest::testBuild()
 
     ts::MPEPacket mpe2(sect);
     TSUNIT_ASSERT(mpe2.isValid());
-    TSUNIT_EQUAL(ts::PID(765), mpe2.sourcePID());
+    TSUNIT_EQUAL(765, mpe2.sourcePID());
     TSUNIT_ASSERT(mpe2.destinationMACAddress() == ts::MACAddress(6, 7, 8, 9, 10, 11));
     TSUNIT_ASSERT(mpe2.sourceIPAddress() == ts::IPAddress(54, 59, 197, 201));
     TSUNIT_ASSERT(mpe2.destinationIPAddress() == ts::IPAddress(123, 34, 45, 78));
-    TSUNIT_EQUAL(uint16_t(7920), mpe2.sourceUDPPort());
-    TSUNIT_EQUAL(uint16_t(4654), mpe2.destinationUDPPort());
+    TSUNIT_EQUAL(7920, mpe2.sourceUDPPort());
+    TSUNIT_EQUAL(4654, mpe2.destinationUDPPort());
     TSUNIT_EQUAL(sizeof(ref), mpe2.udpMessageSize());
     TSUNIT_ASSERT(mpe2.udpMessage() != nullptr);
     TSUNIT_EQUAL(0, ::memcmp(mpe2.udpMessage(), ref, mpe2.udpMessageSize()));

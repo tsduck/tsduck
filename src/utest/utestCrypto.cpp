@@ -491,7 +491,7 @@ void CryptoTest::testDVBCISSA()
         const size_t size = psize - psize % cissa.blockSize();
         TSUNIT_EQUAL(hsize, tv->cipher.getHeaderSize());
         TSUNIT_EQUAL(psize, tv->cipher.getPayloadSize());
-        TSUNIT_EQUAL(size_t(16), cissa.blockSize());
+        TSUNIT_EQUAL(16, cissa.blockSize());
         testCipher(cissa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain.b + hsize, size, tv->cipher.b + hsize, size);
     }
 }

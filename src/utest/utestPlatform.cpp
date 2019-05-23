@@ -231,21 +231,21 @@ void PlatformTest::testIntegerTypes()
         << ", sizeof(void*) = " << sizeof(void*)
         << std::endl;
 
-    TSUNIT_EQUAL(size_t(1), sizeof(int8_t));
-    TSUNIT_EQUAL(size_t(2), sizeof(int16_t));
-    TSUNIT_EQUAL(size_t(4), sizeof(int32_t));
-    TSUNIT_EQUAL(size_t(8), sizeof(int64_t));
+    TSUNIT_EQUAL(1, sizeof(int8_t));
+    TSUNIT_EQUAL(2, sizeof(int16_t));
+    TSUNIT_EQUAL(4, sizeof(int32_t));
+    TSUNIT_EQUAL(8, sizeof(int64_t));
 
-    TSUNIT_EQUAL(size_t(1), sizeof(uint8_t));
-    TSUNIT_EQUAL(size_t(2), sizeof(uint16_t));
-    TSUNIT_EQUAL(size_t(4), sizeof(uint32_t));
-    TSUNIT_EQUAL(size_t(8), sizeof(uint64_t));
+    TSUNIT_EQUAL(1, sizeof(uint8_t));
+    TSUNIT_EQUAL(2, sizeof(uint16_t));
+    TSUNIT_EQUAL(4, sizeof(uint32_t));
+    TSUNIT_EQUAL(8, sizeof(uint64_t));
 
     TSUNIT_EQUAL(0, TS_ADDRESS_BITS % 8);
-    TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(void*));
-    TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(size_t));
-    TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(std::size_t));
-    TSUNIT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(std::ptrdiff_t));
+    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(void*));
+    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(size_t));
+    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(std::size_t));
+    TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, sizeof(std::ptrdiff_t));
 
     TSUNIT_ASSERT(std::numeric_limits<int8_t>::is_signed);
     TSUNIT_ASSERT(std::numeric_limits<int16_t>::is_signed);
@@ -272,15 +272,15 @@ void PlatformTest::testIntegerTypes()
     int32_t ai32[10];
     int64_t ai64[10];
 
-    TSUNIT_EQUAL(size_t(1), sizeof(i8));
-    TSUNIT_EQUAL(size_t(2), sizeof(i16));
-    TSUNIT_EQUAL(size_t(4), sizeof(i32));
-    TSUNIT_EQUAL(size_t(8), sizeof(i64));
+    TSUNIT_EQUAL(1, sizeof(i8));
+    TSUNIT_EQUAL(2, sizeof(i16));
+    TSUNIT_EQUAL(4, sizeof(i32));
+    TSUNIT_EQUAL(8, sizeof(i64));
 
-    TSUNIT_EQUAL(size_t(1), sizeof(ui8));
-    TSUNIT_EQUAL(size_t(2), sizeof(ui16));
-    TSUNIT_EQUAL(size_t(4), sizeof(ui32));
-    TSUNIT_EQUAL(size_t(8), sizeof(ui64));
+    TSUNIT_EQUAL(1, sizeof(ui8));
+    TSUNIT_EQUAL(2, sizeof(ui16));
+    TSUNIT_EQUAL(4, sizeof(ui32));
+    TSUNIT_EQUAL(8, sizeof(ui64));
 
     TSUNIT_ASSERT(i8  < 0);
     TSUNIT_ASSERT(i16 < 0);
@@ -297,15 +297,15 @@ void PlatformTest::testIntegerTypes()
     uint32_t aui32[10];
     uint64_t aui64[10];
 
-    TSUNIT_EQUAL(ptrdiff_t(1), (char*)&ai8[1]  - (char*)&ai8[0]);
-    TSUNIT_EQUAL(ptrdiff_t(2), (char*)&ai16[1] - (char*)&ai16[0]);
-    TSUNIT_EQUAL(ptrdiff_t(4), (char*)&ai32[1] - (char*)&ai32[0]);
-    TSUNIT_EQUAL(ptrdiff_t(8), (char*)&ai64[1] - (char*)&ai64[0]);
+    TSUNIT_EQUAL(1, (char*)&ai8[1]  - (char*)&ai8[0]);
+    TSUNIT_EQUAL(2, (char*)&ai16[1] - (char*)&ai16[0]);
+    TSUNIT_EQUAL(4, (char*)&ai32[1] - (char*)&ai32[0]);
+    TSUNIT_EQUAL(8, (char*)&ai64[1] - (char*)&ai64[0]);
 
-    TSUNIT_EQUAL(ptrdiff_t(1), (char*)&aui8[1]  - (char*)&aui8[0]);
-    TSUNIT_EQUAL(ptrdiff_t(2), (char*)&aui16[1] - (char*)&aui16[0]);
-    TSUNIT_EQUAL(ptrdiff_t(4), (char*)&aui32[1] - (char*)&aui32[0]);
-    TSUNIT_EQUAL(ptrdiff_t(8), (char*)&aui64[1] - (char*)&aui64[0]);
+    TSUNIT_EQUAL(1, (char*)&aui8[1]  - (char*)&aui8[0]);
+    TSUNIT_EQUAL(2, (char*)&aui16[1] - (char*)&aui16[0]);
+    TSUNIT_EQUAL(4, (char*)&aui32[1] - (char*)&aui32[0]);
+    TSUNIT_EQUAL(8, (char*)&aui64[1] - (char*)&aui64[0]);
 }
 
 // Test case: 64-bit literals
@@ -314,8 +314,8 @@ void PlatformTest::test64bitLiterals()
     uint64_t ui64 = TS_UCONST64(0xFEDCBA9876543210);
     int64_t i64 = TS_CONST64(0xFEDCBA9876543210);
 
-    TSUNIT_EQUAL(uint32_t(0x0FEDCBA9), uint32_t(ui64 >> 36));
-    TSUNIT_EQUAL(int32_t(0xFFEDCBA9), int32_t(i64 >> 36));
+    TSUNIT_EQUAL(0x0FEDCBA9, uint32_t(ui64 >> 36));
+    TSUNIT_EQUAL(0xFFEDCBA9, int32_t(i64 >> 36));
 }
 
 // Test case: stringification macro
@@ -367,30 +367,30 @@ void PlatformTest::testMemoryBarrier()
 
 void PlatformTest::testROL()
 {
-    TSUNIT_EQUAL(uint32_t(0x34567812), ts::ROL(0x12345678, 8));
-    TSUNIT_EQUAL(uint32_t(0x23456781), ts::ROL(0x12345678, 4));
-    TSUNIT_EQUAL(uint32_t(0x67812345), ts::ROL(0x12345678, -12));
+    TSUNIT_EQUAL(0x34567812, ts::ROL(0x12345678, 8));
+    TSUNIT_EQUAL(0x23456781, ts::ROL(0x12345678, 4));
+    TSUNIT_EQUAL(0x67812345, ts::ROL(0x12345678, -12));
 }
 
 void PlatformTest::testROLc()
 {
-    TSUNIT_EQUAL(uint32_t(0x34567812), ts::ROLc(0x12345678, 8));
-    TSUNIT_EQUAL(uint32_t(0x23456781), ts::ROLc(0x12345678, 4));
-    TSUNIT_EQUAL(uint32_t(0x45678123), ts::ROLc(0x12345678, 12));
+    TSUNIT_EQUAL(0x34567812, ts::ROLc(0x12345678, 8));
+    TSUNIT_EQUAL(0x23456781, ts::ROLc(0x12345678, 4));
+    TSUNIT_EQUAL(0x45678123, ts::ROLc(0x12345678, 12));
 }
 
 void PlatformTest::testROR()
 {
-    TSUNIT_EQUAL(uint32_t(0x78123456), ts::ROR(0x12345678, 8));
-    TSUNIT_EQUAL(uint32_t(0x81234567), ts::ROR(0x12345678, 4));
-    TSUNIT_EQUAL(uint32_t(0x45678123), ts::ROR(0x12345678, -12));
+    TSUNIT_EQUAL(0x78123456, ts::ROR(0x12345678, 8));
+    TSUNIT_EQUAL(0x81234567, ts::ROR(0x12345678, 4));
+    TSUNIT_EQUAL(0x45678123, ts::ROR(0x12345678, -12));
 }
 
 void PlatformTest::testRORc()
 {
-    TSUNIT_EQUAL(uint32_t(0x78123456), ts::RORc(0x12345678, 8));
-    TSUNIT_EQUAL(uint32_t(0x81234567), ts::RORc(0x12345678, 4));
-    TSUNIT_EQUAL(uint32_t(0x45678123), ts::RORc(0x12345678, 20));
+    TSUNIT_EQUAL(0x78123456, ts::RORc(0x12345678, 8));
+    TSUNIT_EQUAL(0x81234567, ts::RORc(0x12345678, 4));
+    TSUNIT_EQUAL(0x45678123, ts::RORc(0x12345678, 20));
 }
 
 void PlatformTest::testROL64()
@@ -450,12 +450,12 @@ namespace {
 
 void PlatformTest::testByteSwap16()
 {
-    TSUNIT_EQUAL(uint16_t(0x3412), ts::ByteSwap16(0x1234));
+    TSUNIT_EQUAL(0x3412, ts::ByteSwap16(0x1234));
 }
 
 void PlatformTest::testByteSwap32()
 {
-    TSUNIT_EQUAL(uint32_t(0x78563412), ts::ByteSwap32(0x12345678));
+    TSUNIT_EQUAL(0x78563412, ts::ByteSwap32(0x12345678));
 }
 
 void PlatformTest::testByteSwap64()
@@ -466,36 +466,36 @@ void PlatformTest::testByteSwap64()
 void PlatformTest::testCondByteSwap16BE()
 {
 #if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(uint16_t(0x3412), ts::CondByteSwap16BE(0x1234));
+    TSUNIT_EQUAL(0x3412, ts::CondByteSwap16BE(0x1234));
 #else
-    TSUNIT_EQUAL(uint16_t(0x1234), ts::CondByteSwap16BE(0x1234));
+    TSUNIT_EQUAL(0x1234, ts::CondByteSwap16BE(0x1234));
 #endif
 }
 
 void PlatformTest::testCondByteSwap16LE()
 {
 #if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(uint16_t(0x1234), ts::CondByteSwap16LE(0x1234));
+    TSUNIT_EQUAL(0x1234, ts::CondByteSwap16LE(0x1234));
 #else
-    TSUNIT_EQUAL(uint16_t(0x3412), ts::CondByteSwap16LE(0x1234));
+    TSUNIT_EQUAL(0x3412, ts::CondByteSwap16LE(0x1234));
 #endif
 }
 
 void PlatformTest::testCondByteSwap32BE()
 {
 #if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(uint32_t(0x78563412), ts::CondByteSwap32BE(0x12345678));
+    TSUNIT_EQUAL(0x78563412, ts::CondByteSwap32BE(0x12345678));
 #else
-    TSUNIT_EQUAL(uint32_t(0x12345678), ts::CondByteSwap32BE(0x12345678));
+    TSUNIT_EQUAL(0x12345678, ts::CondByteSwap32BE(0x12345678));
 #endif
 }
 
 void PlatformTest::testCondByteSwap32LE()
 {
 #if defined(TS_LITTLE_ENDIAN)
-    TSUNIT_EQUAL(uint32_t(0x12345678), ts::CondByteSwap32LE(0x12345678));
+    TSUNIT_EQUAL(0x12345678, ts::CondByteSwap32LE(0x12345678));
 #else
-    TSUNIT_EQUAL(uint32_t(0x78563412), ts::CondByteSwap32LE(0x12345678));
+    TSUNIT_EQUAL(0x78563412, ts::CondByteSwap32LE(0x12345678));
 #endif
 }
 
@@ -519,39 +519,39 @@ void PlatformTest::testCondByteSwap64LE()
 
 void PlatformTest::testGetUInt8()
 {
-    TSUNIT_EQUAL(uint8_t(0x07), ts::GetUInt8(_bytes + 0x07));
+    TSUNIT_EQUAL(0x07, ts::GetUInt8(_bytes + 0x07));
 }
 
 void PlatformTest::testGetUInt16BE()
 {
-    TSUNIT_EQUAL(uint16_t(0x2324), ts::GetUInt16BE(_bytes + 0x23));
+    TSUNIT_EQUAL(0x2324, ts::GetUInt16BE(_bytes + 0x23));
 }
 
 void PlatformTest::testGetUInt16LE()
 {
-    TSUNIT_EQUAL(uint16_t(0x2423), ts::GetUInt16LE(_bytes + 0x23));
+    TSUNIT_EQUAL(0x2423, ts::GetUInt16LE(_bytes + 0x23));
 }
 
 void PlatformTest::testGetUInt24BE()
 {
-    TSUNIT_EQUAL(uint32_t(0x101112), ts::GetUInt24BE(_bytes + 0x10));
-    TSUNIT_EQUAL(uint32_t(0xCECFD0), ts::GetUInt24BE(_bytes + 0xCE));
+    TSUNIT_EQUAL(0x101112, ts::GetUInt24BE(_bytes + 0x10));
+    TSUNIT_EQUAL(0xCECFD0, ts::GetUInt24BE(_bytes + 0xCE));
 }
 
 void PlatformTest::testGetUInt24LE()
 {
-    TSUNIT_EQUAL(uint32_t(0x121110), ts::GetUInt24LE(_bytes + 0x10));
-    TSUNIT_EQUAL(uint32_t(0xD0CFCE), ts::GetUInt24LE(_bytes + 0xCE));
+    TSUNIT_EQUAL(0x121110, ts::GetUInt24LE(_bytes + 0x10));
+    TSUNIT_EQUAL(0xD0CFCE, ts::GetUInt24LE(_bytes + 0xCE));
 }
 
 void PlatformTest::testGetUInt32BE()
 {
-    TSUNIT_EQUAL(uint32_t(0x4748494A), ts::GetUInt32BE(_bytes + 0x47));
+    TSUNIT_EQUAL(0x4748494A, ts::GetUInt32BE(_bytes + 0x47));
 }
 
 void PlatformTest::testGetUInt32LE()
 {
-    TSUNIT_EQUAL(uint32_t(0x4A494847), ts::GetUInt32LE(_bytes + 0x47));
+    TSUNIT_EQUAL(0x4A494847, ts::GetUInt32LE(_bytes + 0x47));
 }
 
 void PlatformTest::testGetUInt64BE()
@@ -576,39 +576,39 @@ void PlatformTest::testGetUInt48LE()
 
 void PlatformTest::testGetInt8()
 {
-    TSUNIT_EQUAL(int8_t(3), ts::GetInt8(_bytes + 0x03));
+    TSUNIT_EQUAL(3, ts::GetInt8(_bytes + 0x03));
 }
 
 void PlatformTest::testGetInt16BE()
 {
-    TSUNIT_EQUAL(int16_t(-12593), ts::GetInt16BE(_bytes + 0xCE)); // 0xCECF
+    TSUNIT_EQUAL(-12593, ts::GetInt16BE(_bytes + 0xCE)); // 0xCECF
 }
 
 void PlatformTest::testGetInt16LE()
 {
-    TSUNIT_EQUAL(int16_t(-12338), ts::GetInt16LE(_bytes + 0xCE)); // 0xCFCE
+    TSUNIT_EQUAL(-12338, ts::GetInt16LE(_bytes + 0xCE)); // 0xCFCE
 }
 
 void PlatformTest::testGetInt24BE()
 {
-    TSUNIT_EQUAL(int32_t(0x101112), ts::GetInt24BE(_bytes + 0x10));
-    TSUNIT_EQUAL(int32_t(-3223600), ts::GetInt24BE(_bytes + 0xCE)); // 0xFFCECFD0
+    TSUNIT_EQUAL(0x101112, ts::GetInt24BE(_bytes + 0x10));
+    TSUNIT_EQUAL(-3223600, ts::GetInt24BE(_bytes + 0xCE)); // 0xFFCECFD0
 }
 
 void PlatformTest::testGetInt24LE()
 {
-    TSUNIT_EQUAL(int32_t(0x121110), ts::GetInt24LE(_bytes + 0x10));
-    TSUNIT_EQUAL(int32_t(-3092530), ts::GetInt24LE(_bytes + 0xCE)); // 0xFFD0CFCE
+    TSUNIT_EQUAL(0x121110, ts::GetInt24LE(_bytes + 0x10));
+    TSUNIT_EQUAL(-3092530, ts::GetInt24LE(_bytes + 0xCE)); // 0xFFD0CFCE
 }
 
 void PlatformTest::testGetInt32BE()
 {
-    TSUNIT_EQUAL(int32_t(-2122153084), ts::GetInt32BE(_bytes + 0x81)); // 0x81828384
+    TSUNIT_EQUAL(-2122153084, ts::GetInt32BE(_bytes + 0x81)); // 0x81828384
 }
 
 void PlatformTest::testGetInt32LE()
 {
-    TSUNIT_EQUAL(int32_t(-2071756159), ts::GetInt32LE(_bytes + 0x81)); // 0x84838281
+    TSUNIT_EQUAL(-2071756159, ts::GetInt32LE(_bytes + 0x81)); // 0x84838281
 }
 
 void PlatformTest::testGetInt64BE()

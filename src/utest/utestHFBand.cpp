@@ -109,7 +109,7 @@ void HFBandTest::testEmpty()
     const ts::HFBand* hf = ts::HFBand::GetBand(u"zozoland", ts::HFBand::UHF, report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(hf->empty());
-    TSUNIT_EQUAL(uint32_t(0), hf->channelCount());
+    TSUNIT_EQUAL(0, hf->channelCount());
 }
 
 void HFBandTest::testEurope()
@@ -117,21 +117,21 @@ void HFBandTest::testEurope()
     const ts::HFBand* hf = ts::HFBand::GetBand(u"Europe", ts::HFBand::UHF, report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
-    TSUNIT_EQUAL(ts::HFBand::BandType(ts::HFBand::UHF), hf->type());
-    TSUNIT_EQUAL(uint32_t(49), hf->channelCount());
-    TSUNIT_EQUAL(uint32_t(21), hf->firstChannel());
-    TSUNIT_EQUAL(uint32_t(69), hf->lastChannel());
+    TSUNIT_EQUAL(ts::HFBand::UHF, hf->type());
+    TSUNIT_EQUAL(49, hf->channelCount());
+    TSUNIT_EQUAL(21, hf->firstChannel());
+    TSUNIT_EQUAL(69, hf->lastChannel());
     
-    TSUNIT_EQUAL(uint32_t(25), hf->nextChannel(24));
-    TSUNIT_EQUAL(uint32_t(23), hf->previousChannel(24));
-    TSUNIT_EQUAL(uint64_t(498000000), hf->frequency(24));
-    TSUNIT_EQUAL(uint64_t(497666668), hf->frequency(24, -2));
-    TSUNIT_EQUAL(uint64_t(498333332), hf->frequency(24, +2));
-    TSUNIT_EQUAL(uint32_t(24), hf->channelNumber(498000000));
-    TSUNIT_EQUAL(uint32_t(24), hf->channelNumber(497666668));
-    TSUNIT_EQUAL(uint32_t(24), hf->channelNumber(498333332));
-    TSUNIT_EQUAL(int32_t(0), hf->offsetCount(498000000));
-    TSUNIT_EQUAL(int32_t(-2), hf->offsetCount(497666668));
+    TSUNIT_EQUAL(25, hf->nextChannel(24));
+    TSUNIT_EQUAL(23, hf->previousChannel(24));
+    TSUNIT_EQUAL(498000000, hf->frequency(24));
+    TSUNIT_EQUAL(497666668, hf->frequency(24, -2));
+    TSUNIT_EQUAL(498333332, hf->frequency(24, +2));
+    TSUNIT_EQUAL(24, hf->channelNumber(498000000));
+    TSUNIT_EQUAL(24, hf->channelNumber(497666668));
+    TSUNIT_EQUAL(24, hf->channelNumber(498333332));
+    TSUNIT_EQUAL(0, hf->offsetCount(498000000));
+    TSUNIT_EQUAL(-2, hf->offsetCount(497666668));
     TSUNIT_EQUAL(int32_t(+2), hf->offsetCount(498333332));
     TSUNIT_ASSERT(!hf->inBand(200000000, false));
     TSUNIT_ASSERT(!hf->inBand(497666668, true));
@@ -140,16 +140,16 @@ void HFBandTest::testEurope()
     TSUNIT_ASSERT(hf->inBand(497666668, false));
     TSUNIT_ASSERT(hf->inBand(498000000, false));
     TSUNIT_ASSERT(hf->inBand(498333332, false));
-    TSUNIT_EQUAL(uint64_t(8000000), hf->bandWidth(24));
-    TSUNIT_EQUAL(uint64_t(166666), hf->offsetWidth(24));
-    TSUNIT_EQUAL(int32_t(-1), hf->firstOffset(24));
-    TSUNIT_EQUAL(int32_t(3), hf->lastOffset(24));
+    TSUNIT_EQUAL(8000000, hf->bandWidth(24));
+    TSUNIT_EQUAL(166666, hf->offsetWidth(24));
+    TSUNIT_EQUAL(-1, hf->firstOffset(24));
+    TSUNIT_EQUAL(3, hf->lastOffset(24));
 
-    TSUNIT_EQUAL(uint32_t(22), hf->nextChannel(21));
-    TSUNIT_EQUAL(uint32_t(0), hf->previousChannel(21));
+    TSUNIT_EQUAL(22, hf->nextChannel(21));
+    TSUNIT_EQUAL(0, hf->previousChannel(21));
 
-    TSUNIT_EQUAL(uint32_t(0), hf->nextChannel(69));
-    TSUNIT_EQUAL(uint32_t(68), hf->previousChannel(69));
+    TSUNIT_EQUAL(0, hf->nextChannel(69));
+    TSUNIT_EQUAL(68, hf->previousChannel(69));
 }
 
 void HFBandTest::testUSA()
@@ -157,28 +157,28 @@ void HFBandTest::testUSA()
     const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", ts::HFBand::UHF, report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
-    TSUNIT_EQUAL(ts::HFBand::BandType(ts::HFBand::UHF), hf->type());
-    TSUNIT_EQUAL(uint32_t(56), hf->channelCount());
-    TSUNIT_EQUAL(uint32_t(14), hf->firstChannel());
-    TSUNIT_EQUAL(uint32_t(69), hf->lastChannel());
+    TSUNIT_EQUAL(ts::HFBand::UHF, hf->type());
+    TSUNIT_EQUAL(56, hf->channelCount());
+    TSUNIT_EQUAL(14, hf->firstChannel());
+    TSUNIT_EQUAL(69, hf->lastChannel());
 
-    TSUNIT_EQUAL(uint32_t(25), hf->nextChannel(24));
-    TSUNIT_EQUAL(uint32_t(23), hf->previousChannel(24));
-    TSUNIT_EQUAL(uint64_t(533000000), hf->frequency(24));
-    TSUNIT_EQUAL(uint64_t(533000000), hf->frequency(24, -2));
-    TSUNIT_EQUAL(uint64_t(533000000), hf->frequency(24, +2));
-    TSUNIT_EQUAL(uint32_t(24), hf->channelNumber(533000000));
-    TSUNIT_EQUAL(int32_t(0), hf->offsetCount(533000000));
-    TSUNIT_EQUAL(uint64_t(6000000), hf->bandWidth(24));
-    TSUNIT_EQUAL(uint64_t(0), hf->offsetWidth(24));
-    TSUNIT_EQUAL(int32_t(0), hf->firstOffset(24));
-    TSUNIT_EQUAL(int32_t(0), hf->lastOffset(24));
+    TSUNIT_EQUAL(25, hf->nextChannel(24));
+    TSUNIT_EQUAL(23, hf->previousChannel(24));
+    TSUNIT_EQUAL(533000000, hf->frequency(24));
+    TSUNIT_EQUAL(533000000, hf->frequency(24, -2));
+    TSUNIT_EQUAL(533000000, hf->frequency(24, +2));
+    TSUNIT_EQUAL(24, hf->channelNumber(533000000));
+    TSUNIT_EQUAL(0, hf->offsetCount(533000000));
+    TSUNIT_EQUAL(6000000, hf->bandWidth(24));
+    TSUNIT_EQUAL(0, hf->offsetWidth(24));
+    TSUNIT_EQUAL(0, hf->firstOffset(24));
+    TSUNIT_EQUAL(0, hf->lastOffset(24));
 
-    TSUNIT_EQUAL(uint32_t(15), hf->nextChannel(14));
-    TSUNIT_EQUAL(uint32_t(0), hf->previousChannel(14));
+    TSUNIT_EQUAL(15, hf->nextChannel(14));
+    TSUNIT_EQUAL(0, hf->previousChannel(14));
 
-    TSUNIT_EQUAL(uint32_t(0), hf->nextChannel(69));
-    TSUNIT_EQUAL(uint32_t(68), hf->previousChannel(69));
+    TSUNIT_EQUAL(0, hf->nextChannel(69));
+    TSUNIT_EQUAL(68, hf->previousChannel(69));
 }
 
 void HFBandTest::testVHF()
@@ -186,30 +186,30 @@ void HFBandTest::testVHF()
     const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", ts::HFBand::VHF, report());
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
-    TSUNIT_EQUAL(ts::HFBand::BandType(ts::HFBand::VHF), hf->type());
-    TSUNIT_EQUAL(uint32_t(13), hf->channelCount());
-    TSUNIT_EQUAL(uint32_t(1), hf->firstChannel());
-    TSUNIT_EQUAL(uint32_t(13), hf->lastChannel());
+    TSUNIT_EQUAL(ts::HFBand::VHF, hf->type());
+    TSUNIT_EQUAL(13, hf->channelCount());
+    TSUNIT_EQUAL(1, hf->firstChannel());
+    TSUNIT_EQUAL(13, hf->lastChannel());
 
-    TSUNIT_EQUAL(uint64_t(63000000), hf->frequency(3));
-    TSUNIT_EQUAL(uint64_t(63000000), hf->frequency(3, -2));
-    TSUNIT_EQUAL(uint64_t(63000000), hf->frequency(3, +2));
-    TSUNIT_EQUAL(uint32_t(3), hf->channelNumber(63000000));
-    TSUNIT_EQUAL(int32_t(0), hf->offsetCount(63000000));
-    TSUNIT_EQUAL(uint64_t(6000000), hf->bandWidth(3));
-    TSUNIT_EQUAL(uint64_t(0), hf->offsetWidth(3));
-    TSUNIT_EQUAL(int32_t(0), hf->firstOffset(3));
-    TSUNIT_EQUAL(int32_t(0), hf->lastOffset(3));
+    TSUNIT_EQUAL(63000000, hf->frequency(3));
+    TSUNIT_EQUAL(63000000, hf->frequency(3, -2));
+    TSUNIT_EQUAL(63000000, hf->frequency(3, +2));
+    TSUNIT_EQUAL(3, hf->channelNumber(63000000));
+    TSUNIT_EQUAL(0, hf->offsetCount(63000000));
+    TSUNIT_EQUAL(6000000, hf->bandWidth(3));
+    TSUNIT_EQUAL(0, hf->offsetWidth(3));
+    TSUNIT_EQUAL(0, hf->firstOffset(3));
+    TSUNIT_EQUAL(0, hf->lastOffset(3));
 
-    TSUNIT_EQUAL(uint32_t(2), hf->nextChannel(1));
-    TSUNIT_EQUAL(uint32_t(0), hf->previousChannel(1));
+    TSUNIT_EQUAL(2, hf->nextChannel(1));
+    TSUNIT_EQUAL(0, hf->previousChannel(1));
 
-    TSUNIT_EQUAL(uint32_t(5), hf->nextChannel(4));
-    TSUNIT_EQUAL(uint32_t(3), hf->previousChannel(4));
+    TSUNIT_EQUAL(5, hf->nextChannel(4));
+    TSUNIT_EQUAL(3, hf->previousChannel(4));
 
-    TSUNIT_EQUAL(uint32_t(6), hf->nextChannel(5));
-    TSUNIT_EQUAL(uint32_t(4), hf->previousChannel(5));
+    TSUNIT_EQUAL(6, hf->nextChannel(5));
+    TSUNIT_EQUAL(4, hf->previousChannel(5));
 
-    TSUNIT_EQUAL(uint32_t(0), hf->nextChannel(13));
-    TSUNIT_EQUAL(uint32_t(12), hf->previousChannel(13));
+    TSUNIT_EQUAL(0, hf->nextChannel(13));
+    TSUNIT_EQUAL(12, hf->previousChannel(13));
 }

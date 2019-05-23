@@ -142,7 +142,7 @@ void ArgsTest::testAccessors()
 
     TSUNIT_EQUAL(u"description", args.getDescription());
     TSUNIT_EQUAL(u"syntax", args.getSyntax());
-    TSUNIT_EQUAL(int(ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS), args.getFlags());
+    TSUNIT_EQUAL(ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS, args.getFlags());
 
     args.setDescription(u"description-1");
     TSUNIT_EQUAL(u"description-1", args.getDescription());
@@ -276,25 +276,25 @@ void ArgsTest::testValidCommandVariableArgs()
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt3", u"6", u"a", u"--opt1", u"b", u"--opt9", u"val2", u"--opt3", u"0", u"--opt3", u"6"}));
 
     TSUNIT_EQUAL(u"test", args.appName());
-    TSUNIT_EQUAL(size_t(2), args.count(u""));
+    TSUNIT_EQUAL(2, args.count(u""));
     TSUNIT_EQUAL(u"a", args.value(u"", u"", 0));
     TSUNIT_EQUAL(u"b", args.value(u"", u"", 1));
-    TSUNIT_EQUAL(size_t(1), args.count(u"opt1"));
+    TSUNIT_EQUAL(1, args.count(u"opt1"));
     TSUNIT_ASSERT(args.present(u"opt1"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt2"));
+    TSUNIT_EQUAL(0, args.count(u"opt2"));
     TSUNIT_ASSERT(!args.present(u"opt2"));
-    TSUNIT_EQUAL(size_t(3), args.count(u"opt3"));
+    TSUNIT_EQUAL(3, args.count(u"opt3"));
     TSUNIT_ASSERT(args.present(u"opt3"));
     TSUNIT_EQUAL(6, args.intValue<int>(u"opt3", -1, 0));
     TSUNIT_EQUAL(0, args.intValue<int>(u"opt3", -1, 1));
     TSUNIT_EQUAL(6, args.intValue<int>(u"opt3", -1, 2));
     TSUNIT_EQUAL(-1, args.intValue<int>(u"opt3", -1, 3));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt4"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt5"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt6"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt7"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt8"));
-    TSUNIT_EQUAL(size_t(1), args.count(u"opt9"));
+    TSUNIT_EQUAL(0, args.count(u"opt4"));
+    TSUNIT_EQUAL(0, args.count(u"opt5"));
+    TSUNIT_EQUAL(0, args.count(u"opt6"));
+    TSUNIT_EQUAL(0, args.count(u"opt7"));
+    TSUNIT_EQUAL(0, args.count(u"opt8"));
+    TSUNIT_EQUAL(1, args.count(u"opt9"));
     TSUNIT_ASSERT(args.present(u"opt9"));
     TSUNIT_EQUAL(12, args.intValue<int>(u"opt9"));
 
@@ -361,24 +361,24 @@ void ArgsTest::testValidCommandArgcArgv()
     TSUNIT_ASSERT(args.analyze(argc, argv));
 
     TSUNIT_EQUAL(u"test", args.appName());
-    TSUNIT_EQUAL(size_t(2), args.count(u""));
+    TSUNIT_EQUAL(2, args.count(u""));
     TSUNIT_EQUAL(u"a", args.value(u"", u"", 0));
     TSUNIT_EQUAL(u"b", args.value(u"", u"", 1));
-    TSUNIT_EQUAL(size_t(1), args.count(u"opt1"));
+    TSUNIT_EQUAL(1, args.count(u"opt1"));
     TSUNIT_ASSERT(args.present(u"opt1"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt2"));
+    TSUNIT_EQUAL(0, args.count(u"opt2"));
     TSUNIT_ASSERT(!args.present(u"opt2"));
-    TSUNIT_EQUAL(size_t(2), args.count(u"opt3"));
+    TSUNIT_EQUAL(2, args.count(u"opt3"));
     TSUNIT_ASSERT(args.present(u"opt3"));
     TSUNIT_EQUAL(6, args.intValue<int>(u"opt3", -1, 0));
     TSUNIT_EQUAL(0, args.intValue<int>(u"opt3", -1, 1));
     TSUNIT_EQUAL(-1, args.intValue<int>(u"opt3", -1, 2));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt4"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt5"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt6"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt7"));
-    TSUNIT_EQUAL(size_t(0), args.count(u"opt8"));
-    TSUNIT_EQUAL(size_t(1), args.count(u"opt9"));
+    TSUNIT_EQUAL(0, args.count(u"opt4"));
+    TSUNIT_EQUAL(0, args.count(u"opt5"));
+    TSUNIT_EQUAL(0, args.count(u"opt6"));
+    TSUNIT_EQUAL(0, args.count(u"opt7"));
+    TSUNIT_EQUAL(0, args.count(u"opt8"));
+    TSUNIT_EQUAL(1, args.count(u"opt9"));
     TSUNIT_ASSERT(args.present(u"opt9"));
     TSUNIT_EQUAL(12, args.intValue<int>(u"opt9"));
 
@@ -492,7 +492,7 @@ void ArgsTest::testThousandsSeparator()
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"a", u"-5", u"2000", u"--opt5=3,000", u"-50x4.000", u"-5", u"80 000", u"-5", u"2.000 000"}));
-    TSUNIT_EQUAL(size_t(5), args.count(u"opt5"));
+    TSUNIT_EQUAL(5, args.count(u"opt5"));
     TSUNIT_EQUAL(2000, args.intValue<int>(u"opt5", 0, 0));
     TSUNIT_EQUAL(3000, args.intValue<int>(u"opt5", 0, 1));
     TSUNIT_EQUAL(0x4000, args.intValue<int>(u"opt5", 0, 2));
@@ -662,10 +662,10 @@ void ArgsTest::testRedirection()
     TSUNIT_ASSERT(!args.present(u"opt3"));
     TSUNIT_ASSERT(args.present(u"opt4"));
 
-    TSUNIT_EQUAL(size_t(2), args.count(u""));
-    TSUNIT_EQUAL(size_t(1), args.count(u"opt1"));
-    TSUNIT_EQUAL(size_t(1), args.count(u"opt2"));
-    TSUNIT_EQUAL(size_t(2), args.count(u"opt4"));
+    TSUNIT_EQUAL(2, args.count(u""));
+    TSUNIT_EQUAL(1, args.count(u"opt1"));
+    TSUNIT_EQUAL(1, args.count(u"opt2"));
+    TSUNIT_EQUAL(2, args.count(u"opt4"));
     TSUNIT_EQUAL(u"param1", args.value(u"", u"", 0));
     TSUNIT_EQUAL(u"param2", args.value(u"", u"", 1));
     TSUNIT_EQUAL(u"@foo", args.value(u"opt2"));
@@ -722,7 +722,7 @@ void ArgsTest::testRanges()
     TSUNIT_ASSERT(args.present(u"opt1"));
     TSUNIT_ASSERT(!args.present(u"opt2"));
     TSUNIT_ASSERT(!args.present(u"opt3"));
-    TSUNIT_EQUAL(size_t(5), args.count(u"opt1"));
+    TSUNIT_EQUAL(5, args.count(u"opt1"));
     TSUNIT_EQUAL(0,  args.intValue<int>(u"opt1", -1, 0));
     TSUNIT_EQUAL(10, args.intValue<int>(u"opt1", -1, 1));
     TSUNIT_EQUAL(11, args.intValue<int>(u"opt1", -1, 2));
@@ -734,14 +734,14 @@ void ArgsTest::testRanges()
     TSUNIT_EQUAL(u"Error: too many option --opt2, 3 maximum", log.getMessages());
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt2", u"1", u"--opt2", u"10-11"}));
-    TSUNIT_EQUAL(size_t(3), args.count(u"opt2"));
+    TSUNIT_EQUAL(3, args.count(u"opt2"));
     TSUNIT_EQUAL(1,  args.intValue<int>(u"opt2", -1, 0));
     TSUNIT_EQUAL(10, args.intValue<int>(u"opt2", -1, 1));
     TSUNIT_EQUAL(11, args.intValue<int>(u"opt2", -1, 2));
     TSUNIT_EQUAL(-1, args.intValue<int>(u"opt2", -1, 3));
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt3=100,000", u"--opt3", u"--opt3=9000-9,003"}));
-    TSUNIT_EQUAL(size_t(6), args.count(u"opt3"));
+    TSUNIT_EQUAL(6, args.count(u"opt3"));
     TSUNIT_EQUAL(100000, args.intValue<int>(u"opt3", -1, 0));
     TSUNIT_EQUAL(-1,   args.intValue<int>(u"opt3", -1, 1));
     TSUNIT_EQUAL(9000, args.intValue<int>(u"opt3", -1, 2));

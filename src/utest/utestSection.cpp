@@ -102,8 +102,8 @@ void SectionTest::testTOT()
     ts::Section sec(psi_tot_tnt_sections, sizeof(psi_tot_tnt_sections), ts::PID_TOT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_TOT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_TOT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_TOT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_TOT, sec.sourcePID());
     TSUNIT_ASSERT(!sec.isLongSection());
 }
 
@@ -112,8 +112,8 @@ void SectionTest::testBAT()
     ts::Section sec(psi_bat_tvnum_sections, sizeof(psi_bat_tvnum_sections), ts::PID_BAT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_BAT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_BAT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_BAT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_BAT, sec.sourcePID());
     TSUNIT_ASSERT(sec.isLongSection());
 }
 
@@ -122,8 +122,8 @@ void SectionTest::testNIT()
     ts::Section sec(psi_nit_tntv23_sections, sizeof(psi_nit_tntv23_sections), ts::PID_NIT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_NIT_ACT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_NIT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_NIT_ACT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_NIT, sec.sourcePID());
     TSUNIT_ASSERT(sec.isLongSection());
 }
 
@@ -132,15 +132,15 @@ void SectionTest::testReload()
     ts::Section sec(psi_tot_tnt_sections, sizeof(psi_tot_tnt_sections), ts::PID_TOT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_TOT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_TOT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_TOT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_TOT, sec.sourcePID());
     TSUNIT_ASSERT(!sec.isLongSection());
 
     sec.reload(psi_bat_tvnum_sections, sizeof(psi_bat_tvnum_sections), ts::PID_BAT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_BAT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_BAT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_BAT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_BAT, sec.sourcePID());
     TSUNIT_ASSERT(sec.isLongSection());
 }
 
@@ -149,22 +149,22 @@ void SectionTest::testAssign()
     ts::Section sec(psi_tot_tnt_sections, sizeof(psi_tot_tnt_sections), ts::PID_TOT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_TOT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_TOT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_TOT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_TOT, sec.sourcePID());
     TSUNIT_ASSERT(!sec.isLongSection());
 
     ts::Section sec2(psi_nit_tntv23_sections, sizeof(psi_nit_tntv23_sections), ts::PID_NIT, ts::CRC32::CHECK);
 
     TSUNIT_ASSERT(sec2.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_NIT_ACT), sec2.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_NIT), sec2.sourcePID());
+    TSUNIT_EQUAL(ts::TID_NIT_ACT, sec2.tableId());
+    TSUNIT_EQUAL(ts::PID_NIT, sec2.sourcePID());
     TSUNIT_ASSERT(sec2.isLongSection());
 
     sec = sec2;
 
     TSUNIT_ASSERT(sec.isValid());
-    TSUNIT_EQUAL(ts::TID(ts::TID_NIT_ACT), sec.tableId());
-    TSUNIT_EQUAL(ts::PID(ts::PID_NIT), sec.sourcePID());
+    TSUNIT_EQUAL(ts::TID_NIT_ACT, sec.tableId());
+    TSUNIT_EQUAL(ts::PID_NIT, sec.sourcePID());
     TSUNIT_ASSERT(sec.isLongSection());
 }
 
@@ -188,11 +188,11 @@ void SectionTest::testPackSections()
 
     TSUNIT_ASSERT(table.isValid());
     TSUNIT_ASSERT(!table.isShortSection());
-    TSUNIT_EQUAL(ts::TID(150), table.tableId());
-    TSUNIT_EQUAL(uint16_t(102), table.tableIdExtension());
-    TSUNIT_EQUAL(uint8_t(12), table.version());
-    TSUNIT_EQUAL(ts::PID(2000), table.sourcePID());
-    TSUNIT_EQUAL(size_t(3), table.sectionCount());
+    TSUNIT_EQUAL(150, table.tableId());
+    TSUNIT_EQUAL(102, table.tableIdExtension());
+    TSUNIT_EQUAL(12, table.version());
+    TSUNIT_EQUAL(2000, table.sourcePID());
+    TSUNIT_EQUAL(3, table.sectionCount());
 
     ts::SectionPtr sec(table.sectionAt(0));
     TSUNIT_ASSERT(!sec.isNull());
@@ -202,15 +202,15 @@ void SectionTest::testPackSections()
     TSUNIT_ASSERT(sec->isPrivateSection());
     TSUNIT_ASSERT(sec->isCurrent());
     TSUNIT_ASSERT(!sec->isNext());
-    TSUNIT_EQUAL(ts::TID(150), sec->tableId());
-    TSUNIT_EQUAL(uint16_t(102), sec->tableIdExtension());
-    TSUNIT_EQUAL(uint8_t(12), sec->version());
-    TSUNIT_EQUAL(ts::PID(2000), sec->sourcePID());
-    TSUNIT_EQUAL(uint8_t(0), sec->sectionNumber());
-    TSUNIT_EQUAL(uint8_t(2), sec->lastSectionNumber());
-    TSUNIT_EQUAL(size_t(2), sec->payloadSize());
+    TSUNIT_EQUAL(150, sec->tableId());
+    TSUNIT_EQUAL(102, sec->tableIdExtension());
+    TSUNIT_EQUAL(12, sec->version());
+    TSUNIT_EQUAL(2000, sec->sourcePID());
+    TSUNIT_EQUAL(0, sec->sectionNumber());
+    TSUNIT_EQUAL(2, sec->lastSectionNumber());
+    TSUNIT_EQUAL(2, sec->payloadSize());
     TSUNIT_ASSERT(sec->payload() != nullptr);
-    TSUNIT_EQUAL(uint8_t(1), *sec->payload());
+    TSUNIT_EQUAL(1, *sec->payload());
 
     sec = table.sectionAt(1);
     TSUNIT_ASSERT(!sec.isNull());
@@ -220,15 +220,15 @@ void SectionTest::testPackSections()
     TSUNIT_ASSERT(sec->isPrivateSection());
     TSUNIT_ASSERT(sec->isCurrent());
     TSUNIT_ASSERT(!sec->isNext());
-    TSUNIT_EQUAL(ts::TID(150), sec->tableId());
-    TSUNIT_EQUAL(uint16_t(102), sec->tableIdExtension());
-    TSUNIT_EQUAL(uint8_t(12), sec->version());
-    TSUNIT_EQUAL(ts::PID(2000), sec->sourcePID());
-    TSUNIT_EQUAL(uint8_t(1), sec->sectionNumber());
-    TSUNIT_EQUAL(uint8_t(2), sec->lastSectionNumber());
-    TSUNIT_EQUAL(size_t(3), sec->payloadSize());
+    TSUNIT_EQUAL(150, sec->tableId());
+    TSUNIT_EQUAL(102, sec->tableIdExtension());
+    TSUNIT_EQUAL(12, sec->version());
+    TSUNIT_EQUAL(2000, sec->sourcePID());
+    TSUNIT_EQUAL(1, sec->sectionNumber());
+    TSUNIT_EQUAL(2, sec->lastSectionNumber());
+    TSUNIT_EQUAL(3, sec->payloadSize());
     TSUNIT_ASSERT(sec->payload() != nullptr);
-    TSUNIT_EQUAL(uint8_t(3), *sec->payload());
+    TSUNIT_EQUAL(3, *sec->payload());
 
     sec = table.sectionAt(2);
     TSUNIT_ASSERT(!sec.isNull());
@@ -238,15 +238,15 @@ void SectionTest::testPackSections()
     TSUNIT_ASSERT(sec->isPrivateSection());
     TSUNIT_ASSERT(sec->isCurrent());
     TSUNIT_ASSERT(!sec->isNext());
-    TSUNIT_EQUAL(ts::TID(150), sec->tableId());
-    TSUNIT_EQUAL(uint16_t(102), sec->tableIdExtension());
-    TSUNIT_EQUAL(uint8_t(12), sec->version());
-    TSUNIT_EQUAL(ts::PID(2000), sec->sourcePID());
-    TSUNIT_EQUAL(uint8_t(2), sec->sectionNumber());
-    TSUNIT_EQUAL(uint8_t(2), sec->lastSectionNumber());
-    TSUNIT_EQUAL(size_t(4), sec->payloadSize());
+    TSUNIT_EQUAL(150, sec->tableId());
+    TSUNIT_EQUAL(102, sec->tableIdExtension());
+    TSUNIT_EQUAL(12, sec->version());
+    TSUNIT_EQUAL(2000, sec->sourcePID());
+    TSUNIT_EQUAL(2, sec->sectionNumber());
+    TSUNIT_EQUAL(2, sec->lastSectionNumber());
+    TSUNIT_EQUAL(4, sec->payloadSize());
     TSUNIT_ASSERT(sec->payload() != nullptr);
-    TSUNIT_EQUAL(uint8_t(4), *sec->payload());
+    TSUNIT_EQUAL(4, *sec->payload());
 }
 
 // Create a dummy long section.
@@ -262,25 +262,25 @@ void SectionTest::testSize()
     ts::BinaryTable table;
     table.addSection(NewSection(183, 0));
     TSUNIT_ASSERT(table.isValid());
-    TSUNIT_EQUAL(size_t(1), table.sectionCount());
-    TSUNIT_EQUAL(size_t(183), table.sectionAt(0)->size());
-    TSUNIT_EQUAL(size_t(183), table.totalSize());
-    TSUNIT_EQUAL(ts::PacketCounter(1), table.packetCount());
+    TSUNIT_EQUAL(1, table.sectionCount());
+    TSUNIT_EQUAL(183, table.sectionAt(0)->size());
+    TSUNIT_EQUAL(183, table.totalSize());
+    TSUNIT_EQUAL(1, table.packetCount());
 
     table.clear();
     table.addSection(NewSection(184, 0));
     TSUNIT_ASSERT(table.isValid());
-    TSUNIT_EQUAL(size_t(1), table.sectionCount());
-    TSUNIT_EQUAL(size_t(184), table.sectionAt(0)->size());
-    TSUNIT_EQUAL(size_t(184), table.totalSize());
-    TSUNIT_EQUAL(ts::PacketCounter(2), table.packetCount());
+    TSUNIT_EQUAL(1, table.sectionCount());
+    TSUNIT_EQUAL(184, table.sectionAt(0)->size());
+    TSUNIT_EQUAL(184, table.totalSize());
+    TSUNIT_EQUAL(2, table.packetCount());
 
     table.addSection(NewSection(182, 1));
     TSUNIT_ASSERT(table.isValid());
-    TSUNIT_EQUAL(size_t(2), table.sectionCount());
-    TSUNIT_EQUAL(size_t(182), table.sectionAt(1)->size());
-    TSUNIT_EQUAL(size_t(366), table.totalSize());
-    TSUNIT_EQUAL(ts::PacketCounter(2), table.packetCount());
+    TSUNIT_EQUAL(2, table.sectionCount());
+    TSUNIT_EQUAL(182, table.sectionAt(1)->size());
+    TSUNIT_EQUAL(366, table.totalSize());
+    TSUNIT_EQUAL(2, table.packetCount());
 
     table.clear();
     table.addSection(NewSection(184, 0));
@@ -288,7 +288,7 @@ void SectionTest::testSize()
     table.addSection(NewSection(20, 2));
     table.addSection(NewSection(142, 3));
     TSUNIT_ASSERT(table.isValid());
-    TSUNIT_EQUAL(size_t(4), table.sectionCount());
-    TSUNIT_EQUAL(size_t(366), table.totalSize());
-    TSUNIT_EQUAL(ts::PacketCounter(2), table.packetCount());
+    TSUNIT_EQUAL(4, table.sectionCount());
+    TSUNIT_EQUAL(366, table.totalSize());
+    TSUNIT_EQUAL(2, table.packetCount());
 }

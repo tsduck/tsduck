@@ -137,12 +137,12 @@ void XMLTest::testDocument()
     ts::xml::Document doc(report());
     TSUNIT_ASSERT(doc.parse(document));
     TSUNIT_ASSERT(doc.hasChildren());
-    TSUNIT_EQUAL(size_t(2), doc.childrenCount());
+    TSUNIT_EQUAL(2, doc.childrenCount());
 
     ts::xml::Element* root = doc.rootElement();
     TSUNIT_ASSERT(root != nullptr);
     TSUNIT_ASSERT(root->hasChildren());
-    TSUNIT_EQUAL(size_t(4), root->childrenCount());
+    TSUNIT_EQUAL(4, root->childrenCount());
     TSUNIT_ASSERT(root->hasAttribute(u"attr1"));
     TSUNIT_ASSERT(root->hasAttribute(u"AttR1"));
     TSUNIT_EQUAL(u"root", root->name());
@@ -229,9 +229,9 @@ void XMLTest::testFileBOM()
     TSUNIT_ASSERT(doc.load(_tempFileName));
 
     ts::xml::Element* root = doc.rootElement();
-    TSUNIT_EQUAL(size_t(2), doc.childrenCount());
+    TSUNIT_EQUAL(2, doc.childrenCount());
     TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_EQUAL(size_t(1), root->childrenCount());
+    TSUNIT_EQUAL(1, root->childrenCount());
     TSUNIT_EQUAL(rootName, root->name());
 
     ts::xml::Element* elem = root->firstChildElement();
@@ -242,7 +242,7 @@ void XMLTest::testFileBOM()
     TSUNIT_EQUAL(childText1, elem->text(false));
     TSUNIT_EQUAL(childText2, elem->text(true));
 
-    TSUNIT_ASSERT(ts::DeleteFile(_tempFileName) == ts::SYS_SUCCESS);
+    TSUNIT_EQUAL(ts::SYS_SUCCESS, ts::DeleteFile(_tempFileName));
 }
 
 void XMLTest::testValidation()
@@ -284,11 +284,11 @@ void XMLTest::testCreation()
 
     ts::xml::Element* root = doc.initialize(u"theRoot");
     TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_EQUAL(size_t(0), doc.depth());
-    TSUNIT_EQUAL(size_t(1), root->depth());
+    TSUNIT_EQUAL(0, doc.depth());
+    TSUNIT_EQUAL(1, root->depth());
 
     TSUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
-    TSUNIT_EQUAL(size_t(2), child1->depth());
+    TSUNIT_EQUAL(2, child1->depth());
     child1->setAttribute(u"str", u"a string");
     child1->setIntAttribute(u"int", -47);
     TSUNIT_ASSERT(child1->addElement(u"subChild1") != nullptr);
@@ -389,11 +389,11 @@ void XMLTest::testEscape()
 
     ts::xml::Element* root = doc.initialize(u"theRoot");
     TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_EQUAL(size_t(0), doc.depth());
-    TSUNIT_EQUAL(size_t(1), root->depth());
+    TSUNIT_EQUAL(0, doc.depth());
+    TSUNIT_EQUAL(1, root->depth());
 
     TSUNIT_ASSERT((child1 = root->addElement(u"child1")) != nullptr);
-    TSUNIT_EQUAL(size_t(2), child1->depth());
+    TSUNIT_EQUAL(2, child1->depth());
     child1->setAttribute(u"str", u"ab&<>'\"cd");
 
     TSUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
@@ -411,12 +411,12 @@ void XMLTest::testEscape()
     ts::xml::Document doc2(report());
     TSUNIT_ASSERT(doc2.parse(text));
     TSUNIT_ASSERT(doc2.hasChildren());
-    TSUNIT_EQUAL(size_t(2), doc2.childrenCount());
+    TSUNIT_EQUAL(2, doc2.childrenCount());
 
     ts::xml::Element* root2 = doc2.rootElement();
     TSUNIT_ASSERT(root2 != nullptr);
     TSUNIT_ASSERT(root2->hasChildren());
-    TSUNIT_EQUAL(size_t(2), root2->childrenCount());
+    TSUNIT_EQUAL(2, root2->childrenCount());
     TSUNIT_EQUAL(u"theRoot", root2->name());
 
     ts::xml::Element* elem = root2->firstChildElement();
