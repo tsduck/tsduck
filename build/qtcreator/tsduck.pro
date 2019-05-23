@@ -101,6 +101,7 @@ SUBDIRS += \
     tsplugin_teletext \
     tsplugin_time \
     tsplugin_timeref \
+    tsplugin_trigger \
     tsplugin_tsrename \
     tsplugin_until \
     tsplugin_zap \
