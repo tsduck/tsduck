@@ -180,7 +180,7 @@ void ts::PCRAnalyzer::setIgnoreErrors(bool ignore)
 // Process a discontinuity in the transport stream
 //----------------------------------------------------------------------------
 
-void ts::PCRAnalyzer::processDiscountinuity()
+void ts::PCRAnalyzer::processDiscontinuity()
 {
     _discontinuities++;
 
@@ -265,7 +265,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
 
     // Reject invalid packets, suspected TS corruption
     if (!_ignore_errors && !pkt.hasValidSync()) {
-        processDiscountinuity();
+        processDiscontinuity();
         return _bitrate_valid;
     }
 
@@ -315,7 +315,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
 
         // In case of suspected packet loss, reset calculations
         if (broken_rate) {
-            processDiscountinuity();
+            processDiscontinuity();
         }
     }
 

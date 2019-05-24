@@ -184,7 +184,7 @@ namespace ts {
 
     private:
         // Process a discontinuity in the transport stream
-        void processDiscountinuity();
+        void processDiscontinuity();
 
         // Analysis of one PID
         struct PIDAnalysis
