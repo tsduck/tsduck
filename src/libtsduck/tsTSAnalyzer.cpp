@@ -1501,7 +1501,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
                 ps->duplicated++;
             }
             else if (pkt.getCC() != (ps->cur_continuity + 1) % CC_MAX) {
-                // Counter not following previous -> discountinuity
+                // Counter not following previous -> discontinuity
                 ps->unexp_discont++;
                 broken_rate = true;
             }
