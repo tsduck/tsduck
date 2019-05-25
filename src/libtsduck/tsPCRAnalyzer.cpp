@@ -53,11 +53,11 @@ ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
     _ts_bitrate_188(0),
     _ts_bitrate_204(0),
     _ts_bitrate_cnt(0),
+    _inst_ts_bitrate_188(0),
+    _inst_ts_bitrate_204(0),
     _completed_pids(0),
     _pcr_pids(0),
-    _discontinuities(0),
-    _inst_ts_bitrate_188(0),
-    _inst_ts_bitrate_204(0)
+    _discontinuities(0)
 {
     TS_ZERO(_pid);
 }
@@ -355,19 +355,19 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
                 ((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE * 8) /
                 (pcr - ps->last_pcr_value);
 
-            // clear out values older than 1 second from _packet_pcr_index_map
-            // note that this is a map that covers PCR/DTS packets across all PIDs
+            // Clear out values older than 1 second from _packet_pcr_index_map.
+            // Note that this is a map that covers PCR/DTS packets across all PIDs
             // as long as the clocks used to generate the PCR/DTS values for different
             // programs is the same clock, there should be no issue, but if the PCR/DTS values
-            // across the two programs are wildly different, then the following approach won't
-            // work
+            // across the two programs are wildly different, then the following approach won't work.
             while (!_packet_pcr_index_map.empty()) {
-                uint64_t earliestPCR = _packet_pcr_index_map.begin()->first;
+                const uint64_t earliestPCR = _packet_pcr_index_map.begin()->first;
                 if ((pcr - earliestPCR) > SYSTEM_CLOCK_FREQ) {
                     _packet_pcr_index_map.erase(_packet_pcr_index_map.begin());
                 }
-                else
+                else {
                     break;
+                }
             }
 
             // Per-PID statistics:
@@ -387,7 +387,7 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             // Transport stream instantaneous statistics
             // For instantaneous bit rates, these are the actual bit rates, and it doesn't use the "count"
             // approach
-            _inst_ts_bitrate_188 = 
+            _inst_ts_bitrate_188 =
                 ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
                 (pcr - _packet_pcr_index_map.begin()->first);
             _inst_ts_bitrate_204 =
@@ -406,9 +406,14 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             ps->last_pcr_value = pcr;
             ps->last_pcr_packet = _ts_pkt_cnt;
 
-            // also add PCR/packet index combo to map for use in
-            // instantaneous bit rate calculations
+            // Also add PCR/packet index combo to map for use in instantaneous bit rate calculations.
             _packet_pcr_index_map[pcr] = _ts_pkt_cnt;
+
+            // Make sure that some crazy TS does not accumulate thousands of PCR values in the same second range.
+            while (_packet_pcr_index_map.size() > FOOLPROOF_MAP_LIMIT) {
+                // Erase older entries.
+                _packet_pcr_index_map.erase(_packet_pcr_index_map.begin());
+            }
         }
     }
 
