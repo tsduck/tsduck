@@ -194,6 +194,18 @@ namespace ts {
         //!
         bool eof() const { return _eof; }
 
+        //!
+        //! This static method asynchronously launches a command, without pipe, without waiting for the completion of the command process.
+        //! @param [in] command The command to execute.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] out_mode How to handle stdout and stderr. Keep both by default.
+        //! Output modes using pipes are forbidden.
+        //! @param [in] in_mode How to handle stdin. Keep the parent input by default.
+        //! Input modes using pipes are forbidden.
+        //! @return True on success, false on error.
+        //!
+        static bool Launch(const UString& command, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = STDIN_PARENT);
+
     protected:
         // Implementation of AbstractOutputStream
         virtual bool writeStreamBuffer(const void* addr, size_t size) override;

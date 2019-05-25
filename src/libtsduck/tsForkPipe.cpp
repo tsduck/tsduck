@@ -725,3 +725,33 @@ bool ts::ForkPipe::read(void* addr, size_t max_size, size_t unit_size, size_t& r
     // Not an error yet if we already read some data.
     return ret_size > 0;
 }
+
+
+//----------------------------------------------------------------------------
+// This static method asynchronously launches a command, without pipe,
+// without waiting for the completion of the command process.
+//----------------------------------------------------------------------------
+
+bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::ForkPipe::OutputMode out_mode, ts::ForkPipe::InputMode in_mode)
+{
+    // Reject input and output mode involving pipes.
+    if (in_mode == STDIN_PIPE) {
+        report.error(u"internal error, invalid input mode in ForkPipe::Launch");
+        return false;
+    }
+    if (out_mode == STDOUT_PIPE || out_mode == STDOUTERR_PIPE) {
+        report.error(u"internal error, invalid output mode in ForkPipe::Launch");
+        return false;
+    }
+
+    // Run the command asynchronously.
+    ForkPipe exe;
+    if (exe.open(command, ASYNCHRONOUS, 0, report, out_mode, in_mode)) {
+        // Process was created asynchronously, close ForkPipe object now.
+        return exe.close(report);
+    }
+    else {
+        report.error(u"cannot execute command: %s", {command});
+        return false;
+    }
+}
