@@ -34,6 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsForkPipe.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -85,9 +86,6 @@ namespace ts {
         TSPacketMetadata::LabelSet _labels_go_normal; // Set these labels on one packet when bitrate goes back to normal.
         TSPacketMetadata::LabelSet _labels_go_above;  // Set these labels on one packet when bitrate goes above normal.
         TSPacketMetadata::LabelSet _labels_next;      // Set these labels on next packet.
-
-        // Run the alarm command.
-        void runAlarmCommand(const ts::UString& parameter);
 
         // Compute bitrate. Report any alarm.
         void computeBitrate();
@@ -298,24 +296,6 @@ bool ts::BitrateMonitorPlugin::start()
 
 
 //----------------------------------------------------------------------------
-// Run the alarm command, if one was specified as the plugin option.
-// The given string parameter describes the alarm.
-//----------------------------------------------------------------------------
-
-void ts::BitrateMonitorPlugin::runAlarmCommand(const ts::UString& parameter)
-{
-    // Do nothing if alarm command was not specified
-    if (!_alarm_command.empty()) {
-        const UString completeCommand(_alarm_command + u" \"" + parameter + u'"');
-        // Flawfinder: ignore: system causes a new program to execute and is difficult to use safely.
-        if (::system(completeCommand.toUTF8().c_str()) != 0) {
-            tsp->error(u"unable to run alarm command %s", {completeCommand});
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Compute bitrate, report alarms.
 //----------------------------------------------------------------------------
 
@@ -369,10 +349,14 @@ void ts::BitrateMonitorPlugin::computeBitrate()
                 assert(false); // should not get there
         }
 
+        // Report alarm message as a tsp warning.
         tsp->warning(alarmMessage);
 
         // Call alarm script if defined, and pass the alarm message as parameter.
-        runAlarmCommand(alarmMessage);
+        // The command is run asynchronously, do not wait for completion.
+        if (!_alarm_command.empty()) {
+            ForkPipe::Launch(_alarm_command + u" \"" + alarmMessage + u'"', *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+        }
 
         // Update status
         _last_bitrate_status = new_bitrate_status;
