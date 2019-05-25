@@ -37,6 +37,8 @@
 #include "tsTSPacket.h"
 #include "tsStringifyInterface.h"
 
+#include <map>
+
 namespace ts {
     //!
     //! PCR statistics analysis.
@@ -141,6 +143,18 @@ namespace ts {
         BitRate bitrate204(PID pid) const;
 
         //!
+        //! Get the evaluated TS bitrate in bits/second based on 188-byte packets for the last second.
+        //! @return The evaluated TS bitrate in bits/second based on 188-byte packets.
+        //!
+        BitRate instantaneousBitrate188() const;
+
+        //!
+        //! Get the evaluated TS bitrate in bits/second based on 204-byte packets for the last second.
+        //! @return The evaluated TS bitrate in bits/second based on 204-byte packets.
+        //!
+        BitRate instantaneousBitrate204() const;
+
+        //!
         //! Get the number of TS packets on a PID.
         //! @param [in] pid The PID to evaluate.
         //! @return The number of TS packets on @a pid.
@@ -160,6 +174,9 @@ namespace ts {
             PacketCounter pcr_count;       //!< The number of analyzed PCR's.
             size_t        pcr_pids;        //!< The number of PID's with PCR's.
             size_t        discontinuities; //!< The number of discontinuities.
+
+            BitRate       instantaneous_bitrate_188;  //!< The evaluated TS bitrate in bits/second based on 188-byte packets for the last second.
+            BitRate       instantaneous_bitrate_204;  //!< The evaluated TS bitrate in bits/second based on 204-byte packets for the last second.
 
             //!
             //! Default constructor.
@@ -184,7 +201,7 @@ namespace ts {
 
     private:
         // Process a discontinuity in the transport stream
-        void processDiscountinuity();
+        void processDiscontinuity();
 
         // Analysis of one PID
         struct PIDAnalysis
@@ -202,19 +219,23 @@ namespace ts {
         };
 
         // Private members:
-        bool     _use_dts;            // Use DTS instead of PCR
-        bool     _ignore_errors;      // Ignore TS errors such as discontinuities.
-        size_t   _min_pid;            // Min # of PID
-        size_t   _min_pcr;            // Min # of PCR per PID
-        bool     _bitrate_valid;      // Bitrate evaluation is valid
-        uint64_t _ts_pkt_cnt;         // Total TS packets count
-        uint64_t _ts_bitrate_188;     // Sum of all computed TS bitrates (188-byte)
-        uint64_t _ts_bitrate_204;     // Sum of all computed TS bitrates (204-byte)
-        uint64_t _ts_bitrate_cnt;     // Count of computed bitrates
-        size_t   _completed_pids;     // Number of PIDs with enough PCRs
-        size_t   _pcr_pids;           // Number of PIDs with PCRs
-        size_t   _discontinuities;    // Number of discontinuities
-        PIDAnalysis* _pid[PID_MAX];   // Per-PID stats
+        bool     _use_dts;             // Use DTS instead of PCR
+        bool     _ignore_errors;       // Ignore TS errors such as discontinuities.
+        size_t   _min_pid;             // Min # of PID
+        size_t   _min_pcr;             // Min # of PCR per PID
+        bool     _bitrate_valid;       // Bitrate evaluation is valid
+        uint64_t _ts_pkt_cnt;          // Total TS packets count
+        uint64_t _ts_bitrate_188;      // Sum of all computed TS bitrates (188-byte)
+        uint64_t _ts_bitrate_204;      // Sum of all computed TS bitrates (204-byte)
+        uint64_t _ts_bitrate_cnt;      // Count of computed bitrates
+        uint64_t _inst_ts_bitrate_188; // Sum of all computed TS bitrates (188-byte) for last second
+        uint64_t _inst_ts_bitrate_204; // Sum of all computed TS bitrates (204-byte) for last second
+        size_t   _completed_pids;      // Number of PIDs with enough PCRs
+        size_t   _pcr_pids;            // Number of PIDs with PCRs
+        size_t   _discontinuities;     // Number of discontinuities
+        PIDAnalysis* _pid[PID_MAX];    // Per-PID stats
+
+        std::map<uint64_t, uint64_t> _packet_pcr_index_map; // Map of PCR to packet index across entire TS 
 
         // Unreachable constructors and operators.
         PCRAnalyzer(const PCRAnalyzer&) = delete;
