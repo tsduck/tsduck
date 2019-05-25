@@ -37,8 +37,6 @@
 #include "tsTSPacket.h"
 #include "tsStringifyInterface.h"
 
-#include <map>
-
 namespace ts {
     //!
     //! PCR statistics analysis.
@@ -174,7 +172,6 @@ namespace ts {
             PacketCounter pcr_count;       //!< The number of analyzed PCR's.
             size_t        pcr_pids;        //!< The number of PID's with PCR's.
             size_t        discontinuities; //!< The number of discontinuities.
-
             BitRate       instantaneous_bitrate_188;  //!< The evaluated TS bitrate in bits/second based on 188-byte packets for the last second.
             BitRate       instantaneous_bitrate_204;  //!< The evaluated TS bitrate in bits/second based on 204-byte packets for the last second.
 
@@ -235,7 +232,8 @@ namespace ts {
         size_t   _discontinuities;     // Number of discontinuities
         PIDAnalysis* _pid[PID_MAX];    // Per-PID stats
 
-        std::map<uint64_t, uint64_t> _packet_pcr_index_map; // Map of PCR to packet index across entire TS 
+        std::map<uint64_t, uint64_t> _packet_pcr_index_map; // Map of PCR to packet index across entire TS
+        static constexpr size_t FOOLPROOF_MAP_LIMIT = 1000; // Max number of entries in the PCR map
 
         // Unreachable constructors and operators.
         PCRAnalyzer(const PCRAnalyzer&) = delete;
