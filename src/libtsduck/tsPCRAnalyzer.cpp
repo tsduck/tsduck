@@ -57,7 +57,9 @@ ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
     _inst_ts_bitrate_204(0),
     _completed_pids(0),
     _pcr_pids(0),
-    _discontinuities(0)
+    _discontinuities(0),
+    _pid(),
+    _packet_pcr_index_map()
 {
     TS_ZERO(_pid);
 }
