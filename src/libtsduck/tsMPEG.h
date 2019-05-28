@@ -435,17 +435,7 @@ namespace ts {
     //! @return The PCR of the packet which is at the specified @a distance from the packet with @a last_pcr
     //! or INVALID_PCR if a parameter is incorrect.
     //!
-    TSDUCKDLL inline uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
-    {
-        if (last_pcr == INVALID_PCR || bitrate == 0)
-            return INVALID_PCR;
-        
-        uint64_t next_pcr = last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
-        if (next_pcr > MAX_PCR)
-            next_pcr -= MAX_PCR;
-
-        return next_pcr;
-    }
+    TSDUCKDLL uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate);
 
     //!
     //! Compute the difference between PCR2 and PCR1.
@@ -454,13 +444,7 @@ namespace ts {
     //! @return The difference between the two values.
     //! or INVALID_PCR if a parameter is incorrect.
     //!
-    TSDUCKDLL inline uint64_t DiffPCR(uint64_t pcr1, uint64_t pcr2)
-    {
-        if ((pcr1 == INVALID_PCR) || (pcr2 == INVALID_PCR))
-            return INVALID_PCR;
-
-        return WrapUpPCR(pcr1, pcr2) ? (pcr2 + MAX_PCR) - pcr1 : pcr2 - pcr1;
-    }
+    TSDUCKDLL uint64_t DiffPCR(uint64_t pcr1, uint64_t pcr2);
 
     //!
     //! Check if PTS2 follows PTS1 after wrap up.
@@ -496,13 +480,7 @@ namespace ts {
     //! @return The difference between the two values.
     //! or INVALID_PTS if a parameter is incorrect.
     //!
-    TSDUCKDLL inline uint64_t DiffPTS(uint64_t pts1, uint64_t pts2)
-    {
-        if ((pts1 == INVALID_PCR) || (pts2 == INVALID_PCR))
-            return INVALID_PTS;
-
-        return WrapUpPTS(pts1, pts2) ? (pts2 + MAX_PTS_DTS) - pts1 : pts2 - pts1;
-    }
+    TSDUCKDLL uint64_t DiffPTS(uint64_t pts1, uint64_t pts2);
 
     //---------------------------------------------------------------------
     //! Stream id values, as used in PES header.
