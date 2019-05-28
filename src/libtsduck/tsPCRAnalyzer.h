@@ -208,8 +208,8 @@ namespace ts {
             // Members:
             uint64_t ts_pkt_cnt;       // Count of TS packets
             uint8_t  cur_continuity;   // Current continuity counter
-            uint64_t last_pcr_value;   // Last PCR value in this PID
-            uint64_t last_pcr_packet;  // Packet index containing last PCR
+            uint64_t last_pcr_value;   // Last PCR/DTS value in this PID
+            uint64_t last_pcr_packet;  // Packet index containing last PCR/DTS
             uint64_t ts_bitrate_188;   // Sum of all computed TS bitrates (188-byte)
             uint64_t ts_bitrate_204;   // Sum of all computed TS bitrates (204-byte)
             uint64_t ts_bitrate_cnt;   // Count of computed TS bitrates
@@ -232,7 +232,7 @@ namespace ts {
         size_t   _discontinuities;     // Number of discontinuities
         PIDAnalysis* _pid[PID_MAX];    // Per-PID stats
 
-        std::map<uint64_t, uint64_t> _packet_pcr_index_map; // Map of PCR to packet index across entire TS
+        std::map<uint64_t, uint64_t> _packet_pcr_index_map; // Map of PCR/DTS to packet index across entire TS
         static constexpr size_t FOOLPROOF_MAP_LIMIT = 1000; // Max number of entries in the PCR map
 
         // Unreachable constructors and operators.
