@@ -157,3 +157,47 @@ bool ts::IsLongHeaderSID (uint8_t sid)
         sid != SID_DSMCC &&    // DSM-CC data
         sid != SID_H222_1_E;   // H.222.1 type E
 }
+
+
+//----------------------------------------------------------------------------
+// Compute the PCR of a packet, based on the PCR of a previous packet.
+//----------------------------------------------------------------------------
+
+uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
+{
+    if (last_pcr == INVALID_PCR || bitrate == 0) {
+        return INVALID_PCR;
+    }
+
+    uint64_t next_pcr = last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
+    if (next_pcr > MAX_PCR) {
+        next_pcr -= MAX_PCR;
+    }
+
+    return next_pcr;
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the difference between PCR2 and PCR1.
+//----------------------------------------------------------------------------
+
+uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
+{
+    if ((pcr1 == INVALID_PCR) || (pcr2 == INVALID_PCR)) {
+        return INVALID_PCR;
+    }
+    else {
+        return WrapUpPCR(pcr1, pcr2) ? (pcr2 + MAX_PCR) - pcr1 : pcr2 - pcr1;
+    }
+}
+
+uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
+{
+    if ((pts1 == INVALID_PCR) || (pts2 == INVALID_PCR)) {
+        return INVALID_PTS;
+    }
+    else {
+        return WrapUpPTS(pts1, pts2) ? (pts2 + MAX_PTS_DTS) - pts1 : pts2 - pts1;
+    }
+}
