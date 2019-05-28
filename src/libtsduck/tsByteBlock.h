@@ -47,7 +47,7 @@ namespace ts {
     //! This is a subclass of @c std::vector on @c uint8_t.
     //! @ingroup cpp
     //!
-    class TSDUCKDLL ByteBlock : public std::vector<uint8_t>
+    class ByteBlock : public std::vector<uint8_t>
     {
     public:
         //!
@@ -59,21 +59,21 @@ namespace ts {
         //! Default constructor.
         //! @param [in] size Initial size in bytes of the block.
         //!
-        explicit ByteBlock(size_type size = 0);
+        TSDUCKDLL explicit ByteBlock(size_type size = 0);
 
         //!
         //! Constructor, initialized with bytes of specified value.
         //! @param [in] size Initial size in bytes of the block.
         //! @param [in] value Value of each byte.
         //!
-        ByteBlock(size_type size, uint8_t value);
+        TSDUCKDLL ByteBlock(size_type size, uint8_t value);
 
         //!
         //! Constructor from a data block.
         //! @param [in] data Address of area to copy.
         //! @param [in] size Initial size of the block.
         //!
-        ByteBlock(const void* data, size_type size);
+        TSDUCKDLL ByteBlock(const void* data, size_type size);
 
         //!
         //! Constructor from a C string.
@@ -81,20 +81,20 @@ namespace ts {
         //! The content of the byte block is the content of the
         //! string, excluding the terminating nul character.
         //!
-        ByteBlock(const char* str);
+        TSDUCKDLL ByteBlock(const char* str);
 
         //!
         //! Constructor from an initializer list.
         //! @param [in] init Initializer list.
         //!
-        ByteBlock(std::initializer_list<uint8_t> init);
+        TSDUCKDLL ByteBlock(std::initializer_list<uint8_t> init);
 
         //!
         //! Replace the content of a byte block.
         //! @param [in] data Address of the new area to copy.
         //! @param [in] size Size of the area to copy.
         //!
-        void copy(const void* data, size_type size);
+        TSDUCKDLL void copy(const void* data, size_type size);
 
         //!
         //! Remove 'size' elements at index 'first'.
@@ -102,14 +102,14 @@ namespace ts {
         //! @param [in] first Index of the first byte to erase.
         //! @param [in] size Number of bytes to erase.
         //!
-        void erase(size_type first, size_type size);
+        TSDUCKDLL void erase(size_type first, size_type size);
 
         //!
         //! Increase size return pointer to new area at end of block.
         //! @param [in] n Number of bytes to add at the end of the block.
         //! @return Address of the new n-byte area at the end of the block.
         //!
-        void* enlarge(size_type n);
+        TSDUCKDLL void* enlarge(size_type n);
 
         //!
         //! Append raw data to a byte block.
@@ -145,13 +145,13 @@ namespace ts {
         //! Append a unicode string in UTF-8 representation to a byte block.
         //! @param [in] s String to append.
         //!
-        void appendUTF8(const UString& s);
+        TSDUCKDLL void appendUTF8(const UString& s);
 
         //!
         //! Append a unicode string in UTF-8 representation to a byte block with one-byte preceding length.
         //! @param [in] s String to append. UTF-8 representation is trunctated to 255 if necessary so that the length fits in one byte.
         //!
-        void appendUTF8WithByteLength(const UString& s);
+        TSDUCKDLL void appendUTF8WithByteLength(const UString& s);
 
         //!
         //! Append @a n bytes with value @a i.
@@ -479,7 +479,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
+        TSDUCKDLL bool loadFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
 
         //!
         //! Read a byte block from a binary file and append to existing content.
@@ -488,7 +488,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool appendFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
+        TSDUCKDLL bool appendFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
 
         //!
         //! Save a byte block to a binary file.
@@ -518,7 +518,7 @@ namespace ts {
         //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
         //! @return A reference to the @a strm object.
         //!
-        std::istream& read(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
+        TSDUCKDLL std::istream& read(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
 
         //!
         //! Read a byte block from standard streams and append to existing content (binary mode).
@@ -526,7 +526,7 @@ namespace ts {
         //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
         //! @return A reference to the @a strm object.
         //!
-        std::istream& append(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
+        TSDUCKDLL std::istream& append(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
 
         //!
         //! Write a byte to standard streams (binary mode).
@@ -540,7 +540,7 @@ namespace ts {
 
     private:
         // Common code for saveToFile and appendToFile.
-        bool writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const;
+        TSDUCKDLL bool writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const;
     };
 
 #if !defined(DOXYGEN)
@@ -566,7 +566,7 @@ namespace ts {
 //! @param [in] bb A byte block.
 //! @return A reference to the @a strm object.
 //!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::ByteBlock& bb)
+inline std::ostream& operator<<(std::ostream& strm, const ts::ByteBlock& bb)
 {
     return bb.write(strm);
 }
@@ -577,7 +577,7 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::ByteBloc
 //! @param [out] bb A byte block.
 //! @return A reference to the @a strm object.
 //!
-TSDUCKDLL inline std::istream& operator>>(std::istream& strm, ts::ByteBlock& bb)
+inline std::istream& operator>>(std::istream& strm, ts::ByteBlock& bb)
 {
     return bb.read(strm);
 }
