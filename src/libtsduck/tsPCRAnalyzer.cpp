@@ -80,7 +80,7 @@ ts::PCRAnalyzer::~PCRAnalyzer()
 ts::PCRAnalyzer::PIDAnalysis::PIDAnalysis() :
     ts_pkt_cnt(0),
     cur_continuity(0),
-    last_pcr_value(0),
+    last_pcr_value(INVALID_PCR),
     last_pcr_packet(0),
     ts_bitrate_188(0),
     ts_bitrate_204(0),
@@ -157,6 +157,8 @@ void ts::PCRAnalyzer::reset()
             _pid[i] = nullptr;
         }
     }
+
+    _packet_pcr_index_map.clear();
 }
 
 
@@ -193,7 +195,7 @@ void ts::PCRAnalyzer::processDiscontinuity()
     // All collected PCR's become invalid since at least one packet is missing.
     for (size_t i = 0; i < PID_MAX; ++i) {
         if (_pid[i] != nullptr) {
-            _pid[i]->last_pcr_value = 0;
+            _pid[i]->last_pcr_value = INVALID_PCR;
         }
     }
     _packet_pcr_index_map.clear();
@@ -341,19 +343,23 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
     // Process PCR (or DTS)
     if ((_use_dts && pkt.hasDTS()) || (!_use_dts && pkt.hasPCR())) {
 
-        // Get PCR value (or converted DTS)
-        const uint64_t pcr = _use_dts ? pkt.getDTS() * SYSTEM_CLOCK_SUBFACTOR : pkt.getPCR();
+        // Get PCR value (or DTS)
+        const uint64_t pcr_dts = _use_dts ? pkt.getDTS() : pkt.getPCR();
 
-        // If last PCR valid, compute transport rate between the two
-        if (ps->last_pcr_value != 0 && ps->last_pcr_value < pcr) {
+        // If last PCR/DTS valid, compute transport rate between the two
+        if (ps->last_pcr_value != INVALID_PCR && ps->last_pcr_value != pcr_dts) {
 
-            // Compute transport rate in b/s since last PCR
+            // Compute transport rate in b/s since last PCR/DTS
+            uint64_t diff_values = _use_dts ?
+                DiffPTS(ps->last_pcr_value, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
+                DiffPCR(ps->last_pcr_value, pcr_dts);
+
             uint64_t ts_bitrate_188 =
                 ((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
-                (pcr - ps->last_pcr_value);
+                diff_values;
             uint64_t ts_bitrate_204 =
                 ((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE * 8) /
-                (pcr - ps->last_pcr_value);
+                diff_values;
 
             // Clear out values older than 1 second from _packet_pcr_index_map.
             // Note that this is a map that covers PCR/DTS packets across all PIDs
@@ -361,8 +367,11 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             // programs is the same clock, there should be no issue, but if the PCR/DTS values
             // across the two programs are wildly different, then the following approach won't work.
             while (!_packet_pcr_index_map.empty()) {
-                const uint64_t earliestPCR = _packet_pcr_index_map.begin()->first;
-                if ((pcr - earliestPCR) > SYSTEM_CLOCK_FREQ) {
+                const uint64_t earliestPCR_DTS = _packet_pcr_index_map.begin()->first;
+                diff_values = _use_dts ?
+                    DiffPTS(earliestPCR_DTS, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
+                    DiffPCR(earliestPCR_DTS, pcr_dts);
+                if (diff_values > SYSTEM_CLOCK_FREQ) {
                     _packet_pcr_index_map.erase(_packet_pcr_index_map.begin());
                 }
                 else {
@@ -387,12 +396,15 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             // Transport stream instantaneous statistics
             // For instantaneous bit rates, these are the actual bit rates, and it doesn't use the "count"
             // approach
+            diff_values = _use_dts ?
+                DiffPTS(_packet_pcr_index_map.begin()->first, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
+                DiffPCR(_packet_pcr_index_map.begin()->first, pcr_dts);
             _inst_ts_bitrate_188 =
                 ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
-                (pcr - _packet_pcr_index_map.begin()->first);
+                diff_values;
             _inst_ts_bitrate_204 =
                 ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE * 8) /
-                (pcr - _packet_pcr_index_map.begin()->first);
+                diff_values;
 
             // Check if we got enough values for this PID
             if (ps->ts_bitrate_cnt == _min_pcr) {
@@ -401,13 +413,13 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             }
         }
 
-        // Save PCR for next calculation, ignore duplicated PCR values.
-        if (ps->last_pcr_value != pcr) {
-            ps->last_pcr_value = pcr;
+        // Save PCR/DTS for next calculation, ignore duplicated values.
+        if (ps->last_pcr_value != pcr_dts) {
+            ps->last_pcr_value = pcr_dts;
             ps->last_pcr_packet = _ts_pkt_cnt;
 
-            // Also add PCR/packet index combo to map for use in instantaneous bit rate calculations.
-            _packet_pcr_index_map[pcr] = _ts_pkt_cnt;
+            // Also add PCR (or DTS)/packet index combo to map for use in instantaneous bit rate calculations.
+            _packet_pcr_index_map[pcr_dts] = _ts_pkt_cnt;
 
             // Make sure that some crazy TS does not accumulate thousands of PCR values in the same second range.
             while (_packet_pcr_index_map.size() > FOOLPROOF_MAP_LIMIT) {
