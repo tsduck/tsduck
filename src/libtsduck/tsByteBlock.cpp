@@ -229,6 +229,21 @@ std::istream& ts::ByteBlock::append(std::istream& strm, size_t maxSize)
 // Save byte blocks to binary files.
 //----------------------------------------------------------------------------
 
+bool ts::ByteBlock::saveToFile(const UString& fileName, Report* report) const
+{
+    return writeToFile(fileName, std::ios::out | std::ios::binary, report);
+}
+
+bool ts::ByteBlock::appendToFile(const UString& fileName, Report* report) const
+{
+    return writeToFile(fileName, std::ios::out | std::ios::app | std::ios::binary, report);
+}
+
+std::ostream& ts::ByteBlock::write(std::ostream& strm) const
+{
+    return strm.write(reinterpret_cast<const char*>(data()), std::streamsize(size()));
+}
+
 bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const
 {
     // Create the file
