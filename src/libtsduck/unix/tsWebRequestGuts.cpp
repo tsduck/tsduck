@@ -262,13 +262,13 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Set the cookie file.
-    if (status == ::CURLE_OK && WebRequest::_useCookies) {
+    if (status == ::CURLE_OK && _request._useCookies) {
         // COOKIEFILE can be empty.
-        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, WebRequest::_cookiesFileName.toUTF8().c_str());
+        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, _request._cookiesFileName.toUTF8().c_str());
     }
-    if (status == ::CURLE_OK && WebRequest::_useCookies && !WebRequest::_cookiesFileName.empty()) {
+    if (status == ::CURLE_OK && _request._useCookies && !_request._cookiesFileName.empty()) {
         // COOKIEJAR cannot be empty.
-        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, WebRequest::_cookiesFileName.toUTF8().c_str());
+        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, _request._cookiesFileName.toUTF8().c_str());
     }
 
     // Set the request headers.

@@ -185,6 +185,11 @@ bool ts::hls::InputPlugin::getOptions()
     _highestRes = present(u"highest-resolution");
     _listVariants = present(u"list-variants");
 
+    // Enable authentication tokens from master playlist to media playlist
+    // and from media playlists to media segments.
+    _webArgs.useCookies = true;
+    _webArgs.cookiesFile = TempFile(u".cookies");
+
     if (present(u"live")) {
         // With live streams, start at the last segment.
         if (_startSegment != 0) {
@@ -228,10 +233,6 @@ bool ts::hls::InputPlugin::getOptions()
 
 bool ts::hls::InputPlugin::start()
 {
-    // Enable authentication tokens from master playlist to media playlist
-    // and from media playlists to media segments.
-    WebRequest::EnableCookies();
-
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
     if (!_playlist.loadURL(_url, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
@@ -351,7 +352,15 @@ bool ts::hls::InputPlugin::stop()
     bool ok = AbstractHTTPInputPlugin::stop();
 
     // Delete all cookies from this session.
-    return WebRequest::DeleteCookiesFile(*tsp) && ok;
+    if (FileExists(_webArgs.cookiesFile)) {
+        tsp->debug(u"deleting cookies file %s", {_webArgs.cookiesFile});
+        const ErrorCode status = DeleteFile(_webArgs.cookiesFile);
+        if (status != SYS_SUCCESS) {
+            tsp->error(u"error deleting cookies file %s", {_webArgs.cookiesFile});
+        }
+    }
+
+    return ok;
 }
 
 
@@ -374,6 +383,7 @@ void ts::hls::InputPlugin::processInput()
         request.setURL(url);
         request.setAutoRedirect(true);
         request.setArgs(_webArgs);
+        request.enableCookies(_webArgs.cookiesFile);
 
         // Perform the download of the current segment.
         // Ignore errors, continue to play next segments.

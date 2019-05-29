@@ -366,6 +366,12 @@ bool ts::hls::PlayList::loadURL(const UString& url, bool strict, const WebReques
     WebRequest web(report);
     web.setURL(url);
     web.setArgs(args);
+    if (args.useCookies) {
+        web.enableCookies(args.cookiesFile);
+    }
+    else {
+        web.disableCookies();
+    }
 
     // Download the content.
     UString text;
