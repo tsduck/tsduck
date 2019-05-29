@@ -50,6 +50,18 @@ namespace ts {
     class ByteBlock : public std::vector<uint8_t>
     {
     public:
+        // Implementation note: This class is exported out of the TSDuck library
+        // and is used by many applications. Normally, the class should be exported
+        // using "class TSDUCKDLL ByteBlock". At some point, it has been reported
+        // that this created a link error in some applications. This is a typical
+        // nasty effect of the Windows DLL hell. As a workaround, the class is no
+        // longer exported with TSDUCKDLL. Instead, all its public methods are
+        // individually exported with TSDUCKDLL. So far, it works but may create
+        // other unpredictible issues in the future in other configurations. In
+        // case of problem, the solution could be to revert to a class-wird export.
+        // Note: This is a Windows-specific issue. On other systems, TSDUCKDLL
+        // expands to nothing.
+
         //!
         //! Explicit name of superclass, @c std::vector on @c uint8_t.
         //!
@@ -470,7 +482,7 @@ namespace ts {
         //! @param [in] i Integer value to serialize at the end of the block.
         //! @param [in] bcd_count Number of BCD digits. Note that @a bcd_count can be even.
         //!
-        void appendBCD(uint32_t i, size_t bcd_count);
+        TSDUCKDLL void appendBCD(uint32_t i, size_t bcd_count);
 
         //!
         //! Read a byte block from a binary file.
@@ -496,10 +508,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool saveToFile(const UString& fileName, Report* report = nullptr) const
-        {
-            return writeToFile(fileName, std::ios::out | std::ios::binary, report);
-        }
+        TSDUCKDLL bool saveToFile(const UString& fileName, Report* report = nullptr) const;
 
         //!
         //! Save a byte block to a binary file, append to existing file content.
@@ -507,10 +516,7 @@ namespace ts {
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        bool appendToFile(const UString& fileName, Report* report = nullptr) const
-        {
-            return writeToFile(fileName, std::ios::out | std::ios::app | std::ios::binary, report);
-        }
+        TSDUCKDLL bool appendToFile(const UString& fileName, Report* report = nullptr) const;
 
         //!
         //! Read a byte block from standard streams (binary mode).
@@ -533,14 +539,11 @@ namespace ts {
         //! @param [in,out] strm A standard stream in output mode.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& write(std::ostream& strm) const
-        {
-            return strm.write(reinterpret_cast<const char*>(data()), std::streamsize(size()));
-        }
+        TSDUCKDLL std::ostream& write(std::ostream& strm) const;
 
     private:
         // Common code for saveToFile and appendToFile.
-        TSDUCKDLL bool writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const;
+        bool writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const;
     };
 
 #if !defined(DOXYGEN)
