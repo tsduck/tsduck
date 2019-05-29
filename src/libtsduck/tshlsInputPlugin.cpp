@@ -228,6 +228,10 @@ bool ts::hls::InputPlugin::getOptions()
 
 bool ts::hls::InputPlugin::start()
 {
+    // Enable authentication tokens from master playlist to media playlist
+    // and from media playlists to media segments.
+    WebRequest::EnableCookies();
+
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
     if (!_playlist.loadURL(_url, false, _webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
@@ -338,6 +342,20 @@ bool ts::hls::InputPlugin::start()
 
 
 //----------------------------------------------------------------------------
+// Input stop method
+//----------------------------------------------------------------------------
+
+bool ts::hls::InputPlugin::stop()
+{
+    // Invoke superclass.
+    bool ok = AbstractHTTPInputPlugin::stop();
+
+    // Delete all cookies from this session.
+    return WebRequest::DeleteCookiesFile(*tsp) && ok;
+}
+
+
+//----------------------------------------------------------------------------
 // Input method. Executed in a separate thread.
 //----------------------------------------------------------------------------
 
@@ -352,12 +370,14 @@ void ts::hls::InputPlugin::processInput()
 
         // Create a Web request to download the content.
         WebRequest request(*tsp);
-        request.setURL(_playlist.buildURL(seg.uri));
+        const UString url(_playlist.buildURL(seg.uri));
+        request.setURL(url);
         request.setAutoRedirect(true);
         request.setArgs(_webArgs);
 
         // Perform the download of the current segment.
         // Ignore errors, continue to play next segments.
+        tsp->debug(u"downloading segment %s", {url});
         request.downloadToApplication(this);
 
         // If there is only one or zero remaining segment, try to reload the playlist.
