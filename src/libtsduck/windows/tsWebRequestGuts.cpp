@@ -221,7 +221,7 @@ bool ts::WebRequest::SystemGuts::init()
     const ::DWORD urlFlags =
         INTERNET_FLAG_KEEP_CONNECTION |   // Use keep-alive.
         INTERNET_FLAG_NO_UI |             // Disable popup windows.
-        INTERNET_FLAG_NO_COOKIES |        // Don't store cookies, don't send stored cookies.
+        (WebRequest::_useCookies ? 0 : INTERNET_FLAG_NO_COOKIES) | // Don't store cookies, don't send stored cookies.
         INTERNET_FLAG_PASSIVE |           // Use passive mode with FTP (less NAT issues).
         INTERNET_FLAG_NO_AUTO_REDIRECT |  // Disable redirections (see comment on top of file).
         INTERNET_FLAG_NO_CACHE_WRITE;     // Don't save downloaded data to local disk cache.

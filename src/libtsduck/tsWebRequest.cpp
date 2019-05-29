@@ -35,12 +35,15 @@
 #include "tsWebRequest.h"
 #include "tsFatal.h"
 #include "tsIntegerUtils.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 ts::UString ts::WebRequest::_defaultProxyHost;
 uint16_t    ts::WebRequest::_defaultProxyPort = 0;
 ts::UString ts::WebRequest::_defaultProxyUser;
 ts::UString ts::WebRequest::_defaultProxyPassword;
+ts::UString ts::WebRequest::_cookiesFileName;
+bool        ts::WebRequest::_useCookies = false;
 
 
 //----------------------------------------------------------------------------
@@ -139,6 +142,47 @@ void ts::WebRequest::SetDefaultProxyUser(const UString& user, const UString& pas
     _defaultProxyPassword = password;
 }
 
+
+//----------------------------------------------------------------------------
+// Set global cookie management.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::EnableCookies(const UString& fileName)
+{
+    _useCookies = true;
+#if defined(TS_UNIX)
+    _cookiesFileName = fileName.empty() ? TempFile(u".cookies") : fileName;
+#endif
+}
+
+void ts::WebRequest::DisableCookies()
+{
+    _useCookies = false;
+}
+
+ts::UString ts::WebRequest::GetCookiesFileName()
+{
+    return _cookiesFileName;
+}
+
+bool ts::WebRequest::DeleteCookiesFile(Report& report)
+{
+    if (_cookiesFileName.empty() || !FileExists(_cookiesFileName)) {
+        // No cookies file to delete.
+        return true;
+    }
+    else {
+        report.debug(u"deleting cookies file %s", {_cookiesFileName});
+        const ErrorCode status = DeleteFile(_cookiesFileName);
+        if (status != SYS_SUCCESS) {
+            report.error(u"error deleting cookies file %s", {_cookiesFileName});
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+}
 
 //----------------------------------------------------------------------------
 // Set various arguments from command line.
