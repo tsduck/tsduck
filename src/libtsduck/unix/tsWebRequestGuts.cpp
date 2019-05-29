@@ -261,6 +261,16 @@ bool ts::WebRequest::SystemGuts::init()
         }
     }
 
+    // Set the cookie file.
+    if (status == ::CURLE_OK && WebRequest::_useCookies) {
+        // COOKIEFILE can be empty.
+        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, WebRequest::_cookiesFileName.toUTF8().c_str());
+    }
+    if (status == ::CURLE_OK && WebRequest::_useCookies && !WebRequest::_cookiesFileName.empty()) {
+        // COOKIEJAR cannot be empty.
+        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, WebRequest::_cookiesFileName.toUTF8().c_str());
+    }
+
     // Set the request headers.
     if (status == ::CURLE_OK && !_request._requestHeaders.empty()) {
         for (HeadersMap::const_iterator it = _request._requestHeaders.begin(); it != _request._requestHeaders.end(); ++it) {
