@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1261
+VERSION 3.18-1278
 
 [NEW] New commands and plugins:
 
@@ -35,6 +35,8 @@ VERSION 3.18-1261
     removed by default inside all text nodes.
   * Fixed input plugin "dektec": with satellite receivers, the LNB was not
     properly enabled.
+  * In input plugin "hls", the cookies which were returned by a playlist were
+    not passed to the next playlist or segment download.
 
 -------------------------------------------------------------------------------
 
