@@ -41,7 +41,9 @@ ts::WebRequestArgs::WebRequestArgs() :
     proxyPort(0),
     proxyHost(),
     proxyUser(),
-    proxyPassword()
+    proxyPassword(),
+    useCookies(true),
+    cookiesFile()
 {
 }
 

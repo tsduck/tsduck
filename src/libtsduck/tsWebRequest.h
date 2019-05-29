@@ -140,36 +140,36 @@ namespace ts {
         static void SetDefaultProxyUser(const UString& user, const UString& password);
 
         //!
-        //! Enable the use of cookies for all requests.
+        //! Enable the use of cookies for all requests using this instance.
         //! @param [in] fileName The name of the file to use to load and store cookies.
         //! On Windows, there is an implicit per-user cookie repository and @a fileName
         //! is ignored. On Unix systems, this file is used to store and retrieve cookies
         //! in the libcurl format. When @a fileName is empty, use a temporary file name.
         //!
-        static void EnableCookies(const UString& fileName = UString());
+        void enableCookies(const UString& fileName = UString());
 
         //!
         //! Disable the use of cookies for all requests.
         //! Cookies are initially disabled by default.
         //!
-        static void DisableCookies();
+        void disableCookies();
 
         //!
-        //! Get the file name to use for cookies for all requests.
+        //! Get the file name to use for cookies for all requests using this instance.
         //! - On Linux, return the current cookie file name, possibly the name of a
         //!   temporary file if EnableCookies() was called with an empty string.
         //! - On Windows, the cookie repository is defined per user. There is no specific
         //!   per-application file and this method always report an empty string.
         //! @return The cookie file name.
         //!
-        static UString GetCookiesFileName();
+        UString getCookiesFileName() const;
 
         //!
         //! Delete the cookies file, if one was defined.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool DeleteCookiesFile(Report& report);
+        bool deleteCookiesFile(Report& report) const;
 
         //!
         //! Set the user agent name to use in HTTP headers.
@@ -308,6 +308,8 @@ namespace ts {
         uint16_t      _proxyPort;
         UString       _proxyUser;
         UString       _proxyPassword;
+        UString       _cookiesFileName;
+        bool          _useCookies;
         HeadersMap    _requestHeaders;           // all request headers (to send)
         HeadersMap    _responseHeaders;          // all response headers (received)
         int           _httpStatus;               // 200, 404, etc.
@@ -323,8 +325,6 @@ namespace ts {
         static uint16_t _defaultProxyPort;
         static UString  _defaultProxyUser;
         static UString  _defaultProxyPassword;
-        static UString  _cookiesFileName;
-        static bool     _useCookies;
 
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
