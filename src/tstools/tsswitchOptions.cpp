@@ -69,7 +69,7 @@ ts::tsswitch::Options::Options(int argc, char *argv[]) :
     option(u"allow", 'a', STRING);
     help(u"allow",
         u"Specify an IP address or host name which is allowed to send remote commands. "
-        u"Several --allow options are allowed . By default, all remote commands are accepted.");
+        u"Several --allow options are allowed. By default, all remote commands are accepted.");
 
     option(u"buffer-packets", 'b', POSITIVE);
     help(u"buffer-packets",

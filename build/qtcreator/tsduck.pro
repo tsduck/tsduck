@@ -45,6 +45,7 @@ SUBDIRS += \
     tsplugin_continuity \
     tsplugin_count \
     tsplugin_craft \
+    tsplugin_cutoff \
     tsplugin_datainject \
     tsplugin_decap \
     tsplugin_dektec \

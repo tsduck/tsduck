@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1278
+VERSION 3.18-1281
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,8 @@ VERSION 3.18-1278
     packet processor to similarly alter packets in transit.
   * Added plugin 'trigger" which executes actions on selected labeled TS
     packets.
+  * Added plugin "cutoff" which sets labels on TS packets upon reception of
+    UDP messages.
 
 [IMP] Improvements on existing commands and plugins:
 
