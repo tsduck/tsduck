@@ -55,6 +55,9 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_craft.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_cutoff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\tsplugins\tsplugin_datainject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

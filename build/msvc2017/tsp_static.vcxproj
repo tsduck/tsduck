@@ -14,6 +14,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_continuity.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_count.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_craft.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_cutoff.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_datainject.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_decap.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_dektec.cpp" />
