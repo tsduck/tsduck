@@ -326,8 +326,8 @@ ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
 
 void ts::UString::toUTF8(std::string& utf8) const
 {
-    // The maximum number of UTF-8 bytes is 1.5 times the number of UTF-16 codes.
-    utf8.resize(2 * size());
+    // The maximum number of UTF-8 bytes is 3 times the number of UTF-16 codes.
+    utf8.resize(3 * size());
 
     const UChar* inStart = data();
     char* outStart = const_cast<char*>(utf8.data());
