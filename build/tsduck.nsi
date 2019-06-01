@@ -32,7 +32,7 @@
 ;  Do not invoke NSIS directly, use Build-Installer.ps1.
 ;  If Win64 is defined, generate a 64-bit installer (default: 32-bit).
 ;  If ProjectDir is defined, it designates the subdirectory containing the
-;  Visual Studio files. By default, use "msvc2017".
+;  Visual Studio files. By default, use "msvc".
 ;
 ;-----------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ Caption "TSDuck Installer"
 !define RootDir ".."
 !define InstallerDir "${RootDir}\installers"
 !ifndef ProjectDir
-    !define ProjectDir "${RootDir}\build\msvc2017"
+    !define ProjectDir "${RootDir}\build\msvc"
 !endif
 !ifdef Win64
     !define BinDir "${ProjectDir}\Release-x64"

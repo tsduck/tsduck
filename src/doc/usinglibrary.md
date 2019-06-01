@@ -40,8 +40,9 @@ $ make TS_STATIC=true
 # Building applications on Windows  {#libwindows}
 
 The "Development" option of the TSDuck installer provides the build
-environment for Visual Studio 2017, in debug and release mode, for
-32-bit and 64-bit platforms.
+environment for Visual Studio 2019, in debug and release mode, for
+32-bit and 64-bit platforms. It may be compatible with Visual Studio
+2015 and 2017, but without guarantee.
 
 The environment variable `TSDUCK` is defined to the root of the
 TSDuck installation tree. A Visual Studio property file named

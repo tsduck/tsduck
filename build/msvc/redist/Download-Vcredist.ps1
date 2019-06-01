@@ -51,9 +51,11 @@ param(
 $LocalName32 = "vcredist32.exe"
 $LocalName64 = "vcredist64.exe"
 
-$Url32 = "https://go.microsoft.com/fwlink/?LinkId=746571"
-$Url64 = "https://go.microsoft.com/fwlink/?LinkId=746572"
+$Url32 = "https://aka.ms/vs/16/release/vc_redist.x86.exe"
+$Url64 = "https://aka.ms/vs/16/release/vc_redist.x64.exe"
 
+# Without this, Invoke-WebRequest is awfully slow.
+$ProgressPreference = 'SilentlyContinue'
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")

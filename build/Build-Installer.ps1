@@ -108,12 +108,9 @@ Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
+$MsvcDir = (Join-Path $PSScriptRoot "msvc")
 $SrcDir = (Join-Path $RootDir "src")
 $InstallerDir = (Join-Path $RootDir "installers")
-
-# Get location of Visual Studio and project files.
-$VS = Search-VisualStudio
-$MsvcDir = $VS.MsvcDir
 
 # Apply defaults.
 if (-not $Win32 -and -not $Win64) {
