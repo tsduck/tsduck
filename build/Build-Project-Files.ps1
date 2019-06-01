@@ -39,8 +39,8 @@
 
   The following files are rebuilt:
 
-  - build/msvc2017/libtsduck-files.props
-  - build/msvc2017/libtsduck-filters.props
+  - build/msvc/libtsduck-files.props
+  - build/msvc/libtsduck-filters.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
   - src/libtsduck/tsTables.h
@@ -67,14 +67,11 @@ Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $SrcDir = "$RootDir\src\libtsduck"
+$MsvcDir = "$PSScriptRoot\msvc"
 
 # Relative path from Visual Studio project files to libtsduck source directory.
 $MsSrcRelPath = "..\..\src\libtsduck\"
 $QtSrcRelPath = "../../../src/libtsduck/"
-
-# Get location of Visual Studio and project files.
-$VS = Search-VisualStudio
-$MsvcDir = $VS.MsvcDir
 
 # Get all libtsduck files by type.
 function GetSources([string]$type, [string]$subdir = "", [string]$prefix = "", [string]$suffix, $exclude = "")

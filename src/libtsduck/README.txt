@@ -19,7 +19,7 @@ be updated. Do not update them manually, use one of the follwing scripts:
 
 The following files are rebuilt:
 
-  - build/msvc2017/libtsduck-files.props
-  - build/msvc2017/libtsduck-filters.props
+  - build/msvc/libtsduck-files.props
+  - build/msvc/libtsduck-filters.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h

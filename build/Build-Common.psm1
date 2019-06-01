@@ -40,7 +40,6 @@
 #  - New-Directory [-Path] <Object>
 #  - New-TempDirectory
 #  - New-ZipFile [-Path] <String> [[-Root] <String>] [-Input <Object>] [-Force
-#  - Search-VisualStudio [[-BuildRoot] <String>]
 #
 #-----------------------------------------------------------------------------
 
@@ -373,44 +372,3 @@ function New-ZipFile
     }
 }
 Export-ModuleMember -Function New-ZipFile
-
-<#
- .SYNOPSIS
-  Search installed version of MSBuild and Visual Studio.
-
- .PARAMETER BuildRoot
-  Where to search for "msvcXXX" subdirectories. Default to the
-  directory containing the executed script.
-#>
-function Search-VisualStudio
-{
-    [CmdletBinding()]
-    param([Parameter(Mandatory=$false)][String] $BuildRoot = $PSScriptRoot)
-
-    # List of known MSBuild with corresponding version of Visual Studio,
-    # in decreasing order of preference.
-    $KnownMSBuild = @(
-        @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe'},
-        @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'},
-        @{VS = '2017'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\amd64\MSBuild.exe'},
-        @{VS = '2017'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'}
-    )
-
-    # Find preferred version of MSBuild.
-    $MSBuild = ""
-    foreach ($m in $KnownMSBuild) {
-        $MsvcDir = (Join-Path $BuildRoot "msvc$($m.VS)")
-        if ((Test-Path $MsvcDir -PathType Container) -and (Test-Path $m.Exe)) {
-            $MSBuild = $m.Exe
-            break
-        }
-    }
-
-    # Check presence of MSBuild.
-    if (-not $MSBuild) {
-        Exit-Script "MSBuild not found"
-    }
-
-    return @{MSBuild = $MSBuild; MsvcDir = $MsvcDir}
-}
-Export-ModuleMember -Function Search-VisualStudio

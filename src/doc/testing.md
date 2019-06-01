@@ -75,13 +75,13 @@ On Windows, the Visual Studio project builds two executables named
 manually or from Vidual Studio:
 
 ~~~~
-D:\Devel\tsduck> build\msvc2017\Release-x64\utests-tsduckdll.exe
+D:\Devel\tsduck> build\msvc\Release-x64\utests-tsduckdll.exe
 
 
 OK (311 tests)
 
 
-D:\Devel\tsduck> build\msvc2017\Release-x64\utests-tsducklib.exe
+D:\Devel\tsduck> build\msvc\Release-x64\utests-tsducklib.exe
 
 
 OK (308 tests)

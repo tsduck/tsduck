@@ -37,10 +37,9 @@ To develop a new plugin named `foo`, follow these steps:
 - On Linux or macOS systems, this new source file will be automatically recognized by
   the Makefile and the new plugin will be built.
 
-- On Windows systems, create a project file named `tsplugin_foo.vcxproj` in the `msvc2017`
-  subdirectory (or the corresponding directory for another version of Visual Studio).
-  The fastest way is to copy another plugin's project file. Then, edit the file (this is
-  an XML file) and replace the names of the project and source file.
+- On Windows systems, create a project file named `tsplugin_foo.vcxproj` in the `msvc`
+  subdirectory. The fastest way is to copy another plugin's project file. Then, edit
+  the file (this is an XML file) and replace the names of the project and source file.
   Finally, under Visual C++, add the new project in the solution (File / Add / Existing Project).
 
 # Development guidelines {#pdevguidelines}

@@ -34,8 +34,8 @@
 #
 #  The following files are rebuilt:
 #
-#  - build/msvc2017/libtsduck-files.props
-#  - build/msvc2017/libtsduck-filters.props
+#  - build/msvc/libtsduck-files.props
+#  - build/msvc/libtsduck-filters.props
 #  - build/qtcreator/libtsduck/libtsduck-files.pri
 #  - src/libtsduck/tsduck.h
 #  - src/libtsduck/tsTables.h
@@ -56,14 +56,11 @@ TARGET=$(basename "$1")
 BUILDDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)
 ROOTDIR=$(cd "$BUILDDIR/.."; pwd)
 SRCDIR="$ROOTDIR/src/libtsduck"
+MSVCDIR="$BUILDDIR/msvc"
 
 # Relative path from Visual Studio project files to libtsduck source directory.
 MS_RELPATH="..\\..\\src\\libtsduck\\"
 QT_RELPATH="../../../src/libtsduck/"
-
-# Get location of Visual Studio and project files.
-MSVCDIR=$(ls -d "$BUILDDIR"/msvc* | sort | tail -1)
-[[ -z "$MSVCDIR" ]] && error "MSVC project directory not found"
 
 # find(1) option to limit the search to one level.
 [[ $(uname -s) == Linux ]] && FIND1="-maxdepth 1" || FIND1="-depth 1"

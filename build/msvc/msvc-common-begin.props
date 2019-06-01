@@ -28,9 +28,19 @@
         <PlatformToolset>v140</PlatformToolset>
       </PropertyGroup>
     </When>
-    <Otherwise>
+    <When Condition="'$(MSBuildToolsVersion)' == '14.1'">
       <PropertyGroup Label="Configuration">
         <PlatformToolset>v141</PlatformToolset>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(MSBuildToolsVersion)' == '14.2'">
+      <PropertyGroup Label="Configuration">
+        <PlatformToolset>v142</PlatformToolset>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup Label="Configuration">
+        <PlatformToolset>v142</PlatformToolset>
       </PropertyGroup>
     </Otherwise>
   </Choose>
