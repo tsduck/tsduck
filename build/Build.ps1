@@ -127,33 +127,6 @@ if ($GitPull) {
     Pop-Location
 }
 
-# List of known MSBuild with corresponding version of Visual Studio,
-# in decreasing order of preference.
-$KnownMSBuild = @(
-    'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64\MSBuild.exe',
-    'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe',
-    'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe',
-    'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe',
-    'C:\Program Files (x86)\MSBuild\14.0\Bin\amd64\MSBuild.exe',
-    'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'
-)
-
-# Find preferred version of MSBuild.
-$MSBuild = ""
-foreach ($m in $KnownMSBuild) {
-    if ((Test-Path $m)) {
-        $MSBuild = $m
-        break
-    }
-}
-
-# Check presence of MSBuild.
-if (-not $MSBuild) {
-    Exit-Script "MSBuild not found"
-}
-
-
-
 # A function to invoke MSBuild.
 function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
@@ -163,6 +136,7 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
     else {
         $OptTeletext =""
     }
+    $MSBuild = (Find-MSBuild)
     & $MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target 
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
