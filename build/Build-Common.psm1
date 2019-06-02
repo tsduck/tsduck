@@ -40,6 +40,7 @@
 #  - New-Directory [-Path] <Object>
 #  - New-TempDirectory
 #  - New-ZipFile [-Path] <String> [[-Root] <String>] [-Input <Object>] [-Force
+#  - Find-MSBuild
 #
 #-----------------------------------------------------------------------------
 
@@ -176,13 +177,13 @@ Export-ModuleMember -Function Search-File
   of the environment variable Path ($env:Path).
 
  .OUTPUTS
-  Return the first file which is found or $null if none is found.
+  Return the first file which is found or exit script if none is found.
 #>
 function Get-FileInPath ([string]$File, $SearchPath)
 {
     $Path = Search-File $File $SearchPath
     if (-not $Path) {
-        Exit-Script "$File not found"
+        Exit-Script -NoPause:$NoPause "$File not found"
     }
     return $Path
 }
@@ -372,3 +373,24 @@ function New-ZipFile
     }
 }
 Export-ModuleMember -Function New-ZipFile
+
+<#
+ .SYNOPSIS
+  Find MSBuild.exe, regardless of Visual Studion version.
+
+ .OUTPUTS
+  Return the first MSBuild.exe which is found or exit script if none is found.
+#>
+function Find-MSBuild
+{
+    return Get-FileInPath "MSBuild.exe" @(
+        $env:Path,
+        'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64',
+        'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin',
+        'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64',
+        'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin',
+        'C:\Program Files (x86)\MSBuild\14.0\Bin\amd64',
+        'C:\Program Files (x86)\MSBuild\14.0\Bin'
+    )
+}
+Export-ModuleMember -Function Find-MSBuild

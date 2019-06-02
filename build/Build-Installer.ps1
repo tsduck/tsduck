@@ -170,10 +170,10 @@ if (-not $NoInstaller) {
 
 # Build binary installers.
 if (-not $NoInstaller -and $Win32) {
-    & $NsisExe /V2 "/DProjectDir=$MsvcDir" $NsisOptTeletext $NsisScript
+    & $NsisExe /V2 $NsisOptTeletext $NsisScript
 }
 if (-not $NoInstaller -and $Win64) {
-    & $NsisExe /V2 "/DProjectDir=$MsvcDir" $NsisOptTeletext /DWin64 $NsisScript
+    & $NsisExe /V2 $NsisOptTeletext /DWin64 $NsisScript
 }
 
 # A function to build a portable package.
