@@ -114,13 +114,20 @@ ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
          u"(all PID's can be specified as decimal or hexadecimal values). "
          u"In the first form, the PID \"pid\" is remapped to \"newpid\". "
          u"In the latter form, all PID's within the range \"pid1\" to \"pid2\" "
-         u"(inclusive) are respectively remapped to \"newpid\", \"newpid\"+1, etc.");
+         u"(inclusive) are respectively remapped to \"newpid\", \"newpid\"+1, etc. "
+         u"This behaviour is changed using option --single.");
 
     option(u"no-psi", 'n');
     help(u"no-psi",
          u"Do not modify the PSI. By default, the PAT, CAT and PMT's are "
          u"modified so that previous references to the remapped PID's will "
          u"point to the new PID values.");
+
+    option(u"single", 's');
+    help(u"single",
+         u"When a remapping is in the form \"pid1-pid2=newpid\", remap all input PID's "
+         u"to the same \"newpid\" value, not \"newpid\", \"newpid\"+1, etc. "
+         u"This option forces --unchecked since distinct PID's are remapped to the same one.");
 
     option(u"unchecked", 'u');
     help(u"unchecked",
@@ -139,8 +146,9 @@ ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
 
 bool ts::RemapPlugin::start()
 {
-    // Get option values
-    _check_integrity = !present(u"unchecked");
+    // Get option values.
+    const bool single = present(u"single");
+    _check_integrity = !present(u"unchecked") && !single;
     _update_psi = !present(u"no-psi");
 
     // Decode all PID remappings
@@ -193,8 +201,8 @@ bool ts::RemapPlugin::start()
         }
 
         // Remember output PID's
-        for (PID pid = newpid; pid <= newpid + (pid2 - pid1); ++pid) {
-            if (_check_integrity && _new_pids.test (pid)) {
+        for (PID pid = newpid; pid <= newpid + (single ? 0 : (pid2 - pid1)); ++pid) {
+            if (_check_integrity && _new_pids.test(pid)) {
                 tsp->error(u"duplicated remapping to PID %d (0x%X)", {pid, pid});
                 return false;
             }
@@ -210,7 +218,9 @@ bool ts::RemapPlugin::start()
             }
             _pid_map.insert(std::make_pair(pid1, newpid));
             ++pid1;
-            ++newpid;
+            if (!single) {
+                ++newpid;
+            }
         }
     }
 
