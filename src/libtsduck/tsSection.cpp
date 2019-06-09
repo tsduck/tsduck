@@ -221,7 +221,7 @@ void ts::Section::reload(TID tid,
               0x8000 | (is_private_section ? 0x4000 : 0x0000) | 0x3000 |
               uint16_t((LONG_SECTION_HEADER_SIZE - 3 + payload_size + SECTION_CRC32_SIZE) & 0x0FFF));
     PutUInt16(_data->data() + 3, tid_ext);
-    PutUInt8(_data->data() + 5, 0xC0 | ((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
+    PutUInt8(_data->data() + 5, 0xC0 | uint8_t((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
     PutUInt8(_data->data() + 6, section_number);
     PutUInt8(_data->data() + 7, last_section_number);
     ::memcpy(_data->data() + 8, payload, payload_size);  // Flawfinder: ignore: memcpy()
@@ -399,7 +399,7 @@ void ts::Section::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 void ts::Section::setVersion (uint8_t version, bool recompute_crc)
 {
     if (isLongSection()) {
-        (*_data)[5] = ((*_data)[5] & 0xC1) | ((version & 0x1F) << 1);
+        (*_data)[5] = ((*_data)[5] & 0xC1) | uint8_t((version & 0x1F) << 1);
         if (recompute_crc) {
             recomputeCRC();
         }

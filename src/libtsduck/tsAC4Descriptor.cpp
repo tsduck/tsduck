@@ -85,7 +85,7 @@ void ts::AC4Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
     bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8((ac4_dialog_enhancement_enabled.set() && ac4_channel_mode.set() ? 0x80 : 0x00) | (!ac4_dsi_toc.empty() ? 0x40 : 0x00));
     if (ac4_dialog_enhancement_enabled.set() && ac4_channel_mode.set()) {
-        bbp->appendUInt8((ac4_dialog_enhancement_enabled.value() ? 0x80 : 0x00) | ((ac4_channel_mode.value() & 0x03) << 5));
+        bbp->appendUInt8((ac4_dialog_enhancement_enabled.value() ? 0x80 : 0x00) | uint8_t((ac4_channel_mode.value() & 0x03) << 5));
     }
     if (!ac4_dsi_toc.empty()) {
         bbp->appendUInt8(uint8_t(ac4_dsi_toc.size()));

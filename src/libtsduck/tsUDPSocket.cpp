@@ -191,15 +191,15 @@ bool ts::UDPSocket::setDefaultDestination(const SocketAddress& addr, Report& rep
 bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 {
     if (multicast) {
-        TS_SOCKET_MC_TTL_T mttl = (TS_SOCKET_MC_TTL_T) (ttl);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T (&mttl), sizeof(mttl)) != 0) {
+        TS_SOCKET_MC_TTL_T mttl = TS_SOCKET_MC_TTL_T(ttl);
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T(&mttl), sizeof(mttl)) != 0) {
             report.error(u"socket option multicast TTL: " + SocketErrorCodeMessage());
             return false;
         }
     }
     else {
-        TS_SOCKET_TTL_T uttl = (TS_SOCKET_TTL_T) (ttl);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T (&uttl), sizeof(uttl)) != 0) {
+        TS_SOCKET_TTL_T uttl = TS_SOCKET_TTL_T(ttl);
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T(&uttl), sizeof(uttl)) != 0) {
             report.error(u"socket option unicast TTL: " + SocketErrorCodeMessage());
             return false;
         }
@@ -214,7 +214,7 @@ bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 
 bool ts::UDPSocket::setTOS(int tos, Report& report)
 {
-    TS_SOCKET_TOS_T utos = (TS_SOCKET_TOS_T) (tos);
+    TS_SOCKET_TOS_T utos = TS_SOCKET_TOS_T(tos);
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, TS_SOCKOPT_T(&utos), sizeof(utos)) != 0) {
         report.error(u"socket option TOS: " + SocketErrorCodeMessage());
         return false;

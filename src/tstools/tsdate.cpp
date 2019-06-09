@@ -40,6 +40,7 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
@@ -215,5 +216,3 @@ int MainCode(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

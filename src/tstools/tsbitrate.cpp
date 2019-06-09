@@ -35,6 +35,7 @@
 #include "tsInputRedirector.h"
 #include "tsPCRAnalyzer.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
@@ -194,5 +195,3 @@ int MainCode(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

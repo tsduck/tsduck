@@ -94,7 +94,7 @@ void ts::ApplicationRecordingDescriptor::serialize(DuckContext& duck, Descriptor
     bbp->appendUInt8(uint8_t(labels.size()));
     for (auto it = labels.begin(); it != labels.end(); ++it) {
         bbp->append(duck.toDVBWithByteLength(it->label));
-        bbp->appendUInt8((it->storage_properties << 6) | 0x3F);
+        bbp->appendUInt8(uint8_t(it->storage_properties << 6) | 0x3F);
     }
     bbp->appendUInt8(uint8_t(component_tags.size()));
     bbp->append(component_tags);

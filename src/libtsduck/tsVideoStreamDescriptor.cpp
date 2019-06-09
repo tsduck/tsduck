@@ -78,13 +78,13 @@ void ts::VideoStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((multiple_frame_rate ? 0x80 : 00) |
-                     ((frame_rate_code & 0x0F) << 3) |
+                     uint8_t((frame_rate_code & 0x0F) << 3) |
                      (MPEG_1_only ? 0x04 : 00) |
                      (constrained_parameter ? 0x02 : 00) |
                      (still_picture ? 0x01 : 00));
     if (!MPEG_1_only) {
         bbp->appendUInt8(profile_and_level_indication);
-        bbp->appendUInt8(((chroma_format & 0x03) << 6) |
+        bbp->appendUInt8(uint8_t((chroma_format & 0x03) << 6) |
                          (frame_rate_extension ? 0x20 : 00) |
                          0x1F);
     }

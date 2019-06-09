@@ -37,8 +37,7 @@ namespace {
 ts::TelnetConnection::TelnetConnection(const std::string prompt) :
     TCPConnection(),
     _received(0),
-    _prompt(prompt),
-    _mutex()
+    _prompt(prompt)
 {
 }
 
@@ -86,7 +85,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& foun
 
         // what we are looking for does not exist yet
         // read some data from the socket
-        bool result = SuperClass::receive((void *) &_buffer[_received], BUFFER_SIZE - _received, size, abort, report);
+        bool result = SuperClass::receive(_buffer + _received, BUFFER_SIZE - _received, size, abort, report);
 
         if (!result || !size) {
             report.info(u"result = false\n");

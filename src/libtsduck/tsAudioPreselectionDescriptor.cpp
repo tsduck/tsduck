@@ -110,7 +110,7 @@ void ts::AudioPreselectionDescriptor::serialize(DuckContext& duck, Descriptor& d
     bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8(uint8_t(entries.size() << 3));
     for (auto it = entries.begin(); it != entries.end(); ++ it) {
-        bbp->appendUInt8((it->preselection_id << 3) | (it->audio_rendering_indication & 0x07));
+        bbp->appendUInt8(uint8_t(it->preselection_id << 3) | (it->audio_rendering_indication & 0x07));
         bbp->appendUInt8((it->audio_description ? 0x80 : 0x00) |
                          (it->spoken_subtitles ? 0x40 : 0x00) |
                          (it->dialogue_enhancement ? 0x20 : 0x00) |

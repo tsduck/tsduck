@@ -143,7 +143,7 @@ void ts::TeletextDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
             desc.invalidate();
             return;
         }
-        bbp->appendUInt8((it->teletext_type << 3) | (it->magazineNumber() & 0x07));
+        bbp->appendUInt8(uint8_t(it->teletext_type << 3) | (it->magazineNumber() & 0x07));
         bbp->appendUInt8(it->pageNumber());
     }
 

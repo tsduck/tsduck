@@ -86,7 +86,7 @@ void ts::HEVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 {
     ByteBlockPtr bbp(serializeStart());
 
-    bbp->appendUInt8(((profile_space & 0x03) << 6) | (tier ? 0x20 : 0x00) | (profile_idc & 0x1F));
+    bbp->appendUInt8(uint8_t((profile_space & 0x03) << 6) | (tier ? 0x20 : 0x00) | (profile_idc & 0x1F));
     bbp->appendUInt32(profile_compatibility_indication);
     bbp->appendUInt16((progressive_source    ? 0x8000 : 0x0000) |
                       (interlaced_source     ? 0x4000 : 0x0000) |

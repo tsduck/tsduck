@@ -48,7 +48,7 @@ public:
     virtual void afterTest() override;
 
     void testGuard();
-    void testAcquireFailed();
+    [[noreturn]] void testAcquireFailed();
     void testReleaseFailed();
 
     TSUNIT_TEST_BEGIN(GuardTest);

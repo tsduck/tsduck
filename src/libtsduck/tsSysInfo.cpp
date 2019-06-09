@@ -152,12 +152,8 @@ ts::SysInfo::SysInfo() :
 
     _systemName = u"Windows";
 
-    // With Microsoft compiler:
-    // warning C4996: 'GetVersionExW': was declared deprecated
-    #if defined(TS_MSC)
-        #pragma warning(push)
-        #pragma warning(disable:4996)
-    #endif
+    TS_PUSH_WARNING()
+    TS_MSC_NOWARNING(4996) // warning C4996: 'GetVersionExW': was declared deprecated
 
     // System version.
     ::OSVERSIONINFOW info;
@@ -168,9 +164,7 @@ ts::SysInfo::SysInfo() :
         _systemVersion.trim();
     }
 
-    #if defined(TS_MSC)
-        #pragma warning(pop)
-    #endif
+    TS_POP_WARNING()
 
     // Detect 32-bit application on 64-bit system.
     ::BOOL wow64 = 0;

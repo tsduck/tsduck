@@ -580,12 +580,15 @@ namespace ts {
 //! @hideinitializer
 //!
 #if defined(DOXYGEN) || !defined(TSDUCK_STATIC_PLUGINS)
-#define TSPLUGIN_DECLARE_VERSION                        \
-    extern "C" {                                        \
-        /** @cond nodoxygen */                          \
-        TS_DLL_EXPORT                                   \
-        int tspInterfaceVersion = ts::TSP::API_VERSION; \
-        /** @endcond */                                 \
+#define TSPLUGIN_DECLARE_VERSION                         \
+    extern "C" {                                         \
+        /** @cond nodoxygen */                           \
+        TS_PUSH_WARNING()                                \
+        TS_LLVM_NOWARNING(missing-variable-declarations) \
+        TS_DLL_EXPORT                                    \
+        int tspInterfaceVersion = ts::TSP::API_VERSION;  \
+        TS_POP_WARNING()                                 \
+        /** @endcond */                                  \
     }
 #else
 #define TSPLUGIN_DECLARE_VERSION
@@ -597,15 +600,21 @@ namespace ts {
 #define _TSPLUGIN_DECLARE_PLUGIN(name,type,suffix) \
     namespace {                                    \
         /** @cond nodoxygen */                     \
+        TS_PUSH_WARNING()                          \
+        TS_LLVM_NOWARNING(missing-protoypes)       \
         ts::suffix##Plugin* tspNew##suffix(ts::TSP* tsp) { return new type(tsp); } \
         TS_UNUSED ts::PluginRepository::Register tspRegister##suffix(#name, &tspNew##suffix); \
+        TS_POP_WARNING()                           \
         /** @endcond */                            \
     }
 #else
 #define _TSPLUGIN_DECLARE_PLUGIN(name,type,suffix) \
     extern "C" {                                   \
         /** @cond nodoxygen */                     \
+        TS_PUSH_WARNING()                          \
+        TS_LLVM_NOWARNING(missing-prototypes)      \
         TS_DLL_EXPORT ts::suffix##Plugin* tspNew##suffix(ts::TSP* tsp) { return new type(tsp); } \
+        TS_POP_WARNING()                           \
         /** @endcond */                            \
     }
 #endif

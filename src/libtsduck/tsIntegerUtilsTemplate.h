@@ -32,15 +32,10 @@
 //
 // In this module, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
 // capability of the type (is_signed, etc.) But, for each instantiation of INT, the corresponding
-// expression is constant and the Microsoft compiler complains about that. Disable this specific
-// warning in the module. Note the #pragma warning(pop) at the end of file.
+// expression is constant and the Microsoft compiler complains about that.
 //
-// warning C4127: conditional expression is constant
-//
-#if defined(TS_MSC)
-#pragma warning(push)
-#pragma warning(disable:4127)
-#endif
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(4127)  // warning C4127: conditional expression is constant
 
 
 //----------------------------------------------------------------------------
@@ -112,6 +107,4 @@ INT ts::BoundedSub(INT a, INT b)
     }
 }
 
-#if defined(TS_MSC)
-#pragma warning(pop)
-#endif
+TS_POP_WARNING()

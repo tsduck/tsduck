@@ -83,8 +83,8 @@ void ts::SupplementaryAudioDescriptor::serialize(DuckContext& duck, Descriptor& 
     ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt8(MY_EDID);
-    bbp->appendUInt8((mix_type << 7) |
-                     ((editorial_classification & 0x1F) << 2) |
+    bbp->appendUInt8(uint8_t(mix_type << 7) |
+                     uint8_t((editorial_classification & 0x1F) << 2) |
                      0x02 |
                      (language_code.empty() ? 0x00 : 0x01));
     if (!language_code.empty() && !SerializeLanguageCode(duck, *bbp, language_code)) {

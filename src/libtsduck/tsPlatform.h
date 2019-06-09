@@ -500,6 +500,143 @@
 
 
 //----------------------------------------------------------------------------
+// Macro parameter to string transformation
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+    #define TS_STRINGIFY1(x) #x
+    #define TS_USTRINGIFY2(x) u ## x
+    #define TS_USTRINGIFY1(x) TS_USTRINGIFY2(#x)
+#endif
+
+//!
+//! @hideinitializer
+//! This macro transforms the @e value of a macro parameter into the equivalent string literal.
+//!
+//! This is a very specific macro. It is typically used only inside the definition of
+//! another macro. It is similar to the @# token in the preprocessor but has a slightly
+//! different effect. The @# token transforms the @e text of a macro parameter into a
+//! string while TS_STRINGIFY transforms the @e value of a macro parameter into a
+//! string, after all preprocessing substitutions.
+//!
+//! The following example illustrates the difference between the @# token and TS_STRINGIFY:
+//!
+//! @code
+//! #define P1(v) printf("#parameter:   %s = %d\n", #v, v)
+//! #define P2(v) printf("TS_STRINGIFY: %s = %d\n", TS_STRINGIFY(v), v)
+//! ....
+//! #define X 1
+//! P1(X);
+//! P2(X);
+//! @endcode
+//!
+//! This will print:
+//!
+//! @code
+//! #parameter:   X = 1
+//! TS_STRINGIFY: 1 = 1
+//! @endcode
+//!
+#define TS_STRINGIFY(x) TS_STRINGIFY1(x)
+
+//!
+//! @hideinitializer
+//! This macro transforms the @e value of a macro parameter into the equivalent 16-bit Unicode string literal.
+//!
+//! This macro is equivalent to TS_STRINGIFY() except that the string literal is of the for @c u"..." instead of @c "..."
+//! @see TS_STRINGIFY()
+//!
+#define TS_USTRINGIFY(x) TS_USTRINGIFY1(x)
+
+
+//----------------------------------------------------------------------------
+// Compiler warnings
+//----------------------------------------------------------------------------
+
+#if defined(DOXYGEN)
+
+//!
+//! Helper macro for the C++11 keyword @c _Pragma.
+//!
+//! With the C++11 standard, the keywork @c _Pragma uses a string literal.
+//! However, Visual C++ does not support it as of Visual Studio 2019.
+//! Instead, it uses the non-standard keyword @c __pragma with a plain directive (not a string).
+//! @param directive The directive for the pragma. Plain directive, not a string literal.
+//!
+//! Examples (depending on compilers):
+//! @code
+//! TS_PRAGMA(clang diagnostic push)
+//! TS_PRAGMA(GCC diagnostic push)
+//! TS_PRAGMA(warning(push))
+//! @endcode
+//!
+#define TS_PRAGMA(directive)
+//!
+//! Save the compiler's warnings reporting.
+//! @see TS_POP_WARNING
+//!
+#define TS_PUSH_WARNING()
+//!
+//! Restore the compiler's warnings reporting from a previous TS_PUSH_WARNING().
+//! @see TS_PUSH_WARNING
+//!
+#define TS_POP_WARNING()
+//!
+//! Disable a warning with the LLVM/clang compiler (does nothing on other compilers).
+//! @param name Warning name, as used after command line option @c -W
+//!
+#define TS_LLVM_NOWARNING(name)
+//!
+//! Disable a warning with the GCC compiler (does nothing on other compilers).
+//! @param name Warning name, as used after command line option @c -W
+//!
+#define TS_GCC_NOWARNING(name)
+//!
+//! Disable a warning with the Microsoft Visual C++ compiler (does nothing on other compilers).
+//! @param num Warning number.
+//!
+#define TS_MSC_NOWARNING(num)
+
+#else
+
+// Use a two-step macro to allow stringification of parameters.
+#if defined(TS_MSC)
+    #define TS_PRAGMA1_(s) __pragma(s)
+#else
+    #define TS_PRAGMA1_(s) _Pragma(#s)
+#endif
+#define TS_PRAGMA(s) TS_PRAGMA1_(s)
+
+#if defined(TS_LLVM)
+    #define TS_PUSH_WARNING()       TS_PRAGMA(clang diagnostic push)
+    #define TS_POP_WARNING()        TS_PRAGMA(clang diagnostic pop)
+    #define TS_LLVM_NOWARNING(name) TS_PRAGMA(clang diagnostic ignored TS_STRINGIFY(-W##name))
+    #define TS_GCC_NOWARNING(name)
+    #define TS_MSC_NOWARNING(num)
+#elif defined(TS_GCC)
+    #define TS_PUSH_WARNING()       TS_PRAGMA(GCC diagnostic push)
+    #define TS_POP_WARNING()        TS_PRAGMA(GCC diagnostic pop)
+    #define TS_LLVM_NOWARNING(name)
+    #define TS_GCC_NOWARNING(name)  TS_PRAGMA(GCC diagnostic ignored TS_STRINGIFY(-W##name))
+    #define TS_MSC_NOWARNING(num)
+#elif defined(TS_MSC)
+    #define TS_PUSH_WARNING()       TS_PRAGMA(warning(push))
+    #define TS_POP_WARNING()        TS_PRAGMA(warning(pop))
+    #define TS_LLVM_NOWARNING(name)
+    #define TS_GCC_NOWARNING(name)
+    #define TS_MSC_NOWARNING(num)   TS_PRAGMA(warning(disable:num))
+#else
+    #define TS_PUSH_NOWARNING()
+    #define TS_POP_NOWARNING()
+    #define TS_LLVM_NOWARNING(name)
+    #define TS_GCC_NOWARNING(name)
+    #define TS_MSC_NOWARNING(num)
+#endif
+
+#endif // DOXYGEN
+
+
+//----------------------------------------------------------------------------
 // System-specific settings
 //----------------------------------------------------------------------------
 
@@ -546,34 +683,34 @@
     #undef NDEBUG
 #endif
 
-// Disable some Visual C++ warnings.
+// Disable some warnings, application-wide, for various compilers.
 
-#if defined(TS_MSC)
+TS_LLVM_NOWARNING(unused-parameter)         // Unused parameters are frequent with overrides.
+TS_LLVM_NOWARNING(global-constructors)      // Do not warn about static/global objects being constructed.
+TS_LLVM_NOWARNING(exit-time-destructors)    // Do not warn about static/global objects being destructed.
+TS_LLVM_NOWARNING(inconsistent-missing-destructor-override) // Requesting "override" for destructors is idiotic, simply.
+TS_LLVM_NOWARNING(covered-switch-default)   // Allow "default" in "switch" after all enum values to catch invalid binary values.
+TS_LLVM_NOWARNING(sign-conversion)          // Too many occurences since pointer arithmetics is signed, opposite from size_t.
+TS_LLVM_NOWARNING(padded)                   // Fo not care if padding is required between class fields.
+TS_LLVM_NOWARNING(reserved-id-macro)        // We sometimes use underscores at the beginning of identifiers.
+TS_LLVM_NOWARNING(c++98-compat-pedantic)    // Require C++11, no need for C++98 compatibility.
+TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 
 // Methods may have unused formal parameters.
-// warning C4100 : 'xxx' : unreferenced formal parameter
-#pragma warning (disable:4100)
-
+TS_MSC_NOWARNING(4100)  // 'xxx' : unreferenced formal parameter
 // When a user class is exported in a user DLL and this class has STL templates instantiations
-// warning C4251: 'classname' : class 'std::vector<_Ty>' needs to have dll-interface to be used by clients of class 'classname'
-#pragma warning (disable:4251)
-
+TS_MSC_NOWARNING(4251)  // 'classname' : class 'std::vector<_Ty>' needs to have dll-interface to be used by clients of class 'classname'
 // When a user class is exported in a user DLL and this class has an STL template instantiation as base class
-// warning C4275: non dll-interface class 'std::_Container_base_aux' used as base for dll-interface class 'std::_Container_base_aux_alloc_real<_Alloc>'
-#pragma warning (disable:4275)
-
+TS_MSC_NOWARNING(4275)  // non dll-interface class 'std::_Container_base_aux' used as base for dll-interface class 'std::_Container_base_aux_alloc_real<_Alloc>'
 // VC++ does not implement exception specification
-// warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-#pragma warning (disable:4290)
-
-// VC++ does not like usage of this in member initializer list although there are some legal usage for that
-// (be careful however...)
-// warning C4355: 'this' : used in base member initializer list
-#pragma warning (disable:4355)
-
-#endif
+TS_MSC_NOWARNING(4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+// VC++ does not like usage of this in member initializer list although there are some legal usage for that (be careful however...)
+TS_MSC_NOWARNING(4355)  // 'this' : used in base member initializer list
 
 // System headers
+
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(reserved-id-macro)
 
 #if defined(TS_WINDOWS)
 
@@ -681,6 +818,7 @@
 #include <cstddef>     // size_t
 #include <fcntl.h>
 
+TS_POP_WARNING()
 
 // Required link libraries under Windows.
 
@@ -697,7 +835,6 @@
 #pragma comment(lib, "comsuppw.lib")
 #endif
 #endif
-
 
 // Some standard Windows headers have the very-very bad idea to define common
 // words as macros. Also, common function names, used by TSDuck, are defined
@@ -794,52 +931,6 @@
 // Basic preprocessing features
 //----------------------------------------------------------------------------
 
-// Macro parameter to string transformation
-
-#if !defined(DOXYGEN)
-    #define TS_STRINGIFY1(x) #x
-    #define TS_USTRINGIFY2(x) u ## x
-    #define TS_USTRINGIFY1(x) TS_USTRINGIFY2(#x)
-#endif
-//!
-//! @hideinitializer
-//! This macro transforms the @e value of a macro parameter into the equivalent string literal.
-//!
-//! This is a very specific macro. It is typically used only inside the definition of
-//! another macro. It is similar to the @# token in the preprocessor but has a slightly
-//! different effect. The @# token transforms the @e text of a macro parameter into a
-//! string while TS_STRINGIFY transforms the @e value of a macro parameter into a
-//! string, after all preprocessing substitutions.
-//!
-//! The following example illustrates the difference between the @# token and TS_STRINGIFY:
-//!
-//! @code
-//! #define P1(v) printf("#parameter:   %s = %d\n", #v, v)
-//! #define P2(v) printf("TS_STRINGIFY: %s = %d\n", TS_STRINGIFY(v), v)
-//! ....
-//! #define X 1
-//! P1(X);
-//! P2(X);
-//! @endcode
-//!
-//! This will print:
-//!
-//! @code
-//! #parameter:   X = 1
-//! TS_STRINGIFY: 1 = 1
-//! @endcode
-//!
-#define TS_STRINGIFY(x) TS_STRINGIFY1(x)
-
-//!
-//! @hideinitializer
-//! This macro transforms the @e value of a macro parameter into the equivalent 16-bit Unicode string literal.
-//!
-//! This macro is equivalent to TS_STRINGIFY() except that the string literal is of the for @c u"..." instead of @c "..."
-//! @see TS_STRINGIFY()
-//!
-#define TS_USTRINGIFY(x) TS_USTRINGIFY1(x)
-
 //!
 //! Attribute for explicitly unused variables.
 //!
@@ -865,8 +956,7 @@
     // With MS compiler, there is no such attribute. It is not possible to disable the
     // "unused" warning for a specific variable. The unused warnings must be disabled.
     // warning C4189: 'xxx' : local variable is initialized but not referenced
-    #pragma warning(disable:4189)
-    #define TS_UNUSED
+    #define TS_UNUSED TS_MSC_NOWARNING(4189)
 #else
     #error "New unknown compiler, please update TS_UNUSED in tsPlatform.h"
 #endif
@@ -973,7 +1063,7 @@
 
 
 //----------------------------------------------------------------------------
-//  Properties of some integer types.
+// Properties of some integer types.
 //----------------------------------------------------------------------------
 
 //!
@@ -989,7 +1079,7 @@
 
 
 //----------------------------------------------------------------------------
-//  Definition of common integer literals.
+// Definition of common integer literals.
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
@@ -1041,15 +1131,28 @@
 
 
 //----------------------------------------------------------------------------
+// Some common pointer types, typically for casting.
+//----------------------------------------------------------------------------
+
+//!
+//! TSDuck namespace, containing all TSDuck classes and functions.
+//!
+namespace ts {
+    typedef char*     char_ptr;    //!< Pointer to @c char
+    typedef uint8_t*  uint8_ptr;   //!< Pointer to @c uint8_t
+    typedef uint16_t* uint16_ptr;  //!< Pointer to @c uint16_t
+    typedef uint32_t* uint32_ptr;  //!< Pointer to @c uint32_t
+    typedef uint64_t* uint64_ptr;  //!< Pointer to @c uint64_t
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization of integer data.
 // Suffix BE means serialized data in Big-Endian representation.
 // Suffix LE means serialized data in Little-Endian representation.
 // No suffix assumes Big-Endian representation.
 //----------------------------------------------------------------------------
 
-//!
-//! TSDuck namespace, containing all TSDuck classes and functions.
-//!
 namespace ts {
     //!
     //! Inlined function performing byte swap on 16-bit integer data.
@@ -1067,7 +1170,7 @@ namespace ts {
     #elif defined(TS_MSC)
         return _byteswap_ushort(x);
     #else
-        return (x << 8) | (x >> 8);
+        return uint16_t((x << 8) | (x >> 8));
     #endif
     }
 
@@ -1330,7 +1433,7 @@ namespace ts {
     //!
     TSDUCKDLL inline int32_t SignExtend24(int32_t x)
     {
-        return (x & 0x00800000) == 0 ? (x & 0x00FFFFFF) : (x | 0xFF000000);
+        return (x & 0x00800000) == 0 ? (x & 0x00FFFFFF) : int32_t(uint32_t(x) | 0xFF000000);
     }
 
     //!
@@ -2816,7 +2919,7 @@ namespace ts {
 //!
 //! Data type for socket descriptors as returned by the socket() system call.
 //!
-#define TS_SOCKET_T platform_specific
+typedef platform_specific TS_SOCKET_T;
 
 //!
 //! Value of type TS_SOCKET_T which is returned by the socket() system call in case of failure.
@@ -2841,7 +2944,7 @@ namespace ts {
 //! }
 //! @endcode
 //!
-#define TS_SOCKET_SOCKLEN_T platform_specific
+typedef platform_specific TS_SOCKET_SOCKLEN_T;
 
 //!
 //! Integer data type for a "signed size" returned from send() or recv() system calls.
@@ -2850,7 +2953,7 @@ namespace ts {
 //! TS_SOCKET_SSIZE_T got = recv(sock, TS_RECVBUF_T(&data), max_size, 0);
 //! @endcode
 //!
-#define TS_SOCKET_SSIZE_T platform_specific
+typedef platform_specific TS_SOCKET_SSIZE_T;
 
 //!
 //! Integer data type for the Time To Live (TTL) socket option.
@@ -2862,12 +2965,12 @@ namespace ts {
 //! }
 //! @endcode
 //!
-#define TS_SOCKET_TTL_T platform_specific
+typedef platform_specific TS_SOCKET_TTL_T;
 
 //!
 //! Integer data type for the TOS socket option.
 //!
-#define TS_SOCKET_TOS_T platform_specific
+typedef platform_specific TS_SOCKET_TOS_T;
 
 //!
 //! Integer data type for the multicast Time To Live (TTL) socket option.
@@ -2879,7 +2982,7 @@ namespace ts {
 //! }
 //! @endcode
 //!
-#define TS_SOCKET_MC_TTL_T platform_specific
+typedef platform_specific TS_SOCKET_MC_TTL_T;
 
 //!
 //! Type conversion macro for the field l_linger in the struct linger socket option.
@@ -2902,7 +3005,7 @@ namespace ts {
 //! }
 //! @endcode
 //!
-#define TS_SOCKET_PKTINFO_T platform_specific
+typedef platform_specific TS_SOCKET_PKTINFO_T;
 
 //!
 //! Type conversion macro for the address of a socket option value.
@@ -2994,47 +3097,49 @@ namespace ts {
 
 #elif defined(TS_WINDOWS)
 
-#define TS_SOCKET_T             ::SOCKET
-#define TS_SOCKET_T_INVALID     INVALID_SOCKET
-#define TS_SOCKET_SOCKLEN_T     int
-#define TS_SOCKET_SSIZE_T       int
-#define TS_SOCKET_TOS_T         ::DWORD
-#define TS_SOCKET_TTL_T         ::DWORD
-#define TS_SOCKET_MC_TTL_T      ::DWORD
 #define TS_SOCKET_L_LINGER_T(x) (static_cast<u_short>(x))
-#define TS_SOCKET_PKTINFO_T     ::DWORD
 #define TS_SOCKOPT_T(x)         (reinterpret_cast<const char*>(x))
 #define TS_RECVBUF_T(x)         (reinterpret_cast<char*>(x))
 #define TS_SENDBUF_T(x)         (reinterpret_cast<const char*>(x))
 #define TS_SOCKET_IOCTL         ::ioctlsocket
 #define TS_SOCKET_CLOSE         ::closesocket
+#define TS_SOCKET_T_INVALID     INVALID_SOCKET
 #define TS_SOCKET_SHUT_RDWR     SD_BOTH
 #define TS_SOCKET_SHUT_RD       SD_RECEIVE
 #define TS_SOCKET_SHUT_WR       SD_SEND
 #define TS_SOCKET_ERR_RESET     WSAECONNRESET
 #define TS_SOCKET_ERR_NOTCONN   WSAENOTCONN
 
+typedef ::SOCKET TS_SOCKET_T;
+typedef int TS_SOCKET_SOCKLEN_T;
+typedef int TS_SOCKET_SSIZE_T;
+typedef ::DWORD TS_SOCKET_TOS_T;
+typedef ::DWORD TS_SOCKET_TTL_T;
+typedef ::DWORD TS_SOCKET_MC_TTL_T;
+typedef ::DWORD TS_SOCKET_PKTINFO_T;
+
 #elif defined(TS_UNIX)
 
-#define TS_SOCKET_T             int
-#define TS_SOCKET_T_INVALID     (-1)
-#define TS_SOCKET_SOCKLEN_T     ::socklen_t
-#define TS_SOCKET_SSIZE_T       ::ssize_t
-#define TS_SOCKET_TOS_T         int
-#define TS_SOCKET_TTL_T         int
-#define TS_SOCKET_MC_TTL_T      unsigned char
 #define TS_SOCKET_L_LINGER_T(x) (static_cast<int>(x))
-#define TS_SOCKET_PKTINFO_T     int
 #define TS_SOCKOPT_T(x)         (x)
 #define TS_RECVBUF_T(x)         (x)
 #define TS_SENDBUF_T(x)         (x)
 #define TS_SOCKET_IOCTL         ::ioctl
 #define TS_SOCKET_CLOSE         ::close
+#define TS_SOCKET_T_INVALID     (-1)
 #define TS_SOCKET_SHUT_RDWR     SHUT_RDWR
 #define TS_SOCKET_SHUT_RD       SHUT_RD
 #define TS_SOCKET_SHUT_WR       SHUT_WR
 #define TS_SOCKET_ERR_RESET     EPIPE
 #define TS_SOCKET_ERR_NOTCONN   ENOTCONN
+
+typedef int TS_SOCKET_T;
+typedef ::socklen_t TS_SOCKET_SOCKLEN_T;
+typedef ::ssize_t TS_SOCKET_SSIZE_T;
+typedef int TS_SOCKET_TOS_T;
+typedef int TS_SOCKET_TTL_T;
+typedef unsigned char TS_SOCKET_MC_TTL_T;
+typedef int TS_SOCKET_PKTINFO_T;
 
 #else
 #error "check socket compatibility macros on this platform"
@@ -3252,4 +3357,8 @@ namespace ts {
 //!   by the asctime function.
 //! - Name of the source file which invokes the macro.
 //!
-#define TSDUCK_SOURCE TS_SET_BUILD_MARK(TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR)
+#define TSDUCK_SOURCE \
+    TS_PUSH_WARNING() \
+    TS_LLVM_NOWARNING(date-time) \
+    TS_SET_BUILD_MARK(TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR) \
+    TS_POP_WARNING()

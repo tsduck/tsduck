@@ -78,18 +78,12 @@ ts::ContentDescriptor::ContentDescriptor(DuckContext& duck, const Descriptor& de
 
 void ts::ContentDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
+    ByteBlockPtr bbp(serializeStart());
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8 ((it->content_nibble_level_1 << 4) | (it->content_nibble_level_2 & 0x0F));
-        bbp->appendUInt8 ((it->user_nibble_1 << 4) | (it->user_nibble_2 & 0x0F));
+        bbp->appendUInt8(uint8_t(it->content_nibble_level_1 << 4) | (it->content_nibble_level_2 & 0x0F));
+        bbp->appendUInt8(uint8_t(it->user_nibble_1 << 4) | (it->user_nibble_2 & 0x0F));
     }
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 

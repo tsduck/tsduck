@@ -47,6 +47,14 @@
 #include <cstdlib>
 #include <cstdio>
 
+#if defined(__llvm__)
+#pragma clang diagnostic ignored "-Wc++98-compat"           // Need C++11, don't care about C++98
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"  // Idem
+#pragma clang diagnostic ignored "-Wglobal-constructors"    // We use many global objects for test registration
+#pragma clang diagnostic ignored "-Wexit-time-destructors"  // Idem
+#pragma clang diagnostic ignored "-Wpadded"                 // Allow padding between class fields
+#endif
+
 //!
 //! Unitary tests namespace.
 //!
@@ -156,9 +164,9 @@ namespace tsunit {
 
 //! @cond nodoxygen
 // A macro to generate a unique name from a prefix and the source line number of the macro call.
-#define _TSUNIT_NAME1(prefix,num) prefix##num
-#define _TSUNIT_NAME2(prefix,num) _TSUNIT_NAME1(prefix,num)
-#define _TSUNIT_NAME(prefix) _TSUNIT_NAME2(prefix,__LINE__)
+#define TSUNIT_NAME1_(prefix,num) prefix##num
+#define TSUNIT_NAME2_(prefix,num) TSUNIT_NAME1_(prefix,num)
+#define TSUNIT_NAME(prefix) TSUNIT_NAME2_(prefix,__LINE__)
 //! @endcond
 
 //!
@@ -214,7 +222,7 @@ namespace tsunit {
 //! Add a test method which should raise an exception to the test suite inside a test class.
 //! @hideinitializer
 //! @param method Simple name of a test method. Must be a <code>void (*)()</code> method.
-//! @param exceptclass Name 
+//! @param exceptclass Name
 //! @see TSUNIT_TEST_BEGIN
 //!
 #define TSUNIT_TEST_EXCEPTION(method, exceptclass)  \
@@ -229,7 +237,7 @@ namespace tsunit {
             return suite;   \
         }                   \
     private:                \
-        typedef int _TSUNIT_NAME(unused)
+        typedef int TSUNIT_NAME(unused)
 
 //!
 //! Register a test class as a test suite.
@@ -238,7 +246,7 @@ namespace tsunit {
 //! @see TSUNIT_TEST_BEGIN
 //!
 #define TSUNIT_REGISTER(classname) \
-    static const tsunit::TestRepository::Register _TSUNIT_NAME(_Registrar)(classname::testSuite())
+    static const tsunit::TestRepository::Register TSUNIT_NAME(_Registrar)(classname::testSuite())
 
 //!
 //! Report a test case as failed.
@@ -461,7 +469,7 @@ namespace tsunit {
         static size_t getFailedCount() { return _failedCount; }
 
         // Assertion functions.
-        static void fail(const std::string& message, const char* sourcefile, int linenumber);
+        [[noreturn]] static void fail(const std::string& message, const char* sourcefile, int linenumber);
         static void condition(bool cond, const std::string& expression, const char* sourcefile, int linenumber);
 
         template<typename CHAR>
@@ -595,7 +603,7 @@ void tsunit::Assertions::equalString(const std::basic_string<CHAR>& expected, co
         std::string details3;
         if (diff < expected.size() && diff < actual.size()) {
             details3 = "differ at index " + toString(diff) +
-                ", expected '" + toUTF8(expected.substr(diff, 1)) + 
+                ", expected '" + toUTF8(expected.substr(diff, 1)) +
                 "', actual: '" + toUTF8(actual.substr(diff, 1)) + "'";
         }
         else {

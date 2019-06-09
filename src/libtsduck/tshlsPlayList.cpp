@@ -1019,6 +1019,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
             }
             break;
         }
+        case UNKNOWN_PLAYLIST:
         default: {
             report.error(u"unknown HLS playlist type (master or media playlist)");
             text.clear();

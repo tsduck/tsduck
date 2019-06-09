@@ -65,6 +65,9 @@ QT_RELPATH="../../../src/libtsduck/"
 # find(1) option to limit the search to one level.
 [[ $(uname -s) == Linux ]] && FIND1="-maxdepth 1" || FIND1="-depth 1"
 
+# On macOS, make sure that commands which were installed by Homebrew packages are in the path.
+[[ $(uname -s) == Darwin ]] && export PATH="$PATH:/usr/local/bin"
+
 # Enforce LANG to get the same sort order as "Sort-Object -Culture en-US" in PowerShell
 export LANG=C
 export LC_ALL=$LANG

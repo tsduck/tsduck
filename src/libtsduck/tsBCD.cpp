@@ -70,7 +70,7 @@ void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value)
                 *bcd = (*bcd & 0xF0) | (value % 10);
             }
             else {
-                *bcd = (*bcd & 0x0F) | ((value % 10) << 4);
+                *bcd = (*bcd & 0x0F) | uint8_t((value % 10) << 4);
                 bcd--;
             }
             value = value / 10;

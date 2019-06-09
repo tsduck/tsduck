@@ -84,7 +84,7 @@ void ts::ComponentDescriptor::serialize(DuckContext& duck, Descriptor& desc) con
 {
     ByteBlockPtr bbp(serializeStart());
 
-    bbp->appendUInt8((stream_content_ext << 4) | (stream_content & 0x0F));
+    bbp->appendUInt8(uint8_t(stream_content_ext << 4) | (stream_content & 0x0F));
     bbp->appendUInt8(component_type);
     bbp->appendUInt8(component_tag);
     if (!SerializeLanguageCode(duck, *bbp, language_code)) {

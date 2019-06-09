@@ -14,9 +14,13 @@ TSDUCK_SOURCE;
 
 // Operations on 64-bit areas.
 
-#define clear_8(x)        (*(uint64_t*)(x) = 0);
-#define memcpy_8(dst,src) (*(uint64_t*)(dst) = *(uint64_t*)(src))
-#define xor_8(res,a,b)    (*(uint64_t*)(res) = *(uint64_t*)(a) ^ *(uint64_t*)(b))
+typedef uint64_t* uint64_ptr;
+
+#define clear_8(x)        (*(uint64_ptr(x)) = 0);
+#define memcpy_8(dst,src) (*(uint64_ptr(dst)) = *(uint64_ptr(src)))
+#define xor_8(res,a,b)    (*(uint64_ptr(res)) = *(uint64_ptr(a)) ^ *(uint64_ptr(b)))
+
+TS_LLVM_NOWARNING(cast-align) // Because of casts to uint64_ptr
 
 // Assume that we work on MPEG-2 TS packets only (max 184 bytes of payload).
 // In the case of PES-level scrambling, the PES payload is divided into
@@ -24,12 +28,6 @@ TSDUCK_SOURCE;
 // longer than 184 bytes.
 
 #define MAX_NBLOCKS (184 / 8)
-
-// Disable some aggressive warnings on MSVC.
-
-#if defined(TS_MSC)
-#pragma warning(disable:4244) // '=': conversion from 'int' to 'uint8_t', possible loss of data
-#endif
 
 
 //----------------------------------------------------------------------------
@@ -39,8 +37,8 @@ TSDUCK_SOURCE;
 
 void ts::DVBCSA2::ReduceCW(uint8_t *cw)
 {
-    cw[3] = ((uint16_t)cw[0] + (uint16_t)cw[1] + (uint16_t)cw[2]) % 256;
-    cw[7] = ((uint16_t)cw[4] + (uint16_t)cw[5] + (uint16_t)cw[6]) % 256;
+    cw[3] = cw[0] + cw[1] + cw[2];
+    cw[7] = cw[4] + cw[5] + cw[6];
 }
 
 
@@ -51,8 +49,7 @@ void ts::DVBCSA2::ReduceCW(uint8_t *cw)
 
 bool ts::DVBCSA2::IsReducedCW(const uint8_t *cw)
 {
-    return cw[3] == ((uint16_t)cw[0] + (uint16_t)cw[1] + (uint16_t)cw[2]) % 256 &&
-           cw[7] == ((uint16_t)cw[4] + (uint16_t)cw[5] + (uint16_t)cw[6]) % 256;
+    return cw[3] == cw[0] + cw[1] + cw[2] && cw[7] == cw[4] + cw[5] + cw[6];
 }
 
 
@@ -331,7 +328,7 @@ void ts::DVBCSA2::StreamCipher::cipher(const uint8_t* sb, uint8_t *cb)
             op = (op << 2) ^ ((((D ^ (D >> 1)) >> 1) & 2) | ((D ^ (D >> 1)) & 1));
         }
         // return input data during init
-        cb[i] = init ? sb[i] : op;
+        cb[i] = init ? sb[i] : uint8_t(op);
     }
 }
 
@@ -513,14 +510,14 @@ void ts::DVBCSA2::BlockCipher::decipher(const uint8_t *ib, uint8_t *bd)
         R[8] = next_R8;
     }
 
-    bd[0] = R[1];
-    bd[1] = R[2];
-    bd[2] = R[3];
-    bd[3] = R[4];
-    bd[4] = R[5];
-    bd[5] = R[6];
-    bd[6] = R[7];
-    bd[7] = R[8];
+    bd[0] = uint8_t(R[1]);
+    bd[1] = uint8_t(R[2]);
+    bd[2] = uint8_t(R[3]);
+    bd[3] = uint8_t(R[4]);
+    bd[4] = uint8_t(R[5]);
+    bd[5] = uint8_t(R[6]);
+    bd[6] = uint8_t(R[7]);
+    bd[7] = uint8_t(R[8]);
 }
 
 
@@ -558,14 +555,14 @@ void ts::DVBCSA2::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
         R[1] = next_R1;
     }
 
-    ib[0] = R[1];
-    ib[1] = R[2];
-    ib[2] = R[3];
-    ib[3] = R[4];
-    ib[4] = R[5];
-    ib[5] = R[6];
-    ib[6] = R[7];
-    ib[7] = R[8];
+    ib[0] = uint8_t(R[1]);
+    ib[1] = uint8_t(R[2]);
+    ib[2] = uint8_t(R[3]);
+    ib[3] = uint8_t(R[4]);
+    ib[4] = uint8_t(R[5]);
+    ib[5] = uint8_t(R[6]);
+    ib[6] = uint8_t(R[7]);
+    ib[7] = uint8_t(R[8]);
 }
 
 
@@ -753,23 +750,23 @@ bool ts::DVBCSA2::decrypt(const void* cipher, size_t cipher_length, void* plain,
 // Implementation of CipherChaining interface:
 //----------------------------------------------------------------------------
 
-bool ts::DVBCSA2::setIV(const void*, size_t) 
+bool ts::DVBCSA2::setIV(const void*, size_t)
 {
     return false;
 }
-size_t ts::DVBCSA2::minIVSize() const 
+size_t ts::DVBCSA2::minIVSize() const
 {
     return 0;
 }
-size_t ts::DVBCSA2::maxIVSize() const 
+size_t ts::DVBCSA2::maxIVSize() const
 {
     return 0;
 }
-size_t ts::DVBCSA2::minMessageSize() const 
+size_t ts::DVBCSA2::minMessageSize() const
 {
     return 0;
 }
-bool ts::DVBCSA2::residueAllowed() const 
+bool ts::DVBCSA2::residueAllowed() const
 {
     return true;
 }
@@ -778,35 +775,35 @@ bool ts::DVBCSA2::residueAllowed() const
 // Implementation of BlockCipher interface:
 //----------------------------------------------------------------------------
 
-ts::UString ts::DVBCSA2::name() const 
+ts::UString ts::DVBCSA2::name() const
 {
     return u"DVB-CSA2";
 }
-size_t ts::DVBCSA2::blockSize() const 
+size_t ts::DVBCSA2::blockSize() const
 {
     return 8;
 }
-size_t ts::DVBCSA2::minKeySize() const 
+size_t ts::DVBCSA2::minKeySize() const
 {
     return KEY_SIZE;
 }
-size_t ts::DVBCSA2::maxKeySize() const 
+size_t ts::DVBCSA2::maxKeySize() const
 {
     return KEY_SIZE;
 }
-bool ts::DVBCSA2::isValidKeySize(size_t size) const 
+bool ts::DVBCSA2::isValidKeySize(size_t size) const
 {
     return size == KEY_SIZE;
 }
-size_t ts::DVBCSA2::minRounds() const 
+size_t ts::DVBCSA2::minRounds() const
 {
     return 8;
 }
-size_t ts::DVBCSA2::maxRounds() const 
+size_t ts::DVBCSA2::maxRounds() const
 {
     return 8;
 }
-size_t ts::DVBCSA2::defaultRounds() const 
+size_t ts::DVBCSA2::defaultRounds() const
 {
     return 8;
 }

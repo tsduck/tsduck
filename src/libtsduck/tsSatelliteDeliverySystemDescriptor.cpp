@@ -99,8 +99,8 @@ void ts::SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descrip
     EncodeBCD(data + 2, 8, frequency);
     EncodeBCD(data + 6, 4, orbital_position);
     data[8] = (eastNotWest ? 0x80 : 0x00) |
-        ((polarization & 0x03) << 5) |
-        (dvbS2 ? ((roll_off & 0x03) << 3) : 0x00) |
+        uint8_t((polarization & 0x03) << 5) |
+        (dvbS2 ? uint8_t((roll_off & 0x03) << 3) : 0x00) |
         (dvbS2 ? 0x04 : 0x00) |
         (modulation_type & 0x03);
     EncodeBCD(data + 9, 7, symbol_rate);

@@ -263,7 +263,7 @@ ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
     const uint16_t sc = (type & 0x0F00) >> 8;
 
     // Value to use for name lookup:
-    const uint16_t nType = (sc >= 1 && sc <= 8 ? 0x0F00 : ((type & 0xF000) >> 4)) | ((type & 0x0F00) << 4) | (type & 0x00FF);
+    const uint16_t nType = (sc >= 1 && sc <= 8 ? 0x0F00 : ((type & 0xF000) >> 4)) | uint16_t((type & 0x0F00) << 4) | (type & 0x00FF);
 
     // Value to display:
     const uint16_t dType = sc >= 1 && sc <= 8 ? (type & 0x0FFF) : type;
@@ -607,13 +607,25 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
     }
 
     switch (flags & (names::FIRST | names::DECIMAL | names::HEXA)) {
-        case names::DECIMAL: return UString::Format(u"%s (%d)", {*displayName, value});
-        case names::HEXA: return UString::Format(u"%s (0x%0*X)", {*displayName, HexaDigits(bits), value});
-        case names::BOTH: return UString::Format(u"%s (0x%0*X, %d)", {*displayName, HexaDigits(bits), value, value});
-        case names::DECIMAL_FIRST: return UString::Format(u"%d (%s)", {value, *displayName});
-        case names::HEXA_FIRST: return UString::Format(u"0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
-        case names::BOTH_FIRST: return UString::Format(u"0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
-        default: assert(false); return UString();
+        case names::DECIMAL:
+            return UString::Format(u"%s (%d)", {*displayName, value});
+        case names::HEXA:
+            return UString::Format(u"%s (0x%0*X)", {*displayName, HexaDigits(bits), value});
+        case names::BOTH:
+            return UString::Format(u"%s (0x%0*X, %d)", {*displayName, HexaDigits(bits), value, value});
+        case names::DECIMAL_FIRST:
+            return UString::Format(u"%d (%s)", {value, *displayName});
+        case names::HEXA_FIRST:
+            return UString::Format(u"0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
+        case names::BOTH_FIRST:
+            return UString::Format(u"0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
+        case names::NAME:
+        case names::VALUE:
+        case names::FIRST:
+        case names::ALTERNATE:
+        default:
+            assert(false);
+            return UString();
     }
 }
 

@@ -35,6 +35,7 @@
 #include "tsHFBand.h"
 #include "tsHiDesDevice.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
@@ -187,5 +188,3 @@ int MainCode(int argc, char *argv[])
 
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-TS_MAIN(MainCode)

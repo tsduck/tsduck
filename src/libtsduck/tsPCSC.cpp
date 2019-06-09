@@ -38,6 +38,10 @@ TSDUCK_SOURCE;
 
 #if !defined(TS_NO_PCSC)
 
+// SCARD_ macros contains many "old style" casts.
+TS_LLVM_NOWARNING(old-style-cast)
+
+
 //----------------------------------------------------------------------------
 // Check a PC/SC status. In case of error, report an error message.
 // Return true is status is success, false if error.
@@ -403,7 +407,7 @@ const char* ts::pcsc::StrError(::LONG status)
         default:
 #if defined(TS_LINUX) || defined(TS_MAC)
             // pcsc_stringify_error is specific to pcsc-lite.
-            return pcsc_stringify_error (long (status));
+            return pcsc_stringify_error(status);
 #else
             return "Unknown PC/SC error code";
 #endif

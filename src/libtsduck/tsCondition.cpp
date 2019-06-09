@@ -49,7 +49,6 @@ ts::Condition::Condition() :
     // Windows implementation.
     if ((_handle = ::CreateEvent(NULL, FALSE, FALSE, NULL)) == NULL) {
         throw ConditionError(::GetLastError());
-        return;
     }
 
 #else
@@ -60,22 +59,18 @@ ts::Condition::Condition() :
 
     if ((error = ::pthread_condattr_init(&attr)) != 0) {
         throw ConditionError(u"cond attr init", error);
-        return;
     }
 #if !defined(TS_MAC)
     // The clock attribute is not implemented in MacOS, just keep the default clock.
     else if ((error = ::pthread_condattr_setclock(&attr, CLOCK_REALTIME)) != 0) {
         throw ConditionError(u"cond attr set clock", error);
-        return;
     }
 #endif
     else if ((error = ::pthread_cond_init(&_cond, &attr)) != 0) {
         throw ConditionError(u"cond init", error);
-        return;
     }
     else if ((error = ::pthread_condattr_destroy(&attr)) != 0) {
         throw ConditionError(u"cond attr destroy", error);
-        return;
     }
 
 #endif

@@ -92,7 +92,7 @@ namespace ts {
         //!
         //! Subclasses have the choice to either implement buildXML() or toXML().
         //! If the object is serialized as one single XML node, it is simpler to
-        //! implement buidlXML().
+        //! implement buildXML().
         //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the new XML tree.

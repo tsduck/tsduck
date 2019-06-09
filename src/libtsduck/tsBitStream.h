@@ -253,19 +253,19 @@ namespace ts {
             INT val = 0;
             // Read leading bits up to byte boundary
             while (n > 0 && (_next_bit & 0x07) != 0) {
-                val = (val << 1) | INT (readBit());
+                val = INT(val << 1) | INT(readBit());
                 --n;
             }
             // Read complete bytes
             const uint8_t* byte = _base + (_next_bit >> 3);
             while (n > 7) {
-                val = (val << 8) | INT(*byte++);
+                val = INT(val << 8) | INT(*byte++);
                 _next_bit += 8;
                 n -= 8;
             }
             // Read trailing bits
             while (n > 0) {
-                val = (val << 1) | INT(readBit());
+                val = INT(val << 1) | INT(readBit());
                 --n;
             }
             return val;

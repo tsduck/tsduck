@@ -68,20 +68,20 @@ bool ts::AVCParser::readBits(INT& val, size_t n)
 
     // Read leading bits up to byte boundary
     while (n > 0 && _bit != 0) {
-        val = (val << 1) | nextBit();
+        val = INT(val << 1) | nextBit();
         --n;
     }
 
     // Read complete bytes
     while (n > 7) {
-        val = (val << 8) | *_byte;
+        val = INT(val << 8) | *_byte;
         nextByte();
         n -= 8;
     }
 
     // Read trailing bits
     while (n > 0) {
-        val = (val << 1) | nextBit();
+        val = INT(val << 1) | nextBit();
         --n;
     }
 

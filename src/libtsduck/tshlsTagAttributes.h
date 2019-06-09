@@ -82,7 +82,6 @@ namespace ts {
             //! @param [out] val Decoded value.
             //! @param [in] name Attribute name.
             //! @param [in] defValue Default value if not present.
-            //! @return Attribute value.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void getIntValue(INT& val, const UString& name, INT defValue = static_cast<INT>(0)) const

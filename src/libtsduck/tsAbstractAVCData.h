@@ -86,10 +86,8 @@ namespace ts {
         bool valid;
 
     protected:
-        #if defined(TS_MSC)
-            #pragma warning(push)
-            #pragma warning(disable:4127) // conditional expression is constant
-        #endif
+        TS_PUSH_WARNING()
+        TS_MSC_NOWARNING(4127) // conditional expression is constant
 
         //!
         //! Display helper for subclasses.
@@ -137,8 +135,6 @@ namespace ts {
             }
         }
 
-        #if defined(TS_MSC)
-            #pragma warning (pop)
-        #endif
+        TS_POP_WARNING()
     };
 }

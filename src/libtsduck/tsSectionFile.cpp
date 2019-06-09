@@ -462,9 +462,13 @@ ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name,
 ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType type)
 {
     switch (type) {
-        case BINARY: return PathPrefix(file_name) + TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX;
-        case XML: return PathPrefix(file_name) + TS_DEFAULT_XML_SECTION_FILE_SUFFIX;
-        default: return file_name;
+        case BINARY:
+            return PathPrefix(file_name) + TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX;
+        case XML:
+            return PathPrefix(file_name) + TS_DEFAULT_XML_SECTION_FILE_SUFFIX;
+        case UNSPECIFIED:
+        default:
+            return file_name;
     }
 }
 
@@ -480,6 +484,7 @@ bool ts::SectionFile::load(const UString& file_name, Report& report, FileType ty
             return loadBinary(file_name, report);
         case XML:
             return loadXML(file_name, report);
+        case UNSPECIFIED:
         default:
             report.error(u"unknown file type for %s", {file_name});
             return false;
@@ -493,6 +498,7 @@ bool ts::SectionFile::load(std::istream& strm, Report& report, FileType type)
             return loadBinary(strm, report);
         case XML:
             return loadXML(strm, report);
+        case UNSPECIFIED:
         default:
             report.error(u"unknown input file type");
             return false;

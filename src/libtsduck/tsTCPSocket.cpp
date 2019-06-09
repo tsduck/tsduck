@@ -118,7 +118,7 @@ bool ts::TCPSocket::close(Report& report)
 
 bool ts::TCPSocket::setTTL(int ttl, Report& report)
 {
-    TS_SOCKET_TTL_T uttl = (TS_SOCKET_TTL_T)(ttl);
+    TS_SOCKET_TTL_T uttl = TS_SOCKET_TTL_T(ttl);
     report.debug(u"setting socket TTL to %'d", {uttl});
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T(&uttl), sizeof(uttl)) != 0) {
         report.error(u"socket option TTL: %s", {SocketErrorCodeMessage()});

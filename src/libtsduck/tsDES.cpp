@@ -1260,23 +1260,23 @@ namespace {
 
 //----------------------------------------------------------------------------
 
-void ts::DES::cookey (const uint32_t* raw1, uint32_t* keyout)
+void ts::DES::cookey(const uint32_t* raw1, uint32_t* keyout)
 {
-    uint32_t *cook;
-    const uint32_t *raw0;
+    uint32_t* cook;
+    const uint32_t* raw0;
     uint32_t dough[32];
     int i;
 
     cook = dough;
-    for(i=0; i < 16; i++, raw1++) {
+    for (i=0; i < 16; i++, raw1++) {
         raw0 = raw1++;
-        *cook    = (*raw0 & 0x00FC0000L) << 6;
-        *cook   |= (*raw0 & 0x00000FC0L) << 10;
-        *cook   |= (*raw1 & 0x00FC0000L) >> 10;
-        *cook++ |= (*raw1 & 0x00000FC0L) >> 6;
-        *cook    = (*raw0 & 0x0003F000L) << 12;
-        *cook   |= (*raw0 & 0x0000003FL) << 16;
-        *cook   |= (*raw1 & 0x0003F000L) >> 4;
+        *cook    = uint32_t((*raw0 & 0x00FC0000L) << 6);
+        *cook   |= uint32_t((*raw0 & 0x00000FC0L) << 10);
+        *cook   |= uint32_t((*raw1 & 0x00FC0000L) >> 10);
+        *cook++ |= uint32_t((*raw1 & 0x00000FC0L) >> 6);
+        *cook    = uint32_t((*raw0 & 0x0003F000L) << 12);
+        *cook   |= uint32_t((*raw0 & 0x0000003FL) << 16);
+        *cook   |= uint32_t((*raw1 & 0x0003F000L) >> 4);
         *cook++ |= (*raw1 & 0x0000003FL);
     }
 
@@ -1287,15 +1287,15 @@ void ts::DES::cookey (const uint32_t* raw1, uint32_t* keyout)
 
 //----------------------------------------------------------------------------
 
-void ts::DES::deskey (const uint8_t* key, uint16_t edf, uint32_t* keyout)
+void ts::DES::deskey(const uint8_t* key, uint16_t edf, uint32_t* keyout)
 {
     uint32_t i, j, l, m, n, kn[32];
     uint8_t pc1m[56], pcr[56];
 
     for (j=0; j < 56; j++) {
-        l = (uint32_t)pc1[j];
+        l = uint32_t(pc1[j]);
         m = l & 7;
-        pc1m[j] = uint8_t ((key[l >> 3U] & bytebit[m]) == bytebit[m] ? 1 : 0);
+        pc1m[j] = uint8_t((key[l >> 3U] & bytebit[m]) == bytebit[m] ? 1 : 0);
     }
 
     for (i=0; i < 16; i++) {
@@ -1308,7 +1308,7 @@ void ts::DES::deskey (const uint8_t* key, uint16_t edf, uint32_t* keyout)
         n = m + 1;
         kn[m] = kn[n] = 0L;
         for (j = 0; j < 28; j++) {
-            l = j + uint32_t (totrot[i]);
+            l = j + uint32_t(totrot[i]);
             if (l < 28) {
                 pcr[j] = pc1m[l];
             }
@@ -1326,10 +1326,10 @@ void ts::DES::deskey (const uint8_t* key, uint16_t edf, uint32_t* keyout)
             }
         }
         for (j = 0; j < 24; j++)  {
-            if ((int)pcr[(int)pc2[j]] != 0) {
+            if (pcr[pc2[j]] != 0) {
                 kn[m] |= bigbyte[j];
             }
-            if ((int)pcr[(int)pc2[j+24]] != 0) {
+            if (pcr[pc2[j+24]] != 0) {
                 kn[n] |= bigbyte[j];
             }
         }

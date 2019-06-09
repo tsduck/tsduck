@@ -42,7 +42,7 @@ template <int YEARBASE>
 uint16_t ts::CASDate<YEARBASE>::toUInt16(int year, int month, int day) const
 {
     if (year >= MIN_YEAR && year <= MAX_YEAR && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        return (uint16_t(year - YEARBASE) << 9) | (uint16_t(month) << 5) | uint16_t(day);
+        return uint16_t((year - YEARBASE) << 9) | uint16_t(month << 5) | uint16_t(day);
     }
     else {
         return INVALID_DATE;

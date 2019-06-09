@@ -374,7 +374,7 @@ void ts::ECMGClient::main()
     // Main loop
     for (;;) {
 
-        TS_UNUSED const AbortInterface* abort = nullptr;
+        const AbortInterface* abort = nullptr;
 
         // Wait for a connection to be managed
         {

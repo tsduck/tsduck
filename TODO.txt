@@ -2,10 +2,6 @@
 TSDuck - List of features to be implemented or fixed
 ====================================================
 
-* Tables refactoring:
-  - buildXML => protected
-  - (de)serialize => (de)serializeContent
-
 * Improve packet distribution in plugin "merge". Evaluate average stuffing
   distribution, evaluate merged stream bitrate, then smoothen merged packets.
 

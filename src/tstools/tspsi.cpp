@@ -37,6 +37,7 @@
 #include "tsPagerArgs.h"
 #include "tsPSILogger.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 // With static link, enforce a reference to MPEG/DVB structures.
 #if defined(TSDUCK_STATIC_LIBRARY)
@@ -123,5 +124,3 @@ int MainCode(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

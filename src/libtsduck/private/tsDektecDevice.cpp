@@ -32,6 +32,7 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NO_DTAPI)
+TS_LLVM_NOWARNING(missing-variable-declarations)
 bool tsDektecDeviceIsEmpty = true; // Avoid warning about empty module.
 #else
 

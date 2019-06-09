@@ -44,6 +44,7 @@
 #include "tsVariable.h"
 #include "tsOneShotPacketizer.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 namespace {
     // Command line default arguments.
@@ -731,5 +732,3 @@ int MainCode(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

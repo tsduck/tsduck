@@ -60,6 +60,7 @@
 #include "tsAsyncReport.h"
 #include "tsCerrReport.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
@@ -111,5 +112,3 @@ int MainCode(int argc, char *argv[])
     core.waitForTermination();
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

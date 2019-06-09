@@ -37,6 +37,7 @@
 #include "tsInputRedirector.h"
 #include "tsPagerArgs.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
@@ -119,5 +120,3 @@ int MainCode(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

@@ -57,21 +57,21 @@ CONFIG *= warn_on
 QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck
 INCLUDEPATH += $$SRCROOT/libtsduck
 linux|mac|mingw {
-    # GCC/clang options. Some of them depend on the compiler version.
-    GCC_VERSION = $$system($$QMAKE_CXX " -dumpversion")
-    GCC_FIELDS = $$split(GCC_VERSION, ".")
-    GCC_MAJOR = $$member(GCC_FIELDS, 0)
-    QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra -Wformat-security -Wswitch-default \
-        -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wpointer-arith -Wsign-promo \
-        -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual \
-        -Wzero-as-null-pointer-constant
-    greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
+    QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
     QMAKE_CXXFLAGS += $$system(curl-config --cflags)
     LIBS += $$system(curl-config --libs)
 }
 linux|mingw {
-    QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel
+    # GCC options. Some of them depend on the compiler version.
+    GCC_VERSION = $$system($$QMAKE_CXX " -dumpversion")
+    GCC_FIELDS = $$split(GCC_VERSION, ".")
+    GCC_MAJOR = $$member(GCC_FIELDS, 0)
+    QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel -Wformat-security \
+        -Wswitch-default -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wpointer-arith \
+        -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor \
+        -Woverloaded-virtual -Wzero-as-null-pointer-constant
+    greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
 }
 linux {
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
@@ -79,7 +79,7 @@ linux {
     LIBS += -lrt -ldl $$PROJROOT/dektec/LinuxSDK/DTAPI/Lib/GCC4.4/DTAPI64.o
 }
 mac {
-    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument -Wweak-vtables
+    QMAKE_CXXFLAGS_WARN_ON += -Weverything
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/mac -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/mac
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib

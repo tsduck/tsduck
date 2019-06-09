@@ -126,7 +126,7 @@ namespace ts {
             };
             //!
             //! Return a message for a given protocol error status.
-            //! @param [in] status
+            //! @param [in] status Status code.
             //! @return Error message.
             //!
             static UString Name(uint16_t status);

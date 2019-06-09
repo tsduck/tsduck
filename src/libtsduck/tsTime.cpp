@@ -318,11 +318,11 @@ ts::Time ts::Time::localToUTC() const
     }
 
 #if defined(__sun)
-    int gmt_offset = ::gmtoffset(stime.tm_isdst);
+    const int gmt_offset = ::gmtoffset(stime.tm_isdst);
 #elif defined(__hpux) || defined(_AIX)
-    int gmt_offset = ::gmtoffset(seconds);
+    const int gmt_offset = ::gmtoffset(seconds);
 #else
-    int gmt_offset = stime.tm_gmtoff;
+    const long gmt_offset = stime.tm_gmtoff;
 #endif
 
     return Time(_value - int64_t(gmt_offset) * 1000 * TICKS_PER_MS);
@@ -355,11 +355,11 @@ ts::Time ts::Time::UTCToLocal() const
     }
 
 #if defined(__sun)
-    int gmt_offset = ::gmtoffset(stime.tm_isdst);
+    const int gmt_offset = ::gmtoffset(stime.tm_isdst);
 #elif defined(__hpux) || defined(_AIX)
-    int gmt_offset = ::gmtoffset(seconds);
+    const int gmt_offset = ::gmtoffset(seconds);
 #else
-    int gmt_offset = stime.tm_gmtoff;
+    const long gmt_offset = stime.tm_gmtoff;
 #endif
 
     return Time(_value + int64_t(gmt_offset) * 1000 * TICKS_PER_MS);
@@ -424,7 +424,7 @@ ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 // This static routine converts a UNIX time_t to a UTC time
 //----------------------------------------------------------------------------
 
-ts::Time ts::Time::UnixTimeToUTC(const uint32_t t)
+ts::Time ts::Time::UnixTimeToUTC(const uint64_t t)
 {
     // The value t is a number of seconds since Jan 1st 1970.
     return Time(UnixEpoch._value + (Second(t) * 1000 * TICKS_PER_MS));
@@ -487,7 +487,6 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
     if (::SystemTimeToFileTime(&stime, &ftime.ft) == 0) {
         throw TimeError(::GetLastError());
-        // return 0; // unreachable code
     }
 
     return ftime.i;
@@ -505,20 +504,19 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     stime.tm_sec = second;
     stime.tm_isdst = -1;
 
-    time_t seconds = ::mktime(&stime);
+    int64_t seconds = ::mktime(&stime);
 
     if (seconds == time_t(-1)) {
         throw TimeError(u"mktime error");
-        return 0;
     }
 
     // Add the GMT offset since mktime() uses stime as a local time
 #if defined(__sun)
-    int gmt_offset = ::gmtoffset(stime.tm_isdst);
+    const int gmt_offset = ::gmtoffset(stime.tm_isdst);
 #elif defined(__hpux) || defined(_AIX)
-    int gmt_offset = ::gmtoffset(seconds);
+    const int gmt_offset = ::gmtoffset(seconds);
 #else
-    int gmt_offset = stime.tm_gmtoff;
+    const long gmt_offset = stime.tm_gmtoff;
 #endif
     seconds += gmt_offset;
 
@@ -532,7 +530,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     seconds += (hour - stime.tm_hour) * 3600;
 
     // Convert to 64-bit time value
-    return (int64_t(seconds) * 1000 + int64_t(millisecond)) * TICKS_PER_MS;
+    return (seconds * 1000 + int64_t(millisecond)) * TICKS_PER_MS;
 
 #endif
 }

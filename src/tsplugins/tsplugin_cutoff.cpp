@@ -91,6 +91,7 @@ TSPLUGIN_DECLARE_PROCESSOR(cutoff, ts::CutoffPlugin)
 
 ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Set labels on TS packets upon reception of UDP messages", u"[options] [address:]port"),
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _terminate(false),
     _max_queued(DEFAULT_MAX_QUEUED_COMMANDS),
     _allowedRemote(),

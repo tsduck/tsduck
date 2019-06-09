@@ -75,11 +75,11 @@ void ts::TimeSliceFECIdentifierDescriptor::serialize(DuckContext& duck, Descript
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((time_slicing ? 0x80 : 0x00) |
-                     ((mpe_fec & 0x03) << 5) |
+                     uint8_t((mpe_fec & 0x03) << 5) |
                      0x18 |
                      (frame_size & 0x07));
     bbp->appendUInt8(max_burst_duration);
-    bbp->appendUInt8(((max_average_rate & 0x0F) << 4) |
+    bbp->appendUInt8(uint8_t((max_average_rate & 0x0F) << 4) |
                      (time_slice_fec_id & 0x0F));
     bbp->append(id_selector_bytes);
     serializeEnd(desc, bbp);

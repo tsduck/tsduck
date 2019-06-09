@@ -81,11 +81,11 @@ void ts::DTSDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
 
-    bbp->appendUInt8((sample_rate_code << 4) | ((bit_rate_code >> 2) & 0x0F));
-    bbp->appendUInt8((bit_rate_code << 6) | ((nblks >> 1) & 0x3F));
-    bbp->appendUInt8((nblks << 7) | (uint8_t(fsize >> 7) & 0x7F));
+    bbp->appendUInt8(uint8_t(sample_rate_code << 4) | ((bit_rate_code >> 2) & 0x0F));
+    bbp->appendUInt8(uint8_t(bit_rate_code << 6) | ((nblks >> 1) & 0x3F));
+    bbp->appendUInt8(uint8_t(nblks << 7) | (uint8_t(fsize >> 7) & 0x7F));
     bbp->appendUInt8(uint8_t(fsize << 1) | ((surround_mode >> 5) & 0x01));
-    bbp->appendUInt8((surround_mode << 3) | (lfe ? 0x04 : 0x00) | (extended_surround & 0x03));
+    bbp->appendUInt8(uint8_t(surround_mode << 3) | (lfe ? 0x04 : 0x00) | (extended_surround & 0x03));
     bbp->append(additional_info);
 
     serializeEnd(desc, bbp);

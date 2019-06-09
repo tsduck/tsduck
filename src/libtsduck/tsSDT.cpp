@@ -275,7 +275,7 @@ void ts::SDT::serializeContent(DuckContext& duck, BinaryTable& table) const
 
             // The following fields are inserted in the 4 "reserved" bits
             // of the descriptor_loop_length.
-            flags[0] = (flags[0] & 0x0F) | (serv.running_status << 5) | (serv.CA_controlled ? 0x10 : 0x00);
+            flags[0] = (flags[0] & 0x0F) | uint8_t(serv.running_status << 5) | (serv.CA_controlled ? 0x10 : 0x00);
 
             // If not all descriptors were written, the section is full.
             // Open a new one and continue with this service.

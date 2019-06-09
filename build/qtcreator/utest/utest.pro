@@ -8,11 +8,11 @@ QMAKE_POST_LINK += cp ../tsplugin_skip/tsplugin_skip.so . $$escape_expand(\\n\\t
 
 HEADERS += \
     ../../../src/utest/tsunit.h \
-    ../../../src/utest/tsunitThread.h
+    ../../../src/utest/utestTSUnitThread.h
 
 SOURCES += \
     ../../../src/utest/tsunit.cpp \
-    ../../../src/utest/tsunitThread.cpp \
+    ../../../src/utest/utestTSUnitThread.cpp \
     ../../../src/utest/utest.cpp \
     ../../../src/utest/utestAlgorithm.cpp \
     ../../../src/utest/utestArgs.cpp \

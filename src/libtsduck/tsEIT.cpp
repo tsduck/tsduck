@@ -325,7 +325,7 @@ void ts::EIT::serializeContent(DuckContext& duck, BinaryTable& table) const
             start_index = ev->descs.lengthSerialize(data, remain, start_index);
 
             // The following fields are inserted in the 4 "reserved" bits of the descriptor_loop_length.
-            flags[0] = (flags[0] & 0x0F) | (ev->running_status << 5) | (ev->CA_controlled ? 0x10 : 0x00);
+            flags[0] = (flags[0] & 0x0F) | uint8_t(ev->running_status << 5) | (ev->CA_controlled ? 0x10 : 0x00);
 
             // If not all descriptors were written, the section is full.
             // Open a new one and continue with this event.
