@@ -719,6 +719,12 @@ ifeq ($(GCC_VERSION_DONE),)
     export GCC_VERSION_DONE = true
     export GCC_VERSION := $(shell $(GCC) -dumpversion 2>/dev/null)
     export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
+    ifeq ($(shell test 0$(GCC_MAJOR) -ge 5; echo $$?),0)
+        export GCC_5_OR_MORE := true
+    else
+        GCC_5_OR_MORE :=
+        unexport GCC_5_OR_MORE
+    endif
     ifeq ($(shell test 0$(GCC_MAJOR) -ge 6; echo $$?),0)
         export GCC_6_OR_MORE := true
     else
@@ -770,28 +776,30 @@ endif
 CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
 
 # Always use maximal or even paranoid warning mode.
-COMMON_WARNINGS   = -Werror -Wall -Wextra -Wformat-nonliteral -Wformat-security -Wswitch-default \
-                    -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wundef -Wpointer-arith
-CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
-                    -Wbad-function-cast -Wc++-compat
-CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor \
-                    -Woverloaded-virtual -Wsign-promo -Wzero-as-null-pointer-constant
-ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
-    # Use these warnings on macOS or with GCC 5.x and higher only.
-    # They are supported with GCC 4.x but are totally insane before 5.x.
-    COMMON_WARNINGS += -Wshadow -Wpedantic
-    CXXFLAGS_WARNINGS += -Weffc++
-endif
+# With clang (macOS), the option -Weverything turns everything on.
+# There is no such option with GCC.
+COMMON_WARNINGS = -Werror
+CFLAGS_WARNINGS = $(COMMON_WARNINGS)
+CXXFLAGS_WARNINGS = $(COMMON_WARNINGS)
 ifdef MACOS
-    COMMON_WARNINGS += -Wno-unused-command-line-argument
-    CXXFLAGS_WARNINGS += -Wweak-vtables
+    COMMON_WARNINGS += -Weverything
 else
-    CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
-    ifeq ($(MAIN_ARCH),arm)
-        COMMON_WARNINGS += -Wno-psabi
+    COMMON_WARNINGS += -Wall -Wextra
+    COMMON_WARNINGS += -Wformat-nonliteral -Wformat-security -Wswitch-default  -Wuninitialized \
+                       -Wno-unused-parameter -Wfloat-equal -Wundef -Wpointer-arith
+    CFLAGS_WARNINGS += -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
+                       -Wbad-function-cast -Wc++-compat
+    CXXFLAGS_WARNINGS += -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Wsign-promo \
+                         -Wzero-as-null-pointer-constant -Wstrict-null-sentinel
+    ifdef GCC_5_OR_MORE
+        COMMON_WARNINGS += -Wshadow -Wpedantic
+        CXXFLAGS_WARNINGS += -Weffc++
     endif
     ifdef GCC_6_OR_MORE
         CXXFLAGS_WARNINGS += -Wsuggest-override
+    endif
+    ifeq ($(MAIN_ARCH),arm)
+        COMMON_WARNINGS += -Wno-psabi
     endif
 endif
 

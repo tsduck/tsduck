@@ -67,7 +67,7 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     // Locked space starts at next page boundary after allocated base:
     // Its size is the next multiple of page size after requested_size:
 
-    _locked_base = (char*)(RoundUp(uint64_t(_allocated_base), uint64_t(page_size)));
+    _locked_base = char_ptr(RoundUp(uint64_t(_allocated_base), uint64_t(page_size)));
     _locked_size = RoundUp(requested_size, page_size);
 
     _base = new (_locked_base) T[elem_count];
@@ -81,7 +81,7 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     assert(_locked_size <= _allocated_size);
     assert(uint64_t(_locked_base) % page_size == 0);
     assert(uint64_t(_locked_base) == uint64_t(_base));
-    assert((char*)(_base + elem_count) <= _locked_base + _locked_size);
+    assert(char_ptr(_base + elem_count) <= _locked_base + _locked_size);
     assert(_locked_size % page_size == 0);
 
 #if defined(TS_WINDOWS)

@@ -340,10 +340,10 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
 
         if (size > 4) {
             if (_update_mpe_fec) {
-                base[4] = (base[4] & ~0x04) | (_mpe_fec << 2);
+                base[4] = (base[4] & ~0x04) | uint8_t(_mpe_fec << 2);
             }
             if (_update_time_slicing) {
-                base[4] = (base[4] & ~0x08) | (_time_slicing << 3);
+                base[4] = (base[4] & ~0x08) | uint8_t(_time_slicing << 3);
             }
         }
     }

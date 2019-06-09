@@ -39,6 +39,7 @@
 #include "tsMonotonic.h"
 #include "tsSectionFile.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 namespace {
     // Command line default arguments.
@@ -590,5 +591,3 @@ int MainCode(int argc, char *argv[])
     client.disconnect();
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

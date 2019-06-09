@@ -165,11 +165,11 @@ void ts::tlv::MessageFactory::analyzeMessage()
     while (!parm_anl.endOfMessage()) {
 
         // Get current parameter
-        TAG         parm_tag     = parm_anl.tag ();
-        const void* tlv_addr     = parm_anl.fieldAddr ();
-        size_t      tlv_size     = parm_anl.fieldSize ();
-        const void* value_addr   = parm_anl.valueAddr ();
-        LENGTH      value_length = parm_anl.length ();
+        TAG         parm_tag     = parm_anl.tag();
+        const void* tlv_addr     = parm_anl.fieldAddr();
+        size_t      tlv_size     = parm_anl.fieldSize();
+        const void* value_addr   = parm_anl.valueAddr();
+        LENGTH      value_length = parm_anl.length();
 
         // Locate the description of this parameter tag in the protocol definition.
         Protocol::ParameterMap::const_iterator parm_it = cmd_it->second.params.find (parm_tag);
@@ -178,7 +178,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
             // Parameter tag not found in protocol definition
             _error_status = UnknownParameterTag;
             _error_info_is_offset = true;
-            _error_info = uint16_t ((uint8_t*)(tlv_addr) - _msg_base); // offset
+            _error_info = uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
             return;
         }
 
@@ -189,17 +189,14 @@ void ts::tlv::MessageFactory::analyzeMessage()
             // Store the parameter value in the multimap for this command.
             // Analyze the compound parameter.
 
-            ParameterMultimap::iterator it =
-                _params.insert (ParameterMultimap::value_type (parm_tag,
-                    ExtParameter (tlv_addr, tlv_size, value_addr, value_length,
-                                  new MessageFactory (tlv_addr, tlv_size, parm_it->second.compound))));
+            auto it = _params.insert(ParameterMultimap::value_type(parm_tag, ExtParameter(tlv_addr, tlv_size, value_addr, value_length, new MessageFactory(tlv_addr, tlv_size, parm_it->second.compound))));
 
             // Check if the analysis is successful
             if ((_error_status = it->second.compound->_error_status) != OK) {
                 _error_info = it->second.compound->_error_info;
                 _error_info_is_offset = it->second.compound->_error_info_is_offset;
                 if (_error_info_is_offset) {
-                    _error_info += uint16_t ((uint8_t*)(tlv_addr) - _msg_base); // offset
+                    _error_info += uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
                 }
                 return;
             }
@@ -210,7 +207,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
 
             _error_status = InvalidParameterLength;
             _error_info_is_offset = true;
-            _error_info = uint16_t ((uint8_t*)(tlv_addr) - _msg_base); // offset
+            _error_info = uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
             return;
         }
         else {
@@ -218,8 +215,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
             // The parameter is not a compound TLV and its length is fine.
             // Store the parameter value in the multimap for this command
 
-            _params.insert (ParameterMultimap::value_type (parm_tag,
-                ExtParameter (tlv_addr, tlv_size, value_addr, value_length)));
+            _params.insert(ParameterMultimap::value_type (parm_tag, ExtParameter(tlv_addr, tlv_size, value_addr, value_length)));
         }
 
         // Advance to next parameter
@@ -230,7 +226,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
     if (!parm_anl.valid ()) {
         _error_status = InvalidMessage;
         _error_info_is_offset = true;
-        _error_info = uint16_t ((uint8_t*)(parm_anl.fieldAddr()) - _msg_base); // offset
+        _error_info = uint16_t(uint8_ptr(parm_anl.fieldAddr()) - _msg_base); // offset
         return;
     }
 

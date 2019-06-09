@@ -73,8 +73,8 @@ void ts::AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((free_format ? 0x80 : 0x00) |
-                     ((ID & 0x01) << 6) |
-                     ((layer & 0x03) << 4) |
+                     uint8_t((ID & 0x01) << 6) |
+                     uint8_t((layer & 0x03) << 4) |
                      (variable_rate_audio ? 0x08 : 0x00) |
                      0x07);
     serializeEnd(desc, bbp);

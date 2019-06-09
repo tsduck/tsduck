@@ -164,7 +164,7 @@ void ts::LinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 
     // Known variable parts.
     if (linkage_type == LINKAGE_HAND_OVER) {
-        bbp->appendUInt8((mobile_handover_info.handover_type << 4) | 0x0E | (mobile_handover_info.origin_type & 0x01));
+        bbp->appendUInt8(uint8_t(mobile_handover_info.handover_type << 4) | 0x0E | (mobile_handover_info.origin_type & 0x01));
         if (mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) {
             bbp->appendUInt16(mobile_handover_info.network_id);
         }
@@ -185,8 +185,8 @@ void ts::LinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
             bbp->appendUInt16(it->target_event_id);
             bbp->appendUInt8((it->target_listed ? 0x80 : 0x00) |
                              (it->event_simulcast ? 0x40 : 0x00) |
-                             ((it->link_type & 0x03) << 4) |
-                             ((it->target_id_type & 0x03) << 2) |
+                             uint8_t((it->link_type & 0x03) << 4) |
+                             uint8_t((it->target_id_type & 0x03) << 2) |
                              (it->target_original_network_id.set() ? 0x02 : 0x00) |
                              (it->target_service_id.set() ? 0x01 : 0x00));
             if (it->target_id_type == 3) {

@@ -103,18 +103,18 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descr
     data[0] = _tag;
     data[1] = 11;
     PutUInt32(data + 2, centre_frequency);
-    data[6] = (bandwidth << 5) |
-              (uint8_t(high_priority) << 4) |
-              (uint8_t(no_time_slicing) << 3) |
-              (uint8_t(no_mpe_fec) << 2) |
+    data[6] = uint8_t(bandwidth << 5) |
+              uint8_t(uint8_t(high_priority) << 4) |
+              uint8_t(uint8_t(no_time_slicing) << 3) |
+              uint8_t(uint8_t(no_mpe_fec) << 2) |
               0x03;
-    data[7] = (constellation << 6) |
-              ((hierarchy & 0x07) << 3) |
+    data[7] = uint8_t(constellation << 6) |
+              uint8_t((hierarchy & 0x07) << 3) |
               (code_rate_hp & 0x07);
-    data[8] = (code_rate_lp << 5) |
-              ((guard_interval & 0x03) << 3) |
-              ((transmission_mode & 0x03) << 1) |
-              (uint8_t(other_frequency));
+    data[8] = uint8_t(code_rate_lp << 5) |
+              uint8_t((guard_interval & 0x03) << 3) |
+              uint8_t((transmission_mode & 0x03) << 1) |
+              uint8_t(other_frequency);
     data[9] = data[10] = data[11] = data[12] = 0xFF;
 
     Descriptor d(data, sizeof(data));

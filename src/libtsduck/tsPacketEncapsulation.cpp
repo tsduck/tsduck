@@ -75,7 +75,7 @@ void ts::PacketEncapsulation::reset(PID pidOutput, const PIDSet& pidInput, PID p
     _packing = false;
     _packDistance = NPOS;
     _pesMode = DISABLED;
-    _pesOffset = 0,
+    _pesOffset = 0;
     _pidOutput = pidOutput;
     _pidInput = pidInput;
     _pcrReference = pcrReference;

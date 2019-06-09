@@ -179,7 +179,7 @@ void ts::VCT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 {
     // Clear table content
     protocol_version = 0;
-    transport_stream_id = 0,
+    transport_stream_id = 0;
     descs.clear();
     channels.clear();
 
@@ -348,10 +348,10 @@ void ts::VCT::serializeContent(DuckContext& duck, BinaryTable& table) const
             PutUInt32(data + 18, ch.carrier_frequency);
             PutUInt16(data + 22, ch.channel_TSID);
             PutUInt16(data + 24, ch.program_number);
-            PutUInt8(data + 26, (ch.ETM_location << 6) |
+            PutUInt8(data + 26, uint8_t(ch.ETM_location << 6) |
                                 (ch.access_controlled ? 0x20 : 0x00) |
                                 (ch.hidden ? 0x10 : 0x00) |
-                                (_table_id != TID_CVCT ? 0x08 : ((ch.path_select & 0x01) << 3)) |
+                                (_table_id != TID_CVCT ? 0x08 : uint8_t((ch.path_select & 0x01) << 3)) |
                                 (_table_id != TID_CVCT || ch.out_of_band ? 0x04 : 0x00) |
                                 (ch.hide_guide ? 0x02 : 0x00) |
                                 0x01);

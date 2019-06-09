@@ -50,6 +50,7 @@
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
 #define DEFAULT_MIN_STRENGTH  10
@@ -731,5 +732,3 @@ int MainCode(int argc, char *argv[])
     ctx.main();
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-TS_MAIN(MainCode)

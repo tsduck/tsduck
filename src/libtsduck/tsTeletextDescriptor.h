@@ -76,7 +76,6 @@ namespace ts {
             //! The binary descriptor contains these two values.
             //! @param [in] teletext_magazine_number Teletext magazine number, 3-bit value from descriptor.
             //! @param [in] teletext_page_number Teletext page number, 8-bit value from descriptor.
-            //! @return Full page number.
             //!
             void setFullNumber(uint8_t teletext_magazine_number, uint8_t teletext_page_number);
 

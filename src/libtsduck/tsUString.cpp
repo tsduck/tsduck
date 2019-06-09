@@ -205,7 +205,7 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
                 break;
             }
             else {
-                *outStart++ = uint16_t((code & 0x0F) << 12) | ((uint16_t(inStart[0] & 0x3F)) << 6) | (inStart[1] & 0x3F);
+                *outStart++ = uint16_t((code & 0x0F) << 12) | uint16_t((uint16_t(inStart[0] & 0x3F)) << 6) | (inStart[1] & 0x3F);
                 inStart += 2;
             }
         }
@@ -1381,7 +1381,7 @@ bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result) const
             result.push_back(byte | nibble);
         }
         else {
-            byte = nibble << 4;
+            byte = uint8_t(nibble << 4);
         }
         got_first_nibble = !got_first_nibble;
     }

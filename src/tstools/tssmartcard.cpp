@@ -34,6 +34,10 @@
 #include "tsMain.h"
 #include "tsPCSC.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
+
+// SCARD_ macros contains many "old style" casts.
+TS_LLVM_NOWARNING(old-style-cast)
 
 
 //----------------------------------------------------------------------------
@@ -119,14 +123,16 @@ int MainCode(int argc, char *argv[])
 //  Return false on error.
 //----------------------------------------------------------------------------
 
-bool Check(::LONG sc_status, Options& opt, const ts::UString& cause)
-{
-    if (sc_status == SCARD_S_SUCCESS) {
-        return true;
-    }
-    else {
-        opt.error(u"%s: PC/SC error 0x%08X: %s", {cause, sc_status, ts::pcsc::StrError(sc_status)});
-        return false;
+namespace {
+    bool Check(::LONG sc_status, Options& opt, const ts::UString& cause)
+    {
+        if (sc_status == SCARD_S_SUCCESS) {
+            return true;
+        }
+        else {
+            opt.error(u"%s: PC/SC error 0x%08X: %s", {cause, sc_status, ts::pcsc::StrError(sc_status)});
+            return false;
+        }
     }
 }
 
@@ -135,9 +141,11 @@ bool Check(::LONG sc_status, Options& opt, const ts::UString& cause)
 //  Return a comma, except a colon the first time
 //----------------------------------------------------------------------------
 
-inline char sep(int& count)
-{
-    return count++ == 0 ? ':' : ',';
+namespace {
+    inline char sep(int& count)
+    {
+        return count++ == 0 ? ':' : ',';
+    }
 }
 
 
@@ -145,35 +153,37 @@ inline char sep(int& count)
 //  List one smartcard
 //----------------------------------------------------------------------------
 
-void List(Options& opt, const ts::pcsc::ReaderState& st)
-{
-    std::cout << st.reader;
+namespace {
+    void List(Options& opt, const ts::pcsc::ReaderState& st)
+    {
+        std::cout << st.reader;
 
-    if (opt.verbose()) {
-        int count = 0;
-        if (st.event_state & SCARD_STATE_UNAVAILABLE) {
-            std::cout << sep(count) << " unavailable state";
+        if (opt.verbose()) {
+            int count = 0;
+            if (st.event_state & SCARD_STATE_UNAVAILABLE) {
+                std::cout << sep(count) << " unavailable state";
+            }
+            if (st.event_state & SCARD_STATE_EMPTY) {
+                std::cout << sep(count) << " empty";
+            }
+            if (st.event_state & SCARD_STATE_PRESENT) {
+                std::cout << sep(count) << " smartcard present";
+            }
+            if (st.event_state & SCARD_STATE_EXCLUSIVE) {
+                std::cout << sep(count) << " exclusive access";
+            }
+            if (st.event_state & SCARD_STATE_INUSE) {
+                std::cout << sep(count) << " in use";
+            }
+            if (st.event_state & SCARD_STATE_MUTE) {
+                std::cout << sep(count) << " mute";
+            }
+            if (!st.atr.empty()) {
+                std::cout << std::endl << "    ATR: " << ts::UString::Dump(st.atr, ts::UString::SINGLE_LINE);
+            }
         }
-        if (st.event_state & SCARD_STATE_EMPTY) {
-            std::cout << sep(count) << " empty";
-        }
-        if (st.event_state & SCARD_STATE_PRESENT) {
-            std::cout << sep(count) << " smartcard present";
-        }
-        if (st.event_state & SCARD_STATE_EXCLUSIVE) {
-            std::cout << sep(count) << " exclusive access";
-        }
-        if (st.event_state & SCARD_STATE_INUSE) {
-            std::cout << sep(count) << " in use";
-        }
-        if (st.event_state & SCARD_STATE_MUTE) {
-            std::cout << sep(count) << " mute";
-        }
-        if (!st.atr.empty()) {
-            std::cout << std::endl << "    ATR: " << ts::UString::Dump(st.atr, ts::UString::SINGLE_LINE);
-        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }
 
 
@@ -181,28 +191,30 @@ void List(Options& opt, const ts::pcsc::ReaderState& st)
 //  Reset a smartcard
 //----------------------------------------------------------------------------
 
-bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
-{
-    if (opt.verbose()) {
-        std::cout << "resetting " << reader << std::endl;
+namespace {
+    bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
+    {
+        if (opt.verbose()) {
+            std::cout << "resetting " << reader << std::endl;
+        }
+
+        ::SCARDHANDLE handle;
+        ::DWORD protocol;
+        ::LONG sc_status = ::SCardConnect(pcsc_context,
+                                          reader.toUTF8().c_str(),
+                                          SCARD_SHARE_SHARED,
+                                          SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1 | SCARD_PROTOCOL_RAW,
+                                          &handle,
+                                          &protocol);
+
+        if (!Check(sc_status, opt, reader)) {
+            return false;
+        }
+
+        sc_status = ::SCardDisconnect(handle, ::DWORD(opt.reset_action));
+
+        return Check(sc_status, opt, reader);
     }
-
-    ::SCARDHANDLE handle;
-    ::DWORD protocol;
-    ::LONG sc_status = ::SCardConnect(pcsc_context,
-                                      reader.toUTF8().c_str(),
-                                      SCARD_SHARE_SHARED,
-                                      SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1 | SCARD_PROTOCOL_RAW,
-                                      &handle,
-                                      &protocol);
-
-    if (!Check(sc_status, opt, reader)) {
-        return false;
-    }
-
-    sc_status = ::SCardDisconnect(handle, ::DWORD(opt.reset_action));
-
-    return Check(sc_status, opt, reader);
 }
 
 
@@ -272,5 +284,3 @@ int MainCode(int argc, char *argv[])
 }
 
 #endif // TS_NO_PCSC
-
-TS_MAIN(MainCode)

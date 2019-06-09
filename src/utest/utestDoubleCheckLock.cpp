@@ -77,7 +77,7 @@ void DoubleCheckLockTest::afterTest()
 
 void DoubleCheckLockTest::testDoubleCheckLock()
 {
-    TS_UNUSED int data = 0;
+    int data = 0;
     ts::DoubleCheckLock lock;
 
     TSUNIT_ASSERT(!lock.changed());

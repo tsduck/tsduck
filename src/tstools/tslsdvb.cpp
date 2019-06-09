@@ -37,6 +37,7 @@
 #include "tsTunerArgs.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 #if defined(TS_WINDOWS)
     #include "tsDirectShowTest.h"
@@ -198,5 +199,3 @@ int MainCode(int argc, char *argv[])
 
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-TS_MAIN(MainCode)

@@ -1145,7 +1145,7 @@ void UStringTest::testAppendContainer()
 
     TSUNIT_ASSERT(ts::UString::Append(var, 4, arr1) == ref);
 
-    char* arr2[] = {(char*)"ab", (char*)"cde", (char*)"", (char*)"fghi"};
+    const char* arr2[] = {"ab", "cde", "", "fghi"};
 
     var.clear();
     var.push_back(u"begin");
@@ -1167,7 +1167,7 @@ void UStringTest::testAssignContainer()
 
     TSUNIT_ASSERT(ts::UString::Assign(var, 4, arr1) == ref);
 
-    char* arr2[] = {(char*)"ab", (char*)"cde", (char*)"", (char*)"fghi"};
+    const char* arr2[] = {"ab", "cde", "", "fghi"};
 
     var.clear();
     var.push_back(u"other");

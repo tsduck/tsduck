@@ -186,6 +186,10 @@ bool ts::WebRequest::SystemGuts::init()
         return false;
     }
 
+    // The curl_easy_setopt() function is a strange macro which triggers warnings.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(disabled-macro-expansion)
+
     // Setup the error message buffer.
     ::CURLcode status = ::curl_easy_setopt(_curl, CURLOPT_ERRORBUFFER, _error);
 
@@ -279,6 +283,9 @@ bool ts::WebRequest::SystemGuts::init()
         }
         status = ::curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);
     }
+
+    // End of curl_easy_setopt() sequence.
+    TS_POP_WARNING()
 
     // Now process setopt error.
     if (status != ::CURLE_OK) {

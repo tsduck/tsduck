@@ -44,7 +44,7 @@ namespace ts {
     //! @param [in] length Length of @a message. The caller must specify @a length
     //! in a static way. In that kind of fatal error, we can't even dare to call strlen().
     //!
-    TSDUCKDLL void FatalError(const char* message, size_t length);
+    [[noreturn]] TSDUCKDLL void FatalError(const char* message, size_t length);
 
     //!
     //! Handle fatal memory allocation failure.
@@ -52,7 +52,7 @@ namespace ts {
     //! recover from that, need to abort immediately. An emergency error
     //! message is output and the application is terminated.
     //!
-    TSDUCKDLL void FatalMemoryAllocation();
+    [[noreturn]] TSDUCKDLL void FatalMemoryAllocation();
 
     //!
     //! Check the value of a pointer and abort the application when zero.

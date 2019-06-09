@@ -238,7 +238,7 @@ void ts::SpliceInformationTable::serializeContent(DuckContext& duck, BinaryTable
     bb->appendUInt8(uint8_t(pts_adjustment >> 32) & 0x01);
     bb->appendUInt32(uint32_t(pts_adjustment));
     bb->appendUInt8(0); // cw_index
-    bb->appendUInt16(tier << 4);
+    bb->appendUInt16(uint16_t(tier << 4));
     bb->appendUInt8(0); // placeholder for command length
     bb->appendUInt8(splice_command_type);
 
@@ -268,7 +268,7 @@ void ts::SpliceInformationTable::serializeContent(DuckContext& duck, BinaryTable
     }
 
     // Adjust the command length.
-    PutUInt16(bb->data() + 11, (uint16_t((*bb)[11]) << 8) | (uint16_t(bb->size() - start) & 0x0FFF));
+    PutUInt16(bb->data() + 11, uint16_t(uint16_t((*bb)[11]) << 8) | (uint16_t(bb->size() - start) & 0x0FFF));
 
     // Descriptor loop.
     start = bb->size();

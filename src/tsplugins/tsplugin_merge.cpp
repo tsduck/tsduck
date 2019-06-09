@@ -156,6 +156,7 @@ TSPLUGIN_DECLARE_PROCESSOR(merge, ts::MergePlugin)
 
 ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _merge_psi(false),
     _pcr_restamp(false),
     _ignore_conflicts(false),

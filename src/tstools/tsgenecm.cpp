@@ -37,33 +37,32 @@
 #include "tsStandaloneTableDemux.h"
 #include "tsSectionFile.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-namespace ts {
-    class GenECMOptions: public ts::Args
-    {
-    public:
-        GenECMOptions(int argc, char *argv[]);
-        virtual ~GenECMOptions();
+class GenECMOptions: public ts::Args
+{
+public:
+    GenECMOptions(int argc, char *argv[]);
+    virtual ~GenECMOptions();
 
-        DuckContext    duck;       // TSDuck execution context.
-        UString        outFile;    // Name of binary output file.
-        ECMGClientArgs ecmg;       // ECMG parameters
-        uint16_t       cpNumber;   // Crypto-period number
-        ByteBlock      cwCurrent;  // Current CW
-        ByteBlock      cwNext;     // Next CW
-    };
-}
+    ts::DuckContext    duck;       // TSDuck execution context.
+    ts::UString        outFile;    // Name of binary output file.
+    ts::ECMGClientArgs ecmg;       // ECMG parameters
+    uint16_t           cpNumber;   // Crypto-period number
+    ts::ByteBlock      cwCurrent;  // Current CW
+    ts::ByteBlock      cwNext;     // Next CW
+};
 
 // Destructor.
-ts::GenECMOptions::~GenECMOptions() {}
+GenECMOptions::~GenECMOptions() {}
 
 // Constructor.
-ts::GenECMOptions::GenECMOptions(int argc, char *argv[]) :
+GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
     duck(this),
     outFile(),
@@ -111,21 +110,21 @@ ts::GenECMOptions::GenECMOptions(int argc, char *argv[]) :
 //  Extract sections from an ECM response.
 //----------------------------------------------------------------------------
 
-namespace ts {
-    bool ExtractECMs(GenECMOptions& opt, SectionFile& ecmFile, const ecmgscs::ChannelStatus& channelStatus, const ecmgscs::ECMResponse& response)
+namespace {
+    bool ExtractECMs(GenECMOptions& opt, ts::SectionFile& ecmFile, const ts::ecmgscs::ChannelStatus& channelStatus, const ts::ecmgscs::ECMResponse& response)
     {
         if (channelStatus.section_TSpkt_flag) {
 
             // The ECM is in TS packet format.
-            if (response.ECM_datagram.size() % PKT_SIZE != 0) {
-                opt.error(u"Invalid ECM reponse, pretend to be in packet mode, returned %d bytes, not a multiple of %d", {response.ECM_datagram.size(), PKT_SIZE});
+            if (response.ECM_datagram.size() % ts::PKT_SIZE != 0) {
+                opt.error(u"Invalid ECM reponse, pretend to be in packet mode, returned %d bytes, not a multiple of %d", {response.ECM_datagram.size(), ts::PKT_SIZE});
                 return false;
             }
 
             // Demux the ECM sections from the TS packets.
             ts::StandaloneTableDemux demux(opt.duck, ts::AllPIDs);
-            for (size_t index = 0; index + PKT_SIZE <= response.ECM_datagram.size(); index += PKT_SIZE) {
-                TSPacket pkt;
+            for (size_t index = 0; index + ts::PKT_SIZE <= response.ECM_datagram.size(); index += ts::PKT_SIZE) {
+                ts::TSPacket pkt;
                 pkt.copyFrom(&response.ECM_datagram[index]);
                 demux.feedPacket(pkt);
             }
@@ -138,10 +137,10 @@ namespace ts {
             const uint8_t* data = response.ECM_datagram.data();
             size_t remain = response.ECM_datagram.size();
             size_t size = 0;
-            while ((size = Section::SectionSize(data, remain)) > 0) {
+            while ((size = ts::Section::SectionSize(data, remain)) > 0) {
                 // Get one section.
                 assert(size <= remain);
-                SectionPtr section(new Section(data, size));
+                ts::SectionPtr section(new ts::Section(data, size));
                 if (section.isNull() || !section->isValid()) {
                     opt.error(u"ECMG returned an invalid section");
                     return false;
@@ -162,7 +161,7 @@ namespace ts {
 
 int MainCode(int argc, char *argv[])
 {
-    ts::GenECMOptions opt(argc, argv);
+    GenECMOptions opt(argc, argv);
     ts::tlv::Logger logger(ts::Severity::Debug, &opt);
     ts::ecmgscs::ChannelStatus channelStatus;
     ts::ecmgscs::StreamStatus streamStatus;
@@ -194,7 +193,7 @@ int MainCode(int argc, char *argv[])
 
     // Get the ECM section from the ECMG response.
     ts::SectionFile ecmFile(opt.duck);
-    if (!ts::ExtractECMs(opt, ecmFile, channelStatus, response)) {
+    if (!ExtractECMs(opt, ecmFile, channelStatus, response)) {
         // Malformed response, error message already reported
         return EXIT_FAILURE;
     }
@@ -202,5 +201,3 @@ int MainCode(int argc, char *argv[])
     // Save the binary file containing the ECM's.
     return ecmFile.saveBinary(opt.outFile, opt) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-TS_MAIN(MainCode)

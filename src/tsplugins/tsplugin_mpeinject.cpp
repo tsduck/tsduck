@@ -100,6 +100,7 @@ TSPLUGIN_DECLARE_PROCESSOR(mpeinject, ts::MPEInjectPlugin)
 
 ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port"),
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _terminate(false),
     _mpe_pid(PID_NULL),
     _replace(false),

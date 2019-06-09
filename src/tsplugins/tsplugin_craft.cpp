@@ -324,7 +324,7 @@ bool ts::CraftInput::getOptions()
         (uint8_t(pid >> 8) & 0x1F);
     _packet.b[2] = uint8_t(pid);
     _packet.b[3] =
-        ((scrambling & 0x03) << 6) |
+        uint8_t((scrambling & 0x03) << 6) |
         (afSize > 0 ? 0x20 : 0x00) |
         (payloadSize > 0 ? 0x10 : 0x00) |
         (_initCC & 0x0F);

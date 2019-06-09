@@ -297,15 +297,15 @@ void PlatformTest::testIntegerTypes()
     uint32_t aui32[10];
     uint64_t aui64[10];
 
-    TSUNIT_EQUAL(1, (char*)&ai8[1]  - (char*)&ai8[0]);
-    TSUNIT_EQUAL(2, (char*)&ai16[1] - (char*)&ai16[0]);
-    TSUNIT_EQUAL(4, (char*)&ai32[1] - (char*)&ai32[0]);
-    TSUNIT_EQUAL(8, (char*)&ai64[1] - (char*)&ai64[0]);
+    TSUNIT_EQUAL(1, ts::char_ptr(&ai8[1])  - ts::char_ptr(&ai8[0]));
+    TSUNIT_EQUAL(2, ts::char_ptr(&ai16[1]) - ts::char_ptr(&ai16[0]));
+    TSUNIT_EQUAL(4, ts::char_ptr(&ai32[1]) - ts::char_ptr(&ai32[0]));
+    TSUNIT_EQUAL(8, ts::char_ptr(&ai64[1]) - ts::char_ptr(&ai64[0]));
 
-    TSUNIT_EQUAL(1, (char*)&aui8[1]  - (char*)&aui8[0]);
-    TSUNIT_EQUAL(2, (char*)&aui16[1] - (char*)&aui16[0]);
-    TSUNIT_EQUAL(4, (char*)&aui32[1] - (char*)&aui32[0]);
-    TSUNIT_EQUAL(8, (char*)&aui64[1] - (char*)&aui64[0]);
+    TSUNIT_EQUAL(1, ts::char_ptr(&aui8[1])  - ts::char_ptr(&aui8[0]));
+    TSUNIT_EQUAL(2, ts::char_ptr(&aui16[1]) - ts::char_ptr(&aui16[0]));
+    TSUNIT_EQUAL(4, ts::char_ptr(&aui32[1]) - ts::char_ptr(&aui32[0]));
+    TSUNIT_EQUAL(8, ts::char_ptr(&aui64[1]) - ts::char_ptr(&aui64[0]));
 }
 
 // Test case: 64-bit literals

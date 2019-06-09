@@ -59,7 +59,6 @@ void ts::TCPConnection::declareConnected(Report& report)
         if (_is_connected) {
             report.fatal(u"implementation error: TCP socket already connected");
             throw ImplementationError(u"TCP socket already connected");
-            return;
         }
         _is_connected = true;
     }

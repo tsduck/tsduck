@@ -57,6 +57,7 @@
 //!
 #if !defined(TS_WINDOWS)
 #define TS_MAIN(func)                                                         \
+    int func(int argc, char *argv[]);                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
         try {                                                                 \
@@ -66,9 +67,11 @@
             std::cerr << "Program aborted: " << e.what() << std::endl;        \
             return EXIT_FAILURE;                                              \
         }                                                                     \
-    }
+    }                                                                         \
+    typedef int UnusedMainType /* allow trailing semi-colon */
 #elif defined(TS_NO_BUILD_VERSION)
 #define TS_MAIN(func)                                                         \
+    int func(int argc, char *argv[]);                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
         try {                                                                 \
@@ -82,9 +85,11 @@
             std::cerr << "Program aborted: " << e.what() << std::endl;        \
             return EXIT_FAILURE;                                              \
         }                                                                     \
-    }
+    }                                                                         \
+    typedef int UnusedMainType /* allow trailing semi-colon */
 #else
 #define TS_MAIN(func)                                                         \
+    int func(int argc, char *argv[]);                                         \
     int main(int argc, char *argv[])                                          \
     {                                                                         \
         if (tsduckLibraryVersionMajor != TS_VERSION_MAJOR ||                  \
@@ -110,5 +115,6 @@
             std::cerr << "Program aborted: " << e.what() << std::endl;        \
             return EXIT_FAILURE;                                              \
         }                                                                     \
-    }
+    }                                                                         \
+    typedef int UnusedMainType /* allow trailing semi-colon */
 #endif

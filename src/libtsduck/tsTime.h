@@ -639,10 +639,10 @@ namespace ts {
         //!
         //! This static routine converts a UNIX @c time_t to a UTC time.
         //!
-        //! @param [in] unixTime A UNIX @c time_t value.
+        //! @param [in] unixTime A UNIX @c time_t value. Must be unsigned. Can be 32 or 64 bits.
         //! @return The corresponding UTC time.
         //!
-        static Time UnixTimeToUTC(const uint32_t unixTime);
+        static Time UnixTimeToUTC(const uint64_t unixTime);
 
 #if defined(TS_UNIX) || defined(DOXYGEN)
         //!

@@ -157,7 +157,7 @@ bool ts::Socket::setReceiveTimeout(ts::MilliSecond timeout, ts::Report& report)
 #else
     struct timeval param;
     param.tv_sec = time_t(timeout / MilliSecPerSec);
-    param.tv_usec = long(timeout % MilliSecPerSec);
+    param.tv_usec = suseconds_t(timeout % MilliSecPerSec);
 #endif
 
     if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, TS_SOCKOPT_T(&param), sizeof(param)) != 0) {

@@ -35,11 +35,8 @@
 #pragma once
 #include "tsMemoryUtils.h"
 
-#if defined(TS_MSC)
-    #pragma warning(push)
-    // warning C4505: 'ts::DVS042<ts::AES>::encrypt': unreferenced local function has been removed
-    #pragma warning(disable:4505)
-#endif
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(4505) // warning C4505: 'ts::DVS042<ts::AES>::encrypt': unreferenced local function has been removed
 
 
 //----------------------------------------------------------------------------
@@ -59,19 +56,19 @@ ts::DVS042<CIPHER>::DVS042() :
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-size_t ts::DVS042<CIPHER>::minMessageSize() const 
+size_t ts::DVS042<CIPHER>::minMessageSize() const
 {
     return 0;
 }
 
 template<class CIPHER>
-bool ts::DVS042<CIPHER>::residueAllowed() const 
+bool ts::DVS042<CIPHER>::residueAllowed() const
 {
     return true;
 }
 
 template<class CIPHER>
-ts::UString ts::DVS042<CIPHER>::name() const 
+ts::UString ts::DVS042<CIPHER>::name() const
 {
     return this->algo == nullptr ? UString() : this->algo->name() + u"-DVS042";
 }
@@ -230,6 +227,4 @@ bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
     return true;
 }
 
-#if defined(TS_MSC)
-    #pragma warning (pop)
-#endif
+TS_POP_WARNING()

@@ -133,7 +133,10 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         }
         case VERSION_DATE: {
             // The build date.
+            TS_PUSH_WARNING()
+            TS_LLVM_NOWARNING(date-time)
             return UString::Format(u"%s - %s", {__DATE__, __TIME__});
+            TS_POP_WARNING()
         }
         case VERSION_NSIS: {
             // A definition directive for NSIS.

@@ -210,14 +210,19 @@ const ts::Enumeration ts::PLSModeEnum({
 uint32_t ts::BitsPerSymbol(Modulation modulation)
 {
     switch (modulation) {
-        case QPSK:    return 2;  // Q (in QPSK) = quad = 4 states = 2 bits
-        case PSK_8:   return 3;  // 8 states = 3 bits
-        case QAM_16:  return 4;  // 16 states = 4 bits
-        case QAM_32:  return 5;  // 32 states = 5 bits
-        case QAM_64:  return 6;  // 64 states = 6 bits
-        case QAM_128: return 7;  // 128 states = 7 bits
-        case QAM_256: return 8;  // 256 states = 8 bits
-        default:      return 0;  // Unknown
+        case QPSK:     return 2;  // Q (in QPSK) = quad = 4 states = 2 bits
+        case PSK_8:    return 3;  // 8 states = 3 bits
+        case QAM_16:   return 4;  // 16 states = 4 bits
+        case QAM_32:   return 5;  // 32 states = 5 bits
+        case QAM_64:   return 6;  // 64 states = 6 bits
+        case QAM_128:  return 7;  // 128 states = 7 bits
+        case QAM_256:  return 8;  // 256 states = 8 bits
+        case QAM_AUTO: return 0;  // Unknown
+        case VSB_8:    return 3;  // 8 states = 3 bits
+        case VSB_16:   return 4;  // 16 states = 4 bits
+        case APSK_16:  return 4;  // 16 states = 4 bits
+        case APSK_32:  return 5;  // 32 states = 5 bits
+        default:       return 0;  // Unknown
     }
 }
 
@@ -245,6 +250,7 @@ uint32_t ts::FECMultiplier(InnerFEC fec)
         case FEC_1_4:  return 1;
         case FEC_2_5:  return 2;
         case FEC_5_11: return 5;
+        case FEC_AUTO: return 0; // Unknown
         default:       return 0; // Unknown
     }
 }
@@ -267,6 +273,7 @@ uint32_t ts::FECDivider(InnerFEC fec)
         case FEC_1_4:  return 4;
         case FEC_2_5:  return 5;
         case FEC_5_11: return 11;
+        case FEC_AUTO: return 0; // Unknown
         default:       return 0; // Unknown
     }
 }
@@ -287,6 +294,7 @@ uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
         case GUARD_1_128:  return 1;
         case GUARD_19_128: return 19;
         case GUARD_19_256: return 19;
+        case GUARD_AUTO:   return 0; // unknown
         default:           return 0; // unknown
     }
 }
@@ -302,6 +310,7 @@ uint32_t ts::GuardIntervalDivider(GuardInterval guard)
         case GUARD_1_128:  return 128;
         case GUARD_19_128: return 128;
         case GUARD_19_256: return 256;
+        case GUARD_AUTO:   return 0; // unknown
         default:           return 0; // unknown
     }
 }
@@ -328,6 +337,7 @@ uint32_t ts::BandWidthValueHz(BandWidth bandwidth)
         case BW_7_MHZ:     return 7000000;
         case BW_8_MHZ:     return 8000000;
         case BW_10_MHZ:    return 10000000;
+        case BW_AUTO:      return 0; // unknown
         default:           return 0; // unknown
     }
 #endif

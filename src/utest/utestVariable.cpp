@@ -48,7 +48,7 @@ public:
 
     void testElementaryType();
     void testClass();
-    void testUninitialized();
+    [[noreturn]] void testUninitialized();
 
     TSUNIT_TEST_BEGIN(VariableTest);
     TSUNIT_TEST(testElementaryType);

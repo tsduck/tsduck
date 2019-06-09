@@ -70,11 +70,12 @@ ts::BinaryTable::BinaryTable(const BinaryTable& table, CopyShare mode) :
     _sections()
 {
     switch (mode) {
-        case SHARE:
+        case SHARE: {
             // Copy the pointers, share the pointed sections
             _sections = table._sections;
             break;
-        case COPY:
+        }
+        case COPY: {
             _sections.resize(table._sections.size());
             for (size_t i = 0; i < _sections.size(); ++i) {
                 if (table._sections[i].isNull()) {
@@ -85,9 +86,11 @@ ts::BinaryTable::BinaryTable(const BinaryTable& table, CopyShare mode) :
                 }
             }
             break;
-        default:
+        }
+        default: {
             // should not get there
             assert(false);
+        }
     }
 }
 

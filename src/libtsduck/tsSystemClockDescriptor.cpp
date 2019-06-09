@@ -72,7 +72,7 @@ void ts::SystemClockDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8((external_clock_reference ? 0x80 : 0x00) | 0x40 | (clock_accuracy_integer & 0x3F));
-    bbp->appendUInt8(((clock_accuracy_exponent & 0x07) << 5) | 0x1F);
+    bbp->appendUInt8(uint8_t((clock_accuracy_exponent & 0x07) << 5) | 0x1F);
     serializeEnd(desc, bbp);
 }
 

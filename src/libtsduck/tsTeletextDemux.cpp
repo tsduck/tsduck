@@ -286,7 +286,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
     // - Data: 40 bytes
 
     // Variable names conform to ETS 300 706, chapter 7.1.2.
-    uint8_t address = (unham_8_4(pkt[3]) << 4) | unham_8_4(pkt[2]);
+    uint8_t address = uint8_t(unham_8_4(pkt[3]) << 4) | unham_8_4(pkt[2]);
     uint8_t m = address & 0x07;
     if (m == 0) {
         m = 8;
@@ -297,7 +297,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
 
     if (y == 0) {
         // Page number and control bits
-        uint16_t pageNumber = (m << 8) | (unham_8_4(data[1]) << 4) | unham_8_4(data[0]);
+        uint16_t pageNumber = uint16_t(uint16_t(m) << 8) | uint16_t(uint16_t(unham_8_4(data[1])) << 4) | unham_8_4(data[0]);
         uint8_t charset = ((unham_8_4(data[7]) & 0x08) | (unham_8_4(data[7]) & 0x04) | (unham_8_4(data[7]) & 0x02)) >> 1;
 
         // ETS 300 706, chapter 9.3.1.3:

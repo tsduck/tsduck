@@ -105,7 +105,6 @@ namespace ts {
         char        _buffer[BUFFER_SIZE];
         size_t      _received;
         std::string _prompt;
-        Mutex       _mutex;
 
         bool waitForChunk(const std::string, std::string&, const AbortInterface*, Report&);
     };

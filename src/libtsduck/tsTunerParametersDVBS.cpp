@@ -161,6 +161,8 @@ ts::UString ts::TunerParametersDVBS::shortDescription(int strength, int quality)
         case POL_RIGHT:
             desc += u" R";
             break;
+        case POL_AUTO:
+        case POL_NONE:
         default:
             break;
     }

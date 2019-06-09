@@ -467,7 +467,6 @@ void ts::SleepThread(MilliSecond delay)
         else {
             // Actual error
             throw ts::Exception(u"nanosleep error", errno);
-            break;
         }
     }
 
@@ -903,7 +902,6 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     const ::kern_return_t status1 = ::task_info(::mach_task_self(), MACH_TASK_BASIC_INFO, ::task_info_t(&taskinfo), &count);
     if (status1 != KERN_SUCCESS) {
         throw ts::Exception(u"task_info error");
-        return;
     }
     metrics.vmem_size = taskinfo.virtual_size;
 
@@ -912,7 +910,6 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     const int status2 = ::getrusage(RUSAGE_SELF, &usage);
     if (status2 < 0) {
         throw ts::Exception(u"getrusage error");
-        return;
     }
 
     // Add system time and user time, in milliseconds.

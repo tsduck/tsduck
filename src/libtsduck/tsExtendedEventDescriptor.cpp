@@ -117,7 +117,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
         }
         if (tag == MY_DID && len >= 4) {
             const UString lang(UString::FromDVB(data + 1, 3));
-            data[0] = ((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
+            data[0] = uint8_t((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
             desc_index[lang]++;
         }
         data += len; size -= len;
@@ -215,7 +215,7 @@ void ts::ExtendedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc)
 {
     ByteBlockPtr bbp(serializeStart());
 
-    bbp->appendUInt8((descriptor_number << 4) | (last_descriptor_number & 0x0F));
+    bbp->appendUInt8(uint8_t(descriptor_number << 4) | (last_descriptor_number & 0x0F));
     if (!SerializeLanguageCode(duck, *bbp, language_code)) {
         desc.invalidate();
         return;

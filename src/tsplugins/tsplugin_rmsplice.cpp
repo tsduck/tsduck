@@ -576,7 +576,7 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSP
                                 }
 
                                 tsp->verbose(u"Immediate splice in on PID 0x%X (%d) at PTS %d (%.3f s)",
-                                    {pid, pid, state.lastPTS, (double) state.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
+                                             {pid, pid, state.lastPTS, double(state.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
                             }
                         }
                     }
@@ -604,7 +604,7 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSP
                                 state.outStart = state.lastPTS;
 
                                 tsp->verbose(u"Immediate splice out on PID 0x%X (%d) at PTS %d (%.3f s)",
-                                    {pid, pid, state.lastPTS, (double) state.lastPTS / (double) SYSTEM_CLOCK_SUBFREQ});
+                                             {pid, pid, state.lastPTS, double(state.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
                             }
                         }
                     }

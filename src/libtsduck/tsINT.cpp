@@ -300,7 +300,7 @@ void ts::INT::addSection(BinaryTable& table,
                          size_t& remain) const
 {
     // The table id extension is made of action_type and platform_id_hash.
-    const uint16_t tidext = (uint16_t(action_type) << 8) |
+    const uint16_t tidext = uint16_t(uint16_t(action_type) << 8) |
         uint16_t(((platform_id >> 16) & 0xFF) ^ ((platform_id >> 8) & 0xFF) ^ (platform_id& 0xFF));
 
     table.addSection(new Section(_table_id,

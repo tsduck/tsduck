@@ -88,7 +88,7 @@ void ts::ApplicationDescriptor::serialize(DuckContext& duck, Descriptor& desc) c
         bbp->appendUInt8(it->version_minor);
         bbp->appendUInt8(it->version_micro);
     }
-    bbp->appendUInt8((service_bound ? 0x80 : 0x00) | ((visibility & 0x03)<< 5) | 0x1F);
+    bbp->appendUInt8((service_bound ? 0x80 : 0x00) | uint8_t((visibility & 0x03) << 5) | 0x1F);
     bbp->appendUInt8(application_priority);
     bbp->append(transport_protocol_labels);
     serializeEnd(desc, bbp);

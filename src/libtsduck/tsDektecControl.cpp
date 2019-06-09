@@ -80,6 +80,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
         {u"green", DTAPI_LED_GREEN},
         {u"red", DTAPI_LED_RED},
         {u"yellow", DTAPI_LED_YELLOW},
+        {u"blue", DTAPI_LED_BLUE},
         {u"hardware", DTAPI_LED_HARDWARE},
     }));
     help(u"led", u"state",

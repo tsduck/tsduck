@@ -366,6 +366,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                 ::close(filedes[PIPE_READFD]);
                 break;
             }
+            case STDIN_PARENT:
             default: {
                 // Nothing to do.
                 break;
@@ -408,6 +409,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                 ::close(filedes[PIPE_WRITEFD]);
                 break;
             }
+            case KEEP_BOTH:
             default: {
                 // Nothing to do.
                 break;

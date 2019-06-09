@@ -36,6 +36,7 @@
 #include "tsTSFileOutput.h"
 #include "tsVariable.h"
 TSDUCK_SOURCE;
+TS_MAIN(MainCode);
 
 
 //-----------------------------------------------------------------------------
@@ -212,7 +213,7 @@ private:
     uint64_t                _additional_bits;         // Additional bits (less than one packet) to add in next segment.
 
     // Abort processing (invoked on fatal error, when message already reported)
-    void fatalError();
+    [[noreturn]] void fatalError();
 
     // Get name of time stamps
     ts::UString getTimeStampType() const {return _opt.dts_based ? u"DTS" : u"PCR";}
@@ -518,5 +519,3 @@ int MainCode(int argc, char *argv[])
     stuffer.stuff();
     return EXIT_SUCCESS;
 }
-
-TS_MAIN(MainCode)

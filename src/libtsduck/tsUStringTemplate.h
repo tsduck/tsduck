@@ -37,10 +37,8 @@
 // With Microsoft compiler:
 // warning C4127: conditional expression is constant
 // for expression: if (sizeof(CHARTYPE) == sizeof(UChar)) {
-#if defined(TS_MSC)
-    #pragma warning(push)
-    #pragma warning(disable:4127)
-#endif
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(4127)
 
 template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec, INT count)
@@ -88,9 +86,7 @@ ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr, INT coun
     return *this;
 }
 
-#if defined(TS_MSC)
-    #pragma warning(pop)
-#endif
+TS_POP_WARNING()
 
 template <typename CHARTYPE>
 ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec)
@@ -463,12 +459,10 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
 {
     // In this function, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
     // capabilities of the type (is_signed, etc.) But, for each instantiation of INT, some expression
-    // may not make sense and the Microsoft compiler complains about that. Disable specific warnings
-    #if defined(TS_MSC)
-        #pragma warning(push)
-        #pragma warning(disable:4127)
-        #pragma warning(disable:4146)
-    #endif
+    // may not make sense and the Microsoft compiler complains about that. Disable specific warnings.
+    TS_PUSH_WARNING()
+    TS_MSC_NOWARNING(4127)
+    TS_MSC_NOWARNING(4146)
 
     typedef typename std::numeric_limits<INT> limits;
 
@@ -541,9 +535,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
     // Success only if we went down to the end of string
     return start == end;
 
-    #if defined(TS_MSC)
-        #pragma warning(pop)
-    #endif
+    TS_POP_WARNING()
 }
 
 
@@ -637,18 +629,13 @@ ts::UString ts::UString::Decimal(INT value,
 
     INT ivalue;
     if (negative) {
-        // If the type is unsigned, "ivalue = -value" will never be executed
-        // but Visual C++ complains. Suppress the warning.
-        #if defined(TS_MSC)
-            #pragma warning(push)
-            #pragma warning(disable:4146)
-        #endif
+        // If the type is unsigned, "ivalue = -value" will never be executed but Visual C++ complains.
+        TS_PUSH_WARNING()
+        TS_MSC_NOWARNING(4146)
 
         ivalue = -value;
 
-        #if defined(TS_MSC)
-            #pragma warning(pop)
-        #endif
+        TS_POP_WARNING()
     }
     else {
         ivalue = value;
