@@ -397,7 +397,7 @@ void ts::ECMGClient::main()
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receive(msg, _abort, _logger)) {
+        while (ok && _connection.receive(msg, abort, _logger)) {
             switch (msg->tag()) {
                 case ecmgscs::Tags::channel_test: {
                     // Automatic reply to channel_test

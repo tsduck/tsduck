@@ -95,6 +95,7 @@ void DoubleCheckLockTest::testDoubleCheckLock()
         ts::DoubleCheckLock::Reader guard(lock);
         reader = true;
     }
+    TSUNIT_EQUAL(1, data);
     TSUNIT_ASSERT(reader);
     TSUNIT_ASSERT(!lock.changed());
 
