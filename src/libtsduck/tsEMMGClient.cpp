@@ -523,7 +523,7 @@ void ts::EMMGClient::main()
         // Loop on message reception
         tlv::MessagePtr msg;
         bool ok = true;
-        while (ok && _connection.receive(msg, _abort, _logger)) {
+        while (ok && _connection.receive(msg, abort, _logger)) {
             // Is this kind of response worth reporting to the application?
             bool reportResponse = true;
 
