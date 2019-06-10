@@ -128,6 +128,12 @@ public:
     Polarization        polarity;     // Polarity.
     bool                high_band;    // Use LNB high frequency band.
     bool                lnb_setup;    // Need LNB setup.
+
+private:
+    // Inaccessible operations
+    Guts(const Guts&) = delete;
+    Guts(const Guts&&) = delete;
+    Guts& operator=(const Guts&) = delete;
 };
 
 ts::DektecInputPlugin::Guts::Guts() :

@@ -62,6 +62,9 @@ namespace ts {
     private:
         static SingletonManager* volatile _instance;
         SingletonManager() : mutex() {}
+        // Inaccessible operations
+        SingletonManager(const SingletonManager&) = delete;
+        SingletonManager& operator=(const SingletonManager&) = delete;
     };
 }
 

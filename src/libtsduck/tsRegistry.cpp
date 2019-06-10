@@ -211,7 +211,7 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
     }
 
     // Allocate new buffer and actually get the value
-    ::DWORD bufsize = (size < 0 ? 0 : size) + 10;
+    ::DWORD bufsize = size + 10;
     ::BYTE* buf = new ::BYTE[size = bufsize];
     CheckNonNull(buf);
     hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, buf, &size);

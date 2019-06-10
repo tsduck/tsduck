@@ -99,8 +99,9 @@ namespace ts {
         OutputMode _outputMode;
         UString    _pagerCommand;
 
-        // Inacessible operations.
+        // Inaccessible operations.
         OutputPager(const OutputPager&) = delete;
+        OutputPager(const OutputPager&&) = delete;
         OutputPager& operator=(const OutputPager&) = delete;
     };
 }

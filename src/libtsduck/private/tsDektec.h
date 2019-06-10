@@ -44,8 +44,16 @@
     #define DTAPI_VERSION_MAJOR 0
     #define DTAPI_VERSION_MINOR 0
 #else
-    #define _NO_USING_NAMESPACE_DTAPI
+    // The DTAPI header triggers some warnings, ignore them.
+    TS_PUSH_WARNING()
+    TS_MSC_NOWARNING(4263)
+    TS_MSC_NOWARNING(4264)
+    TS_MSC_NOWARNING(4265)
+    TS_MSC_NOWARNING(4266)
+    TS_MSC_NOWARNING(4626)
+#define _NO_USING_NAMESPACE_DTAPI
     #include "DTAPI.h"
+    TS_POP_WARNING()
 #endif
 
 //!

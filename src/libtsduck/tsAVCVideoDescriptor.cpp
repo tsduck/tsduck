@@ -174,7 +174,7 @@ void ts::AVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setBoolAttribute(u"constraint_set2", constraint_set2);
     root->setIntAttribute(u"AVC_compatible_flags", AVC_compatible_flags, true);
     root->setIntAttribute(u"level_idc", level_idc, true);
-    root->setBoolAttribute(u"AVC_still_present", level_idc);
+    root->setBoolAttribute(u"AVC_still_present", AVC_still_present);
     root->setBoolAttribute(u"AVC_24_hour_picture", AVC_24_hour_picture);
 }
 

@@ -57,7 +57,7 @@ namespace ts {
         //! Maximum size of the DTMF character string.
         //! The DTMF size is stored in 3 bits in the descriptor.
         //!
-        const size_t DTMF_MAX_SIZE = 7;
+        static const size_t DTMF_MAX_SIZE = 7;
 
         //!
         //! Default constructor.

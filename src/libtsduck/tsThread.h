@@ -197,15 +197,10 @@ namespace ts {
         static void Yield();
 
     private:
-        // Forbidden operations
-        Thread(const Thread&) = delete;
-        Thread& operator=(const Thread&) = delete;
-
-        // Private members
         ThreadAttributes _attributes;
-        mutable Mutex _mutex;
-        volatile bool _started;
-        volatile bool _waiting;
+        mutable Mutex    _mutex;
+        volatile bool    _started;
+        volatile bool    _waiting;
 
         // Internal version of isCurrentThread(), bypass checks
         bool isCurrentThreadUnchecked() const;
@@ -223,5 +218,10 @@ namespace ts {
         // Actual starting point of thread. Parameter is "this".
         static void* ThreadProc(void* parameter);
 #endif
+
+        // Inaccessible operations
+        Thread(const Thread&) = delete;
+        Thread(const Thread&&) = delete;
+        Thread& operator=(const Thread&) = delete;
     };
 }

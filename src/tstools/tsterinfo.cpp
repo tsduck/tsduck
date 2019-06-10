@@ -79,8 +79,9 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -97,6 +98,13 @@ struct Options: public ts::Args
     bool              simple;          // Simple output
     bool              default_region;  // Display the default region for UHF/VHF band frequency layout
     ts::UString       hfband_region;   // Region for UHF/VHF band frequency layout
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

@@ -300,6 +300,10 @@ namespace ts {
 
             // StringifyInterface interface.
             virtual UString toString() const override;
+
+        private:
+            // Inaccessible operations.
+            HFBandIndex& operator=(HFBandIndex&) = delete;
         };
 
         // A map of HFBand by index.

@@ -93,7 +93,9 @@ public:
 
 private:
     // Inaccessible operations.
+    ScanOptions() = delete;
     ScanOptions(const ScanOptions&) = delete;
+    ScanOptions(const ScanOptions&&) = delete;
     ScanOptions& operator=(const ScanOptions&) = delete;
 };
 
@@ -325,6 +327,13 @@ private:
 
     // Test the signal at one specific offset. Return true if signal is found.
     bool tryOffset(int32_t offset);
+
+private:
+    // Inaccessible operations.
+    OffsetScanner() = delete;
+    OffsetScanner(const OffsetScanner&) = delete;
+    OffsetScanner(const OffsetScanner&&) = delete;
+    OffsetScanner& operator=(const OffsetScanner&) = delete;
 };
 
 

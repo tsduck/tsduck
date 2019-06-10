@@ -48,8 +48,9 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -68,6 +69,13 @@ struct Options: public ts::Args
     bool        pid_ignore;
     bool        cc_ignore;
     bool        continue_all;
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

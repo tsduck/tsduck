@@ -42,14 +42,22 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
     bool              check_only;   // check only, do not truncate
     ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
     ts::UStringVector files;        // file names
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

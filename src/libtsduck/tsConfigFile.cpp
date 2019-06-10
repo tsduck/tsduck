@@ -31,6 +31,9 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+// Used to return a constant reference.
+const ts::ConfigSection ts::ConfigFile::_empty;
+
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -38,8 +41,7 @@ TSDUCK_SOURCE;
 
 ts::ConfigFile::ConfigFile(const UString& filename, Report& report) :
     _filename(filename),
-    _sections(),
-    _empty()
+    _sections()
 {
     if (!filename.empty()) {
         load(filename, report);
@@ -48,8 +50,7 @@ ts::ConfigFile::ConfigFile(const UString& filename, Report& report) :
 
 ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report) :
     _filename(),
-    _sections(),
-    _empty()
+    _sections()
 {
     // Try to load first file.
     if (!filename1.empty()) {
@@ -63,8 +64,7 @@ ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, R
 
 ts::ConfigFile::ConfigFile(std::istream& strm) :
     _filename(),
-    _sections(),
-    _empty()
+    _sections()
 {
     merge(strm);
 }

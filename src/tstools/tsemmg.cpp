@@ -98,6 +98,13 @@ public:
 
     // Adjust the various rates and delays according to the allocated bandwidth.
     bool adjustBandwidth(uint16_t allocated);
+
+private:
+    // Inaccessible operations.
+    EMMGOptions() = delete;
+    EMMGOptions(const EMMGOptions&) = delete;
+    EMMGOptions(const EMMGOptions&&) = delete;
+    EMMGOptions& operator=(const EMMGOptions&) = delete;
 };
 
 // Destructor.

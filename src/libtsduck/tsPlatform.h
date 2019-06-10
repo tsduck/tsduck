@@ -696,21 +696,48 @@ TS_LLVM_NOWARNING(reserved-id-macro)        // We sometimes use underscores at t
 TS_LLVM_NOWARNING(c++98-compat-pedantic)    // Require C++11, no need for C++98 compatibility.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 
-// Methods may have unused formal parameters.
-TS_MSC_NOWARNING(4100)  // 'xxx' : unreferenced formal parameter
-// When a user class is exported in a user DLL and this class has STL templates instantiations
+TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
 TS_MSC_NOWARNING(4251)  // 'classname' : class 'std::vector<_Ty>' needs to have dll-interface to be used by clients of class 'classname'
-// When a user class is exported in a user DLL and this class has an STL template instantiation as base class
 TS_MSC_NOWARNING(4275)  // non dll-interface class 'std::_Container_base_aux' used as base for dll-interface class 'std::_Container_base_aux_alloc_real<_Alloc>'
-// VC++ does not implement exception specification
-TS_MSC_NOWARNING(4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-// VC++ does not like usage of this in member initializer list although there are some legal usage for that (be careful however...)
 TS_MSC_NOWARNING(4355)  // 'this' : used in base member initializer list
+TS_MSC_NOWARNING(4365)  // conversion from 'type1' to 'type2', signed/unsigned mismatch
+TS_MSC_NOWARNING(4514)  // unreferenced inline function has been removed
+TS_MSC_NOWARNING(4571)  // catch (...) semantics changed since Visual C++ 7.1; structured exceptions(SEH) are no longer caught
+TS_MSC_NOWARNING(4820)  // 'n' bytes padding added after data member 'nnnnn'
+TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 
-// System headers
+// The following ones should really be informational instead of warning:
+TS_MSC_NOWARNING(4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'xxxx'
+TS_MSC_NOWARNING(4710)  // 'xxx' : function not inlined
+TS_MSC_NOWARNING(4711)  // function 'xxx' selected for automatic inline expansion
+TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
+
+// System headers.
+// Before including system headers, we must temporarily suspend some compilation warnings.
+// This is especially true for Windows which trigger tons of warnings.
+// The normal warning reporting is restored after inclusion.
+
+// [BUG.1] This one is nasty and is a bug in winioctl.h, already reported, never fixed, as usual with MSVC...
+// It must be set before pushing warnings.
+// tsPlatform.h(840, 1) : error C2220 : warning treated as error - no 'object' file generated
+// tsPlatform.h(840, 1) : warning C5031 : #pragma warning(pop) : likely mismatch, popping warning state pushed in different file
+// winioctl.h(161, 17) : message:  #pragma warning(push)
+// tsPlatform.h(719, 1) : warning C5032 : detected #pragma warning(push) with no corresponding #pragma warning(pop)
+TS_MSC_NOWARNING(5031)
+TS_MSC_NOWARNING(5032)
 
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(reserved-id-macro)
+TS_MSC_NOWARNING(4263)
+TS_MSC_NOWARNING(4264)
+TS_MSC_NOWARNING(4571)
+TS_MSC_NOWARNING(4625)
+TS_MSC_NOWARNING(4626)
+TS_MSC_NOWARNING(4627)
+TS_MSC_NOWARNING(4668)
+TS_MSC_NOWARNING(4774)
+TS_MSC_NOWARNING(5026)
+TS_MSC_NOWARNING(5027)
 
 #if defined(TS_WINDOWS)
 
@@ -819,6 +846,13 @@ TS_LLVM_NOWARNING(reserved-id-macro)
 #include <fcntl.h>
 
 TS_POP_WARNING()
+
+// See [BUG.1] above. Try to recover from this sh... bug in winioctl.h
+#if defined(TS_MSC)
+    #pragma warning(pop)         // one more to compensate for missing one in winioctl.h
+    #pragma warning(error:5031)  // restore warning without being 100% sure of what happened
+    #pragma warning(error:5032)  // idem
+#endif
 
 // Required link libraries under Windows.
 
@@ -953,10 +987,9 @@ TS_POP_WARNING()
 #elif defined(TS_GCC)
     #define TS_UNUSED __attribute__ ((unused))
 #elif defined(TS_MSC)
-    // With MS compiler, there is no such attribute. It is not possible to disable the
-    // "unused" warning for a specific variable. The unused warnings must be disabled.
+    // With MS compiler, there is no such attribute. The unused warnings must be disabled exactly once.
     // warning C4189: 'xxx' : local variable is initialized but not referenced
-    #define TS_UNUSED TS_MSC_NOWARNING(4189)
+    #define TS_UNUSED __pragma(warning(suppress:4189))
 #else
     #error "New unknown compiler, please update TS_UNUSED in tsPlatform.h"
 #endif
@@ -3308,14 +3341,16 @@ namespace ts {
 #if defined(TS_GCC)
 #define TS_SET_BUILD_MARK(s) static __attribute__ ((used)) const char* const _tsBuildMark = (s)
 #else
-#define TS_SET_BUILD_MARK(s)                              \
-    namespace {                                           \
-        class _tsBuildMarkClass {                         \
-        public:                                           \
-            const char* const str;                        \
-            _tsBuildMarkClass(const char* _s): str(_s) {} \
-        };                                                \
-        const _tsBuildMarkClass _tsBuildMark(s);          \
+#define TS_SET_BUILD_MARK(s)                                                  \
+    namespace {                                                               \
+        class _tsBuildMarkClass {                                             \
+        public:                                                               \
+            const char* const str;                                            \
+            _tsBuildMarkClass(const char* _s): str(_s) {}                     \
+            _tsBuildMarkClass(const _tsBuildMarkClass&) = delete;             \
+            _tsBuildMarkClass& operator=(const _tsBuildMarkClass&) = delete;  \
+        };                                                                    \
+        const _tsBuildMarkClass _tsBuildMark(s);                              \
     }
 #endif
 

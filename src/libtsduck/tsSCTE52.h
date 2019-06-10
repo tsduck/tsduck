@@ -62,6 +62,11 @@ namespace ts {
     private:
         // The IV are identical, there is no specific IV for short blocks.
         virtual bool setShortIV(const void* iv_, size_t iv_length) override;
+
+        // Inaccessible operations
+        SCTE52_2003(const SCTE52_2003&) = delete;
+        SCTE52_2003(const SCTE52_2003&&) = delete;
+        SCTE52_2003& operator=(const SCTE52_2003&) = delete;
     };
 
     //!
@@ -85,5 +90,10 @@ namespace ts {
 
         // Implementation of BlockCipher interface.
         virtual UString name() const override;
+
+        // Inaccessible operations
+        SCTE52_2008(const SCTE52_2008&) = delete;
+        SCTE52_2008(const SCTE52_2008&&) = delete;
+        SCTE52_2008& operator=(const SCTE52_2008&) = delete;
     };
 }

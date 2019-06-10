@@ -165,7 +165,7 @@ namespace ts {
         size_t           _max_messages;
         ByteBlock        _sample_buffer;     // Collected media samples
         size_t           _sample_offset;     // Next offset in _sample_buffer
-        Report& _report;
+        Report&          _report;
         ::LONG volatile  _ref_count;
         ::FILTER_STATE   _state;
         ::IFilterGraph*  _graph;
@@ -178,6 +178,11 @@ namespace ts {
         //! @param [in,out] size Size in bytes of user's buffer. Updated after last read packet.
         //!
         void FillBuffer(char*& buffer, size_t& buffer_size);
+
+        // Inaccessible operations
+        SinkFilter(const SinkFilter&) = delete;
+        SinkFilter(const SinkFilter&&) = delete;
+        SinkFilter& operator=(const SinkFilter&) = delete;
     };
 
     //!
@@ -241,11 +246,16 @@ namespace ts {
     private:
         bool             _flushing;
         bool             _input_overflow;
-        Report& _report;
+        Report&          _report;
         ::LONG volatile  _ref_count;
         SinkFilter*      _filter;
         ::IPin*          _partner;
         ::AM_MEDIA_TYPE  _cur_media_type;
+
+        // Inaccessible operations
+        SinkPin(const SinkPin&) = delete;
+        SinkPin(const SinkPin&&) = delete;
+        SinkPin& operator=(const SinkPin&) = delete;
     };
 
     //!
@@ -284,9 +294,14 @@ namespace ts {
         //! @endcond
 
     private:
-        Report& _report;
+        Report&          _report;
         ::LONG volatile  _ref_count;
         int              _next; // Next media type to enumerate
+
+        // Inaccessible operations
+        SinkEnumMediaTypes(const SinkEnumMediaTypes&) = delete;
+        SinkEnumMediaTypes(const SinkEnumMediaTypes&&) = delete;
+        SinkEnumMediaTypes& operator=(const SinkEnumMediaTypes&) = delete;
     };
 
     //!
@@ -327,9 +342,14 @@ namespace ts {
 
     private:
         // There is only one pin to enumerate
-        Report& _report;
+        Report&          _report;
         ::LONG volatile  _ref_count;
         SinkFilter*      _filter;
         bool             _done;
+
+        // Inaccessible operations
+        SinkEnumPins(const SinkEnumPins&) = delete;
+        SinkEnumPins(const SinkEnumPins&&) = delete;
+        SinkEnumPins& operator=(const SinkEnumPins&) = delete;
     };
 }

@@ -113,8 +113,9 @@ namespace ts {
                        size_t work_blocks = 1);
 
     private:
-        // Inaccesible operations
+        // Inaccessible operations
         CipherChaining(const CipherChaining&) = delete;
+        CipherChaining(const CipherChaining&&) = delete;
         CipherChaining& operator=(const CipherChaining&) = delete;
     };
 
@@ -146,6 +147,12 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~CipherChainingTemplate();
+
+    private:
+        // Inaccessible operations
+        CipherChainingTemplate(const CipherChainingTemplate&) = delete;
+        CipherChainingTemplate(const CipherChainingTemplate&&) = delete;
+        CipherChainingTemplate& operator=(const CipherChainingTemplate&) = delete;
     };
 }
 

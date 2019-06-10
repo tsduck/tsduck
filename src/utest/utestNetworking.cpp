@@ -466,6 +466,7 @@ namespace {
     {
     private:
         uint16_t _portNumber;
+
     public:
         // Constructor
         explicit TCPClient(uint16_t portNumber) :
@@ -532,6 +533,12 @@ namespace {
             session.close(CERR);
             CERR.debug(u"TCPSocketTest: client thread: terminated");
         }
+
+    private:
+        // Inaccessible operations
+        TCPClient(const TCPClient&) = delete;
+        TCPClient(const TCPClient&&) = delete;
+        TCPClient& operator=(const TCPClient&) = delete;
     };
 }
 
@@ -591,6 +598,7 @@ namespace {
     {
     private:
         uint16_t _portNumber;
+
     public:
         // Constructor
         explicit UDPClient(uint16_t portNumber) :
@@ -640,6 +648,12 @@ namespace {
 
             CERR.debug(u"UDPSocketTest: client thread terminated");
         }
+
+    private:
+        // Inaccessible operations
+        UDPClient(const UDPClient&) = delete;
+        UDPClient(const UDPClient&&) = delete;
+        UDPClient& operator=(const UDPClient&) = delete;
     };
 }
 

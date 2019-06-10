@@ -891,10 +891,6 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
 
     private:
-        // Inaccessible operations.
-        Args(const Args&) = delete;
-        Args& operator=(const Args&) = delete;
-
         // Representation of an option value.
         class ArgValue
         {
@@ -1020,6 +1016,11 @@ namespace ts {
         // Throw exception if not found.
         const IOption& getIOption(const UChar* name) const;
         IOption& getIOption(const UChar* name);
+
+        // Inaccessible operations.
+        Args(const Args&) = delete;
+        Args(const Args&&) = delete;
+        Args& operator=(const Args&) = delete;
     };
 }
 

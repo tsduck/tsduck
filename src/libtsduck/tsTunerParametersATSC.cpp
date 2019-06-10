@@ -182,6 +182,7 @@ ts::BitRate ts::TunerParametersATSC::theoreticalBitrate() const
     // Only two modulation values are available for ATSC.
     TS_PUSH_WARNING()
     TS_LLVM_NOWARNING(switch-enum)
+    TS_MSC_NOWARNING(4061)
 
     switch (modulation) {
         case VSB_8:  return 19392658;

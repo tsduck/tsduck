@@ -54,6 +54,13 @@ public:
 
     HiDesOptions(int argc, char *argv[]);
     virtual ~HiDesOptions();
+
+private:
+    // Inaccessible operations.
+    HiDesOptions() = delete;
+    HiDesOptions(const HiDesOptions&) = delete;
+    HiDesOptions(const HiDesOptions&&) = delete;
+    HiDesOptions& operator=(const HiDesOptions&) = delete;
 };
 
 // Destructor.

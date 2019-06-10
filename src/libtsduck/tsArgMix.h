@@ -483,7 +483,7 @@ namespace ts {
         TS_PUSH_WARNING()
         TS_LLVM_NOWARNING(deprecated)
         ArgMixIn& operator=(const ArgMixIn&) = delete;
-        TS_PUSH_WARNING()
+        TS_POP_WARNING()
     };
 
     //!

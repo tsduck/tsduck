@@ -91,10 +91,7 @@ namespace ts {
         //! @return True if this object has the same content as @a other,
         //! false otherwise.
         //!
-        bool operator==(const Enumeration& other) const
-        {
-            return _map == other._map;
-        }
+        bool operator==(const Enumeration& other) const;
 
         //!
         //! Unequality operator.
@@ -103,10 +100,7 @@ namespace ts {
         //! @return True if this object does not have the same content as @a other,
         //! false otherwise.
         //!
-        bool operator!=(const Enumeration& other) const
-        {
-            return _map != other._map;
-        }
+        bool operator!=(const Enumeration& other) const;
 
         //!
         //! Get the number of entries in the enumeration.

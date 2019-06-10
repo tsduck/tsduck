@@ -67,6 +67,13 @@ public:
     bool        keep;        // keep packet size (default: reduce to 188 bytes)
     ts::UString infile;      // Input file name
     ts::UString outfile;     // Output file name
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

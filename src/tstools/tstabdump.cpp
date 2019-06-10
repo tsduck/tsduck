@@ -56,8 +56,9 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -69,6 +70,13 @@ struct Options: public ts::Args
     size_t                max_tables;        // Max number of tables to dump.
     size_t                max_invalid_udp;   // Max number of invalid UDP messages before giving up.
     bool                  no_encapsulation;  // Raw sections in UDP messages.
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

@@ -264,5 +264,10 @@ namespace ts {
 
         // Hide this method, we do not want the section provider to be replaced
         void setSectionProvider(SectionProviderInterface*);
+
+        // Inaccessible operations
+        CyclingPacketizer(const CyclingPacketizer&&) = delete;
+        CyclingPacketizer(const CyclingPacketizer&) = delete;
+        CyclingPacketizer& operator=(const CyclingPacketizer&) = delete;
     };
 }

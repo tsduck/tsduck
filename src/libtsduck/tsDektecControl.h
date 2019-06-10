@@ -76,9 +76,6 @@ namespace ts {
         int execute();
 
     private:
-        DektecControl() = delete;
-        DektecControl& operator=(const DektecControl&) = delete;
-
         // Command line parameters.
         bool   _list_all;      //!< List all Dektec devices
         bool   _normalized;    //!< List in "normalized" format
@@ -104,5 +101,11 @@ namespace ts {
 
         // Display a long line on multiple lines
         void wideDisplay(const UString& line);
+
+        // Inaccessible operations
+        DektecControl() = delete;
+        DektecControl(const DektecControl&) = delete;
+        DektecControl(const DektecControl&&) = delete;
+        DektecControl& operator=(const DektecControl&) = delete;
     };
 }

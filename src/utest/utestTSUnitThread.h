@@ -66,5 +66,11 @@ namespace utest {
 
         // Implementation of thread interface.
         virtual void main() override;
+
+    private:
+        // Inaccessible operations
+        TSUnitThread(const TSUnitThread&) = delete;
+        TSUnitThread(const TSUnitThread&&) = delete;
+        TSUnitThread& operator=(const TSUnitThread&) = delete;
     };
 }
