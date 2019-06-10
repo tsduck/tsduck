@@ -88,7 +88,7 @@ namespace ts {
         // Inacessible operations
         StandaloneTableDemux() = delete;
         StandaloneTableDemux(const StandaloneTableDemux&) = delete;
-        StandaloneTableDemux(const StandaloneTableDemux&&) = delete;
+        StandaloneTableDemux(StandaloneTableDemux&&) = delete;
         StandaloneTableDemux& operator=(const StandaloneTableDemux&) = delete;
     };
 }

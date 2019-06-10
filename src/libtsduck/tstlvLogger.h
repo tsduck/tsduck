@@ -130,7 +130,7 @@ namespace ts {
 
             // Make sure the compiler knows that we understand the consequences of
             // copying the Report* in the object: we point to the same external Report.
-            //! @cond doxygen
+            //! @cond nodoxygen
             Logger(const Logger&) = default;
             Logger& operator=(const Logger&) = default;
             //! @endcond

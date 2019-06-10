@@ -145,7 +145,7 @@ namespace ts {
         // Inaccessible operations.
         TSAnalyzerReport() = delete;
         TSAnalyzerReport(const TSAnalyzerReport&) = delete;
-        TSAnalyzerReport(const TSAnalyzerReport&&) = delete;
+        TSAnalyzerReport(TSAnalyzerReport&&) = delete;
         TSAnalyzerReport& operator=(const TSAnalyzerReport&) = delete;
     };
 }

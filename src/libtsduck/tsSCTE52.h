@@ -65,7 +65,7 @@ namespace ts {
 
         // Inaccessible operations
         SCTE52_2003(const SCTE52_2003&) = delete;
-        SCTE52_2003(const SCTE52_2003&&) = delete;
+        SCTE52_2003(SCTE52_2003&&) = delete;
         SCTE52_2003& operator=(const SCTE52_2003&) = delete;
     };
 
@@ -91,9 +91,10 @@ namespace ts {
         // Implementation of BlockCipher interface.
         virtual UString name() const override;
 
+    private:
         // Inaccessible operations
         SCTE52_2008(const SCTE52_2008&) = delete;
-        SCTE52_2008(const SCTE52_2008&&) = delete;
+        SCTE52_2008(SCTE52_2008&&) = delete;
         SCTE52_2008& operator=(const SCTE52_2008&) = delete;
     };
 }

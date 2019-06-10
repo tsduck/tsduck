@@ -64,7 +64,7 @@ private:
     // Inaccessible operations.
     Options() = delete;
     Options(const Options&) = delete;
-    Options(const Options&&) = delete;
+    Options(Options&&) = delete;
     Options& operator=(const Options&) = delete;
 };
 
@@ -138,7 +138,7 @@ public:
 private:
     // Inaccessible operations.
     TableHandler(const TableHandler&) = delete;
-    TableHandler(const TableHandler&&) = delete;
+    TableHandler(TableHandler&&) = delete;
     TableHandler& operator=(const TableHandler&) = delete;
 };
 

@@ -266,7 +266,7 @@ namespace ts {
         void setSectionProvider(SectionProviderInterface*);
 
         // Inaccessible operations
-        CyclingPacketizer(const CyclingPacketizer&&) = delete;
+        CyclingPacketizer(CyclingPacketizer&&) = delete;
         CyclingPacketizer(const CyclingPacketizer&) = delete;
         CyclingPacketizer& operator=(const CyclingPacketizer&) = delete;
     };

@@ -103,7 +103,7 @@ private:
     // Inaccessible operations.
     EMMGOptions() = delete;
     EMMGOptions(const EMMGOptions&) = delete;
-    EMMGOptions(const EMMGOptions&&) = delete;
+    EMMGOptions(EMMGOptions&&) = delete;
     EMMGOptions& operator=(const EMMGOptions&) = delete;
 };
 

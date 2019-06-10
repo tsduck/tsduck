@@ -105,7 +105,7 @@ namespace ts {
         // Inaccessible operations
         DektecControl() = delete;
         DektecControl(const DektecControl&) = delete;
-        DektecControl(const DektecControl&&) = delete;
+        DektecControl(DektecControl&&) = delete;
         DektecControl& operator=(const DektecControl&) = delete;
     };
 }

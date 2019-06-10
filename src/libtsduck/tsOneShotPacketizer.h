@@ -78,7 +78,7 @@ namespace ts {
         bool getNextPacket(TSPacket&) = delete;
 
         // Inaccessible operations
-        OneShotPacketizer(const OneShotPacketizer&&) = delete;
+        OneShotPacketizer(OneShotPacketizer&&) = delete;
         OneShotPacketizer(const OneShotPacketizer&) = delete;
         OneShotPacketizer& operator=(const OneShotPacketizer&) = delete;
     };

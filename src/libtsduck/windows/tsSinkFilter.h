@@ -181,7 +181,7 @@ namespace ts {
 
         // Inaccessible operations
         SinkFilter(const SinkFilter&) = delete;
-        SinkFilter(const SinkFilter&&) = delete;
+        SinkFilter(SinkFilter&&) = delete;
         SinkFilter& operator=(const SinkFilter&) = delete;
     };
 
@@ -254,7 +254,7 @@ namespace ts {
 
         // Inaccessible operations
         SinkPin(const SinkPin&) = delete;
-        SinkPin(const SinkPin&&) = delete;
+        SinkPin(SinkPin&&) = delete;
         SinkPin& operator=(const SinkPin&) = delete;
     };
 
@@ -300,7 +300,7 @@ namespace ts {
 
         // Inaccessible operations
         SinkEnumMediaTypes(const SinkEnumMediaTypes&) = delete;
-        SinkEnumMediaTypes(const SinkEnumMediaTypes&&) = delete;
+        SinkEnumMediaTypes(SinkEnumMediaTypes&&) = delete;
         SinkEnumMediaTypes& operator=(const SinkEnumMediaTypes&) = delete;
     };
 
@@ -349,7 +349,7 @@ namespace ts {
 
         // Inaccessible operations
         SinkEnumPins(const SinkEnumPins&) = delete;
-        SinkEnumPins(const SinkEnumPins&&) = delete;
+        SinkEnumPins(SinkEnumPins&&) = delete;
         SinkEnumPins& operator=(const SinkEnumPins&) = delete;
     };
 }

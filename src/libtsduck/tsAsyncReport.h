@@ -155,8 +155,8 @@ namespace ts {
             virtual void handleMessage(int, const UString&) override;
         private:
             DefaultHandler() = delete;
+            DefaultHandler(DefaultHandler&&) = delete;
             DefaultHandler(const DefaultHandler&) = delete;
-            DefaultHandler(const DefaultHandler&&) = delete;
             DefaultHandler& operator=(const DefaultHandler&) = delete;
         };
 
@@ -169,6 +169,7 @@ namespace ts {
         volatile bool           _terminated;
 
         // Inaccessible operations.
+        AsyncReport(AsyncReport&&) = delete;
         AsyncReport(const AsyncReport&) = delete;
         AsyncReport& operator=(const AsyncReport&) = delete;
     };

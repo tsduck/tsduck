@@ -1018,8 +1018,8 @@ namespace ts {
         IOption& getIOption(const UChar* name);
 
         // Inaccessible operations.
+        Args(Args&é) = delete;
         Args(const Args&) = delete;
-        Args(const Args&&) = delete;
         Args& operator=(const Args&) = delete;
     };
 }

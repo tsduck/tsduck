@@ -73,7 +73,7 @@ namespace ts {
         // Inaccessible operations
         DektecInputPlugin() = delete;
         DektecInputPlugin(const DektecInputPlugin&) = delete;
-        DektecInputPlugin(const DektecInputPlugin&&) = delete;
+        DektecInputPlugin(DektecInputPlugin&&) = delete;
         DektecInputPlugin& operator=(const DektecInputPlugin&) = delete;
     };
 }

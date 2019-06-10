@@ -208,8 +208,8 @@ namespace ts {
 
         // Inaccessible operations
         AbstractDemux() = delete;
+        AbstractDemux(AbstractDemux&&) = delete;
         AbstractDemux(const AbstractDemux&) = delete;
-        AbstractDemux(const AbstractDemux&&) = delete;
         AbstractDemux& operator=(const AbstractDemux&) = delete;
     };
 }

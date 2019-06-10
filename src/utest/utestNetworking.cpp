@@ -537,7 +537,7 @@ namespace {
     private:
         // Inaccessible operations
         TCPClient(const TCPClient&) = delete;
-        TCPClient(const TCPClient&&) = delete;
+        TCPClient(TCPClient&&) = delete;
         TCPClient& operator=(const TCPClient&) = delete;
     };
 }
@@ -652,7 +652,7 @@ namespace {
     private:
         // Inaccessible operations
         UDPClient(const UDPClient&) = delete;
-        UDPClient(const UDPClient&&) = delete;
+        UDPClient(UDPClient&&) = delete;
         UDPClient& operator=(const UDPClient&) = delete;
     };
 }

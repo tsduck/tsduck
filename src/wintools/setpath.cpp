@@ -63,7 +63,7 @@ public:
 private:
     // Inaccessible operations.
     Options(const Options&) = delete;
-    Options(const Options&&) = delete;
+    Options(Options&&) = delete;
     Options& operator=(const Options&) = delete;
 };
 
