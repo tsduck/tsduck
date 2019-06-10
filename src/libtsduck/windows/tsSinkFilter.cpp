@@ -45,8 +45,10 @@ TSDUCK_SOURCE;
 
 #if defined(DEBUG)
 #define TRACE(...) _report.log(__VA_ARGS__)
+#define IF_TRACE(x) x
 #else
 #define TRACE(...)
+#define IF_TRACE(x)
 #endif
 
 namespace {
@@ -768,7 +770,7 @@ STDMETHODIMP ts::SinkPin::ReceiveMultiple (::IMediaSample** pSamples, long nSamp
 
 STDMETHODIMP ts::SinkPin::Receive (::IMediaSample* pSample)
 {
-    long length = pSample->GetActualDataLength();
+    IF_TRACE(const long length = pSample->GetActualDataLength();)
     TRACE(2, u"SinkPin::Receive: actual data length: %d bytes, %d packets + %d bytes", {length, length / PKT_SIZE, length % PKT_SIZE});
     // Reject samples during a flush
     if (_flushing) {
