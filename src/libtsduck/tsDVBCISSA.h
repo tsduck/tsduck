@@ -61,5 +61,10 @@ namespace ts {
 
     private:
         virtual bool setIV(const void* iv_, size_t iv_length) override;
+
+        // Inaccessible operations
+        DVBCISSA(const DVBCISSA&) = delete;
+        DVBCISSA(const DVBCISSA&&) = delete;
+        DVBCISSA& operator=(const DVBCISSA&) = delete;
     };
 }

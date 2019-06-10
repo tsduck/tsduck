@@ -84,5 +84,11 @@ namespace ts {
         // Make these methods inaccessible
         void setHandler(TableHandlerInterface*);
         void setHandler(SectionHandlerInterface*);
+
+        // Inacessible operations
+        StandaloneTableDemux() = delete;
+        StandaloneTableDemux(const StandaloneTableDemux&) = delete;
+        StandaloneTableDemux(const StandaloneTableDemux&&) = delete;
+        StandaloneTableDemux& operator=(const StandaloneTableDemux&) = delete;
     };
 }

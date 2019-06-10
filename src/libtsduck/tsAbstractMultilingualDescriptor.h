@@ -104,15 +104,17 @@ namespace ts {
         //!
         virtual void deserializeProlog(DuckContext& duck, const uint8_t*& data, size_t& size);
 
+        // Use default assignment but declare it to make sure the compiler knows
+        // that we have understood the consequences of a pointer member.
+        //! @cond nodoxygen
+        AbstractMultilingualDescriptor(const AbstractMultilingualDescriptor&) = default;
+        AbstractMultilingualDescriptor& operator=(const AbstractMultilingualDescriptor&) = default;
+        //! @endcond
+
     private:
         const UChar* _xml_attribute;
 
-        // Use default assignment but declare it to make sure the compiler knows
-        // that we have understood the consequences of a pointer member.
-        AbstractMultilingualDescriptor(const AbstractMultilingualDescriptor&) = default;
-        AbstractMultilingualDescriptor& operator=(const AbstractMultilingualDescriptor&) = default;
-
-        // Unreachable constructors and operators.
+        // Inaccessible operations.
         AbstractMultilingualDescriptor() = delete;
     };
 }

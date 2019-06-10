@@ -109,10 +109,10 @@ namespace ts {
             uint64_t duration() const;
 
         private:
-            const uint64_t _scale;  //!< Scale offset after wrapping up at max value.
-            uint64_t       _first;  //!< First value seen on PID (INVALID_PCR if none found).
-            uint64_t       _last;   //!< Last value seen on PID (INVALID_PCR if none found).
-            uint64_t       _offset; //!< Accumulated offsets after wrapping up at max value once or more.
+            uint64_t _scale;  //!< Scale offset after wrapping up at max value.
+            uint64_t _first;  //!< First value seen on PID (INVALID_PCR if none found).
+            uint64_t _last;   //!< Last value seen on PID (INVALID_PCR if none found).
+            uint64_t _offset; //!< Accumulated offsets after wrapping up at max value once or more.
         };
 
         typedef std::map<PID, TimeTracker> PIDContextMap;
@@ -120,5 +120,11 @@ namespace ts {
         PID           _pcrPID;    //!< First detected PID with PCR's.
         TimeTracker   _pcrTime;   //!< PCR time tracker on _pcrPID.
         PIDContextMap _pids;      //!< PTS time tracker per demuxed PID.
+
+        // Inaccessible operations
+        TimeTrackerDemux() = delete;
+        TimeTrackerDemux(const TimeTrackerDemux&) = delete;
+        TimeTrackerDemux(const TimeTrackerDemux&&) = delete;
+        TimeTrackerDemux& operator=(const TimeTrackerDemux&) = delete;
     };
 }

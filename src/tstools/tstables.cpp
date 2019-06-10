@@ -50,8 +50,9 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -60,6 +61,13 @@ struct Options: public ts::Args
     ts::TablesLoggerArgs  logger;   // Table logging options.
     ts::TablesDisplayArgs display;  // Table formatting options.
     ts::PagerArgs         pager;    // Output paging options.
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

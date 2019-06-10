@@ -59,6 +59,13 @@ public:
     bool                  all;      // Report all tables, not only the first one.
     ts::UString           infile;   // Input file name
     ts::TablesDisplayArgs display;  // Table formatting options (all default values, nothing on command line).
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -127,6 +134,12 @@ public:
 
     // This hook is invoked when a complete table is available.
     virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&) override;
+
+private:
+    // Inaccessible operations.
+    TableHandler(const TableHandler&) = delete;
+    TableHandler(const TableHandler&&) = delete;
+    TableHandler& operator=(const TableHandler&) = delete;
 };
 
 

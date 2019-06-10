@@ -264,6 +264,7 @@ namespace ts {
         // Inacessible operations
         SectionDemux() = delete;
         SectionDemux(const SectionDemux&) = delete;
+        SectionDemux(const SectionDemux&&) = delete;
         SectionDemux& operator=(const SectionDemux&) = delete;
     };
 }

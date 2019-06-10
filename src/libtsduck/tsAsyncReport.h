@@ -153,6 +153,11 @@ namespace ts {
         public:
             DefaultHandler(const AsyncReport& report) : _report(report) {}
             virtual void handleMessage(int, const UString&) override;
+        private:
+            DefaultHandler() = delete;
+            DefaultHandler(const DefaultHandler&) = delete;
+            DefaultHandler(const DefaultHandler&&) = delete;
+            DefaultHandler& operator=(const DefaultHandler&) = delete;
         };
 
         // Private members:

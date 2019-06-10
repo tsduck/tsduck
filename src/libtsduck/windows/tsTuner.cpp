@@ -868,25 +868,31 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
 
                 // Check if DVB system type matches our tuner type.
                 switch (systype) {
-                    case ::DVB_Satellite:
+                    case ::DVB_Satellite: {
                         tspace_found = true;
                         _tuner_type = ts::DVB_S;
                         _delivery_systems.set(DS_DVB_S);
                         // No way to check if DS_DVB_S2 is supported
                         break;
-                    case ::DVB_Terrestrial:
+                    }
+                    case ::DVB_Terrestrial: {
                         tspace_found = true;
                         _tuner_type = ts::DVB_T;
                         _delivery_systems.set(DS_DVB_T);
                         break;
-                    case ::DVB_Cable:
+                    }
+                    case ::DVB_Cable: {
                         tspace_found = true;
                         _tuner_type = ts::DVB_C;
                         _delivery_systems.set(DS_DVB_C);
                         break;
-                    default:
+                    }
+                    case ::ISDB_Terrestrial:
+                    case ::ISDB_Satellite:
+                    default: {
                         // Not a kind of tuning space we support.
                         break;
+                    }
                 }
             }
             else {

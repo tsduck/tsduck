@@ -730,6 +730,11 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
         return false;
     }
 
+    // Not all enum values used in switch, intentionally.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(switch-enum)
+    TS_MSC_NOWARNING(4061)
+
     // Build modulation parameters.
     // Translate TSDuck enums into HiDes codes.
     ite::IoctlDVBT modRequest(ite::IOCTL_IT95X_SET_DVBT_MODULATION);
@@ -802,6 +807,8 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             report.error(u"unsupported transmission mode");
             return false;
     }
+
+    TS_POP_WARNING()
 
     // Don't know how to set spectral inversion on Windows.
 

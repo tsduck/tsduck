@@ -56,6 +56,13 @@ public:
     uint16_t           cpNumber;   // Crypto-period number
     ts::ByteBlock      cwCurrent;  // Current CW
     ts::ByteBlock      cwNext;     // Next CW
+
+private:
+    // Inaccessible operations.
+    GenECMOptions() = delete;
+    GenECMOptions(const GenECMOptions&) = delete;
+    GenECMOptions(const GenECMOptions&&) = delete;
+    GenECMOptions& operator=(const GenECMOptions&) = delete;
 };
 
 // Destructor.

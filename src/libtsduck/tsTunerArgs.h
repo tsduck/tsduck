@@ -159,7 +159,7 @@ namespace ts {
         bool tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const;
 
     private:
-        const bool _info_only;
-        const bool _allow_short_options;
+        bool _info_only;
+        bool _allow_short_options;
     };
 }

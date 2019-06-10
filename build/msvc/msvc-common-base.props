@@ -34,7 +34,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <BufferSecurityCheck>true</BufferSecurityCheck>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>

@@ -44,14 +44,22 @@ TS_LLVM_NOWARNING(old-style-cast)
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
     ts::UString reader;        // Optional reader name
     uint32_t    timeout_ms;    // Timeout in milliseconds
     uint32_t    reset_action;  // Type of reset to apply
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

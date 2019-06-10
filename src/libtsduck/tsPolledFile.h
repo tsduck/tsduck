@@ -89,12 +89,12 @@ namespace ts {
     private:
         friend class PollFiles;
 
-        const UString _name;           // File name
-        Status        _status;         // Status since last report
-        int64_t       _file_size;      // File size in bytes
-        Time          _file_date;      // Last file modification date (UTC)
-        bool          _pending;        // Not yet notified, waiting for stable state
-        Time          _found_date;     // First time (UTC) this size/date state was reported
+        UString _name;           // File name
+        Status  _status;         // Status since last report
+        int64_t _file_size;      // File size in bytes
+        Time    _file_date;      // Last file modification date (UTC)
+        bool    _pending;        // Not yet notified, waiting for stable state
+        Time    _found_date;     // First time (UTC) this size/date state was reported
 
         // Constructor
         PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now);

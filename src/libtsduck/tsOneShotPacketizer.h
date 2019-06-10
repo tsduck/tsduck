@@ -76,5 +76,10 @@ namespace ts {
         // Hide these methods
         void setStuffingPolicy(StuffingPolicy) = delete;
         bool getNextPacket(TSPacket&) = delete;
+
+        // Inaccessible operations
+        OneShotPacketizer(const OneShotPacketizer&&) = delete;
+        OneShotPacketizer(const OneShotPacketizer&) = delete;
+        OneShotPacketizer& operator=(const OneShotPacketizer&) = delete;
     };
 }

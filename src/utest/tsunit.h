@@ -38,14 +38,30 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include <map>
-#include <list>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <exception>
-#include <cstdlib>
-#include <cstdio>
+
+#if defined(_MSC_VER)
+// How to pass the system header files with /Wall
+#pragma warning(disable:4100)  // unreferenced formal parameter
+#pragma warning(disable:4251)  // 'classname' : class 'std::vector<_Ty>' needs to have dll-interface to be used by clients of class 'classname'
+#pragma warning(disable:4275)  // non dll-interface class 'std::_Container_base_aux' used as base for dll-interface class 'std::_Container_base_aux_alloc_real<_Alloc>'
+#pragma warning(disable:4355)  // 'this' : used in base member initializer list
+#pragma warning(disable:4365)  // conversion from 'type1' to 'type2', signed/unsigned mismatch
+#pragma warning(disable:4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'xxxx'
+#pragma warning(disable:4514)  // unreferenced inline function has been removed
+#pragma warning(disable:4571)  // catch (...) semantics changed since Visual C++ 7.1; structured exceptions(SEH) are no longer caught
+#pragma warning(disable:4625)  // copy constructor was implicitly defined as deleted
+#pragma warning(disable:4626)  // assignment operator was implicitly defined as deleted
+#pragma warning(disable:4710)  // 'xxx' : function not inlined
+#pragma warning(disable:4711)  // function 'xxx' selected for automatic inline expansion
+#pragma warning(disable:4774)  // format string expected in argument N is not a string literal
+#pragma warning(disable:4820)  // 'n' bytes padding added after data member 'nnnnn'
+#pragma warning(disable:5026)  // move constructor was implicitly defined as deleted
+#pragma warning(disable:5027)  // move assignment operator was implicitly defined as deleted
+#pragma warning(disable:5031)  // bug in winioctl.h : #pragma warning(pop) : likely mismatch, popping warning state pushed in different file
+#pragma warning(disable:5032)  // bug in winioctl.h : detected #pragma warning(push) with no corresponding #pragma warning(pop)
+#pragma warning(disable:5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
+#pragma warning(disable:5045)  // Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
+#endif
 
 #if defined(__llvm__)
 #pragma clang diagnostic ignored "-Wc++98-compat"           // Need C++11, don't care about C++98
@@ -54,6 +70,15 @@
 #pragma clang diagnostic ignored "-Wexit-time-destructors"  // Idem
 #pragma clang diagnostic ignored "-Wpadded"                 // Allow padding between class fields
 #endif
+
+#include <map>
+#include <list>
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <exception>
+#include <cstdlib>
+#include <cstdio>
 
 //!
 //! Unitary tests namespace.
@@ -287,7 +312,7 @@ namespace tsunit {
         std::string getBaseName() const;       // without leading and trailing "test", case-insentive
         std::string getLowerBaseName() const;  // lowercase version of base name
     private:
-        const std::string _name;
+        std::string _name;
     };
 
     // Definition of a test case (one method in a user test class).

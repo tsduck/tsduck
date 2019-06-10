@@ -42,8 +42,9 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -56,6 +57,13 @@ struct Options: public ts::Args
     bool        value_only;    // Output value only
     bool        ignore_errors; // Ignore TS errors
     ts::UString infile;        // Input file name
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

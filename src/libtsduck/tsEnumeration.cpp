@@ -26,12 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//! @file tsEnumeration.h
-//!
-//! Declare the ts::Enumeration class.
-//!
-//----------------------------------------------------------------------------
 
 #include "tsEnumeration.h"
 TSDUCK_SOURCE;
@@ -55,6 +49,21 @@ ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values) :
     for (std::initializer_list<NameValue>::const_iterator it = values.begin(); it != values.end(); ++it) {
         _map.insert(std::make_pair(it->value, it->name));
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Operators
+//----------------------------------------------------------------------------
+
+bool ts::Enumeration::operator==(const Enumeration& other) const
+{
+    return _map == other._map;
+}
+
+bool ts::Enumeration::operator!=(const Enumeration& other) const
+{
+    return _map != other._map;
 }
 
 

@@ -43,8 +43,9 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -56,6 +57,13 @@ struct Options: public ts::Args
     ts::PacketCounter max_packets; // Maximum number of packets to dump per file
     ts::UStringVector infiles;     // Input file names
     ts::PagerArgs     pager;       // Output paging options.
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

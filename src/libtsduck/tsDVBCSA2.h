@@ -147,5 +147,10 @@ namespace ts {
         uint8_t      _key[KEY_SIZE];
         BlockCipher  _block;
         StreamCipher _stream;
+
+        // Inaccessible operations
+        DVBCSA2(const DVBCSA2&) = delete;
+        DVBCSA2(const DVBCSA2&&) = delete;
+        DVBCSA2& operator=(const DVBCSA2&) = delete;
     };
 }

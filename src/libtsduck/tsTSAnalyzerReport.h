@@ -141,5 +141,11 @@ namespace ts {
 
         // Display one normalized line of a time value.
         static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
+
+        // Inaccessible operations.
+        TSAnalyzerReport() = delete;
+        TSAnalyzerReport(const TSAnalyzerReport&) = delete;
+        TSAnalyzerReport(const TSAnalyzerReport&&) = delete;
+        TSAnalyzerReport& operator=(const TSAnalyzerReport&) = delete;
     };
 }

@@ -55,6 +55,13 @@ public:
     // Check if there was an I/O error on the file.
     // Print an error message if this is the case.
     bool fileError(const ts::UChar* message);
+
+private:
+    // Inaccessible operations.
+    Options() = delete;
+    Options(const Options&) = delete;
+    Options(const Options&&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

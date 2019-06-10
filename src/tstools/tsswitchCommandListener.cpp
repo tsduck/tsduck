@@ -134,7 +134,6 @@ void ts::tsswitch::CommandListener::main()
             static const char err[] = "\n\n*** Emergency abort requested\n\n";
             static const size_t err_size = sizeof(err) - 1;
             FatalError(err, err_size);
-            assert(false); // should never get there
         }
         else {
             _log.error(u"received invalid command \"%s\" from remote control at %s", {cmd, sender});

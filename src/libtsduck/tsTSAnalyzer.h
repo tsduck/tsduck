@@ -189,10 +189,10 @@ namespace ts {
             bool           carry_t2mi;         //!< Carry T2-MI encasulated data.
 
             //!
-            //! Default constructor.
+            //! Constructor.
             //! @param [in] serv_id Service id.
             //!
-            ServiceContext(uint16_t serv_id = 0);
+            ServiceContext(uint16_t serv_id);
 
             //!
             //! Destructor.
@@ -210,6 +210,13 @@ namespace ts {
             //! @return A displayable provider name.
             //!
             UString getProvider() const;
+
+        private:
+            // Inaccessible operations.
+            ServiceContext() = delete;
+            ServiceContext(const ServiceContext&) = delete;
+            ServiceContext(const ServiceContext&&) = delete;
+            ServiceContext& operator=(const ServiceContext&) = delete;
         };
 
         //!
@@ -263,10 +270,17 @@ namespace ts {
             uint64_t   last_pkt;                  //!< Last packet index of last section# 0.
 
             //!
-            //! Default constructor.
-            //! @param [in] etid Externded table id.
+            //! Constructor.
+            //! @param [in] etid Extended table id.
             //!
-            ETIDContext(const ETID& etid = ETID());
+            ETIDContext(const ETID& etid);
+
+        private:
+            // Inaccessible operations.
+            ETIDContext() = delete;
+            ETIDContext(const ETIDContext&) = delete;
+            ETIDContext(const ETIDContext&&) = delete;
+            ETIDContext& operator=(const ETIDContext&) = delete;
         };
 
         //!
@@ -376,8 +390,11 @@ namespace ts {
             UString fullDescription(bool include_attributes) const;
 
         private:
-            // Unreachable constructor:
-            PIDContext();
+            // Inaccessible operations.
+            PIDContext() = delete;
+            PIDContext(const PIDContext&) = delete;
+            PIDContext(const PIDContext&&) = delete;
+            PIDContext& operator=(const PIDContext&) = delete;
         };
 
         //!
@@ -524,6 +541,7 @@ namespace ts {
         // Inaccessible operations.
         TSAnalyzer() = delete;
         TSAnalyzer(const TSAnalyzer&) = delete;
+        TSAnalyzer(const TSAnalyzer&&) = delete;
         TSAnalyzer& operator=(const TSAnalyzer&) = delete;
     };
 }

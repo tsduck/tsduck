@@ -112,6 +112,12 @@ public:
     BitRate              cur_bitrate;   // Current output bitrate
     int                  max_fifo_size; // Maximum FIFO size
     int                  fifo_size;     // Actual FIFO size
+
+private:
+    // Inaccessible operations
+    Guts(const Guts&) = delete;
+    Guts(const Guts&&) = delete;
+    Guts& operator=(const Guts&) = delete;
 };
 
 
@@ -996,6 +1002,11 @@ void ts::DektecOutputPlugin::displaySymbolRate(int ts_bitrate, int dt_modulation
 
 bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 {
+    // Many switch/case structures here use only a subset of the enum type.
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(switch-enum)
+    TS_MSC_NOWARNING(4061)
+
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
     const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository(u"tsp.dvb.params") : nullptr);
@@ -1022,6 +1033,10 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             }
         }
         else if (input_dvbc != nullptr) {
+            // Only some values are present in the switch..
+            TS_PUSH_WARNING()
+            TS_LLVM_NOWARNING(switch-enum)
+            TS_MSC_NOWARNING(4061)
             switch (input_dvbc->modulation) {
                 case QAM_16:  modulation_type = DTAPI_MOD_QAM16;  break;
                 case QAM_32:  modulation_type = DTAPI_MOD_QAM32;  break;
@@ -1030,6 +1045,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 case QAM_256: modulation_type = DTAPI_MOD_QAM256; break;
                 default: break;
             }
+            TS_POP_WARNING()
         }
         else if (input_dvbt != nullptr) {
             modulation_type = DTAPI_MOD_DVBT;
@@ -1430,6 +1446,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
     // Finally ok
     return true;
+
+    TS_POP_WARNING()
 }
 
 

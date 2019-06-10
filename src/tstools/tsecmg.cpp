@@ -68,8 +68,9 @@ namespace {
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct ECMGOptions: public ts::Args
+class ECMGOptions: public ts::Args
 {
+public:
     ECMGOptions(int argc, char *argv[]);
     virtual ~ECMGOptions();
 
@@ -81,6 +82,13 @@ struct ECMGOptions: public ts::Args
     ts::SocketAddress          serverAddress;  // TCP server local address.
     ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
     ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
+
+private:
+    // Inaccessible operations.
+    ECMGOptions() = delete;
+    ECMGOptions(const ECMGOptions&) = delete;
+    ECMGOptions(const ECMGOptions&&) = delete;
+    ECMGOptions& operator=(const ECMGOptions&) = delete;
 };
 
 // Destructor.
@@ -252,6 +260,11 @@ private:
     ts::tlv::Logger    _logger;    // Protocol message logger.
     ts::Mutex          _mutex;     // Protect shared data.
     std::set<uint16_t> _channels;  // Active channels.
+
+    // Inaccessible operations.
+    ECMGSharedData(const ECMGSharedData&) = delete;
+    ECMGSharedData(const ECMGSharedData&&) = delete;
+    ECMGSharedData& operator=(const ECMGSharedData&) = delete;
 };
 
 
