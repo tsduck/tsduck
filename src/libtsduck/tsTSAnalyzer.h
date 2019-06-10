@@ -215,7 +215,7 @@ namespace ts {
             // Inaccessible operations.
             ServiceContext() = delete;
             ServiceContext(const ServiceContext&) = delete;
-            ServiceContext(const ServiceContext&&) = delete;
+            ServiceContext(ServiceContext&&) = delete;
             ServiceContext& operator=(const ServiceContext&) = delete;
         };
 
@@ -279,7 +279,7 @@ namespace ts {
             // Inaccessible operations.
             ETIDContext() = delete;
             ETIDContext(const ETIDContext&) = delete;
-            ETIDContext(const ETIDContext&&) = delete;
+            ETIDContext(ETIDContext&&) = delete;
             ETIDContext& operator=(const ETIDContext&) = delete;
         };
 
@@ -393,7 +393,7 @@ namespace ts {
             // Inaccessible operations.
             PIDContext() = delete;
             PIDContext(const PIDContext&) = delete;
-            PIDContext(const PIDContext&&) = delete;
+            PIDContext(PIDContext&&) = delete;
             PIDContext& operator=(const PIDContext&) = delete;
         };
 
@@ -541,7 +541,7 @@ namespace ts {
         // Inaccessible operations.
         TSAnalyzer() = delete;
         TSAnalyzer(const TSAnalyzer&) = delete;
-        TSAnalyzer(const TSAnalyzer&&) = delete;
+        TSAnalyzer(TSAnalyzer&&) = delete;
         TSAnalyzer& operator=(const TSAnalyzer&) = delete;
     };
 }

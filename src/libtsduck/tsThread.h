@@ -221,7 +221,7 @@ namespace ts {
 
         // Inaccessible operations
         Thread(const Thread&) = delete;
-        Thread(const Thread&&) = delete;
+        Thread(Thread&&) = delete;
         Thread& operator=(const Thread&) = delete;
     };
 }

@@ -61,7 +61,7 @@ private:
     // Inaccessible operations.
     GenECMOptions() = delete;
     GenECMOptions(const GenECMOptions&) = delete;
-    GenECMOptions(const GenECMOptions&&) = delete;
+    GenECMOptions(GenECMOptions&&) = delete;
     GenECMOptions& operator=(const GenECMOptions&) = delete;
 };
 

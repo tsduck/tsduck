@@ -62,7 +62,7 @@ namespace ts {
         virtual bool setShortIV(const void* iv_, size_t iv_length) override;
 
         // Inaccessible operations
-        IDSA(const IDSA&&) = delete;
+        IDSA(IDSA&&) = delete;
         IDSA(const IDSA&) = delete;
         IDSA& operator=(const IDSA&) = delete;
     };

@@ -87,7 +87,7 @@ private:
     // Inaccessible operations.
     ECMGOptions() = delete;
     ECMGOptions(const ECMGOptions&) = delete;
-    ECMGOptions(const ECMGOptions&&) = delete;
+    ECMGOptions(ECMGOptions&&) = delete;
     ECMGOptions& operator=(const ECMGOptions&) = delete;
 };
 
@@ -263,7 +263,7 @@ private:
 
     // Inaccessible operations.
     ECMGSharedData(const ECMGSharedData&) = delete;
-    ECMGSharedData(const ECMGSharedData&&) = delete;
+    ECMGSharedData(ECMGSharedData&&) = delete;
     ECMGSharedData& operator=(const ECMGSharedData&) = delete;
 };
 

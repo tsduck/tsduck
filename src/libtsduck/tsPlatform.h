@@ -685,6 +685,7 @@
 
 // Disable some warnings, application-wide, for various compilers.
 
+TS_LLVM_NOWARNING(deprecated)               // Most of these messages are informational only.
 TS_LLVM_NOWARNING(unused-parameter)         // Unused parameters are frequent with overrides.
 TS_LLVM_NOWARNING(global-constructors)      // Do not warn about static/global objects being constructed.
 TS_LLVM_NOWARNING(exit-time-destructors)    // Do not warn about static/global objects being destructed.

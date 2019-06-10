@@ -231,7 +231,7 @@ namespace ts {
 
         // Inaccessible operations.
         ForkPipe(const ForkPipe&) = delete;
-        ForkPipe(const ForkPipe&&) = delete;
+        ForkPipe(ForkPipe&&) = delete;
         ForkPipe& operator=(const ForkPipe&) = delete;
     };
 }

@@ -115,7 +115,7 @@ namespace ts {
     private:
         // Inaccessible operations
         CipherChaining(const CipherChaining&) = delete;
-        CipherChaining(const CipherChaining&&) = delete;
+        CipherChaining(CipherChaining&&) = delete;
         CipherChaining& operator=(const CipherChaining&) = delete;
     };
 
@@ -151,7 +151,7 @@ namespace ts {
     private:
         // Inaccessible operations
         CipherChainingTemplate(const CipherChainingTemplate&) = delete;
-        CipherChainingTemplate(const CipherChainingTemplate&&) = delete;
+        CipherChainingTemplate(CipherChainingTemplate&&) = delete;
         CipherChainingTemplate& operator=(const CipherChainingTemplate&) = delete;
     };
 }

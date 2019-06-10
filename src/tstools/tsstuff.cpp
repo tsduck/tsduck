@@ -72,7 +72,7 @@ private:
     // Inaccessible operations.
     Options() = delete;
     Options(const Options&) = delete;
-    Options(const Options&&) = delete;
+    Options(Options&&) = delete;
     Options& operator=(const Options&) = delete;
 };
 
@@ -241,7 +241,7 @@ private:
 
     // Inaccessible operations.
     Stuffer(const Stuffer&) = delete;
-    Stuffer(const Stuffer&&) = delete;
+    Stuffer(Stuffer&&) = delete;
     Stuffer& operator=(const Stuffer&) = delete;
 };
 

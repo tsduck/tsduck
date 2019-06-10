@@ -64,7 +64,7 @@ namespace ts {
 
         // Inaccessible operations
         DVBCISSA(const DVBCISSA&) = delete;
-        DVBCISSA(const DVBCISSA&&) = delete;
+        DVBCISSA(DVBCISSA&&) = delete;
         DVBCISSA& operator=(const DVBCISSA&) = delete;
     };
 }

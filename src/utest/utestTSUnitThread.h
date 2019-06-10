@@ -70,7 +70,7 @@ namespace utest {
     private:
         // Inaccessible operations
         TSUnitThread(const TSUnitThread&) = delete;
-        TSUnitThread(const TSUnitThread&&) = delete;
+        TSUnitThread(TSUnitThread&&) = delete;
         TSUnitThread& operator=(const TSUnitThread&) = delete;
     };
 }

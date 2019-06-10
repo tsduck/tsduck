@@ -89,7 +89,7 @@ namespace ts {
 
         // Inaccessible operations.
         PagerArgs(const PagerArgs&) = delete;
-        PagerArgs(const PagerArgs&&) = delete;
+        PagerArgs(PagerArgs&&) = delete;
         PagerArgs& operator=(const PagerArgs&) = delete;
     };
 }

@@ -48,11 +48,11 @@ ts::Exception::Exception(const UString& w, ErrorCode error) :
 {
 }
 
-ts::Exception::~Exception() throw()
+ts::Exception::~Exception() noexcept
 {
 }
 
-const char* ts::Exception::what() const throw()
+const char* ts::Exception::what() const noexcept
 {
     if (_utf8.empty() && !_what.empty()) {
         _utf8 = _what.toUTF8();

@@ -123,8 +123,8 @@ namespace ts {
 
         // Inaccessible operations
         TimeTrackerDemux() = delete;
+        TimeTrackerDemux(TimeTrackerDemux&&) = delete;
         TimeTrackerDemux(const TimeTrackerDemux&) = delete;
-        TimeTrackerDemux(const TimeTrackerDemux&&) = delete;
         TimeTrackerDemux& operator=(const TimeTrackerDemux&) = delete;
     };
 }

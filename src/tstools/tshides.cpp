@@ -59,7 +59,7 @@ private:
     // Inaccessible operations.
     HiDesOptions() = delete;
     HiDesOptions(const HiDesOptions&) = delete;
-    HiDesOptions(const HiDesOptions&&) = delete;
+    HiDesOptions(HiDesOptions&&) = delete;
     HiDesOptions& operator=(const HiDesOptions&) = delete;
 };
 

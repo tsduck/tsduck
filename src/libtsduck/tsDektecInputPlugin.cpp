@@ -132,7 +132,7 @@ public:
 private:
     // Inaccessible operations
     Guts(const Guts&) = delete;
-    Guts(const Guts&&) = delete;
+    Guts(Guts&&) = delete;
     Guts& operator=(const Guts&) = delete;
 };
 

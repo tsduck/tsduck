@@ -150,7 +150,7 @@ namespace ts {
 
         // Inaccessible operations
         DVBCSA2(const DVBCSA2&) = delete;
-        DVBCSA2(const DVBCSA2&&) = delete;
+        DVBCSA2(DVBCSA2&&) = delete;
         DVBCSA2& operator=(const DVBCSA2&) = delete;
     };
 }

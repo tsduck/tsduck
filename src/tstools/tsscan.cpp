@@ -95,7 +95,7 @@ private:
     // Inaccessible operations.
     ScanOptions() = delete;
     ScanOptions(const ScanOptions&) = delete;
-    ScanOptions(const ScanOptions&&) = delete;
+    ScanOptions(ScanOptions&&) = delete;
     ScanOptions& operator=(const ScanOptions&) = delete;
 };
 
@@ -332,7 +332,7 @@ private:
     // Inaccessible operations.
     OffsetScanner() = delete;
     OffsetScanner(const OffsetScanner&) = delete;
-    OffsetScanner(const OffsetScanner&&) = delete;
+    OffsetScanner(OffsetScanner&&) = delete;
     OffsetScanner& operator=(const OffsetScanner&) = delete;
 };
 
