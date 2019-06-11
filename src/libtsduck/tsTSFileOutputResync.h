@@ -47,6 +47,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileOutputResync: public TSFileOutput
     {
+        TS_NOCOPY(TSFileOutputResync);
     public:
         //!
         //! Default constructor.
@@ -83,11 +84,6 @@ namespace ts {
         bool write(TSPacket* buffer, size_t packet_count, PID pid, Report& report);
 
     private:
-        // Private members
         ContinuityAnalyzer _ccFixer;
-
-        // Inaccessible operations
-        TSFileOutputResync(const TSFileOutputResync&) = delete;
-        TSFileOutputResync& operator=(const TSFileOutputResync&) = delete;
     };
 }

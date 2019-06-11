@@ -97,6 +97,7 @@ namespace ts {
         public ProcessorPlugin,
         private PMTHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(ScramblerPlugin);
     public:
         // Implementation of plugin API
         ScramblerPlugin(TSP*);
@@ -112,6 +113,7 @@ namespace ts {
         // is set in ScramblerPlugin.
         class CryptoPeriod: private ECMGClientHandlerInterface
         {
+            TS_NOCOPY(CryptoPeriod);
         public:
             // Default constructor.
             CryptoPeriod();
@@ -150,10 +152,6 @@ namespace ts {
 
             // Invoked when an ECM is available, maybe in the context of an external thread.
             virtual void handleECM(const ecmgscs::ECMResponse&) override;
-
-            // Inaccessible operations
-            CryptoPeriod(const CryptoPeriod&) = delete;
-            CryptoPeriod& operator=(const CryptoPeriod&) = delete;
         };
 
         // ScramblerPlugin parameters, remain constant after start()
@@ -217,11 +215,6 @@ namespace ts {
 
         // Invoked when the PMT of the service is available.
         virtual void handlePMT(const PMT&) override;
-
-        // Inaccessible operations
-        ScramblerPlugin() = delete;
-        ScramblerPlugin(const ScramblerPlugin&) = delete;
-        ScramblerPlugin& operator=(const ScramblerPlugin&) = delete;
     };
 }
 

@@ -50,6 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL DVBCharsetSingleByte: public DVBCharset
     {
+        TS_NOBUILD_NOCOPY(DVBCharsetSingleByte);
     public:
         // Predefined character sets.
         static const DVBCharsetSingleByte ISO_6937;    //!< Modified ISO 6937, DVB default charset.
@@ -85,17 +86,14 @@ namespace ts {
         DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac = std::initializer_list<uint8_t>());
 
     private:
-        //! List of code points for byte values 0xA0-0xFF. Always contain 96 values.
+        // List of code points for byte values 0xA0-0xFF. Always contain 96 values.
         const std::vector<uint16_t> _upperCodePoints;
-        //! Reverse mapping for complete character set (key = code point, value = byte rep).
-        std::map<UChar, uint8_t> _bytesMap;
-        //! Bitmap of combining diacritical marks which precede their base letter (and must be reversed from Unicode).
-        //! This only applies to byte values 0xA0-0xFF (96 values).
-        std::bitset<96> _reversedDiacritical;
 
-        // Inaccessible operations.
-        DVBCharsetSingleByte() = delete;
-        DVBCharsetSingleByte(const DVBCharsetSingleByte&) = delete;
-        DVBCharsetSingleByte& operator=(const DVBCharsetSingleByte&) = delete;
+        // Reverse mapping for complete character set (key = code point, value = byte rep).
+        std::map<UChar, uint8_t> _bytesMap;
+
+        // Bitmap of combining diacritical marks which precede their base letter (and must be reversed from Unicode).
+        // This only applies to byte values 0xA0-0xFF (96 values).
+        std::bitset<96> _reversedDiacritical;
     };
 }

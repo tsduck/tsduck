@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SkipPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(SkipPlugin);
     public:
         // Implementation of plugin API
         SkipPlugin(TSP*);
@@ -53,11 +54,6 @@ namespace ts {
     private:
         PacketCounter skip_count;
         bool          use_stuffing;
-
-        // Inaccessible operations
-        SkipPlugin() = delete;
-        SkipPlugin(const SkipPlugin&) = delete;
-        SkipPlugin& operator=(const SkipPlugin&) = delete;
     };
 }
 

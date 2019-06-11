@@ -59,6 +59,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class AESPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(AESPlugin);
     public:
         // Implementation of plugin API
         AESPlugin(TSP*);
@@ -88,11 +89,6 @@ namespace ts {
         void processPAT(PAT&);
         void processPMT(PMT&);
         void processSDT(SDT&);
-
-        // Inaccessible operations
-        AESPlugin() = delete;
-        AESPlugin(const AESPlugin&) = delete;
-        AESPlugin& operator=(const AESPlugin&) = delete;
     };
 }
 

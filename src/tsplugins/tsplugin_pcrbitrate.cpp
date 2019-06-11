@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PCRBitratePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(PCRBitratePlugin);
     public:
         // Implementation of plugin API
         PCRBitratePlugin(TSP*);
@@ -69,11 +70,6 @@ namespace ts {
         // which vary only by less than the following factor.
 
         static constexpr BitRate REPORT_THRESHOLD = 500000; // 100 b/s on a 50 Mb/s stream
-
-        // Inaccessible operations
-        PCRBitratePlugin() = delete;
-        PCRBitratePlugin(const PCRBitratePlugin&) = delete;
-        PCRBitratePlugin& operator=(const PCRBitratePlugin&) = delete;
     };
 }
 

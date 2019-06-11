@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileInputBuffered: public TSFileInput
     {
+        TS_NOBUILD_NOCOPY(TSFileInputBuffered);
     public:
         //!
         //! Constructor.
@@ -187,15 +188,12 @@ namespace ts {
         bool seek(PacketCounter position, Report& report);
 
     private:
-        TSPacketVector _buffer;         //!< Seekable packet circular buffer.
-        size_t         _first_index;    //!< Index of first packet in buffer.
-        size_t         _current_offset; //!< Offset from _first_index of "current" readable packet
-        size_t         _total_count;    //!< Total count of valid packets in buffer.
+        TSPacketVector _buffer;         // Seekable packet circular buffer.
+        size_t         _first_index;    // Index of first packet in buffer.
+        size_t         _current_offset; // Offset from _first_index of "current" readable packet
+        size_t         _total_count;    // Total count of valid packets in buffer.
 
-        // Inaccessible operations
-        TSFileInputBuffered() = delete;
-        TSFileInputBuffered(const TSFileInputBuffered&) = delete;
-        TSFileInputBuffered& operator=(const TSFileInputBuffered&) = delete;
+        // Make rewind inaccessible.
         bool rewind(Report&);
     };
 }

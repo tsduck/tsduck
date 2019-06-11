@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL OutputRedirector
     {
+        TS_NOBUILD_NOCOPY(OutputRedirector);
     public:
         //!
         //! Constructor, the output redirection is automatically started.
@@ -71,9 +72,5 @@ namespace ts {
         std::ostream&   _stream;
         std::streambuf* _previous;
         std::ofstream   _file;
-
-        // Inaccessible operations
-        OutputRedirector(const OutputRedirector&) = delete;
-        OutputRedirector& operator=(const OutputRedirector&) = delete;
     };
 }

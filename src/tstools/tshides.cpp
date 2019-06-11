@@ -44,6 +44,7 @@ TS_MAIN(MainCode);
 
 class HiDesOptions: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(HiDesOptions);
 public:
     bool          count;       // Only display device count.
     bool          gain_range;  // Only display output gain range.
@@ -54,13 +55,6 @@ public:
 
     HiDesOptions(int argc, char *argv[]);
     virtual ~HiDesOptions();
-
-private:
-    // Inaccessible operations.
-    HiDesOptions() = delete;
-    HiDesOptions(const HiDesOptions&) = delete;
-    HiDesOptions(HiDesOptions&&) = delete;
-    HiDesOptions& operator=(const HiDesOptions&) = delete;
 };
 
 // Destructor.

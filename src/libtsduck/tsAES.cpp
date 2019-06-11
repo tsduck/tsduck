@@ -1431,7 +1431,9 @@ bool ts::AES::decrypt(const void* cipher, size_t cipher_length,
 //----------------------------------------------------------------------------
 
 ts::AES::AES() :
-    _Nr(0)
+    _Nr(0),
+    _eK(),
+    _dK()
 {
 }
 

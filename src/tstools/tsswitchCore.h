@@ -51,6 +51,7 @@ namespace ts {
         //!
         class Core: private WatchDogHandlerInterface
         {
+            TS_NOBUILD_NOCOPY(Core);
         public:
             //!
             //! Constructor.
@@ -212,11 +213,6 @@ namespace ts {
 
             // Implementation of WatchDogHandlerInterface
             virtual void handleWatchDogTimeout(WatchDog& watchdog) override;
-
-            // Inaccessible operations.
-            Core() = delete;
-            Core(const Core&) = delete;
-            Core& operator=(const Core&) = delete;
         };
     }
 }

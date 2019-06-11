@@ -63,6 +63,7 @@ namespace ts {
         private PESHandlerInterface,
         private T2MIHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(TSAnalyzer);
     public:
         //!
         //! Default constructor.
@@ -172,6 +173,7 @@ namespace ts {
         //!
         class TSDUCKDLL ServiceContext
         {
+            TS_NOBUILD_NOCOPY(ServiceContext);
         public:
             // Public members - Synthetic data (do not modify outside ServiceContext methods)
             const uint16_t service_id;         //!< Service id.
@@ -210,13 +212,6 @@ namespace ts {
             //! @return A displayable provider name.
             //!
             UString getProvider() const;
-
-        private:
-            // Inaccessible operations.
-            ServiceContext() = delete;
-            ServiceContext(const ServiceContext&) = delete;
-            ServiceContext(ServiceContext&&) = delete;
-            ServiceContext& operator=(const ServiceContext&) = delete;
         };
 
         //!
@@ -253,6 +248,7 @@ namespace ts {
         //!
         class TSDUCKDLL ETIDContext
         {
+            TS_NOBUILD_NOCOPY(ETIDContext);
         public:
             // Public members - Synthetic data (do not modify outside ETIDContext methods)
             const ETID etid;                      //!< ETID value.
@@ -274,13 +270,6 @@ namespace ts {
             //! @param [in] etid Extended table id.
             //!
             ETIDContext(const ETID& etid);
-
-        private:
-            // Inaccessible operations.
-            ETIDContext() = delete;
-            ETIDContext(const ETIDContext&) = delete;
-            ETIDContext(ETIDContext&&) = delete;
-            ETIDContext& operator=(const ETIDContext&) = delete;
         };
 
         //!
@@ -312,6 +301,7 @@ namespace ts {
         //!
         class TSDUCKDLL PIDContext
         {
+            TS_NOBUILD_NOCOPY(PIDContext);
         public:
             // Public members - Synthetic data (do not modify outside PIDContext methods)
             const PID     pid;             //!< PID value.
@@ -388,13 +378,6 @@ namespace ts {
             //! @return The PID description.
             //!
             UString fullDescription(bool include_attributes) const;
-
-        private:
-            // Inaccessible operations.
-            PIDContext() = delete;
-            PIDContext(const PIDContext&) = delete;
-            PIDContext(PIDContext&&) = delete;
-            PIDContext& operator=(const PIDContext&) = delete;
         };
 
         //!
@@ -537,11 +520,5 @@ namespace ts {
         SectionDemux      _demux;                     // PSI tables analysis
         PESDemux          _pes_demux;                 // Audio/video analysis
         T2MIDemux         _t2mi_demux;                // T2-MI analysis
-
-        // Inaccessible operations.
-        TSAnalyzer() = delete;
-        TSAnalyzer(const TSAnalyzer&) = delete;
-        TSAnalyzer(TSAnalyzer&&) = delete;
-        TSAnalyzer& operator=(const TSAnalyzer&) = delete;
     };
 }

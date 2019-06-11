@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL ReportWithPrefix : public Report
     {
+        TS_NOBUILD_NOCOPY(ReportWithPrefix);
     public:
         //!
         //! Constructor.
@@ -78,10 +79,5 @@ namespace ts {
     private:
         Report& _report;  //!< The actual object which is used to report
         UString _prefix;  //!< The prefix to prepend to all messages
-
-        // Inaccessible methods.
-        ReportWithPrefix() = delete;
-        ReportWithPrefix(const ReportWithPrefix&) = delete;
-        ReportWithPrefix& operator=(const ReportWithPrefix&) = delete;
     };
 }

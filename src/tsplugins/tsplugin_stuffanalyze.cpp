@@ -50,6 +50,7 @@ namespace ts {
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(StuffAnalyzePlugin);
     public:
         // Implementation of plugin API
         StuffAnalyzePlugin(TSP*);
@@ -91,11 +92,6 @@ namespace ts {
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
-
-        // Inaccessible operations
-        StuffAnalyzePlugin() = delete;
-        StuffAnalyzePlugin(const StuffAnalyzePlugin&) = delete;
-        StuffAnalyzePlugin& operator=(const StuffAnalyzePlugin&) = delete;
     };
 }
 

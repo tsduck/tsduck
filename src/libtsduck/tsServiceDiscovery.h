@@ -53,6 +53,7 @@ namespace ts {
     //!
     class TSDUCKDLL ServiceDiscovery : public Service, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(ServiceDiscovery);
     public:
         //!
         //! Default constructor.
@@ -122,10 +123,5 @@ namespace ts {
         void processSDT(const SDT&);
         void analyzeMGT(const MGT&);
         void analyzeVCT(const VCT&);
-
-        // Inaccessible operations.
-        ServiceDiscovery() = delete;
-        ServiceDiscovery(const ServiceDiscovery&) = delete;
-        ServiceDiscovery& operator=(const ServiceDiscovery&) = delete;
     };
 }

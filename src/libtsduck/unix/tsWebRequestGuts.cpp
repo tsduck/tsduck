@@ -109,6 +109,7 @@ namespace {
 
 class ts::WebRequest::SystemGuts
 {
+     TS_NOBUILD_NOCOPY(SystemGuts);
 public:
     // Constructor with a reference to parent WebRequest.
     SystemGuts(WebRequest& request);
@@ -135,11 +136,6 @@ private:
     static size_t headerCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
     static size_t writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
     static int progressCallback(void *clientp, TS_CALLBACK_PARAM dltotal, TS_CALLBACK_PARAM dlnow, TS_CALLBACK_PARAM ultotal, TS_CALLBACK_PARAM ulnow);
-
-    // Inaccessible operations.
-    SystemGuts() = delete;
-    SystemGuts(const SystemGuts&) = delete;
-    SystemGuts& operator=(const SystemGuts&) = delete;
 };
 
 

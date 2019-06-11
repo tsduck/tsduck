@@ -60,6 +60,7 @@ namespace ts {
     template <class CIPHER>
     class DVS042: public CipherChainingTemplate<CIPHER>
     {
+        TS_NOCOPY(DVS042);
     public:
         //!
         //! Constructor.

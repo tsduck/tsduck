@@ -76,6 +76,7 @@ namespace ts {
     //!
     class TSDUCKDLL DuckContext
     {
+        TS_NOCOPY(DuckContext);
     public:
         //!
         //! Constructor.
@@ -404,9 +405,5 @@ namespace ts {
 
         // Define several classes of command line options in an Args.
         void defineOptions(Args& args, int cmdOptionsMask);
-
-        // Inaccessible operations.
-        DuckContext(const DuckContext&) = delete;
-        DuckContext& operator=(const DuckContext&) = delete;
     };
 }

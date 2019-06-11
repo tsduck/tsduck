@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class DuplicatePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(DuplicatePlugin);
     public:
         // Implementation of plugin API
         DuplicatePlugin(TSP*);
@@ -65,11 +66,6 @@ namespace ts {
         PIDSet           _newPIDs;          // New (duplicated) PID values
         PIDMap           _pidMap;           // Key = input pid, value = duplicated pid
         TSPacketPtrQueue _queue;            // Buffered packets, waiting for null packets to replace.
-
-        // Inaccessible operations
-        DuplicatePlugin() = delete;
-        DuplicatePlugin(const DuplicatePlugin&) = delete;
-        DuplicatePlugin& operator=(const DuplicatePlugin&) = delete;
     };
 }
 

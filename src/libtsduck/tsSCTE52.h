@@ -50,6 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL SCTE52_2003 : public DVS042<DES>
     {
+        TS_NOCOPY(SCTE52_2003);
     public:
         //!
         //! Constructor.
@@ -62,11 +63,6 @@ namespace ts {
     private:
         // The IV are identical, there is no specific IV for short blocks.
         virtual bool setShortIV(const void* iv_, size_t iv_length) override;
-
-        // Inaccessible operations
-        SCTE52_2003(const SCTE52_2003&) = delete;
-        SCTE52_2003(SCTE52_2003&&) = delete;
-        SCTE52_2003& operator=(const SCTE52_2003&) = delete;
     };
 
     //!
@@ -82,6 +78,7 @@ namespace ts {
     //!
     class TSDUCKDLL SCTE52_2008 : public DVS042<DES>
     {
+        TS_NOCOPY(SCTE52_2008);
     public:
         //!
         //! Constructor.
@@ -90,11 +87,5 @@ namespace ts {
 
         // Implementation of BlockCipher interface.
         virtual UString name() const override;
-
-    private:
-        // Inaccessible operations
-        SCTE52_2008(const SCTE52_2008&) = delete;
-        SCTE52_2008(SCTE52_2008&&) = delete;
-        SCTE52_2008& operator=(const SCTE52_2008&) = delete;
     };
 }

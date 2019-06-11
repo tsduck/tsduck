@@ -70,8 +70,13 @@ namespace ts {
         //! @param [in] mode The packet's data are either shared (ts::SHARE) between the
         //! two instances or duplicated (ts::COPY).
         //!
-        //!
         PESPacket(const PESPacket& other, CopyShare mode);
+
+        //!
+        //! Move constructor.
+        //! @param [in,out] other Another instance to move.
+        //!
+        PESPacket(PESPacket&& other) noexcept;
 
         //!
         //! Constructor from full binary content.
@@ -140,6 +145,13 @@ namespace ts {
         //! @return A reference to this object.
         //!
         PESPacket& operator=(const PESPacket& other);
+
+        //!
+        //! Move assignment operator.
+        //! @param [in,out] other Other packet to assign to this object.
+        //! @return A reference to this object.
+        //!
+        PESPacket& operator=(PESPacket&& other) noexcept;
 
         //!
         //! Duplication.

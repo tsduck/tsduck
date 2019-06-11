@@ -35,7 +35,7 @@ TSDUCK_SOURCE;
 // Constructor for subclasses
 //----------------------------------------------------------------------------
 
-ts::CipherChaining::CipherChaining (BlockCipher* cipher, size_t iv_min_blocks, size_t iv_max_blocks, size_t work_blocks) :
+ts::CipherChaining::CipherChaining(BlockCipher* cipher, size_t iv_min_blocks, size_t iv_max_blocks, size_t work_blocks) :
     algo(cipher),
     block_size(algo == nullptr ? 0 : algo->blockSize()),
     iv_min_size(iv_min_blocks * block_size),

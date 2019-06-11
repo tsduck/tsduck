@@ -160,6 +160,7 @@ namespace ts {
         //!
         class Register
         {
+            TS_NOBUILD_NOCOPY(Register);
         public:
             //!
             //! The constructor registers an input plugin.
@@ -181,12 +182,6 @@ namespace ts {
             //! @param [in] allocator New output plugin allocator function.
             //!
             Register(const char* name, NewOutputProfile allocator);
-
-        private:
-            // Inaccessible operations.
-            Register() = delete;
-            Register(const Register&) = delete;
-            Register& operator=(const Register&) = delete;
         };
 
     private:

@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class CATPlugin: public AbstractTablePlugin
     {
+        TS_NOBUILD_NOCOPY(CATPlugin);
     public:
         // Implementation of plugin API
         CATPlugin(TSP*);
@@ -60,11 +61,6 @@ namespace ts {
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
         virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
-
-        // Inaccessible operations
-        CATPlugin() = delete;
-        CATPlugin(const CATPlugin&) = delete;
-        CATPlugin& operator=(const CATPlugin&) = delete;
     };
 }
 

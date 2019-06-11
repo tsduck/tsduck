@@ -53,6 +53,7 @@ namespace ts {
         //!
         class TSDUCKDLL Node : public RingNode
         {
+            TS_NOBUILD_NOCOPY(Node);
         public:
             //!
             //! Get the line number in input document.
@@ -326,10 +327,6 @@ namespace ts {
             size_t  _inputLineNum;  //!< Line number in input document, zero if build programmatically.
 
             static const Tweaks defaultTweaks;  //!< Default XML tweaks for orphan nodes.
-
-            // Inaccessible operations.
-            Node(const Node&) = delete;
-            Node& operator=(const Node&) = delete;
         };
     }
 }

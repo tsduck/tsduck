@@ -46,6 +46,7 @@ namespace ts {
         //!
         class JointTermination: public PluginThread
         {
+            TS_NOBUILD_NOCOPY(JointTermination);
         public:
             //!
             //! Constructor.
@@ -84,11 +85,6 @@ namespace ts {
             static int           _jt_users;         // Nb plugins using "joint termination"
             static int           _jt_remaining;     // Nb pluging using jt but not yet completed
             static PacketCounter _jt_hightest_pkt;  // Highest pkt# for completed jt plugins
-
-            // Inaccessible operations
-            JointTermination() = delete;
-            JointTermination(const JointTermination&) = delete;
-            JointTermination& operator=(const JointTermination&) = delete;
         };
     }
 }

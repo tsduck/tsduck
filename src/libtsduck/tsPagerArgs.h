@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL PagerArgs
     {
+        TS_NOCOPY(PagerArgs);
     public:
         // Public fields
         bool page_by_default; //!< Use a page process by default.
@@ -86,10 +87,5 @@ namespace ts {
 
     private:
         OutputPager _pager;
-
-        // Inaccessible operations.
-        PagerArgs(const PagerArgs&) = delete;
-        PagerArgs(PagerArgs&&) = delete;
-        PagerArgs& operator=(const PagerArgs&) = delete;
     };
 }

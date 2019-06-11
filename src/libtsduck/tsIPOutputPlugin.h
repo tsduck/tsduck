@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL IPOutputPlugin: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(IPOutputPlugin);
     public:
         //!
         //! Constructor.
@@ -67,10 +68,5 @@ namespace ts {
         UDPSocket      _sock;           // Outgoing socket
         size_t         _out_count;      // Number of packets in _out_buffer
         TSPacketVector _out_buffer;     // Buffered packets for output with --enforce-burst
-
-        // Inaccessible operations
-        IPOutputPlugin() = delete;
-        IPOutputPlugin(const IPOutputPlugin&) = delete;
-        IPOutputPlugin& operator=(const IPOutputPlugin&) = delete;
     };
 }

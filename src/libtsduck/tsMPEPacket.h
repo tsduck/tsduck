@@ -67,6 +67,12 @@ namespace ts {
         MPEPacket(const MPEPacket& other, CopyShare mode);
 
         //!
+        //! Move constructor.
+        //! @param [in,out] other Another instance to move.
+        //!
+        MPEPacket(MPEPacket&& other) noexcept;
+
+        //!
         //! Constructor from a full datagram (including network headers).
         //! @param [in] datagram Smart pointer to the complete datagram content.
         //! The datagram typically includes the IP and UDP headers. The datagram
@@ -98,6 +104,13 @@ namespace ts {
         //! @return A reference to this object.
         //!
         MPEPacket& operator=(const MPEPacket& other);
+
+        //!
+        //! Move assignment operator.
+        //! @param [in,out] other Other instance to move into this object.
+        //! @return A reference to this object.
+        //!
+        MPEPacket& operator=(MPEPacket&& other) noexcept;
 
         //!
         //! Duplication.

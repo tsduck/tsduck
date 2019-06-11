@@ -286,6 +286,7 @@ namespace ts {
     //!
     class TSDUCKDLL Args: public Report
     {
+        TS_NOCOPY(Args);
     public:
         //!
         //! Internal application error in command line argument handling.
@@ -1016,11 +1017,6 @@ namespace ts {
         // Throw exception if not found.
         const IOption& getIOption(const UChar* name) const;
         IOption& getIOption(const UChar* name);
-
-        // Inaccessible operations.
-        Args(Args&&) = delete;
-        Args(const Args&) = delete;
-        Args& operator=(const Args&) = delete;
     };
 }
 

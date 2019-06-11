@@ -72,6 +72,14 @@ ts::MPEPacket::MPEPacket(const MPEPacket& other, CopyShare mode) :
     }
 }
 
+ts::MPEPacket::MPEPacket(MPEPacket&& other) noexcept :
+    _is_valid(other._is_valid),
+    _source_pid(other._source_pid),
+    _dest_mac(other._dest_mac),
+    _datagram(std::move(other._datagram))
+{
+}
+
 ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, CopyShare mode, const MACAddress& mac, PID pid) :
     _is_valid(!datagram.isNull() && FindUDP(datagram->data(), datagram->size())),
     _source_pid(pid),
@@ -182,6 +190,17 @@ ts::MPEPacket& ts::MPEPacket::operator=(const MPEPacket& other)
         _source_pid = other._source_pid;
         _dest_mac = other._dest_mac;
         _datagram = other._datagram;
+    }
+    return *this;
+}
+
+ts::MPEPacket& ts::MPEPacket::operator=(MPEPacket&& other) noexcept
+{
+    if (&other != this) {
+        _is_valid = other._is_valid;
+        _source_pid = other._source_pid;
+        _dest_mac = other._dest_mac;
+        _datagram = std::move(other._datagram);
     }
     return *this;
 }

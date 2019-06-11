@@ -182,7 +182,9 @@ namespace tsunit {
 
         // Inaccessible operations.
         Main() = delete;
+        Main(Main&&) = delete;
         Main(const Main&) = delete;
+        Main& operator=(Main&&) = delete;
         Main& operator=(const Main&) = delete;
     };
 }
@@ -324,7 +326,9 @@ namespace tsunit {
         virtual void run() = 0;
     private:
         TestCase() = delete;
+        TestCase(TestCase&&) = delete;
         TestCase(const TestCase&) = delete;
+        TestCase& operator=(TestCase&&) = delete;
         TestCase& operator=(const TestCase&) = delete;
     };
 
@@ -340,7 +344,9 @@ namespace tsunit {
         TestMethod _method;
         TEST* _test;
         TestCaseWrapper() = delete;
+        TestCaseWrapper(TestCaseWrapper&&) = delete;
         TestCaseWrapper(const TestCaseWrapper&) = delete;
+        TestCaseWrapper& operator=(TestCaseWrapper&&) = delete;
         TestCaseWrapper& operator=(const TestCaseWrapper&) = delete;
     };
 
@@ -361,7 +367,9 @@ namespace tsunit {
         int _linenumber;
         TEST* _test;
         TestExceptionWrapper() = delete;
+        TestExceptionWrapper(TestExceptionWrapper&&) = delete;
         TestExceptionWrapper(const TestExceptionWrapper&) = delete;
+        TestExceptionWrapper& operator=(TestExceptionWrapper&&) = delete;
         TestExceptionWrapper& operator=(const TestExceptionWrapper&) = delete;
     };
 
@@ -382,7 +390,9 @@ namespace tsunit {
         Test* _test;
         std::map<std::string, TestCase*> _testmap;
         TestSuite() = delete;
+        TestSuite(TestSuite&&) = delete;
         TestSuite(const TestSuite&) = delete;
+        TestSuite& operator=(TestSuite&&) = delete;
         TestSuite& operator=(const TestSuite&) = delete;
     };
 
@@ -405,7 +415,9 @@ namespace tsunit {
         static TestRepository* _instance;
         static void cleanupInstance();
         TestRepository();
+        TestRepository(TestRepository&&) = delete;
         TestRepository(const TestRepository&) = delete;
+        TestRepository& operator=(TestRepository&&) = delete;
         TestRepository& operator=(const TestRepository&) = delete;
     };
 
@@ -422,7 +434,9 @@ namespace tsunit {
         std::ostream& _out;
         size_t _passedCount;
         size_t _failedCount;
+        TestRunner(TestRunner&&) = delete;
         TestRunner(const TestRunner&) = delete;
+        TestRunner& operator=(TestRunner&&) = delete;
         TestRunner& operator=(const TestRunner&) = delete;
     };
 

@@ -55,6 +55,7 @@ namespace ts {
     //!
     class TSDUCKDLL PushInputPlugin : public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(PushInputPlugin);
     protected:
         //!
         //! Packet reception interface.
@@ -124,21 +125,14 @@ namespace ts {
         // Internal thread which receives TS packets.
         class Receiver : public Thread
         {
+            TS_NOBUILD_NOCOPY(Receiver);
         public:
             // Constructor & destructor.
             Receiver(PushInputPlugin* plugin);
             virtual ~Receiver();
-
+            virtual void main() override;
         private:
             PushInputPlugin* _plugin;
-
-            // Thread main.
-            virtual void main() override;
-
-            // Inaccessible operations
-            Receiver() = delete;
-            Receiver(const Receiver&) = delete;
-            Receiver& operator=(const Receiver&) = delete;
         };
 
         // Plugin private data.
@@ -149,10 +143,5 @@ namespace ts {
 
         // Standard input routine, now hidden from subclasses.
         virtual size_t receive(TSPacket* buffer, size_t max_packets) override;
-
-        // Inaccessible operations
-        PushInputPlugin() = delete;
-        PushInputPlugin(const PushInputPlugin&) = delete;
-        PushInputPlugin& operator=(const PushInputPlugin&) = delete;
     };
 }

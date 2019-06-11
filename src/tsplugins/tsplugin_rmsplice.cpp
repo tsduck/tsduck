@@ -51,6 +51,7 @@ namespace ts {
             private SectionHandlerInterface,
             private PMTHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(RMSplicePlugin);
     public:
         // Implementation of plugin API
         RMSplicePlugin(TSP*);
@@ -138,11 +139,6 @@ namespace ts {
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
         virtual void handlePMT(const PMT& table) override;
-
-        // Inaccessible operations
-        RMSplicePlugin() = delete;
-        RMSplicePlugin(const RMSplicePlugin&) = delete;
-        RMSplicePlugin& operator=(const RMSplicePlugin&) = delete;
     };
 }
 

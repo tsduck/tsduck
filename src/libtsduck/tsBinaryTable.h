@@ -73,6 +73,12 @@ namespace ts {
         BinaryTable(const BinaryTable& table, CopyShare mode);
 
         //!
+        //! Move constructor.
+        //! @param [in,out] table Another instance to move.
+        //!
+        BinaryTable(BinaryTable&& table) noexcept;
+
+        //!
         //! Constructor from an array of sections.
         //! @param [in] sections An array of smart pointers to sections.
         //! @param [in] replace If true, duplicated sections may be replaced.
@@ -91,6 +97,14 @@ namespace ts {
         //! @return A reference to this object.
         //!
         BinaryTable& operator=(const BinaryTable& table);
+
+        //!
+        //! Move assignment operator.
+        //! The sections are referenced, and thus shared between the two table objects.
+        //! @param [in,out] table Other table to move into this object.
+        //! @return A reference to this object.
+        //!
+        BinaryTable& operator=(BinaryTable&& table) noexcept;
 
         //!
         //! Duplication.

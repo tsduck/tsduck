@@ -47,6 +47,7 @@ namespace utest {
     //!
     class TSUnitThread : public ts::Thread
     {
+        TS_NOCOPY(TSUnitThread);
     public:
         //!
         //! Default constructor.
@@ -66,11 +67,5 @@ namespace utest {
 
         // Implementation of thread interface.
         virtual void main() override;
-
-    private:
-        // Inaccessible operations
-        TSUnitThread(const TSUnitThread&) = delete;
-        TSUnitThread(TSUnitThread&&) = delete;
-        TSUnitThread& operator=(const TSUnitThread&) = delete;
     };
 }

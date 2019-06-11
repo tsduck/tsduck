@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL DirectShowTest
     {
+        TS_NOBUILD_NOCOPY(DirectShowTest);
     public:
         //!
         //! Constructor.
@@ -155,10 +156,5 @@ namespace ts {
 
         // Show one properties support through IKsControl for a COM object.
         void displayOneIKsControl(::IKsControl* iks, const ::GUID& propSetGuid, const char* propSetName, ::ULONG propId, const char* propName, const UString& margin = UString());
-
-        // Inaccessible operations.
-        DirectShowTest() = delete;
-        DirectShowTest(const DirectShowTest&) = delete;
-        DirectShowTest& operator=(const DirectShowTest&) = delete;
     };
 }

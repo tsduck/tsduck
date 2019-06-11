@@ -80,6 +80,7 @@ namespace ts {
     //!
     class TSDUCKDLL TCPConnection: public TCPSocket
     {
+        TS_NOCOPY(TCPConnection);
     public:
         //!
         //! Reference to the superclass.
@@ -235,10 +236,6 @@ namespace ts {
 
         // Shutdown the socket.
         bool shutdownSocket(int how, Report& report = CERR);
-
-        // Unreachable operations
-        TCPConnection(const TCPConnection&) = delete;
-        TCPConnection& operator=(const TCPConnection&) = delete;
     };
 
     //!

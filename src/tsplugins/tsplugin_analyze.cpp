@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class AnalyzePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(AnalyzePlugin);
     public:
         // Implementation of plugin API
         AnalyzePlugin(TSP*);
@@ -68,11 +69,6 @@ namespace ts {
         bool openOutput();
         void closeOutput();
         bool produceReport();
-
-        // Inaccessible operations
-        AnalyzePlugin() = delete;
-        AnalyzePlugin(const AnalyzePlugin&) = delete;
-        AnalyzePlugin& operator=(const AnalyzePlugin&) = delete;
     };
 }
 

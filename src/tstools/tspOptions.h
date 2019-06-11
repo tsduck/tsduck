@@ -48,6 +48,7 @@ namespace ts {
         //!
         class Options: public ArgsWithPlugins, public DisplayInterface
         {
+            TS_NOBUILD_NOCOPY(Options);
         public:
             //!
             //! Constructor from command line options.
@@ -90,11 +91,6 @@ namespace ts {
 
             // Display one vector of plugins.
             std::ostream& display(const PluginOptionsVector& opts, const UString& name, std::ostream& stream, const UString& margin = UString()) const;
-
-            // Inaccessible operations.
-            Options() = delete;
-            Options(const Options&) = delete;
-            Options& operator=(const Options&) = delete;
         };
     }
 }

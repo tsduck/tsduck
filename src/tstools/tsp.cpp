@@ -60,16 +60,13 @@ namespace ts {
     namespace tsp {
         class TSPInterruptHandler: public InterruptHandler
         {
+            TS_NOCOPY(TSPInterruptHandler);
         public:
             TSPInterruptHandler(AsyncReport* report = nullptr, PluginExecutor* first_plugin = nullptr);
             virtual void handleInterrupt() override;
         private:
             AsyncReport*    _report;
             PluginExecutor* _first_plugin;
-
-            // Inaccessible operations
-            TSPInterruptHandler(const TSPInterruptHandler&) = delete;
-            TSPInterruptHandler& operator=(const TSPInterruptHandler&) = delete;
         };
     }
 }

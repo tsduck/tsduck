@@ -115,7 +115,7 @@ namespace ts {
         //!
         //! Example:
         //! @code
-        //! ts::SafePtr<Foo> ptr (new Foo (...));
+        //! ts::SafePtr<Foo> ptr(new Foo(...));
         //! @endcode
         //!
         //! @param [in] p A pointer to an object of class @a T.
@@ -137,9 +137,20 @@ namespace ts {
         //!
         //! @param [in] sp Another safe pointer instance.
         //!
-        SafePtr(const SafePtr<T,MUTEX> &sp) :
+        SafePtr(const SafePtr<T,MUTEX>& sp) :
             _shared(sp._shared->attach())
         {
+        }
+
+        //!
+        //! Move constructor.
+        //!
+        //! @param [in,out] sp Another safe pointer instance.
+        //!
+        SafePtr(SafePtr<T,MUTEX>&& sp) noexcept :
+            _shared(sp._shared)
+        {
+            sp._shared = nullptr;
         }
 
         //!
@@ -164,6 +175,14 @@ namespace ts {
         //! @return A reference to this object.
         //!
         SafePtr<T,MUTEX>& operator=(const SafePtr<T,MUTEX>& sp);
+
+        //!
+        //! Move assignment between safe pointers.
+        //!
+        //! @param [in,out] sp The value to assign.
+        //! @return A reference to this object.
+        //!
+        SafePtr<T,MUTEX>& operator=(SafePtr<T,MUTEX>&& sp) noexcept;
 
         //!
         //! Assignment from a standard pointer @c T*.
@@ -450,38 +469,26 @@ namespace ts {
         }
 
     private:
-        //! @cond nodoxygen
-
-        // All safe pointer objects which reference the same @c T object share
-        // one single @c SafePtrShared object.
-        class SafePtrShared;
-        // cppcheck-suppress unsafeClassCanLeak // pointer is managed through its detach() method
-        SafePtrShared* _shared;
-
+        // All safe pointers which reference the same T object share one single SafePtrShared object.
         class SafePtrShared
         {
+            TS_NOBUILD_NOCOPY(SafePtrShared);
         private:
             // Private members:
             T*    _ptr;        // pointer to actual object
             int   _ref_count;  // reference counter
             MUTEX _mutex;      // protect the SafePtrShared
 
-            // Inaccessible operators
-            SafePtrShared(const SafePtrShared&) = delete;
-            SafePtrShared& operator=(const SafePtrShared&) = delete;
-
         public:
             // Constructor. Initial reference count is 1.
-            SafePtrShared(T* p = nullptr) : _ptr(p), _ref_count(1), _mutex()
-            {
-            }
+            SafePtrShared(T* p) : _ptr(p), _ref_count(1), _mutex() {}
 
             // Destructor. Deallocate actual object (if any).
             ~SafePtrShared();
 
             // Same semantics as SafePtr counterparts:
             T* release();
-            void reset(T* p = nullptr);
+            void reset(T* p);
             T* pointer();
             int count();
             bool isNull();
@@ -530,7 +537,8 @@ namespace ts {
             }
         };
 
-        //! @endcond
+        // This is the only member field in SafePtr.
+        SafePtrShared* _shared;
     };
 }
 

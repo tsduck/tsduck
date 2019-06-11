@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TimeRefPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(TimeRefPlugin);
     public:
         // Implementation of plugin API
         TimeRefPlugin(TSP*);
@@ -71,11 +72,6 @@ namespace ts {
 
         // Process a TDT or TOT section.
         void processSection(uint8_t* section, size_t size);
-
-        // Inaccessible operations
-        TimeRefPlugin() = delete;
-        TimeRefPlugin(const TimeRefPlugin&) = delete;
-        TimeRefPlugin& operator=(const TimeRefPlugin&) = delete;
     };
 }
 

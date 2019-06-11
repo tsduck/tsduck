@@ -50,6 +50,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ClearPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(ClearPlugin);
     public:
         // Implementation of plugin API
         ClearPlugin(TSP*);
@@ -74,14 +75,9 @@ namespace ts {
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
-        void processPAT (PAT&);
-        void processPMT (PMT&);
-        void processSDT (SDT&);
-
-        // Inaccessible operations
-        ClearPlugin() = delete;
-        ClearPlugin(const ClearPlugin&) = delete;
-        ClearPlugin& operator=(const ClearPlugin&) = delete;
+        void processPAT(PAT&);
+        void processPMT(PMT&);
+        void processSDT(SDT&);
     };
 }
 
@@ -178,7 +174,7 @@ bool ts::ClearPlugin::start()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::ClearPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
@@ -257,7 +253,7 @@ void ts::ClearPlugin::processSDT(SDT& sdt)
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::ClearPlugin::processPAT (PAT& pat)
+void ts::ClearPlugin::processPAT(PAT& pat)
 {
     if (_service.hasId()) {
         // The service id is known, search it in the PAT
@@ -296,7 +292,7 @@ void ts::ClearPlugin::processPAT (PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::ClearPlugin::processPMT (PMT& pmt)
+void ts::ClearPlugin::processPMT(PMT& pmt)
 {
     // Collect all audio/video PIDS
     _clear_pids.reset();

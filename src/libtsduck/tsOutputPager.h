@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL OutputPager : public ForkPipe
     {
+        TS_NOCOPY(OutputPager);
     public:
         //!
         //! Default name of the environment variable containing the pager command.
@@ -98,10 +99,5 @@ namespace ts {
         bool       _hasTerminal;
         OutputMode _outputMode;
         UString    _pagerCommand;
-
-        // Inaccessible operations.
-        OutputPager(const OutputPager&) = delete;
-        OutputPager(OutputPager&&) = delete;
-        OutputPager& operator=(const OutputPager&) = delete;
     };
 }

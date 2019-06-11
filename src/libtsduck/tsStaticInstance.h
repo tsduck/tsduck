@@ -88,6 +88,7 @@
 #define TS_STATIC_INSTANCE_DECLARATION(ObjectClass, ClassAttributes, StaticInstanceClass) \
     class ClassAttributes StaticInstanceClass                                \
     {                                                                        \
+        TS_NOCOPY(StaticInstanceClass);                                      \
     public:                                                                  \
         /** Public static method to access the static instance. */           \
         /** @return A reference to the static instance. */                   \
@@ -104,6 +105,7 @@
         /* destruction of the static instance. */                            \
         class Controller                                                     \
         {                                                                    \
+            TS_NOCOPY(Controller);                                           \
         public:                                                              \
             /* The controller constructor forces the creation of */          \
             /* the static instance if not already created by an */           \
@@ -115,9 +117,6 @@
         };                                                                   \
         /* Only one instance of the controller. */                           \
         static Controller _controller;                                       \
-        /* Inaccessible operations. */                                       \
-        StaticInstanceClass(const StaticInstanceClass&) = delete;            \
-        StaticInstanceClass& operator=(const StaticInstanceClass&) = delete; \
     }
 
 //!

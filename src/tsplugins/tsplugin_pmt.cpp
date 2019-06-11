@@ -55,6 +55,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PMTPlugin: public AbstractTablePlugin
     {
+        TS_NOBUILD_NOCOPY(PMTPlugin);
     public:
         // Implementation of plugin API
         PMTPlugin(TSP*);
@@ -112,11 +113,6 @@ namespace ts {
         // Decode options like --set-stream-identifier which add a simple descriptor in a component.
         template<typename DESCRIPTOR, typename INT>
         bool decodeComponentDescOption(const UChar* parameter_name);
-
-        // Inaccessible operations
-        PMTPlugin() = delete;
-        PMTPlugin(const PMTPlugin&) = delete;
-        PMTPlugin& operator=(const PMTPlugin&) = delete;
     };
 }
 

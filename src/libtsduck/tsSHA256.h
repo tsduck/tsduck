@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL SHA256: public Hash
     {
+        TS_NOCOPY(SHA256);
     public:
         // Sizes in bytes
         static const size_t HASH_SIZE  = 32;  //!< SHA-256 hash size in bytes.

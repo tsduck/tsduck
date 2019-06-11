@@ -42,10 +42,12 @@ namespace ts {
     //!
     class TSDUCKDLL DES: public BlockCipher
     {
+        TS_NOCOPY(DES);
     public:
-        static const size_t BLOCK_SIZE = 8;  //!< DES block size in bytes.
-        static const size_t KEY_SIZE = 8;    //!< DES key size in bytes.
-        static const size_t ROUNDS = 16;     //!< DES number of rounds.
+        DES();                                   //!< Constructor.
+        static constexpr size_t BLOCK_SIZE = 8;  //!< DES block size in bytes.
+        static constexpr size_t KEY_SIZE = 8;    //!< DES key size in bytes.
+        static constexpr size_t ROUNDS = 16;     //!< DES number of rounds.
 
         // Implementation of BlockCipher interface:
         virtual UString name() const override;

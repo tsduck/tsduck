@@ -43,6 +43,7 @@ namespace ts {
         //!
         class TSDUCKDLL Analyzer
         {
+            TS_NOBUILD_NOCOPY(Analyzer);
         public:
             //!
             //! Constructor.
@@ -122,12 +123,6 @@ namespace ts {
             //! Analyze the next TLV field.
             //!
             void next();
-
-        private:
-            // Unreachable constructors and operators
-            Analyzer() = delete;
-            Analyzer(const Analyzer&) = delete;
-            Analyzer& operator=(const Analyzer&) = delete;
 
         private:
             // Private members

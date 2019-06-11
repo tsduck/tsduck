@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SDTPlugin: public AbstractTablePlugin
     {
+        TS_NOBUILD_NOCOPY(SDTPlugin);
     public:
         // Implementation of plugin API
         SDTPlugin(TSP*);
@@ -62,11 +63,6 @@ namespace ts {
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
         virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
-
-        // Inaccessible operations
-        SDTPlugin() = delete;
-        SDTPlugin(const SDTPlugin&) = delete;
-        SDTPlugin& operator=(const SDTPlugin&) = delete;
     };
 }
 

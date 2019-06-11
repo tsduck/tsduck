@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class MPEPlugin: public ProcessorPlugin, private MPEHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(MPEPlugin);
     public:
         // Implementation of plugin API
         MPEPlugin(TSP*);
@@ -95,11 +96,6 @@ namespace ts {
         // Build the strings for --sync-layout or --dump-*.
         UString syncLayoutString(const uint8_t* udp, size_t udpSize);
         UString dumpString(const MPEPacket& mpe);
-
-        // Inaccessible operations
-        MPEPlugin() = delete;
-        MPEPlugin(const MPEPlugin&) = delete;
-        MPEPlugin& operator=(const MPEPlugin&) = delete;
     };
 }
 

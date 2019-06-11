@@ -44,16 +44,11 @@ TSDUCK_SOURCE;
 namespace ts {
     class DropOutput: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(DropOutput);
     public:
         // Implementation of plugin API
         DropOutput(TSP*);
         virtual bool send(const TSPacket*, size_t) override;
-
-    private:
-        // Inaccessible operations
-        DropOutput() = delete;
-        DropOutput(const DropOutput&) = delete;
-        DropOutput& operator=(const DropOutput&) = delete;
     };
 }
 

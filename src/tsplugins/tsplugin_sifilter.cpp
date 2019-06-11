@@ -49,6 +49,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SIFilterPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(SIFilterPlugin);
     public:
         // Implementation of plugin API
         SIFilterPlugin(TSP*);
@@ -67,11 +68,6 @@ namespace ts {
 
         // Process specific tables
         void processPAT(const PAT&);
-
-        // Inaccessible operations
-        SIFilterPlugin() = delete;
-        SIFilterPlugin(const SIFilterPlugin&) = delete;
-        SIFilterPlugin& operator=(const SIFilterPlugin&) = delete;
     };
 }
 

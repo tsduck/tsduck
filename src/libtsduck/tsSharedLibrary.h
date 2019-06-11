@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL SharedLibrary
     {
+        TS_NOBUILD_NOCOPY(SharedLibrary);
     public:
         //!
         //! Constructor: Load a shared library
@@ -112,10 +113,5 @@ namespace ts {
 #else
         void* _dl; // dlopen/dlclose handle
 #endif
-
-        // Unreachable operations.
-        SharedLibrary() = delete;
-        SharedLibrary(const SharedLibrary&) = delete;
-        SharedLibrary& operator=(const SharedLibrary&) = delete;
     };
 }

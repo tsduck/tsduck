@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL HiDesDevice
     {
+        TS_NOCOPY(HiDesDevice);
     public:
         //!
         //! Constructor.
@@ -186,9 +187,5 @@ namespace ts {
 
         bool  _is_open;
         Guts* _guts;
-
-        // Inaccessible operations.
-        HiDesDevice(const HiDesDevice&) = delete;
-        HiDesDevice& operator=(const HiDesDevice&) = delete;
     };
 }

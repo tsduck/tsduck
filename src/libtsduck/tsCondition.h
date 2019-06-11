@@ -57,6 +57,7 @@ namespace ts {
     //!
     class TSDUCKDLL Condition
     {
+        TS_NOCOPY(Condition);
     public:
         //!
         //! Fatal low-level condition/threading error.
@@ -126,11 +127,6 @@ namespace ts {
         }
 
     private:
-        // Unreachable ops
-        Condition(const Condition&) = delete;
-        Condition& operator=(const Condition&) = delete;
-
-        // Private members
         bool _created;
 #if defined(TS_WINDOWS)
         ::HANDLE _handle; // Event handle

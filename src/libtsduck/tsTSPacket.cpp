@@ -131,6 +131,18 @@ void ts::TSPacket::init(PID pid, uint8_t cc, uint8_t data)
 }
 
 //----------------------------------------------------------------------------
+// Assigment operator.
+//----------------------------------------------------------------------------
+
+ts::TSPacket& ts::TSPacket::operator=(const TSPacket& p) noexcept
+{
+    if (&p != this) {
+        ::memcpy(b, p.b, PKT_SIZE);
+    }
+    return *this;
+}
+
+//----------------------------------------------------------------------------
 // Compute the size of the stuffing part in the adaptation_field.
 //----------------------------------------------------------------------------
 

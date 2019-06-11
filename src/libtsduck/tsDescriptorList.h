@@ -68,6 +68,16 @@ namespace ts {
         DescriptorList(const AbstractTable* table, const DescriptorList& dl);
 
         //!
+        //! Basic move-like constructor.
+        //! We forbid a real move constructor because we want to copy the descriptors only,
+        //! while the parent table is usually different.
+        //! @param [in] table Parent table. A descriptor list is always attached to a table it is part of.
+        //! Use zero for a descriptor list object outside a table.
+        //! @param [in,out] dl Another instance to move.
+        //!
+        DescriptorList(const AbstractTable* table, DescriptorList&& dl) noexcept;
+
+        //!
         //! Assignment operator.
         //! The descriptors objects are shared between the two lists.
         //! The parent table remains unchanged.
@@ -75,6 +85,15 @@ namespace ts {
         //! @return A reference to this object.
         //!
         DescriptorList& operator=(const DescriptorList& dl);
+
+        //!
+        //! Move assignment operator.
+        //! The descriptors objects are moved.
+        //! The parent table remains unchanged.
+        //! @param [in,out] dl Another instance to move.
+        //! @return A reference to this object.
+        //!
+        DescriptorList& operator=(DescriptorList&& dl) noexcept;
 
         //!
         //! Check if the descriptor list is empty.
@@ -397,6 +416,7 @@ namespace ts {
 
         // Inaccessible operations.
         DescriptorList() = delete;
+        DescriptorList(DescriptorList&&) = delete;
         DescriptorList(const DescriptorList&) = delete;
     };
 }

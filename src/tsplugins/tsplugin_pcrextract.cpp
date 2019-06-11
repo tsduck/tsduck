@@ -53,6 +53,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PCRExtractPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(PCRExtractPlugin);
     public:
         // Implementation of plugin API
         PCRExtractPlugin(TSP*);
@@ -133,11 +134,6 @@ namespace ts {
 
         // Report a value in log format.
         void logValue(const UString& type, PID pid, uint64_t value, uint64_t since_start, uint64_t frequency);
-
-        // Inaccessible operations
-        PCRExtractPlugin() = delete;
-        PCRExtractPlugin(const PCRExtractPlugin&) = delete;
-        PCRExtractPlugin& operator=(const PCRExtractPlugin&) = delete;
     };
 }
 

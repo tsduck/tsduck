@@ -205,14 +205,22 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool storeInteger(INT i) const;
 
-#if !defined(DOXYGEN)
-        // Copy constructor.
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
         ArgMix(const ArgMix& other);
-        // Instances are directly built in initializer lists and cannot be assigned.
-        ArgMix& operator=(const ArgMix&) = delete;
-        // Destructor.
+
+        //!
+        //! Move constructor.
+        //! @param [in,out] other Other instance to move.
+        //!
+        ArgMix(ArgMix&& other);
+
+        //!
+        //! Destructor.
+        //!
         ~ArgMix();
-#endif
 
     protected:
         //!
@@ -247,6 +255,7 @@ namespace ts {
             uint32_t                  uint32;
             int64_t                   int64;
             uint64_t                  uint64;
+            double                    dbl;
             const char*               charptr;
             const UChar*              ucharptr;
             void*                     intptr;  // output
@@ -255,7 +264,6 @@ namespace ts {
             const UString*            ustring;
             const StringifyInterface* stringify;
 #endif
-            double                    dbl;
 
             Value(void* p)              : intptr(p) {}
             Value(bool b)               : uint32(b) {}
@@ -263,6 +271,7 @@ namespace ts {
             Value(uint32_t i)           : uint32(i) {}
             Value(int64_t i)            : int64(i) {}
             Value(uint64_t i)           : uint64(i) {}
+            Value(double d)             : dbl(d) {}
             Value(const char* s)        : charptr(s) {}
             Value(const UChar* s)       : ucharptr(s) {}
 #if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
@@ -270,7 +279,6 @@ namespace ts {
             Value(const UString& s)     : ustring(&s) {}
             Value(const StringifyInterface& s) : stringify(&s) {}
 #endif
-            Value(double d)             : dbl(d) {}
         };
 #endif // DOXYGEN
 
@@ -413,6 +421,10 @@ namespace ts {
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
         static const ts::UString uempty;
+
+        // Instances are directly built in initializer lists and cannot be assigned.
+        ArgMix& operator=(ArgMix&&) = delete;
+        ArgMix& operator=(const ArgMix&) = delete;
     };
 
     //!
@@ -435,6 +447,16 @@ namespace ts {
         //! Default constructor.
         //!
         ArgMixIn() : ArgMix() {}
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        ArgMixIn(const ArgMixIn& other) : ArgMix(other) {}
+        //!
+        //! Move constructor.
+        //! @param [in,out] other Other instance to move.
+        //!
+        ArgMixIn(ArgMixIn&& other) noexcept : ArgMix(other) {}
         //!
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
@@ -482,6 +504,7 @@ namespace ts {
         // LLVM says "definition of implicit copy constructor is deprecated because it has a user-declared copy assignment operator"
         TS_PUSH_WARNING()
         TS_LLVM_NOWARNING(deprecated)
+        ArgMixIn& operator=(ArgMixIn&&) = delete;
         ArgMixIn& operator=(const ArgMixIn&) = delete;
         TS_POP_WARNING()
     };
@@ -507,6 +530,16 @@ namespace ts {
         //!
         ArgMixOut() : ArgMix() {}
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        ArgMixOut(const ArgMixOut& other) : ArgMix(other) {}
+        //!
+        //! Move constructor.
+        //! @param [in,out] other Other instance to move.
+        //!
+        ArgMixOut(ArgMixOut&& other) : ArgMix(other) {}
+        //!
         //! Constructor from the address of an integer or enum data.
         //! @param [in] ptr Address of an integer or enum data.
         //!
@@ -515,6 +548,7 @@ namespace ts {
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.
+        ArgMixOut& operator=(ArgMixOut&&) = delete;
         ArgMixOut& operator=(const ArgMixOut&) = delete;
     };
 }

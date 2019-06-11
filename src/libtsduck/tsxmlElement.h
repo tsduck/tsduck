@@ -72,6 +72,7 @@ namespace ts {
         //!
         class TSDUCKDLL Element: public Node
         {
+            TS_NOCOPY(Element);
         private:
             // Attributes are stored indexed by case-(in)sensitive name.
             typedef std::map<UString, Attribute> AttributeMap;
@@ -591,10 +592,6 @@ namespace ts {
 
             // Get a modifiable reference to an attribute, create if does not exist.
             Attribute& refAttribute(const UString& attributeName);
-
-            // Inaccessible operations.
-            Element(const Element&) = delete;
-            Element& operator=(const Element&) = delete;
         };
     }
 }

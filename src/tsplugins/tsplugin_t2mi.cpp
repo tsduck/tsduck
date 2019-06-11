@@ -49,6 +49,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class T2MIPlugin: public ProcessorPlugin, private T2MIHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(T2MIPlugin);
     public:
         // Implementation of plugin API
         T2MIPlugin(TSP*);
@@ -87,11 +88,6 @@ namespace ts {
         virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
         virtual void handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
-
-        // Inaccessible operations
-        T2MIPlugin() = delete;
-        T2MIPlugin(const T2MIPlugin&) = delete;
-        T2MIPlugin& operator=(const T2MIPlugin&) = delete;
     };
 }
 

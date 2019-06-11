@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL SubRipGenerator
     {
+        TS_NOCOPY(SubRipGenerator);
     public:
         //!
         //! Constructor.
@@ -132,9 +133,5 @@ namespace ts {
         std::ofstream _outputStream;  //!< Text stream for output file.
         std::ostream* _stream;        //!< Output text stream.
         int           _frameCount;    //!< Number of output frames.
-
-        // Inaccessible operation.
-        SubRipGenerator(const SubRipGenerator&) = delete;
-        SubRipGenerator& operator=(const SubRipGenerator&) = delete;
     };
 }

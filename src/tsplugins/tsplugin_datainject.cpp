@@ -59,6 +59,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class DataInjectPlugin: public ProcessorPlugin, private SectionProviderInterface
     {
+        TS_NOBUILD_NOCOPY(DataInjectPlugin);
     public:
         // Implementation of plugin API
         DataInjectPlugin(TSP*);
@@ -78,6 +79,7 @@ namespace ts {
         // TCP listener thread.
         class TCPListener : public Thread
         {
+            TS_NOBUILD_NOCOPY(TCPListener);
         public:
             // Constructor.
             TCPListener(DataInjectPlugin* plugin);
@@ -85,23 +87,19 @@ namespace ts {
             // Terminate the thread.
             void stop();
 
+            // Invoked in the context of the server thread.
+            virtual void main() override;
+
         private:
             DataInjectPlugin* const _plugin;
             SwitchableReport        _report;
             tlv::Connection<Mutex>  _client;
-
-            // Invoked in the context of the server thread.
-            virtual void main() override;
-
-            // Inaccessible operations.
-            TCPListener() = delete;
-            TCPListener(const TCPListener&) = delete;
-            TCPListener& operator=(const TCPListener&) = delete;
         };
 
         // UDP listener thread.
         class UDPListener : public Thread
         {
+            TS_NOBUILD_NOCOPY(UDPListener);
         public:
             // Constructor.
             UDPListener(DataInjectPlugin* plugin);
@@ -112,18 +110,13 @@ namespace ts {
             // Terminate the thread.
             void stop();
 
+            // Invoked in the context of the server thread.
+            virtual void main() override;
+
         private:
             DataInjectPlugin* const _plugin;
             SwitchableReport        _report;
             UDPReceiver             _client;
-
-            // Invoked in the context of the server thread.
-            virtual void main() override;
-
-            // Inaccessible operations.
-            UDPListener() = delete;
-            UDPListener(const UDPListener&) = delete;
-            UDPListener& operator=(const UDPListener&) = delete;
         };
 
         // Plugin private data
@@ -170,11 +163,6 @@ namespace ts {
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
         virtual bool doStuffing() override { return false; }
-
-        // Inaccessible operations
-        DataInjectPlugin() = delete;
-        DataInjectPlugin(const DataInjectPlugin&) = delete;
-        DataInjectPlugin& operator=(const DataInjectPlugin&) = delete;
     };
 }
 

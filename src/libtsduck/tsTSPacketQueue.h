@@ -60,6 +60,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSPacketQueue
     {
+        TS_NOCOPY(TSPacketQueue);
     public:
         //!
         //! Default size in packets of the buffer.
@@ -175,9 +176,5 @@ namespace ts {
 
         // Get bitrate, must be called with mutex held.
         BitRate getBitrate() const;
-
-        // Inaccessible operations
-        TSPacketQueue(const TSPacketQueue&) = delete;
-        TSPacketQueue& operator=(const TSPacketQueue&) = delete;
     };
 }

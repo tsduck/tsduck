@@ -51,6 +51,7 @@ namespace ts {
     template <class CIPHER>
     class CTS4: public CipherChainingTemplate<CIPHER>
     {
+        TS_NOCOPY(CTS4);
     public:
         //!
         //! Constructor.

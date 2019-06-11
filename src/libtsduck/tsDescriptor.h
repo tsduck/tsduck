@@ -61,6 +61,12 @@ namespace ts {
         Descriptor(const Descriptor& desc, CopyShare mode);
 
         //!
+        //! Move constructor.
+        //! @param [in,out] desc Another instance to move.
+        //!
+        Descriptor(Descriptor&& desc) noexcept;
+
+        //!
         //! Constructor from tag and payload.
         //! The content is copied into the section if valid.
         //! @param [in] tag Descriptor tag.
@@ -107,11 +113,14 @@ namespace ts {
         //! @param [in] desc Another instance to copy.
         //! @return A reference to this object.
         //!
-        Descriptor& operator=(const Descriptor& desc)
-        {
-            _data = desc._data;
-            return *this;
-        }
+        Descriptor& operator=(const Descriptor& desc);
+
+        //!
+        //! Move assignment operator.
+        //! @param [in,out] desc Another instance to move.
+        //! @return A reference to this object.
+        //!
+        Descriptor& operator=(Descriptor&& desc) noexcept;
 
         //!
         //! Duplication.
@@ -119,11 +128,7 @@ namespace ts {
         //! @param [in] desc Another instance to copy.
         //! @return A reference to this object.
         //!
-        Descriptor& copy(const Descriptor& desc)
-        {
-            _data = new ByteBlock(*desc._data);
-            return *this;
-        }
+        Descriptor& copy(const Descriptor& desc);
 
         //!
         //! Check if a descriptor has valid content.

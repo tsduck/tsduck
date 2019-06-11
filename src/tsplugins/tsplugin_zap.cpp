@@ -56,6 +56,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ZapPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(ZapPlugin);
     public:
         // Implementation of plugin API
         ZapPlugin(TSP*);
@@ -112,11 +113,6 @@ namespace ts {
         // Analyze a list of descriptors, looking for CA descriptors.
         // All PIDs which are referenced in CA descriptors are set with the specified state.
         void analyzeCADescriptors(const DescriptorList& dlist, uint8_t pid_state);
-
-        // Inaccessible operations
-        ZapPlugin() = delete;
-        ZapPlugin(const ZapPlugin&) = delete;
-        ZapPlugin& operator=(const ZapPlugin&) = delete;
     };
 }
 

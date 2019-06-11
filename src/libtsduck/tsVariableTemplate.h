@@ -44,6 +44,16 @@ ts::Variable<T>::Variable(const Variable<T>& other) :
 }
 
 template <typename T>
+ts::Variable<T>::Variable(Variable<T>&& other) :
+    _access(nullptr)
+{
+    if (other._access != nullptr) {
+        _access = new(_data) T(std::move(*(other._access)));
+        other.reset();
+    }
+}
+
+template <typename T>
 ts::Variable<T>::~Variable()
 {
     reset();
@@ -56,6 +66,19 @@ ts::Variable<T>& ts::Variable<T>::operator=(const Variable<T>& other)
         reset();
         if (other._access != nullptr) {
             _access = new(_data) T(*(other._access));
+        }
+    }
+    return *this;
+}
+
+template <typename T>
+ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
+{
+    if (&other != this) {
+        reset();
+        if (other._access != nullptr) {
+            _access = new(_data) T(std::move(*(other._access)));
+            other.reset();
         }
     }
     return *this;

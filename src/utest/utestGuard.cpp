@@ -69,6 +69,7 @@ TSUNIT_REGISTER(GuardTest);
 namespace {
     class MutexTest: public ts::MutexInterface
     {
+        TS_NOCOPY(MutexTest);
     private:
         int _count;
         const bool _acquireResult;
@@ -103,10 +104,6 @@ namespace {
             _count--;
             return _failResult;
         }
-    private:
-        // Inaccessible operations
-        MutexTest(const MutexTest&) = delete;
-        MutexTest& operator=(const MutexTest&) = delete;
     };
 }
 

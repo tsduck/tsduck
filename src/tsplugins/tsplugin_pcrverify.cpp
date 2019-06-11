@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PCRVerifyPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(PCRVerifyPlugin);
     public:
         // Implementation of plugin API
         PCRVerifyPlugin(TSP*);
@@ -56,15 +57,10 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
+            PIDContext() : last_pcr_value(0), last_pcr_packet(0) {}
+
             uint64_t      last_pcr_value;   // Last PCR value in this PID
             PacketCounter last_pcr_packet;  // Packet index containing last PCR
-
-            // Constructor
-            PIDContext() :
-                last_pcr_value(0),
-                last_pcr_packet(0)
-            {
-            }
         };
 
         // PCRVerifyPlugin private members
@@ -83,11 +79,6 @@ namespace ts {
         static constexpr int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
         static constexpr int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
         static constexpr int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
-
-        // Inaccessible operations
-        PCRVerifyPlugin() = delete;
-        PCRVerifyPlugin(const PCRVerifyPlugin&) = delete;
-        PCRVerifyPlugin& operator=(const PCRVerifyPlugin&) = delete;
     };
 }
 

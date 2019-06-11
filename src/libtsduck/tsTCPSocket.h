@@ -59,6 +59,7 @@ namespace ts {
     //!
     class TSDUCKDLL TCPSocket: public Socket
     {
+        TS_NOCOPY(TCPSocket);
     public:
         //!
         //! Constructor.
@@ -163,11 +164,6 @@ namespace ts {
 
         // Implementation of Socket interface.
         virtual void declareOpened(TS_SOCKET_T sock, Report& report) override;
-
-    private:
-        // Unreachable operations
-        TCPSocket(const TCPSocket&) = delete;
-        TCPSocket& operator=(const TCPSocket&) = delete;
     };
 
     //!

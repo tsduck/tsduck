@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class FilterPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(FilterPlugin);
     public:
         // Implementation of plugin API
         FilterPlugin (TSP*);
@@ -78,11 +79,6 @@ namespace ts {
         TSPacketMetadata::LabelSet _labels;       // Select packets with any of these labels
         TSPacketMetadata::LabelSet _set_labels;   // Labels to set on filtered packets
         TSPacketMetadata::LabelSet _reset_labels; // Labels to reset on filtered packets
-
-        // Inaccessible operations
-        FilterPlugin() = delete;
-        FilterPlugin(const FilterPlugin&) = delete;
-        FilterPlugin& operator=(const FilterPlugin&) = delete;
     };
 }
 

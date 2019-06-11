@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL DirectShowGraph
     {
+        TS_NOCOPY(DirectShowGraph);
     public:
         //!
         //! Default constructor.
@@ -185,9 +186,5 @@ namespace ts {
         //! @param [in] verbose True for verbose information.
         //!
         void display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& filter, const UString& margin, bool verbose);
-
-        // Inaccessible operations.
-        DirectShowGraph(const DirectShowGraph&) = delete;
-        DirectShowGraph& operator=(const DirectShowGraph&) = delete;
     };
 }

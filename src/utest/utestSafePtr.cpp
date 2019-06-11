@@ -81,7 +81,8 @@ namespace {
         explicit TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
 
         // Assignment is different from copy constructor, do not increment instance count.
-        TestData& operator=(const TestData& other) {if (&other != this) _value = other._value; return *this;}
+        TestData& operator=(TestData&& other) {_value = other._value; return *this;}
+        TestData& operator=(const TestData& other) {_value = other._value; return *this;}
 
         // Destructor
         virtual ~TestData() {_instanceCount--;}

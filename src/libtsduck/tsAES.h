@@ -42,14 +42,15 @@ namespace ts {
     //!
     class TSDUCKDLL AES: public BlockCipher
     {
+        TS_NOCOPY(AES);
     public:
-        AES();                                    //!< Constructor.
-        static const size_t BLOCK_SIZE = 16;      //!< AES block size in bytes.
-        static const size_t MIN_KEY_SIZE = 16;    //!< AES minimum key size in bytes.
-        static const size_t MAX_KEY_SIZE = 32;    //!< AES maximum key size in bytes.
-        static const size_t MIN_ROUNDS = 10;      //!< AES minimum number of rounds.
-        static const size_t MAX_ROUNDS = 14;      //!< AES maximum number of rounds.
-        static const size_t DEFAULT_ROUNDS = 10;  //!< AES default number of rounds, actually depends on key size.
+        AES();                                        //!< Constructor.
+        static constexpr size_t BLOCK_SIZE = 16;      //!< AES block size in bytes.
+        static constexpr size_t MIN_KEY_SIZE = 16;    //!< AES minimum key size in bytes.
+        static constexpr size_t MAX_KEY_SIZE = 32;    //!< AES maximum key size in bytes.
+        static constexpr size_t MIN_ROUNDS = 10;      //!< AES minimum number of rounds.
+        static constexpr size_t MAX_ROUNDS = 14;      //!< AES maximum number of rounds.
+        static constexpr size_t DEFAULT_ROUNDS = 10;  //!< AES default number of rounds, actually depends on key size.
 
         // Implementation of BlockCipher interface:
         virtual UString name() const override;

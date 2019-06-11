@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class CraftInput: public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(CraftInput);
     public:
         // Implementation of plugin API
         CraftInput(TSP*);
@@ -59,11 +60,6 @@ namespace ts {
         PacketCounter _maxCount;    // Number of packets to generate
         PacketCounter _limit;       // Current max number of packets
         TSPacket      _packet;      // Template of packet to generate
-
-        // Inaccessible operations
-        CraftInput() = delete;
-        CraftInput(const CraftInput&) = delete;
-        CraftInput& operator=(const CraftInput&) = delete;
     };
 }
 
@@ -75,6 +71,7 @@ namespace ts {
 namespace ts {
     class CraftPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(CraftPlugin);
     public:
         // Implementation of plugin API
         CraftPlugin(TSP*);
@@ -117,11 +114,6 @@ namespace ts {
 
         // Perform --pack-pes-header on a packet.
         void packPESHeader(TSPacket&);
-
-        // Inaccessible operations
-        CraftPlugin() = delete;
-        CraftPlugin(const CraftPlugin&) = delete;
-        CraftPlugin& operator=(const CraftPlugin&) = delete;
     };
 }
 

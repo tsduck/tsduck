@@ -47,6 +47,7 @@ namespace ts {
         //!
         class TSDUCKDLL Protocol
         {
+            TS_NOCOPY(Protocol);
         public:
             //!
             //! Constructor for a protocol without version number.
@@ -138,10 +139,6 @@ namespace ts {
             virtual void buildErrorResponse(const MessageFactory& mf, MessagePtr& msg) const = 0;
 
         private:
-            // Unreachable constructors and operators
-            Protocol(const Protocol&) = delete;
-            Protocol& operator=(const Protocol&) = delete;
-
             // The class MessageFactory acceeses the internal representation of the protocol.
             friend class MessageFactory;
 

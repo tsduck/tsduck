@@ -48,6 +48,7 @@ namespace ts {
     template <class CIPHER>
     class ECB: public CipherChainingTemplate<CIPHER>
     {
+        TS_NOCOPY(ECB);
     public:
         //!
         //! Constructor.

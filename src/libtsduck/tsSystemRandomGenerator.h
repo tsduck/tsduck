@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL SystemRandomGenerator: public RandomGenerator
     {
+        TS_NOCOPY(SystemRandomGenerator);
     public:
         // Implementation of RandomGenerator interface:
         virtual UString name() const override;
@@ -67,9 +68,5 @@ namespace ts {
 #else
         int _fd;
 #endif
-
-        // Inaccessible operations.
-        SystemRandomGenerator(const SystemRandomGenerator&) = delete;
-        SystemRandomGenerator& operator=(const SystemRandomGenerator&) = delete;
     };
 }

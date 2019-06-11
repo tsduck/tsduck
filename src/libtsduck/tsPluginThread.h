@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL PluginThread: public Thread, public TSP
     {
+        TS_NOBUILD_NOCOPY(PluginThread);
     public:
         //!
         //! Constructor.
@@ -117,10 +118,5 @@ namespace ts {
         UString _name;    // Plugin name.
         UString _logname; // Plugin name as displayed in log messages.
         Plugin* _shlib;   // Shared library API.
-
-        // Inaccessible operations.
-        PluginThread() = delete;
-        PluginThread(const PluginThread&) = delete;
-        PluginThread& operator=(const PluginThread&) = delete;
     };
 }

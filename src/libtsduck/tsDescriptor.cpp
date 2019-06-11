@@ -108,6 +108,40 @@ ts::Descriptor::Descriptor(const Descriptor& desc, CopyShare mode) :
     }
 }
 
+ts::Descriptor::Descriptor(Descriptor&& desc) noexcept :
+    _data(std::move(desc._data))
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Assignment operators.
+//----------------------------------------------------------------------------
+
+ts::Descriptor& ts::Descriptor::operator=(const Descriptor& desc)
+{
+    if (&desc != this) {
+        _data = desc._data;
+    }
+    return *this;
+}
+
+ts::Descriptor& ts::Descriptor::operator=(Descriptor&& desc) noexcept
+{
+    if (&desc != this) {
+        _data = std::move(desc._data);
+    }
+    return *this;
+}
+
+ts::Descriptor& ts::Descriptor::copy(const Descriptor& desc)
+{
+    if (&desc != this) {
+        _data = new ByteBlock(*desc._data);
+    }
+    return *this;
+}
+
 
 //----------------------------------------------------------------------------
 // Get the extended descriptor id.
@@ -238,7 +272,7 @@ ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent,
     // If we could not generate a typed node, generate a generic one.
     if (node == nullptr) {
         // Create the XML node.
-        node = parent->addElement(TS_XML_GENERIC_DESCRIPTOR);
+        node = parent->addElement(AbstractDescriptor::XML_GENERIC_DESCRIPTOR);
         node->setIntAttribute(u"tag", tag(), true);
         node->addHexaText(payload(), payloadSize());
     }
@@ -283,7 +317,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
     }
 
     // Try to decode a generic descriptor.
-    if (node->name().similar(TS_XML_GENERIC_DESCRIPTOR)) {
+    if (node->name().similar(AbstractDescriptor::XML_GENERIC_DESCRIPTOR)) {
         DID tag = 0xFF;
         ByteBlock payload;
         if (node->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) && node->getHexaText(payload, 0, 255)) {

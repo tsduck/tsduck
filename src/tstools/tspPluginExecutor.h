@@ -121,6 +121,7 @@ namespace ts {
         //!
         class PluginExecutor: public JointTermination, public RingNode
         {
+            TS_NOBUILD_NOCOPY(PluginExecutor);
         public:
             //!
             //! TS packet are accessed in a memory-resident buffer.
@@ -243,11 +244,6 @@ namespace ts {
             size_t  _pkt_cnt;    // Size of packets area
             bool    _input_end;  // No more packet after current ones
             BitRate _bitrate;    // Input bitrate (set by previous plugin)
-
-            // Inaccessible operations.
-            PluginExecutor() = delete;
-            PluginExecutor(const PluginExecutor&) = delete;
-            PluginExecutor& operator=(const PluginExecutor&) = delete;
         };
     }
 }

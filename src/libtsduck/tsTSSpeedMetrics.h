@@ -71,6 +71,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSSpeedMetrics
     {
+        TS_NOCOPY(TSSpeedMetrics);
     public:
         //!
         //! Default minimum packets to accumulate per interval.
@@ -151,9 +152,5 @@ namespace ts {
         NanoSecond    _start_interval;     // Start time of interval, from _start_session.
         PacketCounter _count_interval;     // Number of processed packets in current interval.
         PacketCounter _remain_interval;    // Number of packets to process in this interval before checking the clock.
-
-        // Unreachable constructors and operators.
-        TSSpeedMetrics(const TSSpeedMetrics&) = delete;
-        TSSpeedMetrics& operator=(const TSSpeedMetrics&) = delete;
     };
 }

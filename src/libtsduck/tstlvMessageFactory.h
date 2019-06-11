@@ -85,6 +85,7 @@ namespace ts {
         //!
         class TSDUCKDLL MessageFactory
         {
+            TS_NOBUILD_NOCOPY(MessageFactory);
         public:
             //!
             //! Constructor: Analyze a TLV message in memory.
@@ -314,11 +315,6 @@ namespace ts {
             void getCompound(TAG tag, std::vector<MSG>& param) const;
 
         private:
-            // Unreachable constructors and operators
-            MessageFactory() = delete;
-            MessageFactory(const MessageFactory&) = delete;
-            MessageFactory& operator=(const MessageFactory&) = delete;
-
             // Internal description of a parameter.
             // Include the description of compound TLV parameter.
             // When compound.isNull(), this is not a compound TLV parameter.

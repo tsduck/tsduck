@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class HiDesOutput: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(HiDesOutput);
     public:
         // Implementation of plugin API
         HiDesOutput(TSP*);
@@ -61,11 +62,6 @@ namespace ts {
         BitRate         _bitrate;     // Nominal output bitrate.
         HiDesDevice     _device;      // HiDes device object.
         HiDesDeviceInfo _dev_info;    // HiDes device information.
-
-        // Inaccessible operations
-        HiDesOutput() = delete;
-        HiDesOutput(const HiDesOutput&) = delete;
-        HiDesOutput& operator=(const HiDesOutput&) = delete;
     };
 }
 

@@ -54,6 +54,7 @@ namespace ts {
         protected PMTHandlerInterface,
         protected SectionHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(AbstractDescrambler);
     public:
         // Implementation of ProcessorPlugin interface.
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
@@ -186,6 +187,7 @@ namespace ts {
         // Description of an ECM stream
         class ECMStream
         {
+            TS_NOBUILD_NOCOPY(ECMStream);
         public:
             // Constructor
             ECMStream(AbstractDescrambler* parent);
@@ -202,12 +204,6 @@ namespace ts {
             ByteBlock     cw_even;      // Last valid CW (even)
             ByteBlock     cw_odd;       // Last valid CW (odd)
             // -- end of protected area --
-
-        private:
-            // Inaccessible operations.
-            ECMStream() = delete;
-            ECMStream(const ECMStream&) = delete;
-            ECMStream& operator=(const ECMStream&) = delete;
         };
 
         typedef SafePtr<ECMStream, NullMutex> ECMStreamPtr;
@@ -216,6 +212,7 @@ namespace ts {
         // ECM deciphering thread
         class ECMThread : public Thread
         {
+            TS_NOBUILD_NOCOPY(ECMThread);
         public:
             // Constructor.
             ECMThread(AbstractDescrambler* parent) : _parent(parent) {}
@@ -226,11 +223,6 @@ namespace ts {
 
             // Link to parent descrambler.
             AbstractDescrambler* _parent;
-
-            // Inaccessible operations.
-            ECMThread() = delete;
-            ECMThread(const ECMThread&) = delete;
-            ECMThread& operator=(const ECMThread&) = delete;
         };
 
         // Get the ECM stream for a PID, create it if non existent
@@ -262,10 +254,5 @@ namespace ts {
         // -- start of protected area --
         bool               _stop_thread;       // Terminate ECM processing thread
         // -- end of protected area --
-
-        // Inaccessible operations.
-        AbstractDescrambler() = delete;
-        AbstractDescrambler(const AbstractDescrambler&) = delete;
-        AbstractDescrambler& operator=(const AbstractDescrambler&) = delete;
     };
 }

@@ -51,6 +51,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class RMOrphanPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(RMOrphanPlugin);
     public:
         // Implementation of plugin API
         RMOrphanPlugin(TSP*);
@@ -70,11 +71,6 @@ namespace ts {
 
         // Adds all ECM/EMM PIDs from the specified descriptor list
         void addCA(const DescriptorList& dlist, TID parent_table);
-
-        // Inaccessible operations
-        RMOrphanPlugin() = delete;
-        RMOrphanPlugin(const RMOrphanPlugin&) = delete;
-        RMOrphanPlugin& operator=(const RMOrphanPlugin&) = delete;
     };
 }
 

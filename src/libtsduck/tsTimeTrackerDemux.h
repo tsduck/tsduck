@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TimeTrackerDemux: public AbstractDemux
     {
+        TS_NOBUILD_NOCOPY(TimeTrackerDemux);
     public:
         //!
         //! Explicit reference to superclass.
@@ -120,11 +121,5 @@ namespace ts {
         PID           _pcrPID;    //!< First detected PID with PCR's.
         TimeTracker   _pcrTime;   //!< PCR time tracker on _pcrPID.
         PIDContextMap _pids;      //!< PTS time tracker per demuxed PID.
-
-        // Inaccessible operations
-        TimeTrackerDemux() = delete;
-        TimeTrackerDemux(TimeTrackerDemux&&) = delete;
-        TimeTrackerDemux(const TimeTrackerDemux&) = delete;
-        TimeTrackerDemux& operator=(const TimeTrackerDemux&) = delete;
     };
 }

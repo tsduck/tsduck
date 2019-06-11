@@ -12,6 +12,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SamplePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(SamplePlugin);
     public:
         // Implementation of plugin API
         SamplePlugin(TSP*);
@@ -27,11 +28,6 @@ namespace ts {
 
         // Processing data:
         PacketCounter counter;  // Actual packet counter.
-
-        // Inaccessible operations
-        SamplePlugin() = delete;
-        SamplePlugin(const SamplePlugin&) = delete;
-        SamplePlugin& operator=(const SamplePlugin&) = delete;
     };
 }
 

@@ -86,6 +86,7 @@ namespace ts {
     //!
     class TSDUCKDLL Guard
     {
+        TS_NOBUILD_NOCOPY(Guard);
     public:
         //!
         //! Fatal low-level mutex guard error.
@@ -131,12 +132,6 @@ namespace ts {
         bool isLocked() const {return _is_locked;}
 
     private:
-        // Unreachable ops
-        Guard() = delete;
-        Guard(const Guard&) = delete;
-        Guard& operator=(const Guard&) = delete;
-
-        // Private members
         MutexInterface& _mutex;
         bool _is_locked;
     };

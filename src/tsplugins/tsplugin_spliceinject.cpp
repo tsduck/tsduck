@@ -83,6 +83,7 @@ namespace ts {
         private PMTHandlerInterface,
         private SectionProviderInterface
     {
+        TS_NOBUILD_NOCOPY(SpliceInjectPlugin);
     public:
         // Implementation of plugin API
         SpliceInjectPlugin(TSP*);
@@ -100,6 +101,7 @@ namespace ts {
 
         class SpliceCommand : public StringifyInterface
         {
+            TS_NOBUILD_NOCOPY(SpliceCommand);
         public:
             SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec);
 
@@ -118,11 +120,6 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-
-            // Inaccessible operations.
-            SpliceCommand() = delete;
-            SpliceCommand(const SpliceCommand&) = delete;
-            SpliceCommand& operator=(const SpliceCommand&) = delete;
         };
 
         // Splice commands are passed from the server threads to the plugin thread using a message queue.
@@ -139,6 +136,7 @@ namespace ts {
 
         class FileListener : public Thread, private PollFilesListener
         {
+            TS_NOBUILD_NOCOPY(FileListener);
         public:
             FileListener(SpliceInjectPlugin* plugin);
             void stop();
@@ -155,11 +153,6 @@ namespace ts {
             // Implementation of PollFilesListener.
             virtual bool handlePolledFiles(const PolledFileList& files) override;
             virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay) override;
-
-            // Inaccessible operations.
-            FileListener() = delete;
-            FileListener(const FileListener&) = delete;
-            FileListener& operator=(const FileListener&) = delete;
         };
 
         // -------------------
@@ -168,6 +161,7 @@ namespace ts {
 
         class UDPListener : public Thread
         {
+            TS_NOBUILD_NOCOPY(UDPListener);
         public:
             UDPListener(SpliceInjectPlugin* plugin);
             bool open();
@@ -181,11 +175,6 @@ namespace ts {
 
             // Implementation of Thread.
             virtual void main() override;
-
-            // Inaccessible operations.
-            UDPListener() = delete;
-            UDPListener(const UDPListener&) = delete;
-            UDPListener& operator=(const UDPListener&) = delete;
         };
 
         // -------------------
@@ -232,11 +221,6 @@ namespace ts {
 
         // Process a section file or message. Invoked from listener threads.
         void processSectionMessage(const uint8_t*, size_t);
-
-        // Inaccessible operations
-        SpliceInjectPlugin() = delete;
-        SpliceInjectPlugin(const SpliceInjectPlugin&) = delete;
-        SpliceInjectPlugin& operator=(const SpliceInjectPlugin&) = delete;
     };
 }
 

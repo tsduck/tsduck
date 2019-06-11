@@ -44,6 +44,7 @@ namespace ts {
         //!
         class InputExecutor: public PluginExecutor
         {
+            TS_NOBUILD_NOCOPY(InputExecutor);
         public:
             //!
             //! Constructor.
@@ -98,11 +99,6 @@ namespace ts {
             // Encapsulation of the plugin's getBitrate() method, taking into account the tsp input
             // stuffing options. Use PCR analysis if bitrate not otherwise available.
             BitRate getBitrate();
-
-            // Inaccessible operations
-            InputExecutor() = delete;
-            InputExecutor(const InputExecutor&) = delete;
-            InputExecutor& operator=(const InputExecutor&) = delete;
         };
     }
 }

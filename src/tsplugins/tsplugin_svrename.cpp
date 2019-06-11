@@ -54,6 +54,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SVRenamePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(SVRenamePlugin);
     public:
         // Implementation of plugin API
         SVRenamePlugin(TSP*);
@@ -85,11 +86,6 @@ namespace ts {
         void processSDT(SDT&);
         void processNITBAT(AbstractTransportListTable&);
         void processNITBATDescriptorList(DescriptorList&);
-
-        // Inaccessible operations
-        SVRenamePlugin() = delete;
-        SVRenamePlugin(const SVRenamePlugin&) = delete;
-        SVRenamePlugin& operator=(const SVRenamePlugin&) = delete;
     };
 }
 

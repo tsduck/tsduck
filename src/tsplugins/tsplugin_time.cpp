@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TimePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(TimePlugin);
     public:
         // Implementation of plugin API
         TimePlugin(TSP*);
@@ -86,11 +87,6 @@ namespace ts {
 
         // Add time events in the list fro one option. Return false if a time string is invalid
         bool addEvents(const UChar* option, Status status);
-
-        // Inaccessible operations
-        TimePlugin() = delete;
-        TimePlugin(const TimePlugin&) = delete;
-        TimePlugin& operator=(const TimePlugin&) = delete;
     };
 }
 

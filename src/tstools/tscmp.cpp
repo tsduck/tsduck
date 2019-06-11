@@ -50,6 +50,7 @@ TS_MAIN(MainCode);
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -69,13 +70,6 @@ public:
     bool        pid_ignore;
     bool        cc_ignore;
     bool        continue_all;
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

@@ -53,6 +53,7 @@ namespace ts {
         template <class MUTEX = Mutex>
         class Connection: public ts::TCPConnection
         {
+            TS_NOBUILD_NOCOPY(Connection);
         public:
             //!
             //! Reference to superclass.
@@ -70,7 +71,7 @@ namespace ts {
             //! automatically disconnected when the number of consecutive
             //! invalid messages has reached this value.
             //!
-            Connection(const Protocol* protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
+            explicit Connection(const Protocol* protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
             //!
             //! Serialize and send a TLV message.
@@ -154,9 +155,6 @@ namespace ts {
             size_t          _invalid_msg_count;
             MUTEX           _send_mutex;
             MUTEX           _receive_mutex;
-
-            Connection(const Connection&) = delete;
-            Connection& operator=(const Connection&) = delete;
         };
     }
 }

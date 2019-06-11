@@ -33,7 +33,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::T2MIPacket::T2MIPacket() :
@@ -42,11 +42,6 @@ ts::T2MIPacket::T2MIPacket() :
     _data()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor. The packet content is either shared or copied.
-//----------------------------------------------------------------------------
 
 ts::T2MIPacket::T2MIPacket(const T2MIPacket& pp, CopyShare mode) :
     _is_valid(pp._is_valid),
@@ -64,6 +59,13 @@ ts::T2MIPacket::T2MIPacket(const T2MIPacket& pp, CopyShare mode) :
             // should not get there
             assert(false);
     }
+}
+
+ts::T2MIPacket::T2MIPacket(T2MIPacket&& pp) noexcept :
+    _is_valid(pp._is_valid),
+    _source_pid(pp._source_pid),
+    _data(std::move(pp._data))
+{
 }
 
 
@@ -149,8 +151,7 @@ void ts::T2MIPacket::clear()
 
 
 //----------------------------------------------------------------------------
-// Assignment. The packet content is referenced, and thus shared
-// between the two packet objects.
+// Assignment.
 //----------------------------------------------------------------------------
 
 ts::T2MIPacket& ts::T2MIPacket::operator=(const T2MIPacket& pp)
@@ -159,6 +160,16 @@ ts::T2MIPacket& ts::T2MIPacket::operator=(const T2MIPacket& pp)
         _is_valid = pp._is_valid;
         _source_pid = pp._source_pid;
         _data = pp._data;
+    }
+    return *this;
+}
+
+ts::T2MIPacket& ts::T2MIPacket::operator=(T2MIPacket&& pp) noexcept
+{
+    if (&pp != this) {
+        _is_valid = pp._is_valid;
+        _source_pid = pp._source_pid;
+        _data = std::move(pp._data);
     }
     return *this;
 }

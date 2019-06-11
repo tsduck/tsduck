@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL PCRAnalyzer
     {
+        TS_NOCOPY(PCRAnalyzer);
     public:
         //!
         //! Constructor.
@@ -233,9 +234,5 @@ namespace ts {
         PIDAnalysis* _pid[PID_MAX];    // Per-PID stats
         std::map<uint64_t, uint64_t> _packet_pcr_index_map; // Map of PCR/DTS to packet index across entire TS
         static constexpr size_t FOOLPROOF_MAP_LIMIT = 1000; // Max number of entries in the PCR map
-
-        // Unreachable constructors and operators.
-        PCRAnalyzer(const PCRAnalyzer&) = delete;
-        PCRAnalyzer& operator=(const PCRAnalyzer&) = delete;
     };
 }

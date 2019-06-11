@@ -97,6 +97,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
 
 class ts::DektecOutputPlugin::Guts
 {
+    TS_NOCOPY(Guts);
 public:
     Guts();                             // Constructor
     bool                 starting;      // Starting phase (loading FIFO, no transmit)
@@ -112,12 +113,6 @@ public:
     BitRate              cur_bitrate;   // Current output bitrate
     int                  max_fifo_size; // Maximum FIFO size
     int                  fifo_size;     // Actual FIFO size
-
-private:
-    // Inaccessible operations
-    Guts(const Guts&) = delete;
-    Guts(Guts&&) = delete;
-    Guts& operator=(const Guts&) = delete;
 };
 
 

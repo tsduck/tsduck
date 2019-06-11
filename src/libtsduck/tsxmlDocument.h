@@ -47,6 +47,7 @@ namespace ts {
         //!
         class TSDUCKDLL Document: public Node, public StringifyInterface
         {
+            TS_NOCOPY(Document);
         public:
             //!
             //! Constructor.
@@ -182,10 +183,6 @@ namespace ts {
 
             // Private members.
             Tweaks _tweaks;  // Global XML tweaks for the document.
-
-            // Inaccessible operations.
-            Document(const Document&) = delete;
-            Document& operator=(const Document&) = delete;
         };
     }
 }

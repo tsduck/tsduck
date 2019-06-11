@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL DVBCharset
     {
+        TS_NOBUILD_NOCOPY(DVBCharset);
     public:
         //!
         //! Exception thrown when registering duplicate charsets.
@@ -192,10 +193,5 @@ namespace ts {
     private:
         UString  _name;  //!< Character set name.
         uint32_t _code;  //!< Table code.
-
-        // Inaccessible operations.
-        DVBCharset() = delete;
-        DVBCharset(const DVBCharset&) = delete;
-        DVBCharset& operator=(const DVBCharset&) = delete;
     };
 }

@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL TeletextDemux : public PESDemux
     {
+        TS_NOBUILD_NOCOPY(TeletextDemux);
     public:
         //!
         //! Explicit reference to superclass.
@@ -244,10 +245,6 @@ namespace ts {
         TeletextHandlerInterface* _txtHandler;    //!< User handler.
         PIDContextMap             _pids;          //!< Map of PID analysis contexts.
         bool                      _addColors;     //!< Add font color tags.
-
-        // Inaccessible operations.
-        TeletextDemux(const TeletextDemux&) = delete;
-        TeletextDemux& operator=(const TeletextDemux&) = delete;
     };
 }
 

@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class EncapPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(EncapPlugin);
     public:
         // Implementation of plugin API
         EncapPlugin(TSP*);
@@ -64,11 +65,6 @@ namespace ts {
         PacketEncapsulation::PESMode _pesMode;       // Enable PES mode and select type.
         size_t                       _pesOffset;     // Offset value in PES Synchronous.
         PacketEncapsulation          _encap;         // Encapsulation engine.
-
-        // Inaccessible operations
-        EncapPlugin() = delete;
-        EncapPlugin(const EncapPlugin&) = delete;
-        EncapPlugin& operator=(const EncapPlugin&) = delete;
     };
 }
 

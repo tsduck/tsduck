@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileInput
     {
+        TS_NOCOPY(TSFileInput);
     public:
         //!
         //! Default constructor.
@@ -192,10 +193,6 @@ namespace ts {
 #else
         int           _fd;            //!< File descriptor
 #endif
-
-        // Inaccessible operations
-        TSFileInput(const TSFileInput&) = delete;
-        TSFileInput& operator=(const TSFileInput&) = delete;
 
         // Internal methods
         bool openInternal(Report& report);

@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL UDPReceiver: public UDPSocket
     {
+        TS_NOCOPY(UDPReceiver);
     public:
         //!
         //! Constructor.
@@ -109,9 +110,5 @@ namespace ts {
         SocketAddress           _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
         SocketAddress           _first_source;       // Socket address of first received packet.
         std::set<SocketAddress> _sources;            // Set of all detected packet sources.
-
-        // Unreachable operations
-        UDPReceiver(const UDPReceiver&) = delete;
-        UDPReceiver& operator=(const UDPReceiver&) = delete;
     };
 }

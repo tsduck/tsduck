@@ -67,6 +67,7 @@ namespace {
 
 class EMMGOptions: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(EMMGOptions);
 public:
     EMMGOptions(int argc, char *argv[]);
     virtual ~EMMGOptions();
@@ -98,13 +99,6 @@ public:
 
     // Adjust the various rates and delays according to the allocated bandwidth.
     bool adjustBandwidth(uint16_t allocated);
-
-private:
-    // Inaccessible operations.
-    EMMGOptions() = delete;
-    EMMGOptions(const EMMGOptions&) = delete;
-    EMMGOptions(EMMGOptions&&) = delete;
-    EMMGOptions& operator=(const EMMGOptions&) = delete;
 };
 
 // Destructor.
@@ -393,6 +387,7 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
 
 class EMMGSectionProvider : public ts::SectionProviderInterface
 {
+    TS_NOBUILD_NOCOPY(EMMGSectionProvider);
 public:
     // Constructor.
     EMMGSectionProvider(const EMMGOptions& opt);
@@ -411,11 +406,6 @@ private:
     uint8_t _payloadData;
     size_t  _nextSection;
     size_t  _cycleCount;
-
-    // Inaccessible operations.
-    EMMGSectionProvider() = delete;
-    EMMGSectionProvider(const EMMGSectionProvider&) = delete;
-    EMMGSectionProvider& operator=(const EMMGSectionProvider&) = delete;
 };
 
 // Constructor.

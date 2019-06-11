@@ -49,6 +49,7 @@ TS_MAIN(MainCode);
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -59,13 +60,6 @@ public:
     bool                  all;      // Report all tables, not only the first one.
     ts::UString           infile;   // Input file name
     ts::TablesDisplayArgs display;  // Table formatting options (all default values, nothing on command line).
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -110,12 +104,7 @@ Options::~Options()
 
 class TableHandler: public ts::TableHandlerInterface
 {
-private:
-    Options&          _opt;
-    ts::TablesDisplay _display;
-    bool              _tdt_ok;  // Finished TDT processing
-    bool              _tot_ok;  // Finished TOT processing
-
+    TS_NOBUILD_NOCOPY(TableHandler);
 public:
     // Constructor
     TableHandler(Options& opt) :
@@ -136,10 +125,10 @@ public:
     virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&) override;
 
 private:
-    // Inaccessible operations.
-    TableHandler(const TableHandler&) = delete;
-    TableHandler(TableHandler&&) = delete;
-    TableHandler& operator=(const TableHandler&) = delete;
+    Options&          _opt;
+    ts::TablesDisplay _display;
+    bool              _tdt_ok;  // Finished TDT processing
+    bool              _tot_ok;  // Finished TOT processing
 };
 
 

@@ -49,6 +49,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class NITScanPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(NITScanPlugin);
     public:
         // Implementation of plugin API
         NITScanPlugin(TSP*);
@@ -85,11 +86,6 @@ namespace ts {
         // Process specific tables
         void processPAT(const PAT&);
         void processNIT(const NIT&);
-
-        // Inaccessible operations
-        NITScanPlugin() = delete;
-        NITScanPlugin(const NITScanPlugin&) = delete;
-        NITScanPlugin& operator=(const NITScanPlugin&) = delete;
     };
 }
 

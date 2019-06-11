@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL StandaloneTableDemux: public SectionDemux, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(StandaloneTableDemux);
     public:
         //!
         //! Constructor.
@@ -84,11 +85,5 @@ namespace ts {
         // Make these methods inaccessible
         void setHandler(TableHandlerInterface*);
         void setHandler(SectionHandlerInterface*);
-
-        // Inacessible operations
-        StandaloneTableDemux() = delete;
-        StandaloneTableDemux(const StandaloneTableDemux&) = delete;
-        StandaloneTableDemux(StandaloneTableDemux&&) = delete;
-        StandaloneTableDemux& operator=(const StandaloneTableDemux&) = delete;
     };
 }

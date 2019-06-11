@@ -44,6 +44,7 @@ namespace ts {
     template <typename T = uint8_t>
     class ResidentBuffer
     {
+        TS_NOBUILD_NOCOPY(ResidentBuffer);
     public:
         //!
         //! Constructor, based on required amount of elements.
@@ -95,12 +96,6 @@ namespace ts {
         }
 
     private:
-        // Unreachable constructors and operators.
-        ResidentBuffer() = delete;
-        ResidentBuffer(const ResidentBuffer&) = delete;
-        ResidentBuffer& operator=(const ResidentBuffer&) = delete;
-
-        // Private members:
         char*     _allocated_base;   // First allocated address
         char*     _locked_base;      // First locked address (mlock, page boundary)
         T*        _base;             // Same as _locked_base with type T*

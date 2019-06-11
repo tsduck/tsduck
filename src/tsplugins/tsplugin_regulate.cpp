@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class RegulatePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(RegulatePlugin);
     public:
         // Implementation of plugin API
         RegulatePlugin(TSP*);
@@ -59,11 +60,6 @@ namespace ts {
         bool             _pcr_synchronous;
         BitRateRegulator _bitrate_regulator;
         PCRRegulator     _pcr_regulator;
-
-        // Inaccessible operations
-        RegulatePlugin() = delete;
-        RegulatePlugin(const RegulatePlugin&) = delete;
-        RegulatePlugin& operator=(const RegulatePlugin&) = delete;
     };
 }
 

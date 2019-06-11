@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL PluginSharedLibrary: public ApplicationSharedLibrary
     {
+        TS_NOBUILD_NOCOPY(PluginSharedLibrary);
     public:
         //!
         //! Constructor.
@@ -80,12 +81,6 @@ namespace ts {
         //! If null, the plugin either does not provide packet processing capability or is not a valid TSP plugin.
         //!
         NewProcessorProfile new_processor;
-
-    private:
-        // Unreachable operations.
-        PluginSharedLibrary() = delete;
-        PluginSharedLibrary(const PluginSharedLibrary&) = delete;
-        PluginSharedLibrary& operator=(const PluginSharedLibrary&) = delete;
     };
 
     //!

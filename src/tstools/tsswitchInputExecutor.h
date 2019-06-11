@@ -52,6 +52,7 @@ namespace ts {
         //!
         class InputExecutor : public PluginThread
         {
+            TS_NOBUILD_NOCOPY(InputExecutor);
         public:
             //!
             //! Constructor.
@@ -142,11 +143,6 @@ namespace ts {
 
             // Implementation of Thread.
             virtual void main() override;
-
-            // Inaccessible operations.
-            InputExecutor() = delete;
-            InputExecutor(const InputExecutor&) = delete;
-            InputExecutor& operator=(const InputExecutor&) = delete;
         };
 
         //!

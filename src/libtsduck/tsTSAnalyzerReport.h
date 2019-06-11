@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSAnalyzerReport: public TSAnalyzer
     {
+        TS_NOBUILD_NOCOPY(TSAnalyzerReport);
     public:
         //!
         //! Default constructor.
@@ -141,11 +142,5 @@ namespace ts {
 
         // Display one normalized line of a time value.
         static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
-
-        // Inaccessible operations.
-        TSAnalyzerReport() = delete;
-        TSAnalyzerReport(const TSAnalyzerReport&) = delete;
-        TSAnalyzerReport(TSAnalyzerReport&&) = delete;
-        TSAnalyzerReport& operator=(const TSAnalyzerReport&) = delete;
     };
 }

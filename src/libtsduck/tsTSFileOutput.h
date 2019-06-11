@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileOutput
     {
+        TS_NOCOPY(TSFileOutput);
     public:
         //!
         //! Default constructor.
@@ -143,9 +144,5 @@ namespace ts {
         int           _fd;                // File descriptor
 #endif
         static const UString stdoutName;  // File string for standard output.
-
-        // Inaccessible operations
-        TSFileOutput(const TSFileOutput&) = delete;
-        TSFileOutput& operator=(const TSFileOutput&) = delete;
     };
 }

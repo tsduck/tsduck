@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PESPlugin: public ProcessorPlugin, private PESHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(PESPlugin);
     public:
         // Implementation of plugin API
         PESPlugin(TSP*);
@@ -91,11 +92,6 @@ namespace ts {
         virtual void handleNewAVCAttributes (PESDemux&, const PESPacket&, const AVCAttributes&) override;
         virtual void handleNewAudioAttributes (PESDemux&, const PESPacket&, const AudioAttributes&) override;
         virtual void handleNewAC3Attributes (PESDemux&, const PESPacket&, const AC3Attributes&) override;
-
-        // Inaccessible operations
-        PESPlugin() = delete;
-        PESPlugin(const PESPlugin&) = delete;
-        PESPlugin& operator=(const PESPlugin&) = delete;
     };
 }
 

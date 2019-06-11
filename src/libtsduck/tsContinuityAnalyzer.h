@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL ContinuityAnalyzer
     {
+        TS_NOCOPY(ContinuityAnalyzer);
     public:
         //!
         //! Constructor.
@@ -235,9 +236,5 @@ namespace ts {
 
         // Build the first part of an error message.
         UString linePrefix(PID pid) const;
-
-        // Unreachable constructors and operators.
-        ContinuityAnalyzer(const ContinuityAnalyzer&) = delete;
-        ContinuityAnalyzer& operator=(const ContinuityAnalyzer&) = delete;
     };
 }

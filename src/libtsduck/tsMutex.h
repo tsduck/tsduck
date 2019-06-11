@@ -55,6 +55,7 @@ namespace ts {
     //!
     class TSDUCKDLL Mutex: public MutexInterface
     {
+        TS_NOCOPY(Mutex);
     public:
         //!
         //! Fatal low-level mutex error.
@@ -104,10 +105,6 @@ namespace ts {
         virtual bool release() override;
 
     private:
-        // Unreachable ops
-        Mutex(const Mutex&) = delete;
-        Mutex& operator=(const Mutex&) = delete;
-
         // Private members
         bool _created;
 #if defined(TS_WINDOWS)

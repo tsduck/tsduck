@@ -49,6 +49,7 @@ namespace ts {
     //!
     class TSDUCKDLL PESDemux: public TimeTrackerDemux, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(PESDemux);
     public:
         //!
         //! Explicit reference to superclass.
@@ -180,10 +181,5 @@ namespace ts {
         PIDContextMap        _pids;
         StreamTypeMap        _stream_types;
         SectionDemux         _section_demux;
-
-        // Inaccessible operations
-        PESDemux() = delete;
-        PESDemux(const PESDemux&) = delete;
-        PESDemux& operator=(const PESDemux&) = delete;
     };
 }

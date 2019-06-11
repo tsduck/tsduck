@@ -53,6 +53,7 @@ namespace ts {
     template <typename MSG, class MUTEX = Mutex, class COMPARE = std::less<MSG>>
     class MessagePriorityQueue: public MessageQueue<MSG, MUTEX>
     {
+        TS_NOCOPY(MessagePriorityQueue);
     public:
         //!
         //! Constructor.

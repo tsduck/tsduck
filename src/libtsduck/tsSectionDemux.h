@@ -50,6 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL SectionDemux: public AbstractDemux
     {
+        TS_NOBUILD_NOCOPY(SectionDemux);
     public:
         //!
         //! Explicit reference to superclass.
@@ -260,12 +261,6 @@ namespace ts {
         Status                   _status;
         bool                     _get_current;
         bool                     _get_next;
-
-        // Inacessible operations
-        SectionDemux() = delete;
-        SectionDemux(const SectionDemux&) = delete;
-        SectionDemux(SectionDemux&&) = delete;
-        SectionDemux& operator=(const SectionDemux&) = delete;
     };
 }
 

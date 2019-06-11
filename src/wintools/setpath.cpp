@@ -52,19 +52,13 @@ TSDUCK_SOURCE;
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-
     enum UpdateCommand {APPEND, PREPEND, REMOVE};
     ts::UString   directory;
     UpdateCommand command;
     bool          dryRun;
-
-private:
-    // Inaccessible operations.
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

@@ -76,6 +76,7 @@ namespace ts {
     //!
     class TSDUCKDLL CyclingPacketizer: public Packetizer, private SectionProviderInterface
     {
+        TS_NOCOPY(CyclingPacketizer);
     public:
         //!
         //! Specify where stuffing applies.
@@ -264,10 +265,5 @@ namespace ts {
 
         // Hide this method, we do not want the section provider to be replaced
         void setSectionProvider(SectionProviderInterface*);
-
-        // Inaccessible operations
-        CyclingPacketizer(CyclingPacketizer&&) = delete;
-        CyclingPacketizer(const CyclingPacketizer&) = delete;
-        CyclingPacketizer& operator=(const CyclingPacketizer&) = delete;
     };
 }

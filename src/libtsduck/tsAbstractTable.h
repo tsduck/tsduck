@@ -125,9 +125,18 @@ namespace ts {
             //!
             EntryWithDescriptors& operator=(const EntryWithDescriptors& other);
 
+            //!
+            //! Move assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in,out] other Another instance to copy.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptors& operator=(EntryWithDescriptors&& other) noexcept;
+
         private:
             // Inaccessible operations.
             EntryWithDescriptors() = delete;
+            EntryWithDescriptors(EntryWithDescriptors&&) = delete;
             EntryWithDescriptors(const EntryWithDescriptors&) = delete;
         };
 
@@ -167,6 +176,14 @@ namespace ts {
             EntryWithDescriptorsMap& operator=(const EntryWithDescriptorsMap& other);
 
             //!
+            //! Move assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in,out] other Another instance to copy.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptorsMap& operator=(EntryWithDescriptorsMap&& other);
+
+            //!
             //! Swap two instances (override of std::list).
             //! @param [in,out] other Another instance to swap with the current object.
             //!
@@ -193,6 +210,7 @@ namespace ts {
 
             // Inaccessible operations.
             EntryWithDescriptorsMap() = delete;
+            EntryWithDescriptorsMap(EntryWithDescriptorsMap&&) = delete;
             EntryWithDescriptorsMap(const EntryWithDescriptorsMap&) = delete;
         };
 

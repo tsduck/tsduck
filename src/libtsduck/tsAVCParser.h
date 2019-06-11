@@ -47,6 +47,7 @@ namespace ts {
     //!
     class TSDUCKDLL AVCParser
     {
+        TS_NOBUILD_NOCOPY(AVCParser);
     public:
         //!
         //! Constructor.
@@ -185,12 +186,6 @@ namespace ts {
         bool se(INT& val);
 
     private:
-        // Deleted operations.
-        AVCParser() = delete;
-        AVCParser(const AVCParser&) = delete;
-        AVCParser& operator=(const AVCParser&) = delete;
-
-        // Private members.
         const uint8_t* _base;         // Base address of the memory area to parse.
         const uint8_t* _end;          // End address + 1 of the memory area.
         size_t         _total_size;   // Size in bytes of the memory area.

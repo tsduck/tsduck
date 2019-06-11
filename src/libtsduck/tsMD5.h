@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL MD5: public Hash
     {
+        TS_NOCOPY(MD5);
     public:
         static const size_t HASH_SIZE  = 16;  //!< MD-5 hash size in bytes.
         static const size_t BLOCK_SIZE = 64;  //!< MD-5 block size in bytes.

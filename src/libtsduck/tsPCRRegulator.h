@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL PCRRegulator
     {
+        TS_NOCOPY(PCRRegulator);
     public:
         //!
         //! Constructor.
@@ -119,9 +120,5 @@ namespace ts {
         uint64_t      _pcr_last;        // Last PCR value.
         Monotonic     _clock_first;     // System time at first PCR.
         Monotonic     _clock_last;      // System time at last wait
-
-        // Inaccessible operations
-        PCRRegulator(const PCRRegulator&) = delete;
-        PCRRegulator& operator=(const PCRRegulator&) = delete;
     };
 }

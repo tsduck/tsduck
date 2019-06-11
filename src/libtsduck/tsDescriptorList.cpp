@@ -55,11 +55,26 @@ ts::DescriptorList::DescriptorList(const AbstractTable* table, const DescriptorL
 {
 }
 
+ts::DescriptorList::DescriptorList(const AbstractTable* table, DescriptorList&& dl) noexcept :
+    _table(table),
+    _list(std::move(dl._list))
+{
+}
+
 ts::DescriptorList& ts::DescriptorList::operator=(const DescriptorList& dl)
 {
     if (&dl != this) {
         // Copy the list of descriptors but preserve the parent table.
         _list = dl._list;
+    }
+    return *this;
+}
+
+ts::DescriptorList& ts::DescriptorList::operator=(DescriptorList&& dl) noexcept
+{
+    if (&dl != this) {
+        // Move the list of descriptors but preserve the parent table.
+        _list = std::move(dl._list);
     }
     return *this;
 }

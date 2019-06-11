@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL SHA512: public Hash
     {
+        TS_NOCOPY(SHA512);
     public:
         static const size_t HASH_SIZE  =  64;  //!< SHA-512 hash size in bytes.
         static const size_t BLOCK_SIZE = 128;  //!< SHA-512 block size in bytes.

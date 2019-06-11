@@ -2020,6 +2020,7 @@ namespace ts {
         //!
         class ArgMixContext
         {
+            TS_NOBUILD_NOCOPY(ArgMixContext);
         public:
             //!
             //! Constructor.
@@ -2052,11 +2053,6 @@ namespace ts {
             static volatile bool _debugOn;     //!< Check if debugging is on.
             static volatile bool _debugValid;  //!< Check if _debugOn is valid.
             static bool debugInit();           //!< Set _debugOn, normally executed only once.
-
-            // Inaccessible operations.
-            ArgMixContext() = delete;
-            ArgMixContext(const ArgMixContext&) = delete;
-            ArgMixContext& operator=(const ArgMixContext&) = delete;
         };
 
         //!
@@ -2064,6 +2060,7 @@ namespace ts {
         //!
         class ArgMixInContext : public ArgMixContext
         {
+            TS_NOBUILD_NOCOPY(ArgMixInContext);
         public:
             //!
             //! Constructor, format the string.
@@ -2090,11 +2087,6 @@ namespace ts {
             //! @param [in,out] size Size value. Unmodified if no size is found at @e _fmt.
             //!
             void getFormatSize(size_t& size);
-
-            // Inaccessible operations.
-            ArgMixInContext() = delete;
-            ArgMixInContext(const ArgMixInContext&) = delete;
-            ArgMixInContext& operator=(const ArgMixInContext&) = delete;
         };
 
         //!
@@ -2102,6 +2094,7 @@ namespace ts {
         //!
         class ArgMixOutContext : public ArgMixContext
         {
+            TS_NOBUILD_NOCOPY(ArgMixOutContext);
         public:
             //!
             //! Constructor, parse the string and extract values.
@@ -2125,11 +2118,6 @@ namespace ts {
             // Process one field, either a literal character or a '%' sequence.
             // Return true on match, false on error.
             bool processField();
-
-            // Inaccessible operations.
-            ArgMixOutContext() = delete;
-            ArgMixOutContext(const ArgMixOutContext&) = delete;
-            ArgMixOutContext& operator=(const ArgMixOutContext&) = delete;
         };
     };
 }

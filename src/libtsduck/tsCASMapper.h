@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL CASMapper : private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(CASMapper);
     public:
         //!
         //! Constructor.
@@ -146,12 +147,7 @@ namespace ts {
         SectionDemux      _demux;
         PIDDescriptionMap _pids;
 
-        // Hooks
+        // Implementation of TableHandlerInterface
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-
-        // Inaccessible operations.
-        CASMapper() = delete;
-        CASMapper(const CASMapper&) = delete;
-        CASMapper& operator=(const CASMapper&) = delete;
     };
 }

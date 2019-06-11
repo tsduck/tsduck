@@ -58,6 +58,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class MergePlugin: public ProcessorPlugin, private Thread, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(MergePlugin);
     public:
         // Implementation of plugin API
         MergePlugin (TSP*);
@@ -138,11 +139,6 @@ namespace ts {
                 dest.version = version;
             }
         }
-
-        // Inaccessible operations
-        MergePlugin() = delete;
-        MergePlugin(const MergePlugin&) = delete;
-        MergePlugin& operator=(const MergePlugin&) = delete;
     };
 }
 

@@ -56,6 +56,7 @@ namespace ts {
     //!
     class TSDUCKDLL WebRequest
     {
+        TS_NOBUILD_NOCOPY(WebRequest);
     public:
         //!
         //! Constructor.
@@ -356,10 +357,5 @@ namespace ts {
         uint16_t        proxyPort() const { return _proxyPort == 0 ? _defaultProxyPort : _proxyPort; }
         const UString&  proxyUser() const { return _proxyUser.empty() ? _defaultProxyUser : _proxyUser; }
         const UString&  proxyPassword() const { return _proxyPassword.empty() ? _defaultProxyPassword : _proxyPassword; }
-
-        // Inaccessible operations.
-        WebRequest() = delete;
-        WebRequest(const WebRequest&) = delete;
-        WebRequest& operator=(const WebRequest&) = delete;
     };
 }

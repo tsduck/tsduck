@@ -55,6 +55,7 @@ namespace ts {
         public AbstractDemux,
         private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(T2MIDemux);
     public:
         //!
         //! Explicit reference to superclass.
@@ -67,7 +68,7 @@ namespace ts {
         //! @param [in] t2mi_handler The object to invoke when T2-MI information is found.
         //! @param [in] pid_filter The set of T2-MI PID's to demux.
         //!
-        T2MIDemux(DuckContext& duck, T2MIHandlerInterface* t2mi_handler = nullptr, const PIDSet& pid_filter = NoPID);
+        explicit T2MIDemux(DuckContext& duck, T2MIHandlerInterface* t2mi_handler = nullptr, const PIDSet& pid_filter = NoPID);
 
         //!
         //! Destructor.
@@ -142,9 +143,5 @@ namespace ts {
         T2MIHandlerInterface* _handler;    // Application-defined handler
         PIDContextMap         _pids;       // Map of PID contexts.
         SectionDemux          _psi_demux;  // Demux for PSI parsing.
-
-        // Inacessible operations
-        T2MIDemux(const T2MIDemux&) = delete;
-        T2MIDemux& operator=(const T2MIDemux&) = delete;
     };
 }

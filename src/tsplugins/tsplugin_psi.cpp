@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PSIPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(PSIPlugin);
     public:
         // Implementation of plugin API
         PSIPlugin(TSP*);
@@ -58,11 +59,6 @@ namespace ts {
         PSILoggerArgs     _logger_options;
         TablesDisplay     _display;
         PSILoggerPtr      _logger;
-
-        // Inaccessible operations
-        PSIPlugin() = delete;
-        PSIPlugin(const PSIPlugin&) = delete;
-        PSIPlugin& operator=(const PSIPlugin&) = delete;
     };
 }
 

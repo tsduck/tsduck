@@ -43,6 +43,7 @@ namespace ts {
         //!
         class TSDUCKDLL Declaration: public Node
         {
+            TS_NOCOPY(Declaration);
         public:
             //!
             //! Default XML declaration.
@@ -70,11 +71,6 @@ namespace ts {
         protected:
             // Inherited from xml::Node.
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
-
-        private:
-            // Inaccessible operations.
-            Declaration(const Declaration&) = delete;
-            Declaration& operator=(const Declaration&) = delete;
         };
     }
 }

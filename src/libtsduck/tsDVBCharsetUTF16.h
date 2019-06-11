@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL DVBCharsetUTF16 : public DVBCharset
     {
+        TS_NOCOPY(DVBCharsetUTF16);
     public:
         //!
         //! UNICODE character set singleton
@@ -60,10 +61,5 @@ namespace ts {
         //! There is only one definition for such DVB character sets.
         //!
         DVBCharsetUTF16() : DVBCharset(u"UNICODE", 0x000011) {}
-
-    private:
-        // Inaccessible operations.
-        DVBCharsetUTF16(const DVBCharsetUTF16&) = delete;
-        DVBCharsetUTF16& operator=(const DVBCharsetUTF16&) = delete;
     };
 }

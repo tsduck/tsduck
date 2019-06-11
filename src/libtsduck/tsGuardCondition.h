@@ -79,6 +79,7 @@ namespace ts {
     //!
     class TSDUCKDLL GuardCondition
     {
+        TS_NOBUILD_NOCOPY(GuardCondition);
     public:
         //!
         //! Fatal low-level condition guard error.
@@ -149,11 +150,6 @@ namespace ts {
         bool waitCondition(MilliSecond timeout = Infinite);
 
     private:
-        GuardCondition() = delete;
-        GuardCondition(const GuardCondition&) = delete;
-        GuardCondition& operator=(const GuardCondition&) = delete;
-
-        // Private members
         Mutex&     _mutex;
         Condition& _condition;
         bool       _is_locked;

@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class DVBInput: public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(DVBInput);
     public:
         // Implementation of plugin API
         DVBInput(TSP*);
@@ -66,11 +67,6 @@ namespace ts {
         TunerArgs          _tuner_args;       // Command-line tuning arguments
         TunerParametersPtr _tuner_params;     // Tuning parameters
         BitRate            _previous_bitrate; // Previous value from getBitrate()
-
-        // Inaccessible operations
-        DVBInput() = delete;
-        DVBInput(const DVBInput&) = delete;
-        DVBInput& operator=(const DVBInput&) = delete;
     };
 }
 
