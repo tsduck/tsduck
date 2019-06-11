@@ -43,6 +43,7 @@ namespace ts {
         //!
         class OutputExecutor: public PluginExecutor
         {
+            TS_NOBUILD_NOCOPY(OutputExecutor);
         public:
             //!
             //! Constructor.
@@ -68,11 +69,6 @@ namespace ts {
 
             // Inherited from Thread
             virtual void main() override;
-
-            // Inaccessible operations
-            OutputExecutor() = delete;
-            OutputExecutor(const OutputExecutor&) = delete;
-            OutputExecutor& operator=(const OutputExecutor&) = delete;
         };
     }
 }

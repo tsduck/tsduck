@@ -69,6 +69,13 @@ namespace ts {
         Variable(const Variable<T>& other);
 
         //!
+        //! Move constructor.
+        //!
+        //! @param [in,out] other Another instance from which to build this object.
+        //!
+        Variable(Variable<T>&& other);
+
+        //!
         //! Constructor from a @a T instance, the variable is initialized.
         //!
         //! @param [in] obj The initial value for the variable.
@@ -90,6 +97,14 @@ namespace ts {
         //! @return A reference to this object.
         //!
         Variable<T>& operator=(const Variable<T>& other);
+
+        //!
+        //! Move assignment operator.
+        //!
+        //! @param [in,out] other Another instance from which to assign this object.
+        //! @return A reference to this object.
+        //!
+        Variable<T>& operator=(Variable<T>&& other);
 
         //!
         //! Assignment operator from a @a T object.

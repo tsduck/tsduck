@@ -55,6 +55,7 @@ namespace ts {
     //!
     class TSDUCKDLL WatchDog : private Thread
     {
+        TS_NOCOPY(WatchDog);
     public:
         //!
         //! Constructor.
@@ -122,9 +123,5 @@ namespace ts {
 
         // Implementation of Thread.
         virtual void main() override;
-
-        // Inaccessible operations.
-        WatchDog(const WatchDog&) = delete;
-        WatchDog& operator=(const WatchDog&) = delete;
     };
 }

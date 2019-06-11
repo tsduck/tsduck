@@ -47,6 +47,7 @@ namespace ts {
     //!
     class TSDUCKDLL CipherChaining: public BlockCipher
     {
+        TS_NOCOPY(CipherChaining);
     public:
         // Implementation of BlockCipher interface:
         virtual size_t blockSize() const override;
@@ -111,12 +112,6 @@ namespace ts {
                        size_t iv_min_blocks = 1,
                        size_t iv_max_blocks = 1,
                        size_t work_blocks = 1);
-
-    private:
-        // Inaccessible operations
-        CipherChaining(const CipherChaining&) = delete;
-        CipherChaining(CipherChaining&&) = delete;
-        CipherChaining& operator=(const CipherChaining&) = delete;
     };
 
     //!
@@ -132,6 +127,7 @@ namespace ts {
     template <class CIPHER>
     class CipherChainingTemplate: public CipherChaining
     {
+        TS_NOCOPY(CipherChainingTemplate);
     protected:
         //!
         //! Constructor for subclasses.
@@ -147,12 +143,6 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~CipherChainingTemplate();
-
-    private:
-        // Inaccessible operations
-        CipherChainingTemplate(const CipherChainingTemplate&) = delete;
-        CipherChainingTemplate(CipherChainingTemplate&&) = delete;
-        CipherChainingTemplate& operator=(const CipherChainingTemplate&) = delete;
     };
 }
 

@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class BATPlugin: public AbstractTablePlugin
     {
+        TS_NOBUILD_NOCOPY(BATPlugin);
     public:
         // Implementation of plugin API
         BATPlugin(TSP*);
@@ -67,11 +68,6 @@ namespace ts {
 
         // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
-
-        // Inaccessible operations
-        BATPlugin() = delete;
-        BATPlugin(const BATPlugin&) = delete;
-        BATPlugin& operator=(const BATPlugin&) = delete;
     };
 }
 

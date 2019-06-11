@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class NITPlugin: public AbstractTablePlugin
     {
+        TS_NOBUILD_NOCOPY(NITPlugin);
     public:
         // Implementation of plugin API
         NITPlugin(TSP*);
@@ -84,11 +85,6 @@ namespace ts {
 
         // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
-
-        // Inaccessible operations
-        NITPlugin() = delete;
-        NITPlugin(const NITPlugin&) = delete;
-        NITPlugin& operator=(const NITPlugin&) = delete;
     };
 }
 

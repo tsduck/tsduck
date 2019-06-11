@@ -48,6 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TriggerPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(TriggerPlugin);
     public:
         // Implementation of plugin API
         TriggerPlugin (TSP*);
@@ -73,11 +74,6 @@ namespace ts {
         PacketCounter _lastPacket;    // Last action packet.
         Time          _lastTime;      // UTC time of last action.
         UDPSocket     _sock;          // Output socket.
-
-        // Inaccessible operations
-        TriggerPlugin() = delete;
-        TriggerPlugin(const TriggerPlugin&) = delete;
-        TriggerPlugin& operator=(const TriggerPlugin&) = delete;
     };
 }
 

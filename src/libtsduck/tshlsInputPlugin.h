@@ -49,6 +49,7 @@ namespace ts {
         //!
         class TSDUCKDLL InputPlugin: public AbstractHTTPInputPlugin
         {
+            TS_NOBUILD_NOCOPY(InputPlugin);
         public:
             //!
             //! Constructor.
@@ -80,11 +81,6 @@ namespace ts {
             size_t         _maxSegmentCount;
             WebRequestArgs _webArgs;
             PlayList       _playlist;
-
-            // Inaccessible operations
-            InputPlugin() = delete;
-            InputPlugin(const InputPlugin&) = delete;
-            InputPlugin& operator=(const InputPlugin&) = delete;
         };
     }
 }

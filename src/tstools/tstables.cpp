@@ -52,6 +52,7 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -61,13 +62,6 @@ public:
     ts::TablesLoggerArgs  logger;   // Table logging options.
     ts::TablesDisplayArgs display;  // Table formatting options.
     ts::PagerArgs         pager;    // Output paging options.
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

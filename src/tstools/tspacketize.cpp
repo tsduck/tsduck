@@ -47,6 +47,7 @@ TS_MAIN(MainCode);
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -60,13 +61,6 @@ public:
     ts::UString               outfile;    // Output file
     ts::FileNameRateList      infiles;    // Input file names and repetition rates
     ts::SectionFile::FileType inType;     // Input files type
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

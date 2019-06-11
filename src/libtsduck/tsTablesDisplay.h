@@ -52,6 +52,7 @@ namespace ts {
     //!
     class TSDUCKDLL TablesDisplay
     {
+        TS_NOBUILD_NOCOPY(TablesDisplay);
     public:
         //!
         //! Constructor.
@@ -59,7 +60,7 @@ namespace ts {
         //! Use redirect() to redirect the output to a file.
         //! @param [in] options Table logging options.
         //!
-        TablesDisplay(const TablesDisplayArgs& options);
+        explicit TablesDisplay(const TablesDisplayArgs& options);
 
         //!
         //! Virtual destructor.
@@ -228,10 +229,5 @@ namespace ts {
 
     private:
         const TablesDisplayArgs& _opt;
-
-        // Inaccessible operations.
-        TablesDisplay() = delete;
-        TablesDisplay(const TablesDisplay&) = delete;
-        TablesDisplay& operator=(const TablesDisplay&) = delete;
     };
 }

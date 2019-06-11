@@ -82,6 +82,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PCRAdjustPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(PCRAdjustPlugin);
     public:
         // Implementation of plugin API
         PCRAdjustPlugin(TSP*);
@@ -126,11 +127,6 @@ namespace ts {
 
         // Compute an updated PTS or DTS for the current packet.
         uint64_t updatedPDTS(const PIDContextPtr& ctx, uint64_t originalPDTS, BitRate bitrate);
-
-        // Inaccessible operations
-        PCRAdjustPlugin() = delete;
-        PCRAdjustPlugin(const PCRAdjustPlugin&) = delete;
-        PCRAdjustPlugin& operator=(const PCRAdjustPlugin&) = delete;
     };
 }
 

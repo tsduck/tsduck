@@ -55,6 +55,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SVRemovePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(SVRemovePlugin);
     public:
         // Implementation of plugin API
         SVRemovePlugin(TSP*);
@@ -91,11 +92,6 @@ namespace ts {
 
         // Mark all ECM PIDs from the specified descriptor list in the specified PID set
         void addECMPID(const DescriptorList&, PIDSet&);
-
-        // Inaccessible operations
-        SVRemovePlugin() = delete;
-        SVRemovePlugin(const SVRemovePlugin&) = delete;
-        SVRemovePlugin& operator=(const SVRemovePlugin&) = delete;
     };
 }
 

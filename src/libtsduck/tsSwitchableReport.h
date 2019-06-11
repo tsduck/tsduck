@@ -48,13 +48,14 @@ namespace ts {
     //!
     class TSDUCKDLL SwitchableReport : public Report
     {
+        TS_NOBUILD_NOCOPY(SwitchableReport);
     public:
         //!
         //! Constructor.
         //! @param [in,out] delegate The report to which all messages are delegated when on.
         //! @param [in] on Initial state of the switch.
         //!
-        SwitchableReport(Report& delegate, bool on = true);
+        explicit SwitchableReport(Report& delegate, bool on = true);
 
         //!
         //! Set the switch state of this object.
@@ -70,10 +71,5 @@ namespace ts {
     private:
         volatile bool _on;
         Report&       _delegate;
-
-        // Inaccessible operations.
-        SwitchableReport() = delete;
-        SwitchableReport(const SwitchableReport&) = delete;
-        SwitchableReport& operator=(const SwitchableReport&) = delete;
     };
 }

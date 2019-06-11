@@ -59,6 +59,7 @@ namespace ts {
     //!
     class TSDUCKDLL AsyncReport : public Report, private Thread
     {
+        TS_NOCOPY(AsyncReport);
     public:
         //!
         //! Default maximum number of messages in the queue.
@@ -134,13 +135,11 @@ namespace ts {
         // The application threads send that type of message to the logging thread
         struct LogMessage
         {
-            // Members
+            LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
+
             bool    terminate;  // ask the logging thread to terminate
             int     severity;
             UString message;
-
-            // Constructor:
-            LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
         };
         typedef SafePtr <LogMessage, NullMutex> LogMessagePtr;
         typedef MessageQueue <LogMessage, NullMutex> LogMessageQueue;
@@ -148,16 +147,12 @@ namespace ts {
         // Default report handler:
         class DefaultHandler : public ReportHandler
         {
-        private:
-            const AsyncReport& _report;
+            TS_NOBUILD_NOCOPY(DefaultHandler);
         public:
             DefaultHandler(const AsyncReport& report) : _report(report) {}
             virtual void handleMessage(int, const UString&) override;
         private:
-            DefaultHandler() = delete;
-            DefaultHandler(DefaultHandler&&) = delete;
-            DefaultHandler(const DefaultHandler&) = delete;
-            DefaultHandler& operator=(const DefaultHandler&) = delete;
+            const AsyncReport& _report;
         };
 
         // Private members:
@@ -167,10 +162,5 @@ namespace ts {
         volatile bool           _time_stamp;
         volatile bool           _synchronous;
         volatile bool           _terminated;
-
-        // Inaccessible operations.
-        AsyncReport(AsyncReport&&) = delete;
-        AsyncReport(const AsyncReport&) = delete;
-        AsyncReport& operator=(const AsyncReport&) = delete;
     };
 }

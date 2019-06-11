@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractHTTPInputPlugin: public PushInputPlugin, protected WebRequestHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(AbstractHTTPInputPlugin);
     public:
         // Implementation of Plugin interface.
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
@@ -77,10 +78,5 @@ namespace ts {
         size_t       _partial_size;  // Number of bytes in partial.
         UString      _autoSaveDir;   // If not empty, automatically save loaded files to this directory.
         TSFileOutput _outSave;       // TS file where to store the loaded file.
-
-        // Inaccessible operations
-        AbstractHTTPInputPlugin() = delete;
-        AbstractHTTPInputPlugin(const AbstractHTTPInputPlugin&) = delete;
-        AbstractHTTPInputPlugin& operator=(const AbstractHTTPInputPlugin&) = delete;
     };
 }

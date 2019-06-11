@@ -42,7 +42,9 @@ namespace ts {
     //!
     class TSDUCKDLL TDES: public BlockCipher
     {
+        TS_NOCOPY(TDES);
     public:
+        TDES();                                  //!< Constructor.
         static constexpr size_t BLOCK_SIZE = 8;  //!< TDES block size in bytes.
         static constexpr size_t KEY_SIZE = 24;   //!< TDES key size in bytes.
         static constexpr size_t ROUNDS = 16;     //!< TDES number of rounds.

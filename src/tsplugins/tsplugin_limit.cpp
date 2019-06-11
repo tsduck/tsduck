@@ -55,6 +55,7 @@ namespace ts {
         public ProcessorPlugin,
         private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(LimitPlugin);
     public:
         // Implementation of plugin API
         LimitPlugin(TSP*);
@@ -110,11 +111,6 @@ namespace ts {
 
         // Add bits in excess in counters.
         void addExcessBits(uint64_t bits);
-
-        // Inaccessible operations
-        LimitPlugin() = delete;
-        LimitPlugin(const LimitPlugin&) = delete;
-        LimitPlugin& operator=(const LimitPlugin&) = delete;
     };
 }
 

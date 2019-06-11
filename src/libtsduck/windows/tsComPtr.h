@@ -88,6 +88,13 @@ namespace ts {
         ComPtr(const ComPtr<COMCLASS>& p);
 
         //!
+        //! Move constructor.
+        //! The reference count of the COM object is not incremented.
+        //! @param [in,out] p Another ComPtr instance. Cleared on output.
+        //!
+        ComPtr(ComPtr<COMCLASS>&& p);
+
+        //!
         //! Constructor using CoCreateInstance().
         //! If the COM object is successfully created, it becomes managed and
         //! its reference count is unchanged (== 1).
@@ -186,6 +193,14 @@ namespace ts {
         //! @return A reference to this object.
         //!
         ComPtr<COMCLASS>& operator=(const ComPtr<COMCLASS>& p);
+
+        //!
+        //! Move assignment operator.
+        //! The reference count of the COM object is not incremented.
+        //! @param [in,out] p A ComPtr to a COM object. Cleared on return.
+        //! @return A reference to this object.
+        //!
+        ComPtr<COMCLASS>& operator=(ComPtr<COMCLASS>&& p);
 
         //!
         //! Assignment operator from a COM object pointer.

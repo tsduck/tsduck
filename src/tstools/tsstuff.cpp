@@ -50,6 +50,7 @@ static const uint64_t DEFAULT_MIN_INTERVAL   = 100;              // milliseconds
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -67,13 +68,6 @@ public:
     bool        dyn_initial_inter_packet;
     ts::UString input_file;
     ts::UString output_file;
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.
@@ -200,6 +194,7 @@ struct TimeStamp
 
 class Stuffer
 {
+    TS_NOBUILD_NOCOPY(Stuffer);
 public:
     // Constructor
     Stuffer(Options&);
@@ -238,11 +233,6 @@ private:
 
     // Read input up to end_packet and perform simple inter-packet stuffing.
     void simpleInterPacketStuffing(uint64_t inter_packet, uint64_t end_packet);
-
-    // Inaccessible operations.
-    Stuffer(const Stuffer&) = delete;
-    Stuffer(Stuffer&&) = delete;
-    Stuffer& operator=(const Stuffer&) = delete;
 };
 
 

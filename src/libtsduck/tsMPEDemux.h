@@ -53,6 +53,7 @@ namespace ts {
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(MPEDemux);
     public:
         //!
         //! Explicit reference to superclass.
@@ -127,10 +128,5 @@ namespace ts {
         PMTMap               _pmts;       // Map of all PMT's in the TS.
         PIDSet               _new_pids;   // New MPE PID's which where signalled to the application.
         std::set<uint32_t>   _int_tags;   // Set of service_id / component_tag from the INT.
-
-        // Inacessible operations
-        MPEDemux() = delete;
-        MPEDemux(const MPEDemux&) = delete;
-        MPEDemux& operator=(const MPEDemux&) = delete;
     };
 }

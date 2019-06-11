@@ -51,6 +51,7 @@ namespace ts {
         //!
         class CommandListener : private Thread
         {
+            TS_NOBUILD_NOCOPY(CommandListener);
         public:
             //!
             //! Constructor.
@@ -85,11 +86,6 @@ namespace ts {
 
             // Implementation of Thread.
             virtual void main() override;
-
-            // Inaccessible operations.
-            CommandListener() = delete;
-            CommandListener(const CommandListener&) = delete;
-            CommandListener& operator=(const CommandListener&) = delete;
         };
     }
 }

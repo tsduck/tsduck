@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class UntilPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(UntilPlugin);
     public:
         // Implementation of plugin API
         UntilPlugin(TSP*);
@@ -64,11 +65,6 @@ namespace ts {
         bool           _started;          // First packet was received
         bool           _terminated;       // Final condition is met
         bool           _transparent;      // Pass all packets, no longer check conditions
-
-        // Inaccessible operations
-        UntilPlugin() = delete;
-        UntilPlugin(const UntilPlugin&) = delete;
-        UntilPlugin& operator=(const UntilPlugin&) = delete;
     };
 }
 

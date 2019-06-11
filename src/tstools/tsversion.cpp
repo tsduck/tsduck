@@ -49,8 +49,10 @@ TS_MAIN(MainCode);
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -66,11 +68,6 @@ struct Options: public ts::Args
     bool        upgrade;   // Upgrade TSDuck to the latest version.
     ts::UString name;      // Use the specified version, not the latest one.
     ts::UString out_dir;   // Output directory for downloaded files.
-
-private:
-    // Inaccessible operations.
-    Options(const Options&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

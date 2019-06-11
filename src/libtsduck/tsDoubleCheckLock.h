@@ -101,10 +101,7 @@ namespace ts {
     //!
     class TSDUCKDLL DoubleCheckLock
     {
-    private:
-        Mutex _mutex;
-        volatile bool _changed;
-
+        TS_NOCOPY(DoubleCheckLock);
     public:
         //!
         //! Default constructor.
@@ -128,6 +125,7 @@ namespace ts {
         //!
         class TSDUCKDLL Writer : private Guard
         {
+            TS_NOBUILD_NOCOPY(Writer);
         public:
             //!
             //! Default constructor, acquire the mutex and mark data as "changed".
@@ -140,10 +138,6 @@ namespace ts {
             //! Virtual destructor
             //!
             virtual ~Writer();
-
-        private:
-            Writer(const Writer&) = delete;
-            Writer& operator=(const Writer&) = delete;
         };
 
         //!
@@ -151,6 +145,7 @@ namespace ts {
         //!
         class TSDUCKDLL Reader : private Guard
         {
+            TS_NOBUILD_NOCOPY(Reader);
         public:
             //!
             //! Default constructor, acquire the mutex and clear "changed" state for data.
@@ -163,14 +158,10 @@ namespace ts {
             //! Virtual destructor
             //!
             virtual ~Reader();
-
-        private:
-            Reader(const Reader&) = delete;
-            Reader& operator=(const Reader&) = delete;
         };
 
     private:
-        DoubleCheckLock(const DoubleCheckLock&) = delete;
-        DoubleCheckLock& operator=(const DoubleCheckLock&) = delete;
+        Mutex _mutex;
+        volatile bool _changed;
     };
 }

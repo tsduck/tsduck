@@ -46,6 +46,7 @@ namespace ts {
         public ProcessorPlugin,
         protected TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(AbstractTablePlugin);
     public:
         // Implementation of ProcessorPlugin interface.
         // If overridden by subclass, superclass must be explicitly invoked.
@@ -133,10 +134,5 @@ namespace ts {
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-
-        // Inaccessible operations.
-        AbstractTablePlugin() = delete;
-        AbstractTablePlugin(const AbstractTablePlugin&) = delete;
-        AbstractTablePlugin& operator=(const AbstractTablePlugin&) = delete;
     };
 }

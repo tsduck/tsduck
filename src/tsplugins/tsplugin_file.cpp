@@ -48,6 +48,7 @@ namespace ts {
     // Input plugin
     class FileInput: public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(FileInput);
     public:
         // Implementation of plugin API
         FileInput(TSP*);
@@ -63,16 +64,12 @@ namespace ts {
         uint64_t      _start_offset;
         TSFileInput   _file;
         volatile bool _aborted;
-
-        // Inaccessible operations
-        FileInput() = delete;
-        FileInput(const FileInput&) = delete;
-        FileInput& operator=(const FileInput&) = delete;
     };
 
     // Output plugin
     class FileOutput: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(FileOutput);
     public:
         // Implementation of plugin API
         FileOutput(TSP*);
@@ -81,16 +78,12 @@ namespace ts {
         virtual bool send(const TSPacket*, size_t) override;
     private:
         TSFileOutput _file;
-
-        // Inaccessible operations
-        FileOutput() = delete;
-        FileOutput(const FileOutput&) = delete;
-        FileOutput& operator=(const FileOutput&) = delete;
     };
 
     // Packet processor plugin
     class FileProcessor: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(FileProcessor);
     public:
         // Implementation of plugin API
         FileProcessor(TSP*);
@@ -99,11 +92,6 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
     private:
         TSFileOutput _file;
-
-        // Inaccessible operations
-        FileProcessor() = delete;
-        FileProcessor(const FileProcessor&) = delete;
-        FileProcessor& operator=(const FileProcessor&) = delete;
     };
 }
 

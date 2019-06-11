@@ -150,7 +150,9 @@ namespace {
     public:
         // Constructors
         explicit TestData(int value = 0) : _value(value) {_instanceCount++;}
+        TestData(TestData&& other) : _value(other._value) {_instanceCount++;}
         TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
+        TestData& operator=(TestData&& other) {_value = other._value; return *this;}
         TestData& operator=(const TestData& other) {_value = other._value; return *this;}
         bool operator==(const TestData& other) {return _value == other._value;}
 

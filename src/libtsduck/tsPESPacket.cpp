@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::PESPacket::PESPacket(PID source_pid) :
@@ -49,11 +49,6 @@ ts::PESPacket::PESPacket(PID source_pid) :
     _data()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor. The packet content is either shared or copied.
-//----------------------------------------------------------------------------
 
 ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
     _is_valid(pp._is_valid),
@@ -77,10 +72,16 @@ ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Constructors from binary content.
-//----------------------------------------------------------------------------
+ts::PESPacket::PESPacket(PESPacket&& pp) noexcept :
+    _is_valid(pp._is_valid),
+    _header_size(pp._header_size),
+    _source_pid(pp._source_pid),
+    _stream_type(pp._stream_type),
+    _first_pkt(pp._first_pkt),
+    _last_pkt(pp._last_pkt),
+    _data(std::move(pp._data))
+{
+}
 
 ts::PESPacket::PESPacket(const void* content, size_t content_size, PID source_pid) :
     PESPacket(source_pid)
@@ -220,8 +221,7 @@ void ts::PESPacket::setStreamId(uint8_t sid)
 
 
 //----------------------------------------------------------------------------
-// Assignment. The packet content is referenced, and thus shared
-// between the two packet objects.
+// Assignment.
 //----------------------------------------------------------------------------
 
 ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
@@ -233,6 +233,18 @@ ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
     _data = pp._data;
+    return *this;
+}
+
+ts::PESPacket& ts::PESPacket::operator=(PESPacket&& pp) noexcept
+{
+    _is_valid = pp._is_valid;
+    _header_size = pp._header_size;
+    _source_pid = pp._source_pid;
+    _stream_type = pp._stream_type;
+    _first_pkt = pp._first_pkt;
+    _last_pkt = pp._last_pkt;
+    _data = std::move(pp._data);
     return *this;
 }
 

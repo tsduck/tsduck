@@ -61,6 +61,7 @@ namespace ts {
         private SectionHandlerInterface,
         private SectionProviderInterface
     {
+        TS_NOBUILD_NOCOPY(EITProcessor);
     public:
         //!
         //! Constructor.
@@ -232,10 +233,5 @@ namespace ts {
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
         virtual bool doStuffing() override;
-
-        // Inaccessible operations.
-        EITProcessor() = delete;
-        EITProcessor(const EITProcessor&) = delete;
-        EITProcessor& operator=(const EITProcessor&) = delete;
     };
 }

@@ -46,6 +46,7 @@ TS_MAIN(MainCode);
 
 class GenECMOptions: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(GenECMOptions);
 public:
     GenECMOptions(int argc, char *argv[]);
     virtual ~GenECMOptions();
@@ -56,13 +57,6 @@ public:
     uint16_t           cpNumber;   // Crypto-period number
     ts::ByteBlock      cwCurrent;  // Current CW
     ts::ByteBlock      cwNext;     // Next CW
-
-private:
-    // Inaccessible operations.
-    GenECMOptions() = delete;
-    GenECMOptions(const GenECMOptions&) = delete;
-    GenECMOptions(GenECMOptions&&) = delete;
-    GenECMOptions& operator=(const GenECMOptions&) = delete;
 };
 
 // Destructor.

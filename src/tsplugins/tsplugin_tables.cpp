@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TablesPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(TablesPlugin);
     public:
         // Implementation of plugin API
         TablesPlugin(TSP*);
@@ -58,11 +59,6 @@ namespace ts {
         TablesLoggerArgs  _logger_options;
         TablesDisplay     _display;
         TablesLoggerPtr   _logger;
-
-        // Inaccessible operations
-        TablesPlugin() = delete;
-        TablesPlugin(const TablesPlugin&) = delete;
-        TablesPlugin& operator=(const TablesPlugin&) = delete;
     };
 }
 

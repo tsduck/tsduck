@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL TablesDisplayArgs
     {
+        TS_NOBUILD_NOCOPY(TablesDisplayArgs);
     public:
         // Public fields
         DuckContext&      duck;             //!< Reference to the associated TSDuck context.
@@ -58,7 +59,7 @@ namespace ts {
         //! Default constructor.
         //! @param [in,out] d TSDuck context.
         //!
-        TablesDisplayArgs(DuckContext& d);
+        explicit TablesDisplayArgs(DuckContext& d);
 
         //!
         //! Virtual destructor.
@@ -78,11 +79,5 @@ namespace ts {
         //! @return True on success, false on error in argument line.
         //!
         virtual bool load(Args& args);
-
-    private:
-        // Inaccessible operations
-        TablesDisplayArgs() = delete;
-        TablesDisplayArgs(const TablesDisplayArgs& other) = delete;
-        TablesDisplayArgs& operator=(const TablesDisplayArgs& other) = delete;
     };
 }

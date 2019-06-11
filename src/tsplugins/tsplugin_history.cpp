@@ -52,6 +52,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class HistoryPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(HistoryPlugin);
     public:
         // Implementation of plugin API
         HistoryPlugin(TSP*);
@@ -97,11 +98,6 @@ namespace ts {
         // Report a history line
         void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
         void report(PacketCounter, const UChar* fmt, const std::initializer_list<ArgMixIn> args);
-
-        // Inaccessible operations
-        HistoryPlugin() = delete;
-        HistoryPlugin(const HistoryPlugin&) = delete;
-        HistoryPlugin& operator=(const HistoryPlugin&) = delete;
     };
 }
 

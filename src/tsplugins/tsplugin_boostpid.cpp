@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class BoostPIDPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(BoostPIDPlugin);
     public:
         // Implementation of plugin API
         BoostPIDPlugin(TSP*);
@@ -57,11 +58,6 @@ namespace ts {
         uint8_t  _last_cc;     // Last continuity counter in PID
         int      _in_count;    // Input packet countdown for next insertion
         int      _add_count;   // Current number of packets to add
-
-        // Inaccessible operations
-        BoostPIDPlugin() = delete;
-        BoostPIDPlugin(const BoostPIDPlugin&) = delete;
-        BoostPIDPlugin& operator=(const BoostPIDPlugin&) = delete;
     };
 }
 

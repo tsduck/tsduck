@@ -52,6 +52,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class InjectPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(InjectPlugin);
     public:
         // Implementation of plugin API
         InjectPlugin(TSP*);
@@ -92,11 +93,6 @@ namespace ts {
 
         // Replace current packet with one from the packetizer.
         void replacePacket(TSPacket& pkt);
-
-        // Inaccessible operations
-        InjectPlugin() = delete;
-        InjectPlugin(const InjectPlugin&) = delete;
-        InjectPlugin& operator=(const InjectPlugin&) = delete;
     };
 }
 

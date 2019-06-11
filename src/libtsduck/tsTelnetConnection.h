@@ -52,6 +52,7 @@ namespace ts {
     //!
     class TSDUCKDLL TelnetConnection: public TCPConnection
     {
+        TS_NOCOPY(TelnetConnection);
     public:
         //!
         //! Reference to the superclass.
@@ -98,9 +99,6 @@ namespace ts {
         bool waitForPrompt(const AbortInterface* abort, Report& report);
 
     private:
-        TelnetConnection(const TelnetConnection&) = delete;
-        TelnetConnection& operator=(const TelnetConnection&) = delete;
-
         static const size_t BUFFER_SIZE = 1024 * 4;
         char        _buffer[BUFFER_SIZE];
         size_t      _received;

@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL TextFormatter: public AbstractOutputStream
     {
+        TS_NOCOPY(TextFormatter);
     public:
         //!
         //! Constructor.
@@ -201,10 +202,6 @@ namespace ts {
         size_t             _tabSize;     // Tabulation size in characters.
         size_t             _column;      // Current column in line, starting at 0.
         bool               _afterSpace;  // After initial spaces in line.
-
-        // Inaccessible operations.
-        TextFormatter(const TextFormatter&) = delete;
-        TextFormatter& operator=(const TextFormatter&) = delete;
     };
 
     //!

@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL InputRedirector
     {
+     TS_NOBUILD_NOCOPY(InputRedirector);
     public:
         //!
         //! Constructor, the input redirection is automatically started.
@@ -68,10 +69,6 @@ namespace ts {
         ~InputRedirector();
 
     private:
-        InputRedirector(const InputRedirector&) = delete;
-        InputRedirector& operator=(const InputRedirector&) = delete;
-
-        // Private members.
         std::istream&   _stream;
         std::streambuf* _previous;
         std::ifstream   _file;

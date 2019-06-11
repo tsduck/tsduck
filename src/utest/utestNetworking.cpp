@@ -464,9 +464,9 @@ void NetworkingTest::testSocketAddress()
 namespace {
     class TCPClient: public utest::TSUnitThread
     {
+        TS_NOBUILD_NOCOPY(TCPClient);
     private:
         uint16_t _portNumber;
-
     public:
         // Constructor
         explicit TCPClient(uint16_t portNumber) :
@@ -533,12 +533,6 @@ namespace {
             session.close(CERR);
             CERR.debug(u"TCPSocketTest: client thread: terminated");
         }
-
-    private:
-        // Inaccessible operations
-        TCPClient(const TCPClient&) = delete;
-        TCPClient(TCPClient&&) = delete;
-        TCPClient& operator=(const TCPClient&) = delete;
     };
 }
 
@@ -596,9 +590,9 @@ void NetworkingTest::testTCPSocket()
 namespace {
     class UDPClient: public utest::TSUnitThread
     {
+        TS_NOBUILD_NOCOPY(UDPClient);
     private:
         uint16_t _portNumber;
-
     public:
         // Constructor
         explicit UDPClient(uint16_t portNumber) :
@@ -648,12 +642,6 @@ namespace {
 
             CERR.debug(u"UDPSocketTest: client thread terminated");
         }
-
-    private:
-        // Inaccessible operations
-        UDPClient(const UDPClient&) = delete;
-        UDPClient(UDPClient&&) = delete;
-        UDPClient& operator=(const UDPClient&) = delete;
     };
 }
 

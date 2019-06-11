@@ -53,6 +53,7 @@ namespace ts {
         //!
         class TSDUCKDLL OutputPlugin: public ts::OutputPlugin, private TableHandlerInterface
         {
+            TS_NOBUILD_NOCOPY(OutputPlugin);
         public:
             //!
             //! Constructor.
@@ -102,11 +103,6 @@ namespace ts {
 
             // Write packets into the current segment file, adjust CC in PAT and PMT PID.
             bool writePackets(const TSPacket*, size_t);
-
-            // Inaccessible operations
-            OutputPlugin() = delete;
-            OutputPlugin(const OutputPlugin&) = delete;
-            OutputPlugin& operator=(const OutputPlugin&) = delete;
         };
     }
 }

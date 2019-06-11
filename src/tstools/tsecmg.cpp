@@ -70,6 +70,7 @@ namespace {
 
 class ECMGOptions: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(ECMGOptions);
 public:
     ECMGOptions(int argc, char *argv[]);
     virtual ~ECMGOptions();
@@ -82,13 +83,6 @@ public:
     ts::SocketAddress          serverAddress;  // TCP server local address.
     ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
     ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
-
-private:
-    // Inaccessible operations.
-    ECMGOptions() = delete;
-    ECMGOptions(const ECMGOptions&) = delete;
-    ECMGOptions(ECMGOptions&&) = delete;
-    ECMGOptions& operator=(const ECMGOptions&) = delete;
 };
 
 // Destructor.
@@ -239,6 +233,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
 class ECMGSharedData
 {
+    TS_NOBUILD_NOCOPY(ECMGSharedData);
 public:
     // Constructor.
     ECMGSharedData(const ECMGOptions& opt);
@@ -260,11 +255,6 @@ private:
     ts::tlv::Logger    _logger;    // Protocol message logger.
     ts::Mutex          _mutex;     // Protect shared data.
     std::set<uint16_t> _channels;  // Active channels.
-
-    // Inaccessible operations.
-    ECMGSharedData(const ECMGSharedData&) = delete;
-    ECMGSharedData(ECMGSharedData&&) = delete;
-    ECMGSharedData& operator=(const ECMGSharedData&) = delete;
 };
 
 
@@ -309,6 +299,7 @@ bool ECMGSharedData::closeChannel(uint16_t id)
 
 class ECMGClientHandler: public ts::Thread
 {
+    TS_NOBUILD_NOCOPY(ECMGClientHandler);
 public:
     // Constructor.
     // When deleteWhenTerminated is true, this object is automatically deleted
@@ -349,10 +340,6 @@ private:
     {
         return ts::Time::CurrentLocalTime().format(ts::Time::DATE | ts::Time::TIME);
     }
-
-    // Deleted operations.
-    ECMGClientHandler(const ECMGClientHandler&) = delete;
-    ECMGClientHandler& operator=(const ECMGClientHandler&) = delete;
 };
 
 

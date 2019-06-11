@@ -80,11 +80,7 @@ namespace ts {
         //! @param [in] p Other packet to copy.
         //! @return A reference to this object.
         //!
-        TSPacket& operator=(const TSPacket& p)
-        {
-            ::memcpy(b, p.b, PKT_SIZE);
-            return *this;
-        }
+        TSPacket& operator=(const TSPacket& p) noexcept;
 
         //!
         //! Equality operator.

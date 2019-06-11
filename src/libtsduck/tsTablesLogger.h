@@ -52,6 +52,7 @@ namespace ts {
         protected TableHandlerInterface,
         protected SectionHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(TablesLogger);
     public:
         //!
         //! Constructor.
@@ -172,12 +173,6 @@ namespace ts {
         // Pre/post-display of a table or section
         void preDisplay(PacketCounter first, PacketCounter last);
         void postDisplay();
-
-    private:
-        // Inaccessible operations.
-        TablesLogger() = delete;
-        TablesLogger(const TablesLogger&) = delete;
-        TablesLogger& operator=(const TablesLogger&) = delete;
     };
 
     //!

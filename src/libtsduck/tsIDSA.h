@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL IDSA : public DVS042<AES>
     {
+        TS_NOCOPY(IDSA);
     public:
         //!
         //! ATIS-IDSA control words size in bytes (AES-128 key size).
@@ -60,10 +61,5 @@ namespace ts {
     private:
         virtual bool setIV(const void* iv_, size_t iv_length) override;
         virtual bool setShortIV(const void* iv_, size_t iv_length) override;
-
-        // Inaccessible operations
-        IDSA(IDSA&&) = delete;
-        IDSA(const IDSA&) = delete;
-        IDSA& operator=(const IDSA&) = delete;
     };
 }

@@ -46,6 +46,7 @@ TS_LLVM_NOWARNING(old-style-cast)
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -53,13 +54,6 @@ public:
     ts::UString reader;        // Optional reader name
     uint32_t    timeout_ms;    // Timeout in milliseconds
     uint32_t    reset_action;  // Type of reset to apply
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

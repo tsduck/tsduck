@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PATPlugin: public AbstractTablePlugin
     {
+        TS_NOBUILD_NOCOPY(PATPlugin);
     public:
         // Implementation of plugin API
         PATPlugin(TSP*);
@@ -62,11 +63,6 @@ namespace ts {
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
         virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
-
-        // Inaccessible operations
-        PATPlugin() = delete;
-        PATPlugin(const PATPlugin&) = delete;
-        PATPlugin& operator=(const PATPlugin&) = delete;
     };
 }
 

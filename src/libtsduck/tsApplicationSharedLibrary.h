@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL ApplicationSharedLibrary: public SharedLibrary
     {
+        TS_NOBUILD_NOCOPY(ApplicationSharedLibrary);
     public:
         //!
         //! Constructor.
@@ -94,10 +95,5 @@ namespace ts {
 
     private:
         UString _prefix;
-
-        // Unreachable operations.
-        ApplicationSharedLibrary() = delete;
-        ApplicationSharedLibrary(const ApplicationSharedLibrary&) = delete;
-        ApplicationSharedLibrary& operator=(const ApplicationSharedLibrary&) = delete;
     };
 }

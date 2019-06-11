@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class SlicePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(SlicePlugin);
     public:
         // Implementation of plugin API
         SlicePlugin(TSP*);
@@ -81,11 +82,6 @@ namespace ts {
 
         // Add event in the list from one option.
         void addEvents(const UChar* option, Status status);
-
-        // Inaccessible operations
-        SlicePlugin() = delete;
-        SlicePlugin(const SlicePlugin&) = delete;
-        SlicePlugin& operator=(const SlicePlugin&) = delete;
     };
 }
 

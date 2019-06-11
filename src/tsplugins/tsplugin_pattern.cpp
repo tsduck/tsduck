@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PatternPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(PatternPlugin);
     public:
         // Implementation of plugin API
         PatternPlugin(TSP*);
@@ -56,11 +57,6 @@ namespace ts {
         uint8_t   _offset_non_pusi;  // Start offset in packets without PUSI
         ByteBlock _pattern;          // Binary pattern to apply
         PIDSet    _pid_list;         // Array of pid values to filter
-
-        // Inaccessible operations
-        PatternPlugin() = delete;
-        PatternPlugin(const PatternPlugin&) = delete;
-        PatternPlugin& operator=(const PatternPlugin&) = delete;
     };
 }
 

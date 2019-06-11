@@ -44,6 +44,7 @@ namespace ts {
         public std::basic_ostream<char>,     // Public base
         private std::basic_streambuf<char>   // Internally use a streambuf
     {
+        TS_NOCOPY(AbstractOutputStream);
     public:
         //!
         //! Explicit reference to the public superclass.
@@ -105,9 +106,5 @@ namespace ts {
         {
             setp(&_buffer[0], &_buffer[0] + _buffer.size());
         }
-
-        // Inaccessible operations.
-        AbstractOutputStream(const AbstractOutputStream&) = delete;
-        AbstractOutputStream& operator=(const AbstractOutputStream&) = delete;
     };
 }

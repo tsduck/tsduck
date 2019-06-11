@@ -43,6 +43,7 @@ namespace ts {
         //!
         class TSDUCKDLL Comment: public Node
         {
+            TS_NOCOPY(Comment);
         public:
             //!
             //! Constructor.
@@ -67,11 +68,6 @@ namespace ts {
         protected:
             // Inherited from xml::Node.
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
-
-        private:
-            // Inaccessible operations.
-            Comment(const Comment&) = delete;
-            Comment& operator=(const Comment&) = delete;
         };
     }
 }

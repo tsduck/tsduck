@@ -72,6 +72,12 @@ namespace ts {
         T2MIPacket(const T2MIPacket& other, CopyShare mode);
 
         //!
+        //! Move constructor.
+        //! @param [in,out] other Another instance to move.
+        //!
+        T2MIPacket(T2MIPacket&& other) noexcept;
+
+        //!
         //! Constructor from full binary content.
         //! The content is copied into the packet if valid.
         //! @param [in] content Address of the binary packet data.
@@ -150,6 +156,13 @@ namespace ts {
         //! @return A reference to this object.
         //!
         T2MIPacket& operator=(const T2MIPacket& other);
+
+        //!
+        //! Move assignment operator.
+        //! @param [in,out] other Other packet to move into this object.
+        //! @return A reference to this object.
+        //!
+        T2MIPacket& operator=(T2MIPacket&& other) noexcept;
 
         //!
         //! Duplication.

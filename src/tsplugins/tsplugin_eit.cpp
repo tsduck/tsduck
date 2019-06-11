@@ -52,6 +52,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class EITPlugin: public ProcessorPlugin, private TableHandlerInterface, private SectionHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(EITPlugin);
     public:
         // Implementation of plugin API
         EITPlugin(TSP*);
@@ -102,11 +103,6 @@ namespace ts {
 
         // Number of days in a duration, used for EPG depth
         static int Days(const MilliSecond& ms) { return int((ms + MilliSecPerDay - 1) / MilliSecPerDay); }
-
-        // Inaccessible operations
-        EITPlugin() = delete;
-        EITPlugin(const EITPlugin&) = delete;
-        EITPlugin& operator=(const EITPlugin&) = delete;
     };
 }
 

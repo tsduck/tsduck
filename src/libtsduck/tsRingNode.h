@@ -46,10 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL RingNode
     {
-    private:
-        RingNode* _ring_previous;
-        RingNode* _ring_next;
-
+        TS_NOCOPY(RingNode);
     public:
         //!
         //! Default constructor.
@@ -147,8 +144,7 @@ namespace ts {
         size_t ringSize() const;
 
     private:
-        // Inaccessible operations
-        RingNode(const RingNode&) = delete;
-        RingNode& operator=(const RingNode&) = delete;
+        RingNode* _ring_previous;
+        RingNode* _ring_next;
     };
 }

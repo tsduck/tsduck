@@ -110,6 +110,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
 
 class ts::DektecInputPlugin::Guts
 {
+    TS_NOCOPY(Guts);
 public:
     Guts();                           // Constructor.
     bool                is_started;   // Device started
@@ -128,12 +129,6 @@ public:
     Polarization        polarity;     // Polarity.
     bool                high_band;    // Use LNB high frequency band.
     bool                lnb_setup;    // Need LNB setup.
-
-private:
-    // Inaccessible operations
-    Guts(const Guts&) = delete;
-    Guts(Guts&&) = delete;
-    Guts& operator=(const Guts&) = delete;
 };
 
 ts::DektecInputPlugin::Guts::Guts() :

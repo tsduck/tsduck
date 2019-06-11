@@ -56,6 +56,7 @@ TSDUCK_SOURCE;
 
 class ts::WebRequest::SystemGuts
 {
+    TS_NOBUILD_NOCOPY(SystemGuts);
 public:
     // Constructor with a reference to parent WebRequest.
     SystemGuts(WebRequest& request);
@@ -80,11 +81,6 @@ private:
 
     // Transmit response headers to the WebRequest.
     void transmitResponseHeaders();
-
-    // Inaccessible operations.
-    SystemGuts() = delete;
-    SystemGuts(const SystemGuts&) = delete;
-    SystemGuts& operator=(const SystemGuts&) = delete;
 };
 
 

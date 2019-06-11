@@ -351,6 +351,7 @@ namespace ts {
     //!
     class TSDUCKDLL Names
     {
+        TS_NOBUILD_NOCOPY(Names);
     public:
         //!
         //! Constructor.
@@ -482,11 +483,6 @@ namespace ts {
         size_t           _configLines;   // Number of lines in configuration file.
         size_t           _configErrors;  // Number of errors in configuration file.
         ConfigSectionMap _sections;      // Configuration sections.
-
-        // Inaccessible operations.
-        Names() = delete;
-        Names(const Names&) = delete;
-        Names& operator=(const Names&) = delete;
     };
 
     //!

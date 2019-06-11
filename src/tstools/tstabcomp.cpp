@@ -54,8 +54,10 @@ const ts::StaticReferencesDVB dependenciesForStaticLib;
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::Args
+class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
+public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
@@ -69,11 +71,6 @@ struct Options: public ts::Args
     bool                  xmlModel;        // Display XML model instead of compilation.
     ts::xml::TweaksArgs   xmlTweaks;       // XML formatting options.
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
-
-private:
-    // Inaccessible operations.
-    Options(const Options&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

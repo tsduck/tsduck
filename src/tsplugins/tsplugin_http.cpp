@@ -49,6 +49,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class HttpInput: public AbstractHTTPInputPlugin
     {
+        TS_NOBUILD_NOCOPY(HttpInput);
     public:
         // Implementation of plugin API
         HttpInput(TSP*);
@@ -61,11 +62,6 @@ namespace ts {
         MilliSecond    _reconnect_delay;
         WebRequest     _request;
         WebRequestArgs _web_args;
-
-        // Inaccessible operations
-        HttpInput() = delete;
-        HttpInput(const HttpInput&) = delete;
-        HttpInput& operator=(const HttpInput&) = delete;
     };
 }
 

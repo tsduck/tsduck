@@ -54,6 +54,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class TSRenamePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(TSRenamePlugin);
     public:
         // Implementation of plugin API
         TSRenamePlugin(TSP*);
@@ -87,11 +88,6 @@ namespace ts {
         void processPAT(PAT&);
         void processSDT(SDT&);
         void processNITBAT(AbstractTransportListTable&, bool);
-
-        // Inaccessible operations
-        TSRenamePlugin() = delete;
-        TSRenamePlugin(const TSRenamePlugin&) = delete;
-        TSRenamePlugin& operator=(const TSRenamePlugin&) = delete;
     };
 }
 

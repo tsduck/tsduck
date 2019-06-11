@@ -40,12 +40,12 @@
 #define TRACE_HEADER(adj) std::cerr << ts::UString::Format(u"[COMPTR] %X=%-3d(@%X): ", size_t(_ptr), refCount() + (adj), size_t(this))
 #define TRACE_TRAILER()   std::endl << std::flush
 
-#define TRACE_CONSTRUCT() (_ptr != 0 ? (TRACE_HEADER(0) << "constructor" << TRACE_TRAILER()) : std::cerr)
-#define TRACE_COCREATE()  (_ptr != 0 ? (TRACE_HEADER(0) << "CoCreateInstance" << TRACE_TRAILER()) : std::cerr)
-#define TRACE_QUERY()     (_ptr != 0 ? (TRACE_HEADER(0) << "QueryInterface" << TRACE_TRAILER()) : std::cerr)
-#define TRACE_BIND()      (_ptr != 0 ? (TRACE_HEADER(0) << "BindToObject" << TRACE_TRAILER()) : std::cerr)
+#define TRACE_CONSTRUCT() (_ptr != nullptr ? (TRACE_HEADER(0) << "constructor" << TRACE_TRAILER()) : std::cerr)
+#define TRACE_COCREATE()  (_ptr != nullptr ? (TRACE_HEADER(0) << "CoCreateInstance" << TRACE_TRAILER()) : std::cerr)
+#define TRACE_QUERY()     (_ptr != nullptr ? (TRACE_HEADER(0) << "QueryInterface" << TRACE_TRAILER()) : std::cerr)
+#define TRACE_BIND()      (_ptr != nullptr ? (TRACE_HEADER(0) << "BindToObject" << TRACE_TRAILER()) : std::cerr)
 #define TRACE_CREATOR()   (_traceCreator = true)
-#define TRACE_ENTRY()     (_traceCreator ? ((_ptr != 0 ? (TRACE_HEADER(0) << "creator" << TRACE_TRAILER()) : std::cerr), _traceCreator = false) : false)
+#define TRACE_ENTRY()     (_traceCreator ? ((_ptr != nullptr ? (TRACE_HEADER(0) << "creator" << TRACE_TRAILER()) : std::cerr), _traceCreator = false) : false)
 #define TRACE_ADDREF()    (TRACE_HEADER(0) << "AddRef" << TRACE_TRAILER())
 #define TRACE_RELEASE()   (TRACE_HEADER(-1) << "Release" << TRACE_TRAILER())  // Must be traced before calling Release() => adjust refcount by -1.
 
@@ -73,7 +73,7 @@ ts::ComPtr<COMCLASS>::ComPtr(COMCLASS* p, ::HRESULT hr) :
 #if defined(TS_COMPTR_INSTRUMENTATION)
     _traceCreator(false),
 #endif
-    _ptr(SUCCEEDED(hr) ? p : 0)
+    _ptr(SUCCEEDED(hr) ? p : nullptr)
 {
     TRACE_CONSTRUCT();
 }
@@ -91,10 +91,27 @@ ts::ComPtr<COMCLASS>::ComPtr(const ComPtr<COMCLASS>& p) :
 #endif
     _ptr(p.pointer())
 {
-    if (_ptr != 0) {
+    if (_ptr != nullptr) {
         _ptr->AddRef();
         TRACE_ADDREF();
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// Move constructor.
+//-----------------------------------------------------------------------------
+
+template <class COMCLASS>
+ts::ComPtr<COMCLASS>::ComPtr(ComPtr<COMCLASS>&& p) :
+
+#if defined(TS_COMPTR_INSTRUMENTATION)
+    _traceCreator(false),
+#endif
+    _ptr(p.pointer())
+{
+    p._ptr = nullptr;
+    TRACE_CONSTRUCT();
 }
 
 
@@ -108,7 +125,7 @@ ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, R
 #if defined(TS_COMPTR_INSTRUMENTATION)
     _traceCreator(false),
 #endif
-    _ptr(0)
+    _ptr(nullptr)
 {
     createInstance(class_id, interface_id, report);
 }
@@ -124,7 +141,7 @@ ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, Report& r
 #if defined(TS_COMPTR_INSTRUMENTATION)
     _traceCreator(false),
 #endif
-    _ptr(0)
+    _ptr(nullptr)
 {
     queryInterface(obj, interface_id, report);
 }
@@ -149,7 +166,7 @@ template <class COMCLASS>
 bool ts::ComPtr<COMCLASS>::isNull() const
 {
     TRACE_ENTRY();
-    return _ptr == 0;
+    return _ptr == nullptr;
 }
 
 
@@ -210,7 +227,7 @@ template <class COMCLASS>
 void ts::ComPtr<COMCLASS>::release()
 {
     TRACE_ENTRY();
-    if (_ptr != 0) {
+    if (_ptr != nullptr) {
         TRACE_RELEASE();
         _ptr->Release();
         _ptr = 0;
@@ -225,7 +242,7 @@ void ts::ComPtr<COMCLASS>::release()
 template <class COMCLASS>
 int ts::ComPtr<COMCLASS>::refCount() const
 {
-    if (_ptr == 0) {
+    if (_ptr == nullptr) {
         return 0;
     }
     else {
@@ -250,7 +267,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::assign(const ComPtr<COMSUBCLASS>& p)
     if (_ptr != p.pointer()) {
         release();
         _ptr = p.pointer();
-        if (_ptr != 0) {
+        if (_ptr != nullptr) {
             _ptr->AddRef();
             TRACE_ADDREF();
         }
@@ -267,6 +284,25 @@ template <class COMCLASS>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::operator=(const ComPtr<COMCLASS>& p)
 {
     return assign(p);
+}
+
+
+//-----------------------------------------------------------------------------
+// Move assignment operator.
+//-----------------------------------------------------------------------------
+
+template <class COMCLASS>
+ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::operator=(ComPtr<COMCLASS>&& p)
+{
+    TRACE_ENTRY();
+    // Do not do anything if the two ComPtr already point to the same COM object.
+    // This also exclude two null pointers and self-assignment.
+    if (_ptr != p.pointer()) {
+        release();
+        _ptr = p.pointer();
+        p._ptr = nullptr;
+    }
+    return *this;
 }
 
 
@@ -297,7 +333,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::createInstance(const ::IID& class_id
                                       interface_id,           // ID of interface we request
                                       (void**)&_ptr);         // Returned pointer to interface
     if (!ComSuccess(hr, u"CoCreateInstance", report)) {
-        _ptr = 0;
+        _ptr = nullptr;
     }
     TRACE_COCREATE();
     return *this;
@@ -315,7 +351,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, cons
     if (obj != 0) {
         ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
         if (!ComSuccess(hr, u"IUnknown::QueryInterface", report)) {
-            _ptr = 0;
+            _ptr = nullptr;
         }
         TRACE_QUERY();
     }
@@ -331,13 +367,13 @@ template <class COMCLASS>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::bindToObject(::IMoniker* moniker, const IID& interface_id, Report& report)
 {
     release();
-    if (moniker != 0) {
-        ::HRESULT hr = moniker->BindToObject(0,               // No cached context
-                                             0,               // Not part of a composite
+    if (moniker != nullptr) {
+        ::HRESULT hr = moniker->BindToObject(nullptr,         // No cached context
+                                             nullptr,         // Not part of a composite
                                              interface_id,    // ID of interface we request
                                              (void**)&_ptr);  // Returned pointer to interface
         if (!ComSuccess(hr, u"IMoniker::BindToObject", report)) {
-            _ptr = 0;
+            _ptr = nullptr;
         }
         TRACE_BIND();
     }
@@ -366,8 +402,8 @@ ts::UString ts::ComPtr<COMCLASS>::className() const
 {
     TRACE_ENTRY();
     ::GUID guid(GUID_NULL);
-    ::IPersist* persist = 0;
-    if (_ptr != 0 && SUCCEEDED(_ptr->QueryInterface(::IID_IPersist, (void**)&persist))) {
+    ::IPersist* persist = nullptr;
+    if (_ptr != nullptr && SUCCEEDED(_ptr->QueryInterface(::IID_IPersist, (void**)&persist))) {
         persist->GetClassID(&guid);
         persist->Release();
     }

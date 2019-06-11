@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL DVBCISSA : public CBC<AES>
     {
+        TS_NOCOPY(DVBCISSA);
     public:
         //!
         //! DVB-CISSA control words size in bytes (AES-128 key size).
@@ -61,10 +62,5 @@ namespace ts {
 
     private:
         virtual bool setIV(const void* iv_, size_t iv_length) override;
-
-        // Inaccessible operations
-        DVBCISSA(const DVBCISSA&) = delete;
-        DVBCISSA(DVBCISSA&&) = delete;
-        DVBCISSA& operator=(const DVBCISSA&) = delete;
     };
 }

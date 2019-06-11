@@ -70,6 +70,23 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>& ts::AbstractTable::Entr
     return *this;
 }
 
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>& ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>::operator=(EntryWithDescriptorsMap&& other)
+{
+    if (&other != this) {
+        // Clear and move each entry one by one to ensure that the copied entries actually point to the target table.
+        this->clear();
+        for (typename EntryWithDescriptorsMap::const_iterator it = other.begin(); it != other.end(); ++it) {
+            (*this)[it->first] = std::move(it->second);
+        }
+        // The other instance is still a valid map with valid entries.
+        // But all entries have unspecified values.
+        // Just clear the other it to get a deterministic state.
+        other.clear();
+    }
+    return *this;
+}
+
 //----------------------------------------------------------------------------
 // Template map of subclasses of EntryWithDescriptors - Swap.
 //----------------------------------------------------------------------------

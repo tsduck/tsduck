@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class DescramblerPlugin: public AbstractDescrambler
     {
+        TS_NOBUILD_NOCOPY(DescramblerPlugin);
     public:
         // Constructor.
         DescramblerPlugin(TSP*);
@@ -62,11 +63,6 @@ namespace ts {
     private:
         // Private fields.
         uint16_t _cas_id;
-
-        // Inaccessible operations
-        DescramblerPlugin() = delete;
-        DescramblerPlugin(const DescramblerPlugin&) = delete;
-        DescramblerPlugin& operator=(const DescramblerPlugin&) = delete;
     };
 }
 

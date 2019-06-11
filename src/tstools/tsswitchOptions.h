@@ -47,6 +47,7 @@ namespace ts {
         //!
         class Options: public ArgsWithPlugins
         {
+            TS_NOBUILD_NOCOPY(Options);
         public:
             bool          fastSwitch;        //!< Fast switch between input plugins.
             bool          delayedSwitch;     //!< Delayed switch between input plugins.
@@ -78,12 +79,6 @@ namespace ts {
             //! Virtual destructor.
             //!
             virtual ~Options();
-
-        private:
-            // Inaccessible operations.
-            Options() = delete;
-            Options(const Options&) = delete;
-            Options& operator=(const Options&) = delete;
         };
     }
 }

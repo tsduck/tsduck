@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL BitRateRegulator
     {
+         TS_NOCOPY(BitRateRegulator);
     public:
         //!
         //! Constructor.
@@ -124,9 +125,5 @@ namespace ts {
 
         // Process one packet in a regulated burst. Wait at end of burst.
         void regulatePacket(bool& flush, bool smoothen);
-
-        // Inaccessible operations
-        BitRateRegulator(const BitRateRegulator&) = delete;
-        BitRateRegulator& operator=(const BitRateRegulator&) = delete;
     };
 }

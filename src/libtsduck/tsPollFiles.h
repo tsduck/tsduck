@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL PollFiles
     {
+        TS_NOCOPY(PollFiles);
     public:
         //!
         //! Default interval in milliseconds between two poll operations.
@@ -123,9 +124,5 @@ namespace ts {
 
         // Mark a file as deleted, move from polled to notified files.
         void deleteFile(PolledFileList::iterator&);
-
-        // Inaccessible operations
-        PollFiles(const PollFiles&) = delete;
-        PollFiles& operator=(const PollFiles&) = delete;
     };
 }

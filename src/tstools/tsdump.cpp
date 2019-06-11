@@ -45,6 +45,7 @@ TS_MAIN(MainCode);
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -57,13 +58,6 @@ public:
     ts::PacketCounter max_packets; // Maximum number of packets to dump per file
     ts::UStringVector infiles;     // Input file names
     ts::PagerArgs     pager;       // Output paging options.
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

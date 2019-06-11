@@ -107,6 +107,7 @@ namespace ts {
     //!
     class TSDUCKDLL SectionFile
     {
+        TS_NOBUILD_NOCOPY(SectionFile);
     public:
         //!
         //! Constructor.
@@ -368,10 +369,5 @@ namespace ts {
         //! Check it a table can be formed using the last sections in _orphanSections.
         //!
         void collectLastTable();
-
-        // Inaccessible operations
-        SectionFile() = delete;
-        SectionFile(const SectionFile&) = delete;
-        SectionFile& operator=(const SectionFile&) = delete;
     };
 }

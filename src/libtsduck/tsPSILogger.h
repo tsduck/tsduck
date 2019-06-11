@@ -46,6 +46,7 @@ namespace ts {
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(PSILogger);
     public:
         //!
         //! Constructor.
@@ -103,11 +104,6 @@ namespace ts {
         // Implementations of TableHandlerInterface and SectionHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
-
-        // Inaccessible operations
-        PSILogger() = delete;
-        PSILogger(const PSILogger&) = delete;
-        PSILogger& operator=(const PSILogger&) = delete;
     };
 
     //!

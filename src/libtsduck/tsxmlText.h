@@ -43,6 +43,7 @@ namespace ts {
         //!
         class TSDUCKDLL Text: public Node
         {
+            TS_NOCOPY(Text);
         public:
             //!
             //! Constructor.
@@ -77,10 +78,6 @@ namespace ts {
 
         private:
             bool _isCData;
-
-            // Inaccessible operations.
-            Text(const Text&) = delete;
-            Text& operator=(const Text&) = delete;
         };
     }
 }

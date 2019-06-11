@@ -67,6 +67,22 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     setScramblingType(_scrambling_type);
 }
 
+ts::TSScrambling::TSScrambling(TSScrambling&& other) :
+    _report(other._report),
+    _scrambling_type(other._scrambling_type),
+    _explicit_type(other._explicit_type),
+    _cw_list(other._cw_list),
+    _next_cw(_cw_list.end()),
+    _encrypt_scv(SC_CLEAR),
+    _decrypt_scv(SC_CLEAR),
+    _dvbcsa(),
+    _dvbcissa(),
+    _idsa(),
+    _scrambler{nullptr, nullptr}
+{
+    setScramblingType(_scrambling_type);
+}
+
 
 //----------------------------------------------------------------------------
 // Force the usage of a specific algorithm.

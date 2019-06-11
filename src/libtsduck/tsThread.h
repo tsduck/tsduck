@@ -52,6 +52,7 @@ namespace ts {
     //!
     class TSDUCKDLL Thread
     {
+        TS_NOCOPY(Thread);
     public:
         //!
         //! Fatal low-level threading error.
@@ -218,10 +219,5 @@ namespace ts {
         // Actual starting point of thread. Parameter is "this".
         static void* ThreadProc(void* parameter);
 #endif
-
-        // Inaccessible operations
-        Thread(const Thread&) = delete;
-        Thread(Thread&&) = delete;
-        Thread& operator=(const Thread&) = delete;
     };
 }

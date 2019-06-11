@@ -52,6 +52,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class RemapPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(RemapPlugin);
     public:
         // Implementation of plugin API
         RemapPlugin(TSP*);
@@ -82,11 +83,6 @@ namespace ts {
 
         // Process a list of descriptors, remap PIDs in CA descriptors.
         void processDescriptors(DescriptorList&, TID);
-
-        // Inaccessible operations
-        RemapPlugin() = delete;
-        RemapPlugin(const RemapPlugin&) = delete;
-        RemapPlugin& operator=(const RemapPlugin&) = delete;
     };
 }
 

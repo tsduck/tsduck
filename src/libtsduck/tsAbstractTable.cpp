@@ -70,6 +70,15 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
     return *this;
 }
 
+ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors::operator=(EntryWithDescriptors&& other) noexcept
+{
+    if (&other != this) {
+        // Moving the descriptor list preserves the associated table of the target.
+        descs = std::move(other.descs);
+    }
+    return *this;
+}
+
 
 //----------------------------------------------------------------------------
 // This method checks if a table id is valid for this object.

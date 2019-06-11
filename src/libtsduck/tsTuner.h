@@ -85,6 +85,7 @@ namespace ts {
     //!
     class TSDUCKDLL Tuner
     {
+        TS_NOCOPY(Tuner);
     public:
         //!
         //! Get the list of all existing DVB tuners.
@@ -510,9 +511,5 @@ namespace ts {
         static bool FindTuners(Tuner*, TunerPtrVector*, Report&);
 
 #endif // windows
-
-        // Inaccessible operations.
-        Tuner(const Tuner&) = delete;
-        Tuner& operator=(const Tuner&) = delete;
     };
 }

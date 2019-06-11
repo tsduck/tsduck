@@ -96,6 +96,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSP: public Report, public AbortInterface
     {
+        TS_NOBUILD_NOCOPY(TSP);
     public:
         //!
         //! Plugin API Version Number
@@ -216,11 +217,6 @@ namespace ts {
     private:
         PacketCounter _total_packets;   // Total processed packets in the plugin thread.
         PacketCounter _plugin_packets;  // Total processed packets in the plugin object.
-
-        // Inaccessible operations
-        TSP() = delete;
-        TSP(const TSP&) = delete;
-        TSP& operator=(const TSP&) = delete;
     };
 
 
@@ -238,6 +234,7 @@ namespace ts {
     //!
     class TSDUCKDLL Plugin: public Args
     {
+        TS_NOBUILD_NOCOPY(Plugin);
     public:
         //!
         //! Default stack usage in bytes for the thread executing a plugin.
@@ -350,12 +347,6 @@ namespace ts {
 
         // Report implementation.
         virtual void writeLog(int severity, const UString& message) override;
-
-    private:
-        // Inaccessible operations
-        Plugin() = delete;
-        Plugin(const Plugin&) = delete;
-        Plugin& operator=(const Plugin&) = delete;
     };
 
 
@@ -370,6 +361,7 @@ namespace ts {
     //!
     class TSDUCKDLL InputPlugin : public Plugin
     {
+        TS_NOBUILD_NOCOPY(InputPlugin);
     public:
         //!
         //! Packet reception interface.
@@ -411,12 +403,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         InputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
-
-    private:
-        // Inaccessible operations
-        InputPlugin() = delete;
-        InputPlugin(const InputPlugin&) = delete;
-        InputPlugin& operator=(const InputPlugin&) = delete;
     };
 
     //!
@@ -442,6 +428,7 @@ namespace ts {
     //!
     class TSDUCKDLL OutputPlugin : public Plugin
     {
+        TS_NOBUILD_NOCOPY(OutputPlugin);
     public:
         //!
         //! Packet output interface.
@@ -467,12 +454,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         OutputPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
-
-    private:
-        // Inaccessible operations
-        OutputPlugin() = delete;
-        OutputPlugin(const OutputPlugin&) = delete;
-        OutputPlugin& operator=(const OutputPlugin&) = delete;
     };
 
     //!
@@ -498,6 +479,7 @@ namespace ts {
     //!
     class TSDUCKDLL ProcessorPlugin : public Plugin
     {
+        TS_NOBUILD_NOCOPY(ProcessorPlugin);
     public:
         //!
         //! Status of a packet processing.
@@ -549,12 +531,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         ProcessorPlugin(TSP* tsp_, const UString& description = UString(), const UString& syntax = UString());
-
-    private:
-        // Inaccessible operations
-        ProcessorPlugin() = delete;
-        ProcessorPlugin(const ProcessorPlugin&) = delete;
-        ProcessorPlugin& operator=(const ProcessorPlugin&) = delete;
     };
 
     //!

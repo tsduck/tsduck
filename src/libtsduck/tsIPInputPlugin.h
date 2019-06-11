@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL IPInputPlugin: public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(IPInputPlugin);
     public:
         //!
         //! Constructor.
@@ -75,10 +76,5 @@ namespace ts {
         size_t        _inbuf_count;        // Remaining TS packets in inbuf
         size_t        _inbuf_next;         // Index in inbuf of next TS packet to return
         uint8_t       _inbuf[IP_MAX_PACKET_SIZE]; // Input buffer
-
-        // Inaccessible operations
-        IPInputPlugin() = delete;
-        IPInputPlugin(const IPInputPlugin&) = delete;
-        IPInputPlugin& operator=(const IPInputPlugin&) = delete;
     };
 }

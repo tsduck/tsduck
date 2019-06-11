@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ReducePlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(ReducePlugin);
     public:
         // Implementation of plugin API
         ReducePlugin(TSP*);
@@ -55,11 +56,6 @@ namespace ts {
         int _opt_inpkt;   // inpkt parameter
         int _in_count;    // Input packet count (0 to inpkt)
         int _rem_count;   // Current number of packets to remove
-
-        // Inaccessible operations
-        ReducePlugin() = delete;
-        ReducePlugin(const ReducePlugin&) = delete;
-        ReducePlugin& operator=(const ReducePlugin&) = delete;
     };
 }
 

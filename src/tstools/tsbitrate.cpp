@@ -44,6 +44,7 @@ TS_MAIN(MainCode);
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -57,13 +58,6 @@ public:
     bool        value_only;    // Output value only
     bool        ignore_errors; // Ignore TS errors
     ts::UString infile;        // Input file name
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

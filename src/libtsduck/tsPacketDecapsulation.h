@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL PacketDecapsulation
     {
+        TS_NOCOPY(PacketDecapsulation);
     public:
         //!
         //! Constructor.
@@ -102,9 +103,5 @@ namespace ts {
         // Loose synchronization, return false.
         bool lostSync(const UString& error);
         bool lostSync(TSPacket& pkt, const UString& error);
-
-        // Inaccessible operations.
-        PacketDecapsulation(const PacketDecapsulation&) = delete;
-        PacketDecapsulation& operator=(const PacketDecapsulation&) = delete;
     };
 }

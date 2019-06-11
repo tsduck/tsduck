@@ -50,6 +50,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class PlayPlugin: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(PlayPlugin);
     public:
         // Implementation of plugin API
         PlayPlugin(TSP*);
@@ -65,11 +66,6 @@ namespace ts {
 
         // Search a file in a search path. Return true is found
         bool searchInPath(UString& result, const UStringVector& path, const UString& name);
-
-        // Inaccessible operations
-        PlayPlugin() = delete;
-        PlayPlugin(const PlayPlugin&) = delete;
-        PlayPlugin& operator=(const PlayPlugin&) = delete;
     };
 }
 

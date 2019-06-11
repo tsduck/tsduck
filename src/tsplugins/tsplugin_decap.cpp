@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class DecapPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(DecapPlugin);
     public:
         // Implementation of plugin API
         DecapPlugin(TSP*);
@@ -56,11 +57,6 @@ namespace ts {
         bool                _ignoreErrors;  // Ignore encapsulation errors.
         PID                 _pid;           // Input PID.
         PacketDecapsulation _decap;         // Decapsulation engine.
-
-        // Inaccessible operations
-        DecapPlugin() = delete;
-        DecapPlugin(const DecapPlugin&) = delete;
-        DecapPlugin& operator=(const DecapPlugin&) = delete;
     };
 }
 

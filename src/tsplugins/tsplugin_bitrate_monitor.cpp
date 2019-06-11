@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class BitrateMonitorPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(BitrateMonitorPlugin);
     public:
         // Implementation of plugin API
         BitrateMonitorPlugin(TSP*);
@@ -92,11 +93,6 @@ namespace ts {
 
         // Check time and compute bitrate when necessary.
         void checkTime();
-
-        // Inaccessible operations.
-        BitrateMonitorPlugin() = delete;
-        BitrateMonitorPlugin(const BitrateMonitorPlugin&) = delete;
-        BitrateMonitorPlugin& operator=(const BitrateMonitorPlugin&) = delete;
     };
 }
 

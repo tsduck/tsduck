@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class NullInput: public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(NullInput);
     public:
         // Implementation of plugin API
         NullInput(TSP*);
@@ -56,11 +57,6 @@ namespace ts {
         PacketCounter _max_count;   // Number of packets to generate
         PacketCounter _count;       // Number of generated packets
         PacketCounter _limit;       // Current max number of packets
-
-        // Inaccessible operations
-        NullInput() = delete;
-        NullInput(const NullInput&) = delete;
-        NullInput& operator=(const NullInput&) = delete;
     };
 }
 

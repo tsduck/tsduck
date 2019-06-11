@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL Packetizer
     {
+        TS_NOCOPY(Packetizer);
     public:
         //!
         //! Default constructor.
@@ -168,7 +169,6 @@ namespace ts {
         virtual std::ostream& display(std::ostream& strm) const;
 
     private:
-        // Private members:
         SectionProviderInterface* _provider;
         PID            _pid;
         uint8_t        _continuity;        // Continuity counter for next packet
@@ -177,10 +177,6 @@ namespace ts {
         PacketCounter  _packet_count;      // Number of generated packets
         SectionCounter _section_out_count; // Number of output (packetized) sections
         SectionCounter _section_in_count;  // Number of input (provided) sections
-
-        // Inaccessible operations
-        Packetizer(const Packetizer&) = delete;
-        Packetizer& operator=(const Packetizer&) = delete;
     };
 }
 

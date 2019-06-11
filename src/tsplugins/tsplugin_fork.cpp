@@ -48,6 +48,7 @@ namespace ts {
     // Input plugin
     class ForkInput: public InputPlugin
     {
+        TS_NOBUILD_NOCOPY(ForkInput);
     public:
         // Implementation of plugin API
         ForkInput(TSP*);
@@ -62,16 +63,12 @@ namespace ts {
         bool     _nowait;       // Don't wait for children termination.
         size_t   _buffer_size;  // Pipe buffer size in packets.
         ForkPipe _pipe;         // The pipe device.
-
-        // Inaccessible operations
-        ForkInput() = delete;
-        ForkInput(const ForkInput&) = delete;
-        ForkInput& operator=(const ForkInput&) = delete;
     };
 
     // Output plugin
     class ForkOutput: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(ForkOutput);
     public:
         // Implementation of plugin API
         ForkOutput(TSP*);
@@ -85,16 +82,12 @@ namespace ts {
         bool     _nowait;       // Don't wait for children termination.
         size_t   _buffer_size;  // Pipe buffer size in packets.
         ForkPipe _pipe;         // The pipe device.
-
-        // Inaccessible operations
-        ForkOutput() = delete;
-        ForkOutput(const ForkOutput&) = delete;
-        ForkOutput& operator=(const ForkOutput&) = delete;
     };
 
     // Packet processor plugin
     class ForkPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(ForkPlugin);
     public:
         // Implementation of plugin API
         ForkPlugin (TSP*);
@@ -110,11 +103,6 @@ namespace ts {
         size_t         _buffer_count;  // Number of packets currently in buffer.
         TSPacketVector _buffer;        // Packet buffer.
         ForkPipe       _pipe;          // The pipe device.
-
-        // Inaccessible operations
-        ForkPlugin() = delete;
-        ForkPlugin(const ForkPlugin&) = delete;
-        ForkPlugin& operator=(const ForkPlugin&) = delete;
     };
 }
 

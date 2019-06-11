@@ -44,6 +44,7 @@ TS_MAIN(MainCode);
 
 class Options: public ts::Args
 {
+    TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
     virtual ~Options();
@@ -51,13 +52,6 @@ public:
     bool              check_only;   // check only, do not truncate
     ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
     ts::UStringVector files;        // file names
-
-private:
-    // Inaccessible operations.
-    Options() = delete;
-    Options(const Options&) = delete;
-    Options(Options&&) = delete;
-    Options& operator=(const Options&) = delete;
 };
 
 // Destructor.

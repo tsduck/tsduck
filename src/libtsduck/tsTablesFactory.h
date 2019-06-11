@@ -53,7 +53,6 @@ namespace ts {
     class TSDUCKDLL TablesFactory
     {
         TS_DECLARE_SINGLETON(TablesFactory);
-
     public:
         //!
         //! Profile of a function which creates a table.
@@ -172,6 +171,7 @@ namespace ts {
         //!
         class Register
         {
+            TS_NOBUILD_NOCOPY(Register);
         public:
             //!
             //! The constructor registers a table factory for a given id.
@@ -241,12 +241,6 @@ namespace ts {
             //! @see TS_ID_DESCRIPTOR_DISPLAY
             //!
             Register(const EDID& edid, DisplayDescriptorFunction func);
-
-        private:
-            // Inaccessible operations.
-            Register() = delete;
-            Register(const Register&) = delete;
-            Register& operator=(const Register&) = delete;
         };
 
     private:

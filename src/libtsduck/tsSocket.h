@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL Socket
     {
+        TS_NOCOPY(Socket);
     public:
         //!
         //! Constructor.
@@ -148,9 +149,5 @@ namespace ts {
 
     private:
         TS_SOCKET_T _sock;
-
-        // Unreachable operations
-        Socket(const Socket&) = delete;
-        Socket& operator=(const Socket&) = delete;
     };
 }

@@ -61,6 +61,7 @@ namespace ts {
     //!
     class TSDUCKDLL SystemMonitor: public Thread
     {
+        TS_NOBUILD_NOCOPY(SystemMonitor);
     public:
         //!
         //! Constructor.
@@ -85,10 +86,5 @@ namespace ts {
 
         // Prefix strings for all monitor messages
         static UString MonPrefix(const ts::Time& date);
-
-        // Inaccessible operations.
-        SystemMonitor() = delete;
-        SystemMonitor(const SystemMonitor&) = delete;
-        SystemMonitor& operator=(const SystemMonitor&) = delete;
     };
 }

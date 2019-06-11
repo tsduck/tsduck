@@ -56,6 +56,7 @@ namespace ts {
     //!
     class TSDUCKDLL ECMGClient: private Thread
     {
+        TS_NOCOPY(ECMGClient);
     public:
         //!
         //! Constructor.
@@ -188,9 +189,5 @@ namespace ts {
 
         // Report specified error message if not empty, abort connection and return false
         bool abortConnection(const UString& = UString());
-
-        // Unreachable operations
-        ECMGClient(const ECMGClient&) = delete;
-        ECMGClient& operator=(const ECMGClient&) = delete;
     };
 }

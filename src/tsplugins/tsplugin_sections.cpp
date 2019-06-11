@@ -49,6 +49,7 @@ namespace ts {
         private SectionHandlerInterface,
         private SectionProviderInterface
     {
+        TS_NOBUILD_NOCOPY(SectionsPlugin);
     public:
         // Implementation of plugin API
         SectionsPlugin(TSP*);
@@ -73,11 +74,6 @@ namespace ts {
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
         virtual bool doStuffing() override;
-
-        // Inaccessible operations
-        SectionsPlugin() = delete;
-        SectionsPlugin(const SectionsPlugin&) = delete;
-        SectionsPlugin& operator=(const SectionsPlugin&) = delete;
     };
 }
 

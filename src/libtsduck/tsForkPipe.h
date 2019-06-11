@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL ForkPipe: public AbstractOutputStream
     {
+        TS_NOCOPY(ForkPipe);
     public:
         //!
         //! Default constructor.
@@ -228,10 +229,5 @@ namespace ts {
         ::pid_t       _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
         int           _fd;            // Pipe output file descriptor.
 #endif
-
-        // Inaccessible operations.
-        ForkPipe(const ForkPipe&) = delete;
-        ForkPipe(ForkPipe&&) = delete;
-        ForkPipe& operator=(const ForkPipe&) = delete;
     };
 }

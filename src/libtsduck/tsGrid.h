@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL Grid
     {
+        TS_NOCOPY(Grid);
     public:
         //!
         //! Default report line width.
@@ -291,10 +292,5 @@ namespace ts {
 
         // Recompute layout based on grid width.
         void adjustLayout();
-
-        // Inaccessible operations.
-        Grid() = delete;
-        Grid(const Grid&) = delete;
-        Grid& operator=(const Grid&) = delete;
     };
 }

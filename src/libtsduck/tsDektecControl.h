@@ -56,6 +56,7 @@ namespace ts {
     //!
     class TSDUCKDLL DektecControl: public Args
     {
+        TS_NOBUILD_NOCOPY(DektecControl);
     public:
         //!
         //! Constructor.
@@ -101,11 +102,5 @@ namespace ts {
 
         // Display a long line on multiple lines
         void wideDisplay(const UString& line);
-
-        // Inaccessible operations
-        DektecControl() = delete;
-        DektecControl(const DektecControl&) = delete;
-        DektecControl(DektecControl&&) = delete;
-        DektecControl& operator=(const DektecControl&) = delete;
     };
 }

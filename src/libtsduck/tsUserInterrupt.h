@@ -53,6 +53,7 @@ namespace ts {
         : private Thread
 #endif
     {
+        TS_NOBUILD_NOCOPY(UserInterrupt);
     public:
         //!
         //! Constructor.
@@ -126,9 +127,5 @@ namespace ts {
 
         // There is only one active instance at a time
         static UserInterrupt* volatile _active_instance;
-
-        // Inaccessible operations
-        UserInterrupt(const UserInterrupt&) = delete;
-        UserInterrupt& operator=(const UserInterrupt&) = delete;
     };
 }

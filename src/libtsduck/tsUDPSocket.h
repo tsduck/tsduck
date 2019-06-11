@@ -47,6 +47,7 @@ namespace ts {
     //!
     class TSDUCKDLL UDPSocket: public Socket
     {
+        TS_NOCOPY(UDPSocket);
     public:
         //!
         //! Constructor.
@@ -378,9 +379,5 @@ namespace ts {
 #if defined(TS_WINDOWS)
         static volatile ::LPFN_WSARECVMSG _wsaRevcMsg;
 #endif
-
-        // Unreachable operations
-        UDPSocket(const UDPSocket&) = delete;
-        UDPSocket& operator=(const UDPSocket&) = delete;
     };
 }

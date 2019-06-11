@@ -51,6 +51,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class CutoffPlugin: public ProcessorPlugin, private Thread
     {
+        TS_NOBUILD_NOCOPY(CutoffPlugin);
     public:
         // Implementation of plugin API
         CutoffPlugin(TSP*);
@@ -73,11 +74,6 @@ namespace ts {
 
         // Invoked in the context of the server thread.
         virtual void main() override;
-
-        // Inaccessible operations
-        CutoffPlugin() = delete;
-        CutoffPlugin(const CutoffPlugin&) = delete;
-        CutoffPlugin& operator=(const CutoffPlugin&) = delete;
     };
 }
 

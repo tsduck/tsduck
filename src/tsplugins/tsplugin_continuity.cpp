@@ -45,6 +45,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class ContinuityPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(ContinuityPlugin);
     public:
         // Implementation of plugin API
         ContinuityPlugin(TSP*);
@@ -58,11 +59,6 @@ namespace ts {
         int                _log_level;    // Log level for discontinuity messages
         PIDSet             _pids;         // PID values to check or fix
         ContinuityAnalyzer _cc_analyzer;  // Continuity counters analyzer
-
-        // Inaccessible operations
-        ContinuityPlugin() = delete;
-        ContinuityPlugin(const ContinuityPlugin&) = delete;
-        ContinuityPlugin& operator=(const ContinuityPlugin&) = delete;
     };
 }
 

@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL DirectShowFilterCategory
     {
+        TS_NOBUILD_NOCOPY(DirectShowFilterCategory);
     public:
         //!
         //! Constructor.
@@ -129,10 +130,5 @@ namespace ts {
         ComPtr<::ICreateDevEnum> _enum;
         ComPtr<::IEnumMoniker>   _moniker;
         std::vector<Filter>      _filters;
-
-        // Inaccessible operations.
-        DirectShowFilterCategory() = delete;
-        DirectShowFilterCategory(const DirectShowFilterCategory&) = delete;
-        DirectShowFilterCategory& operator=(const DirectShowFilterCategory&) = delete;
     };
 }

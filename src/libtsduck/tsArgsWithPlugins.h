@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL ArgsWithPlugins: public Args
     {
+        TS_NOCOPY(ArgsWithPlugins);
     public:
         //!
         //! Constructor.
@@ -90,9 +91,5 @@ namespace ts {
 
         // Load default list of plugins by type.
         void loadDefaultPlugins(PluginType type, const UString& entry, PluginOptionsVector& options);
-
-        // Inaccessible operations.
-        ArgsWithPlugins(const ArgsWithPlugins&) = delete;
-        ArgsWithPlugins& operator=(const ArgsWithPlugins&) = delete;
     };
 }

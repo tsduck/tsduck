@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL SHA1: public Hash
     {
+        TS_NOCOPY(SHA1);
     public:
         static const size_t HASH_SIZE  = 20;  //!< SHA-1 hash size in bytes.
         static const size_t BLOCK_SIZE = 64;  //!< SHA-1 block size in bytes.

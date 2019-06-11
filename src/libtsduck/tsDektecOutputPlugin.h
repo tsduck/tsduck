@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL DektecOutputPlugin: public OutputPlugin
     {
+        TS_NOBUILD_NOCOPY(DektecOutputPlugin);
     public:
         //!
         //! Constructor.
@@ -81,10 +82,5 @@ namespace ts {
         // Set modulation parameters (modulators only). Return true on success, false on error.
         bool setModulation(int& modulation_type);
 #endif
-
-        // Inaccessible operations
-        DektecOutputPlugin() = delete;
-        DektecOutputPlugin(const DektecOutputPlugin&) = delete;
-        DektecOutputPlugin& operator=(const DektecOutputPlugin&) = delete;
     };
 }

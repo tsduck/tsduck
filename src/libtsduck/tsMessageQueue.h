@@ -53,6 +53,7 @@ namespace ts {
     template <typename MSG, class MUTEX = Mutex>
     class MessageQueue
     {
+        TS_NOCOPY(MessageQueue);
     public:
         //!
         //! Safe pointer to messages.
@@ -221,10 +222,6 @@ namespace ts {
 
         // Wait for free space in the queue using a specific timeout, under the protection of the mutex.
         bool waitFreeSpace(GuardCondition& lock, MilliSecond timeout);
-
-        // Inaccessible operations.
-        MessageQueue(const MessageQueue&) = delete;
-        MessageQueue& operator=(const MessageQueue&) = delete;
     };
 }
 

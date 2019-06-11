@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDemux
     {
+        TS_NOBUILD_NOCOPY(AbstractDemux);
     public:
         //!
         //! The following method feeds the demux with a TS packet.
@@ -205,11 +206,5 @@ namespace ts {
         bool _reset_pending;     // Delayed reset()
         bool _pid_reset_pending; // Delayed resetPID(_pid_in_handler)
         int  _demux_id;          // Demux identity (from application)
-
-        // Inaccessible operations
-        AbstractDemux() = delete;
-        AbstractDemux(AbstractDemux&&) = delete;
-        AbstractDemux(const AbstractDemux&) = delete;
-        AbstractDemux& operator=(const AbstractDemux&) = delete;
     };
 }

@@ -52,6 +52,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSScanner: private TableHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(TSScanner);
     public:
         //!
         //! Constructor.
@@ -123,10 +124,5 @@ namespace ts {
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
-
-        // Inaccessible operations.
-        TSScanner() = delete;
-        TSScanner(const TSScanner&) = delete;
-        TSScanner& operator=(const TSScanner&) = delete;
     };
 }

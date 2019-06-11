@@ -53,6 +53,7 @@ namespace ts {
         private PMTHandlerInterface,
         private TeletextHandlerInterface
     {
+        TS_NOBUILD_NOCOPY(TeletextPlugin);
     public:
         // Implementation of plugin API
         TeletextPlugin(TSP*);
@@ -75,11 +76,6 @@ namespace ts {
         // Implementation of interfaces.
         virtual void handlePMT(const PMT& table) override;
         virtual void handleTeletextMessage(TeletextDemux& demux, const TeletextFrame& frame) override;
-
-        // Inaccessible operations
-        TeletextPlugin() = delete;
-        TeletextPlugin(const TeletextPlugin&) = delete;
-        TeletextPlugin& operator=(const TeletextPlugin&) = delete;
     };
 }
 

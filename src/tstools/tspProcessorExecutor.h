@@ -43,6 +43,7 @@ namespace ts {
         //!
         class ProcessorExecutor: public PluginExecutor
         {
+            TS_NOBUILD_NOCOPY(ProcessorExecutor);
         public:
             //!
             //! Constructor.
@@ -68,11 +69,6 @@ namespace ts {
 
             // Inherited from Thread
             virtual void main() override;
-
-            // Inaccessible operations
-            ProcessorExecutor() = delete;
-            ProcessorExecutor(const ProcessorExecutor&) = delete;
-            ProcessorExecutor& operator=(const ProcessorExecutor&) = delete;
         };
     }
 }

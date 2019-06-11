@@ -63,6 +63,7 @@ namespace ts {
     //!
     class TSDUCKDLL TCPServer: public TCPSocket
     {
+        TS_NOCOPY(TCPServer);
     public:
         //!
         //! Reference to the superclass.
@@ -115,10 +116,5 @@ namespace ts {
 
         // Inherited and overridden
         virtual bool close(Report& report = CERR) override;
-
-    private:
-        // Unreachable operations
-        TCPServer(const TCPServer&) = delete;
-        TCPServer& operator=(const TCPServer&) = delete;
     };
 }

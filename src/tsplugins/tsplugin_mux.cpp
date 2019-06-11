@@ -47,6 +47,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class MuxPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(MuxPlugin);
     public:
         // Implementation of plugin API
         MuxPlugin(TSP*);
@@ -76,11 +77,6 @@ namespace ts {
         uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
         ContinuityAnalyzer _cc_fixer;         // To fix continuity counters in mux'ed PID's
-
-        // Inaccessible operations
-        MuxPlugin() = delete;
-        MuxPlugin(const MuxPlugin&) = delete;
-        MuxPlugin& operator=(const MuxPlugin&) = delete;
     };
 }
 

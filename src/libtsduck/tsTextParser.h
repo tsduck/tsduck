@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TextParser
     {
+        TS_NOBUILD_NOCOPY(TextParser);
     public:
         //!
         //! Constructor.
@@ -273,10 +274,5 @@ namespace ts {
         Report&     _report;
         UStringList _lines;
         Position    _pos;
-
-        // Inaccessible operations.
-        TextParser() = delete;
-        TextParser(const TextParser&) = delete;
-        TextParser& operator=(const TextParser&) = delete;
     };
 }

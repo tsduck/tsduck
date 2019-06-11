@@ -1095,6 +1095,31 @@ TS_POP_WARNING()
     #define TS_NEED_STATIC_CONST_DEFINITIONS 1
 #endif
 
+//!
+//! A macro to disable object copy in the definition of a class.
+//! The copy and move constructors and assignments are explicitly deleted.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NOCOPY(classname)                        \
+    private:                                        \
+        classname(classname&&) = delete;            \
+        classname(const classname&) = delete;       \
+        classname& operator=(classname&&) = delete; \
+        classname& operator=(const classname&) = delete
+
+//!
+//! A macro to disable default constructor and object copy in the definition of a class.
+//! The default, copy and move constructors and assignments are explicitly deleted.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NOBUILD_NOCOPY(classname)                \
+    private:                                        \
+        classname() = delete;                       \
+        classname(classname&&) = delete;            \
+        classname(const classname&) = delete;       \
+        classname& operator=(classname&&) = delete; \
+        classname& operator=(const classname&) = delete
+
 
 //----------------------------------------------------------------------------
 // Properties of some integer types.
@@ -3345,11 +3370,10 @@ namespace ts {
 #define TS_SET_BUILD_MARK(s)                                                  \
     namespace {                                                               \
         class _tsBuildMarkClass {                                             \
+            TS_NOBUILD_NOCOPY(_tsBuildMarkClass);                             \
         public:                                                               \
             const char* const str;                                            \
             _tsBuildMarkClass(const char* _s): str(_s) {}                     \
-            _tsBuildMarkClass(const _tsBuildMarkClass&) = delete;             \
-            _tsBuildMarkClass& operator=(const _tsBuildMarkClass&) = delete;  \
         };                                                                    \
         const _tsBuildMarkClass _tsBuildMark(s);                              \
     }
@@ -3372,6 +3396,11 @@ namespace ts {
 #endif
 #define TS_BUILD_MARK_PREFIX TS_BUILD_MARK_SEPARATOR TS_BUILD_MARK_MARKER TS_BUILD_MARK_SEPARATOR "tsduck" TS_BUILD_VERSION TS_BUILD_MARK_SEPARATOR
 
+//
+// Disable one LLVM warning about non-reproduceability of data and time.
+// This sequence should be portable. However, GCC complains about pragmas
+// in this context. Probably a GCC bug but we need to handle it.
+//
 #if defined(TS_LLVM)
     #define TSDUCK_SOURCE_BEGIN  TS_PUSH_WARNING() TS_LLVM_NOWARNING(date-time)
     #define TSDUCK_SOURCE_END    TS_POP_WARNING()

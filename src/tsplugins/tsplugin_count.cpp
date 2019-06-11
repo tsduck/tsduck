@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class CountPlugin: public ProcessorPlugin
     {
+        TS_NOBUILD_NOCOPY(CountPlugin);
     public:
         // Implementation of plugin API
         CountPlugin(TSP*);
@@ -79,11 +80,6 @@ namespace ts {
 
         // Report a line
         void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
-
-        // Inaccessible operations
-        CountPlugin() = delete;
-        CountPlugin(const CountPlugin&) = delete;
-        CountPlugin& operator=(const CountPlugin&) = delete;
     };
 }
 

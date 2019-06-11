@@ -153,6 +153,7 @@ namespace ts {
     //!
     class TSDUCKDLL PacketEncapsulation
     {
+        TS_NOCOPY(PacketEncapsulation);
     public:
         //!
         //! Constructor.
@@ -337,9 +338,5 @@ namespace ts {
 
         // Compute the PCR distance from this packe to last PCR.
         uint64_t getPCRDistance() { return (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec; }
-
-        // Inaccessible operations.
-        PacketEncapsulation(const PacketEncapsulation&) = delete;
-        PacketEncapsulation& operator=(const PacketEncapsulation&) = delete;
     };
 }
