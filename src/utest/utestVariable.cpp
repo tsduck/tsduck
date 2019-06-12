@@ -152,7 +152,7 @@ namespace {
         explicit TestData(int value = 0) : _value(value) {_instanceCount++;}
         TestData(TestData&& other) : _value(other._value) {_instanceCount++;}
         TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
-        TestData& operator=(TestData&& other) {_value = other._value; return *this;}
+        // TestData& operator=(TestData&& other) {_value = other._value; return *this;}
         TestData& operator=(const TestData& other) {_value = other._value; return *this;}
         bool operator==(const TestData& other) {return _value == other._value;}
 
@@ -167,13 +167,20 @@ namespace {
     };
 
     int TestData::_instanceCount = 0;
+
+    typedef ts::Variable<TestData> TestVariable;
+
+    TestVariable NewInstance(int value, int expectedCount)
+    {
+        TestVariable v = TestData(value);
+        TSUNIT_EQUAL(expectedCount, TestData::InstanceCount());
+        return v;
+    }
 }
 
 // Test case: usage on class types.
 void VariableTest::testClass()
 {
-    typedef ts::Variable<TestData> TestVariable;
-
     TSUNIT_EQUAL(0, TestData::InstanceCount());
     {
         TestVariable v1;
@@ -248,6 +255,11 @@ void VariableTest::testClass()
         TSUNIT_ASSERT(v1 != TestData(2));
         TSUNIT_ASSERT(v4 != TestData(1));
         TSUNIT_EQUAL(3, TestData::InstanceCount());
+
+        v5 = NewInstance(5, 4);
+        TSUNIT_EQUAL(4, TestData::InstanceCount());
+        TSUNIT_ASSERT(v5.set());
+        TSUNIT_EQUAL(5, v5.value().v());
     }
     // Check that the destructor of variable properly destroys the contained object
     TSUNIT_EQUAL(0, TestData::InstanceCount());
