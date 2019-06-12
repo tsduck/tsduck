@@ -8,7 +8,7 @@ $dir = $PSScriptRoot
 $env:TSPLUGINS_PATH = "${dir};${env:TSPLUGINS_PATH}"
 
 # Test the sample plugin.
-tsp -I null -P until --packet 200 -P sample --count -O drop
+tsp -v -I null -P until --packet 200 -P sample --count -O drop
 
 # WARNING: tsp writes its log on stderr which makes PowerShell interpret
 # this log as error. So, you have to ignore the extra error messages
