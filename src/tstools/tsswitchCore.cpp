@@ -357,7 +357,7 @@ void ts::tsswitch::Core::execute(const Action& event)
     // Loop on all enqueued commands.
     while (!_actions.empty()) {
 
-        // Inpect front command. Will be dequeued if executed.
+        // Inspect front command. Will be dequeued if executed.
         const Action& action(_actions.front());
         _log.debug(u"executing action %s", {action});
         assert(action.index < _inputs.size());

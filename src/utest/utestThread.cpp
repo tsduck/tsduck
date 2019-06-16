@@ -216,6 +216,7 @@ namespace {
         }
         virtual ~ThreadDeleteWhenTerminated()
         {
+            waitForTermination();
             tsunit::Test::debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
             _report = true;
         }

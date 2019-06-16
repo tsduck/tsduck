@@ -128,6 +128,11 @@ namespace {
         {
         }
 
+        ~MessageQueueTestThread()
+        {
+            waitForTermination();
+        }
+
         virtual void test() override
         {
             tsunit::Test::debug() << "MessageQueueTest: test thread: started" << std::endl;

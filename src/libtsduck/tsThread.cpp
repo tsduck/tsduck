@@ -79,7 +79,16 @@ ts::Thread::Thread(const ThreadAttributes& attributes) :
 
 ts::Thread::~Thread()
 {
-    waitForTermination();
+    // Make sure that the parent class has completed the waitForTermination() or has never started the thread.
+    // First, get the started attribute but release
+    Guard lock(_mutex);
+    if (_started) {
+        lock.unlock();
+        std::cerr << std::endl
+                  << "*** Internal error, Thread subclass did not wait for its 0termination, probably safe, maybe not..."
+                  << std::endl << std::endl << std::flush;
+        waitForTermination();
+    }
 }
 
 

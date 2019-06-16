@@ -85,7 +85,14 @@ namespace ts {
         Thread(const ThreadAttributes& attributes);
 
         //!
-        //! Destructor
+        //! Destructor.
+        //!
+        //! All subclasses should wait for termination before exiting their destructor.
+        //! If this is not done, the thread could continue its parallel execution while
+        //! the member fields are destructed, which is invalid. As a fool-proof check,
+        //! the parent class Thread checks that the thread is actually terminated in
+        //! its own destructor and report a fatal error message on standard error if
+        //! this is not the case.
         //!
         //! @see waitForTermination()
         //!
