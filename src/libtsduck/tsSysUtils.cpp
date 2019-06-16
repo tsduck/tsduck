@@ -1367,12 +1367,7 @@ ts::UString ts::ClassName(const std::type_info& info)
     if (rtti != nullptr) {
         // By default, use the plain RTTI name. Not always a pretty name.
         name.assignFromUTF8(rtti);
-#if defined(TS_MSC)
-        // On Windows, the RTTI name is "class MyName".
-        if (name.startWith(u"class ")) {
-            name.erase(0, 6);
-        }
-#elif defined(TS_GCC)
+#if defined(TS_GCC)
         // With gcc and clang, this is a C++ mangled name.
         // Demangle it using the portable C++ ABI library.
         int status = 0;
@@ -1381,10 +1376,16 @@ ts::UString ts::ClassName(const std::type_info& info)
             name.assignFromUTF8(demangled);
             ::free(demangled);
         }
-        if (name.startWith(u"(anonymous namespace)::")) {
+#endif
+        // Cleanup various initial decoration, depending on compiler.
+        if (name.startWith(u"class ")) {
+            name.erase(0, 6);
+        }
+        // MSC: `anonymous namespace'::
+        // GCC: (anonymous namespace)::
+        if (name.find(u"anonymous namespace") == 1 && name.find(u"::") == 21) {
             name.erase(0, 23);
         }
-#endif
     }
     return name;
 }
