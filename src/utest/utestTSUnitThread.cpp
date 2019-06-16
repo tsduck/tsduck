@@ -31,7 +31,7 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
 utest::TSUnitThread::TSUnitThread() :
@@ -42,6 +42,11 @@ utest::TSUnitThread::TSUnitThread() :
 utest::TSUnitThread::TSUnitThread(const ts::ThreadAttributes& attributes) :
     ts::Thread(attributes)
 {
+}
+
+utest::TSUnitThread::~TSUnitThread()
+{
+    waitForTermination();
 }
 
 

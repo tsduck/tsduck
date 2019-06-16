@@ -67,3 +67,19 @@ ts::Guard::~Guard()
         }
     }
 }
+
+//----------------------------------------------------------------------------
+// Force an early unlock of the mutex.
+//----------------------------------------------------------------------------
+
+bool ts::Guard::unlock()
+{
+    if (_is_locked) {
+        _is_locked = !_mutex.release();
+        return !_is_locked;
+    }
+    else {
+        // The mutex was not locked in the first place.
+        return false;
+    }
+}

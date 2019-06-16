@@ -55,6 +55,11 @@ namespace utest {
         TSUnitThread();
 
         //!
+        //! Destructor.
+        //!
+        ~TSUnitThread();
+
+        //!
         //! Constructor from specified attributes.
         //! @param [in] attributes The set of attributes.
         //!

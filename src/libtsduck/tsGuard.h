@@ -96,10 +96,9 @@ namespace ts {
         //!
         //! Constructor, automatically acquire the mutex with a timeout.
         //!
-        //! Unlike the other constructor (the one without timeout), there is no
-        //! guarantee that the mutex is locked after construction. The user has
-        //! to invoke isLocked() to check that the mutex was actually acquired
-        //! before the timeout expired.
+        //! With a non-infinite timeout, there is no guarantee that the mutex is
+        //! locked after construction. The user has to invoke isLocked() to check
+        //! that the mutex was actually acquired before the timeout expired.
         //!
         //! @param [in,out] mutex A reference on the mutex object to acquire.
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex.
@@ -126,10 +125,15 @@ namespace ts {
         //! timeout. When the constructor without timeout was used, this method
         //! always return true.
         //!
-        //! @return True if the mutex was successfully acquired and false if
-        //! the timeout expired.
+        //! @return True if the mutex was successfully acquired and false if the timeout expired.
         //!
         bool isLocked() const {return _is_locked;}
+
+        //!
+        //! Force an early unlock of the mutex.
+        //! @return True if the mutex has been successfully unlocked.
+        //!
+        bool unlock();
 
     private:
         MutexInterface& _mutex;
