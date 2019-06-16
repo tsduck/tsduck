@@ -118,6 +118,13 @@ namespace ts {
         void getAttributes(ThreadAttributes& attributes);
 
         //!
+        //! Get an implementation-specific name of the object class.
+        //! @return An implementation-specific name of the object class.
+        //! The result may be not portable. The returned value may be empty before start().
+        //!
+        UString getTypeName() const;
+
+        //!
         //! Start the thread.
         //!
         //! The operating system thread is created and started.
@@ -204,9 +211,17 @@ namespace ts {
         //!
         static void Yield();
 
+    protected:
+        //!
+        //! Set the type name.
+        //! @param [in] name The type name to set. If empty, the subclass type name is used.
+        //!
+        void setTypeName(const UString& name = UString());
+
     private:
         ThreadAttributes _attributes;
         mutable Mutex    _mutex;
+        UString          _typename;
         volatile bool    _started;
         volatile bool    _waiting;
 
