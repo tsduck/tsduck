@@ -62,6 +62,7 @@ ts::Thread::Thread() :
 ts::Thread::Thread(const ThreadAttributes& attributes) :
     _attributes(attributes),
     _mutex(),
+    _typename(),
     _started(false),
     _waiting(false),
 #if defined(TS_WINDOWS)
