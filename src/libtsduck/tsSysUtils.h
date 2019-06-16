@@ -637,6 +637,14 @@ namespace ts {
     //! @see SetBinaryModeStdout()
     //!
     TSDUCKDLL bool SetBinaryModeStdout(Report& report = CERR);
+
+    //!
+    //! Get the name of a class from the @c type_info of an object.
+    //! The result may be not portable.
+    //! @param [in] info The @c type_info of an object.
+    //! @return An implementation-specific name of the object class.
+    //!
+    TSDUCKDLL UString ClassName(const std::type_info& info);
 }
 
 TS_FLAGS_OPERATORS(ts::ResolveSymbolicLinksFlags)

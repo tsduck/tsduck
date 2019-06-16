@@ -685,6 +685,11 @@
 
 // Disable some warnings, application-wide, for various compilers.
 
+TS_GCC_NOWARNING(unused-parameter)          // Unused parameters are frequent with overrides.
+#if defined(TS_ARM)
+    TS_GCC_NOWARNING(psabi)
+#endif
+
 TS_LLVM_NOWARNING(deprecated)               // Most of these messages are informational only.
 TS_LLVM_NOWARNING(unused-parameter)         // Unused parameters are frequent with overrides.
 TS_LLVM_NOWARNING(global-constructors)      // Do not warn about static/global objects being constructed.
@@ -835,6 +840,7 @@ TS_MSC_NOWARNING(5027)
 #include <sstream>
 #include <iostream>
 #include <exception>
+#include <typeinfo>
 
 #include <cassert>
 #include <cstdlib>

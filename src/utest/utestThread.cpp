@@ -242,7 +242,7 @@ void ThreadTest::testDeleteWhenTerminated()
     }
     const ts::Time after(ts::Time::CurrentUTC());
     if (counter > 0) {
-        debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted after " << (after - before) << " milliseconds" << std::endl;
+        debug() << "ThreadTest::testDeleteWhenTerminated: ThreadDeleteWhenTerminated deleted after " << (after - before) << " milliseconds" << std::endl;
     }
     else {
         TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {after - before}).toUTF8());
@@ -339,6 +339,8 @@ void ThreadTest::testMutexTimeout()
     TSUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
     TSUNIT_ASSERT(mutex.acquire(1000));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
+
+    debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
 }
 
 //
@@ -391,6 +393,7 @@ void ThreadTest::testCondition()
     {
         TestThreadCondition thread(mutex, condition, data);
         TSUNIT_ASSERT(thread.start());
+        debug() << "ThreadTest::testCondition: type name: \"" << thread.getTypeName() << "\"" << std::endl;
 
         ts::GuardCondition lock(mutex, condition);
         ts::Time dueTime(ts::Time::CurrentUTC() + 100 - _msPrecision);
