@@ -281,6 +281,8 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
         }
         _inter_pkt = ts_bitrate / _bitrate;
         tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _inter_pkt});
+    } else if (_packet_count == 0 && _bitrate == 0) {
+        _pid_next_pkt = _inter_pkt;
     }
 
     // Count TS
@@ -365,7 +367,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
 
     _inserted_packet_count++;
     _pts_last_inserted = _youngest_pts;   // store pts of last insertion
-    tsp->debug(u"Inserting Packet at PTS: %'d, file: %s", { _pts_last_inserted,_file.getFileName() });
+    tsp->debug(u"[%d:%d] Inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)", { _inter_pkt,_pid_next_pkt,_pts_last_inserted,_packet_count,_file.getFileName(),_inserted_packet_count });
 
     if (_inter_time != 0) {
         _pts_range_ok = false; // reset _pts_range_ok signal if inter_time is specified
