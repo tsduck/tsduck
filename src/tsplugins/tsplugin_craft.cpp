@@ -91,6 +91,7 @@ namespace ts {
         bool      _resizePayload;
         size_t    _payloadSize;
         ByteBlock _payloadPattern;
+        uint8_t   _offsetPattern;
         ByteBlock _privateData;
         bool      _clearPrivateData;
         bool      _clearPCR;
@@ -431,6 +432,7 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     _resizePayload(false),
     _payloadSize(0),
     _payloadPattern(),
+    _offsetPattern(0),
     _privateData(),
     _clearPrivateData(false),
     _clearPCR(false),
@@ -497,6 +499,11 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
          u"Without --payload-pattern, the existing payload is either shrunk or enlarged. "
          u"When an existing payload is shrunk, the end of the payload is truncated. "
          u"When an existing payload is enlarged, its end is padded with 0xFF bytes. ");
+
+    option(u"offset-pattern", 0, INTEGER, 0, 1, 0, PKT_SIZE - 4);
+    help(u"offset-pattern",
+         u"Specify starting offset in payload when using payload-pattern. By default, "
+         u"the pattern replacement starts at the beginning of the packet payload (offset 0).");
 
     option(u"pcr", 0, UNSIGNED);
     help(u"pcr", u"Set this PCR value in the packets. Space is required in the adaptation field.");
@@ -573,6 +580,7 @@ bool ts::CraftPlugin::getOptions()
     _clearESPriority = present(u"clear-es-priority");
     _resizePayload = present(u"payload-size") || present(u"no-payload");
     _payloadSize = intValue<size_t>(u"payload-size", 0);
+    _offsetPattern = intValue<uint8_t>(u"offset-pattern", 0);
     _clearPCR = present(u"no-pcr");
     _newPCR = intValue<uint64_t>(u"pcr", INVALID_PCR);
     _clearOPCR = present(u"no-opcr");
@@ -600,6 +608,11 @@ bool ts::CraftPlugin::getOptions()
 
     if (!value(u"private-data").hexaDecode(_privateData)) {
         tsp->error(u"invalid hexadecimal private data");
+        return false;
+    }
+
+    if (_offsetPattern + _payloadSize >= PKT_SIZE) {
+        tsp->error(u"invalid offset-pattern value");
         return false;
     }
 
@@ -706,7 +719,7 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
 
     // Fill payload with pattern.
     if (!_payloadPattern.empty()) {
-        uint8_t* data = pkt.getPayload();
+        uint8_t* data = pkt.getPayload() + _offsetPattern;
         while (data < pkt.b + PKT_SIZE) {
             const size_t size = std::min<size_t>(_payloadPattern.size(), pkt.b + PKT_SIZE - data);
             ::memcpy(data, _payloadPattern.data(), size);
