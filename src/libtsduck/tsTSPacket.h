@@ -668,6 +668,32 @@ namespace ts {
         size_t getPESHeaderSize() const;
 
         //!
+        //! Get the address and size of the stuffing area of the PES header in the TS packet.
+        //! @param [out] addr Address of the PES header stuffing area. This address points
+        //! inside the TS packet payload.
+        //! @param [out] pes_size Size in bytes of the PES header stuffing area. This is the
+        //! complete size, some of which can be outside the TS packet.
+        //! @param [out] ts_size Size in bytes of the PES header stuffing area which is in the
+        //! TS packet. This size can be lower than the returned @a pes_size if the stuffing
+        //! area continues in another TS packet.
+        //! @return True when the PES header stuffing area was found. False otherwise.
+        //!
+        bool getPESHeaderStuffingArea(const uint8_t*& addr, size_t& pes_size, size_t& ts_size) const;
+
+        //!
+        //! Get the address and size of the stuffing area of the PES header in the TS packet.
+        //! @param [out] addr Address of the PES header stuffing area. This address points
+        //! inside the TS packet payload.
+        //! @param [out] pes_size Size in bytes of the PES header stuffing area. This is the
+        //! complete size, some of which can be outside the TS packet.
+        //! @param [out] ts_size Size in bytes of the PES header stuffing area which is in the
+        //! TS packet. This size can be lower than the returned @a pes_size if the stuffing
+        //! area continues in another TS packet.
+        //! @return True when the PES header stuffing area was found. False otherwise.
+        //!
+        bool getPESHeaderStuffingArea(uint8_t*& addr, size_t& pes_size, size_t& ts_size);
+
+        //!
         //! Check if the TS packet contains a Presentation Time Stamp (PTS).
         //! Technically, the PTS and DTS are part of the PES packet, not the TS packet.
         //! If the TS packet is the first TS packet of a PES packet, it is possible
