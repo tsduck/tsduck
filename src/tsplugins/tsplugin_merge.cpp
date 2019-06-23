@@ -89,6 +89,7 @@ namespace ts {
         bool              _merge_psi;         // Merge PSI/SI information.
         bool              _pcr_restamp;       // Restamp PCR from the merged stream.
         bool              _ignore_conflicts;  // Ignore PID conflicts.
+        bool              _terminate;         // Terminate processing after last merged packet.
         PIDSet            _allowed_pids;      // List of PID's to merge.
         bool              _abort;             // Error, give up asap.
         bool              _got_eof;           // Got end of merged stream.
@@ -156,6 +157,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _merge_psi(false),
     _pcr_restamp(false),
     _ignore_conflicts(false),
+    _terminate(false),
     _allowed_pids(),
     _abort(false),
     _got_eof(false),
@@ -195,6 +197,11 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"Warning: this is a dangerous option which can result in an inconsistent "
          u"transport stream.");
 
+    option(u"joint-termination", 'j');
+    help(u"joint-termination",
+        u"Perform a \"joint termination\" when the merged stream is terminated. "
+        u"See \"tsp --help\" for more details on \"joint termination\".");
+
     option(u"max-queue", 0, POSITIVE);
     help(u"max-queue",
          u"Specify the maximum number of queued TS packets before their "
@@ -229,6 +236,12 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --pass can be specified.");
 
+    option(u"terminate");
+    help(u"terminate",
+        u"Terminate packet processing when the merged stream is terminated. "
+        u"By default, when packet insertion is complete, the transmission "
+        u"continues and the stuffing is no longer modified.");
+
     option(u"transparent", 't');
     help(u"transparent",
          u"Pass all PID's without logical transformation. "
@@ -250,6 +263,13 @@ bool ts::MergePlugin::start()
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
+    _terminate = present(u"terminate");
+    tsp->useJointTermination(present(u"joint-termination"));
+
+    if (_terminate && tsp->useJointTermination()) {
+        tsp->error(u"--terminate and --joint-termination are mutually exclusive");
+        return false;
+    }
 
     // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
     _allowed_pids.set();
@@ -448,7 +468,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
     // Final status for this packet.
     Status status = TSP_OK;
 
-    // Process packagets depending on PID.
+    // Process packets depending on PID.
     switch (pid) {
         case PID_PAT: {
             // Replace PAT packets using packetizer if a new PAT was generated.
@@ -504,6 +524,14 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
             // Report end of input stream once.
             _got_eof = true;
             tsp->verbose(u"end of merged stream");
+            // If processing terminated, either exit or transparently pass packets
+            if (tsp->useJointTermination()) {
+                tsp->jointTerminate();
+                return TSP_OK;
+            }
+            else if (_terminate) {
+                return TSP_END;
+            }
         }
         return TSP_OK;
     }
