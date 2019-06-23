@@ -2,13 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1287
+VERSION 3.18-1304
 
 [NEW] New commands and plugins:
 
   * Added plugin "craft" as input to build specifically crafted packets and as
     packet processor to similarly alter packets in transit.
-  * Added plugin 'trigger" which executes actions on selected labeled TS
+  * Added plugin "trigger" which executes actions on selected labeled TS
     packets.
   * Added plugin "cutoff" which sets labels on TS packets upon reception of
     UDP messages.
@@ -27,8 +27,9 @@ VERSION 3.18-1287
     "pmt". The option --add-programinfo-id is now deprecated.
   * Added option --eit to plugin "timeref".
   * Added option --tag to plugin "count".
-  * Added option --single to plugin "remap".
-  * Added options--set-label-below, --set-label-normal, --set-label-above,
+  * Added options --single, --set-label and --reset-label to plugins "remap"
+    and "duplicate".
+  * Added options --set-label-below, --set-label-normal, --set-label-above,
     --set-label-go-below, --set-label-go-normal, --set-label-go-above to
     plugin "bitrate_monitor".
 

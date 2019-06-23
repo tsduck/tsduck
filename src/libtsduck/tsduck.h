@@ -40,6 +40,7 @@
 #include "tsAbstractDescrambler.h"
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractDescriptorsTable.h"
+#include "tsAbstractDuplicateRemapPlugin.h"
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tsAbstractLongTable.h"
 #include "tsAbstractMultilingualDescriptor.h"
