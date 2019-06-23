@@ -257,6 +257,34 @@ bool ts::TSPacket::startPES() const
         getPayloadSize() >= 3 && pl[0] == 0x00 && pl[1] == 0x00 && pl[2] == 0x01;
 }
 
+
+//----------------------------------------------------------------------------
+// Get the size of the PES header in the packet, if one is present.
+//----------------------------------------------------------------------------
+
+size_t ts::TSPacket::getPESHeaderSize() const
+{
+    const uint8_t* const pl = getPayload();
+    const size_t plSize = getPayloadSize();
+
+    if (!startPES() || plSize < 4) {
+        // No start PES or PES header too short to get the stream type.
+        return 0;
+    }
+    else if (!IsLongHeaderSID(pl[3])) {
+        // Short fixed-size PES header for that stream type.
+        return 6;
+    }
+    else if (plSize < 9) {
+        // Long PES header, but not long enough to get actual size.
+        return 0;
+    }
+    else {
+        // Long header.
+        return 9 + size_t(pl[8]);
+    }
+}
+
 //----------------------------------------------------------------------------
 // These private methods compute the offset of PCR, OPCR.
 // Return 0 if there is none.

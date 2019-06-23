@@ -90,9 +90,9 @@ namespace ts {
         bool      _clearESPriority;
         bool      _resizePayload;
         size_t    _payloadSize;
-        bool      _payloadIsPES;
+        bool      _pesPayload;
         ByteBlock _payloadPattern;
-        uint8_t   _offsetPattern;
+        size_t    _offsetPattern;
         ByteBlock _privateData;
         bool      _clearPrivateData;
         bool      _clearPCR;
@@ -432,7 +432,7 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     _clearESPriority(false),
     _resizePayload(false),
     _payloadSize(0),
-    _payloadIsPES(false),
+    _pesPayload(false),
     _payloadPattern(),
     _offsetPattern(0),
     _privateData(),
@@ -504,13 +504,16 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
 
     option(u"offset-pattern", 0, INTEGER, 0, 1, 0, PKT_SIZE - 4);
     help(u"offset-pattern",
-         u"Specify starting offset in payload when using payload-pattern. By default, "
-         u"the pattern replacement starts at the beginning of the packet payload (offset 0).");
+         u"Specify starting offset in payload when using --payload-pattern. By default, "
+         u"the pattern replacement starts at the beginning of the packet payload.");
 
     option(u"pes-payload");
     help(u"pes-payload",
-         u"When using this parameter the payload is the PES payload, not the TS payload. "
-         u"It applyes to --payload-size and --offset-pattern.");
+         u"With this option, the modified payload is the PES payload, not the TS payload. "
+         u"When the TS packet does not contain the start of a PES packet, the TS payload is not modified. "
+         u"With --payload-size, the TS payload is resized so that the part of the PES payload which is in "
+         u"the TS packet gets the specified size. "
+         u"With --payload-pattern and --offset-pattern, the pattern is applied inside the PES payload.");
 
     option(u"pcr", 0, UNSIGNED);
     help(u"pcr", u"Set this PCR value in the packets. Space is required in the adaptation field.");
@@ -587,8 +590,8 @@ bool ts::CraftPlugin::getOptions()
     _clearESPriority = present(u"clear-es-priority");
     _resizePayload = present(u"payload-size") || present(u"no-payload");
     _payloadSize = intValue<size_t>(u"payload-size", 0);
-    _payloadIsPES = present(u"pes-payload");
-    _offsetPattern = intValue<uint8_t>(u"offset-pattern", 0);
+    _pesPayload = present(u"pes-payload");
+    _offsetPattern = intValue<size_t>(u"offset-pattern", 0);
     _clearPCR = present(u"no-pcr");
     _newPCR = intValue<uint64_t>(u"pcr", INVALID_PCR);
     _clearOPCR = present(u"no-opcr");
@@ -619,11 +622,6 @@ bool ts::CraftPlugin::getOptions()
         return false;
     }
 
-    if (_offsetPattern + _payloadSize >= PKT_SIZE) {
-        tsp->error(u"invalid offset-pattern value");
-        return false;
-    }
-
     return true;
 }
 
@@ -634,12 +632,6 @@ bool ts::CraftPlugin::getOptions()
 
 ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    uint8_t offset = 0;
-    if (_payloadIsPES && pkt.startPES()) {
-        uint8_t* const pl = pkt.getPayload();
-        offset = 9 + size_t(pl[8]);  // Warning: Simple PES header calculation!
-    }
-
     // Hack the packet header. Just overwrite a few bits in place, nothing to move.
     if (_clearTransportError) {
         pkt.clearTEI();
@@ -697,9 +689,16 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
         packPESHeader(pkt);
     }
 
+    // Now modify the payload.
+    // With --pes-payload, we may do that only if the TS contains the start of a PES packet with some PES payload.
+    const size_t pesHeaderSize = pkt.getPESHeaderSize();
+    const bool pesPayloadPresent = pesHeaderSize > 0 && pkt.getPayloadSize() > pesHeaderSize;
+    const bool mayUpdatePayload = !_pesPayload || pesPayloadPresent;
+    const size_t payloadBase = _pesPayload ? pesHeaderSize : 0;
+
     // If the payload must be resized to a specific size, do it now.
-    if (_resizePayload && !pkt.setPayloadSize(_payloadSize + offset, true, 0xFF)) {
-        tsp->warning(u"packet %'d: cannot resize payload to %'d bytes", {tsp->pluginPackets(), _payloadSize});
+    if (mayUpdatePayload && _resizePayload && !pkt.setPayloadSize(payloadBase + _payloadSize, true, 0xFF)) {
+        tsp->warning(u"packet %'d: cannot resize %s payload to %'d bytes", {tsp->pluginPackets(), _pesPayload ? u"PES" : u"TS", _payloadSize});
     }
 
     // Check if we are allowed to shrink the payload to any value.
@@ -732,8 +731,8 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     // Fill payload with pattern.
-    if (!_payloadPattern.empty()) {
-        uint8_t* data = pkt.getPayload() + _offsetPattern + offset;
+    if (mayUpdatePayload && !_payloadPattern.empty()) {
+        uint8_t* data = pkt.getPayload() + payloadBase + _offsetPattern;
         while (data < pkt.b + PKT_SIZE) {
             const size_t size = std::min<size_t>(_payloadPattern.size(), pkt.b + PKT_SIZE - data);
             ::memcpy(data, _payloadPattern.data(), size);
