@@ -11,6 +11,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractDescrambler.h \
     ../../../src/libtsduck/tsAbstractDescriptor.h \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.h \
+    ../../../src/libtsduck/tsAbstractDuplicateRemapPlugin.h \
     ../../../src/libtsduck/tsAbstractHTTPInputPlugin.h \
     ../../../src/libtsduck/tsAbstractLongTable.h \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.h \
@@ -511,6 +512,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
+    ../../../src/libtsduck/tsAbstractDuplicateRemapPlugin.cpp \
     ../../../src/libtsduck/tsAbstractHTTPInputPlugin.cpp \
     ../../../src/libtsduck/tsAbstractLongTable.cpp \
     ../../../src/libtsduck/tsAbstractMultilingualDescriptor.cpp \

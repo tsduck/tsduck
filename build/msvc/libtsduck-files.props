@@ -13,6 +13,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDuplicateRemapPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractLongTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.h" />
@@ -523,6 +524,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDuplicateRemapPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractLongTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractMultilingualDescriptor.cpp" />

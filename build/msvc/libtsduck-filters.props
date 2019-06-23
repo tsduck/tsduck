@@ -37,6 +37,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDuplicateRemapPlugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1561,6 +1564,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDuplicateRemapPlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractHTTPInputPlugin.cpp">
