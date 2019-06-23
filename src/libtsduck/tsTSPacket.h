@@ -661,6 +661,13 @@ namespace ts {
         bool startPES() const;
 
         //!
+        //! Get the size of the PES header in the packet, if one is present.
+        //! @return The size of the PES header in bytes or zero if there is no PES header.
+        //! It is not guaranteed that the complete PES header fits inside the TS packet.
+        //!
+        size_t getPESHeaderSize() const;
+
+        //!
         //! Check if the TS packet contains a Presentation Time Stamp (PTS).
         //! Technically, the PTS and DTS are part of the PES packet, not the TS packet.
         //! If the TS packet is the first TS packet of a PES packet, it is possible
