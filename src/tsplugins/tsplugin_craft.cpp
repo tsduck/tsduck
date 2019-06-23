@@ -750,84 +750,34 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
 
 void ts::CraftPlugin::packPESHeader(TSPacket& pkt)
 {
-    // If there is no clear PES header inside the packet, nothing to do.
-    if (!pkt.startPES()) {
-        return;
-    }
+    uint8_t* stuff = nullptr;
+    size_t stuffSize = 0;
+    size_t unused = 0;
 
-    // Analyze the start of the payload, supposed to be a PES header.
-    uint8_t* const pl = pkt.getPayload();
-    const size_t plSize = pkt.getPayloadSize();
-    if (plSize < 9 || !IsLongHeaderSID(pl[3])) {
-        // Can't get the start of a long header or this stream id does not have a long header.
-        return;
-    }
+    // Locate the stuffing area inside the PES header, if there is one.
+    if (pkt.getPESHeaderStuffingArea(stuff, unused, stuffSize) && stuffSize > 0) {
+        // The stuffing area is not empty and starts inside the TS payload. The value stuffSize is what we can pack.
 
-    // Size of the PES header, may include stuffing.
-    const size_t headerSize = 9 + size_t(pl[8]);
+        // TS packet payload:
+        uint8_t* const pl = pkt.getPayload();
+        const size_t plSize = pkt.getPayloadSize();
+        assert(plSize >= 9 + stuffSize);
 
-    // Look for the offset of the stuffing in the PES packet.
-    size_t offset = 9;
-    const uint8_t PTS_DTS_flags = (pl[7] >> 6) & 0x03;
-    if (offset < headerSize && PTS_DTS_flags == 2) {
-        offset += 5;  // skip PTS
-    }
-    if (offset < headerSize && PTS_DTS_flags == 3) {
-        offset += 10;  // skip PTS and DTS
-    }
-    if (offset < headerSize && (pl[7] & 0x20) != 0) {
-        offset += 6;  // ESCR_flag set, skip ESCR
-    }
-    if (offset < headerSize && (pl[7] & 0x10) != 0) {
-        offset += 3;  // ES_rate_flag set, skip ES_rate
-    }
-    if (offset < headerSize && (pl[7] & 0x08) != 0) {
-        offset += 1;  // DSM_trick_mode_flag set, skip trick mode
-    }
-    if (offset < headerSize && (pl[7] & 0x04) != 0) {
-        offset += 1;  // additional_copy_info_flag set, skip additional_copy_info
-    }
-    if (offset < headerSize && (pl[7] & 0x02) != 0) {
-        offset += 2;  // PES_CRC_flag set, skip previous_PES_packet_CRC
-    }
-    if (offset < headerSize && offset < plSize && (pl[7] & 0x01) != 0) {
-        // PES_extension_flag set, analyze and skip PES extensions
-        // First, get the flags indicating which extensions are present.
-        const uint8_t flags = pl[offset++];
-        if (offset < headerSize && (flags & 0x80) != 0) {
-            offset += 16; // PES_private_data_flag set
-        }
-        if (offset < headerSize && offset < plSize && (flags & 0x40) != 0) {
-            offset += 1 + pl[offset]; // pack_header_field_flag set
-        }
-        if (offset < headerSize && (flags & 0x20) != 0) {
-            offset += 2; // program_packet_sequence_counter_flag set
-        }
-        if (offset < headerSize && (flags & 0x10) != 0) {
-            offset += 2; // P-STD_buffer_flag set
-        }
-        if (offset < headerSize && offset < plSize && (flags & 0x01) != 0) {
-            offset += 1 + (pl[offset] & 0x7F); //  PES_extension_flag_2 set
-        }
-    }
-
-    // Now, offset points to the beginning of the stuffing area in the PES header.
-    if (offset < headerSize && offset < plSize) {
-        // The stuffing area is not empty and starts inside the TS payload.
-        // Compute how many stuffing bytes we have inside the TS payload.
-        // This is the size we may remove from the PES header.
-        const size_t stuffSize = std::min(headerSize - offset, plSize - offset);
-        // Adjust the PES header size.
+        // Adjust the PES header size:
+        const size_t headerSize = 9 + size_t(pl[8]);
         assert(size_t(pl[8]) >= stuffSize);
         pl[8] -= uint8_t(stuffSize);
+
         // Adjust the PES packet size if not unbounded (ie. not zero).
-        const uint16_t pesSize = GetUInt16(pl + 4);
+        const size_t pesSize = GetUInt16(pl + 4);
         if (pesSize > stuffSize) {
             // Normally, should test != 0. But make sure that invalid small PES size does not cause an integer overflow.
-            PutUInt16(pl + 4, pesSize - uint16_t(stuffSize));
+            PutUInt16(pl + 4, uint16_t(pesSize - stuffSize));
         }
+
         // Shift the start of the TS payload to compress the PES header.
         ::memmove(pl + stuffSize, pl, std::min(headerSize, plSize) - stuffSize);
+
         // Now resize the TS payload
         pkt.setPayloadSize(plSize - stuffSize, false);
     }
