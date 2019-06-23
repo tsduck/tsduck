@@ -143,7 +143,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
 
     option(u"joint-termination", 'j');
     help(u"joint-termination",
-         u"Perform a \"joint termination\" when file insersion is complete. "
+         u"Perform a \"joint termination\" when the file insertion is complete. "
          u"See \"tsp --help\" for more details on \"joint termination\".");
 
     option(u"max-insert-count", 0, UNSIGNED);
@@ -192,7 +192,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
 
     option(u"terminate", 't');
     help(u"terminate",
-         u"Terminate packet processing when file insersion is complete. By default, "
+         u"Terminate packet processing when the file insertion is complete. By default, "
          u"when packet insertion is complete, the transmission continues and the "
          u"stuffing is no longer modified.");
 }
@@ -204,7 +204,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
 
 bool ts::MuxPlugin::start()
 {
-    tsp->useJointTermination (present(u"joint-termination"));
+    tsp->useJointTermination(present(u"joint-termination"));
     _terminate = present(u"terminate");
     _update_cc = !present(u"no-continuity-update");
     _check_pid_conflict = !present(u"no-pid-conflict-check");
