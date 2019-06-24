@@ -84,6 +84,18 @@ namespace ts {
         virtual bool readByteBlock(ByteBlock& data, size_t size);
 
         //!
+        //! Get a random integer value.
+        //! @tparam INT An integer type for the result.
+        //! @param [out] value The return integer value.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool readInt(INT& value)
+        {
+            return read(&value, sizeof(value));
+        }
+
+        //!
         //! Virtual destructor
         //!
         virtual ~RandomGenerator();
