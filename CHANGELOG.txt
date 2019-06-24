@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1306
+VERSION 3.18-1313
 
 [NEW] New commands and plugins:
 
@@ -30,7 +30,9 @@ VERSION 3.18-1306
   * Added option --tag to plugin "count".
   * Added options --single, --set-label and --reset-label to plugins "remap"
     and "duplicate".
-  * Added options --terminate and --joint-termination to plugin "merge".
+  * Added options --terminate, --joint-termination, --set-label and
+    --reset-label to plugin "merge".
+  * Added options --set-label and --reset-label to plugin "mux".
   * Added options --set-label-below, --set-label-normal, --set-label-above,
     --set-label-go-below, --set-label-go-normal, --set-label-go-above to
     plugin "bitrate_monitor".
