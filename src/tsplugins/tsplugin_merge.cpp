@@ -110,6 +110,8 @@ namespace ts {
         CAT               _merge_cat;         // Last input CAT from merged TS.
         SDT               _main_sdt;          // Last input SDT from main TS (version# is current output version).
         SDT               _merge_sdt;         // Last input SDT from merged TS.
+        TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
+        TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
 
         // Process a --drop or --pass option.
         bool processDropPassOption(const UChar* option, bool allowed);
@@ -122,7 +124,7 @@ namespace ts {
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
 
         // Process one packet coming from the merged stream.
-        Status processMergePacket(TSPacket&);
+        Status processMergePacket(TSPacket&, TSPacketMetadata&);
 
         // Generate new/merged tables.
         void mergePAT();
@@ -177,7 +179,9 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _main_cat(),
     _merge_cat(),
     _main_sdt(),
-    _merge_sdt()
+    _merge_sdt(),
+    _setLabels(),
+    _resetLabels()
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",
@@ -246,6 +250,18 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     help(u"transparent",
          u"Pass all PID's without logical transformation. "
          u"Equivalent to --no-psi-merge --ignore-conflicts --pass 0x00-0x1F.");
+
+    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"set-label", u"label1[-label2]",
+         u"Set the specified labels on the merged packets. "
+         u"Apply to original packets from the merged stream only, not to updated PSI. "
+         u"Several --set-label options may be specified.");
+
+    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"reset-label", u"label1[-label2]",
+         u"Clear the specified labels on the merged packets. "
+         u"Apply to original packets from the merged stream only, not to updated PSI. "
+         u"Several --reset-label options may be specified.");
 }
 
 
@@ -265,6 +281,8 @@ bool ts::MergePlugin::start()
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
     _terminate = present(u"terminate");
     tsp->useJointTermination(present(u"joint-termination"));
+    getIntValues(_setLabels, u"set-label");
+    getIntValues(_resetLabels, u"reset-label");
 
     if (_terminate && tsp->useJointTermination()) {
         tsp->error(u"--terminate and --joint-termination are mutually exclusive");
@@ -493,7 +511,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
         }
         case PID_NULL: {
             // Stuffing, potential candidate for replacement from merged stream.
-            status = processMergePacket(pkt);
+            status = processMergePacket(pkt, pkt_data);
             break;
         }
         default: {
@@ -513,7 +531,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
 // Process one packet coming from the merged stream.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
+ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     BitRate merge_bitrate = 0;
 
@@ -606,6 +624,10 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt)
             tsp->debug(u"adjusted PCR by %'d (%'d ms) in PID 0x%X (%d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid, pid});
         }
     }
+
+    // Apply labels on muxed packets.
+    pkt_data.setLabels(_setLabels);
+    pkt_data.clearLabels(_resetLabels);
 
     return TSP_OK;
 }

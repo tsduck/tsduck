@@ -76,9 +76,9 @@ namespace ts {
         uint64_t      _inserted_packet_count; // counts inserted packets
         uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
-        TSPacketMetadata::LabelSet _setLabels;    //!< Labels to set on output packets.
-        TSPacketMetadata::LabelSet _resetLabels;  //!< Labels to reset on output packets.
-        ContinuityAnalyzer _cc_fixer;         // To fix continuity counters in mux'ed PID's
+        TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
+        TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
+        ContinuityAnalyzer         _cc_fixer;     // To fix continuity counters in mux'ed PID's
     };
 }
 
