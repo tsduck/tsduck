@@ -90,6 +90,7 @@ namespace ts {
         bool      _clearESPriority;
         bool      _resizePayload;
         size_t    _payloadSize;
+        bool      _noPayload;
         bool      _pesPayload;
         ByteBlock _payloadPattern;
         size_t    _offsetPattern;
@@ -171,7 +172,7 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
          u"See \"tsp --help\" for more details on \"joint termination\".");
 
     option(u"no-payload");
-    help(u"no-payload", u"Do not use a payload, equivalent to --payload-size 0.");
+    help(u"no-payload", u"Do not use a payload.");
 
     option(u"payload-pattern", 0, STRING);
     help(u"payload-pattern",
@@ -183,6 +184,8 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
     help(u"payload-size", u"size",
          u"Specify the size of the packet payload in bytes. "
          u"When necessary, an adaptation field is created. "
+         u"Note that --payload-size 0 specifies that a payload exists with a zero size. "
+         u"This is different from --no-payload which also specifies that the payload does not exist. "
          u"By default, the payload uses all free space in the packet.");
 
     option(u"pcr", 0, UNSIGNED);
@@ -241,11 +244,12 @@ bool ts::CraftInput::getOptions()
     const uint64_t opcr = intValue<uint64_t>(u"opcr", INVALID_PCR);
     const uint8_t spliceCountdown = intValue<uint8_t>(u"splice-countdown");
     const bool hasSplicing = present(u"splice-countdown");
-    const bool fullPayload = !present(u"no-payload") && !present(u"payload-size");
+    const bool noPayload = present(u"no-payload");
+    const bool fullPayload = !noPayload && !present(u"payload-size"); // payload uses all available size
     size_t payloadSize = intValue<size_t>(u"payload-size");
 
     // Check consistency of options.
-    if (payloadSize > 0 && present(u"no-payload")) {
+    if (payloadSize > 0 && noPayload) {
         tsp->error(u"options --no-payload and --payload-size are mutually exclusive");
         return false;
     }
@@ -320,7 +324,7 @@ bool ts::CraftInput::getOptions()
     _packet.b[3] =
         uint8_t((scrambling & 0x03) << 6) |
         (afSize > 0 ? 0x20 : 0x00) |
-        (payloadSize > 0 ? 0x10 : 0x00) |
+        (payloadSize > 0 || !noPayload ? 0x10 : 0x00) |
         (_initCC & 0x0F);
 
     // Build adaptation field.
@@ -432,6 +436,7 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     _clearESPriority(false),
     _resizePayload(false),
     _payloadSize(0),
+    _noPayload(false),
     _pesPayload(false),
     _payloadPattern(),
     _offsetPattern(0),
@@ -486,7 +491,7 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     help(u"clear-es-priority", u"Clear the elementary_stream_priority_indicator in the packets.");
 
     option(u"no-payload");
-    help(u"no-payload", u"Remove the payload, equivalent to --payload-size 0.");
+    help(u"no-payload", u"Remove the payload.");
 
     option(u"payload-pattern", 0, STRING);
     help(u"payload-pattern",
@@ -500,7 +505,9 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
          u"When necessary, an adaptation field is created or enlarged. "
          u"Without --payload-pattern, the existing payload is either shrunk or enlarged. "
          u"When an existing payload is shrunk, the end of the payload is truncated. "
-         u"When an existing payload is enlarged, its end is padded with 0xFF bytes. ");
+         u"When an existing payload is enlarged, its end is padded with 0xFF bytes. "
+         u"Note that --payload-size 0 specifies that a payload exists with a zero size. "
+         u"This is different from --no-payload which also specifies that the payload does not exist.");
 
     option(u"offset-pattern", 0, INTEGER, 0, 1, 0, PKT_SIZE - 4);
     help(u"offset-pattern",
@@ -588,7 +595,8 @@ bool ts::CraftPlugin::getOptions()
     _clearTransportPriority = present(u"clear-priority");
     _setESPriority = present(u"es-priority");
     _clearESPriority = present(u"clear-es-priority");
-    _resizePayload = present(u"payload-size") || present(u"no-payload");
+    _noPayload = present(u"no-payload");
+    _resizePayload = present(u"payload-size") || _noPayload;
     _payloadSize = intValue<size_t>(u"payload-size", 0);
     _pesPayload = present(u"pes-payload");
     _offsetPattern = intValue<size_t>(u"offset-pattern", 0);
@@ -611,6 +619,11 @@ bool ts::CraftPlugin::getOptions()
     _clearSpliceCountdown = present(u"no-splice-countdown");
     _newSpliceCountdown = intValue<uint8_t>(u"splice-countdown");
     _clearPrivateData = present(u"no-private-data");
+
+    if (_payloadSize > 0 && _noPayload) {
+        tsp->error(u"options --no-payload and --payload-size are mutually exclusive");
+        return false;
+    }
 
     if (!value(u"payload-pattern").hexaDecode(_payloadPattern)) {
         tsp->error(u"invalid hexadecimal payload pattern");
@@ -737,6 +750,18 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
             const size_t size = std::min<size_t>(_payloadPattern.size(), pkt.b + PKT_SIZE - data);
             ::memcpy(data, _payloadPattern.data(), size);
             data += size;
+        }
+    }
+
+    // If the payload was explicitly resized to zero, set or reset payload presence.
+    if (_resizePayload && _payloadSize == 0 && pkt.getPayloadSize() == 0) {
+        if (_noPayload) {
+            // Was resized with --no-payload, clear payload existence.
+            pkt.b[3] &= ~0x10;
+        }
+        else {
+            // Was resized with --payload-size 0, set payload existence (even if empty).
+            pkt.b[3] |= 0x10;
         }
     }
 
