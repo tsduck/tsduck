@@ -59,14 +59,32 @@ namespace ts {
         virtual bool send(const TSPacket*, size_t) override;
 
     private:
-        UString        _destination;    // Destination address/port.
-        UString        _local_addr;     // Local address.
-        int            _ttl;            // Time to live option.
-        int            _tos;            // Type of service option.
-        size_t         _pkt_burst;      // Number of TS packets per UDP message
-        bool           _enforce_burst;  // Option --enforce-burst
-        UDPSocket      _sock;           // Outgoing socket
-        size_t         _out_count;      // Number of packets in _out_buffer
-        TSPacketVector _out_buffer;     // Buffered packets for output with --enforce-burst
+        UString        _destination;        // Destination address/port.
+        UString        _local_addr;         // Local address.
+        int            _ttl;                // Time to live option.
+        int            _tos;                // Type of service option.
+        size_t         _pkt_burst;          // Number of TS packets per UDP message
+        bool           _enforce_burst;      // Option --enforce-burst
+        bool           _use_rtp;            // Use real-time transport protocol
+        uint8_t        _rtp_pt;             // RTP payload type.
+        bool           _rtp_fixed_sequence; // RTP sequence number starts with a fixed value
+        uint16_t       _rtp_start_sequence; // RTP starting sequence number
+        uint16_t       _rtp_sequence;       // RTP current sequence number
+        bool           _rtp_fixed_ssrc;     // RTP SSRC id has a fixed value
+        uint32_t       _rtp_user_ssrc;      // RTP user-specified SSRC id
+        uint32_t       _rtp_ssrc;           // RTP current SSRC id (constant during a session)
+        PID            _pcr_user_pid;       // User-specified PCR PID.
+        PID            _pcr_pid;            // Current PCR PID.
+        uint64_t       _last_pcr;           // Last PCR value in PCR PID
+        uint64_t       _last_rtp_pcr;       // Last RTP timestamp in PCR units (in last datagram)
+        PacketCounter  _last_rtp_pcr_pkt;   // Packet index of last datagram
+        uint64_t       _rtp_pcr_offset;     // Value to substract from PCR to get RTP timestamp
+        PacketCounter  _pkt_count;          // Total packet counter for output packets
+        UDPSocket      _sock;               // Outgoing socket
+        size_t         _out_count;          // Number of packets in _out_buffer
+        TSPacketVector _out_buffer;         // Buffered packets for output with --enforce-burst
+
+        // Send contiguous packets in one single datagram.
+        bool sendDatagram(const TSPacket* pkt, size_t packet_count);
     };
 }

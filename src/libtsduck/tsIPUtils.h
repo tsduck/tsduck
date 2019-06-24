@@ -123,14 +123,14 @@ namespace ts {
     // Internals of the IPv4 protocol.
     //------------------------------------------------------------------------
 
-    const uint8_t IPv4_VERSION          =     4;   //!< Protocol version of IPv4 is ... 4 !
-    const size_t  IPv4_PROTOCOL_OFFSET  =     9;   //!< Offset of the protocol identifier in an IPv4 header.
-    const size_t  IPv4_CHECKSUM_OFFSET  =    10;   //!< Offset of the checksum in an IPv4 header.
-    const size_t  IPv4_SRC_ADDR_OFFSET  =    12;   //!< Offset of source IP address in an IPv4 header.
-    const size_t  IPv4_DEST_ADDR_OFFSET =    16;   //!< Offset of destination IP address in an IPv4 header.
-    const size_t  IPv4_MIN_HEADER_SIZE  =    20;   //!< Minimum size of an IPv4 header.
-    const size_t  UDP_HEADER_SIZE       =     8;   //!< Size of a UDP header.
-    const size_t  IP_MAX_PACKET_SIZE    = 65536;   //!< Maximum size of an IP packet.
+    constexpr uint8_t IPv4_VERSION          =     4;   //!< Protocol version of IPv4 is ... 4 !
+    constexpr size_t  IPv4_PROTOCOL_OFFSET  =     9;   //!< Offset of the protocol identifier in an IPv4 header.
+    constexpr size_t  IPv4_CHECKSUM_OFFSET  =    10;   //!< Offset of the checksum in an IPv4 header.
+    constexpr size_t  IPv4_SRC_ADDR_OFFSET  =    12;   //!< Offset of source IP address in an IPv4 header.
+    constexpr size_t  IPv4_DEST_ADDR_OFFSET =    16;   //!< Offset of destination IP address in an IPv4 header.
+    constexpr size_t  IPv4_MIN_HEADER_SIZE  =    20;   //!< Minimum size of an IPv4 header.
+    constexpr size_t  UDP_HEADER_SIZE       =     8;   //!< Size of a UDP header.
+    constexpr size_t  IP_MAX_PACKET_SIZE    = 65536;   //!< Maximum size of an IP packet.
 
     //!
     //! Selected IP protocol identifiers.
@@ -177,4 +177,12 @@ namespace ts {
     //! @return True if the checksum was update, false on incorrect buffer.
     //!
     TSDUCKDLL bool UpdateIPHeaderChecksum(void* data, size_t size);
+
+    //------------------------------------------------------------------------
+    // Real-time Transport Protocol (RTP)
+    //------------------------------------------------------------------------
+
+    constexpr size_t   RTP_HEADER_SIZE =    12;  //!< Size in bytes of the fixed posrt of the RTP header.
+    constexpr uint8_t  RTP_PT_MP2T     =    33;  //!< RTP payload type for MPEG2-TS.
+    constexpr uint64_t RTP_RATE_MP2T   = 90000;  //!< RTP clock rate for MPEG2-TS.
 }
