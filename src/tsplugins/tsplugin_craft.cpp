@@ -51,7 +51,7 @@ namespace ts {
         CraftInput(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual size_t receive(TSPacket*, size_t) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override { return true; }
 
     private:
@@ -394,7 +394,7 @@ bool ts::CraftInput::start()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::CraftInput::receive(TSPacket* buffer, size_t maxPackets)
+size_t ts::CraftInput::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t maxPackets)
 {
     // Previous number of generated packets.
     const PacketCounter previousCount = tsp->pluginPackets();

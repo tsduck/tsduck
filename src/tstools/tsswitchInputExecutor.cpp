@@ -46,6 +46,7 @@ ts::tsswitch::InputExecutor::InputExecutor(size_t index, Core& core, Options& op
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _pluginIndex(index),
     _buffer(opt.bufferedPackets),
+    _metadata(opt.bufferedPackets),
     _mutex(),
     _todo(),
     _isCurrent(false),
@@ -149,10 +150,11 @@ void ts::tsswitch::InputExecutor::terminateInput()
 // Indirectly called from the output plugin when it needs some packets.
 //----------------------------------------------------------------------------
 
-void ts::tsswitch::InputExecutor::getOutputArea(ts::TSPacket*& first, size_t& count)
+void ts::tsswitch::InputExecutor::getOutputArea(ts::TSPacket*& first, TSPacketMetadata*& data, size_t& count)
 {
     GuardCondition lock(_mutex, _todo);
     first = &_buffer[_outFirst];
+    data = &_metadata[_outFirst];
     count = std::min(_outCount, _buffer.size() - _outFirst);
     _outputInUse = count > 0;
     lock.signal();
@@ -259,8 +261,13 @@ void ts::tsswitch::InputExecutor::main()
             assert(inFirst < _buffer.size());
             assert(inFirst + inCount <= _buffer.size());
 
+            // Reset packet metadata.
+            for (size_t n = inFirst; n < inFirst + inCount; ++n) {
+                _metadata[n].reset();
+            }
+
             // Receive packets.
-            if ((inCount = _input->receive(&_buffer[inFirst], inCount)) == 0) {
+            if ((inCount = _input->receive(&_buffer[inFirst], &_metadata[inFirst], inCount)) == 0) {
                 // End of input.
                 debug(u"received end of input from plugin");
                 break;

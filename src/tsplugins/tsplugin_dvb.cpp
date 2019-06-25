@@ -57,7 +57,7 @@ namespace ts {
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
-        virtual size_t receive(TSPacket*, size_t) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
 
         // Larger stack size than default
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
@@ -210,7 +210,7 @@ ts::BitRate ts::DVBInput::getBitrate()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::DVBInput::receive (TSPacket* buffer, size_t max_packets)
+size_t ts::DVBInput::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
-    return _tuner.receive (buffer, max_packets, tsp, *tsp);
+    return _tuner.receive(buffer, max_packets, tsp, *tsp);
 }

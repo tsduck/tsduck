@@ -133,7 +133,7 @@ bool ts::PushInputPlugin::abortInput()
 // Standard input routine, now hidden from subclasses.
 //----------------------------------------------------------------------------
 
-size_t ts::PushInputPlugin::receive(TSPacket* buffer, size_t max_packets)
+size_t ts::PushInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // Start the receiver thread the first time.
     if (!_started) {

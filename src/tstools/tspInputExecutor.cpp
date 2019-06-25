@@ -184,8 +184,13 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
     TSPacket* const pkt = _buffer->base() + index;
     TSPacketMetadata* const data = _metadata->base() + index;
 
+    // Reset metadata for new incoming packets.
+    for (size_t n = 0; n < max_packets; ++n) {
+        data[n].reset();
+    }
+
     // Invoke the plugin receive method
-    size_t count = _input->receive(pkt, max_packets);
+    size_t count = _input->receive(pkt, data, max_packets);
 
     // Validate sync byte (0x47) at beginning of each packet
     for (size_t n = 0; n < count; ++n) {
@@ -196,9 +201,6 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
             // Include packet in bitrate analysis.
             _pcr_analyzer.feedPacket(pkt[n]);
             _dts_analyzer.feedPacket(pkt[n]);
-
-            // Reset metadata.
-            data[n].reset();
         }
         else {
             // Report error

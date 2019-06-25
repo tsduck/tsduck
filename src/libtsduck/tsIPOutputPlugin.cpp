@@ -238,7 +238,7 @@ bool ts::IPOutputPlugin::stop()
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::IPOutputPlugin::send(const TSPacket* pkt, size_t packet_count)
+bool ts::IPOutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
     // Send TS packets in UDP messages, grouped according to burst size.
     // Minimum number of TS packets per UDP packet.

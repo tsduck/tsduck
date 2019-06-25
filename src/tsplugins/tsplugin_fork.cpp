@@ -55,7 +55,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual size_t receive(TSPacket*, size_t) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
 
     private:
@@ -75,7 +75,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual bool send(const TSPacket*, size_t) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
         UString  _command;      // The command to run.
@@ -227,7 +227,7 @@ bool ts::ForkInput::abortInput()
     return true;
 }
 
-size_t ts::ForkInput::receive(TSPacket* buffer, size_t max_packets)
+size_t ts::ForkInput::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // Read always an integral number of TS packets.
     size_t ret_size = 0;
@@ -267,7 +267,7 @@ bool ts::ForkOutput::stop()
     return _pipe.close(*tsp);
 }
 
-bool ts::ForkOutput::send(const TSPacket* buffer, size_t packet_count)
+bool ts::ForkOutput::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
     // Send packets in the pipe.
     return _pipe.write(buffer, PKT_SIZE * packet_count, *tsp);

@@ -57,7 +57,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
-        virtual bool send(const TSPacket*, size_t) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
         bool     _use_mplayer;
@@ -113,7 +113,7 @@ bool ts::PlayPlugin::stop()
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::PlayPlugin::send(const TSPacket* buffer, size_t packet_count)
+bool ts::PlayPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
     return _pipe.write(buffer, PKT_SIZE * packet_count, *tsp);
 }

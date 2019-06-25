@@ -52,7 +52,7 @@ namespace ts {
         HiDesOutput(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual bool send(const TSPacket*, size_t) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
         virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
 
@@ -278,7 +278,7 @@ ts::BitRate ts::HiDesOutput::getBitrate()
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::HiDesOutput::send(const TSPacket* pkt, size_t packet_count)
+bool ts::HiDesOutput::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
     return _device.send(pkt, packet_count, *tsp, tsp);
 }

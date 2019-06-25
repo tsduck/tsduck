@@ -56,7 +56,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override;
-        virtual bool send(const TSPacket*, size_t) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
         UString        _destination;        // Destination address/port.

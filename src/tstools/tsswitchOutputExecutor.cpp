@@ -85,15 +85,16 @@ void ts::tsswitch::OutputExecutor::main()
 
     size_t pluginIndex = 0;
     TSPacket* first = nullptr;
+    TSPacketMetadata* metadata = nullptr;
     size_t count = 0;
 
     // Loop until there are packets to output.
-    while (!_terminate && _core.getOutputArea(pluginIndex, first, count)) {
+    while (!_terminate && _core.getOutputArea(pluginIndex, first, metadata, count)) {
         log(2, u"got %d packets from plugin %d, terminate: %s", {count, pluginIndex, _terminate});
         if (!_terminate && count > 0) {
 
             // Output the packets.
-            const bool success = _output->send(first, count);
+            const bool success = _output->send(first, metadata, count);
 
             // Signal to the input plugin that the buffer can be reused..
             _core.outputSent(pluginIndex, count);
