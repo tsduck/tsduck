@@ -48,7 +48,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         DropOutput(TSP*);
-        virtual bool send(const TSPacket*, size_t) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
     };
 }
 
@@ -65,7 +65,7 @@ ts::DropOutput::DropOutput(TSP* tsp_) :
 {
 }
 
-bool ts::DropOutput::send(const TSPacket*, size_t)
+bool ts::DropOutput::send(const TSPacket*, const TSPacketMetadata* pkt_data, size_t)
 {
     return true;
 }

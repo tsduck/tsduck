@@ -98,6 +98,7 @@ void ts::tsp::OutputExecutor::main()
         // (ie. starting with a zero byte) are in the middle of the buffer.
 
         TSPacket* pkt = _buffer->base() + pkt_first;
+        TSPacketMetadata* data = _metadata->base() + pkt_first;
         size_t pkt_remain = pkt_cnt;
 
         while (pkt_remain > 0) {
@@ -107,6 +108,7 @@ void ts::tsp::OutputExecutor::main()
             for (drop_cnt = 0; drop_cnt < pkt_remain && pkt[drop_cnt].b[0] == 0; drop_cnt++) {}
 
             pkt += drop_cnt;
+            data += drop_cnt;
             pkt_remain -= drop_cnt;
             addNonPluginPackets(drop_cnt);
 
@@ -116,11 +118,12 @@ void ts::tsp::OutputExecutor::main()
 
             // Output a contiguous range of non-dropped packets.
             if (out_cnt > 0) {
-                if (!_output->send(pkt, out_cnt)) {
+                if (!_output->send(pkt, data, out_cnt)) {
                     aborted = true;
                     break;
                 }
                 pkt += out_cnt;
+                data += out_cnt;
                 pkt_remain -= out_cnt;
                 output_packets += out_cnt;
                 addPluginPackets(out_cnt);

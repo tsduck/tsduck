@@ -66,7 +66,7 @@ namespace ts {
             virtual bool start() override;
             virtual bool stop() override;
             virtual bool isRealTime() override;
-            virtual bool send(const TSPacket*, size_t) override;
+            virtual bool send(const TSPacket*, const TSPacketMetadata* pkt_data, size_t) override;
 
         private:
             UString        _segmentTemplate;      // Command line segment file names template.

@@ -55,7 +55,7 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual size_t receive(TSPacket*, size_t) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
     private:
         UStringVector _filenames;
@@ -75,7 +75,7 @@ namespace ts {
         FileOutput(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual bool send(const TSPacket*, size_t) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
     private:
         TSFileOutput _file;
     };
@@ -224,7 +224,7 @@ bool ts::FileInput::abortInput()
     return true;
 }
 
-size_t ts::FileInput::receive(TSPacket* buffer, size_t max_packets)
+size_t ts::FileInput::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // Loop on input files.
     for (;;) {
@@ -265,7 +265,7 @@ bool ts::FileOutput::stop()
     return _file.close(*tsp);
 }
 
-bool ts::FileOutput::send(const TSPacket* buffer, size_t packet_count)
+bool ts::FileOutput::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
     return _file.write(buffer, packet_count, *tsp);
 }

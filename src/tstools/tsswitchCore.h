@@ -126,11 +126,12 @@ namespace ts {
             //! Wait until there is some packets to output.
             //! @param [out] pluginIndex Returned index of the input plugin.
             //! @param [out] first Returned address of first packet to output.
+            //! @param [out] data Returned address of metadata for the first packet to output.
             //! @param [out] count Returned number of packets to output.
             //! Never zero, except when @c tsswitch is terminating.
             //! @return False when @c tsswitch is terminating.
             //!
-            bool getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t& count);
+            bool getOutputArea(size_t& pluginIndex, TSPacket*& first, TSPacketMetadata*& data, size_t& count);
 
             //!
             //! Called by the output plugin after sending packets.

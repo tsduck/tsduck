@@ -50,7 +50,7 @@ namespace ts {
         NullInput(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual size_t receive(TSPacket*, size_t) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override { return true; }
 
     private:
@@ -116,7 +116,7 @@ bool ts::NullInput::start()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::NullInput::receive (TSPacket* buffer, size_t max_packets)
+size_t ts::NullInput::receive (TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // If "joint termination" reached for this plugin
     if (_count >= _limit && tsp->useJointTermination()) {

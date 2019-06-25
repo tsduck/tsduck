@@ -433,7 +433,7 @@ void ts::tsswitch::Core::execute(const Action& event)
 // Get some packets to output (called by output plugin).
 //----------------------------------------------------------------------------
 
-bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, size_t& count)
+bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, TSPacketMetadata*& data, size_t& count)
 {
     assert(pluginIndex < _inputs.size());
 
@@ -445,7 +445,7 @@ bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, si
             count = 0;
         }
         else {
-            _inputs[_curPlugin]->getOutputArea(first, count);
+            _inputs[_curPlugin]->getOutputArea(first, data, count);
         }
         // Return when there is something to output in current plugin or the application terminates.
         if (count > 0 || _terminate) {

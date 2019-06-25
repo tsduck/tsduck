@@ -158,7 +158,7 @@ ts::BitRate ts::IPInputPlugin::getBitrate()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::IPInputPlugin::receive(TSPacket* buffer, size_t max_packets)
+size_t ts::IPInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // Check if we receive new packets or process remain of previous buffer.
     bool new_packets = false;

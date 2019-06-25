@@ -59,7 +59,7 @@ namespace ts {
         virtual bool stop() override;
         virtual bool isRealTime() override;
         virtual BitRate getBitrate() override;
-        virtual size_t receive(TSPacket*, size_t) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
 
     private:

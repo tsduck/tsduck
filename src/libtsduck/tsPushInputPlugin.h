@@ -142,6 +142,6 @@ namespace ts {
         TSPacketQueue _queue;
 
         // Standard input routine, now hidden from subclasses.
-        virtual size_t receive(TSPacket* buffer, size_t max_packets) override;
+        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
     };
 }

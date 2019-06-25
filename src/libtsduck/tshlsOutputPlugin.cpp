@@ -446,7 +446,7 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::hls::OutputPlugin::send(const TSPacket* pkt, size_t packetCount)
+bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packetCount)
 {
     bool ok = true;
 

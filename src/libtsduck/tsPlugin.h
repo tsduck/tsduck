@@ -106,7 +106,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 11;
+        static const int API_VERSION = 12;
 
         //!
         //! Get the current input bitrate in bits/seconds.
@@ -371,11 +371,13 @@ namespace ts {
         //! the buffer (never read partial packets).
         //!
         //! @param [out] buffer Address of the buffer for incoming packets.
+        //! @param [in,out] pkt_data Array of metadata for incoming packets.
+        //! A packet and its metadata have the same index in their respective arrays.
         //! @param [in] max_packets Size of @a buffer in number of packets.
         //! @return The number of actually received packets (in the range
         //! 1 to @a max_packets). Returning zero means error or end of input.
         //!
-        virtual size_t receive(TSPacket* buffer, size_t max_packets) = 0;
+        virtual size_t receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets) = 0;
 
         //!
         //! Abort the input operation currently in progress.
@@ -437,10 +439,12 @@ namespace ts {
         //! This methods writes complete 188-byte TS packets.
         //!
         //! @param [in] buffer Address of outgoing packets.
+        //! @param [in] pkt_data Array of metadata for outgoing packets.
+        //! A packet and its metadata have the same index in their respective arrays.
         //! @param [in] packet_count Number of packets to send from @a buffer.
         //! @return True on success, false on error.
         //!
-        virtual bool send(const TSPacket* buffer, size_t packet_count) = 0;
+        virtual bool send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count) = 0;
 
         // Implementation of inherited interface.
         virtual PluginType type() const override;
