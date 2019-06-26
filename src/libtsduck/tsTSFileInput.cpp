@@ -61,6 +61,59 @@ ts::TSFileInput::TSFileInput() :
 
 
 //----------------------------------------------------------------------------
+// Copy constructor.
+//----------------------------------------------------------------------------
+
+ts::TSFileInput::TSFileInput(const TSFileInput& other) :
+    _filename(other._filename),
+    _total_packets(0),
+    _repeat(other._repeat),
+    _counter(0),
+    _start_offset(other._start_offset),
+    _is_open(false),
+    _severity(other._severity),
+    _at_eof(false),
+    _rewindable(false),
+#if defined(TS_WINDOWS)
+    _handle(INVALID_HANDLE_VALUE)
+#else
+    _fd(-1)
+#endif
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Move constructor.
+//----------------------------------------------------------------------------
+
+ts::TSFileInput::TSFileInput(TSFileInput&& other) noexcept :
+    _filename(std::move(other._filename)),
+    _total_packets(other._total_packets),
+    _repeat(other._repeat),
+    _counter(other._counter),
+    _start_offset(other._start_offset),
+    _is_open(other._is_open),
+    _severity(other._severity),
+    _at_eof(other._at_eof),
+    _rewindable(other._rewindable),
+#if defined(TS_WINDOWS)
+    _handle(other._handle)
+#else
+    _fd(other._fd)
+#endif
+{
+    // Mark other object as closed, just in case.
+    other._is_open = false;
+#if defined(TS_WINDOWS)
+    other._handle = INVALID_HANDLE_VALUE;
+#else
+    other._fd = -1;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Destructor
 //----------------------------------------------------------------------------
 
@@ -122,19 +175,19 @@ bool ts::TSFileInput::open(const UString& filename, size_t repeat_count, uint64_
 // Internal open
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::openInternal (Report& report)
+bool ts::TSFileInput::openInternal(Report& report)
 {
 #if defined(TS_WINDOWS)
 
     // Windows implementation
 
     if (_filename.empty()) {
-        _handle = ::GetStdHandle (STD_INPUT_HANDLE);
+        _handle = ::GetStdHandle(STD_INPUT_HANDLE);
     }
     else {
         _handle = ::CreateFile(_filename.toUTF8().c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
-            ErrorCode error_code = LastErrorCode ();
+            ErrorCode error_code = LastErrorCode();
             report.log(_severity, u"cannot open file %s: %s", {_filename, ErrorCodeMessage(error_code)});
             return false;
         }
@@ -142,7 +195,7 @@ bool ts::TSFileInput::openInternal (Report& report)
 
     // If a repeat count or initial offset is specified, the input file must be a regular file
 
-    if ((_repeat != 1 || _start_offset != 0) && ::GetFileType (_handle) != FILE_TYPE_DISK) {
+    if ((_repeat != 1 || _start_offset != 0) && ::GetFileType(_handle) != FILE_TYPE_DISK) {
         report.log(_severity, u"input file %s is not a regular file, cannot %s", {_filename, _repeat != 1 ? u"repeat" : u"specify start offset"});
         if (!_filename.empty()) {
             ::CloseHandle(_handle);
@@ -184,10 +237,10 @@ bool ts::TSFileInput::openInternal (Report& report)
     if (_repeat != 1 || _start_offset != 0) {
         struct stat st;
         if (::fstat(_fd, &st) < 0) {
-            ErrorCode error_code = LastErrorCode ();
+            ErrorCode error_code = LastErrorCode();
             report.log(_severity, u"cannot stat input file %s: %s", {_filename, ErrorCodeMessage(error_code)});
             if (!_filename.empty()) {
-                ::close (_fd);
+                ::close(_fd);
             }
             return false;
         }
@@ -202,11 +255,11 @@ bool ts::TSFileInput::openInternal (Report& report)
 
     // If an initial offset is specified, move here
 
-    if (_start_offset != 0 && ::lseek (_fd, off_t (_start_offset), SEEK_SET) == off_t (-1)) {
+    if (_start_offset != 0 && ::lseek(_fd, off_t (_start_offset), SEEK_SET) == off_t (-1)) {
         ErrorCode error_code = LastErrorCode ();
         report.log (_severity, u"error seeking input file %s: %s", {_filename, ErrorCodeMessage(error_code)});
         if (!_filename.empty()) {
-            ::close (_fd);
+            ::close(_fd);
         }
         return false;
     }

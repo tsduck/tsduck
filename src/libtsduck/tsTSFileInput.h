@@ -43,7 +43,6 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileInput
     {
-        TS_NOCOPY(TSFileInput);
     public:
         //!
         //! Default constructor.
@@ -54,6 +53,20 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~TSFileInput();
+
+        //!
+        //! Copy constructor.
+        //! Only the configuration is copied (name, repetition, etc.)
+        //! @param [in] other Other instance to copy.
+        //!
+        TSFileInput(const TSFileInput& other);
+
+        //!
+        //! Move constructor.
+        //! The full state is moved.
+        //! @param [in,out] other Other instance to move. Closed on return.
+        //!
+        TSFileInput(TSFileInput&& other) noexcept;
 
         //!
         //! Open the file.
@@ -196,6 +209,10 @@ namespace ts {
 
         // Internal methods
         bool openInternal(Report& report);
-        bool seekInternal(uint64_t, Report& report);
+        bool seekInternal(uint64_t index, Report& report);
+
+        // Inaccessible operations.
+        TSFileInput& operator=(TSFileInput&) = delete;
+        TSFileInput& operator=(TSFileInput&&) = delete;
     };
 }

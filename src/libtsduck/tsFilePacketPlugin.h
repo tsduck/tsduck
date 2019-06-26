@@ -26,14 +26,37 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  File packet processor plugin for tsp.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsFileInputPlugin.h"
-#include "tsFileOutputPlugin.h"
-#include "tsFilePacketPlugin.h"
-#include "tsPluginRepository.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsPlugin.h"
+#include "tsTSFileOutput.h"
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(file, ts::FileInputPlugin)
-TSPLUGIN_DECLARE_OUTPUT(file, ts::FileOutputPlugin)
-TSPLUGIN_DECLARE_PROCESSOR(file, ts::FilePacketPlugin)
+namespace ts {
+    //!
+    //! File packet processor plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL FilePacketPlugin: public ProcessorPlugin
+    {
+        TS_NOBUILD_NOCOPY(FilePacketPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        FilePacketPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
+
+    private:
+        TSFileOutput _file;
+    };
+}

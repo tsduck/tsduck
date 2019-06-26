@@ -811,8 +811,8 @@ bool ts::Args::analyze(bool processRedirections)
                 short_opt_index = NPOS;
             }
         }
-        else if (force_parameters || _args[next_arg].empty() || _args[next_arg][0] != u'-') {
-            // Arg is a parameter
+        else if (force_parameters || _args[next_arg].size() < 2 || _args[next_arg][0] != u'-') {
+            // Arg is a parameter (can be empty or '-' alone).
             if ((opt = search(u"")) == nullptr) {
                 ++next_arg;
             }
