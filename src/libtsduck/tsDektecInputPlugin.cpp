@@ -96,7 +96,7 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
     return 0;
 }
 
-size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
+size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
 {
     tsp->error(TS_NO_DTAPI_MESSAGE);
     return 0;

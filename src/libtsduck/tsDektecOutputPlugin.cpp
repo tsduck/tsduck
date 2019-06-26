@@ -83,7 +83,7 @@ ts::BitRate ts::DektecOutputPlugin::getBitrate()
     return 0;
 }
 
-bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
+bool ts::DektecOutputPlugin::send(const TSPacket*, const TSPacketMetadata*, size_t)
 {
     tsp->error(TS_NO_DTAPI_MESSAGE);
     return false;
