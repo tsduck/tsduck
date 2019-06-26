@@ -170,7 +170,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsExternalApplicationAuthorizationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsExternalESIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFatal.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsFileInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFileNameRate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsFileOutputPlugin.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsFilePacketPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsForkPipe.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.h" />
@@ -651,7 +654,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsExternalApplicationAuthorizationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsExternalESIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFatal.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsFileInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFileNameRate.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsFileOutputPlugin.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsFilePacketPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsForkPipe.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.cpp" />

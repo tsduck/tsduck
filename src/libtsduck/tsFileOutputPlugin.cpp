@@ -27,13 +27,44 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsFileInputPlugin.h"
 #include "tsFileOutputPlugin.h"
-#include "tsFilePacketPlugin.h"
-#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(file, ts::FileInputPlugin)
-TSPLUGIN_DECLARE_OUTPUT(file, ts::FileOutputPlugin)
-TSPLUGIN_DECLARE_PROCESSOR(file, ts::FilePacketPlugin)
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
+    _file()
+{
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"Name of the created output file. Use standard output by default.");
+
+    option(u"append", 'a');
+    help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
+
+    option(u"keep", 'k');
+    help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
+}
+
+
+//----------------------------------------------------------------------------
+// Output plugin methods
+//----------------------------------------------------------------------------
+
+bool ts::FileOutputPlugin::start()
+{
+    return _file.open(value(u""), present(u"append"), present(u"keep"), *tsp);
+}
+
+bool ts::FileOutputPlugin::stop()
+{
+    return _file.close(*tsp);
+}
+
+bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
+{
+    return _file.write(buffer, packet_count, *tsp);
+}

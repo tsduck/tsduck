@@ -26,14 +26,37 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  File output plugin for tsp.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsFileInputPlugin.h"
-#include "tsFileOutputPlugin.h"
-#include "tsFilePacketPlugin.h"
-#include "tsPluginRepository.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsPlugin.h"
+#include "tsTSFileOutput.h"
 
-TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(file, ts::FileInputPlugin)
-TSPLUGIN_DECLARE_OUTPUT(file, ts::FileOutputPlugin)
-TSPLUGIN_DECLARE_PROCESSOR(file, ts::FilePacketPlugin)
+namespace ts {
+    //!
+    //! File output plugin for tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL FileOutputPlugin: public OutputPlugin
+    {
+        TS_NOBUILD_NOCOPY(FileOutputPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        FileOutputPlugin(TSP* tsp);
+
+        // Implementation of plugin API
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
+
+    private:
+        TSFileOutput _file;
+    };
+}

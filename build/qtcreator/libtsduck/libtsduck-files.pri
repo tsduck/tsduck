@@ -168,7 +168,10 @@ HEADERS += \
     ../../../src/libtsduck/tsExternalApplicationAuthorizationDescriptor.h \
     ../../../src/libtsduck/tsExternalESIdDescriptor.h \
     ../../../src/libtsduck/tsFatal.h \
+    ../../../src/libtsduck/tsFileInputPlugin.h \
     ../../../src/libtsduck/tsFileNameRate.h \
+    ../../../src/libtsduck/tsFileOutputPlugin.h \
+    ../../../src/libtsduck/tsFilePacketPlugin.h \
     ../../../src/libtsduck/tsForkPipe.h \
     ../../../src/libtsduck/tsGitHubRelease.h \
     ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.h \
@@ -639,7 +642,10 @@ SOURCES += \
     ../../../src/libtsduck/tsExternalApplicationAuthorizationDescriptor.cpp \
     ../../../src/libtsduck/tsExternalESIdDescriptor.cpp \
     ../../../src/libtsduck/tsFatal.cpp \
+    ../../../src/libtsduck/tsFileInputPlugin.cpp \
     ../../../src/libtsduck/tsFileNameRate.cpp \
+    ../../../src/libtsduck/tsFileOutputPlugin.cpp \
+    ../../../src/libtsduck/tsFilePacketPlugin.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
     ../../../src/libtsduck/tsGitHubRelease.cpp \
     ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.cpp \
