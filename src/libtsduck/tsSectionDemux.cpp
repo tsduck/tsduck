@@ -464,35 +464,36 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
-            ETIDContext& tc(pc.tids[etid]);
+            // Avoid accumulating partial sections when there is no table handler.
+
+            ETIDContext* tc = _table_handler == nullptr ? nullptr : &pc.tids[etid];
 
             // If this is a new version of the table, reset the TID context.
             // Note that short sections do not have versions, so the version
             // field is implicitely zero. However, every short section must
-            // be considered as a new version since there is no way to track
-            // versions.
+            // be considered as a new version since there is no way to track versions.
 
-            if (!long_header ||             // short section
-                tc.sect_expected == 0 ||    // new TID on this PID
-                tc.version != version)      // new version
-            {
-                tc.init(version, last_section_number);
-            }
+            if (tc != nullptr) {
+                if (!long_header ||              // short section
+                    tc->sect_expected == 0 ||    // new TID on this PID
+                    tc->version != version)      // new version
+                {
+                    tc->init(version, last_section_number);
+                }
 
-            // Check that the total number of sections in the table
-            // has not changed since last section.
-
-            if (last_section_number != tc.sect_expected - 1) {
-                _status.inv_sect_index++;
-                section_ok = false;
+                // Check that the total number of sections in the table
+                // has not changed since last section.
+                if (last_section_number != tc->sect_expected - 1) {
+                    _status.inv_sect_index++;
+                    section_ok = false;
+                }
             }
 
             // Create a new Section object if necessary (ie. if a section
             // hendler is registered or if this is a new section).
-
             SectionPtr sect_ptr;
 
-            if (section_ok && (_section_handler != nullptr || tc.sects[section_number].isNull())) {
+            if (section_ok && (_section_handler != nullptr || (tc != nullptr && tc->sects[section_number].isNull()))) {
                 sect_ptr = new Section(ts_start, section_length, pid, CRC32::CHECK);
                 sect_ptr->setFirstTSPacketIndex(pusi_pkt_index);
                 sect_ptr->setLastTSPacketIndex(_packet_count);
@@ -513,14 +514,14 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 }
 
                 // Save the section in the TID context if this is a new one.
-                if (section_ok && tc.sects[section_number].isNull()) {
+                if (section_ok && tc != nullptr && tc->sects[section_number].isNull()) {
 
                     // Save the section
-                    tc.sects[section_number] = sect_ptr;
-                    tc.sect_received++;
+                    tc->sects[section_number] = sect_ptr;
+                    tc->sect_received++;
 
                     // If the table is completed and a handler is present, build the table.
-                    tc.notify(*this, false, false);
+                    tc->notify(*this, false, false);
                 }
             }
             catch (...) {
