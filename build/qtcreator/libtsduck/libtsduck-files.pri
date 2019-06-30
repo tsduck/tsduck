@@ -297,6 +297,7 @@ HEADERS += \
     ../../../src/libtsduck/tsProtectionMessageDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
     ../../../src/libtsduck/tsPSILoggerArgs.h \
+    ../../../src/libtsduck/tsPSIMerger.h \
     ../../../src/libtsduck/tsPushInputPlugin.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
     ../../../src/libtsduck/tsRegistrationDescriptor.h \
@@ -763,6 +764,7 @@ SOURCES += \
     ../../../src/libtsduck/tsProtectionMessageDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
     ../../../src/libtsduck/tsPSILoggerArgs.cpp \
+    ../../../src/libtsduck/tsPSIMerger.cpp \
     ../../../src/libtsduck/tsPushInputPlugin.cpp \
     ../../../src/libtsduck/tsRandomGenerator.cpp \
     ../../../src/libtsduck/tsRegistrationDescriptor.cpp \

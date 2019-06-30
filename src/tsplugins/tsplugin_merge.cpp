@@ -36,6 +36,7 @@
 #include "tsPluginRepository.h"
 #include "tsForkPipe.h"
 #include "tsTSPacketQueue.h"
+#include "tsPSIMerger.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsThread.h"
