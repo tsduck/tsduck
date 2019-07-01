@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1313
+VERSION 3.18-1321
 
 [NEW] New commands and plugins:
 
@@ -12,6 +12,7 @@ VERSION 3.18-1313
     packets.
   * Added plugin "cutoff" which sets labels on TS packets upon reception of
     UDP messages.
+  * Added plugin "psimerge" which merges PSI/SI from mixed streams.
 
 [IMP] Improvements on existing commands and plugins:
 

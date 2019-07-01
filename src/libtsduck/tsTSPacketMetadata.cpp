@@ -66,6 +66,11 @@ void ts::TSPacketMetadata::reset()
 // Label operations
 //----------------------------------------------------------------------------
 
+bool ts::TSPacketMetadata::hasLabel(size_t label) const
+{
+    return label < _labels.size() && _labels.test(label);
+}
+
 bool ts::TSPacketMetadata::hasAnyLabel(const LabelSet& mask) const
 {
     return (_labels & mask).any(); 

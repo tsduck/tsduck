@@ -141,7 +141,7 @@ namespace ts {
         //! @param [in] label The label to check.
         //! @return True if the TS packet has @a label set.
         //!
-        bool hasLabel(size_t label) const { return _labels.test(label); }
+        bool hasLabel(size_t label) const;
 
         //!
         //! Check if the TS packet has any label set.

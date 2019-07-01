@@ -133,6 +133,9 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_psi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_psimerge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\tsplugins\tsplugin_reduce.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
