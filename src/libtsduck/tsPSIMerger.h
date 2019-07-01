@@ -72,6 +72,7 @@ namespace ts {
         //! Merging options. Can be used as bitmasks.
         //!
         enum Options: uint32_t {
+            NONE          = 0x00000000,  //!< Do not merge anything.
             MERGE_PAT     = 0x00000001,  //!< Merge the two PAT's into one.
             MERGE_CAT     = 0x00000002,  //!< Merge the two CAT's into one.
             MERGE_NIT     = 0x00000004,  //!< Merge the two NIT's Actual into one. The NIT Others are mixed in the NIT PID.
@@ -165,6 +166,32 @@ namespace ts {
 
         // Check that the queue of EIT's does not overflow.
         bool checkEITs();
+
+        // Get main and merged complete TS id. Return false if not yet known.
+        bool getTransportStreamIds(TransportStreamId& main, TransportStreamId& merge) const;
+
+        // Handle a table from the main or merged transport stream.
+        void handleMainTable(const BinaryTable& table);
+        void handleMergeTable(const BinaryTable& table);
+
+        // Generate new/merged tables.
+        void mergePAT();
+        void mergeCAT();
+        void mergeSDT();
+        void mergeNIT();
+        void mergeBAT(uint16_t bouquet_id);
+
+        // Copy a table into another, preserving the previous version number it the table is valid.
+        template<class TABLE, typename std::enable_if<std::is_base_of<AbstractLongTable, TABLE>::value>::type* = nullptr>
+        void copyTableKeepVersion(TABLE& dest, const TABLE& src)
+        {
+            const bool was_valid = dest.isValid();
+            const uint8_t version = dest.version;
+            dest = src;
+            if (was_valid) {
+                dest.version = version;
+            }
+        }
     };
 }
 TS_FLAGS_OPERATORS(ts::PSIMerger::Options)
