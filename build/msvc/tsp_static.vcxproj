@@ -51,6 +51,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_play.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pmt.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_psi.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_psimerge.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_reduce.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_regulate.cpp" />
     <ClCompile Include="..\..\src\tsplugins\tsplugin_remap.cpp" />

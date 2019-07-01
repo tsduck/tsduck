@@ -82,6 +82,7 @@ SUBDIRS += \
     tsplugin_play \
     tsplugin_pmt \
     tsplugin_psi \
+    tsplugin_psimerge \
     tsplugin_reduce \
     tsplugin_regulate \
     tsplugin_remap \
