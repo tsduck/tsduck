@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPSIMerger.h"
+#include "tsCADescriptor.h"
 TSDUCK_SOURCE;
 
 
@@ -172,6 +173,27 @@ void ts::PSIMerger::reset(Options options)
 
 
 //----------------------------------------------------------------------------
+// Get main and merged complete TS id. Return false if not yet known.
+//----------------------------------------------------------------------------
+
+bool ts::PSIMerger::getTransportStreamIds(TransportStreamId& main, TransportStreamId& merge) const
+{
+    // We can get the TS id from the PAT or SDT-Actual and the original network id from the SDT-Actual.
+    // Since we need the SDT-Actual, no need to use the PAT.
+    if (_main_sdt.isValid() && _merge_sdt.isValid()) {
+        main.transport_stream_id = _main_sdt.ts_id;
+        main.original_network_id = _main_sdt.onetw_id;
+        merge.transport_stream_id = _merge_sdt.ts_id;
+        merge.original_network_id = _merge_sdt.onetw_id;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Feed a packet from the main stream.
 //----------------------------------------------------------------------------
 
@@ -204,8 +226,9 @@ bool ts::PSIMerger::feedMainPacket(TSPacket& pkt)
         }
         case PID_NIT: {
             // Replace NIT packets using packetizer when NIT's are merged.
-            // Do not wait for the two NIT Actual to be merged since some NIT Other can be mixed.
-            if ((_options & MERGE_NIT) != 0) {
+            // Let original packets pass as long as the two NIT-Actual are not merged.
+            // In the meantime, we may miss NIT-Other from the merged stream but we do not care.
+            if (_main_nit.isValid() && _merge_nit.isValid()) {
                 _nit_pzer.getNextPacket(pkt);
             }
             break;
@@ -213,7 +236,9 @@ bool ts::PSIMerger::feedMainPacket(TSPacket& pkt)
         case PID_SDT: {
             // Replace SDT/BAT packets using packetizer when SDT's or BAT's are merged.
             // There is a mixture of merged SDT Actual, mixed SDT Other, merged BAT's.
-            if ((_options & (MERGE_SDT | MERGE_BAT)) != 0) {
+            // Let original packets pass as long as the two SDT-Actual are not merged.
+            // In the meantime, we may miss BAT and SDT-Other from the merged stream but we do not care.
+            if (_main_sdt.isValid() && _merge_sdt.isValid()) {
                 _sdt_bat_pzer.getNextPacket(pkt);
             }
             break;
@@ -331,8 +356,8 @@ bool ts::PSIMerger::checkEITs()
 
 bool ts::PSIMerger::doStuffing()
 {
-    // Do stuffing when there is no more EIT section to send.
-    return _eits.empty();
+    // Never do stuffing, always pack EIT's to make sure we have enough packets to reserialize EIT's.
+    return false;
 }
 
 void ts::PSIMerger::provideSection(SectionCounter counter, SectionPtr& section)
@@ -358,6 +383,7 @@ void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
     // Enqueue EIT's from main and merged stream.
     if ((demux.demuxId() == DEMUX_MAIN_EIT || demux.demuxId() == DEMUX_MERGE_EIT) &&
         (section.tableId() >= TID_EIT_MIN && section.tableId() <= TID_EIT_MAX) &&
+        section.sourcePID() == PID_EIT &&
         (_options & MERGE_EIT) != 0)
     {
         const SectionPtr sp(new Section(section, SHARE));
@@ -373,5 +399,361 @@ void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
 
 void ts::PSIMerger::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
-    //@@@@@
+    switch (demux.demuxId()) {
+        case DEMUX_MAIN:
+            handleMainTable(table);
+            break;
+        case DEMUX_MERGE:
+            handleMergeTable(table);
+            break;
+        default:
+            assert(false); // Unknown demux. Should not get there.
+            break;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Handle a table from the main transport stream.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::handleMainTable(const BinaryTable& table)
+{
+    // The processing is the same for PAT, CAT, BAT, NIT-Actual and SDT-Actual:
+    // update last input table and merge with table from the other stream.
+    switch (table.tableId()) {
+        case TID_PAT: {
+            const PAT pat(_duck, table);
+            if (pat.isValid() && table.sourcePID() == PID_PAT) {
+                copyTableKeepVersion(_main_pat, pat);
+                mergePAT();
+            }
+            break;
+        }
+        case TID_CAT: {
+            const CAT cat(_duck, table);
+            if (cat.isValid() && table.sourcePID() == PID_CAT) {
+                copyTableKeepVersion(_main_cat, cat);
+                mergeCAT();
+            }
+            break;
+        }
+        case TID_NIT_ACT: {
+            const NIT nit(_duck, table);
+            if (nit.isValid() && table.sourcePID() == PID_NIT) {
+                copyTableKeepVersion(_main_nit, nit);
+                mergeNIT();
+            }
+            break;
+        }
+        case TID_NIT_OTH: {
+            if (table.sourcePID() == PID_NIT) {
+                // This is a NIT-Other. It must be reinserted without modification in the NIT PID.
+                _nit_pzer.removeSections(table.tableId(), table.tableIdExtension());
+                _nit_pzer.addTable(table);
+            }
+            break;
+        }
+        case TID_SDT_ACT: {
+            const SDT sdt(_duck, table);
+            if (sdt.isValid() && table.sourcePID() == PID_SDT) {
+                copyTableKeepVersion(_main_sdt, sdt);
+                mergeSDT();
+            }
+            break;
+        }
+        case TID_SDT_OTH: {
+            if (table.sourcePID() == PID_SDT) {
+                // This is an SDT-Other. It must be reinserted without modification in the SDT/BAT PID.
+                _sdt_bat_pzer.removeSections(table.tableId(), table.tableIdExtension());
+                _sdt_bat_pzer.addTable(table);
+            }
+            break;
+        }
+        case TID_BAT: {
+            const BAT bat(_duck, table);
+            if (bat.isValid() && table.sourcePID() == PID_BAT) {
+                if (_main_bats.find(bat.bouquet_id) == _main_bats.end()) {
+                    // No previous BAT for this bouquet.
+                    _main_bats[bat.bouquet_id] = bat;
+                }
+                else {
+                    copyTableKeepVersion(_main_bats[bat.bouquet_id], bat);
+                }
+                mergeBAT(bat.bouquet_id);
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Handle a table from the merged transport stream.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::handleMergeTable(const BinaryTable& table)
+{
+    // The processing the same for PAT, CAT and SDT-Actual:
+    // update last input table and merge with table from the other stream.
+    switch (table.tableId()) {
+        case TID_PAT: {
+            const PAT pat(_duck, table);
+            if (pat.isValid() && table.sourcePID() == PID_PAT) {
+                _merge_pat = pat;
+                mergePAT();
+            }
+            break;
+        }
+        case TID_CAT: {
+            const CAT cat(_duck, table);
+            if (cat.isValid() && table.sourcePID() == PID_CAT) {
+                _merge_cat = cat;
+                mergeCAT();
+            }
+            break;
+        }
+        case TID_NIT_ACT: {
+            const NIT nit(_duck, table);
+            if (nit.isValid() && table.sourcePID() == PID_NIT) {
+                _merge_nit = nit;
+                mergeNIT();
+            }
+            break;
+        }
+        case TID_SDT_ACT: {
+            const SDT sdt(_duck, table);
+            if (sdt.isValid() && table.sourcePID() == PID_SDT) {
+                _merge_sdt = sdt;
+                mergeSDT();
+            }
+            break;
+        }
+        case TID_BAT: {
+            const BAT bat(_duck, table);
+            if (bat.isValid() && table.sourcePID() == PID_BAT) {
+                _merge_bats[bat.bouquet_id] = bat;
+                mergeBAT(bat.bouquet_id);
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Merge the PAT's and build a new one into the packetizer.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::mergePAT()
+{
+    // Check that we have valid tables to merge.
+    if (!_main_pat.isValid() || !_merge_pat.isValid()) {
+        return;
+    }
+
+    _report.debug(u"merging PAT");
+
+    // Build a new PAT based on last main PAT with incremented version number.
+    PAT pat(_main_pat);
+    pat.version = (pat.version + 1) & SVERSION_MASK;
+
+    // Add all services from merged stream into main PAT.
+    for (auto merge = _merge_pat.pmts.begin(); merge != _merge_pat.pmts.end(); ++merge) {
+        // Check if the service already exists in the main PAT.
+        if (pat.pmts.find(merge->first) != pat.pmts.end()) {
+            _report.error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+        }
+        else {
+            pat.pmts[merge->first] = merge->second;
+            _report.verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge->first, merge->first});
+        }
+    }
+
+    // Replace the PAT in the packetizer.
+    _pat_pzer.removeSections(TID_PAT);
+    _pat_pzer.addTable(_duck, pat);
+
+    // Save PAT version number for later increment.
+    _main_pat.version = pat.version;
+}
+
+
+//----------------------------------------------------------------------------
+// Merge the CAT's and build a new one into the packetizer.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::mergeCAT()
+{
+    // Check that we have valid tables to merge.
+    if (!_main_cat.isValid() || !_merge_cat.isValid()) {
+        return;
+    }
+
+    _report.debug(u"merging CAT");
+
+    // Build a new CAT based on last main CAT with incremented version number.
+    CAT cat(_main_cat);
+    cat.version = (cat.version + 1) & SVERSION_MASK;
+
+    // Add all CA descriptors from merged stream into main CAT.
+    for (size_t index = _merge_cat.descs.search(DID_CA); index < _merge_cat.descs.count(); index = _merge_cat.descs.search(DID_CA, index + 1)) {
+        const CADescriptor ca(_duck, *_merge_cat.descs[index]);
+        // Check if the same EMM PID already exists in the main CAT.
+        if (CADescriptor::SearchByPID(_main_cat.descs, ca.ca_pid) < _main_cat.descs.count()) {
+            _report.error(u"EMM PID conflict, PID 0x%X (%d) referenced in the two streams, dropping from merged stream", {ca.ca_pid, ca.ca_pid});
+        }
+        else {
+            cat.descs.add(_merge_cat.descs[index]);
+            _report.verbose(u"adding EMM PID 0x%X (%d) in CAT from merged stream", {ca.ca_pid, ca.ca_pid});
+        }
+    }
+
+    // Replace the CAT in the packetizer.
+    _cat_pzer.removeSections(TID_CAT);
+    _cat_pzer.addTable(_duck, cat);
+
+    // Save CAT version number for later increment.
+    _main_cat.version = cat.version;
+}
+
+
+//----------------------------------------------------------------------------
+// Merge the two SDT-Actual and build a new one into the packetizer.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::mergeSDT()
+{
+    // Check that we have valid tables to merge.
+    if (!_main_sdt.isValid() || !_merge_sdt.isValid()) {
+        return;
+    }
+
+    _report.debug(u"merging SDT");
+
+    // Build a new SDT based on last main SDT with incremented version number.
+    SDT sdt(_main_sdt);
+    sdt.version = (sdt.version + 1) & SVERSION_MASK;
+
+    // Add all services from merged stream into main SDT.
+    for (auto merge = _merge_sdt.services.begin(); merge != _merge_sdt.services.end(); ++merge) {
+        // Check if the service already exists in the main SDT.
+        if (sdt.services.find(merge->first) != sdt.services.end()) {
+            _report.error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+        }
+        else {
+            sdt.services[merge->first] = merge->second;
+            _report.verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge->second.serviceName(_duck), merge->first, merge->first});
+        }
+    }
+
+    // Replace the SDT in the packetizer.
+    _sdt_bat_pzer.removeSections(TID_SDT_ACT, sdt.ts_id);
+    _sdt_bat_pzer.addTable(_duck, sdt);
+
+    // Save SDT version number for later increment.
+    _main_sdt.version = sdt.version;
+}
+
+
+//----------------------------------------------------------------------------
+// Merge the two NIT-Actual and build a new one into the packetizer.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::mergeNIT()
+{
+    TransportStreamId main_tsid;
+    TransportStreamId merge_tsid;
+
+    // Check that we have valid tables to merge. We also need the extended transport stream ids.
+    if (!_main_nit.isValid() || !_merge_nit.isValid() || !getTransportStreamIds(main_tsid, merge_tsid)) {
+        return;
+    }
+
+    _report.debug(u"merging NIT");
+
+    // Build a new NIT based on last main NIT with incremented version number.
+    NIT nit(_main_nit);
+    nit.version = (nit.version + 1) & SVERSION_MASK;
+
+    // If the two TS are from the same network and have distinct TS ids, remove the
+    // description of the merged TS since it is now merged.
+    if (_main_nit.network_id == _merge_nit.network_id && main_tsid != merge_tsid) {
+        nit.transports.erase(merge_tsid);
+    }
+
+    // Description of the merged TS from its description in its own NIT.
+    auto merge_ts = _merge_nit.transports.find(merge_tsid);
+
+    // If the merged stream has its own description, add the descriptors into
+    // the description of the merged TS in the main NIT, if there is one.
+    // This is not perfect since some descriptors can be duplicated.
+    // In some cases such as service_list_descriptor, the two descriptors
+    // Merge transport streams description into main NIT.
+    if (merge_ts != _merge_nit.transports.end()) {
+        nit.transports[main_tsid].descs.add(merge_ts->second.descs);
+    }
+
+    // Replace the NIT in the packetizer.
+    _nit_pzer.removeSections(TID_NIT_ACT, nit.network_id);
+    _nit_pzer.addTable(_duck, nit);
+
+    // Save NIT version number for later increment.
+    _main_nit.version = nit.version;
+}
+
+
+//----------------------------------------------------------------------------
+// Merge two BAT for the same bouquet and build a new one into the packetizer.
+//----------------------------------------------------------------------------
+
+void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
+{
+    TransportStreamId main_tsid;
+    TransportStreamId merge_tsid;
+
+    // Existing main and merge BAT for this bouquet.
+    auto main(_main_bats.find(bouquet_id));
+    auto merge(_merge_bats.find(bouquet_id));
+
+    // Check that we have valid tables to merge. We also need the extended transport stream ids.
+    if (main == _main_bats.end() || merge == _merge_bats.end() || !main->second.isValid() || !merge->second.isValid() || !getTransportStreamIds(main_tsid, merge_tsid)) {
+        return;
+    }
+
+    _report.debug(u"merging BAT");
+
+    // Build a new BAT based on last main BAT with incremented version number.
+    BAT bat(main->second);
+    bat.version = (bat.version + 1) & SVERSION_MASK;
+
+    // If the two TS have distinct TS ids, remove the description of the merged TS since it is now merged.
+    if (main_tsid != merge_tsid) {
+        bat.transports.erase(merge_tsid);
+    }
+
+    // Description of the merged TS from its description in its own BAT.
+    auto merge_ts = merge->second.transports.find(merge_tsid);
+
+    // If the merged stream has its own description, add the descriptors into
+    // the description of the merged TS in the main NIT, if there is one.
+    // This is not perfect since some descriptors can be duplicated.
+    // In some cases such as service_list_descriptor, the two descriptors
+    // Merge transport streams description into main NIT.
+    if (merge_ts != merge->second.transports.end()) {
+        bat.transports[main_tsid].descs.add(merge_ts->second.descs);
+    }
+
+    // Replace the BAT in the packetizer.
+    _sdt_bat_pzer.removeSections(TID_BAT, bouquet_id);
+    _sdt_bat_pzer.addTable(_duck, bat);
+
+    // Save NIT version number for later increment.
+    main->second.version = bat.version;
 }
