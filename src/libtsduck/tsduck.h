@@ -129,6 +129,7 @@
 #include "tsDataStreamAlignmentDescriptor.h"
 #include "tsDeferredAssociationTagsDescriptor.h"
 #include "tsDektecControl.h"
+#include "tsDektecDeviceInfo.h"
 #include "tsDektecInputPlugin.h"
 #include "tsDektecOutputPlugin.h"
 #include "tsDektecUtils.h"

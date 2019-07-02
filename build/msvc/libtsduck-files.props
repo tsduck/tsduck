@@ -115,6 +115,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecControl.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDektecDeviceInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecOutputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecUtils.h" />
@@ -608,6 +609,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecControl.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDektecDeviceInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecOutputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecUtils.cpp" />

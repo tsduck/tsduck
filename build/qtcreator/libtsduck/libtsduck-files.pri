@@ -113,6 +113,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDataStreamAlignmentDescriptor.h \
     ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.h \
     ../../../src/libtsduck/tsDektecControl.h \
+    ../../../src/libtsduck/tsDektecDeviceInfo.h \
     ../../../src/libtsduck/tsDektecInputPlugin.h \
     ../../../src/libtsduck/tsDektecOutputPlugin.h \
     ../../../src/libtsduck/tsDektecUtils.h \
@@ -596,6 +597,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDataStreamAlignmentDescriptor.cpp \
     ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.cpp \
     ../../../src/libtsduck/tsDektecControl.cpp \
+    ../../../src/libtsduck/tsDektecDeviceInfo.cpp \
     ../../../src/libtsduck/tsDektecInputPlugin.cpp \
     ../../../src/libtsduck/tsDektecOutputPlugin.cpp \
     ../../../src/libtsduck/tsDektecUtils.cpp \

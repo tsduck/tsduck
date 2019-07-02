@@ -84,6 +84,12 @@ namespace ts {
     TSDUCKDLL extern const Enumeration DektecDVBTProperty;
 
     //!
+    //! Check if this version of TSDuck was built with Dektec support.
+    //! @return True is Dektec devices are supported. Always false on macOS or on Windows/Linux on non-Intel platforms.
+    //!
+    TSDUCKDLL bool HasDektecSupport();
+
+    //!
     //! Get the versions of Dektec API and drivers.
     //! @return A string describing the Dektec versions (or the lack of Dektec support).
     //!
