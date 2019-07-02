@@ -123,6 +123,20 @@ const ts::Enumeration ts::DektecDVBTProperty({
 
 
 //-----------------------------------------------------------------------------
+// Check if this version of TSDuck was build with Dektec support.
+//-----------------------------------------------------------------------------
+
+bool ts::HasDektecSupport()
+{
+#if defined(TS_NO_DTAPI)
+    return false;
+#else
+    return true;
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
 // Get the versions of Dektec API and drivers.
 //-----------------------------------------------------------------------------
 
