@@ -72,16 +72,18 @@ namespace ts {
         //! Merging options. Can be used as bitmasks.
         //!
         enum Options: uint32_t {
-            NONE          = 0x00000000,  //!< Do not merge anything.
-            MERGE_PAT     = 0x00000001,  //!< Merge the two PAT's into one.
-            MERGE_CAT     = 0x00000002,  //!< Merge the two CAT's into one.
-            MERGE_NIT     = 0x00000004,  //!< Merge the two NIT's Actual into one. The NIT Others are mixed in the NIT PID.
-            MERGE_SDT     = 0x00000008,  //!< Merge the two SDT's Actual into one. The SDT Others are mixed in the SDT/BAT PID.
-            MERGE_BAT     = 0x00000010,  //!< Merge the BAT's from the same bouquet into one.
-            MERGE_EIT     = 0x00000020,  //!< Mix the EIT's from the two streams.
-            NULL_MERGED   = 0x00000040,  //!< Nullify packets from the merged stream when they carried merged PSI (PAT, NIT, SDT, BAT).
-            NULL_UNMERGED = 0x00000080,  //!< Nullify packets from the merged stream when they carry unmerged PSI (PAT, NIT, SDT, BAT, EIT).
-            DEFAULT       = MERGE_PAT | MERGE_CAT | MERGE_NIT | MERGE_SDT | MERGE_BAT | MERGE_EIT | NULL_MERGED | NULL_UNMERGED,
+            NONE           = 0x00000000,  //!< Do not merge anything.
+            MERGE_PAT      = 0x00000001,  //!< Merge the two PAT's into one.
+            MERGE_CAT      = 0x00000002,  //!< Merge the two CAT's into one.
+            MERGE_NIT      = 0x00000004,  //!< Merge the two NIT's Actual into one. The NIT Others are mixed in the NIT PID.
+            MERGE_SDT      = 0x00000008,  //!< Merge the two SDT's Actual into one. The SDT Others are mixed in the SDT/BAT PID.
+            MERGE_BAT      = 0x00000010,  //!< Merge the BAT's from the same bouquet into one.
+            MERGE_EIT      = 0x00000020,  //!< Mix the EIT's from the two streams.
+            KEEP_MAIN_TDT  = 0x00000040,  //!< Keep TDT/TOT from main stream.
+            KEEP_MERGE_TDT = 0x00000080,  //!< Keep TDT/TOT from merge stream. It is dangerous to use KEEP_MAIN_TDT and KEEP_MERGE_TDT at the same time.
+            NULL_MERGED    = 0x00000100,  //!< Nullify packets from the merged stream when they carried merged PSI (PAT, NIT, SDT, BAT).
+            NULL_UNMERGED  = 0x00000200,  //!< Nullify packets from the merged stream when they carry unmerged PSI (PAT, NIT, SDT, BAT, EIT).
+            DEFAULT        = MERGE_PAT | MERGE_CAT | MERGE_NIT | MERGE_SDT | MERGE_BAT | MERGE_EIT | NULL_MERGED | NULL_UNMERGED,
                                          //!< Default options: merge all.
         };
 
