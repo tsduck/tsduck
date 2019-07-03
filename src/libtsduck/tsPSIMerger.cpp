@@ -250,6 +250,13 @@ bool ts::PSIMerger::feedMainPacket(TSPacket& pkt)
             }
             break;
         }
+        case PID_TDT: {
+            if ((_options & KEEP_MAIN_TDT) == 0) {
+                // Do not keep TDT/TOT from main stream.
+                pkt = NullPacket;
+            }
+            break;
+        }
         default: {
             // Other PID's are left unmodified.
             break;
@@ -314,6 +321,13 @@ bool ts::PSIMerger::feedMergedPacket(TSPacket& pkt)
                 _eit_pzer.getNextPacket(pkt);
             }
             else if (null_unmerged) {
+                pkt = NullPacket;
+            }
+            break;
+        }
+        case PID_TDT: {
+            if ((_options & KEEP_MERGE_TDT) == 0) {
+                // Do not keep TDT/TOT from merge stream.
                 pkt = NullPacket;
             }
             break;

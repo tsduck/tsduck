@@ -97,6 +97,11 @@ ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
     option(u"no-bat");
     help(u"no-bat", u"Do not merge the BAT.");
 
+    option(u"time-from-merge");
+    help(u"time-from-merge",
+         u"Use the TDT/TOT time reference from the 'merge' stream. "
+         u"By default, use the TDT/TOT time reference from the 'main' stream.");
+
     option(u"main-label", 0, INTEGER, 0, 1, 0, TSPacketMetadata::LABEL_MAX);
     help(u"main-label",
         u"Specify the label which is set on packets from the 'main' stream. "
@@ -146,6 +151,12 @@ bool ts::PSIMergePlugin::getOptions()
     }
     if (!present(u"no-eit")) {
         options |= PSIMerger::MERGE_EIT;
+    }
+    if (present(u"time-from-merge")) {
+        options |= PSIMerger::KEEP_MERGE_TDT;
+    }
+    else {
+        options |= PSIMerger::KEEP_MAIN_TDT;
     }
     _psi_merger.reset(options);
 
