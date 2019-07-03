@@ -49,6 +49,7 @@ ts::PSIMerger::PSIMerger(DuckContext& duck, Options options, Report& report) :
     _nit_pzer(),
     _sdt_bat_pzer(),
     _eit_pzer(PID_EIT, this),
+    _main_tsid(),
     _main_pat(),
     _merge_pat(),
     _main_cat(),
@@ -158,6 +159,7 @@ void ts::PSIMerger::reset(Options options)
     _eit_pzer.setPID(PID_EIT);
 
     // Make sure that all input tables are invalid.
+    _main_tsid.reset();
     _main_pat.invalidate();
     _merge_pat.invalidate();
     _main_cat.invalidate();
@@ -394,15 +396,28 @@ void ts::PSIMerger::provideSection(SectionCounter counter, SectionPtr& section)
 
 void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
 {
+    const TID tid = section.tableId();
+    const bool is_eit = tid >= TID_EIT_MIN && tid <= TID_EIT_MAX && section.sourcePID() == PID_EIT;
+    const bool is_actual = tid == TID_EIT_PF_ACT || (tid >= TID_EIT_S_ACT_MIN && tid <= TID_EIT_S_ACT_MAX);
+
     // Enqueue EIT's from main and merged stream.
-    if ((demux.demuxId() == DEMUX_MAIN_EIT || demux.demuxId() == DEMUX_MERGE_EIT) &&
-        (section.tableId() >= TID_EIT_MIN && section.tableId() <= TID_EIT_MAX) &&
-        section.sourcePID() == PID_EIT &&
-        (_options & MERGE_EIT) != 0)
-    {
+    if (is_eit && (_options & MERGE_EIT) != 0) {
+
+        // Create a copy of the section object (shared section data).
         const SectionPtr sp(new Section(section, SHARE));
         CheckNonNull(sp.pointer());
-        _eits.push_back(sp);
+
+        if (demux.demuxId() != DEMUX_MERGE_EIT || !is_actual) {
+            // Not an EIT-Actual from the merge stream, pass section without modification.
+            _eits.push_back(sp);
+        }
+        else if (sp->payloadSize() >= 2 && _main_tsid.set()) {
+            // This is an EIT-Actual from merged stream and we know the main TS id.
+            // Patch the EIT with new TS id before enqueueing.
+            // The TSid is in the first two bytes of the EIT payload.
+            sp->setUInt16(0, _main_tsid.value(), true);
+            _eits.push_back(sp);
+        }
     }
 }
 
@@ -439,6 +454,7 @@ void ts::PSIMerger::handleMainTable(const BinaryTable& table)
         case TID_PAT: {
             const PAT pat(_duck, table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
+                _main_tsid = pat.ts_id;
                 copyTableKeepVersion(_main_pat, pat);
                 mergePAT();
             }
@@ -471,6 +487,7 @@ void ts::PSIMerger::handleMainTable(const BinaryTable& table)
         case TID_SDT_ACT: {
             const SDT sdt(_duck, table);
             if (sdt.isValid() && table.sourcePID() == PID_SDT) {
+                _main_tsid = sdt.ts_id;
                 copyTableKeepVersion(_main_sdt, sdt);
                 mergeSDT();
             }
@@ -741,7 +758,7 @@ void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
         return;
     }
 
-    _report.debug(u"merging BAT");
+    _report.debug(u"merging BAT for bouquet id 0x%X (%d)", {bouquet_id, bouquet_id});
 
     // Build a new BAT based on last main BAT with incremented version number.
     BAT bat(main->second);
