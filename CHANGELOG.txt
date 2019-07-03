@@ -20,8 +20,8 @@ VERSION 3.18-1321
     new possibility to mark individual packets with a label which can be
     reused in other plugins.
   * Added options --label, --set-label, --reset-label, --set-permanent-label,
-    --reset-permanent-label, --nullified, --input-stuffing, --every to plugin
-    "filter".
+    --reset-permanent-label, --nullified, --input-stuffing, --every, --interval
+    to plugin "filter".
   * Added option --atsc to commands "tsanalyze", "tstables", "tspsi",
     "tstabdump", "tstabcomp" and plugins "analyze", "tables", "psi".
   * Added option --pes-offset to plugin "encap" (synchronous PES mode).
