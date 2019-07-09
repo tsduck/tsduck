@@ -401,12 +401,12 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
             diff_values = _use_dts ?
                 DiffPTS(_packet_pcr_index_map.begin()->first, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
                 DiffPCR(_packet_pcr_index_map.begin()->first, pcr_dts);
-            _inst_ts_bitrate_188 =
+            _inst_ts_bitrate_188 = diff_values ?
                 ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
-                diff_values;
-            _inst_ts_bitrate_204 =
+                diff_values : 0;
+            _inst_ts_bitrate_204 = diff_values ?
                 ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE * 8) /
-                diff_values;
+                diff_values : 0;
 
             // Check if we got enough values for this PID
             if (ps->ts_bitrate_cnt == _min_pcr) {
