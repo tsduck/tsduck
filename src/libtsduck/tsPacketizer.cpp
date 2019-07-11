@@ -204,7 +204,9 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     }
 
     // Do packet stuffing if necessary.
-    ::memset (data, 0xFF, remain_in_packet);
+    if (remain_in_packet) {
+        ::memset (data, 0xFF, remain_in_packet);
+    }
     return true;
 }
 
