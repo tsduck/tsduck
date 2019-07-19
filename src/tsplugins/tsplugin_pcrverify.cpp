@@ -216,7 +216,7 @@ namespace {
         //       = pcr2 - pcr1 - ((pkt2 - pkt1) * PKT_SIZE * 8 * SysClock / bitrate)
         //       = (bitate * (pcr2 - pcr1) - (pkt2 - pkt1) * PKT_SIZE * 8 * SysClock) / bitrate
 
-        return (bitrate * (pcr2 - pcr1) - (pkt2 - pkt1) * ts::PKT_SIZE * 8 * ts::SYSTEM_CLOCK_FREQ) / bitrate;
+        return pcr2 - pcr1 - (pkt2 - pkt1) * ts::PKT_SIZE * 8 * ts::SYSTEM_CLOCK_FREQ / bitrate;
     }
 }
 
