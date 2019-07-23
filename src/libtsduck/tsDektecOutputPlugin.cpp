@@ -113,6 +113,7 @@ public:
     BitRate              cur_bitrate;   // Current output bitrate
     int                  max_fifo_size; // Maximum FIFO size
     int                  fifo_size;     // Actual FIFO size
+    bool                 preload_fifo;  // Preload FIFO before starting transmission
 };
 
 
@@ -129,7 +130,8 @@ ts::DektecOutputPlugin::Guts::Guts() :
     opt_bitrate(0),
     cur_bitrate(0),
     max_fifo_size(0),
-    fifo_size(0)
+    fifo_size(0),
+    preload_fifo(false)
 {
 }
 
@@ -190,7 +192,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     option(u"cell-id", 0,  UINT16);
     help(u"cell-id",
          u"DVB-T and DVB-T2 modulators: indicate the cell identifier to set in the "
-         u"transmition parameters signaling (TPS). Disabled by default with DVB-T. "
+         u"transmission parameters signaling (TPS). Disabled by default with DVB-T. "
          u"Default value is 0 with DVB-T2.");
 
     option(u"channel", 'c', UNSIGNED);
@@ -612,6 +614,13 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"plp0-type",
          u"DVB-T2 modulators: indicate the PLP type for PLP #0. The default is COMMON.");
 
+    option(u"preload-fifo");
+    help(u"preload-fifo",
+         u"Preload FIFO (hardware buffer) to roughly 80% capacity before starting transmission. "
+         u"Preloading the FIFO introduces a variable delay to the start of transmission based on "
+         u"the size of the FIFO and the TS bit rate. On implicitly when using a modulator for "
+         u"output.");
+
     option(u"qam-b", 'q', Enumeration({
         {u"I128-J1D", DTAPI_MOD_QAMB_I128_J1D},
         {u"I64-J2",   DTAPI_MOD_QAMB_I64_J2},
@@ -770,6 +779,7 @@ bool ts::DektecOutputPlugin::start()
     _guts->opt_bitrate = intValue<BitRate>(u"bitrate", 0);
     _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : DTAPI_WAIT_UNTIL_SENT;
     _guts->mute_on_stop = false;
+    _guts->preload_fifo = present(u"preload-fifo");
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();
@@ -917,9 +927,20 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Start the transmission on the output device.
-    // With ASI device, we can start transmission right now.
+    // With ASI devices, we can start transmission right now.
     // With modulator devices, we need to load the FIFO first.
-    _guts->starting = is_modulator;
+    // However, there is benefit to preloading the FIFO prior
+    // to start of transmission even when using ASI, because
+    // doing so provides some cushion against variability in
+    // thread timing.  Without a preloaded FIFO (hardware
+    // buffer), if there are any hiccups caused by, say, context-
+    // switching out of the thread that calls send(), such that
+    // packets aren't delivered to the ASI channel with the precise
+    // timings that they ought to be delivered, this can cause problems
+    // for other devices that receive the ASI output channel.  This
+    // shouldn't be a problem if a partially filled FIFO is maintained
+    // throughout the transmission duration.
+    _guts->starting = is_modulator || _guts->preload_fifo;
     status = _guts->chan.SetTxControl(_guts->starting ? DTAPI_TXCTRL_HOLD : DTAPI_TXCTRL_SEND);
     if (status != DTAPI_OK) {
         return startError(u"output device start send error", status);
