@@ -1600,6 +1600,26 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
             return false;
         }
 
+        if (!_guts->starting) {
+            int statusFlags, latched;
+            status = _guts->chan.GetFlags(statusFlags, latched);
+            if (status == DTAPI_OK) {
+                if (latched) {
+                    if ((latched & DTAPI_TX_CPU_UFL) != 0) {
+                        tsp->verbose(u"Got CPU underflow.");
+                    }
+                    if ((latched & DTAPI_TX_DMA_UFL) != 0) {
+                        tsp->verbose(u"Got DMA underflow.");
+                    }
+                    if ((latched & DTAPI_TX_FIFO_UFL) != 0) {
+                        tsp->verbose(u"Got FIFO underflow.");
+                    }
+
+                    _guts->chan.ClearFlags(latched);
+                }
+            }
+        }
+
         data += cursize;
         remain -= cursize;
     }
