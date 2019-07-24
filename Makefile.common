@@ -621,6 +621,7 @@ ifndef LOCAL_OS
     export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
     export LOCAL_ARCH := $(shell uname -m)
 endif
+MACOS=""
 ifeq ($(LOCAL_OS),darwin)
     MACOS = true
 endif
