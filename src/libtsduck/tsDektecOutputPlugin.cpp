@@ -39,6 +39,7 @@
 #include "tsTunerParametersATSC.h"
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -1593,6 +1594,30 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
 
         // Limit the transfer size by the maximum I/O size on the device
         int cursize = RoundDown(std::min(remain, max_io_size), int(PKT_SIZE));
+
+        while (!_guts->starting) {
+            int fifo_load;
+            status = _guts->chan.GetFifoLoad(fifo_load);
+            if (status != DTAPI_OK) {
+                tsp->error(u"error getting output fifo load: " + DektecStrError(status));
+                return false;
+            }
+
+            if ((fifo_load + cursize) >= _guts->fifo_size) {
+                // Wait for the FIFO to be partially cleared to make room for
+                // new packets.  Sleep for a short amount of time to minimize the chance
+                // that packets are written slightly later than they ought to be written
+                // to the output.  This approach mirrors that used in Dektec's DtPlay sample.
+                // If packets are written too quickly, without checking the size of the FIFO,
+                // it can result in overflows, per information in the DTAPI documentation.
+                // Also, this approach fulfills the promise of a "real-time" plug-in, and the
+                // Dektec output plug-in indicates that it is a real-time plug-in.
+                SleepThread(1);
+                continue;
+            }
+
+            break;
+        }
 
         status = _guts->chan.Write(data, cursize);
         if (status != DTAPI_OK) {
