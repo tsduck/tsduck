@@ -96,6 +96,10 @@ The compiler and associated tools are redirected to their version 4.9.
 make CC=gcc-4.9 GCC=gcc-4.9 CXX=g++-4.9 AR=gcc-ar-4.9
 ~~~~
 
+If you encounter errors from the `ar` tool, complaining about an unknown `U` option,
+you may have an outdated `binutils` package (probably a version prior to 2.28).
+In that case, add the option `ARFLAGS=rc` to the `make` command above.
+
 ## All Linux distros {#reqlinux}
 
 - Optional Dektec DTAPI: The command `make` at the top level will automatically
