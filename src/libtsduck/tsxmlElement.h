@@ -41,8 +41,17 @@
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 
-#if defined(TS_GCC_ONLY) && !defined(TS_IGNORE_GCC6_BUG) && (__GNUC__ == 6 || __GNUC__ == 7)
-#pragma message "GCC versions 6 and 7 are broken and fail to properly handle some template substitutions, prefer using another version of GCC, see https://tsduck.io/doxy/building.html#reqraspbian"
+// There is a bug in GCC version 6 and 7 which prevents some template methods in this file from
+// compiling correctly. This is specific to GCC 6 and 7. There is no issue with GCC 4.9, 8.x, 9.x
+// as well as MSVC and clang. The error typically appears on Debian/Raspbian 10, Ubuntu 18.04,
+// as well as obsolete versions of other distros.
+
+#if defined(TS_GCC_ONLY) && !defined(TS_IGNORE_GCC6_BUG) && (__GNUC__ == 6 || __GNUC__ == 7) && !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG)
+    #define TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG 1
+#endif
+
+#if defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG)
+    #pragma message "GCC versions 6 and 7 are broken and fail to properly handle some template substitutions, prefer using another version of GCC, see https://tsduck.io/doxy/building.html#reqraspbian"
 #endif
 
 namespace ts {
@@ -417,7 +426,7 @@ namespace ts {
                                  INT minValue = std::numeric_limits<INT>::min(),
                                  INT maxValue = std::numeric_limits<INT>::max()) const;
 
-#if !defined(TS_GCC_ONLY) || defined(TS_IGNORE_GCC6_BUG) || !(__GNUC__ == 6 || __GNUC__ == 7)
+#if !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG) || defined(DOXYGEN)
             //!
             //! Get an integer attribute of an XML element in an enum type.
             //! @tparam ENUM An enumeration type.
