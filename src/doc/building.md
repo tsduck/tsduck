@@ -71,9 +71,9 @@ apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev li
 It has been noted that GCC 6 and 7 are broken and fail to compile TSDuck version 3.17 and higher.
 As of TSDuck version 3.17, the latest versions of the major Linux distros (Fedora, CentOS,
 Red Hat Entreprise, Ubuntu) have either older or newer versions of GCC. However, Raspbian 9.x and
-Debian 9.x (stretch) embed GCC 6.x, one of these buggy versions of GCC.
+Debian 9.x (stretch) embed GCC 6.x. Similarly, Ubuntu 18.04 embeds GCC 7.x.
 
-If you have such a broken GCC, you need to install an older or newer version of GCC.
+If you have such a broken GCC, it is recommended to install an older or newer version of GCC.
 
 The following method has been successfully used to build TSDuck on Raspbian 9.9.
 The compiler is GCC 4.9, an older but valid version, which is available from the
