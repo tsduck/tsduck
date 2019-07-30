@@ -122,7 +122,7 @@ ts::ProcessorPlugin::Status ts::ReTimerPlugin::processPacket(TSPacket& pkt, TSPa
     }
 
     if (ok) {
-        tsp->debug(u"pid:%d PTS/DTS Changed(%d): [%d/%d : %d/%d]",
+        tsp->debug(u"pid=%d Offset(%010d) PTS:[%d >> %d] DTS:[%d >> %d]",
                 {pid, _offset,
                  haspts ? currentPTS : INVALID_PTS, haspts ? pkt.getPTS() : INVALID_PTS,
                  hasdts ? currentDTS : INVALID_PTS, hasdts ? pkt.getDTS() : INVALID_PTS});
