@@ -49,6 +49,7 @@
 #pragma warning(disable:4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'xxxx'
 #pragma warning(disable:4514)  // unreferenced inline function has been removed
 #pragma warning(disable:4571)  // catch (...) semantics changed since Visual C++ 7.1; structured exceptions(SEH) are no longer caught
+#pragma warning(disable:4619)  // disablement of warning that doesn't exist
 #pragma warning(disable:4625)  // copy constructor was implicitly defined as deleted
 #pragma warning(disable:4626)  // assignment operator was implicitly defined as deleted
 #pragma warning(disable:4710)  // 'xxx' : function not inlined

@@ -56,7 +56,7 @@ get-header()
     [[ $(uname -s) == Linux ]] || return
     arch=$(uname -m)
     [[ $arch == x86_64 || $arch == i?86 ]] || return
-    
+
     local HEADER="$DTAPIDIR/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
 }
@@ -90,7 +90,9 @@ get-object()
     local OBJVERS=0
     for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
         DIRVERS=$(basename $(dirname "$obj"))
-        DIRVERS=$(int-version ${DIRVERS#GCC})
+        DIRVERS=${DIRVERS#GCC}
+        DIRVERS=${DIRVERS%%_*}
+        DIRVERS=$(int-version $DIRVERS)
         if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
             OBJFILE="$obj"
             OBJVERS=$DIRVERS

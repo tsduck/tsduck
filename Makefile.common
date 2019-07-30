@@ -614,7 +614,7 @@ RECURSE_SUBDIRS = $(filter $(SUBDIRS),$(filter-out $(NORECURSE_SUBDIRS),$(if $(R
 
 # $(RECURSE) is a shell command which recurses the current
 # make targets in the subdirectories (useful for "all" or "clean").
-RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| break); done
+RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); done
 
 # Operating system, architecture.
 ifndef LOCAL_OS
