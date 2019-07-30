@@ -703,13 +703,19 @@ TS_LLVM_NOWARNING(c++98-compat-pedantic)    // Require C++11, no need for C++98 
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 
 TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
+TS_MSC_NOWARNING(4189)  // local variable is initialized but not referenced
 TS_MSC_NOWARNING(4251)  // 'classname' : class 'std::vector<_Ty>' needs to have dll-interface to be used by clients of class 'classname'
 TS_MSC_NOWARNING(4275)  // non dll-interface class 'std::_Container_base_aux' used as base for dll-interface class 'std::_Container_base_aux_alloc_real<_Alloc>'
 TS_MSC_NOWARNING(4355)  // 'this' : used in base member initializer list
 TS_MSC_NOWARNING(4365)  // conversion from 'type1' to 'type2', signed/unsigned mismatch
 TS_MSC_NOWARNING(4514)  // unreferenced inline function has been removed
 TS_MSC_NOWARNING(4571)  // catch (...) semantics changed since Visual C++ 7.1; structured exceptions(SEH) are no longer caught
+TS_MSC_NOWARNING(4619)  // disablement of warning that doesn't exist
+TS_MSC_NOWARNING(4625)  // copy constructor was implicitly defined as deleted
+TS_MSC_NOWARNING(4626)  // assignment operator was implicitly defined as deleted
+TS_MSC_NOWARNING(4628)  // digraphs not supported with -Ze. Character sequence '<:' not interpreted as alternate token for '['
 TS_MSC_NOWARNING(4820)  // 'n' bytes padding added after data member 'nnnnn'
+TS_MSC_NOWARNING(5026)  // move constructor was implicitly defined as deleted
 TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 
 // The following ones should really be informational instead of warning:
@@ -729,8 +735,10 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 // tsPlatform.h(840, 1) : warning C5031 : #pragma warning(pop) : likely mismatch, popping warning state pushed in different file
 // winioctl.h(161, 17) : message:  #pragma warning(push)
 // tsPlatform.h(719, 1) : warning C5032 : detected #pragma warning(push) with no corresponding #pragma warning(pop)
+// different warnings for older versions of MSVC:  C4193:  #pragma warning(pop): no matching '#pragma warning(push)'
 TS_MSC_NOWARNING(5031)
 TS_MSC_NOWARNING(5032)
+TS_MSC_NOWARNING(4193)
 
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(reserved-id-macro)
