@@ -61,6 +61,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
     }
 }
 
+#if !defined(TS_GCC_ONLY) || defined(TS_IGNORE_GCC6_BUG) || !(__GNUC__ == 6 || __GNUC__ == 7)
 template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
 bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT minValue, INT maxValue) const
 {
@@ -71,6 +72,7 @@ bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool re
     }
     return ok;
 }
+#endif
 
 
 //----------------------------------------------------------------------------
