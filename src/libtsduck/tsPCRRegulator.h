@@ -118,6 +118,7 @@ namespace ts {
         bool          _started;         // First PCR found, regulation started.
         uint64_t      _pcr_first;       // First PCR value.
         uint64_t      _pcr_last;        // Last PCR value.
+        uint64_t      _pcr_offset;      // Offset to add to PCR value, accumulate all PCR wrap-down sequences.
         Monotonic     _clock_first;     // System time at first PCR.
         Monotonic     _clock_last;      // System time at last wait
     };
