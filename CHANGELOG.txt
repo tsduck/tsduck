@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1321
+VERSION 3.18-1349
 
 [NEW] New commands and plugins:
 
@@ -50,6 +50,8 @@ VERSION 3.18-1321
     properly enabled.
   * In input plugin "hls", the cookies which were returned by a playlist were
     not passed to the next playlist or segment download.
+  * In plugin "regulate" with option --pcr-synchronous, the stream was passed
+    unregulated after 26.5 hours (a complete PCR cycle).
 
 -------------------------------------------------------------------------------
 
