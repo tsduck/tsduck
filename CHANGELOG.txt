@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1349
+VERSION 3.18-1350
 
 [NEW] New commands and plugins:
 
@@ -41,6 +41,7 @@ VERSION 3.18-1349
     --payload-type, --pcr-pid, --ssrc-identifier and --start-sequence-number.
   * Added options --interleave, --label-base and --first-terminate to input
     plugin "file".
+  * Added option --min-ms-interval to plugin "pcradjust".
 
 [BUG] Bug fixes:
 
