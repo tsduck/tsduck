@@ -64,12 +64,12 @@ namespace ts {
 
     private:
         // Description of one PID carrying PCR, PTS or DTS.
-        struct PIDContext;
+        class PIDContext;
         typedef SafePtr<PIDContext> PIDContextPtr;
         typedef std::map<PID,PIDContextPtr> PIDContextMap;
 
         // Description of one PID carrying SCTE 35 splice information.
-        struct SpliceContext;
+        class SpliceContext;
         typedef SafePtr<SpliceContext> SpliceContextPtr;
         typedef std::map<PID,SpliceContextPtr> SpliceContextMap;
 
@@ -94,28 +94,50 @@ namespace ts {
         SpliceContextMap _splices;        // Per-PID splice information
         SectionDemux     _demux;          // Section demux for service and SCTE 35 analysis
 
-        // Description of one PID carrying PCR, PTS or DTS.
-        struct PIDContext
+        // Types of time stamps.
+        enum DataType {PCR, OPCR, PTS, DTS};
+        static const Enumeration _type_names;
+
+        // Get the subfactor from PCR for a given data type.
+        static uint32_t pcrSubfactor(DataType type)
         {
-            PIDContext();                  // Constructor
-            PacketCounter packet_count;    // Number of packets in this PID
-            PacketCounter pcr_count;       // Number of PCR in this PID.
-            PacketCounter opcr_count;
-            PacketCounter pts_count;
-            PacketCounter dts_count;
-            uint64_t      first_pcr;       // First PCR value in this PID.
-            uint64_t      first_opcr;
-            uint64_t      first_pts;
+            return (type == PTS || type == DTS) ? SYSTEM_CLOCK_SUBFACTOR : 1;
+        }
+
+        // Description of one type of data in a PID: PCR, OPCR, PTS, DTS.
+        class PIDData
+        {
+            TS_NOBUILD_NOCOPY(PIDData);
+        public:
+            PIDData(DataType);             // Constructor.
+            const DataType type;           // Data type.
+            PacketCounter  count;          // Number of data of this type in this PID.
+            uint64_t       first_value;    // First data value of this type in this PID.
+            uint64_t       last_value;     // First data value of this type in this PID.
+            PacketCounter  last_packet;    // Packet index in TS of last value.
+        };
+
+        // Description of one PID carrying PCR, PTS or DTS.
+        class PIDContext
+        {
+            TS_NOBUILD_NOCOPY(PIDContext);
+        public:
+            PIDContext(PID);              // Constructor.
+            const PID     pid;            // PID value.
+            PacketCounter packet_count;   // Number of packets in this PID.
+            PID           pcr_pid;        // PID containing PCR in the same service.
             uint64_t      last_good_pts;
-            uint64_t      first_dts;
-            uint64_t      last_pcr;        // Last PCR value in this PID.
-            PacketCounter last_pcr_packet; // Packet index in TS of last_pcr
-            PID           pcr_pid;         // PID containing PCR in the same service
+            PIDData       pcr;
+            PIDData       opcr;
+            PIDData       pts;
+            PIDData       dts;
         };
 
         // Description of one PID carrying SCTE 35 splice information.
-        struct SpliceContext
+        class SpliceContext
         {
+            TS_NOCOPY(SpliceContext);
+        public:
             SpliceContext();    // Constructor.
             PIDSet components;  // All service components for this slice info PID.
         };
@@ -129,11 +151,12 @@ namespace ts {
         void processSpliceCommand(PID pid, SpliceInformationTable&);
 
         // Get info context for a PID.
-        PIDContextPtr getPIDContext(PID pid);
-        SpliceContextPtr getSpliceContext(PID pid);
+        PIDContextPtr getPIDContext(PID);
+        SpliceContextPtr getSpliceContext(PID);
 
-        // Report a value in log format.
-        void logValue(const UString& type, PID pid, uint64_t value, uint64_t since_start, uint64_t frequency);
+        // Report a value in csv or log format.
+        void csvHeader();
+        void processValue(PIDContext&, PIDData PIDContext::*, uint64_t value, uint64_t pcr, bool report_it);
     };
 }
 
@@ -239,20 +262,31 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 // Substructures constructors
 //----------------------------------------------------------------------------
 
-ts::PCRExtractPlugin::PIDContext::PIDContext() :
+const ts::Enumeration ts::PCRExtractPlugin::_type_names({
+    {u"PCR",  PCR},
+    {u"OPCR", OPCR},
+    {u"DTS",  DTS},
+    {u"PTS",  PTS}
+});
+
+ts::PCRExtractPlugin::PIDData::PIDData(DataType type_) :
+    type(type_),
+    count(0),
+    first_value(INVALID_PCR), // Same as INVALID_PTS and INVALID_DTS
+    last_value(INVALID_PCR),
+    last_packet(0)
+{
+}
+
+ts::PCRExtractPlugin::PIDContext::PIDContext(PID pid_) :
+    pid(pid_),
     packet_count(0),
-    pcr_count(0),
-    opcr_count(0),
-    pts_count(0),
-    dts_count(0),
-    first_pcr(0),
-    first_opcr(0),
-    first_pts(0),
-    last_good_pts(0),
-    first_dts(0),
-    last_pcr(INVALID_PCR),
-    last_pcr_packet(0),
-    pcr_pid(PID_NULL)
+    pcr_pid(PID_NULL),
+    last_good_pts(INVALID_PTS),
+    pcr(PCR),
+    opcr(OPCR),
+    pts(PTS),
+    dts(DTS)
 {
 }
 
@@ -304,6 +338,12 @@ bool ts::PCRExtractPlugin::getOptions()
 
 bool ts::PCRExtractPlugin::start()
 {
+    // Reset state
+    _stats.clear();
+    _splices.clear();
+    _demux.reset();
+    _demux.addPID(PID_PAT);
+
     // Create the output file if there is one
     if (_output_name.empty()) {
         _output = &std::cerr;
@@ -317,23 +357,8 @@ bool ts::PCRExtractPlugin::start()
         }
     }
 
-    // Reset state
-    _stats.clear();
-    _splices.clear();
-    _demux.reset();
-    _demux.addPID(PID_PAT);
-
     // Output header
-    if (_csv_format && !_noheader) {
-        *_output << "PID" << _separator
-                 << "Packet index in TS" << _separator
-                 << "Packet index in PID" << _separator
-                 << "Type" << _separator
-                 << "Count in PID" << _separator
-                 << "Value" << _separator
-                 << "Value offset in PID" << _separator
-                 << "Offset from PCR" << std::endl;
-    }
+    csvHeader();
     return true;
 }
 
@@ -375,129 +400,50 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, T
     }
 
     // Get context for this PID.
-    PIDContextPtr pc(getPIDContext(pid));
+    PIDContext& pc(*getPIDContext(pid));
 
-    // Packet characteristics.
-    const bool has_pcr = pkt.hasPCR();
+    // Get PCR from packet, if there is one.
     uint64_t pcr = pkt.getPCR();
+    const bool has_pcr = pcr != INVALID_PCR;
 
-    // If there is a PCR in the packet, save it.
     // Note that we must keep track in PCR in all PID's, not only PID's to display,
     // because a PID to display may need a PCR reference in another PID.
-    if (has_pcr) {
-        if (pc->pcr_count++ == 0) {
-            pc->first_pcr = pcr;
-        }
-        pc->last_pcr = pcr;
-        pc->last_pcr_packet = tsp->pluginPackets();
-    }
-    else if (_evaluate_pcr && pc->pcr_pid != PID_NULL) {
+    if (!has_pcr && _evaluate_pcr && pc.pcr_pid != PID_NULL) {
         // No PCR in the packet, evaluate its theoretical value.
         // Get context of associated PCR PID.
-        PIDContextPtr pcrpid(getPIDContext(pc->pcr_pid));
+        PIDContext& pcrpid(*getPIDContext(pc.pcr_pid));
         // Compute theoretical PCR at this point in the TS.
         // Note that NextPCR() return INVALID_PCR if last_pcr or bitrate is incorrect.
-        pcr = NextPCR(pcrpid->last_pcr, tsp->pluginPackets() - pcrpid->last_pcr_packet, tsp->bitrate());
+        pcr = NextPCR(pcrpid.pcr.last_value, tsp->pluginPackets() - pcrpid.pcr.last_packet, tsp->bitrate());
     }
 
     // Check if we must analyze and display this PID.
     if (_pids.test(pid)) {
 
-        // Packet characteristics.
-        const bool has_opcr = pkt.hasOPCR();
-        const bool has_pts = pkt.hasPTS();
-        const bool has_dts = pkt.hasDTS();
-
-        if (has_pcr && _get_pcr) {
-            if (_csv_format) {
-                *_output << pid << _separator
-                            << tsp->pluginPackets() << _separator
-                            << pc->packet_count << _separator
-                            << "PCR" << _separator
-                            << pc->pcr_count << _separator
-                            << pcr << _separator
-                            << (pcr - pc->first_pcr) << _separator
-                            << std::endl;
-            }
-            logValue(u"PCR", pid, pcr, pcr - pc->first_pcr, SYSTEM_CLOCK_FREQ);
+        if (has_pcr) {
+            processValue(pc, &PIDContext::pcr, pcr, INVALID_PCR, _get_pcr);
         }
 
-        if (has_opcr) {
-            const uint64_t opcr = pkt.getOPCR();
-            if (pc->opcr_count++ == 0) {
-                pc->first_opcr = opcr;
-            }
-            if (_get_opcr) {
-                if (_csv_format) {
-                    *_output << pid << _separator
-                             << tsp->pluginPackets() << _separator
-                             << pc->packet_count << _separator
-                             << "OPCR" << _separator
-                             << pc->opcr_count << _separator
-                             << opcr << _separator
-                             << (opcr - pc->first_opcr) << _separator;
-                    if (has_pcr || (_evaluate_pcr && pcr != INVALID_PCR)) {
-                        *_output << (int64_t(opcr) - int64_t(pcr));
-                    }
-                    *_output << std::endl;
-                }
-                logValue(u"OPCR", pid, opcr, opcr - pc->first_opcr, SYSTEM_CLOCK_FREQ);
-            }
+        if (pkt.hasOPCR()) {
+            processValue(pc, &PIDContext::opcr, pkt.getOPCR(), pcr, _get_opcr);
         }
 
-        if (has_pts) {
+        if (pkt.hasPTS()) {
             const uint64_t pts = pkt.getPTS();
-            if (pc->pts_count++ == 0) {
-                pc->first_pts = pc->last_good_pts = pts;
-            }
             // Check if this is a "good" PTS, ie. greater than the last good PTS
             // (or wrapping around the max PTS value 2**33)
-            const bool good_pts = SequencedPTS(pc->last_good_pts, pts);
+            const bool good_pts = pc.pts.count == 0 || SequencedPTS(pc.last_good_pts, pts);
             if (good_pts) {
-                pc->last_good_pts = pts;
+                pc.last_good_pts = pts;
             }
-            if (_get_pts && (good_pts || !_good_pts_only)) {
-                if (_csv_format) {
-                    *_output << pid << _separator
-                             << tsp->pluginPackets() << _separator
-                             << pc->packet_count << _separator
-                             << "PTS" << _separator
-                             << pc->pts_count << _separator
-                             << pts << _separator
-                             << (pts - pc->first_pts) << _separator;
-                    if (has_pcr || (_evaluate_pcr && pcr != INVALID_PCR)) {
-                        *_output << (int64_t(pts) - int64_t(pcr / SYSTEM_CLOCK_SUBFACTOR));
-                    }
-                    *_output << std::endl;
-                }
-                logValue(u"PTS", pid, pts, pts - pc->first_pts, SYSTEM_CLOCK_SUBFREQ);
-            }
+            processValue(pc, &PIDContext::pts, pts, pcr, _get_pts && (good_pts || !_good_pts_only));
         }
 
-        if (has_dts) {
-            const uint64_t dts = pkt.getDTS();
-            if (pc->dts_count++ == 0) {
-                pc->first_dts = dts;
-            }
-            if (_get_dts) {
-                if (_csv_format) {
-                    *_output << pid << _separator
-                             << tsp->pluginPackets() << _separator
-                             << pc->packet_count << _separator
-                             << "DTS" << _separator
-                             << pc->dts_count << _separator
-                             << dts << _separator
-                             << (dts - pc->first_dts) << _separator;
-                    if (has_pcr || (_evaluate_pcr && pcr != INVALID_PCR)) {
-                        *_output << (int64_t (dts) - int64_t(pcr / SYSTEM_CLOCK_SUBFACTOR));
-                    }
-                    *_output << std::endl;
-                }
-                logValue(u"DTS", pid, dts, dts - pc->first_dts, SYSTEM_CLOCK_SUBFREQ);
-            }
+        if (pkt.hasDTS()) {
+            processValue(pc, &PIDContext::dts, pkt.getDTS(), pcr, _get_dts);
         }
 
-        pc->packet_count++;
+        pc.packet_count++;
     }
 
     return TSP_OK;
@@ -505,20 +451,74 @@ ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, T
 
 
 //----------------------------------------------------------------------------
-// Report a value in log format.
+// Report a CSV header. Must be consistent with processValue() below.
 //----------------------------------------------------------------------------
 
-void ts::PCRExtractPlugin::logValue(const UString& type, PID pid, uint64_t value, uint64_t since_start, uint64_t frequency)
+void ts::PCRExtractPlugin::csvHeader()
 {
-    if (_log_format) {
-        // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
-        const size_t width = frequency == SYSTEM_CLOCK_FREQ ? 11 : 9;
-        tsp->info(u"PID: 0x%X (%d), %s: 0x%0*X, (0x%0*X, %'d ms from start of PID)",
-                  {pid, pid,
-                   type, width, value,
-                   width, since_start,
-                   (since_start * MilliSecPerSec) / frequency});
+    if (_csv_format && !_noheader) {
+        *_output << "PID" << _separator
+                 << "Packet index in TS" << _separator
+                 << "Packet index in PID" << _separator
+                 << "Type" << _separator
+                 << "Count in PID" << _separator
+                 << "Value" << _separator
+                 << "Value offset in PID" << _separator
+                 << "Offset from PCR" << std::endl;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Report a value in CSV and/or log format.
+//----------------------------------------------------------------------------
+
+void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* pdata, uint64_t value, uint64_t pcr, bool report_it)
+{
+    PIDData& data(ctx.*pdata);
+    const UString name(_type_names.name(data.type));
+    const uint32_t pcr_subfactor = pcrSubfactor(data.type);
+
+    // Count values and remember first value.
+    if (data.count++ == 0) {
+        data.first_value = value;
+    }
+
+    // Time offset since first value of this type in the PID.
+    const uint64_t since_start = value - data.first_value;
+    const int64_t since_previous = data.last_value == INVALID_PCR ? 0 : int64_t(value) - int64_t(data.last_value);
+
+    // Report in CSV format.
+    if (_csv_format && report_it) {
+        *_output << ctx.pid << _separator
+                 << tsp->pluginPackets() << _separator
+                 << ctx.packet_count << _separator
+                 << name << _separator
+                 << data.count << _separator
+                 << value << _separator
+                 << since_start << _separator;
+        if (pcr != INVALID_PCR) {
+            *_output << (int64_t(value) - int64_t(pcr / pcr_subfactor));
+        }
+        *_output << std::endl;
+    }
+
+    // Report in log format.
+    if (_log_format && report_it) {
+        // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
+        const uint32_t frequency = SYSTEM_CLOCK_FREQ / pcr_subfactor;
+        const size_t width = frequency == pcr_subfactor == 1 ? 11 : 9;
+        tsp->info(u"PID: 0x%X (%d), %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)", {
+                  ctx.pid, ctx.pid,
+                  name, width, value,
+                  width, since_start,
+                  (since_start * MilliSecPerSec) / frequency,
+                  (since_previous * MilliSecPerSec) / frequency});
+    }
+
+    // Remember last value.
+    data.last_value = value;
+    data.last_packet = tsp->pluginPackets();
 }
 
 
@@ -530,7 +530,7 @@ ts::PCRExtractPlugin::PIDContextPtr ts::PCRExtractPlugin::getPIDContext(PID pid)
 {
     PIDContextPtr& pc(_stats[pid]);
     if (pc.isNull()) {
-        pc = new PIDContext;
+        pc = new PIDContext(pid);
         CheckNonNull(pc.pointer());
     }
     return pc;
