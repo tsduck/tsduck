@@ -100,21 +100,23 @@ class ts::DektecOutputPlugin::Guts
 {
     TS_NOCOPY(Guts);
 public:
-    Guts();                             // Constructor
-    bool                 starting;      // Starting phase (loading FIFO, no transmit)
-    bool                 is_started;    // Device started
-    bool                 mute_on_stop;  // Device supports output muting
-    int                  dev_index;     // Dektec device index
-    int                  chan_index;    // Device output channel index
-    DektecDevice         device;        // Device characteristics
-    Dtapi::DtDevice      dtdev;         // Device descriptor
-    Dtapi::DtOutpChannel chan;          // Output channel
-    int                  detach_mode;   // Detach mode
-    BitRate              opt_bitrate;   // Bitrate option (0 means unspecified)
-    BitRate              cur_bitrate;   // Current output bitrate
-    int                  max_fifo_size; // Maximum FIFO size
-    int                  fifo_size;     // Actual FIFO size
-    bool                 preload_fifo;  // Preload FIFO before starting transmission
+    Guts();                                  // Constructor
+    bool                 starting;           // Starting phase (loading FIFO, no transmit)
+    bool                 is_started;         // Device started
+    bool                 mute_on_stop;       // Device supports output muting
+    int                  dev_index;          // Dektec device index
+    int                  chan_index;         // Device output channel index
+    DektecDevice         device;             // Device characteristics
+    Dtapi::DtDevice      dtdev;              // Device descriptor
+    Dtapi::DtOutpChannel chan;               // Output channel
+    int                  detach_mode;        // Detach mode
+    BitRate              opt_bitrate;        // Bitrate option (0 means unspecified)
+    BitRate              cur_bitrate;        // Current output bitrate
+    int                  max_fifo_size;      // Maximum FIFO size
+    int                  fifo_size;          // Actual FIFO size
+    bool                 preload_fifo;       // Preload FIFO before starting transmission
+    int                  preload_fifo_size;  // Size of FIFO to preload before starting transmission
+    uint64_t             preload_fifo_delay; // Preload FIFO such that it starts transmission after specified delay in ms
 };
 
 
@@ -132,10 +134,13 @@ ts::DektecOutputPlugin::Guts::Guts() :
     cur_bitrate(0),
     max_fifo_size(0),
     fifo_size(0),
-    preload_fifo(false)
+    preload_fifo(false),
+    preload_fifo_size(0),
+    preload_fifo_delay(0)
 {
 }
 
+#define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
 
 //----------------------------------------------------------------------------
 // Output constructor
@@ -584,7 +589,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"LONG",  DTAPI_DVBT2_ISSY_LONG},
     }));
     help(u"plp0-issy",
-         u"DVB-T2 modulators: type of ISSY field to compute and inserte in PLP #0. "
+         u"DVB-T2 modulators: type of ISSY field to compute and insert in PLP #0. "
          u"The default is NONE.");
 
     option(u"plp0-modulation", 0, Enumeration({
@@ -617,10 +622,29 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 
     option(u"preload-fifo");
     help(u"preload-fifo",
-         u"Preload FIFO (hardware buffer) to roughly 80% capacity before starting transmission. "
-         u"Preloading the FIFO introduces a variable delay to the start of transmission based on "
-         u"the size of the FIFO and the TS bit rate. On implicitly when using a modulator for "
-         u"output.");
+         u"Preload FIFO (hardware buffer) before starting transmission. Preloading the FIFO "
+         u"will introduce a variable delay to the start of transmission, _if_ the delivery of "
+         u"packets to the plug-in is pre-regulated, based on the size of the FIFO, the TS bit "
+         u"rate, and the size of the FIFO to preload, as controlled by the "
+         u"--preload-fifo-percentage or --preload-fifo-delay options. If the delivery of "
+         u"packets to the plug-in isn't self-regulated (i.e. they are delivered faster than "
+         u"real-time, as might occur when loading from file), there is no benefit to preloading "
+         u"the FIFO, because in that case, the FIFO will fill up quickly anyway. On implicitly "
+         u"when using a modulator for output.");
+
+    option(u"preload-fifo-percentage", 0, INTEGER, 0, 1, 1, 100);
+    help(u"preload-fifo-percentage",
+         u"Percentage of size of FIFO to preload prior to starting transmission "
+         u"(default: " + UString::Decimal(DEFAULT_PRELOAD_FIFO_PERCENTAGE) + u"%).");
+
+    option(u"preload-fifo-delay", 0, INTEGER, 0, 1, 100, 100000);
+    help(u"preload-fifo-delay",
+         u"The use of this option indicates that the size of the FIFO to preload prior to "
+         u"starting transmission should be calculated based on the specified delay, in "
+         u"milliseconds, and the configured bit rate. That is, transmission will start after "
+         u"the specified delay worth of media has been preloaded. This option takes precedence "
+         u"over the --preload-fifo-percentage option. There is no default value, and the valid "
+         u"range is 100-100000.");
 
     option(u"qam-b", 'q', Enumeration({
         {u"I128-J1D", DTAPI_MOD_QAMB_I128_J1D},
@@ -669,7 +693,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     option(u"symbol-rate", 0, POSITIVE);
     help(u"symbol-rate",
          u"DVB-C/S/S2 modulators: Specify the symbol rate in symbols/second. "
-         u"By default, the symbol rate is implicitely computed from the convolutional "
+         u"By default, the symbol rate is implicitly computed from the convolutional "
          u"rate, the modulation type and the bitrate. But when --symbol-rate is "
          u"specified, the input bitrate is ignored and the output bitrate is forced "
          u"to the value resulting from the combination of the specified symbol rate, "
@@ -921,6 +945,24 @@ bool ts::DektecOutputPlugin::start()
     }
     tsp->verbose(u"output fifo size: %'d bytes, max: %'d bytes, typical: %'d bytes", {_guts->fifo_size, _guts->max_fifo_size, typ_fifo_size});
 
+    if (present(u"preload-fifo-delay")) {
+        _guts->preload_fifo_delay = intValue<uint64_t>(u"preload-fifo-delay");
+        if (_guts->preload_fifo_delay) {
+            if (!setPreloadFIFOSizeBasedOnDelay()) {
+                // can't set _guts->preload_fifo_size yet based on delay, because the bit rate hasn't been set yet.
+                // for now, fall through to --preload-fifo-percentage, with expectation that it will
+                // be calculated later when the caller sets the bit rate on the TSP object (and potentially
+                // multiple times later if the bit rate changes multiple times during a session)
+                tsp->verbose(u"For --preload-fifo-delay, no bit rate currently set, so will use --preload-fifo-percentage settings until a bit rate has been set.");
+            }
+        }
+    }
+
+    if (!_guts->preload_fifo_size) {
+        int preloadFifoPercentage = intValue(u"preload-fifo-percentage", DEFAULT_PRELOAD_FIFO_PERCENTAGE);
+        _guts->preload_fifo_size = (_guts->fifo_size * preloadFifoPercentage) / 100;
+    }
+
     // Set output bitrate
     status = _guts->chan.SetTsRateBps(int(_guts->cur_bitrate));
     if (status != DTAPI_OK) {
@@ -948,6 +990,12 @@ bool ts::DektecOutputPlugin::start()
     }
 
     tsp->verbose(u"initial output bitrate: %'d b/s", {_guts->cur_bitrate});
+    if (_guts->starting) {
+        tsp->verbose(u"Will preload FIFO before starting transmission. Preload FIFO size: %'d bytes.", {_guts->preload_fifo_size});
+    }
+    else {
+        tsp->verbose(u"Will start transmission immediately.");
+    }
     _guts->is_started = true;
     return true;
 }
@@ -1553,6 +1601,10 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
         else {
             _guts->cur_bitrate = new_bitrate;
             tsp->verbose(u"new output bitrate: %'d b/s", {_guts->cur_bitrate});
+
+            if (setPreloadFIFOSizeBasedOnDelay()) {
+                tsp->verbose(u"Due to new bit rate and specified delay of %d ms, preload FIFO size adjusted: %'d bytes.", {_guts->preload_fifo_delay, _guts->preload_fifo_size});
+            }
         }
     }
 
@@ -1573,11 +1625,9 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                 return false;
             }
 
-            // We consider the FIFO is loaded when 80% full.
-            const int max_size = (8 * _guts->fifo_size) / 10;
-            if (fifo_load < max_size - int(PKT_SIZE)) {
+            if (fifo_load < _guts->preload_fifo_size - int(PKT_SIZE)) {
                 // Remain in starting phase, limit next I/O size
-                max_io_size = max_size - fifo_load;
+                max_io_size = _guts->preload_fifo_size - fifo_load;
             }
             else {
                 // FIFO now full enough to start transmitting
@@ -1650,6 +1700,34 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
     }
 
     return true;
+}
+
+//----------------------------------------------------------------------------
+// Set preload FIFO size based on delay, if requested, in ms
+// Returns true if preload FIFO size altered, false otherwise
+//----------------------------------------------------------------------------
+
+bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
+{
+    if (_guts->preload_fifo_delay && _guts->cur_bitrate) {
+        // calculate new preload FIFO size based on new bit rate
+        // to calculate the size, in bytes, based on the bit rate and the requested delay, it is:
+        // <bit rate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
+        // converting to uint64_t because multiplying the current bit rate by the delay may exceed the max value for a uint32_t
+        uint64_t prelimPreloadFifoSize = (uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000ULL;
+        if (prelimPreloadFifoSize > uint64_t(_guts->fifo_size)) {
+            _guts->preload_fifo_size = _guts->fifo_size;
+            tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size for preload size instead.",
+                {_guts->preload_fifo_delay, prelimPreloadFifoSize, _guts->cur_bitrate, _guts->fifo_size});
+        }
+        else {
+            _guts->preload_fifo_size = int(prelimPreloadFifoSize);
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 #endif // TS_NO_DTAPI
