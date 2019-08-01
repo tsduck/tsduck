@@ -68,66 +68,66 @@ namespace ts {
         //! Check if the table is a long one.
         //! @return True if the table is a long one.
         //!
-        bool isLongSection() const {return (_etid & 0x01000000) != 0;}
+        bool isLongSection() const { return (_etid & 0x01000000) != 0; }
 
         //!
         //! Check if the table is a short one.
         //! @return True if the table is a short one.
         //!
-        bool isShortSection() const {return (_etid & 0x01000000) == 0;}
+        bool isShortSection() const { return (_etid & 0x01000000) == 0; }
 
         //!
         //! Get the table id.
         //! @return The table id.
         //!
-        TID tid() const {return TID((_etid >> 16) & 0xFF);}
+        TID tid() const { return TID((_etid >> 16) & 0xFF); }
 
         //!
         //! Get the table id extension.
         //! @return The table id extension.
         //!
-        uint16_t tidExt() const {return uint16_t(_etid & 0xFFFF);}
+        uint16_t tidExt() const { return uint16_t(_etid & 0xFFFF); }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object == @a e.
         //!
-        bool operator ==(const ETID& e) const {return _etid == e._etid;}
+        bool operator==(const ETID& e) const { return _etid == e._etid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object != @a e.
         //!
-        bool operator !=(const ETID& e) const {return _etid != e._etid;}
+        bool operator!=(const ETID& e) const { return _etid != e._etid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object < @a e.
         //!
-        bool operator <(const ETID& e) const {return _etid <  e._etid;}
+        bool operator<(const ETID& e) const { return _etid <  e._etid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object <= @a e.
         //!
-        bool operator <=(const ETID& e) const {return _etid <= e._etid;}
+        bool operator<=(const ETID& e) const { return _etid <= e._etid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object > @a e.
         //!
-        bool operator >(const ETID& e) const {return _etid >  e._etid;}
+        bool operator>(const ETID& e) const { return _etid >  e._etid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object >= @a e.
         //!
-        bool operator >=(const ETID& e) const {return _etid >= e._etid;}
+        bool operator>=(const ETID& e) const { return _etid >= e._etid; }
     };
 }
