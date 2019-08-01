@@ -507,7 +507,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
     if (_log_format && report_it) {
         // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
         const uint32_t frequency = SYSTEM_CLOCK_FREQ / pcr_subfactor;
-        const size_t width = frequency == pcr_subfactor == 1 ? 11 : 9;
+        const size_t width = pcr_subfactor == 1 ? 11 : 9;
         tsp->info(u"PID: 0x%X (%d), %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)", {
                   ctx.pid, ctx.pid,
                   name, width, value,
