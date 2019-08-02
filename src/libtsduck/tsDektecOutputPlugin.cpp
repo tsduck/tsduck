@@ -137,7 +137,8 @@ ts::DektecOutputPlugin::Guts::Guts() :
     fifo_size(0),
     preload_fifo(false),
     preload_fifo_size(0),
-    preload_fifo_delay(0)
+    preload_fifo_delay(0),
+    maintain_preload(false)
 {
 }
 
