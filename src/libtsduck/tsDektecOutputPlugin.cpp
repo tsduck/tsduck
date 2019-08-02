@@ -117,6 +117,7 @@ public:
     bool                 preload_fifo;       // Preload FIFO before starting transmission
     int                  preload_fifo_size;  // Size of FIFO to preload before starting transmission
     uint64_t             preload_fifo_delay; // Preload FIFO such that it starts transmission after specified delay in ms
+    bool                 maintain_preload;   // Roughly maintain the buffer size if the FIFO is preloaded prior to starting transmission
 };
 
 
@@ -438,6 +439,12 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies "
          u"are in MHz. The characteristics of the default universal LNB are "
          u"low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
+
+    option(u"maintain-preload");
+    help(u"maintain-preload",
+         u"If the FIFO were preloaded, roughly maintain the FIFO buffer size in order "
+         u"to maintain the delay from real-time. If the FIFO size drops to zero bytes, "
+         u"pause transmission till it gets back to the preload FIFO size.");
 
     option(u"miso", 0, Enumeration({
         {u"OFF",  DTAPI_DVBT2_MISO_OFF},
@@ -805,6 +812,7 @@ bool ts::DektecOutputPlugin::start()
     _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : DTAPI_WAIT_UNTIL_SENT;
     _guts->mute_on_stop = false;
     _guts->preload_fifo = present(u"preload-fifo");
+    _guts->maintain_preload = present(u"maintain-preload");
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();
@@ -984,6 +992,9 @@ bool ts::DektecOutputPlugin::start()
     // shouldn't be a problem if a partially filled FIFO is maintained
     // throughout the transmission duration.
     _guts->starting = is_modulator || _guts->preload_fifo;
+    // also, note the preload status by resetting _guts->preload_fifo--important to know if it
+    // did a preload if the --maintain-preload option is used
+    _guts->preload_fifo = _guts->starting;
     status = _guts->chan.SetTxControl(_guts->starting ? DTAPI_TXCTRL_HOLD : DTAPI_TXCTRL_SEND);
     if (status != DTAPI_OK) {
         return startError(u"output device start send error", status);
@@ -1651,6 +1662,27 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
             if (status != DTAPI_OK) {
                 tsp->error(u"error getting output fifo load: " + DektecStrError(status));
                 return false;
+            }
+
+            if (_guts->preload_fifo && _guts->maintain_preload && (fifo_load == 0)) {
+                // the approach of waiting till the FIFO size hits zero won't handle all cases
+                // in which it gets closer to real-time due to losing data temporarily. If it only
+                // loses data for a short amount of time and doesn't fully drain the FIFO as a result,
+                // the FIFO load won't hit zero, and it won't activate this code in that case.
+                // More intelligent schemes are possible, such as noticing that the FIFO
+                // size is decreasing below the preload FIFO size, and then recognizing when
+                // it levels out, which is an indication that new packets are starting to show up, and,
+                // at this point, it is reasonable to pause transmission. It is preferable not to simply
+                // pause transmission when the FIFO load, say, goes to 1/2 the preload FIFO size, because
+                // those packets that are still in the FIFO are likely connected with those that were just
+                // drained, and we want to keep them together in terms of when they are transmitted if possible.
+                status = _guts->chan.SetTxControl(DTAPI_TXCTRL_HOLD);
+                if (status != DTAPI_OK) { 
+                    tsp->error(u"output device start send error: " + DektecStrError(status));
+                    return false;
+                }
+                _guts->starting = true;
+                tsp->verbose(u"Pausing transmission temporarily in order to maintain preload.");
             }
 
             if ((fifo_load + cursize) >= _guts->fifo_size) {
