@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.18-1350
+VERSION 3.18-1360
 
 [NEW] New commands and plugins:
 
@@ -42,6 +42,8 @@ VERSION 3.18-1350
   * Added options --interleave, --label-base and --first-terminate to input
     plugin "file".
   * Added option --min-ms-interval to plugin "pcradjust".
+  * Added options --preload-fifo, --maintain-preload, --preload-fifo-delay and
+    --preload-fifo-percentage in output plugin "dektec".
 
 [BUG] Bug fixes:
 
