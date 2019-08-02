@@ -566,9 +566,9 @@ uint64_t ts::TSPacket::getPCR() const
     return offset == 0 ? INVALID_PCR : GetPCR(b + offset);
 }
 
-uint64_t ts::TSPacket::getOPCR () const
+uint64_t ts::TSPacket::getOPCR() const
 {
-    const size_t offset = OPCROffset ();
+    const size_t offset = OPCROffset();
     return offset == 0 ? INVALID_PCR : GetPCR(b + offset);
 }
 
@@ -681,6 +681,10 @@ bool ts::TSPacket::reserveStuffing(size_t size, bool shift_payload, bool enforce
 
 bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
 {
+    if (pcr == INVALID_PCR) {
+        return false;
+    }
+
     size_t offset = PCROffset();
     if (offset == 0) {
         // Currently no PCR is present, we need to create one.
@@ -702,6 +706,10 @@ bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
 
 bool ts::TSPacket::setOPCR(const uint64_t &opcr, bool shift_payload)
 {
+    if (opcr == INVALID_PCR) {
+        return false;
+    }
+
     size_t offset = OPCROffset();
     if (offset == 0) {
         // Currently no OPCR is present, we need to create one.
@@ -769,18 +777,18 @@ size_t ts::TSPacket::DTSOffset() const
 }
 
 //----------------------------------------------------------------------------
-// Get PTS or DTS at specified offset. Return 0 if offset is zero.
+// Get PTS or DTS at specified offset.
 //----------------------------------------------------------------------------
 
 uint64_t ts::TSPacket::getPDTS(size_t offset) const
 {
     if (offset == 0) {
-        return 0;
+        return INVALID_PTS; // same as INVALID_DTS
     }
     else {
         return (uint64_t(b[offset] & 0x0E) << 29) |
-            (uint64_t(GetUInt16(b + offset + 1) & 0xFFFE) << 14) |
-            (uint64_t(GetUInt16(b + offset + 3)) >> 1);
+               (uint64_t(GetUInt16(b + offset + 1) & 0xFFFE) << 14) |
+               (uint64_t(GetUInt16(b + offset + 3)) >> 1);
     }
 }
 
@@ -790,7 +798,7 @@ uint64_t ts::TSPacket::getPDTS(size_t offset) const
 
 void ts::TSPacket::setPDTS(uint64_t pdts, size_t offset)
 {
-    if (offset != 0) {
+    if (offset != 0 && pdts != INVALID_PTS) {
         b[offset] = (b[offset] & 0xF1) | (uint8_t(pdts >> 29) & 0x0E);
         PutUInt16(b + offset + 1, (GetUInt16(b + offset + 1) & 0x0001) | (uint16_t(pdts >> 14) & 0xFFFE));
         PutUInt16(b + offset + 3, (GetUInt16(b + offset + 3) & 0x0001) | (uint16_t(pdts << 1) & 0xFFFE));
