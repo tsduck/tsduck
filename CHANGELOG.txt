@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.19-1362
+
+[BUG] Bug fixes:
+
+  * In plugin "hides", the bandwidth was incorrectly set to 5 MHz when 6 MHz
+    was requested.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.18-1360
 
 [NEW] New commands and plugins:
