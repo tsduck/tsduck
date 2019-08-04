@@ -88,7 +88,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
 
     option(u"bandwidth", 'b', Enumeration({
         {u"5", BW_5_MHZ},
-        {u"6", BW_5_MHZ},
+        {u"6", BW_6_MHZ},
         {u"7", BW_7_MHZ},
         {u"8", BW_8_MHZ},
     }));
