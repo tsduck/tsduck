@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1362
+VERSION 3.19-1364
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added options --aes-cbc and --cbc-iv to plugins "scrambler" and
+    "descrambler".
 
 [BUG] Bug fixes:
 

@@ -46,6 +46,7 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _dvbcsa(),
     _dvbcissa(),
     _idsa(),
+    _aescbc(),
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(scrambling);
@@ -62,6 +63,7 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _dvbcsa(),
     _dvbcissa(),
     _idsa(),
+    _aescbc(),
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
@@ -78,6 +80,7 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _dvbcsa(),
     _dvbcissa(),
     _idsa(),
+    _aescbc(),
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
@@ -104,6 +107,10 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
             case SCRAMBLING_ATIS_IIF_IDSA:
                 _scrambler[0] = &_idsa[0];
                 _scrambler[1] = &_idsa[1];
+                break;
+            case SCRAMBLING_DUCK_AES_CBC:
+                _scrambler[0] = &_aescbc[0];
+                _scrambler[1] = &_aescbc[1];
                 break;
             default:
                 // Fallback to DVB-CSA2 if no scrambler was previously defined.
@@ -133,10 +140,28 @@ void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
 
 void ts::TSScrambling::defineOptions(Args& args) const
 {
+    args.option(u"aes-cbc");
+    args.help(u"aes-cbc",
+              u"Use AES-CBC scrambling instead of DVB-CSA2 (the default). "
+              u"The control words are 16-byte long instead of 8-byte. "
+              u"The residue is left clear. "
+              u"Specify a fixed initialization vector using the --cbc-iv option.\n\n"
+              u"Note that this is a non-standard TS scramblig mode. "
+              u"The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA "
+              u"(DVB-CISSA is the same as AES-CBC with a DVB-defined IV). "
+              u"The TSDuck scrambler automatically sets the scrambling_descriptor with "
+              u"user-defined value " + UString::Hexa(uint8_t(SCRAMBLING_DUCK_AES_CBC)) + u".");
+
     args.option(u"atis-idsa");
     args.help(u"atis-idsa",
               u"Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the "
               u"default). The control words are 16-byte long instead of 8-byte.");
+
+    args.option(u"cbc-iv", 0, Args::STRING);
+    args.help(u"cbc-iv",
+              u"With --aes-cbc, specifies a fixed initialization vector for all TS packets. "
+              u"The value must be a string of 32 hexadecimal digits. "
+              u"The default IV is all zeroes.");
 
     args.option(u"cw", 'c', Args::STRING);
     args.help(u"cw",
@@ -173,9 +198,12 @@ void ts::TSScrambling::defineOptions(Args& args) const
 
 bool ts::TSScrambling::loadArgs(Args& args)
 {
+    // Number of explicitly defined scrambling algorithms.
+    const int algo_count = args.present(u"atis-idsa") + args.present(u"dvb-cissa") + args.present(u"dvb-csa2")  + args.present(u"aes-cbc");
+
     // Set the scrambler to use.
-    if (args.present(u"atis-idsa") + args.present(u"dvb-cissa") + args.present(u"dvb-csa2") > 1) {
-        args.error(u"--atis-idsa, --dvb-cissa and --dvb-csa2 are mutally exclusive");
+    if (algo_count > 1) {
+        args.error(u"--atis-idsa, --dvb-cissa, --dvb-csa2 and --aes-cbc are mutally exclusive");
     }
     else if (args.present(u"atis-idsa")) {
         setScramblingType(SCRAMBLING_ATIS_IIF_IDSA);
@@ -183,16 +211,29 @@ bool ts::TSScrambling::loadArgs(Args& args)
     else if (args.present(u"dvb-cissa")) {
         setScramblingType(SCRAMBLING_DVB_CISSA1);
     }
+    else if (args.present(u"aes-cbc")) {
+        setScramblingType(SCRAMBLING_DUCK_AES_CBC);
+    }
     else {
         setScramblingType(SCRAMBLING_DVB_CSA2);
     }
 
     // If an explicit scrambling type is given, the application should probably
     // ignore scrambling descriptors when descrambling.
-    _explicit_type = args.present(u"atis-idsa") || args.present(u"dvb-cissa") || args.present(u"dvb-csa2");
+    _explicit_type = algo_count > 0;
 
     // Set DVB-CSA2 entropy mode regardless of --atis-idsa or --dvb-cissa in case we switch later to DVB-CSA2.
     setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
+
+    // Set AES-CBC initialization vector. The default is all zeroes.
+    ByteBlock iv(AES::BLOCK_SIZE, 0x00);
+    const UString hex_iv(args.value(u"cbc-iv"));
+    if (!hex_iv.empty() && (!hex_iv.hexaDecode(iv) || iv.size() != AES::BLOCK_SIZE)) {
+        args.error(u"invalid initialization vector \"%s\", specify %d hexa digits", {hex_iv, 2 * AES::BLOCK_SIZE});
+    }
+    else if (!_aescbc[0].setIV(iv.data(), iv.size()) || !_aescbc[1].setIV(iv.data(), iv.size())) {
+        args.error(u"error setting AES-CBC initialization vector");
+    }
 
     // Get control words as list of strings.
     UStringList lines;
@@ -216,7 +257,7 @@ bool ts::TSScrambling::loadArgs(Args& args)
         it->trim();
         if (!it->empty()) {
             if (!it->hexaDecode(cw) || cw.size() != cwSize()) {
-                args.error(u"invalid control word \"%s\" , specify %d hexa digits", {*it, 2 * cwSize()});
+                args.error(u"invalid control word \"%s\", specify %d hexa digits", {*it, 2 * cwSize()});
             }
             else {
                 _cw_list.push_back(cw);

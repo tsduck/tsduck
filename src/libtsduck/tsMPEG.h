@@ -1338,11 +1338,15 @@ namespace ts {
     enum : uint8_t {
         SCRAMBLING_DVB_CSA1      = 0x01, //!< DVB-CSA1
         SCRAMBLING_DVB_CSA2      = 0x02, //!< DVB-CSA2
-        SCRAMBLING_DVB_CSA3_STD  = 0x03, //!< DVB-CSA3, standard mode
-        SCRAMBLING_DVB_CSA3_MIN  = 0x04, //!< DVB-CSA3, minimally enhanced mode
-        SCRAMBLING_DVB_CSA3_FULL = 0x05, //!< DVB-CSA3, fully enhanced mode
+        SCRAMBLING_DVB_CSA3      = 0x03, //!< DVB-CSA3
+        SCRAMBLING_DVB_CSA3_MIN  = 0x04, //!< DVB-CSA3, minimally enhanced mode (obsolete)
+        SCRAMBLING_DVB_CSA3_FULL = 0x05, //!< DVB-CSA3, fully enhanced mode (obsolete)
         SCRAMBLING_DVB_CISSA1    = 0x10, //!< DVB-CISSA v1
         SCRAMBLING_ATIS_IIF_IDSA = 0x70, //!< ATIS IIF IDSA for MPEG-2 TS
+        SCRAMBLING_USER_MIN      = 0x80, //!< First user-defined value.
+        SCRAMBLING_DUCK_AES_CBC  = 0xF0, //!< TSDuck-defined value, AES-CBC (with externally-defined IV).
+        SCRAMBLING_USER_MAX      = 0xFE, //!< Last user-defined value.
+        SCRAMBLING_RESERVED      = 0xFF, //!< Reserved value.
     };
 
     //---------------------------------------------------------------------

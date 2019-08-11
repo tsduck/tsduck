@@ -197,6 +197,7 @@ namespace ts {
         DVBCSA2          _dvbcsa[2];    // Index 0 = even key, 1 = odd key.
         DVBCISSA         _dvbcissa[2];
         IDSA             _idsa[2];
+        CBC<AES>         _aescbc[2];
         CipherChaining*  _scrambler[2];
 
         // Set the next fixed control word as scrambling key.

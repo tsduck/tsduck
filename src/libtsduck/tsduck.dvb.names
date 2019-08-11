@@ -2682,13 +2682,14 @@ Bits = 8
 Bits = 8
 0x01 = DVB-CSA1
 0x02 = DVB-CSA2
-0x03 = DVB-CSA3, standard mode
-0x04 = DVB-CSA3, minimally enhanced mode
-0x05 = DVB-CSA3, fully enhanced mode
+0x03 = DVB-CSA3
+0x04 = DVB-CSA3, minimally enhanced mode (obsolete)
+0x05 = DVB-CSA3, fully enhanced mode (obsolete)
 0x10 = DVB-CISSA v1
 0x11-0x1F = DVB-CISSA future versions
 0x70 = ATIS IIF IDSA for MPEG-2 TS
 0x71-0x7F = ATIS defined
+0xF0 = AES-CBC with externally-defined IV (TSDuck-specific)
 
 [MHPTransportProtocolId]
 # In transport_protocol_descriptor (ETSI TS 102 812)
