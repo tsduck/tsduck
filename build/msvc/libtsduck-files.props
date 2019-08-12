@@ -67,6 +67,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsBitRateRegulator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBitStream.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBlockCipher.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsBlockCipherAlertInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBouquetNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsByteBlock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.h" />
@@ -577,6 +578,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsBinaryTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBitRateRegulator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBlockCipher.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsBlockCipherAlertInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBouquetNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsByteBlock.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.cpp" />

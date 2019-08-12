@@ -1014,10 +1014,9 @@ namespace {
 
 //----------------------------------------------------------------------------
 // Schedule a new key. If rounds is zero, the default is used.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
+bool ts::AES::setKeyImpl(const void* key_, size_t key_length, size_t rounds)
 {
     // 3 possible key sizes for AES
     if (key_length != 16 && key_length != 24 && key_length != 32) {
@@ -1041,10 +1040,10 @@ bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
     const uint8_t* key = reinterpret_cast<const uint8_t*> (key_);
     i = 0;
     rk = _eK;
-    rk[0] = GetUInt32 (key);
-    rk[1] = GetUInt32 (key +  4);
-    rk[2] = GetUInt32 (key +  8);
-    rk[3] = GetUInt32 (key + 12);
+    rk[0] = GetUInt32(key);
+    rk[1] = GetUInt32(key +  4);
+    rk[2] = GetUInt32(key +  8);
+    rk[3] = GetUInt32(key + 12);
 
     if (key_length == 16) {
         j = 44;
@@ -1171,12 +1170,9 @@ bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
 
 //----------------------------------------------------------------------------
 // Encryption in ECB mode.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::AES::encrypt(const void* plain, size_t plain_length,
-                      void* cipher, size_t cipher_maxsize,
-                      size_t* cipher_length)
+bool ts::AES::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (plain_length != BLOCK_SIZE || cipher_maxsize < BLOCK_SIZE) {
         return false;
@@ -1299,12 +1295,9 @@ bool ts::AES::encrypt(const void* plain, size_t plain_length,
 
 //----------------------------------------------------------------------------
 // Decryption in ECB mode.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::AES::decrypt(const void* cipher, size_t cipher_length,
-                      void* plain, size_t plain_maxsize,
-                      size_t* plain_length)
+bool ts::AES::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     if (cipher_length != BLOCK_SIZE || plain_maxsize < BLOCK_SIZE) {
         return false;

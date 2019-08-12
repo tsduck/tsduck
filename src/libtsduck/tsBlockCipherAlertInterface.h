@@ -28,52 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Cipher text Stealing (CTS) mode, alternative 1.
+//!  Interface to be notified when an alert is raised on a block cipher.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCipherChaining.h"
+#include "tsPlatform.h"
 
 namespace ts {
+
+    class BlockCipher;
+
     //!
-    //!  Cipher text Stealing (CTS) mode, alternative 1.
-    //!  @ingroup crypto
+    //! Interface for classes which need to be notified when an alert is raised on a block cipher.
+    //! @ingroup crypto
     //!
-    //!  Several incompatible designs of CTS exist. This one implements the
-    //!  description in:
-    //!  - Bruce Schneier, Applied Cryptography (2nd, Ed.), pp 191, 195
-    //!  - RFC 2040, The RC5, RC5-CBC, RC5-CBC-Pad, and RC5-CTS Algorithms
-    //!  - "CBC ciphertext stealing" in
-    //!    http://en.wikipedia.org/wiki/Ciphertext_stealing
-    //!
-    //!  CTS can process a residue. The plain text and cipher text sizes must be
-    //!  greater than the block size of the underlying block cipher.
-    //!
-    //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
-    //!
-    template <class CIPHER>
-    class CTS1: public CipherChainingTemplate<CIPHER>
+    class TSDUCKDLL BlockCipherAlertInterface
     {
-        TS_NOCOPY(CTS1);
     public:
         //!
-        //! Constructor.
+        //! Reason for the alert.
         //!
-        CTS1() : CipherChainingTemplate<CIPHER>(1, 1, 2) {}
+        enum AlertReason {
+            FIRST_ENCRYPTION,     //!< First encryption using the current key. Informational only.
+            FIRST_DECRYPTION,     //!< First decryption using the current key. Informational only.
+            ENCRYPTION_EXCEEDED,  //!< Too many encryptions for the current key. Normal processing is error.
+            DECRYPTION_EXCEEDED,  //!< Too many decryptions for the current key. Normal processing is error.
+        };
 
-        // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const override;
-        virtual bool residueAllowed() const override;
+        //!
+        //! This hook is invoked when an ECM is available.
+        //! It is invoked in the context of an internal thread of the ECMG client object.
+        //! @param [in,out] cipher The block cipher which raised the alert.
+        //! @param [in] reason The reason for the alert.
+        //! @return True when the alert is real and appropriate action shall be taken.
+        //! False to ignore the alert and proceed normally.
+        //! Some alerts are informational only and the return value is ignored.
+        //!
+        virtual bool handleBlockCipherAlert(BlockCipher& cipher, AlertReason reason) = 0;
 
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
-
-    protected:
-        // Implementation of BlockCipher interface.
-        virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
-        virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~BlockCipherAlertInterface();
     };
 }
-
-#include "tsCTS1Template.h"

@@ -1335,13 +1335,13 @@ void ts::DES::deskey(const uint8_t* key, uint16_t edf, uint32_t* keyout)
         }
     }
 
-    cookey (kn, keyout);
+    cookey(kn, keyout);
 }
 
 
 //----------------------------------------------------------------------------
 
-void ts::DES::desfunc (uint32_t* block, const uint32_t* keys)
+void ts::DES::desfunc(uint32_t* block, const uint32_t* keys)
 {
     uint32_t work, right, leftt;
     uint64_t tmp;
@@ -1405,10 +1405,9 @@ void ts::DES::desfunc (uint32_t* block, const uint32_t* keys)
 
 //----------------------------------------------------------------------------
 // Schedule a new key. If rounds is zero, the default is used.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::DES::setKey (const void* key, size_t key_length, size_t rounds)
+bool ts::DES::setKeyImpl(const void* key, size_t key_length, size_t rounds)
 {
     if (key_length != KEY_SIZE || (rounds != 0 && rounds != ROUNDS)) {
         return false;
@@ -1423,12 +1422,9 @@ bool ts::DES::setKey (const void* key, size_t key_length, size_t rounds)
 
 //----------------------------------------------------------------------------
 // Encryption in ECB mode.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::DES::encrypt (const void* plain, size_t plain_length,
-                         void* cipher, size_t cipher_maxsize,
-                         size_t* cipher_length)
+bool ts::DES::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (plain_length != BLOCK_SIZE || cipher_maxsize < BLOCK_SIZE) {
         return false;
@@ -1453,12 +1449,9 @@ bool ts::DES::encrypt (const void* plain, size_t plain_length,
 
 //----------------------------------------------------------------------------
 // Decryption in ECB mode.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::DES::decrypt (const void* cipher, size_t cipher_length,
-                         void* plain, size_t plain_maxsize,
-                         size_t* plain_length)
+bool ts::DES::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     if (cipher_length != BLOCK_SIZE || plain_maxsize < BLOCK_SIZE) {
         return false;

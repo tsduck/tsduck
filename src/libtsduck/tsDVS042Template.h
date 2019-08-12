@@ -109,9 +109,7 @@ bool ts::DVS042<CIPHER>::setShortIV(const void* iv_data, size_t iv_length)
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
-                                 void* cipher, size_t cipher_maxsize,
-                                 size_t* cipher_length)
+bool ts::DVS042<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
@@ -171,9 +169,7 @@ bool ts::DVS042<CIPHER>::encrypt(const void* plain, size_t plain_length,
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::DVS042<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
-                                 void* plain, size_t plain_maxsize,
-                                 size_t* plain_length)
+bool ts::DVS042<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
