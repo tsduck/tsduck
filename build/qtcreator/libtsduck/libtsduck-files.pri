@@ -97,6 +97,8 @@ HEADERS += \
     ../../../src/libtsduck/tsCPDescriptor.h \
     ../../../src/libtsduck/tsCPIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCRC32.h \
+    ../../../src/libtsduck/tsCTR.h \
+    ../../../src/libtsduck/tsCTRTemplate.h \
     ../../../src/libtsduck/tsCTS1.h \
     ../../../src/libtsduck/tsCTS1Template.h \
     ../../../src/libtsduck/tsCTS2.h \

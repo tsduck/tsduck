@@ -99,6 +99,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsCPDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCPIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCRC32.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCTR.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCTRTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCTS1.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCTS1Template.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCTS2.h" />

@@ -295,6 +295,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsCRC32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCTR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCTRTemplate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCTS1.h">
       <Filter>Header Files</Filter>
     </ClInclude>

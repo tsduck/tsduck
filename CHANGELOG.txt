@@ -2,12 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1364
+VERSION 3.19-1365
 
 [IMP] Improvements on existing commands and plugins:
 
-  * Added options --aes-cbc and --cbc-iv to plugins "scrambler" and
-    "descrambler".
+  * Added options --aes-cbc, --aes-ctr, --iv, --ctr-counter-bits to plugins
+    "scrambler" and "descrambler".
 
 [BUG] Bug fixes:
 
