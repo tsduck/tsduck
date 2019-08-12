@@ -35,15 +35,18 @@
 #pragma once
 #include "tsUString.h"
 #include "tsByteBlock.h"
-#include "tsBlockCipherAlertInterface.h"
 
 namespace ts {
+
+    class BlockCipherAlertInterface;
+
     //!
     //! Abstract interface of block ciphers.
     //! @ingroup crypto
     //!
     class TSDUCKDLL BlockCipher
     {
+        TS_NOCOPY(BlockCipher);
     public:
         //!
         //! Constructor.
