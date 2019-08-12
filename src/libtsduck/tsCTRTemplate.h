@@ -147,7 +147,7 @@ bool ts::CTR<CIPHER>::encrypt(const void* plain, size_t plain_length, void* ciph
         const size_t size = std::min(plain_length, this->block_size);
         // cipher-text = plain-text XOR work[1]
         for (size_t i = 0; i < size; ++i) {
-            ct[i] = work[this->block_size + i] ^ pt[i];
+            ct[i] = this->work[this->block_size + i] ^ pt[i];
         }
         // work[0] += 1
         if (!incrementCounter()) {
