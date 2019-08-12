@@ -100,7 +100,7 @@ size_t ts::CipherChaining::defaultRounds() const
     return algo == nullptr ? 0 : algo->defaultRounds();
 }
 
-bool ts::CipherChaining::setKey (const void* key, size_t key_length, size_t rounds)
+bool ts::CipherChaining::setKeyImpl(const void* key, size_t key_length, size_t rounds)
 {
     return algo != nullptr && algo->setKey(key, key_length, rounds);
 }

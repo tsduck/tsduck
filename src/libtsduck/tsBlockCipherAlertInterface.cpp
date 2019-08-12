@@ -26,34 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Interface to be notified of asynchronous ECM generation using ECMGClient.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-#include "tsECMGSCS.h"
+#include "tsBlockCipherAlertInterface.h"
+TSDUCK_SOURCE;
 
-namespace ts {
-
-    //!
-    //! Interface for classes which need to be notified of asynchronous ECM generation using ECMGClient.
-    //! @ingroup mpeg
-    //!
-    class TSDUCKDLL ECMGClientHandlerInterface
-    {
-    public:
-        //!
-        //! This hook is invoked when an ECM is available.
-        //! It is invoked in the context of an internal thread of the ECMG client object.
-        //! @param [in] response The response from the ECMG.
-        //!
-        virtual void handleECM(const ecmgscs::ECMResponse& response) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~ECMGClientHandlerInterface();
-    };
+ts::BlockCipherAlertInterface::~BlockCipherAlertInterface()
+{
 }

@@ -20,10 +20,9 @@ TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
 // Schedule a new key. If rounds is zero, the default is used.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::TDES::setKey(const void* key, size_t key_length, size_t rounds)
+bool ts::TDES::setKeyImpl(const void* key, size_t key_length, size_t rounds)
 {
     if (key_length != KEY_SIZE || (rounds != 0 && rounds != ROUNDS)) {
         return false;
@@ -45,12 +44,9 @@ bool ts::TDES::setKey(const void* key, size_t key_length, size_t rounds)
 
 //----------------------------------------------------------------------------
 // Encryption in ECB mode.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::TDES::encrypt(const void* plain, size_t plain_length,
-                       void* cipher, size_t cipher_maxsize,
-                       size_t* cipher_length)
+bool ts::TDES::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (plain_length != BLOCK_SIZE || cipher_maxsize < BLOCK_SIZE) {
         return false;
@@ -77,12 +73,9 @@ bool ts::TDES::encrypt(const void* plain, size_t plain_length,
 
 //----------------------------------------------------------------------------
 // Decryption in ECB mode.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::TDES::decrypt(const void* cipher, size_t cipher_length,
-                       void* plain, size_t plain_maxsize,
-                       size_t* plain_length)
+bool ts::TDES::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     if (cipher_length != BLOCK_SIZE || plain_maxsize < BLOCK_SIZE) {
         return false;

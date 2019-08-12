@@ -104,11 +104,14 @@ namespace ts {
         virtual size_t minRounds() const override;
         virtual size_t maxRounds() const override;
         virtual size_t defaultRounds() const override;
-        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
-        virtual bool encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length = nullptr) override;
-        virtual bool decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length = nullptr) override;
-        virtual bool encryptInPlace(void* data, size_t data_length, size_t* max_actual_length = nullptr) override;
-        virtual bool decryptInPlace(void* data, size_t data_length, size_t* max_actual_length = nullptr) override;
+
+    protected:
+        // Implementation of BlockCipher interface.
+        virtual bool setKeyImpl(const void* key, size_t key_length, size_t rounds) override;
+        virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
+        virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        virtual bool encryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length) override;
+        virtual bool decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length) override;
 
     private:
         // Block cipher data

@@ -117,7 +117,7 @@ bool ts::CTR<CIPHER>::incrementCounter()
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::CTR<CIPHER>::encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (this->algo == nullptr ||
         this->iv.size() != this->block_size ||
@@ -167,8 +167,8 @@ bool ts::CTR<CIPHER>::encrypt(const void* plain, size_t plain_length, void* ciph
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::CTR<CIPHER>::decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+bool ts::CTR<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     // With CTR, the encryption and decryption are identical operations.
-    return this->encrypt(cipher, cipher_length, plain, plain_maxsize, plain_length);
+    return this->encryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);
 }

@@ -89,6 +89,7 @@
 #include "tsBitRateRegulator.h"
 #include "tsBitStream.h"
 #include "tsBlockCipher.h"
+#include "tsBlockCipherAlertInterface.h"
 #include "tsBouquetNameDescriptor.h"
 #include "tsByteBlock.h"
 #include "tsCableDeliverySystemDescriptor.h"

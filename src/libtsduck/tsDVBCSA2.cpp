@@ -570,7 +570,7 @@ void ts::DVBCSA2::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
 // Set the control word for subsequent encrypt/decrypt operations
 //----------------------------------------------------------------------------
 
-bool ts::DVBCSA2::setKey(const void* key, size_t key_length, size_t rounds)
+bool ts::DVBCSA2::setKeyImpl(const void* key, size_t key_length, size_t rounds)
 {
     // Only one possible key size.
     if (key == nullptr || key_length != KEY_SIZE) {
@@ -599,7 +599,7 @@ bool ts::DVBCSA2::setKey(const void* key, size_t key_length, size_t rounds)
 // Encrypt a data block (typically the payload of a TS or PES packet).
 //----------------------------------------------------------------------------
 
-bool ts::DVBCSA2::encryptInPlace(void* addr, size_t size, size_t* max_actual_length)
+bool ts::DVBCSA2::encryptInPlaceImpl(void* addr, size_t size, size_t* max_actual_length)
 {
     uint8_t* data = reinterpret_cast<uint8_t*>(addr);
     const size_t nblocks = size / 8;   // number of blocks
@@ -663,7 +663,7 @@ bool ts::DVBCSA2::encryptInPlace(void* addr, size_t size, size_t* max_actual_len
 // Decrypt a data block (typically the payload of a TS or PES packet).
 //----------------------------------------------------------------------------
 
-bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_length)
+bool ts::DVBCSA2::decryptInPlaceImpl(void* addr, size_t size, size_t* max_actual_length)
 {
     uint8_t* data = reinterpret_cast<uint8_t*>(addr);
     const size_t nblocks = size / 8;  // number of blocks
@@ -723,25 +723,25 @@ bool ts::DVBCSA2::decryptInPlace(void* addr, size_t size, size_t* max_actual_len
 // Wrappers for encrypt and decrypt.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCSA2::encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+bool ts::DVBCSA2::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (plain == nullptr || cipher == nullptr || cipher_maxsize < plain_length) {
         return false;
     }
     else {
         ::memcpy(cipher, plain, plain_length);
-        return encryptInPlace(cipher, plain_length, cipher_length);
+        return encryptInPlaceImpl(cipher, plain_length, cipher_length);
     }
 }
 
-bool ts::DVBCSA2::decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+bool ts::DVBCSA2::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     if (cipher == nullptr || plain == nullptr || plain_maxsize < cipher_length) {
         return false;
     }
     else {
         ::memcpy(plain, cipher, cipher_length);
-        return decryptInPlace(plain, cipher_length, plain_length);
+        return decryptInPlaceImpl(plain, cipher_length, plain_length);
     }
 }
 

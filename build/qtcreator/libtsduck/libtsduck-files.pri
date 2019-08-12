@@ -65,6 +65,7 @@ HEADERS += \
     ../../../src/libtsduck/tsBitRateRegulator.h \
     ../../../src/libtsduck/tsBitStream.h \
     ../../../src/libtsduck/tsBlockCipher.h \
+    ../../../src/libtsduck/tsBlockCipherAlertInterface.h \
     ../../../src/libtsduck/tsBouquetNameDescriptor.h \
     ../../../src/libtsduck/tsByteBlock.h \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
@@ -565,6 +566,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBinaryTable.cpp \
     ../../../src/libtsduck/tsBitRateRegulator.cpp \
     ../../../src/libtsduck/tsBlockCipher.cpp \
+    ../../../src/libtsduck/tsBlockCipherAlertInterface.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
