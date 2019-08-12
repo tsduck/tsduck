@@ -40,6 +40,7 @@
 #include "tsMD5.h"
 #include "tsECB.h"
 #include "tsCBC.h"
+#include "tsCTR.h"
 #include "tsCTS1.h"
 #include "tsCTS2.h"
 #include "tsCTS3.h"
@@ -79,8 +80,9 @@ public:
     virtual void afterTest() override;
 
     void testAES();
-    void testAESECB();
+    void testAES_ECB();
     void testAES_CBC();
+    void testAES_CTR();
     void testAES_CTS1();
     void testAES_CTS2();
     void testAES_CTS3();
@@ -101,8 +103,9 @@ public:
 
     TSUNIT_TEST_BEGIN(CryptoTest);
     TSUNIT_TEST(testAES);
-    TSUNIT_TEST(testAESECB);
+    TSUNIT_TEST(testAES_ECB);
     TSUNIT_TEST(testAES_CBC);
+    TSUNIT_TEST(testAES_CTR);
     TSUNIT_TEST(testAES_CTS1);
     TSUNIT_TEST(testAES_CTS2);
     TSUNIT_TEST(testAES_CTS3);
@@ -350,7 +353,7 @@ void CryptoTest::testAES()
     }
 }
 
-void CryptoTest::testAESECB()
+void CryptoTest::testAES_ECB()
 {
     ts::ECB<ts::AES> ecb_aes;
     const size_t tv_count = sizeof(tv_ecb_aes) / sizeof(TV_AES_CHAIN);
@@ -367,6 +370,16 @@ void CryptoTest::testAES_CBC()
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_cbc_aes + tvi;
         testChaining(cbc_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+    }
+}
+
+void CryptoTest::testAES_CTR()
+{
+    ts::CTR<ts::AES> ctr_aes;
+    const size_t tv_count = sizeof(tv_ctr_aes) / sizeof(TV_AES_CHAIN);
+    for (size_t tvi = 0; tvi < tv_count; ++tvi) {
+        const TV_AES_CHAIN* tv = tv_ctr_aes + tvi;
+        testChaining(ctr_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
 }
 

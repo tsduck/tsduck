@@ -117,6 +117,7 @@
 #include "tsCPDescriptor.h"
 #include "tsCPIdentifierDescriptor.h"
 #include "tsCRC32.h"
+#include "tsCTR.h"
 #include "tsCTS1.h"
 #include "tsCTS2.h"
 #include "tsCTS3.h"

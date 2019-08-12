@@ -2690,6 +2690,7 @@ Bits = 8
 0x70 = ATIS IIF IDSA for MPEG-2 TS
 0x71-0x7F = ATIS defined
 0xF0 = AES-CBC with externally-defined IV (TSDuck-specific)
+0xF1 = AES-CTR with externally-defined IV (TSDuck-specific)
 
 [MHPTransportProtocolId]
 # In transport_protocol_descriptor (ETSI TS 102 812)
