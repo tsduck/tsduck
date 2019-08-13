@@ -708,11 +708,11 @@ TS_MSC_NOWARNING(4251)  // 'classname' : class 'std::vector<_Ty>' needs to have 
 TS_MSC_NOWARNING(4275)  // non dll-interface class 'std::_Container_base_aux' used as base for dll-interface class 'std::_Container_base_aux_alloc_real<_Alloc>'
 TS_MSC_NOWARNING(4355)  // 'this' : used in base member initializer list
 TS_MSC_NOWARNING(4365)  // conversion from 'type1' to 'type2', signed/unsigned mismatch
-TS_MSC_NOWARNING(4514)  // unreferenced inline function has been removed
-TS_MSC_NOWARNING(4571)  // catch (...) semantics changed since Visual C++ 7.1; structured exceptions(SEH) are no longer caught
 TS_MSC_NOWARNING(4619)  // disablement of warning that doesn't exist
+TS_MSC_NOWARNING(4623)  // default constructor was implicitly defined as deleted
 TS_MSC_NOWARNING(4625)  // copy constructor was implicitly defined as deleted
 TS_MSC_NOWARNING(4626)  // assignment operator was implicitly defined as deleted
+TS_MSC_NOWARNING(4627)  // 'header_file': skipped when looking for precompiled header use
 TS_MSC_NOWARNING(4628)  // digraphs not supported with -Ze. Character sequence '<:' not interpreted as alternate token for '['
 TS_MSC_NOWARNING(4820)  // 'n' bytes padding added after data member 'nnnnn'
 TS_MSC_NOWARNING(5026)  // move constructor was implicitly defined as deleted
@@ -720,6 +720,8 @@ TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function
 
 // The following ones should really be informational instead of warning:
 TS_MSC_NOWARNING(4371)  // layout of class may have changed from a previous version of the compiler due to better packing of member 'xxxx'
+TS_MSC_NOWARNING(4514)  // unreferenced inline function has been removed
+TS_MSC_NOWARNING(4571)  // catch (...) semantics changed since Visual C++ 7.1; structured exceptions(SEH) are no longer caught
 TS_MSC_NOWARNING(4710)  // 'xxx' : function not inlined
 TS_MSC_NOWARNING(4711)  // function 'xxx' selected for automatic inline expansion
 TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
@@ -744,10 +746,6 @@ TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(reserved-id-macro)
 TS_MSC_NOWARNING(4263)
 TS_MSC_NOWARNING(4264)
-TS_MSC_NOWARNING(4571)
-TS_MSC_NOWARNING(4625)
-TS_MSC_NOWARNING(4626)
-TS_MSC_NOWARNING(4627)
 TS_MSC_NOWARNING(4668)
 TS_MSC_NOWARNING(4774)
 TS_MSC_NOWARNING(5026)
