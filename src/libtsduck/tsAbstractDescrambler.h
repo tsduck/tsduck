@@ -58,6 +58,7 @@ namespace ts {
     public:
         // Implementation of ProcessorPlugin interface.
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

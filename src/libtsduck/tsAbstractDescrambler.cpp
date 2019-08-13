@@ -90,6 +90,40 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
 
 
 //----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::AbstractDescrambler::getOptions()
+{
+    // Load command line arguments.
+    _use_service = present(u"");
+    _service.set(value(u""));
+    _synchronous = present(u"synchronous") || !tsp->realtime();
+    getIntValues(_pids, u"pid");
+    if (!_scrambling.loadArgs(*this)) {
+        return false;
+    }
+
+    // Descramble either a service or a list of PID's, not a mixture of them.
+    if ((_use_service + _pids.any()) != 1) {
+        tsp->error(u"specify either a service or a list of PID's");
+        return false;
+    }
+
+    // We need to decipher ECM's if we descramble a service without fixed control words.
+    _need_ecm = _use_service && !_scrambling.hasFixedCW();
+
+    // To descramble a fixed list of PID's, we need fixed control words.
+    if (_pids.any() && !_scrambling.hasFixedCW()) {
+        tsp->error(u"specify control words to descramble an explicit list of PID's");
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Constructor of ECMStream inner class.
 //----------------------------------------------------------------------------
 
@@ -131,35 +165,16 @@ ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStr
 
 bool ts::AbstractDescrambler::start()
 {
-    // Load command line arguments.
-    _use_service = present(u"");
-    _service.set(value(u""));
-    _synchronous = present(u"synchronous") || !tsp->realtime();
-    getIntValues(_pids, u"pid");
-    if (!_scrambling.loadArgs(*this)) {
-        return false;
-    }
-
-    // Descramble either a service or a list of PID's, not a mixture of them.
-    if ((_use_service + _pids.any()) != 1) {
-        tsp->error(u"specify either a service or a list of PID's");
-        return false;
-    }
-
-    // We need to decipher ECM's if we descramble a service without fixed control words.
-    _need_ecm = _use_service && !_scrambling.hasFixedCW();
-
-    // To descramble a fixed list of PID's, we need fixed control words.
-    if (_pids.any() && !_scrambling.hasFixedCW()) {
-        tsp->error(u"specify control words to descramble an explicit list of PID's");
-        return false;
-    }
-
     // Reset descrambler state
     _abort = false;
     _ecm_streams.clear();
     _scrambled_streams.clear();
     _demux.reset();
+
+    // Initialize the scrambling engine.
+    if (!_scrambling.start()) {
+        return false;
+    }
 
     // In asynchronous mode, create a thread for ECM processing
     if (_need_ecm && !_synchronous) {
@@ -192,6 +207,7 @@ bool ts::AbstractDescrambler::stop()
         _ecm_thread.waitForTermination();
     }
 
+    _scrambling.stop();
     return true;
 }
 

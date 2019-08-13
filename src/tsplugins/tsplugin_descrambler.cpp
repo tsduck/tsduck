@@ -52,7 +52,7 @@ namespace ts {
         DescramblerPlugin(TSP*);
 
         // Implementation of ProcessorPlugin interface.
-        virtual bool start() override;
+        virtual bool getOptions() override;
 
     protected:
         // Implementation of AbstractDescrambler.
@@ -91,16 +91,16 @@ ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Plugin start method.
+// Plugin get options method.
 //----------------------------------------------------------------------------
 
-bool ts::DescramblerPlugin::start()
+bool ts::DescramblerPlugin::getOptions()
 {
     // Load plugin-specific command line arguments.
     _cas_id = intValue<uint16_t>(u"cas-id", 0);
 
     // The invoke superclass to actually start the descrambler.
-    return AbstractDescrambler::start();
+    return AbstractDescrambler::getOptions();
 }
 
 
