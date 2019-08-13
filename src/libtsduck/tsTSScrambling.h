@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsBlockCipherAlertInterface.h"
 #include "tsArgs.h"
 #include "tsCerrReport.h"
 #include "tsTSPacket.h"
@@ -62,7 +63,7 @@ namespace ts {
     //! - For decryption, the next key is used each time a new scrambling_control
     //!   value is found in a TS header.
     //!
-    class TSDUCKDLL TSScrambling
+    class TSDUCKDLL TSScrambling : private BlockCipherAlertInterface
     {
     public:
         //!
@@ -159,6 +160,20 @@ namespace ts {
         void setEntropyMode(DVBCSA2::EntropyMode mode);
 
         //!
+        //! Start the scrambling session.
+        //! Reinitialize list of CW's, open files, etc.
+        //! @return True on success, false on error.
+        //!
+        bool start();
+
+        //!
+        //! Stop the scrambling session.
+        //! Close files, etc.
+        //! @return True on success, false on error.
+        //!
+        bool stop();
+
+        //!
         //! Set the control word for encrypt and decrypt.
         //! @param [in] cw The control word to use.
         //! @param [in] parity Use the parity of this integer value (odd or even).
@@ -194,6 +209,8 @@ namespace ts {
         Report&          _report;
         uint8_t          _scrambling_type;
         bool             _explicit_type;
+        UString          _out_cw_name;
+        std::ofstream    _out_cw_file;
         CWList           _cw_list;
         CWList::iterator _next_cw;
         uint8_t          _encrypt_scv;  // Encryption: key to use (SC_EVEN_KEY or SC_ODD_KEY).
@@ -208,7 +225,10 @@ namespace ts {
         // Set the next fixed control word as scrambling key.
         bool setNextFixedCW(int parity);
 
-        // Inaccessible operations.
+        // Implementation of BlockCipherAlertInterface.
+        virtual bool handleBlockCipherAlert(BlockCipher& cipher, AlertReason reason) override;
+
+        // Inaccessible operations. Forbid assignment but not copy/move constructors.
         TSScrambling& operator=(TSScrambling&&) = delete;
         TSScrambling& operator=(const TSScrambling&) = delete;
     };

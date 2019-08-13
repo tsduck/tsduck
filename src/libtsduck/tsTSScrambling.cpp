@@ -39,6 +39,8 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
     _explicit_type(false),
+    _out_cw_name(),
+    _out_cw_file(),
     _cw_list(),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -57,6 +59,8 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
+    _out_cw_name(),
+    _out_cw_file(),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -75,6 +79,8 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
+    _out_cw_name(),
+    _out_cw_file(),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -131,6 +137,12 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
 
         _scrambling_type = scrambling;
     }
+
+    // Make sure the current scramblers notify alerts to this object.
+    _scrambler[0]->setAlertHandler(this);
+    _scrambler[1]->setAlertHandler(this);
+    _scrambler[0]->setCipherId(0);
+    _scrambler[1]->setCipherId(1);
     return true;
 }
 
@@ -201,6 +213,13 @@ void ts::TSScrambling::defineOptions(Args& args) const
               u"digits with --atis-idsa or --dvb-cissa). The next control word is used each time the "
               u"\"scrambling_control\" changes in the TS packets header. When all control "
               u"words are used, the first one is used again, and so on.");
+
+    args.option(u"output-cw-file", 0, Args::STRING);
+    args.help(u"output-cw-file", u"name",
+              u"Specifies a text file to create. "
+              u"Each line of the file will contain a control word in hexadecimal digits. "
+              u"Each time a new control word is used to scramble or descramble packets, it is logged in the file. "
+              u"The created file can be used later using --cw-file.");
 
     args.option(u"dvb-cissa");
     args.help(u"dvb-cissa",
@@ -312,9 +331,79 @@ bool ts::TSScrambling::loadArgs(Args& args)
         args.verbose(u"loaded %d control words", {_cw_list.size()});
     }
 
-    // Point next CW to end of list.
-    _next_cw = _cw_list.end();
+    // Name of the output file for control words.
+    args.getValue(_out_cw_name, u"output-cw-file");
+
     return args.valid();
+}
+
+
+//----------------------------------------------------------------------------
+// Start the scrambling session.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::start()
+{
+    bool success = true;
+
+    // Point next CW to end of list. Will loop to first one.
+    _next_cw = _cw_list.end();
+
+    // Create the output file for control words.
+    if (!_out_cw_name.empty()) {
+        _out_cw_file.open(_out_cw_name.toUTF8().c_str(), std::ios::out);
+        success = !_out_cw_file.fail();
+        if (!success) {
+            _report.error(u"error creating %s", {_out_cw_name});
+        }
+    }
+
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop the scrambling session.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::stop()
+{
+    // Close the output file for control words, if one was created.
+    if (_out_cw_file.is_open()) {
+        _out_cw_file.close();
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipherAlertInterface.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::handleBlockCipherAlert(BlockCipher& cipher, AlertReason reason)
+{
+    switch (reason) {
+        case FIRST_ENCRYPTION:
+        case FIRST_DECRYPTION: {
+            // First usage of a new CW. Report it on debug and add it in --output-cw-file when necessary.
+            ByteBlock key;
+            cipher.getKey(key);
+            if (!key.empty()) {
+                const UString key_string(UString::Dump(key, UString::SINGLE_LINE | UString::COMPACT));
+                _report.debug(u"starting using CW %s (%s)", {key_string, cipher.cipherId() == 0 ? u"even" : u"odd"});
+                if (_out_cw_file.is_open()) {
+                    _out_cw_file << key_string << std::endl;
+                }
+            }
+            return true;
+        }
+        case ENCRYPTION_EXCEEDED:
+        case DECRYPTION_EXCEEDED:
+        default: {
+            // Not interested in other alerts.
+            return true;
+        }
+    }
 }
 
 
