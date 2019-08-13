@@ -16,6 +16,7 @@
 3 = Viaccess
 4 = ThalesCrypt
 5 = SafeAccess
+6 = Widevine
 
 [TableId]
 # MPEG table id. Most significant byte is a CAS family.

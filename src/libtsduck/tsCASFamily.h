@@ -47,6 +47,7 @@ namespace ts {
         CAS_VIACCESS    = 3,  //!< Viaccess.
         CAS_THALESCRYPT = 4,  //!< ThalesCrypt (for TPS).
         CAS_SAFEACCESS  = 5,  //!< SafeAccess (Logiways).
+        CAS_WIDEVINE    = 6,  //!< Widevine CAS (Google).
     };
 
     //!

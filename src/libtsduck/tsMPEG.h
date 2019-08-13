@@ -1435,6 +1435,8 @@ namespace ts {
         CASID_NAGRA_MAX       = 0x18FF,  //!< Maximum CAS Id value for Nagravision.
         CASID_THALESCRYPT_MIN = 0x4A80,  //!< Minimum CAS Id value for ThalesCrypt.
         CASID_THALESCRYPT_MAX = 0x4A8F,  //!< Maximum CAS Id value for ThalesCrypt.
+        CASID_WIDEVINE_MIN    = 0x4AD4,  //!< Minimum CAS Id value for Widevine CAS.
+        CASID_WIDEVINE_MAX    = 0x4AD5,  //!< Maximum CAS Id value for Widevine CAS.
         CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
     };
 
