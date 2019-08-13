@@ -55,6 +55,9 @@ ts::CASFamily ts::CASFamilyOf (uint16_t casid)
     else if (casid >= CASID_THALESCRYPT_MIN && casid <= CASID_THALESCRYPT_MAX) {
         return CAS_THALESCRYPT;
     }
+    else if (casid >= CASID_WIDEVINE_MIN && casid <= CASID_WIDEVINE_MAX) {
+        return CAS_WIDEVINE;
+    }
     else if (casid == CASID_SAFEACCESS) {
         return CAS_SAFEACCESS;
     }
