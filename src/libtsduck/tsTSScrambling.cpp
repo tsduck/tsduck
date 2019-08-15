@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSScrambling.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -103,6 +104,8 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
 bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplicit)
 {
     if (overrideExplicit || !_explicit_type) {
+
+        // Select the right pair of scramblers.
         switch (scrambling) {
             case SCRAMBLING_DVB_CSA1:
             case SCRAMBLING_DVB_CSA2:
@@ -135,7 +138,11 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
                 return false;
         }
 
-        _scrambling_type = scrambling;
+        // Set scrambling type.
+        if (_scrambling_type != scrambling) {
+            _report.debug(u"switching scrambling type from %s to %s", {DVBNameFromSection(u"ScramblingMode", _scrambling_type), DVBNameFromSection(u"ScramblingMode", scrambling)});
+            _scrambling_type = scrambling;
+        }
     }
 
     // Make sure the current scramblers notify alerts to this object.
@@ -389,7 +396,7 @@ bool ts::TSScrambling::handleBlockCipherAlert(BlockCipher& cipher, AlertReason r
             ByteBlock key;
             cipher.getKey(key);
             if (!key.empty()) {
-                const UString key_string(UString::Dump(key, UString::SINGLE_LINE | UString::COMPACT));
+                const UString key_string(UString::Dump(key, UString::SINGLE_LINE));
                 _report.debug(u"starting using CW %s (%s)", {key_string, cipher.cipherId() == 0 ? u"even" : u"odd"});
                 if (_out_cw_file.is_open()) {
                     _out_cw_file << key_string << std::endl;
