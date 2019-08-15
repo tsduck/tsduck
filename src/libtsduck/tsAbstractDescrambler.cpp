@@ -124,6 +124,18 @@ bool ts::AbstractDescrambler::getOptions()
 
 
 //----------------------------------------------------------------------------
+// Constructor of CWData inner class.
+//----------------------------------------------------------------------------
+
+ts::AbstractDescrambler::CWData::CWData(uint8_t mode) :
+    scrambling(mode),
+    cw(),
+    iv()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Constructor of ECMStream inner class.
 //----------------------------------------------------------------------------
 
@@ -377,6 +389,10 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
     Section ecm(estream.ecm, COPY);
     estream.new_ecm = false;
 
+    // Local data for deciphered CW's from ECM.
+    CWData cw_even(estream.scrambling.scramblingType());
+    CWData cw_odd(estream.scrambling.scramblingType());
+
     // In asynchronous mode, release the mutex.
     if (!_synchronous) {
         _mutex.release();
@@ -391,13 +407,11 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
                dumpSize < ecm.payloadSize() ? u" ..." : u""});
 
     // Submit the ECM to the CAS (subclass)
-    ByteBlock cw_even;
-    ByteBlock cw_odd;
     bool ok = decipherECM(ecm, cw_even, cw_odd);
 
     if (ok) {
-        tsp->debug(u"even CW: %s", {UString::Dump(cw_even, UString::SINGLE_LINE)});
-        tsp->debug(u"odd CW:  %s", {UString::Dump(cw_odd, UString::SINGLE_LINE)});
+        tsp->debug(u"even CW: %s", {UString::Dump(cw_even.cw, UString::SINGLE_LINE)});
+        tsp->debug(u"odd CW:  %s", {UString::Dump(cw_odd.cw, UString::SINGLE_LINE)});
     }
 
     // In asynchronous mode, relock the mutex.
@@ -410,12 +424,12 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
     // Compare extracted CW with previous ones to avoid signaling a new
     // CW when it is actually unchanged.
     if (ok) {
-        if (!estream.cw_valid || estream.cw_even != cw_even) {
+        if (!estream.cw_valid || estream.cw_even.cw != cw_even.cw) {
             // Previous even CW was either invalid or different from new one
             estream.new_cw_even = true;
             estream.cw_even = cw_even;
         }
-        if (!estream.cw_valid || estream.cw_odd != cw_odd) {
+        if (!estream.cw_valid || estream.cw_odd.cw != cw_odd.cw) {
             // Previous odd CW was either invalid or different from new one
             estream.new_cw_odd = true;
             estream.cw_odd = cw_odd;
@@ -557,11 +571,13 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
 
         // Store the new CW in the descrambler.
         if (scv == SC_EVEN_KEY) {
-            pecm->scrambling.setCW(pecm->cw_even, SC_EVEN_KEY);
+            pecm->scrambling.setScramblingType(pecm->cw_even.scrambling, false);
+            pecm->scrambling.setCW(pecm->cw_even.cw, SC_EVEN_KEY);
             pecm->new_cw_even = false;
         }
         else {
-            pecm->scrambling.setCW(pecm->cw_odd, SC_ODD_KEY);
+            pecm->scrambling.setScramblingType(pecm->cw_odd.scrambling, false);
+            pecm->scrambling.setCW(pecm->cw_odd.cw, SC_ODD_KEY);
             pecm->new_cw_odd = false;
         }
 
