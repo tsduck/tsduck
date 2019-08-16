@@ -131,7 +131,7 @@ uint16_t ts::CASMapper::casId(PID pid) const
 
 ts::CASFamily ts::CASMapper::casFamily(PID pid) const
 {
-    return CASFamilyOf(casId(pid));
+    return _duck.casFamily(CASFamilyOf(casId(pid)));
 }
 
 bool ts::CASMapper::isECM(PID pid) const
