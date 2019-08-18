@@ -74,6 +74,8 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
+    _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
+    _dvbcsa[1].setEntropyMode(other._dvbcsa[1].entropyMode());
 }
 
 ts::TSScrambling::TSScrambling(TSScrambling&& other) :
@@ -94,6 +96,8 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
+    _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
+    _dvbcsa[1].setEntropyMode(other._dvbcsa[1].entropyMode());
 }
 
 
