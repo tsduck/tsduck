@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::BlockCipher::BlockCipher() :
+    _key_set(false),
     _cipher_id(0),
     _key_encrypt_count(0),
     _key_decrypt_count(0),
@@ -59,7 +60,7 @@ ts::BlockCipher::~BlockCipher()
 bool ts::BlockCipher::getKey(ByteBlock& key) const
 {
     key = _current_key;
-    return isValidKeySize(key.size());
+    return _key_set && isValidKeySize(key.size());
 }
 
 
@@ -71,7 +72,8 @@ bool ts::BlockCipher::setKey(const void* key, size_t key_length, size_t rounds)
 {
     _key_encrypt_count = _key_decrypt_count = 0;
     _current_key.copy(key, key_length);
-    return setKeyImpl(key, key_length, rounds);
+    _key_set = setKeyImpl(key, key_length, rounds);
+    return _key_set;
 }
 
 
@@ -81,6 +83,11 @@ bool ts::BlockCipher::setKey(const void* key, size_t key_length, size_t rounds)
 
 bool ts::BlockCipher::allowEncrypt()
 {
+    // Check that a key was successfully set.
+    if (!_key_set) {
+        return false;
+    }
+
     // Check encryption limitations.
     if (_key_encrypt_count >= _key_encrypt_max &&
         (_alert == nullptr || _alert->handleBlockCipherAlert(*this, BlockCipherAlertInterface::ENCRYPTION_EXCEEDED)))
@@ -102,6 +109,11 @@ bool ts::BlockCipher::allowEncrypt()
 
 bool ts::BlockCipher::allowDecrypt()
 {
+    // Check that a key was successfully set.
+    if (!_key_set) {
+        return false;
+    }
+
     // Check decryption limitations.
     if (_key_decrypt_count >= _key_decrypt_max &&
         (_alert == nullptr || _alert->handleBlockCipherAlert(*this, BlockCipherAlertInterface::DECRYPTION_EXCEEDED)))
