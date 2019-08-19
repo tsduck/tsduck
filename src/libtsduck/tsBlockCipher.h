@@ -315,6 +315,7 @@ namespace ts {
         virtual bool decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length);
 
     private:
+        bool      _key_set;                // Current key successfully set.
         int       _cipher_id;              // Cipher identity (from application).
         size_t    _key_encrypt_count;      // Number of times the current key was used for decryption.
         size_t    _key_decrypt_count;      // Number of times the current key was used for decryption.
