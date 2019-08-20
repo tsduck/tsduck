@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::StuffingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::StuffingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

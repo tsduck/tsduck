@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::STT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::STT, MY_TID, MY_STD);
-TS_ID_SECTION_DISPLAY(ts::STT::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(ts::STT::DisplaySection, MY_TID);
 
 
 // The ATSC system time is the number of GPS seconds since 00:00:00 UTC, January 6th, 1980.

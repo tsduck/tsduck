@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::CVCT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::CVCT, MY_TID, MY_STD);
-TS_ID_SECTION_DISPLAY(ts::CVCT::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(ts::CVCT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------

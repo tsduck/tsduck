@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::HierarchyDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::HierarchyDescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::HierarchyDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::HierarchyDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

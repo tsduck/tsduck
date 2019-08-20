@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceRelocatedDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceRelocatedDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceRelocatedDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_FACTORY_REGISTER(ts::ServiceRelocatedDescriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
 
 
 //----------------------------------------------------------------------------

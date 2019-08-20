@@ -191,7 +191,11 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
 std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int indent, CASFamily cas)
 {
-    DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId());
+    // Update CAS with default one if necessary.
+    cas = _opt.duck.casFamily(cas);
+
+    // Find the display handler for this table id (and maybe CAS).
+    DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId(), cas);
 
     if (handler != nullptr) {
         handler(*this, section, indent);
@@ -209,22 +213,36 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 
 std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, CASFamily cas)
 {
-    std::ostream& strm(_opt.duck.out());
+    // Update CAS with default one if necessary.
+    cas = _opt.duck.casFamily(cas);
 
+    // Find the log handler for this table id (and maybe CAS).
+    LogSectionFunction handler = TablesFactory::Instance()->getSectionLog(section.tableId(), cas);
+    if (handler == nullptr) {
+        handler = LogUnknownSectionData;
+    }
+
+    // Output exactly one line.
+    std::ostream& strm(_opt.duck.out());
+    strm << header << handler(section, max_bytes) << std::endl;
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
+// Log the content of an unknown section.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TablesDisplay::LogUnknownSectionData(const Section& section, size_t max_bytes)
+{
     // Number of bytes to log.
     size_t log_size = section.payloadSize();
     if (max_bytes > 0 && max_bytes < log_size) {
         log_size = max_bytes;
     }
 
-    // Output exactly one line.
-    strm << header << UString::Dump(section.payload(), log_size, UString::SINGLE_LINE);
-    if (section.payloadSize() > log_size) {
-        strm << " ...";
-    }
-    strm << std::endl;
-
-    return strm;
+    // Build log line.
+    return UString::Dump(section.payload(), log_size, UString::SINGLE_LINE) + (section.payloadSize() > log_size ? u" ..." : u"");
 }
 
 

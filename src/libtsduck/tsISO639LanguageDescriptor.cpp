@@ -45,7 +45,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

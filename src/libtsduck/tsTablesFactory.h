@@ -35,6 +35,7 @@
 #pragma once
 #include "tsMPEG.h"
 #include "tsEDID.h"
+#include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsTablesPtr.h"
 #include "tsSingletonManager.h"
@@ -125,9 +126,18 @@ namespace ts {
         //!
         //! Get the display function for a given table id.
         //! @param [in] id Table id.
+        //! @param [in] cas Current CAS family.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplaySectionFunction getSectionDisplay(TID id) const;
+        DisplaySectionFunction getSectionDisplay(TID id, CASFamily cas = CAS_OTHER) const;
+
+        //!
+        //! Get the log function for a given table id.
+        //! @param [in] id Table id.
+        //! @param [in] cas Current CAS family.
+        //! @return Corresponding log function or zero if there is none.
+        //!
+        LogSectionFunction getSectionLog(TID id, CASFamily cas = CAS_OTHER) const;
 
         //!
         //! Get the display function for a given extended descriptor id.
@@ -138,6 +148,13 @@ namespace ts {
         //! @return Corresponding display function or zero if there is none.
         //!
         DisplayDescriptorFunction getDescriptorDisplay(const EDID& edid, TID tid = TID_NULL) const;
+
+        //!
+        //! Get the display function of the CA_descriptor for a given CA_system_id.
+        //! @param [in] cas CA_system_id.
+        //! @return Corresponding display function or zero if there is none.
+        //!
+        DisplayCADescriptorFunction getCADescriptorDisplay(uint16_t cas) const;
 
         //!
         //! Get the list of all registered table ids.
@@ -169,7 +186,7 @@ namespace ts {
         //! The registration is performed using constructors.
         //! Thus, it is possible to perform a registration in the declaration of a static object.
         //!
-        class Register
+        class TSDUCKDLL Register
         {
             TS_NOBUILD_NOCOPY(Register);
         public:
@@ -219,39 +236,87 @@ namespace ts {
 
             //!
             //! The constructor registers a section display function for a given table id.
-            //! @param [in] id Table id for this type.
             //! @param [in] func Display function for the corresponding sections.
-            //! @see TS_ID_SECTION_DISPLAY
+            //! @param [in] id Table id for this type.
+            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @see TS_FACTORY_REGISTER
             //!
-            Register(TID id, DisplaySectionFunction func);
+            Register(DisplaySectionFunction func, TID id, CASFamily cas = CAS_OTHER);
 
             //!
             //! The constructor registers a section display function for a given range of ids.
+            //! @param [in] func Display function for the corresponding sections.
             //! @param [in] minId Minimum table id for this type.
             //! @param [in] maxId Maximum table id for this type.
-            //! @param [in] func Display function for the corresponding sections.
-            //! @see TS_ID_SECTION_RANGE_DISPLAY
+            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @see TS_FACTORY_REGISTER
             //!
-            Register(TID minId, TID maxId, DisplaySectionFunction func);
+            Register(DisplaySectionFunction func, TID minId, TID maxId, CASFamily cas = CAS_OTHER);
+
+            //!
+            //! The constructor registers a section log function for a given table id.
+            //! @param [in] func Log function for the corresponding sections.
+            //! @param [in] id Table id for this type.
+            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @see TS_FACTORY_REGISTER
+            //!
+            Register(LogSectionFunction func, TID id, CASFamily cas = CAS_OTHER);
+
+            //!
+            //! The constructor registers a section log function for a given range of ids.
+            //! @param [in] func Log function for the corresponding sections.
+            //! @param [in] minId Minimum table id for this type.
+            //! @param [in] maxId Maximum table id for this type.
+            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @see TS_FACTORY_REGISTER
+            //!
+            Register(LogSectionFunction func, TID minId, TID maxId, CASFamily cas = CAS_OTHER);
 
             //!
             //! The constructor registers a descriptor display function for a given descriptor id.
-            //! @param [in] edid Exended descriptor id.
             //! @param [in] func Display function for the corresponding descriptors.
-            //! @see TS_ID_DESCRIPTOR_DISPLAY
+            //! @param [in] edid Exended descriptor id.
+            //! @see TS_FACTORY_REGISTER
             //!
-            Register(const EDID& edid, DisplayDescriptorFunction func);
+            Register(DisplayDescriptorFunction func, const EDID& edid);
+
+            //!
+            //! The constructor registers a CA_descriptor display function for a given CAS family.
+            //! @param [in] func Display function for the corresponding descriptors.
+            //! @param [in] cas CAS family for this type.
+            //! @see TS_FACTORY_REGISTER
+            //!
+            Register(DisplayCADescriptorFunction func, CASFamily cas);
+
+            //!
+            //! The constructor registers a CA_descriptor display function for a given range of CA_system_id.
+            //! @param [in] func Display function for the corresponding descriptors.
+            //! @param [in] minCAS Minimum CAS id for this type.
+            //! @param [in] maxCAS Maximum CAS id for this type.
+            //! @see TS_FACTORY_REGISTER
+            //!
+            Register(DisplayCADescriptorFunction func, uint16_t minCAS, uint16_t maxCAS);
         };
 
     private:
-        std::map<TID, TableFactory>               _tableIds;
-        std::map<TID, Standards>                  _tableStandards;
-        std::map<EDID, DescriptorFactory>         _descriptorIds;
-        std::map<UString, TableFactory>           _tableNames;
-        std::map<UString, DescriptorFactory>      _descriptorNames;
-        std::multimap<UString, TID>               _descriptorTablesIds;  // For table-specific descriptors
-        std::map<TID, DisplaySectionFunction>     _sectionDisplays;
-        std::map<EDID, DisplayDescriptorFunction> _descriptorDisplays;
+        std::map<TID, TableFactory>                      _tableIds;
+        std::map<TID, Standards>                         _tableStandards;
+        std::map<EDID, DescriptorFactory>                _descriptorIds;
+        std::map<UString, TableFactory>                  _tableNames;
+        std::map<UString, DescriptorFactory>             _descriptorNames;
+        std::multimap<UString, TID>                      _descriptorTablesIds;       // For table-specific descriptors
+        std::map<uint16_t, DisplaySectionFunction>       _sectionDisplays;           // Key includes TID and CAS.
+        std::map<uint16_t, LogSectionFunction>           _sectionLogs;               // Key includes TID and CAS.
+        std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;
+        std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;   // Key is CAS system id.
+        std::map<CASFamily, DisplayCADescriptorFunction> _casFamilyDescriptorDisplays;
+
+        // Build a key in _sectionDisplays and _sectionLogs.
+        static uint16_t SectionDisplayIndex(TID id, CASFamily cas);
+
+        // Common code for getSectionDisplay and getSectionLog.
+        template <typename FUNCTION>
+        FUNCTION getSectionFunction(TID id, CASFamily cas, const std::map<uint16_t,FUNCTION>& funcMap) const;
 
         // Common code for getDescriptorFactory and getDescriptorDisplay.
         template <typename FUNCTION>
@@ -273,68 +338,53 @@ namespace ts {
 #define _TS_FACTORY(rettype,classname)    namespace { rettype _TS_FACTORY_NAME(_Factory)() {return new classname;} }
 #define _TS_TABLE_FACTORY(classname)      _TS_FACTORY(ts::AbstractTablePtr,classname)
 #define _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY(ts::AbstractDescriptorPtr,classname)
-#define _TS_FACTORY_REGISTER              static ts::TablesFactory::Register _TS_FACTORY_NAME(_Registrar)
 //! @endcond
+
+//!
+//! @hideinitializer
+//! Registration inside the ts::TablesFactory singleton.
+//! This macro is typically used in the .cpp file of a table or descriptor.
+//!
+#define TS_FACTORY_REGISTER static ts::TablesFactory::Register _TS_FACTORY_NAME(_Registrar)
 
 //!
 //! @hideinitializer
 //! Registration of the table id of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory), std)
+#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory), std)
 
 //!
 //! @hideinitializer
 //! Registration of a range of table ids of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId,std) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER((minId), (maxId), _TS_FACTORY_NAME(_Factory), std)
+#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((minId), (maxId), _TS_FACTORY_NAME(_Factory), std)
 
 //!
 //! @hideinitializer
 //! Registration of the descriptor tag of a subclass of ts::AbstractDescriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_ID_DESCRIPTOR_FACTORY(classname,id) _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory))
+#define TS_ID_DESCRIPTOR_FACTORY(classname,id) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_XML_TABLE_FACTORY(classname,xmlname) _TS_TABLE_FACTORY(classname) _TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
+#define TS_XML_TABLE_FACTORY(classname,xmlname) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractDescriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname) _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
+#define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractDescriptor for a table-specific descriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_XML_TABSPEC_DESCRIPTOR_FACTORY(classname, xmlname, ...) _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory), {__VA_ARGS__})
-
-//!
-//! @hideinitializer
-//! Registration of the display function for a table id.
-//! This macro is typically used in the .cpp file of a table.
-//!
-#define TS_ID_SECTION_DISPLAY(func, id) _TS_FACTORY_REGISTER((id), (func))
-
-//!
-//! @hideinitializer
-//! Registration of the display function for a range of table ids.
-//! This macro is typically used in the .cpp file of a table.
-//!
-#define TS_ID_SECTION_RANGE_DISPLAY(func, minId, maxId) _TS_FACTORY_REGISTER((minId), (maxId), (func))
-
-//!
-//! @hideinitializer
-//! Registration of the display function for a descriptor id.
-//! This macro is typically used in the .cpp file of a descriptor.
-//!
-#define TS_ID_DESCRIPTOR_DISPLAY(func, edid) _TS_FACTORY_REGISTER((edid), (func))
+#define TS_XML_TABSPEC_DESCRIPTOR_FACTORY(classname, xmlname, ...) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory), {__VA_ARGS__})

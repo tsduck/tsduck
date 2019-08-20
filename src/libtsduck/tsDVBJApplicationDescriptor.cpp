@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::DVBJApplicationDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::DVBJApplicationDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::DVBJApplicationDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_FACTORY_REGISTER(ts::DVBJApplicationDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------
