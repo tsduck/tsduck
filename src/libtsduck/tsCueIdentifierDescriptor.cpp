@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // The is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
 TS_XML_DESCRIPTOR_FACTORY(ts::CueIdentifierDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CueIdentifierDescriptor, ts::EDID::Private(MY_DID, 0));
-TS_ID_DESCRIPTOR_DISPLAY(ts::CueIdentifierDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, 0));
+TS_FACTORY_REGISTER(ts::CueIdentifierDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, 0));
 
 
 //----------------------------------------------------------------------------

@@ -129,10 +129,10 @@ namespace ts {
         //! @return A reference to the output stream.
         //!
         virtual std::ostream& displayDescriptor(const Descriptor& desc,
-                                               int indent = 0,
-                                               TID tid = TID_NULL,
-                                               PDS pds = 0,
-                                               CASFamily cas = CAS_OTHER);
+                                                int indent = 0,
+                                                TID tid = TID_NULL,
+                                                PDS pds = 0,
+                                                CASFamily cas = CAS_OTHER);
 
         //!
         //! Display the payload of a descriptor on the output stream.
@@ -184,7 +184,6 @@ namespace ts {
         //!
         virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
 
-    protected:
         //!
         //! Display the content of an unknown section.
         //! The command-line formatting options are used to analyze the content.
@@ -192,6 +191,14 @@ namespace ts {
         //! @param [in] indent Indentation width.
         //!
         void displayUnkownSectionData(const ts::Section& section, int indent);
+
+        //!
+        //! Log the content of an unknown section.
+        //! @param [in] section The section to log.
+        //! @param [in] max_bytes Maximum number of bytes to log from the section. 0 means unlimited.
+        //! @return A one-line brief summary of the table.
+        //!
+        static UString LogUnknownSectionData(const Section& section, size_t max_bytes);
 
         //!
         //! Display the content of an unknown descriptor.

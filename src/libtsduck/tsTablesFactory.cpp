@@ -50,8 +50,21 @@ ts::TablesFactory::TablesFactory() :
     _descriptorNames(),
     _descriptorTablesIds(),
     _sectionDisplays(),
-    _descriptorDisplays()
+    _sectionLogs(),
+    _descriptorDisplays(),
+    _casIdDescriptorDisplays(),
+    _casFamilyDescriptorDisplays()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Build a key in _sectionDisplays.
+//----------------------------------------------------------------------------
+
+uint16_t ts::TablesFactory::SectionDisplayIndex(TID id, CASFamily cas)
+{
+    return (uint16_t(cas) << 8) | (uint16_t(id) & 0x00FF);
 }
 
 
@@ -91,21 +104,45 @@ ts::TablesFactory::Register::Register(const UString& node_name, DescriptorFactor
     }
 }
 
-ts::TablesFactory::Register::Register(TID id, DisplaySectionFunction func)
+ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID id, CASFamily cas)
 {
-    TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(id, func));
+    TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(SectionDisplayIndex(id, cas), func));
 }
 
-ts::TablesFactory::Register::Register(TID minId, TID maxId, DisplaySectionFunction func)
+ts::TablesFactory::Register::Register(DisplaySectionFunction func, TID minId, TID maxId, CASFamily cas)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(id, func));
+        TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(SectionDisplayIndex(id, cas), func));
     }
 }
 
-ts::TablesFactory::Register::Register(const EDID& edid, DisplayDescriptorFunction func)
+ts::TablesFactory::Register::Register(LogSectionFunction func, TID id, CASFamily cas)
+{
+    TablesFactory::Instance()->_sectionLogs.insert(std::make_pair(SectionDisplayIndex(id, cas), func));
+}
+
+ts::TablesFactory::Register::Register(LogSectionFunction func, TID minId, TID maxId, CASFamily cas)
+{
+    for (TID id = minId; id <= maxId; ++id) {
+        TablesFactory::Instance()->_sectionLogs.insert(std::make_pair(SectionDisplayIndex(id, cas), func));
+    }
+}
+
+ts::TablesFactory::Register::Register(DisplayDescriptorFunction func, const EDID& edid)
 {
     TablesFactory::Instance()->_descriptorDisplays.insert(std::make_pair(edid, func));
+}
+
+ts::TablesFactory::Register::Register(DisplayCADescriptorFunction func, uint16_t minCAS, uint16_t maxCAS)
+{
+    for (uint16_t id = minCAS; id <= maxCAS; ++id) {
+        TablesFactory::Instance()->_casIdDescriptorDisplays.insert(std::make_pair(id, func));
+    }
+}
+
+ts::TablesFactory::Register::Register(DisplayCADescriptorFunction func, CASFamily cas)
+{
+    TablesFactory::Instance()->_casFamilyDescriptorDisplays.insert(std::make_pair(cas, func));
 }
 
 
@@ -137,10 +174,50 @@ ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(con
     return it != _descriptorNames.end() ? it->second : nullptr;
 }
 
-ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id) const
+ts::DisplayCADescriptorFunction ts::TablesFactory::getCADescriptorDisplay(uint16_t cas_id) const
 {
-    auto it = _sectionDisplays.find(id);
-    return it != _sectionDisplays.end() ? it->second : nullptr;
+    // Try exact CA_system_id.
+    const auto it1 = _casIdDescriptorDisplays.find(cas_id);
+    if (it1 != _casIdDescriptorDisplays.end()) {
+        return it1->second; // exact CA_system_id found
+    }
+
+    // If not found, try by CAS family.
+    const CASFamily cas = CASFamilyOf(cas_id);
+    if (cas == CAS_OTHER) {
+        return nullptr; // no CAS family identified
+    }
+    const auto it2 = _casFamilyDescriptorDisplays.find(cas);
+    return it2 != _casFamilyDescriptorDisplays.end() ? it2->second : nullptr;
+}
+
+
+//----------------------------------------------------------------------------
+// Common code for getSectionDisplay and getSectionLog.
+//----------------------------------------------------------------------------
+
+template <typename FUNCTION>
+FUNCTION ts::TablesFactory::getSectionFunction(TID id, CASFamily cas, const std::map<uint16_t,FUNCTION>& funcMap) const
+{
+    // Try with current CAS.
+    typename std::map<uint16_t, FUNCTION>::const_iterator it = funcMap.find(SectionDisplayIndex(id, cas));
+
+    // Try CAS-independent value if not found.
+    if (cas != CAS_OTHER && it == funcMap.end()) {
+        it = funcMap.find(SectionDisplayIndex(id, CAS_OTHER));
+    }
+
+    return it != funcMap.end() ? it->second : nullptr;
+}
+
+ts::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(TID id, CASFamily cas) const
+{
+    return getSectionFunction(id, cas, _sectionDisplays);
+}
+
+ts::LogSectionFunction ts::TablesFactory::getSectionLog(TID id, CASFamily cas) const
+{
+    return getSectionFunction(id, cas, _sectionLogs);
 }
 
 

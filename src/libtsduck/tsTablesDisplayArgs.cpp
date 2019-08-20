@@ -88,6 +88,34 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
               u"the TLV structure. The field order must be either \"msb\" or \"lsb\" and "
               u"indicates the byte order of the Tag and Length fields.\n\n"
               u"All fields are optional. The default values are \"auto,auto,1,1,msb\".");
+
+    args.option(u"mediaguard", 0);
+    args.help(u"mediaguard",
+        u"Interpret all EMM and ECM from unknown CAS as coming from MediaGuard. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
+
+    args.option(u"nagravision", 0);
+    args.help(u"nagravision",
+        u"Interpret all EMM and ECM from unknown CAS as coming from NagraVision. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
+
+    args.option(u"viaccess", 0);
+    args.help(u"viaccess",
+        u"Interpret all EMM and ECM from unknown CAS as coming from Viaccess. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
+
+    args.option(u"widevine", 0);
+    args.help(u"widevine",
+        u"Interpret all EMM and ECM from unknown CAS as coming from Widevine CAS. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
 }
 
 
@@ -98,6 +126,8 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
 
 bool ts::TablesDisplayArgs::load(Args& args)
 {
+    bool success = true;
+
     raw_dump = args.present(u"raw-dump");
     raw_flags = UString::HEXA;
     if (args.present(u"c-style")) {
@@ -119,5 +149,30 @@ bool ts::TablesDisplayArgs::load(Args& args)
         tlv_syntax.push_back(tlv);
     }
     std::sort(tlv_syntax.begin(), tlv_syntax.end());
-    return true;
+
+    // Get and define default CAS family.
+    const bool mediaguard = args.present(u"mediaguard");
+    const bool nagravision = args.present(u"nagravision");
+    const bool viaccess = args.present(u"viaccess");
+    const bool widevine = args.present(u"widevine");
+
+    // Check/set default CAS.
+    if (mediaguard + nagravision + viaccess + widevine + (duck.casFamily() != CAS_OTHER) > 1) {
+        args.error(u"more than one default CAS defined");
+        success = false;
+    }
+    else if (mediaguard) {
+        duck.setDefaultCASFamily(CAS_MEDIAGUARD);
+    }
+    else if (nagravision) {
+        duck.setDefaultCASFamily(CAS_NAGRA);
+    }
+    else if (viaccess) {
+        duck.setDefaultCASFamily(CAS_VIACCESS);
+    }
+    else if (widevine) {
+        duck.setDefaultCASFamily(CAS_WIDEVINE);
+    }
+
+    return success;
 }
