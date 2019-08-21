@@ -138,15 +138,15 @@ namespace ts {
     typedef void (*DisplayDescriptorFunction)(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
 
     //!
-    //! Profile of a function to display a CA_descriptor.
+    //! Profile of a function to display the private part of a CA_descriptor.
     //!
     //! @param [in,out] display Display engine.
-    //! @param [in] payload Address of the descriptor payload.
-    //! @param [in] size Size in bytes of the descriptor payload.
+    //! @param [in] data Address of the private part of a CA_descriptor.
+    //! @param [in] size Size in bytes of the private part.
     //! @param [in] indent Indentation width.
     //! @param [in] tid Table id of table containing the descriptors (typically CAT or PMT).
     //!
-    typedef void (*DisplayCADescriptorFunction)(TablesDisplay& display, const uint8_t* payload, size_t size, int indent, TID tid);
+    typedef void (*DisplayCADescriptorFunction)(TablesDisplay& display, const uint8_t* data, size_t size, int indent, TID tid);
 
     //!
     //! @hideinitializer

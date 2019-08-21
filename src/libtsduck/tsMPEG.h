@@ -1431,12 +1431,20 @@ namespace ts {
         CASID_MEDIAGUARD_MAX  = 0x01FF,  //!< Maximum CAS Id value for MediaGuard.
         CASID_VIACCESS_MIN    = 0x0500,  //!< Minimum CAS Id value for Viaccess.
         CASID_VIACCESS_MAX    = 0x05FF,  //!< Maximum CAS Id value for Viaccess.
+        CASID_IRDETO_MIN      = 0x0600,  //!< Minimum CAS Id value for Irdeto.
+        CASID_IRDETO_MAX      = 0x06FF,  //!< Maximum CAS Id value for Irdeto.
+        CASID_NDS_MIN         = 0x0900,  //!< Minimum CAS Id value for NDS.
+        CASID_NDS_MAX         = 0x09FF,  //!< Maximum CAS Id value for NDS.
+        CASID_CONAX_MIN       = 0x0B00,  //!< Minimum CAS Id value for Conax.
+        CASID_CONAX_MAX       = 0x0BFF,  //!< Maximum CAS Id value for Conax.
+        CASID_CRYPTOWORKS_MIN = 0x0D00,  //!< Minimum CAS Id value for CryptoWorks (Irdeto).
+        CASID_CRYPTOWORKS_MAX = 0x0DFF,  //!< Maximum CAS Id value for CryptoWorks (Irdeto).
         CASID_NAGRA_MIN       = 0x1800,  //!< Minimum CAS Id value for Nagravision.
         CASID_NAGRA_MAX       = 0x18FF,  //!< Maximum CAS Id value for Nagravision.
         CASID_THALESCRYPT_MIN = 0x4A80,  //!< Minimum CAS Id value for ThalesCrypt.
         CASID_THALESCRYPT_MAX = 0x4A8F,  //!< Maximum CAS Id value for ThalesCrypt.
-        CASID_WIDEVINE_MIN    = 0x4AD4,  //!< Minimum CAS Id value for Widevine CAS.
-        CASID_WIDEVINE_MAX    = 0x4AD5,  //!< Maximum CAS Id value for Widevine CAS.
+        CASID_WIDEVINE_MIN    = 0x4AD4,  //!< Minimum CAS Id value for Widevine CAS (Google).
+        CASID_WIDEVINE_MAX    = 0x4AD5,  //!< Maximum CAS Id value for Widevine CAS (Google).
         CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
     };
 

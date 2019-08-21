@@ -124,5 +124,14 @@ namespace ts {
         //! already in @a pids, so this may not be the number of @e added PID's.
         //!
         size_t addMatchingPIDs(PIDSet& pids, const PMT& pmt, Report& report = NULLREP) const;
+
+    private:
+        // List of predefined known CAS:
+        struct PredefinedCAS {
+            const UChar* name;
+            uint16_t     min;
+            uint16_t     max;
+        };
+        const std::vector<PredefinedCAS> _predefined_cas;
     };
 }
