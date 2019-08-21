@@ -17,6 +17,9 @@
 4 = ThalesCrypt
 5 = SafeAccess
 6 = Widevine
+7 = NDS
+8 = Irdeto
+9 = Conax
 
 [TableId]
 # MPEG table id. Most significant byte is a CAS family.
@@ -132,6 +135,18 @@ Bits = 8
 0x0591 = Logiways BDT
 0x0592 = Logiways VIT
 0x0593 = Logiways VCT
+0x0680 = Widevine ECM (even)
+0x0681 = Widevine ECM (odd)
+0x0682-0x068F = Widevine EMM
+0x0780 = NDS ECM (even)
+0x0781 = NDS ECM (odd)
+0x0782-0x078F = NDS EMM
+0x0880 = Irdeto ECM (even)
+0x0881 = Irdeto ECM (odd)
+0x0882-0x088F = Irdeto EMM
+0x0980 = Conax ECM (even)
+0x0981 = Conax ECM (odd)
+0x0982-0x098F = Conax EMM
 
 [PrivateDataSpecifier]
 Bits = 32
@@ -697,7 +712,7 @@ Bits = 16
 0x0A00-0x0AFF = Nokia
 0x0B00-0x0BFF = Conax
 0x0C00-0x0CFF = NTL
-0x0D00-0x0DFF = CrytoWorks (Irdeto)
+0x0D00-0x0DFF = CryptoWorks (Irdeto)
 0x0E00-0x0EFF = Scientific Atlanta
 0x0F00-0x0FFF = Sony
 0x1000-0x10FF = Tandberg Television

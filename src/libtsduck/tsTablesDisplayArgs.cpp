@@ -89,6 +89,22 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
               u"indicates the byte order of the Tag and Length fields.\n\n"
               u"All fields are optional. The default values are \"auto,auto,1,1,msb\".");
 
+    // Options for default CAS:
+
+    args.option(u"conax", 0);
+    args.help(u"conax",
+        u"Interpret all EMM and ECM from unknown CAS as coming from Conax. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
+
+    args.option(u"irdeto", 0);
+    args.help(u"irdeto",
+        u"Interpret all EMM and ECM from unknown CAS as coming from Irdeto. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
+
     args.option(u"mediaguard", 0);
     args.help(u"mediaguard",
         u"Interpret all EMM and ECM from unknown CAS as coming from MediaGuard. "
@@ -99,6 +115,13 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
     args.option(u"nagravision", 0);
     args.help(u"nagravision",
         u"Interpret all EMM and ECM from unknown CAS as coming from NagraVision. "
+        u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
+        u"references their PID. This option is useful when analyzing partial "
+        u"transport streams without CAT or PMT to correctly identify the CA PID's.");
+
+    args.option(u"nds", 0);
+    args.help(u"nds",
+        u"Interpret all EMM and ECM from unknown CAS as coming from Synamedia (formerly known as NDS). "
         u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
         u"references their PID. This option is useful when analyzing partial "
         u"transport streams without CAT or PMT to correctly identify the CA PID's.");
@@ -151,21 +174,33 @@ bool ts::TablesDisplayArgs::load(Args& args)
     std::sort(tlv_syntax.begin(), tlv_syntax.end());
 
     // Get and define default CAS family.
+    const bool conax      = args.present(u"conax");
+    const bool irdeto     = args.present(u"irdeto");
     const bool mediaguard = args.present(u"mediaguard");
-    const bool nagravision = args.present(u"nagravision");
-    const bool viaccess = args.present(u"viaccess");
-    const bool widevine = args.present(u"widevine");
+    const bool nagra      = args.present(u"nagravision");
+    const bool nds        = args.present(u"nds");
+    const bool viaccess   = args.present(u"viaccess");
+    const bool widevine   = args.present(u"widevine");
 
     // Check/set default CAS.
-    if (mediaguard + nagravision + viaccess + widevine + (duck.casFamily() != CAS_OTHER) > 1) {
+    if (conax + irdeto + mediaguard + nagra + nds + viaccess + widevine + (duck.casFamily() != CAS_OTHER) > 1) {
         args.error(u"more than one default CAS defined");
         success = false;
+    }
+    else if (conax) {
+        duck.setDefaultCASFamily(CAS_CONAX);
+    }
+    else if (irdeto) {
+        duck.setDefaultCASFamily(CAS_IRDETO);
     }
     else if (mediaguard) {
         duck.setDefaultCASFamily(CAS_MEDIAGUARD);
     }
-    else if (nagravision) {
+    else if (nagra) {
         duck.setDefaultCASFamily(CAS_NAGRA);
+    }
+    else if (nds) {
+        duck.setDefaultCASFamily(CAS_NDS);
     }
     else if (viaccess) {
         duck.setDefaultCASFamily(CAS_VIACCESS);
