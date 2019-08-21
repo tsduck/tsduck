@@ -59,6 +59,7 @@
     <ClCompile Include="..\..\src\utest\utestHLS.cpp" />
     <ClCompile Include="..\..\src\utest\utestHFBand.cpp" />
     <ClCompile Include="..\..\src\utest\utestSectionFile.cpp" />
+    <ClCompile Include="..\..\src\utest\utestKeyTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\tsunit.h" />

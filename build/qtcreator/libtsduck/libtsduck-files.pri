@@ -226,6 +226,7 @@ HEADERS += \
     ../../../src/libtsduck/tsjsonString.h \
     ../../../src/libtsduck/tsjsonTrue.h \
     ../../../src/libtsduck/tsjsonValue.h \
+    ../../../src/libtsduck/tsKeyTable.h \
     ../../../src/libtsduck/tsLinkageDescriptor.h \
     ../../../src/libtsduck/tsLNB.h \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
@@ -701,6 +702,7 @@ SOURCES += \
     ../../../src/libtsduck/tsjsonString.cpp \
     ../../../src/libtsduck/tsjsonTrue.cpp \
     ../../../src/libtsduck/tsjsonValue.cpp \
+    ../../../src/libtsduck/tsKeyTable.cpp \
     ../../../src/libtsduck/tsLinkageDescriptor.cpp \
     ../../../src/libtsduck/tsLNB.cpp \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.cpp \
