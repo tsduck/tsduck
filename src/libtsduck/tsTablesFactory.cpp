@@ -64,7 +64,7 @@ ts::TablesFactory::TablesFactory() :
 
 uint16_t ts::TablesFactory::SectionDisplayIndex(TID id, CASFamily cas)
 {
-    return (uint16_t(cas) << 8) | (uint16_t(id) & 0x00FF);
+    return uint16_t((int(cas) << 8) | (id & 0x00FF));
 }
 
 
