@@ -236,6 +236,7 @@
 #include "tsjsonString.h"
 #include "tsjsonTrue.h"
 #include "tsjsonValue.h"
+#include "tsKeyTable.h"
 #include "tsLinkageDescriptor.h"
 #include "tsLNB.h"
 #include "tsLocalTimeOffsetDescriptor.h"

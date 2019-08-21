@@ -228,6 +228,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsjsonString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsjsonTrue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsjsonValue.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsKeyTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLinkageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLNB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.h" />
@@ -713,6 +714,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsjsonString.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsjsonTrue.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsjsonValue.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsKeyTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLinkageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLNB.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.cpp" />

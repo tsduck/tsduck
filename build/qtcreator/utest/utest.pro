@@ -65,7 +65,8 @@ SOURCES += \
     ../../../src/utest/utestWebRequest.cpp \
     ../../../src/utest/utestXML.cpp \
     ../../../src/utest/utestHLS.cpp \
-    ../../../src/utest/utestHFBand.cpp
+    ../../../src/utest/utestHFBand.cpp \
+    ../../../src/utest/utestKeyTable.cpp
 
 DISTFILES += \
     ../../../src/utest/tables/ts2headers.sh \
