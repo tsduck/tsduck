@@ -197,5 +197,4 @@ bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, si
         }
     }
     return success;
-
 }

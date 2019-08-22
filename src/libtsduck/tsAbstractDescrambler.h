@@ -263,6 +263,7 @@ namespace ts {
         bool               _need_ecm;          // We need to get control words from ECM's.
         bool               _abort;             // Error, abort asap.
         bool               _synchronous;       // Synchronous ECM deciphering.
+        bool               _swap_cw;           // Swap even/odd CW from ECM.
         TSScrambling       _scrambling;        // Default descrambling (used with fixed control words).
         PIDSet             _pids;              // Explicit PID's to descramble.
         ServiceDiscovery   _service;           // Service to descramble (by name, id or none).

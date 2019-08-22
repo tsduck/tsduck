@@ -40,15 +40,13 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
-                                             const UString& description,
-                                             const UString& syntax,
-                                             size_t         stack_usage) :
+ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& description, const UString& syntax, size_t stack_usage) :
     ProcessorPlugin(tsp_, description, syntax),
     _use_service(false),
     _need_ecm(false),
     _abort(false),
     _synchronous(false),
+    _swap_cw(false),
     _scrambling(*tsp),
     _pids(),
     _service(duck, this),
@@ -86,6 +84,11 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP*           tsp_,
          u"Specify to synchronously decipher the ECM's. By default, in real-time "
          u"mode, the packet processing continues while processing ECM's. This option "
          u"is always on in offline mode.");
+
+    option(u"swap-cw");
+    help(u"swap-cw",
+        u"Swap even and odd control words from the ECM's. "
+        u"Useful when a crazy ECMG inadvertently swapped the CW before generating the ECM.");
 }
 
 
@@ -99,6 +102,7 @@ bool ts::AbstractDescrambler::getOptions()
     _use_service = present(u"");
     _service.set(value(u""));
     _synchronous = present(u"synchronous") || !tsp->realtime();
+    _swap_cw = present(u"swap-cw");
     getIntValues(_pids, u"pid");
     if (!_scrambling.loadArgs(*this)) {
         return false;
@@ -406,8 +410,9 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
                UString::Dump(ecm.payload(), dumpSize, UString::SINGLE_LINE),
                dumpSize < ecm.payloadSize() ? u" ..." : u""});
 
-    // Submit the ECM to the CAS (subclass)
-    bool ok = decipherECM(ecm, cw_even, cw_odd);
+    // Submit the ECM to the CAS (subclass).
+    // Exchange the control words if CW swapping was requested.
+    bool ok = decipherECM(ecm, _swap_cw ? cw_odd : cw_even, _swap_cw ? cw_even : cw_odd);
 
     if (ok) {
         tsp->debug(u"even CW: %s", {UString::Dump(cw_even.cw, UString::SINGLE_LINE)});
