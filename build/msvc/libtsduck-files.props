@@ -396,6 +396,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsTablesFactory.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLogger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerArgs.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilter.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilterInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilterRepository.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTargetBackgroundGridDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTargetIPAddressDescriptor.h" />
@@ -863,6 +866,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsTablesFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilter.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilterInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilterRepository.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetBackgroundGridDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetIPAddressDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetIPSlashDescriptor.cpp" />

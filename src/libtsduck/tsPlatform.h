@@ -550,6 +550,27 @@
 
 
 //----------------------------------------------------------------------------
+// Unique name generation
+//----------------------------------------------------------------------------
+
+//! @cond nodoxygen
+#define _TS_UNIQUE_NAME1(a,b) a##b
+#define _TS_UNIQUE_NAME2(a,b) _TS_UNIQUE_NAME1(a,b)
+//! @endcond
+
+//!
+//! @hideinitializer
+//! This macro generates a unique name based on the source line number.
+//! It is typically used in more complex macro definitions. These complex
+//! macros should be defined on one single line. All invocations of TS_UNIQUE_NAME
+//! generate the same symbol when placed one the same source line.
+//! @param prefix Prefix for the symbol. Using different prefixes, several
+//! distinct unique identifiers can be used on the same line.
+//!
+#define TS_UNIQUE_NAME(prefix) _TS_UNIQUE_NAME2(prefix,__LINE__)
+
+
+//----------------------------------------------------------------------------
 // Compiler warnings
 //----------------------------------------------------------------------------
 

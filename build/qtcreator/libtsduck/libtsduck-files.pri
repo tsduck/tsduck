@@ -394,6 +394,9 @@ HEADERS += \
     ../../../src/libtsduck/tsTablesFactory.h \
     ../../../src/libtsduck/tsTablesLogger.h \
     ../../../src/libtsduck/tsTablesLoggerArgs.h \
+    ../../../src/libtsduck/tsTablesLoggerFilter.h \
+    ../../../src/libtsduck/tsTablesLoggerFilterInterface.h \
+    ../../../src/libtsduck/tsTablesLoggerFilterRepository.h \
     ../../../src/libtsduck/tsTablesPtr.h \
     ../../../src/libtsduck/tsTargetBackgroundGridDescriptor.h \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.h \
@@ -851,6 +854,9 @@ SOURCES += \
     ../../../src/libtsduck/tsTablesFactory.cpp \
     ../../../src/libtsduck/tsTablesLogger.cpp \
     ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
+    ../../../src/libtsduck/tsTablesLoggerFilter.cpp \
+    ../../../src/libtsduck/tsTablesLoggerFilterInterface.cpp \
+    ../../../src/libtsduck/tsTablesLoggerFilterRepository.cpp \
     ../../../src/libtsduck/tsTargetBackgroundGridDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPSlashDescriptor.cpp \
