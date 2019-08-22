@@ -49,7 +49,7 @@ void ts::DVBCSA2::ReduceCW(uint8_t *cw)
 
 bool ts::DVBCSA2::IsReducedCW(const uint8_t *cw)
 {
-    return cw[3] == cw[0] + cw[1] + cw[2] && cw[7] == cw[4] + cw[5] + cw[6];
+    return cw[3] == uint8_t(cw[0] + cw[1] + cw[2]) && cw[7] == uint8_t(cw[4] + cw[5] + cw[6]);
 }
 
 
