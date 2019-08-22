@@ -126,15 +126,6 @@ namespace ts {
         //!
         virtual void logSection(const Section& section);
 
-        //!
-        //! Check if a specific section must be filtered and displayed.
-        //! @param [in] section The section to check.
-        //! @param [in] cas The CAS family for this section.
-        //! @return True if the section is filtered and must be displayed.
-        //! False if the section shall not be displayed.
-        //!
-        virtual bool isFiltered(const Section& section, CASFamily cas) const;
-
     private:
         const TablesLoggerArgs&  _opt;
         TablesDisplay&           _display;
@@ -173,6 +164,9 @@ namespace ts {
         // Pre/post-display of a table or section
         void preDisplay(PacketCounter first, PacketCounter last);
         void postDisplay();
+
+        // Check if a specific section must be filtered and displayed.
+        bool isFiltered(const Section& section, CASFamily cas) const;
     };
 
     //!

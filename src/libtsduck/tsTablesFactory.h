@@ -331,11 +331,7 @@ namespace ts {
 //
 
 //! @cond nodoxygen
-#define _TS_FACTORY_NAME1(a,b) a##b
-#define _TS_FACTORY_NAME2(a,b) _TS_FACTORY_NAME1(a,b)
-#define _TS_FACTORY_NAME(a)    _TS_FACTORY_NAME2(a,__LINE__)
-
-#define _TS_FACTORY(rettype,classname)    namespace { rettype _TS_FACTORY_NAME(_Factory)() {return new classname;} }
+#define _TS_FACTORY(rettype,classname)    namespace { rettype TS_UNIQUE_NAME(_Factory)() {return new classname;} }
 #define _TS_TABLE_FACTORY(classname)      _TS_FACTORY(ts::AbstractTablePtr,classname)
 #define _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY(ts::AbstractDescriptorPtr,classname)
 //! @endcond
@@ -345,46 +341,46 @@ namespace ts {
 //! Registration inside the ts::TablesFactory singleton.
 //! This macro is typically used in the .cpp file of a table or descriptor.
 //!
-#define TS_FACTORY_REGISTER static ts::TablesFactory::Register _TS_FACTORY_NAME(_Registrar)
+#define TS_FACTORY_REGISTER static ts::TablesFactory::Register TS_UNIQUE_NAME(_Registrar)
 
 //!
 //! @hideinitializer
 //! Registration of the table id of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory), std)
+#define TS_ID_TABLE_FACTORY(classname,id,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory), std)
 
 //!
 //! @hideinitializer
 //! Registration of a range of table ids of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((minId), (maxId), _TS_FACTORY_NAME(_Factory), std)
+#define TS_ID_TABLE_RANGE_FACTORY(classname,minId,maxId,std) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER((minId), (maxId), TS_UNIQUE_NAME(_Factory), std)
 
 //!
 //! @hideinitializer
 //! Registration of the descriptor tag of a subclass of ts::AbstractDescriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_ID_DESCRIPTOR_FACTORY(classname,id) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER((id), _TS_FACTORY_NAME(_Factory))
+#define TS_ID_DESCRIPTOR_FACTORY(classname,id) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER((id), TS_UNIQUE_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractTable.
 //! This macro is typically used in the .cpp file of a table.
 //!
-#define TS_XML_TABLE_FACTORY(classname,xmlname) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
+#define TS_XML_TABLE_FACTORY(classname,xmlname) _TS_TABLE_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractDescriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
+#define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory))
 
 //!
 //! @hideinitializer
 //! Registration of the XML name of a subclass of ts::AbstractDescriptor for a table-specific descriptor.
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
-#define TS_XML_TABSPEC_DESCRIPTOR_FACTORY(classname, xmlname, ...) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory), {__VA_ARGS__})
+#define TS_XML_TABSPEC_DESCRIPTOR_FACTORY(classname, xmlname, ...) _TS_DESCRIPTOR_FACTORY(classname) TS_FACTORY_REGISTER(xmlname, TS_UNIQUE_NAME(_Factory), {__VA_ARGS__})

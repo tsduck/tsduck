@@ -28,20 +28,41 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  The default section filter for TablesLogger.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 19
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1384
+#include "tsTablesLoggerFilterInterface.h"
+#include "tsBinaryTable.h"
+
+namespace ts {
+    //!
+    //! The default section filter for TablesLogger.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL TablesLoggerFilter: public TablesLoggerFilterInterface
+    {
+        TS_NOCOPY(TablesLoggerFilter);
+    public:
+        //!
+        //! Default constructor.
+        //!
+        TablesLoggerFilter();
+
+        // Implementation of TablesLoggerFilterInterface.
+        virtual void defineFilterOptions(Args& args) const override;
+        virtual bool loadFilterOptions(DuckContext& duck, Args& args, PIDSet& initial_pids) override;
+        virtual bool filterSection(DuckContext& duck, const Section& section, CASFamily cas, PIDSet& more_pids) override;
+
+    private:
+        bool               _diversified;    // Payload must be diversified.
+        bool               _negate_tid;     // Negate tid filter (exclude selected tids).
+        bool               _negate_tidext;  // Negate tidext filter (exclude selected tidexts).
+        bool               _psi_si;         // Add PSI/SI PID's.
+        PIDSet             _pids;           // PID values to filter.
+        std::set<uint8_t>  _tids;           // TID values to filter.
+        std::set<uint16_t> _tidexts;        // TID-ext values to filter.
+        BinaryTable        _pat;            // Last PAT.
+    };
+}
