@@ -33,20 +33,25 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 
 namespace ts {
     //!
     //! Command line arguments for the class WebRequest.
     //! @ingroup net
     //!
-    class TSDUCKDLL WebRequestArgs
+    class TSDUCKDLL WebRequestArgs : public ArgsSupplierInterface
     {
     public:
         //!
         //! Constructor.
         //!
         WebRequestArgs();
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~WebRequestArgs();
 
         // Public fields, by options.
         MilliSecond   connectionTimeout;    //!< -\-connection-timeout
@@ -58,18 +63,8 @@ namespace ts {
         bool          useCookies;           //!< Use cookies, no command line options, true by default
         UString       cookiesFile;          //!< Cookies files (Linux only), no command line options
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadArgs(Args& args);
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
     };
 }

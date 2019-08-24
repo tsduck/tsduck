@@ -348,7 +348,7 @@ namespace ts {
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
         //! @param [in,out] args Command line arguments to update.
         //!
-        void defineOptionsForDVBCharset(Args& args) { defineOptions(args, CMD_DVB_CHARSET); }
+        void defineArgsForDVBCharset(Args& args) { defineOptions(args, CMD_DVB_CHARSET); }
 
         //!
         //! Define Private Data Specifier command line options in an Args.
@@ -356,7 +356,7 @@ namespace ts {
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
         //! @param [in,out] args Command line arguments to update.
         //!
-        void defineOptionsForPDS(Args& args) { defineOptions(args, CMD_PDS); }
+        void defineArgsForPDS(Args& args) { defineOptions(args, CMD_PDS); }
 
         //!
         //! Define contextual standards command line options in an Args.
@@ -364,7 +364,7 @@ namespace ts {
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
         //! @param [in,out] args Command line arguments to update.
         //!
-        void defineOptionsForStandards(Args& args) { defineOptions(args, CMD_STANDARDS); }
+        void defineArgsForStandards(Args& args) { defineOptions(args, CMD_STANDARDS); }
 
         //!
         //! Define HF band command line options in an Args.
@@ -372,7 +372,7 @@ namespace ts {
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
         //! @param [in,out] args Command line arguments to update.
         //!
-        void defineOptionsForHFBand(Args& args) { defineOptions(args, CMD_HF_REGION); }
+        void defineArgsForHFBand(Args& args) { defineOptions(args, CMD_HF_REGION); }
 
         //!
         //! Load the values of all previously defined arguments from command line.
@@ -380,7 +380,7 @@ namespace ts {
         //! @param [in,out] args Command line arguments.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadOptions(Args& args);
+        bool loadArgs(Args& args);
 
     private:
         Report*           _report;            // Pointer to a report for error messages. Never null.

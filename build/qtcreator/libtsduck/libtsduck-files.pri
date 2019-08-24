@@ -42,6 +42,7 @@ HEADERS += \
     ../../../src/libtsduck/tsArgMix.h \
     ../../../src/libtsduck/tsArgMixTemplate.h \
     ../../../src/libtsduck/tsArgs.h \
+    ../../../src/libtsduck/tsArgsSupplierInterface.h \
     ../../../src/libtsduck/tsArgsTemplate.h \
     ../../../src/libtsduck/tsArgsWithPlugins.h \
     ../../../src/libtsduck/tsAssociationTagDescriptor.h \
@@ -301,7 +302,6 @@ HEADERS += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsProtectionMessageDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
-    ../../../src/libtsduck/tsPSILoggerArgs.h \
     ../../../src/libtsduck/tsPSIMerger.h \
     ../../../src/libtsduck/tsPushInputPlugin.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
@@ -390,10 +390,8 @@ HEADERS += \
     ../../../src/libtsduck/tsTableHandlerInterface.h \
     ../../../src/libtsduck/tsTables.h \
     ../../../src/libtsduck/tsTablesDisplay.h \
-    ../../../src/libtsduck/tsTablesDisplayArgs.h \
     ../../../src/libtsduck/tsTablesFactory.h \
     ../../../src/libtsduck/tsTablesLogger.h \
-    ../../../src/libtsduck/tsTablesLoggerArgs.h \
     ../../../src/libtsduck/tsTablesLoggerFilter.h \
     ../../../src/libtsduck/tsTablesLoggerFilterInterface.h \
     ../../../src/libtsduck/tsTablesLoggerFilterRepository.h \
@@ -503,7 +501,6 @@ HEADERS += \
     ../../../src/libtsduck/tsxmlNode.h \
     ../../../src/libtsduck/tsxmlText.h \
     ../../../src/libtsduck/tsxmlTweaks.h \
-    ../../../src/libtsduck/tsxmlTweaksArgs.h \
     ../../../src/libtsduck/tsxmlUnknown.h \
     ../../../src/libtsduck/private/tsDektec.h \
     ../../../src/libtsduck/private/tsDektecDevice.h \
@@ -550,6 +547,7 @@ SOURCES += \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
     ../../../src/libtsduck/tsArgs.cpp \
+    ../../../src/libtsduck/tsArgsSupplierInterface.cpp \
     ../../../src/libtsduck/tsArgsWithPlugins.cpp \
     ../../../src/libtsduck/tsAssociationTagDescriptor.cpp \
     ../../../src/libtsduck/tsAsyncReport.cpp \
@@ -774,7 +772,6 @@ SOURCES += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsProtectionMessageDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
-    ../../../src/libtsduck/tsPSILoggerArgs.cpp \
     ../../../src/libtsduck/tsPSIMerger.cpp \
     ../../../src/libtsduck/tsPushInputPlugin.cpp \
     ../../../src/libtsduck/tsRandomGenerator.cpp \
@@ -850,10 +847,8 @@ SOURCES += \
     ../../../src/libtsduck/tsT2MIPacket.cpp \
     ../../../src/libtsduck/tsTableHandlerInterface.cpp \
     ../../../src/libtsduck/tsTablesDisplay.cpp \
-    ../../../src/libtsduck/tsTablesDisplayArgs.cpp \
     ../../../src/libtsduck/tsTablesFactory.cpp \
     ../../../src/libtsduck/tsTablesLogger.cpp \
-    ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
     ../../../src/libtsduck/tsTablesLoggerFilter.cpp \
     ../../../src/libtsduck/tsTablesLoggerFilterInterface.cpp \
     ../../../src/libtsduck/tsTablesLoggerFilterRepository.cpp \
@@ -949,7 +944,6 @@ SOURCES += \
     ../../../src/libtsduck/tsxmlNode.cpp \
     ../../../src/libtsduck/tsxmlText.cpp \
     ../../../src/libtsduck/tsxmlTweaks.cpp \
-    ../../../src/libtsduck/tsxmlTweaksArgs.cpp \
     ../../../src/libtsduck/tsxmlUnknown.cpp \
     ../../../src/libtsduck/private/tsDektecDevice.cpp \
     ../../../src/libtsduck/private/tsDektecVPD.cpp \

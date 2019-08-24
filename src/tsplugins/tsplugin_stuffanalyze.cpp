@@ -131,7 +131,7 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
          u"Analyze all tables from these PID's. Several -p or --pid options may be specified.");
 
     // CAS filtering options.
-    _cas_args.defineOptions(*this);
+    _cas_args.defineArgs(*this);
 }
 
 
@@ -142,7 +142,7 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
 bool ts::StuffAnalyzePlugin::start()
 {
     // Get command line arguments
-    _cas_args.load(*this);
+    _cas_args.loadArgs(*this);
     _output_name = value(u"output-file");
     getIntValues(_analyze_pids, u"pid");
 

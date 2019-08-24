@@ -35,7 +35,6 @@
 #pragma once
 #include "tsxmlNode.h"
 #include "tsxmlTweaks.h"
-#include "tsxmlTweaksArgs.h"
 #include "tsReport.h"
 #include "tsStringifyInterface.h"
 
@@ -145,12 +144,6 @@ namespace ts {
             //! @param [in] tw The new global XML tweaks.
             //!
             void setTweaks(const Tweaks& tw) { _tweaks = tw; }
-
-            //!
-            //! Adjust the global XML tweaks for the document according to command line options.
-            //! @param [in] args The command line arguments.
-            //!
-            void setTweaks(const TweaksArgs& args) { args.setTweaks(_tweaks); }
 
             // Implementation of StringifyInterface.
             virtual UString toString() const override;

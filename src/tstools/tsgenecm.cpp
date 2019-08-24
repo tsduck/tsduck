@@ -90,7 +90,7 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     help(u"cw-next", u"Next control word (optional). The value must be a suite of hexadecimal digits.");
 
     // Common ECMG parameters.
-    ecmg.defineOptions(*this);
+    ecmg.defineArgs(*this);
 
     // Analyze the command line.
     analyze(argc, argv);

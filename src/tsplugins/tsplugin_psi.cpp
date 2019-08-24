@@ -55,10 +55,8 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TablesDisplayArgs _display_options;
-        PSILoggerArgs     _logger_options;
-        TablesDisplay     _display;
-        PSILoggerPtr      _logger;
+        TablesDisplay _display;
+        PSILogger     _logger;
     };
 }
 
@@ -72,16 +70,14 @@ TSPLUGIN_DECLARE_PROCESSOR(psi, ts::PSIPlugin)
 
 ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extract PSI Information", u"[options]"),
-    _display_options(duck),
-    _logger_options(),
-    _display(_display_options),
-    _logger()
+    _display(duck),
+    _logger(_display)
 {
-    duck.defineOptionsForPDS(*this);
-    duck.defineOptionsForStandards(*this);
-    duck.defineOptionsForDVBCharset(*this);
-    _logger_options.defineOptions(*this);
-    _display_options.defineOptions(*this);
+    duck.defineArgsForPDS(*this);
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForDVBCharset(*this);
+    _logger.defineArgs(*this);
+    _display.defineArgs(*this);
 }
 
 
@@ -91,22 +87,18 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
 
 bool ts::PSIPlugin::getOptions()
 {
-    // Decode command line options.
-    return duck.loadOptions(*this) && _logger_options.load(*this) && _display_options.load(*this);
+    return duck.loadArgs(*this) && _logger.loadArgs(*this) && _display.loadArgs(*this);
 }
 
 
 bool ts::PSIPlugin::start()
 {
-    // Create the logger.
-    _logger = new PSILogger(_logger_options, _display);
-    return !_logger->hasErrors();
+    return _logger.open();
 }
 
 bool ts::PSIPlugin::stop()
 {
-    // Cleanup the logger.
-    _logger.clear();
+    _logger.close();
     return true;
 }
 
@@ -117,6 +109,6 @@ bool ts::PSIPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::PSIPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    _logger->feedPacket(pkt);
-    return _logger->completed() ? TSP_END : TSP_OK;
+    _logger.feedPacket(pkt);
+    return _logger.completed() ? TSP_END : TSP_OK;
 }

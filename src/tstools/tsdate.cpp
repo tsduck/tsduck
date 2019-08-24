@@ -54,22 +54,22 @@ public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
-    ts::DuckContext       duck;     // TSDuck execution context.    
-    bool                  no_tdt;   // Do not try to get a TDT
-    bool                  no_tot;   // Do not try to get a TOT
-    bool                  all;      // Report all tables, not only the first one.
-    ts::UString           infile;   // Input file name
-    ts::TablesDisplayArgs display;  // Table formatting options (all default values, nothing on command line).
+    ts::DuckContext   duck;     // TSDuck execution context.
+    ts::TablesDisplay display;  // Table formatting options (all default values, nothing on command line).
+    bool              no_tdt;   // Do not try to get a TDT
+    bool              no_tot;   // Do not try to get a TOT
+    bool              all;      // Report all tables, not only the first one.
+    ts::UString       infile;   // Input file name
 };
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]"),
     duck(this),
+    display(duck),
     no_tdt(false),
     no_tot(false),
     all(false),
-    infile(),
-    display(duck)
+    infile()
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
@@ -109,7 +109,6 @@ public:
     // Constructor
     TableHandler(Options& opt) :
         _opt(opt),
-        _display(ts::TablesDisplayArgs(_opt.duck)),
         _tdt_ok(opt.no_tdt),
         _tot_ok(opt.no_tot)
     {
@@ -125,10 +124,9 @@ public:
     virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&) override;
 
 private:
-    Options&          _opt;
-    ts::TablesDisplay _display;
-    bool              _tdt_ok;  // Finished TDT processing
-    bool              _tot_ok;  // Finished TOT processing
+    Options& _opt;
+    bool     _tdt_ok;  // Finished TDT processing
+    bool     _tot_ok;  // Finished TOT processing
 };
 
 
@@ -146,7 +144,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             _tdt_ok = !_opt.all;
             if (_opt.verbose()) {
-                _display.displayTable(table) << std::endl;
+                _opt.display.displayTable(table) << std::endl;
                 break;
             }
             ts::TDT tdt(_opt.duck, table);
@@ -163,7 +161,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             _tot_ok = !_opt.all;
             if (_opt.verbose()) {
-                _display.displayTable(table) << std::endl;
+                _opt.display.displayTable(table) << std::endl;
                 break;
             }
             ts::TOT tot(_opt.duck, table);

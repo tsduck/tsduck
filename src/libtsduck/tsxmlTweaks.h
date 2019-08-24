@@ -35,6 +35,7 @@
 #pragma once
 #include "tsxml.h"
 #include "tsUChar.h"
+#include "tsArgsSupplierInterface.h"
 
 namespace ts {
     namespace xml {
@@ -43,13 +44,17 @@ namespace ts {
         //! Each document is associated with a Tweaks structure.
         //! @ingroup xml
         //!
-        class TSDUCKDLL Tweaks
+        class TSDUCKDLL Tweaks : public ArgsSupplierInterface
         {
         public:
             //!
             //! Default constructor.
             //!
             Tweaks();
+
+            // Implementation of ArgsSupplierInterface.
+            virtual void defineArgs(Args& args) const override;
+            virtual bool loadArgs(Args& args) override;
 
             //!
             //! If true, use double quotes for attribute values.

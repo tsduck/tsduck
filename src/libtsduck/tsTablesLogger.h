@@ -33,14 +33,17 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsArgsSupplierInterface.h"
 #include "tsTablesDisplay.h"
+#include "tsTablesLoggerFilterInterface.h"
+#include "tsArgs.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
-#include "tsTablesLoggerArgs.h"
 #include "tsTextFormatter.h"
 #include "tsSocketAddress.h"
 #include "tsUDPSocket.h"
 #include "tsCASMapper.h"
+#include "tsxmlTweaks.h"
 #include "tsxmlDocument.h"
 
 namespace ts {
@@ -49,6 +52,7 @@ namespace ts {
     //! @ingroup mpeg
     //!
     class TSDUCKDLL TablesLogger :
+        public ArgsSupplierInterface,
         protected TableHandlerInterface,
         protected SectionHandlerInterface
     {
@@ -56,10 +60,9 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] options Table logging options.
         //! @param [in,out] display Object to display tables and sections.
         //!
-        TablesLogger(const TablesLoggerArgs& options, TablesDisplay& display);
+        TablesLogger(TablesDisplay& display);
 
         //!
         //! Destructor.
@@ -67,10 +70,29 @@ namespace ts {
         virtual ~TablesLogger();
 
         //!
+        //! Default table log size.
+        //! With option -\-log, specify how many bytes are displayed at the
+        //! beginning of the table payload (the header is not displayed).
+        //! The default is 8 bytes.
+        //!
+        static const size_t DEFAULT_LOG_SIZE = 8;
+
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
+
+        //!
         //! The following method feeds the logger with a TS packet.
         //! @param [in] pkt A new transport stream packet.
         //!
         void feedPacket(const TSPacket& pkt);
+
+        //!
+        //! Open files, start operations.
+        //! The options must have been loaded first.
+        //! @return True on success, false on error.
+        //!
+        bool open();
 
         //!
         //! Close all operations, flush tables if required, close files and sockets.
@@ -120,14 +142,40 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
 
-        //!
-        //! Log a section (option @c --log).
-        //! @param [in] section The section to log.
-        //!
-        virtual void logSection(const Section& section);
-
     private:
-        const TablesLoggerArgs&  _opt;
+        // Command line options:
+        bool                     _use_text;          // Produce formatted human-readable tables.
+        bool                     _use_xml;           // Produce XML tables.
+        bool                     _use_binary;        // Save binary sections.
+        bool                     _use_udp;           // Send sections using UDP/IP.
+        UString                  _text_destination;  // Text output file name.
+        UString                  _xml_destination;   // XML output file name.
+        UString                  _bin_destination;   // Binary output file name.
+        UString                  _udp_destination;   // UDP/IP destination address:port.
+        bool                     _multi_files;       // Multiple binary output files (one per section).
+        bool                     _flush;             // Flush output file.
+        bool                     _rewrite_xml;       // Rewrite a new XML file for each table.
+        bool                     _rewrite_binary;    // Rewrite a new binary file for each table.
+        UString                  _udp_local;         // Name of outgoing local address (empty if unspecified).
+        int                      _udp_ttl;           // Time-to-live socket option.
+        bool                     _udp_raw;           // UDP messages contain raw sections, not structured messages.
+        bool                     _all_sections;      // Collect all sections, as they appear.
+        bool                     _all_once;          // Collect all sections but only once per PID/TID/TDIext/secnum/version.
+        uint32_t                 _max_tables;        // Max number of tables to dump.
+        bool                     _time_stamp;        // Display time stamps with each table.
+        bool                     _packet_index;      // Display packet index with each table.
+        bool                     _logger;            // Table logger.
+        size_t                   _log_size;          // Size of table to log.
+        bool                     _no_duplicate;      // Exclude duplicated short sections on a PID.
+        bool                     _pack_all_sections; // Pack all sections as if they were one table.
+        bool                     _pack_and_flush;    // Pack and flush incomplete tables before exiting.
+        bool                     _fill_eit;          // Add missing empty sections to incomplete EIT's before exiting.
+        bool                     _use_current;       // Use tables with "current" flag.
+        bool                     _use_next;          // Use tables with "next" flag.
+        xml::Tweaks              _xml_tweaks;        // XML tweak options.
+        PIDSet                   _initial_pids;      // Initial PID's to filter.
+
+        // Working data:
         TablesDisplay&           _display;
         DuckContext&             _duck;
         Report&                  _report;
@@ -137,14 +185,15 @@ namespace ts {
         PacketCounter            _packet_count;
         SectionDemux             _demux;
         CASMapper                _cas_mapper;
-        TextFormatter            _xmlOut;          // XML output formatter.
-        xml::Document            _xmlDoc;          // XML root document.
-        bool                     _xmlOpen;         // The XML root element is open.
-        std::ofstream            _binfile;         // Binary output file.
-        UDPSocket                _sock;            // Output socket.
-        std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
-        std::map<PID,SectionPtr> _allSections;     // Tracking duplicate sections by PID (with --all-sections).
-        std::set<uint64_t>       _sectionsOnce;    // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
+        TextFormatter            _xmlOut;            // XML output formatter.
+        xml::Document            _xmlDoc;            // XML root document.
+        bool                     _xmlOpen;           // The XML root element is open.
+        std::ofstream            _binfile;           // Binary output file.
+        UDPSocket                _sock;              // Output socket.
+        std::map<PID,SectionPtr> _shortSections;     // Tracking duplicate short sections by PID.
+        std::map<PID,SectionPtr> _allSections;       // Tracking duplicate sections by PID (with --all-sections).
+        std::set<uint64_t>       _sectionsOnce;      // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
+        TablesLoggerFilterVector _section_filters;   // All registered section filters.
 
         // Create a binary file. On error, set _abort and return false.
         bool createBinaryFile(const UString& name);
@@ -166,7 +215,10 @@ namespace ts {
         void postDisplay();
 
         // Check if a specific section must be filtered and displayed.
-        bool isFiltered(const Section& section, CASFamily cas) const;
+        bool isFiltered(const Section& section, CASFamily cas);
+
+        // Log a section (option --log).
+        void logSection(const Section& section);
     };
 
     //!

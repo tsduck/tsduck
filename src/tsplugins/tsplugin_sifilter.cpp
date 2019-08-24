@@ -126,7 +126,7 @@ ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
     help(u"tsdt", u"Extract PID 0x0002 (TSDT).");
 
     // CAS filtering options.
-    _cas_args.defineOptions(*this);
+    _cas_args.defineArgs(*this);
 }
 
 
@@ -137,7 +137,7 @@ ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
 bool ts::SIFilterPlugin::start()
 {
     // Get command line arguments
-    _cas_args.load(*this);
+    _cas_args.loadArgs(*this);
     _pass_pmt = present(u"pmt");
     _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 

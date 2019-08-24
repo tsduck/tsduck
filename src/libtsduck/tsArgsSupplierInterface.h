@@ -28,56 +28,38 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line options for parsing and formatting XML documents.
+//!  An interface which is used to add options in an Args structure.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsArgs.h"
-#include "tsxmlTweaks.h"
 
 namespace ts {
-    namespace xml {
+    //!
+    //! An interface which is used to add options in an Args structure.
+    //! @ingroup cmd
+    //!
+    class TSDUCKDLL ArgsSupplierInterface
+    {
+    public:
         //!
-        //! Command line options for parsing and formatting XML documents.
-        //! @ingroup cmd
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        class TSDUCKDLL TweaksArgs
-        {
-        public:
-            // Public fields
-            bool strictXML;  //!< Option -\-strict-xml.
+        virtual void defineArgs(Args& args) const = 0;
 
-            //!
-            //! Default constructor.
-            //!
-            TweaksArgs();
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        virtual bool loadArgs(Args& args) = 0;
 
-            //!
-            //! Define command line options in an Args.
-            //! @param [in,out] args Command line arguments to update.
-            //!
-            void defineOptions(Args& args) const;
-
-            //!
-            //! Load arguments from command line.
-            //! Args error indicator is set in case of incorrect arguments.
-            //! @param [in,out] args Command line arguments.
-            //! @return True on success, false on error in argument line.
-            //!
-            bool load(Args& args);
-
-            //!
-            //! Set the relevant XML tweaks.
-            //! @param [in,out] tweaks Tweaks to be updated from the command line options.
-            //!
-            void setTweaks(Tweaks& tweaks) const;
-
-            //!
-            //! Get relevant XML tweaks in a default tweaks structure.
-            //! @return Tweaks from the command line options.
-            //!
-            Tweaks tweaks() const;
-        };
-    }
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~ArgsSupplierInterface();
+    };
 }

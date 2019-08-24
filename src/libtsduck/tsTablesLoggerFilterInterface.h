@@ -77,10 +77,8 @@ namespace ts {
         //! @param [in] section The section to check.
         //! @param [in] cas The CAS family for this section.
         //! @param [out] more_pids Additional PID's that the filter would like to see.
-        //! @return True if the section is filtered and must be displayed.
-        //! False if this filter is not interested in this section.
-        //! In the latter case, other section filters may be called
-        //! until one wishes to filter that section.
+        //! @return True if the section can be displayed, false if it must not be displayed.
+        //! A section is actually displayed if all section filters returned true.
         //!
         virtual bool filterSection(DuckContext& duck, const Section& section, CASFamily cas, PIDSet& more_pids) = 0;
 

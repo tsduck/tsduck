@@ -357,7 +357,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 // Load the values of all previously defined arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::DuckContext::loadOptions(Args& args)
+bool ts::DuckContext::loadArgs(Args& args)
 {
     // List of forced standards from the command line.
     _cmdStandards = STD_NONE;
