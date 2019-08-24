@@ -44,6 +44,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgMix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgs.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsArgsSupplierInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgsTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgsWithPlugins.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAssociationTagDescriptor.h" />
@@ -303,7 +304,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsProtectionMessageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSIMerger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPushInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRandomGenerator.h" />
@@ -392,10 +392,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsTableHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTables.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesDisplay.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTablesDisplayArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesFactory.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLogger.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilter.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilterInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilterRepository.h" />
@@ -505,7 +503,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlText.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlTweaks.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsxmlTweaksArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektec.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecDevice.h" />
@@ -562,6 +559,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsArgsSupplierInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgsWithPlugins.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAssociationTagDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
@@ -786,7 +784,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsProtectionMessageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSIMerger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPushInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRandomGenerator.cpp" />
@@ -862,10 +859,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsT2MIPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTableHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesDisplay.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTablesDisplayArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLogger.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilter.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilterInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilterRepository.cpp" />
@@ -961,7 +956,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsxmlNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlText.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlTweaks.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsxmlTweaksArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlUnknown.cpp" />
     <ClCompile Include="..\..\src\libtsduck\private\tsDektecDevice.cpp" />
     <ClCompile Include="..\..\src\libtsduck\private\tsDektecVPD.cpp" />

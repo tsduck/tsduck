@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 #include "tsCASFamily.h"
 #include "tsDescriptorList.h"
 #include "tsNullReport.h"
@@ -46,7 +46,7 @@ namespace ts {
     //! Command line arguments for the class PSILogger.
     //! @ingroup cmd
     //!
-    class TSDUCKDLL CASSelectionArgs
+    class TSDUCKDLL CASSelectionArgs : public ArgsSupplierInterface
     {
     public:
         //!
@@ -67,18 +67,9 @@ namespace ts {
         CASFamily cas_family;  //!< CA system id family of @a min_cas_id.
         uint32_t  cas_oper;    //!< CA operator id (depends on the CAS).
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //!
-        virtual void load(Args& args);
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
 
         //!
         //! Check if the specified CAS id matches the selection criteria.

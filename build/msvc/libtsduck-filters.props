@@ -130,6 +130,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsArgsSupplierInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsArgsTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -907,9 +910,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsPSIMerger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1174,16 +1174,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsTablesDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTablesDisplayArgs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTablesFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTablesLogger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerArgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerFilter.h">
@@ -1513,9 +1507,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlTweaks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsxmlTweaksArgs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1678,6 +1669,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsArgs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsArgsSupplierInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsArgsWithPlugins.cpp">
@@ -2352,9 +2346,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsPSIMerger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2580,16 +2571,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsTablesDisplay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTablesDisplayArgs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTablesFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTablesLogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerFilter.cpp">
@@ -2875,9 +2860,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsxmlTweaks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsxmlTweaksArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsxmlUnknown.cpp">

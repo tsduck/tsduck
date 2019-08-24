@@ -47,6 +47,7 @@ ts::TablesLoggerFilter::TablesLoggerFilter() :
     _diversified(false),
     _negate_tid(false),
     _negate_tidext(false),
+    _psi_si(false),
     _pids(),
     _tids(),
     _tidexts(),
@@ -120,29 +121,33 @@ bool ts::TablesLoggerFilter::loadFilterOptions(DuckContext& duck, Args& args, PI
     _negate_tid = args.present(u"negate-tid");
     _negate_tidext = args.present(u"negate-tid-ext");
     _psi_si = args.present(u"psi-si");
+    args.getIntValues(_pids, u"pid");
     args.getIntValues(_tids, u"tid");
     args.getIntValues(_tidexts, u"tid-ext");
 
-    // Build the list of PID's to filter (--pid and/or --psi-si).
-    if (_psi_si || args.present(u"pid")) {
-        args.getIntValues(_pids, u"pid"); // specific pids
-        if (args.present(u"negate-pid")) {
-            _pids.flip();
-        }
-        if (_psi_si) { // --psi-si
-            _pids.set(PID_PAT);
-            _pids.set(PID_CAT);
-            _pids.set(PID_SDT); // also BAT
-            _pids.set(PID_NIT);
-        }
+    // If any PID was selected, then --negate-pid means all but them.
+    if (args.present(u"negate-pid") && _pids.any()) {
+        _pids.flip();
     }
-    else {
-        // Filter all PID's when --pid is not specified.
-        _pids.set();
+
+    // With --psi-si, accumulate all PSI/SI PID's/
+    // Build the list of PID's to filter (--pid and/or --psi-si).
+    if (_psi_si) {
+        _pids.set(PID_PAT);
+        _pids.set(PID_CAT);
+        _pids.set(PID_SDT); // also BAT
+        _pids.set(PID_NIT);
     }
 
     // Inform the tables logger of which PID's we initially need.
-    initial_pids = _pids;
+    if (_pids.any()) {
+        // Some PID's are selected, so we want only them.
+        initial_pids = _pids;
+    }
+    else {
+        // We do not specify any PID, this means we want them all.
+        initial_pids.set();
+    }
 
     // Clear the current PAT.
     _pat.clear();
@@ -192,15 +197,18 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
         }
     }
 
-    // Is this a TID or TID-ext we need?
+    // Is this a selected TID or TID-ext?
     const bool tid_set = _tids.find(section.tableId()) != _tids.end();
     const bool tidext_set = _tidexts.find(section.tableIdExtension()) != _tidexts.end();
 
-    // Return final verdict.
+    // Return final verdict. For each criteria (--pid, --tid, etc), either the criteria is
+    // not specified or the corresponding value matches.
     return
-        // TID ok
+        // Check PID:
+        (_pids.none() || _pids.test(section.sourcePID())) &&
+        // Check TID:
         (_tids.empty() || (tid_set && !_negate_tid) || (!tid_set && _negate_tid)) &&
-        // TIDext ok
+        // Check TIDext:
         (!section.isLongSection() || _tidexts.empty() || (tidext_set && !_negate_tidext) || (!tidext_set && _negate_tidext)) &&
         // Diversified payload ok
         (!_diversified || section.hasDiversifiedPayload());

@@ -26,54 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Command line arguments for the class PSILogger.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
+TSDUCK_SOURCE;
 
-namespace ts {
-    //!
-    //! Command line arguments for the class PSILogger.
-    //! @ingroup mpeg
-    //!
-    class TSDUCKDLL PSILoggerArgs
-    {
-    public:
-        //!
-        //! Constructor.
-        //!
-        PSILoggerArgs();
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~PSILoggerArgs();
+// Default implementation.
 
-        // Public fields, by options.
-        bool    all_versions;   //!< Display all versions of PSI tables.
-        bool    clear;          //!< Clear stream, do not wait for a CAT.
-        bool    cat_only;       //!< Only CAT, ignore other PSI.
-        bool    dump;           //!< Dump all sections.
-        UString output;         //!< Destination name file.
-        bool    use_current;    //!< Use PSI tables with "current" flag.
-        bool    use_next;       //!< Use PSI tables with "next" flag.
-
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @return True on success, false on error in argument line.
-        //!
-        virtual bool load(Args& args);
-    };
+ts::ArgsSupplierInterface::~ArgsSupplierInterface()
+{
 }

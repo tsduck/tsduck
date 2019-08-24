@@ -59,7 +59,7 @@ ts::PagerArgs::~PagerArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::PagerArgs::defineOptions(Args& args) const
+void ts::PagerArgs::defineArgs(Args& args) const
 {
     if (page_by_default) {
         args.option(u"no-pager");
@@ -80,7 +80,7 @@ void ts::PagerArgs::defineOptions(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::PagerArgs::load(Args& args)
+bool ts::PagerArgs::loadArgs(Args& args)
 {
     if (page_by_default) {
         use_pager = !args.present(u"no-pager");

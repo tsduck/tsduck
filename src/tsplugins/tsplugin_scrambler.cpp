@@ -343,7 +343,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"is always on in offline mode.");
 
     // ECMG and scrambling options.
-    _ecmg_args.defineOptions(*this);
+    _ecmg_args.defineArgs(*this);
     _scrambling.defineOptions(*this);
 }
 

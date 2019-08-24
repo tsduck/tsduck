@@ -32,7 +32,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::WebRequestArgs::WebRequestArgs() :
@@ -47,12 +47,16 @@ ts::WebRequestArgs::WebRequestArgs() :
 {
 }
 
+ts::WebRequestArgs::~WebRequestArgs()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::WebRequestArgs::defineOptions(Args& args) const
+void ts::WebRequestArgs::defineArgs(Args& args) const
 {
     args.option(u"connection-timeout", 0, Args::POSITIVE);
     args.help(u"connection-timeout",

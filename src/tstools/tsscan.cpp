@@ -122,8 +122,8 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     update_channel_file(false),
     default_channel_file(false)
 {
-    duck.defineOptionsForHFBand(*this);
-    tuner_args.defineOptions(*this);
+    duck.defineArgsForHFBand(*this);
+    tuner_args.defineArgs(*this);
 
     option(u"best-quality");
     help(u"best-quality",
@@ -232,8 +232,8 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"See also option --save-channels.");
 
     analyze(argc, argv);
-    duck.loadOptions(*this);
-    tuner_args.load(*this, duck);
+    duck.loadArgs(*this);
+    tuner_args.loadArgs(*this, duck);
 
     // Type of scanning
     uhf_scan = present(u"uhf-band");

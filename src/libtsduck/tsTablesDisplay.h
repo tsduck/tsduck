@@ -33,9 +33,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsArgsSupplierInterface.h"
 #include "tsMPEG.h"
 #include "tsCASFamily.h"
-#include "tsTablesDisplayArgs.h"
+#include "tsTLVSyntax.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -44,13 +46,12 @@ namespace ts {
     class Section;
     class Descriptor;
     class DescriptorList;
-    class TLVSyntax;
 
     //!
     //! A class to display PSI/SI tables.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL TablesDisplay
+    class TSDUCKDLL TablesDisplay : public ArgsSupplierInterface
     {
         TS_NOBUILD_NOCOPY(TablesDisplay);
     public:
@@ -58,20 +59,24 @@ namespace ts {
         //! Constructor.
         //! By default, all displays are done on @c std::cout.
         //! Use redirect() to redirect the output to a file.
-        //! @param [in] options Table logging options.
+        //! @param [in,out] d TSDuck context.
         //!
-        explicit TablesDisplay(const TablesDisplayArgs& options);
+        explicit TablesDisplay(DuckContext& d);
 
         //!
         //! Virtual destructor.
         //!
         virtual ~TablesDisplay();
 
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
+
         //!
         //! Get the TSDuck execution context.
         //! @return A reference to the TSDuck execution context.
         //!
-        DuckContext& duck() { return _opt.duck; }
+        DuckContext& duck() { return _duck; }
 
         //!
         //! Display a table on the output stream.
@@ -235,6 +240,10 @@ namespace ts {
                         const TLVSyntax& tlv);
 
     private:
-        const TablesDisplayArgs& _opt;
+        DuckContext&    _duck;            // Reference to the associated TSDuck context.
+        bool            _raw_dump;        // Raw dump of section, no interpretation.
+        uint32_t        _raw_flags;       // Dump flags in raw mode.
+        TLVSyntaxVector _tlv_syntax;      // TLV syntax to apply to unknown sections.
+        size_t          _min_nested_tlv;  // Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
     };
 }

@@ -91,7 +91,7 @@ void DVBTest::testTunerArgs()
 {
     ts::Args args(u"Test tuner", u"[options]");
     ts::TunerArgs tuner_args;
-    tuner_args.defineOptions(args);
+    tuner_args.defineArgs(args);
     debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
@@ -109,14 +109,14 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
 
     ts::Args args;
     ts::TunerArgs tuner_args;
-    tuner_args.defineOptions(args);
+    tuner_args.defineArgs(args);
     ts::UStringVector args_vec;
     opts.split(args_vec, u' ');
     TSUNIT_ASSERT(args.analyze(u"", args_vec));
 
     ts::TunerArgs tuner;
     ts::DuckContext duck;
-    tuner.load(args, duck);
+    tuner.loadArgs(args, duck);
     ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
     TSUNIT_ASSERT(!ptr.isNull());
     TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());

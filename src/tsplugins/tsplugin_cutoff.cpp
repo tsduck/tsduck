@@ -96,7 +96,7 @@ ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
     _set_labels()
 {
     // UDP receiver common options.
-    _sock.defineOptions(*this);
+    _sock.defineArgs(*this);
 
     option(u"allow", 'a', STRING);
     help(u"allow", u"address",
@@ -134,7 +134,7 @@ bool ts::CutoffPlugin::getOptions()
     }
 
     // Get UDP options.
-    return _sock.load(*this) && ok;
+    return _sock.loadArgs(*this) && ok;
 }
 
 

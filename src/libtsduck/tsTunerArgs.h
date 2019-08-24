@@ -130,7 +130,7 @@ namespace ts {
         //! Define command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
         //!
-        void defineOptions(Args& args) const;
+        void defineArgs(Args& args) const;
 
         //!
         //! Load arguments from command line.
@@ -139,7 +139,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! Required to convert UHF/VHF channels to frequency.
         //!
-        void load(Args& args, DuckContext& duck);
+        bool loadArgs(Args& args, DuckContext& duck);
 
         //!
         //! Open a tuner and configure it according to the parameters in this object.

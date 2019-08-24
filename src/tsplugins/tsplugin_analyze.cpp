@@ -93,8 +93,8 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _analyzer_options()
 {
     // Define all standard analysis options.
-    duck.defineOptionsForStandards(*this);
-    duck.defineOptionsForDVBCharset(*this);
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForDVBCharset(*this);
     _analyzer_options.defineOptions(*this);
 
     option(u"interval", 'i', POSITIVE);
@@ -125,7 +125,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 bool ts::AnalyzePlugin::start()
 {
     // Load all standard analysis options.
-    duck.loadOptions(*this);
+    duck.loadArgs(*this);
     _analyzer_options.load(*this);
 
     _output_name = value(u"output-file");

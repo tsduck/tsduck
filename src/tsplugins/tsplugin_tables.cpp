@@ -55,10 +55,8 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TablesDisplayArgs _display_options;
-        TablesLoggerArgs  _logger_options;
-        TablesDisplay     _display;
-        TablesLoggerPtr   _logger;
+        TablesDisplay _display;
+        TablesLogger  _logger;
     };
 }
 
@@ -72,16 +70,14 @@ TSPLUGIN_DECLARE_PROCESSOR(tables, ts::TablesPlugin)
 
 ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Collect PSI/SI Tables", u"[options]"),
-    _display_options(duck),
-    _logger_options(),
-    _display(_display_options),
-    _logger()
+    _display(duck),
+    _logger(_display)
 {
-    duck.defineOptionsForPDS(*this);
-    duck.defineOptionsForStandards(*this);
-    duck.defineOptionsForDVBCharset(*this);
-    _logger_options.defineOptions(*this);
-    _display_options.defineOptions(*this);
+    duck.defineArgsForPDS(*this);
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForDVBCharset(*this);
+    _logger.defineArgs(*this);
+    _display.defineArgs(*this);
 }
 
 
@@ -91,22 +87,17 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 
 bool ts::TablesPlugin::getOptions()
 {
-    // Decode command line options.
-    return duck.loadOptions(*this) && _logger_options.load(*this) && _display_options.load(*this);
+    return duck.loadArgs(*this) && _logger.loadArgs(*this) && _display.loadArgs(*this);
 }
 
 bool ts::TablesPlugin::start()
 {
-    // Create the logger.
-    _logger = new TablesLogger(_logger_options, _display);
-    return !_logger->hasErrors();
+    return _logger.open();
 }
 
 bool ts::TablesPlugin::stop()
 {
-    // Cleanup the logger.
-    _logger->close();
-    _logger.clear();
+    _logger.close();
     return true;
 }
 
@@ -117,6 +108,6 @@ bool ts::TablesPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::TablesPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    _logger->feedPacket (pkt);
-    return _logger->completed() ? TSP_END : TSP_OK;
+    _logger.feedPacket (pkt);
+    return _logger.completed() ? TSP_END : TSP_OK;
 }

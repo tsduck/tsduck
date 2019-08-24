@@ -54,7 +54,7 @@ ts::ECMGClientArgs::ECMGClientArgs() :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::ECMGClientArgs::defineOptions(Args& args) const
+void ts::ECMGClientArgs::defineArgs(Args& args) const
 {
     args.option(u"access-criteria", 'a', Args::STRING);
     args.help(u"access-criteria",

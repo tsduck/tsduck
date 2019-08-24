@@ -63,7 +63,7 @@ ts::CASSelectionArgs::~CASSelectionArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::CASSelectionArgs::defineOptions(Args& args) const
+void ts::CASSelectionArgs::defineArgs(Args& args) const
 {
     args.option(u"cas", 0, Args::UINT16);
     args.help(u"cas",
@@ -104,8 +104,10 @@ void ts::CASSelectionArgs::defineOptions(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-void ts::CASSelectionArgs::load(Args& args)
+bool ts::CASSelectionArgs::loadArgs(Args& args)
 {
+    bool success = true;
+
     // CAS selection:
     int cas_count = (args.present(u"min-cas") || args.present(u"max-cas"));
     if (args.present(u"cas")) {
@@ -129,6 +131,7 @@ void ts::CASSelectionArgs::load(Args& args)
     // Check that there is only one way to specify the CAS.
     if (cas_count > 1) {
         args.error(u"conflicting CAS selection options");
+        success = false;
     }
 
     // Other options:
@@ -136,6 +139,7 @@ void ts::CASSelectionArgs::load(Args& args)
     cas_oper = args.intValue<uint32_t>(u"operator");
     pass_ecm = args.present(u"ecm");
     pass_emm = args.present(u"emm");
+    return success;
 }
 
 
