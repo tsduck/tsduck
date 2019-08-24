@@ -554,8 +554,8 @@
 //----------------------------------------------------------------------------
 
 //! @cond nodoxygen
-#define _TS_UNIQUE_NAME1(a,b) a##b
-#define _TS_UNIQUE_NAME2(a,b) _TS_UNIQUE_NAME1(a,b)
+#define TS_UNIQUE_NAME1(a,b) a##b
+#define TS_UNIQUE_NAME2(a,b) TS_UNIQUE_NAME1(a,b)
 //! @endcond
 
 //!
@@ -567,7 +567,7 @@
 //! @param prefix Prefix for the symbol. Using different prefixes, several
 //! distinct unique identifiers can be used on the same line.
 //!
-#define TS_UNIQUE_NAME(prefix) _TS_UNIQUE_NAME2(prefix,__LINE__)
+#define TS_UNIQUE_NAME(prefix) TS_UNIQUE_NAME2(prefix,__LINE__)
 
 
 //----------------------------------------------------------------------------
