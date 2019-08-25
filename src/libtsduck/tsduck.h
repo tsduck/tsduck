@@ -148,6 +148,8 @@
 #include "tsDTSNeuralDescriptor.h"
 #include "tsDuckConfigFile.h"
 #include "tsDuckContext.h"
+#include "tsDuckExtension.h"
+#include "tsDuckExtensionRepository.h"
 #include "tsDuckProtocol.h"
 #include "tsDVBCharset.h"
 #include "tsDVBCharsetSingleByte.h"
