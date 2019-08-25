@@ -471,7 +471,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
     assert(table.sectionCount() > 0);
     const PID pid = table.sourcePID();
-    const CASFamily cas = _cas_mapper.casFamily(table.sourcePID());
+    const uint16_t cas = _cas_mapper.casId(table.sourcePID());
 
     // Ignore table if not to be filtered. Keep the table if at least one section shall be kept.
     bool keep = false;
@@ -503,7 +503,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         }
         else {
             // Full table formatting
-            _display.displayTable(table, 0, _cas_mapper.casFamily(pid)) << std::endl;
+            _display.displayTable(table, 0, _cas_mapper.casId(pid)) << std::endl;
         }
         postDisplay();
     }
@@ -553,7 +553,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 {
     const PID pid = sect.sourcePID();
-    const CASFamily cas = _cas_mapper.casFamily(sect.sourcePID());
+    const uint16_t cas = _cas_mapper.casId(sect.sourcePID());
 
     // With option --all-once, track duplicate PID/TID/TDIext/secnum/version.
     if (_all_once) {
@@ -618,7 +618,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
         }
         else {
             // Full section formatting.
-            _display.displaySection(sect, 0, _cas_mapper.casFamily(pid)) << std::endl;
+            _display.displaySection(sect, 0, _cas_mapper.casId(pid)) << std::endl;
         }
         postDisplay();
     }
@@ -938,7 +938,7 @@ void ts::TablesLogger::logSection(const Section& sect)
     header += u": ";
 
     // Output the line through the display object.
-    _display.logSectionData(sect, header, _log_size, _cas_mapper.casFamily(sect.sourcePID()));
+    _display.logSectionData(sect, header, _log_size, _cas_mapper.casId(sect.sourcePID()));
 }
 
 
@@ -946,7 +946,7 @@ void ts::TablesLogger::logSection(const Section& sect)
 //  Check if a specific section must be filtered
 //----------------------------------------------------------------------------
 
-bool ts::TablesLogger::isFiltered(const Section& sect, CASFamily cas)
+bool ts::TablesLogger::isFiltered(const Section& sect, uint16_t cas)
 {
     // By default, keep the section.
     bool status = true;

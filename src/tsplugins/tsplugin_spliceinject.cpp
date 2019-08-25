@@ -716,7 +716,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         SectionPtr sec(*it);
         if (!sec.isNull()) {
             if (sec->tableId() != TID_SCTE35_SIT) {
-                tsp->error(u"unexpected section, %s, ignored", {names::TID(sec->tableId(), CAS_OTHER, names::VALUE)});
+                tsp->error(u"unexpected section, %s, ignored", {names::TID(sec->tableId(), CASID_NULL, names::VALUE)});
             }
             else {
                 CommandPtr cmd(new SpliceCommand(this, sec));

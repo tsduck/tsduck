@@ -12,6 +12,11 @@ linux|mac {
     QMAKE_LFLAGS += $$system("curl-config --libs")
 }
 
+linux {
+    LIBS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
+    QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
+}
+
 DISTFILES += \
     ../../../src/libtsduck/tsduck.dvb.names \
     ../../../src/libtsduck/tsduck.oui.names \

@@ -76,6 +76,7 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true),
     infile()
 {
+    duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
     duck.defineArgsForDVBCharset(*this);

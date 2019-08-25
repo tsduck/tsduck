@@ -47,12 +47,20 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _outFile(),
     _dvbCharsetIn(nullptr),
     _dvbCharsetOut(nullptr),
-    _casFamily(CAS_OTHER),
+    _casId(CASID_NULL),
     _defaultPDS(0),
     _cmdStandards(STD_NONE),
     _accStandards(STD_NONE),
     _hfDefaultRegion(),
-    _definedCmdOptions(0)
+    _definedCmdOptions(0),
+    _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
+                    {CASID_IRDETO_MIN,     u"irdeto"},
+                    {CASID_MEDIAGUARD_MIN, u"mediaguard"},
+                    {CASID_NAGRA_MIN,      u"nagravision"},
+                    {CASID_NDS_MIN,        u"nds"},
+                    {CASID_SAFEACCESS,     u"safeaccess"},
+                    {CASID_VIACCESS_MIN,   u"viaccess"},
+                    {CASID_WIDEVINE_MIN,   u"widevine"}}
 {
 }
 
@@ -98,17 +106,17 @@ void ts::DuckContext::resetStandards(Standards mask)
 
 
 //----------------------------------------------------------------------------
-// The actual CAS family to use.
+// The actual CAS id to use.
 //----------------------------------------------------------------------------
 
-void ts::DuckContext::setDefaultCASFamily(CASFamily cas)
+void ts::DuckContext::setDefaultCASId(uint16_t cas)
 {
-    _casFamily = cas;
+    _casId = cas;
 }
 
-ts::CASFamily ts::DuckContext::casFamily(CASFamily cas) const
+uint16_t ts::DuckContext::casId(uint16_t cas) const
 {
-    return cas == CAS_OTHER ? _casFamily : cas;
+    return cas == CASID_NULL ? _casId : cas;
 }
 
 
@@ -350,6 +358,24 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "
                   u"descriptors is found before the first ATSC MGT or VCT.");
     }
+
+    // Options relating to default CAS identification.
+    if (cmdOptionsMask & CMD_CAS) {
+
+        args.option(u"default-cas-id", 0, Args::UINT16);
+        args.help(u"default-cas-id",
+                  u"Interpret all EMM's and ECM's from unknown CAS as coming from "
+                  u"the specified CA_System_Id. By default, EMM's and ECM's are "
+                  u"interpreted according to the CA_descriptor which references their PID. "
+                  u"This option is useful when analyzing partial transport streams without "
+                  u"CAT or PMT to correctly identify the CA PID's.");
+
+        // Predefined CAS options:
+        for (auto cas = _predefined_cas.begin(); cas != _predefined_cas.end(); ++cas) {
+            args.option(cas->second);
+            args.help(cas->second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", {cas->first}));
+        }
+    }
 }
 
 
@@ -389,6 +415,25 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_definedCmdOptions & CMD_STANDARDS) {
         if (args.present(u"atsc")) {
             _cmdStandards |= STD_ATSC;
+        }
+    }
+
+    // Options relating to default CAS.
+    if (_definedCmdOptions & CMD_CAS) {
+        int count = 0;
+        if (args.present(u"default-cas-id")) {
+            _casId = args.intValue<uint16_t>(u"default-cas-id");
+            count++;
+        }
+        // Predefined CAS options:
+        for (auto cas = _predefined_cas.begin(); cas != _predefined_cas.end(); ++cas) {
+            if (args.present(cas->second)) {
+                _casId = cas->first;
+                count++;
+            }
+        }
+        if (count > 1) {
+            args.error(u"more than one default CAS defined");
         }
     }
 

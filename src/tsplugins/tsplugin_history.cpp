@@ -396,7 +396,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 // Analyze a list of descriptors, looking for CA descriptors.
 //----------------------------------------------------------------------------
 
-void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint16_t service_id)
+void ts::HistoryPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id)
 {
     // Loop on all CA descriptors
     for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
@@ -422,7 +422,7 @@ void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint1
         // Normally, no PID should be referenced in the private part of
         // a CA descriptor. However, this rule is not followed by the
         // old format of MediaGuard CA descriptors.
-        if (CASFamilyOf (sysid) == CAS_MEDIAGUARD && size >= 13) {
+        if (CASFamilyOf(sysid) == CAS_MEDIAGUARD && size >= 13) {
             // MediaGuard CA descriptor in the PMT.
             desc += 13; size -= 13;
             while (size >= 15) {

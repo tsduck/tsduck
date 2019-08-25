@@ -533,7 +533,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
 // Dump the section on an output stream
 //----------------------------------------------------------------------------
 
-std::ostream& ts::Section::dump(std::ostream& strm, int indent, CASFamily cas, bool no_header) const
+std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bool no_header) const
 {
     const std::string margin(indent, ' ');
     const TID tid(tableId());

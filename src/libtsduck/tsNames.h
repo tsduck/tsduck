@@ -36,6 +36,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsCASFamily.h"
+#include "tsMPEG.h"
 #include "tsReport.h"
 #include "tsSingletonManager.h"
 
@@ -64,11 +65,11 @@ namespace ts {
         //!
         //! Name of Table ID.
         //! @param [in] tid Table id.
-        //! @param [in] cas CAS family for EMM/ECM table ids.
+        //! @param [in] cas CAS id for EMM/ECM table ids.
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString TID(uint8_t tid, ts::CASFamily cas = CAS_OTHER, Flags flags = NAME);
+        TSDUCKDLL UString TID(uint8_t tid, uint16_t cas = CASID_NULL, Flags flags = NAME);
 
         //!
         //! Name of Descriptor ID.

@@ -77,24 +77,28 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
     // Load all plugins and register allocator functions (when not zero).
     for (size_t i = 0; i < files.size(); ++i) {
 
+        // Constant reference to the file name.
+        const UString& filename(files[i]);
+
         // Get extension name from file name (without tslibext_).
-        const UString name(BaseName(files[i], TS_SHARED_LIB_SUFFIX).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
+        const UString name(BaseName(filename, TS_SHARED_LIB_SUFFIX).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
         if (name.containSimilar(ignore)) {
             // This extension is listed in TSLIBEXT_IGNORE.
-            EXTDEBUG("ignoring extension" << files[i]);
+            EXTDEBUG("ignoring extension" << filename);
         }
         else {
             // This extension shall be loaded.
-            EXTDEBUG("loading extension " << files[i]);
-            ApplicationSharedLibrary shlib(files[i]);
+            // Use the "permanent" load flag to make sure the shared library remains active.
+            EXTDEBUG("loading extension " << filename);
+            ApplicationSharedLibrary shlib(filename, UString(), UString(), true);
             if (!shlib.isLoaded()) {
-                EXTDEBUG("failed to load extension " << files[i] << " : " << shlib.errorMessage());
+                EXTDEBUG("failed to load extension " << filename << " : " << shlib.errorMessage());
             }
             else {
                 // Finding TSDuckExtensionId symbol in the shared library.
                 void* sym = shlib.getSymbol("TSDuckExtensionId");
                 if (sym == nullptr) {
-                    EXTDEBUG("no symbol TSDuckExtensionId found in " << files[i]);
+                    EXTDEBUG("no symbol TSDuckExtensionId found in " << filename);
                 }
                 else {
                     // The returned address is the address of a pointer to ts::DuckExtension.
@@ -102,8 +106,8 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
                     ts::DuckExtension::ConstPointer ext = *reinterpret_cast<ts::DuckExtension::ConstPointer*>(sym);
                     if (ext != nullptr) {
                         // Now the extension is fully identified.
-                        _extensions.push_back(ext);
-                        EXTDEBUG("extension \"" << ext->name() << "\" loaded from " << files[i]);
+                        _extensions.push_back(std::make_pair(ext, filename));
+                        EXTDEBUG("extension \"" << ext->name() << "\" loaded from " << filename);
                     }
                 }
             }
@@ -117,10 +121,78 @@ ts::DuckExtensionRepository::DuckExtensionRepository() :
 
 
 //----------------------------------------------------------------------------
+// Search a file in a list of directories.
+//----------------------------------------------------------------------------
+
+namespace {
+    ts::UString SearchFile(const ts::UStringList& dirs, const ts::UString& prefix, const ts::UString& name, const ts::UString& suffix)
+    {
+        for (auto it = dirs.begin(); it != dirs.end(); ++it) {
+            const ts::UString filename(*it + ts::PathSeparator + prefix + name + suffix);
+            if (ts::FileExists(filename)) {
+                return filename;
+            }
+        }
+        return u"not found";
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // List all extensions.
 //----------------------------------------------------------------------------
 
 ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 {
-    return UString(); //@@@@@@@@@@@@@@
+    // Compute max name width of all extensions.
+    size_t width = 0;
+    for (size_t i = 0; i < _extensions.size(); ++i) {
+        width = std::max(width, _extensions[i].first->name().width());
+    }
+    width++; // spacing after name
+
+    // Search path for plugins.
+    UStringList plugins_dirs;
+    GetEnvironmentPath(plugins_dirs, TS_PLUGINS_PATH);
+    plugins_dirs.push_back(DirectoryName(ExecutableFile()));
+
+    // Search path for executables.
+    UStringList tools_dirs;
+    GetEnvironmentPath(tools_dirs, TS_COMMAND_PATH);
+
+    // Build the output text as a string.
+    UString out;
+    for (size_t iext = 0; iext < _extensions.size(); ++iext) {
+
+        // Description of the plugin.
+        const DuckExtension::ConstPointer ext = _extensions[iext].first;
+        const UString& filename(_extensions[iext].second);
+        const UStringVector& plugins(ext->plugins());
+        const UStringVector& tools(ext->tools());
+
+        // First line: name and description.
+        out += UString::Format(u"%s %s\n", {ext->name().toJustifiedLeft(width, u'.', false, 1), ext->description()});
+
+        if (report.verbose()) {
+            // Display full file names.
+            out += UString::Format(u"%*s Library: %s\n", {width, u"", filename});
+            for (size_t i = 0; i < plugins.size(); ++i) {
+                out += UString::Format(u"%*s Plugin %s: %s\n", {width, u"", plugins[i], SearchFile(plugins_dirs, u"tsplugin_", plugins[i], TS_SHARED_LIB_SUFFIX)});
+            }
+            for (size_t i = 0; i < tools.size(); ++i) {
+                out += UString::Format(u"%*s Command %s: %s\n", {width, u"", tools[i], SearchFile(tools_dirs, u"", tools[i], TS_EXECUTABLE_SUFFIX)});
+            }
+        }
+        else {
+            // Only display plugins and tools names.
+            if (!plugins.empty()) {
+                out += UString::Format(u"%*s Plugins: %s\n", {width, u"", UString::Join(plugins)});
+            }
+            if (!tools.empty()) {
+                out += UString::Format(u"%*s Commands: %s\n", {width, u"", UString::Join(tools)});
+            }
+        }
+    }
+
+    return out;
 }

@@ -162,14 +162,14 @@ void NamesTest::testConfigFile()
 void NamesTest::testTID()
 {
     TSUNIT_EQUAL(u"CAT", ts::names::TID(ts::TID_CAT));
-    TSUNIT_EQUAL(u"CAT", ts::names::TID(ts::TID_CAT, ts::CAS_NAGRA));
-    TSUNIT_EQUAL(u"PMT", ts::names::TID(ts::TID_PMT, ts::CAS_VIACCESS));
-    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::names::TID(ts::TID_VIA_EMM_U, ts::CAS_VIACCESS));
+    TSUNIT_EQUAL(u"CAT", ts::names::TID(ts::TID_CAT, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"PMT", ts::names::TID(ts::TID_PMT, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::names::TID(ts::TID_VIA_EMM_U, ts::CASID_VIACCESS_MIN));
     TSUNIT_EQUAL(u"EIT schedule Actual", ts::names::TID(ts::TID_EIT_S_ACT_MIN + 4));
     TSUNIT_EQUAL(u"ECM (odd)", ts::names::TID(ts::TID_ECM_81));
-    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::names::TID(ts::TID_ECM_81, ts::CAS_NAGRA));
-    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(ts::TID_SA_EMM_A, ts::CAS_SAFEACCESS, ts::names::VALUE));
-    TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(ts::TID_LW_DMT, ts::CAS_SAFEACCESS));
+    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::names::TID(ts::TID_ECM_81, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::names::VALUE));
+    TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
     TSUNIT_EQUAL(u"unknown (0x90)", ts::names::TID(ts::TID_LW_DMT));
 }
 

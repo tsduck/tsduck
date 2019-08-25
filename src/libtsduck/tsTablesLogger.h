@@ -215,7 +215,7 @@ namespace ts {
         void postDisplay();
 
         // Check if a specific section must be filtered and displayed.
-        bool isFiltered(const Section& section, CASFamily cas);
+        bool isFiltered(const Section& section, uint16_t cas);
 
         // Log a section (option --log).
         void logSection(const Section& section);

@@ -468,11 +468,7 @@ namespace ts {
     template <class CONTAINER>
     void GetEnvironmentPath(CONTAINER& container, const UString& name, const UString& def = UString())
     {
-        GetEnvironment(name, def).split(container, SearchPathSeparator, true);
-        if (container.size() == 1 && container.front().empty()) {
-            // Path was actually empty
-            container.clear();
-        }
+        GetEnvironment(name, def).split(container, SearchPathSeparator, true, true);
     }
 
     //!

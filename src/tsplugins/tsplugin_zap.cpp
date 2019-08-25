@@ -35,6 +35,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsCASFamily.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
@@ -714,7 +715,7 @@ void ts::ZapPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint8_t pi
         desc += 4; size -= 4;
 
         // Establish context based on CAS type
-        CASFamily cas = CASFamilyOf (sysid);
+        const CASFamily cas = CASFamilyOf(sysid);
 
         // Record state of main CA pid for this descriptor
         _pid_state[pid] = pid_state;

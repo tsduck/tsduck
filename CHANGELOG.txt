@@ -2,16 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1383
+VERSION 3.19-1388
 
 [IMP] Improvements on existing commands and plugins:
 
   * Added options --aes-cbc, --aes-ctr, --iv, --ctr-counter-bits,
     --output-cw-file to plugins "scrambler" and "descrambler".
   * Added option --swap-cw to plugin "descrambler".
-  * Added default CAS selection options --conax, --irdeto, --mediaguard,
-    --nagravision, --nds, --safeaccess, --viaccess, --widevine to "tspsi",
-    "tstabdump", "tstables" and plugins "psi", "tables".
+  * Added default CAS selection options --default-cas-id, --conax, --irdeto,
+    --mediaguard, --nagravision, --nds, --safeaccess, --viaccess, --widevine
+    to "tspsi", "tstabdump", "tstables" and plugins "psi", "tables".
+  * Added option --extensions to "tsversion".
 
 [BUG] Bug fixes:
 

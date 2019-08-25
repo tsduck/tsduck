@@ -80,10 +80,10 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
 // Public functions returning names.
 //----------------------------------------------------------------------------
 
-ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
+ts::UString ts::names::TID(uint8_t tid, uint16_t cas, Flags flags)
 {
     // Use version with CAS first, then without CAS.
-    return NamesDVB::Instance()->nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
+    return NamesDVB::Instance()->nameFromSectionWithFallback(u"TableId", (Names::Value(CASFamilyOf(cas)) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
 }
 
 ts::UString ts::names::EDID(uint8_t edid, Flags flags)
