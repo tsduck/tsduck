@@ -70,12 +70,12 @@ namespace ts {
         //!
         //! List all loaded extensions.
         //! This function is typically used to implement the <code>tsversion -\-list-extensions</code> option.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in,out] report Where to report errors. Used to get verbosity level.
         //! @return The text to display.
         //!
         UString listExtensions(Report& report);
 
     private:
-        std::vector<DuckExtension::ConstPointer> _extensions;
+        std::vector<std::pair<DuckExtension::ConstPointer, UString>> _extensions;
     };
 }

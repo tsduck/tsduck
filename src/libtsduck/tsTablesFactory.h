@@ -35,7 +35,6 @@
 #pragma once
 #include "tsMPEG.h"
 #include "tsEDID.h"
-#include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsTablesPtr.h"
 #include "tsSingletonManager.h"
@@ -93,51 +92,51 @@ namespace ts {
 
         //!
         //! Get the table factory for a given XML node name.
-        //! @param [in] node_name Name of XML node.
+        //! @param [in] nodeName Name of XML node.
         //! @return Corresponding factory or zero if there is none.
         //!
-        TableFactory getTableFactory(const UString& node_name) const;
+        TableFactory getTableFactory(const UString& nodeName) const;
 
         //!
         //! Get the descriptor factory for a given XML node name.
-        //! @param [in] node_name Name of XML node.
+        //! @param [in] nodeName Name of XML node.
         //! @return Corresponding factory or zero if there is none.
         //!
-        DescriptorFactory getDescriptorFactory(const UString& node_name) const;
+        DescriptorFactory getDescriptorFactory(const UString& nodeName) const;
 
         //!
         //! Check if a descriptor is allowed in a table.
-        //! @param [in] desc_node_name Name of the XML node for the descriptor.
+        //! @param [in] nodeName Name of the XML node for the descriptor.
         //! @param [in] table_id Table id of the table to check.
         //! @return True if the descriptor is allowed, false otherwise.
         //! Non-table-specific descriptors are allowed everywhere.
         //! Table-specific descriptors are allowed only in a set of specific tables.
         //!
-        bool isDescriptorAllowed(const UString& desc_node_name, TID table_id) const;
+        bool isDescriptorAllowed(const UString& nodeName, TID table_id) const;
 
         //!
         //! Get the list of tables where a descriptor is allowed.
-        //! @param [in] desc_node_name Name of the XML node for the descriptor.
+        //! @param [in] nodeName Name of the XML node for the descriptor.
         //! @return Human-readable list of tables where the descriptor is allowed.
         //! Empty string for non-table-specific descriptors.
         //!
-        UString descriptorTables(const UString& desc_node_name) const;
+        UString descriptorTables(const UString& nodeName) const;
 
         //!
         //! Get the display function for a given table id.
         //! @param [in] id Table id.
-        //! @param [in] cas Current CAS family.
+        //! @param [in] cas Current CAS id.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplaySectionFunction getSectionDisplay(TID id, CASFamily cas = CAS_OTHER) const;
+        DisplaySectionFunction getSectionDisplay(TID id, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the log function for a given table id.
         //! @param [in] id Table id.
-        //! @param [in] cas Current CAS family.
+        //! @param [in] cas Current CAS id.
         //! @return Corresponding log function or zero if there is none.
         //!
-        LogSectionFunction getSectionLog(TID id, CASFamily cas = CAS_OTHER) const;
+        LogSectionFunction getSectionLog(TID id, uint16_t cas = CASID_NULL) const;
 
         //!
         //! Get the display function for a given extended descriptor id.
@@ -219,58 +218,66 @@ namespace ts {
 
             //!
             //! The constructor registers a table factory for a given XML node name.
-            //! @param [in] node_name Name of XML nodes implementing this table.
+            //! @param [in] nodeName Name of XML nodes implementing this table.
             //! @param [in] factory Function which creates a table of the appropriate type.
             //! @see TS_XML_TABLE_FACTORY
             //!
-            Register(const UString& node_name, TableFactory factory);
+            Register(const UString& nodeName, TableFactory factory);
 
             //!
             //! The constructor registers a descriptor factory for a given XML node name.
-            //! @param [in] node_name Name of XML nodes implementing this descriptor.
+            //! @param [in] nodeName Name of XML nodes implementing this descriptor.
             //! @param [in] factory Function which creates a descriptor of the appropriate type.
             //! @param [in] tids For table-specific descriptors, list of table ids where the descriptor is allowed to appear.
             //! @see TS_XML_DESCRIPTOR_FACTORY
             //!
-            Register(const UString& node_name, DescriptorFactory factory, std::initializer_list<TID> tids = std::initializer_list<TID>());
+            Register(const UString& nodeName, DescriptorFactory factory, std::initializer_list<TID> tids = std::initializer_list<TID>());
 
             //!
             //! The constructor registers a section display function for a given table id.
             //! @param [in] func Display function for the corresponding sections.
             //! @param [in] id Table id for this type.
-            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
+            //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(DisplaySectionFunction func, TID id, CASFamily cas = CAS_OTHER);
+            Register(DisplaySectionFunction func, TID id, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
 
             //!
             //! The constructor registers a section display function for a given range of ids.
             //! @param [in] func Display function for the corresponding sections.
             //! @param [in] minId Minimum table id for this type.
             //! @param [in] maxId Maximum table id for this type.
-            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
+            //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(DisplaySectionFunction func, TID minId, TID maxId, CASFamily cas = CAS_OTHER);
+            Register(DisplaySectionFunction func, TID minId, TID maxId, uint16_t minCAS, uint16_t maxCAS);
 
             //!
             //! The constructor registers a section log function for a given table id.
             //! @param [in] func Log function for the corresponding sections.
             //! @param [in] id Table id for this type.
-            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
+            //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(LogSectionFunction func, TID id, CASFamily cas = CAS_OTHER);
+            Register(LogSectionFunction func, TID id, uint16_t minCAS = CASID_NULL, uint16_t maxCAS = CASID_NULL);
 
             //!
             //! The constructor registers a section log function for a given range of ids.
             //! @param [in] func Log function for the corresponding sections.
             //! @param [in] minId Minimum table id for this type.
             //! @param [in] maxId Maximum table id for this type.
-            //! @param [in] cas CAS family (only if the display function applies to one CAS only).
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
+            //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
-            Register(LogSectionFunction func, TID minId, TID maxId, CASFamily cas = CAS_OTHER);
+            Register(LogSectionFunction func, TID minId, TID maxId, uint16_t minCAS, uint16_t maxCAS);
 
             //!
             //! The constructor registers a descriptor display function for a given descriptor id.
@@ -281,18 +288,11 @@ namespace ts {
             Register(DisplayDescriptorFunction func, const EDID& edid);
 
             //!
-            //! The constructor registers a CA_descriptor display function for a given CAS family.
-            //! @param [in] func Display function for the corresponding descriptors.
-            //! @param [in] cas CAS family for this type.
-            //! @see TS_FACTORY_REGISTER
-            //!
-            Register(DisplayCADescriptorFunction func, CASFamily cas);
-
-            //!
             //! The constructor registers a CA_descriptor display function for a given range of CA_system_id.
             //! @param [in] func Display function for the corresponding descriptors.
-            //! @param [in] minCAS Minimum CAS id for this type.
-            //! @param [in] maxCAS Maximum CAS id for this type.
+            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
+            //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_FACTORY_REGISTER
             //!
             Register(DisplayCADescriptorFunction func, uint16_t minCAS, uint16_t maxCAS);
@@ -305,18 +305,17 @@ namespace ts {
         std::map<UString, TableFactory>                  _tableNames;
         std::map<UString, DescriptorFactory>             _descriptorNames;
         std::multimap<UString, TID>                      _descriptorTablesIds;       // For table-specific descriptors
-        std::map<uint16_t, DisplaySectionFunction>       _sectionDisplays;           // Key includes TID and CAS.
-        std::map<uint16_t, LogSectionFunction>           _sectionLogs;               // Key includes TID and CAS.
+        std::map<uint32_t, DisplaySectionFunction>       _sectionDisplays;           // Key includes TID and CAS.
+        std::map<uint32_t, LogSectionFunction>           _sectionLogs;               // Key includes TID and CAS.
         std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;
         std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;   // Key is CAS system id.
-        std::map<CASFamily, DisplayCADescriptorFunction> _casFamilyDescriptorDisplays;
 
         // Build a key in _sectionDisplays and _sectionLogs.
-        static uint16_t SectionDisplayIndex(TID id, CASFamily cas);
+        static uint32_t SectionDisplayIndex(TID id, uint16_t cas);
 
         // Common code for getSectionDisplay and getSectionLog.
         template <typename FUNCTION>
-        FUNCTION getSectionFunction(TID id, CASFamily cas, const std::map<uint16_t,FUNCTION>& funcMap) const;
+        FUNCTION getSectionFunction(TID id, uint16_t cas, const std::map<uint32_t,FUNCTION>& funcMap) const;
 
         // Common code for getDescriptorFactory and getDescriptorDisplay.
         template <typename FUNCTION>

@@ -37,7 +37,6 @@
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
-#include "tsCASFamily.h"
 #include "tsCRC32.h"
 #include "tsETID.h"
 #include "tsTLVSyntax.h"
@@ -598,11 +597,11 @@ namespace ts {
         //! Hexa dump the section on an output stream without interpretation of the payload.
         //! @param [in,out] strm A standard stream in output mode (text mode).
         //! @param [in] indent Indicates the base indentation of lines.
-        //! @param [in] cas CAS family, for CAS-specific information.
+        //! @param [in] cas CAS id, for CAS-specific information.
         //! @param [in] no_header If true, do not display the section header.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& dump(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false) const;
+        std::ostream& dump(std::ostream& strm, int indent = 0, uint16_t cas = CASID_NULL, bool no_header = false) const;
 
         //!
         //! Static method to compute a section size.

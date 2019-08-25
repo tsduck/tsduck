@@ -59,8 +59,6 @@ INCLUDEPATH += $$SRCROOT/libtsduck
 linux|mac|mingw {
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
-    QMAKE_CXXFLAGS += $$system(curl-config --cflags)
-    LIBS += $$system(curl-config --libs)
 }
 linux|mingw {
     # GCC options. Some of them depend on the compiler version.
@@ -74,9 +72,9 @@ linux|mingw {
     greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
 }
 linux {
-    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
+    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/linux
-    LIBS += -lrt -ldl $$PROJROOT/dektec/LinuxSDK/DTAPI/Lib/GCC4.4/DTAPI64.o
+    LIBS += -lrt -ldl
 }
 mac {
     QMAKE_CXXFLAGS_WARN_ON += -Weverything

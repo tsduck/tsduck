@@ -125,13 +125,9 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
 
 uint16_t ts::CASMapper::casId(PID pid) const
 {
+    // Get CAS id for this PID or get default CAS from context.
     const PIDDescriptionMap::const_iterator it(_pids.find(pid));
-    return it == _pids.end() ? 0 : it->second.cas_id;
-}
-
-ts::CASFamily ts::CASMapper::casFamily(PID pid) const
-{
-    return _duck.casFamily(CASFamilyOf(casId(pid)));
+    return it == _pids.end() ? _duck.casId() : it->second.cas_id;
 }
 
 bool ts::CASMapper::isECM(PID pid) const

@@ -38,6 +38,7 @@
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsForkPipe.h"
+#include "tsDuckExtensionRepository.h"
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
 #endif
@@ -56,18 +57,19 @@ public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
-    bool        current;   // Display current version of TSDuck, this executable.
-    bool        integer;   // Display current version of TSDuck as integer value.
-    bool        latest;    // Display the latest version of TSDuck.
-    bool        check;     // Check if a new version of TSDuck is available.
-    bool        all;       // List all available versions of TSDuck.
-    bool        download;  // Download the latest version.
-    bool        force;     // Force downloads.
-    bool        binary;    // With --download, fetch the binaries.
-    bool        source;    // With --download, feth the source code instead of the binaries.
-    bool        upgrade;   // Upgrade TSDuck to the latest version.
-    ts::UString name;      // Use the specified version, not the latest one.
-    ts::UString out_dir;   // Output directory for downloaded files.
+    bool        current;    // Display current version of TSDuck, this executable.
+    bool        integer;    // Display current version of TSDuck as integer value.
+    bool        latest;     // Display the latest version of TSDuck.
+    bool        check;      // Check if a new version of TSDuck is available.
+    bool        all;        // List all available versions of TSDuck.
+    bool        download;   // Download the latest version.
+    bool        force;      // Force downloads.
+    bool        binary;     // With --download, fetch the binaries.
+    bool        source;     // With --download, feth the source code instead of the binaries.
+    bool        upgrade;    // Upgrade TSDuck to the latest version.
+    bool        extensions; // List extensions.
+    ts::UString name;       // Use the specified version, not the latest one.
+    ts::UString out_dir;    // Output directory for downloaded files.
 };
 
 // Destructor.
@@ -86,6 +88,7 @@ Options::Options(int argc, char *argv[]) :
     binary(false),
     source(false),
     upgrade(false),
+    extensions(false),
     name(),
     out_dir()
 {
@@ -107,6 +110,9 @@ Options::Options(int argc, char *argv[]) :
          u"GitHub. By default, download the binary installers for the current "
          u"operating system and architecture. Specify --source to download the "
          u"source code.");
+
+    option(u"extensions", 'e');
+    help(u"extensions", u"List all available TSDuck extensions.");
 
     option(u"force", 'f');
     help(u"force", u"Force downloads even if a file with same name and size already exists.");
@@ -159,6 +165,7 @@ Options::Options(int argc, char *argv[]) :
     download = present(u"download") || binary || source;
     force = present(u"force");
     upgrade = present(u"upgrade");
+    extensions = present(u"extensions");
     getValue(name, u"name");
     getValue(out_dir, u"output-directory");
 
@@ -582,7 +589,12 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
     bool success = true;
 
-    if (opt.current) {
+    if (opt.extensions) {
+        // Display list of available extensions.
+        // The returned string is either empty or ends with a new-line.
+        std::cout << ts::DuckExtensionRepository::Instance()->listExtensions(opt);
+    }
+    else if (opt.current) {
         // Display current version.
         std::cout << ts::GetVersion(opt.verbose() ? ts::VERSION_LONG : ts::VERSION_SHORT) << std::endl;
     }

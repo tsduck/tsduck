@@ -53,7 +53,7 @@ namespace ts {
         // Implementation of TablesLoggerFilterInterface.
         virtual void defineFilterOptions(Args& args) const override;
         virtual bool loadFilterOptions(DuckContext& duck, Args& args, PIDSet& initial_pids) override;
-        virtual bool filterSection(DuckContext& duck, const Section& section, CASFamily cas, PIDSet& more_pids) override;
+        virtual bool filterSection(DuckContext& duck, const Section& section, uint16_t cas, PIDSet& more_pids) override;
 
     private:
         bool               _diversified;    // Payload must be diversified.

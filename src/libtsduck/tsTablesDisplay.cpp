@@ -94,57 +94,6 @@ void ts::TablesDisplay::defineArgs(Args& args) const
               u"the TLV structure. The field order must be either \"msb\" or \"lsb\" and "
               u"indicates the byte order of the Tag and Length fields.\n\n"
               u"All fields are optional. The default values are \"auto,auto,1,1,msb\".");
-
-    // Options for default CAS:
-
-    args.option(u"conax", 0);
-    args.help(u"conax",
-              u"Interpret all EMM and ECM from unknown CAS as coming from Conax. "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
-
-    args.option(u"irdeto", 0);
-    args.help(u"irdeto",
-              u"Interpret all EMM and ECM from unknown CAS as coming from Irdeto. "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
-
-    args.option(u"mediaguard", 0);
-    args.help(u"mediaguard",
-              u"Interpret all EMM and ECM from unknown CAS as coming from MediaGuard. "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
-
-    args.option(u"nagravision", 0);
-    args.help(u"nagravision",
-              u"Interpret all EMM and ECM from unknown CAS as coming from NagraVision. "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
-
-    args.option(u"nds", 0);
-    args.help(u"nds",
-              u"Interpret all EMM and ECM from unknown CAS as coming from Synamedia (formerly known as NDS). "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
-
-    args.option(u"viaccess", 0);
-    args.help(u"viaccess",
-              u"Interpret all EMM and ECM from unknown CAS as coming from Viaccess. "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
-
-    args.option(u"widevine", 0);
-    args.help(u"widevine",
-              u"Interpret all EMM and ECM from unknown CAS as coming from Widevine CAS. "
-              u"By default, EMM's and ECM's are interpreted according to the CA_descriptor which "
-              u"references their PID. This option is useful when analyzing partial "
-              u"transport streams without CAT or PMT to correctly identify the CA PID's.");
 }
 
 
@@ -154,8 +103,6 @@ void ts::TablesDisplay::defineArgs(Args& args) const
 
 bool ts::TablesDisplay::loadArgs(Args &args)
 {
-    bool success = true;
-
     _raw_dump = args.present(u"raw-dump");
     _raw_flags = UString::HEXA;
     if (args.present(u"c-style")) {
@@ -177,44 +124,7 @@ bool ts::TablesDisplay::loadArgs(Args &args)
         _tlv_syntax.push_back(tlv);
     }
     std::sort(_tlv_syntax.begin(), _tlv_syntax.end());
-
-    // Get and define default CAS family.
-    const bool conax      = args.present(u"conax");
-    const bool irdeto     = args.present(u"irdeto");
-    const bool mediaguard = args.present(u"mediaguard");
-    const bool nagra      = args.present(u"nagravision");
-    const bool nds        = args.present(u"nds");
-    const bool viaccess   = args.present(u"viaccess");
-    const bool widevine   = args.present(u"widevine");
-
-    // Check/set default CAS.
-    if (conax + irdeto + mediaguard + nagra + nds + viaccess + widevine + (_duck.casFamily() != CAS_OTHER) > 1) {
-        args.error(u"more than one default CAS defined");
-        success = false;
-    }
-    else if (conax) {
-        _duck.setDefaultCASFamily(CAS_CONAX);
-    }
-    else if (irdeto) {
-        _duck.setDefaultCASFamily(CAS_IRDETO);
-    }
-    else if (mediaguard) {
-        _duck.setDefaultCASFamily(CAS_MEDIAGUARD);
-    }
-    else if (nagra) {
-        _duck.setDefaultCASFamily(CAS_NAGRA);
-    }
-    else if (nds) {
-        _duck.setDefaultCASFamily(CAS_NDS);
-    }
-    else if (viaccess) {
-        _duck.setDefaultCASFamily(CAS_VIACCESS);
-    }
-    else if (widevine) {
-        _duck.setDefaultCASFamily(CAS_WIDEVINE);
-    }
-
-    return success;
+    return true;
 }
 
 
@@ -238,7 +148,7 @@ std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size,
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int indent, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int indent, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
 
@@ -258,7 +168,7 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
 
     const std::string margin(indent, ' ');
     const TID tid = table.tableId();
-    cas = _duck.casFamily(cas);
+    cas = _duck.casId(cas);
 
     // Compute total size of table
     size_t total_size = 0;
@@ -300,7 +210,7 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displaySection(const Section& section, int indent, CASFamily cas, bool no_header)
+std::ostream& ts::TablesDisplay::displaySection(const Section& section, int indent, uint16_t cas, bool no_header)
 {
     std::ostream& strm(_duck.out());
 
@@ -317,7 +227,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
     const std::string margin(indent, ' ');
     const TID tid = section.tableId();
-    cas = _duck.casFamily(cas);
+    cas = _duck.casId(cas);
 
     // Display common header lines.
     if (!no_header) {
@@ -351,10 +261,10 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int indent, CASFamily cas)
+std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int indent, uint16_t cas)
 {
     // Update CAS with default one if necessary.
-    cas = _duck.casFamily(cas);
+    cas = _duck.casId(cas);
 
     // Find the display handler for this table id (and maybe CAS).
     DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId(), cas);
@@ -373,10 +283,10 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 // Display the payload of a section on the output stream as a one-line "log" message.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, CASFamily cas)
+std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, uint16_t cas)
 {
     // Update CAS with default one if necessary.
-    cas = _duck.casFamily(cas);
+    cas = _duck.casId(cas);
 
     // Find the log handler for this table id (and maybe CAS).
     LogSectionFunction handler = TablesFactory::Instance()->getSectionLog(section.tableId(), cas);
@@ -552,7 +462,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int indent, TID tid, PDS pds, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int indent, TID tid, PDS pds, uint16_t cas)
 {
     if (desc.isValid()) {
         return displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), indent, tid, _duck.actualPDS(pds), cas);
@@ -567,7 +477,7 @@ std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int i
 // Display a list of descriptors from a memory area
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, const void* data, size_t size, int indent, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, const void* data, size_t size, int indent, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
     const std::string margin(indent, ' ');
@@ -625,7 +535,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const Section& section, c
 // Display a list of descriptors.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, int indent, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, int indent, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
     const std::string margin(indent, ' ');
@@ -650,7 +560,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, int indent, TID tid, ts::PDS pds, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
 

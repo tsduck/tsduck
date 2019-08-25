@@ -84,13 +84,6 @@ namespace ts {
         }
 
         //!
-        //! Get the CAS family of a CA PID (ECM or EMM).
-        //! @param [in] pid A PID to check.
-        //! @return The CAS family or CAS_OTHER if unknown.
-        //!
-        CASFamily casFamily(PID pid) const;
-
-        //!
         //! Get the CAS id of a CA PID (ECM or EMM).
         //! @param [in] pid A PID to check.
         //! @return The CAS id or zero if the PID is not known.

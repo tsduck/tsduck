@@ -159,7 +159,7 @@ bool ts::TablesLoggerFilter::loadFilterOptions(DuckContext& duck, Args& args, PI
 // Check if a specific section must be filtered and displayed.
 //----------------------------------------------------------------------------
 
-bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& section, CASFamily cas, PIDSet& more_pids)
+bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& section, uint16_t cas, PIDSet& more_pids)
 {
     // Accumulate PAT data when --psi-si is specified to detect PMT PID's.
     if (_psi_si && section.tableId() == TID_PAT) {

@@ -1427,6 +1427,7 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum : uint16_t {
+        CASID_NULL            = 0x0000,  //!< Null/reserved/invalid CAS Id. Can be used to indicated "unspecified".
         CASID_MEDIAGUARD_MIN  = 0x0100,  //!< Minimum CAS Id value for MediaGuard.
         CASID_MEDIAGUARD_MAX  = 0x01FF,  //!< Maximum CAS Id value for MediaGuard.
         CASID_VIACCESS_MIN    = 0x0500,  //!< Minimum CAS Id value for Viaccess.

@@ -41,7 +41,6 @@ ts::CASSelectionArgs::CASSelectionArgs() :
     pass_emm(false),
     min_cas_id(0),
     max_cas_id(0),
-    cas_family(CAS_OTHER),
     cas_oper(0),
     _predefined_cas{{u"conax", CASID_CONAX_MIN, CASID_CONAX_MAX},
                     {u"irdeto", CASID_IRDETO_MIN, CASID_IRDETO_MAX},
@@ -85,7 +84,6 @@ void ts::CASSelectionArgs::defineArgs(Args& args) const
     args.help(u"min-cas",
               u"With options --ecm or --emm, select only ECM or EMM for the CA system id "
               u"values in the range --min-cas to --max-cas.");
-
 
     args.option(u"operator", 0, Args::UINT32);
     args.help(u"operator", u"Restrict to the specified CAS operator (depends on the CAS).");
@@ -135,7 +133,6 @@ bool ts::CASSelectionArgs::loadArgs(Args& args)
     }
 
     // Other options:
-    cas_family = CASFamilyOf(min_cas_id);
     cas_oper = args.intValue<uint32_t>(u"operator");
     pass_ecm = args.present(u"ecm");
     pass_emm = args.present(u"emm");
