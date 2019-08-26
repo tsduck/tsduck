@@ -343,7 +343,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"is always on in offline mode.");
 
     // ECMG and scrambling options.
-    _ecmg_args.defineOptions(*this);
+    _ecmg_args.defineArgs(*this);
     _scrambling.defineOptions(*this);
 }
 
@@ -429,6 +429,11 @@ bool ts::ScramblerPlugin::start()
     _current_cw = 0;
     _current_ecm = 0;
 
+    // Initialize the scrambling engine.
+    if (!_scrambling.start()) {
+        return false;
+    }
+
     // Initialize ECMG.
     if (_need_ecm) {
         if (!_ecmg_args.ecmg_address.hasAddress()) {
@@ -489,6 +494,9 @@ bool ts::ScramblerPlugin::stop()
     if (_ecmg.isConnected()) {
         _ecmg.disconnect();
     }
+
+    // Terminate the scrambling engine.
+    _scrambling.stop();
 
     tsp->debug(u"scrambled %'d packets in %'d PID's", {_scrambled_count, _scrambled_pids.count()});
     return true;

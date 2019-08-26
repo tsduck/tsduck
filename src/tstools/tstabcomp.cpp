@@ -36,7 +36,7 @@
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
 #include "tsDVBCharset.h"
-#include "tsxmlTweaksArgs.h"
+#include "tsxmlTweaks.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
@@ -69,7 +69,7 @@ public:
     bool                  decompile;       // Explicit decompilation.
     bool                  packAndFlush;    // Pack and flush incomplete tables before exiting.
     bool                  xmlModel;        // Display XML model instead of compilation.
-    ts::xml::TweaksArgs   xmlTweaks;       // XML formatting options.
+    ts::xml::Tweaks       xmlTweaks;       // XML formatting options.
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
 };
 
@@ -90,9 +90,9 @@ Options::Options(int argc, char *argv[]) :
     xmlTweaks(),
     defaultCharset(nullptr)
 {
-    duck.defineOptionsForStandards(*this);
-    duck.defineOptionsForDVBCharset(*this);
-    xmlTweaks.defineOptions(*this);
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForDVBCharset(*this);
+    xmlTweaks.defineArgs(*this);
 
     option(u"", 0, STRING);
     help(u"",
@@ -133,8 +133,8 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    duck.loadOptions(*this);
-    xmlTweaks.load(*this);
+    duck.loadArgs(*this);
+    xmlTweaks.loadArgs(*this);
 
     getValues(infiles, u"");
     getValue(outfile, u"output");
@@ -223,7 +223,7 @@ namespace {
         }
 
         ts::SectionFile file(opt.duck);
-        file.setTweaks(opt.xmlTweaks.tweaks());
+        file.setTweaks(opt.xmlTweaks);
         file.setCRCValidation(ts::CRC32::CHECK);
 
         ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");

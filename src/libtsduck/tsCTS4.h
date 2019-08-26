@@ -64,12 +64,11 @@ namespace ts {
 
         // Implementation of BlockCipher interface.
         virtual UString name() const override;
-        virtual bool encrypt(const void* plain, size_t plain_length,
-                             void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = nullptr) override;
-        virtual bool decrypt(const void* cipher, size_t cipher_length,
-                             void* plain, size_t plain_maxsize,
-                             size_t* plain_length = nullptr) override;
+
+    protected:
+        // Implementation of BlockCipher interface.
+        virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
+        virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
     };
 }
 

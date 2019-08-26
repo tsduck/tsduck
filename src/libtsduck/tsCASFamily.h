@@ -47,6 +47,10 @@ namespace ts {
         CAS_VIACCESS    = 3,  //!< Viaccess.
         CAS_THALESCRYPT = 4,  //!< ThalesCrypt (for TPS).
         CAS_SAFEACCESS  = 5,  //!< SafeAccess (Logiways).
+        CAS_WIDEVINE    = 6,  //!< Widevine CAS (Google).
+        CAS_NDS         = 7,  //!< Synamedia, formerly NDS, formerly Cisco Video Solutions.
+        CAS_IRDETO      = 8,  //!< Irdeto.
+        CAS_CONAX       = 9,  //!< Conax, now part of Nagravision.
     };
 
     //!

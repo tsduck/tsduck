@@ -46,7 +46,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------

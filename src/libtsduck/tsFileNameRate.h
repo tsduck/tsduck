@@ -61,14 +61,14 @@ namespace ts {
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is equal to @a other.
         //!
-        bool operator==(const FileNameRate& other);
+        bool operator==(const FileNameRate& other) const;
 
         //!
         //! Comparison operator.
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is different from @a other.
         //!
-        bool operator!=(const FileNameRate& other)
+        bool operator!=(const FileNameRate& other) const
         {
             return !(*this == other);
         }
@@ -79,7 +79,7 @@ namespace ts {
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is less than to @a other.
         //!
-        bool operator<(const FileNameRate& other);
+        bool operator<(const FileNameRate& other) const;
 
         //!
         //! Scan the file for update.

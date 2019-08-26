@@ -133,4 +133,8 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
         // Get list of shared library files matching the requested pattern in this directory.
         ExpandWildcardAndAppend(files, *it + PathSeparator + prefix + u"*" TS_SHARED_LIB_SUFFIX);
     }
+
+    // Sort the list and remove duplicates (in case the same directory is listed several times).
+    std::sort(files.begin(), files.end());
+    std::unique(files.begin(), files.end());
 }

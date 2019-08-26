@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSScrambling.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -39,6 +40,8 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
     _explicit_type(false),
+    _out_cw_name(),
+    _out_cw_file(),
     _cw_list(),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -46,6 +49,8 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _dvbcsa(),
     _dvbcissa(),
     _idsa(),
+    _aescbc(),
+    _aesctr(),
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(scrambling);
@@ -55,6 +60,8 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
+    _out_cw_name(),
+    _out_cw_file(),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -62,15 +69,21 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _dvbcsa(),
     _dvbcissa(),
     _idsa(),
+    _aescbc(),
+    _aesctr(),
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
+    _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
+    _dvbcsa[1].setEntropyMode(other._dvbcsa[1].entropyMode());
 }
 
 ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
+    _out_cw_name(),
+    _out_cw_file(),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
     _encrypt_scv(SC_CLEAR),
@@ -78,9 +91,13 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _dvbcsa(),
     _dvbcissa(),
     _idsa(),
+    _aescbc(),
+    _aesctr(),
     _scrambler{nullptr, nullptr}
 {
     setScramblingType(_scrambling_type);
+    _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
+    _dvbcsa[1].setEntropyMode(other._dvbcsa[1].entropyMode());
 }
 
 
@@ -91,6 +108,8 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
 bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplicit)
 {
     if (overrideExplicit || !_explicit_type) {
+
+        // Select the right pair of scramblers.
         switch (scrambling) {
             case SCRAMBLING_DVB_CSA1:
             case SCRAMBLING_DVB_CSA2:
@@ -105,6 +124,14 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
                 _scrambler[0] = &_idsa[0];
                 _scrambler[1] = &_idsa[1];
                 break;
+            case SCRAMBLING_DUCK_AES_CBC:
+                _scrambler[0] = &_aescbc[0];
+                _scrambler[1] = &_aescbc[1];
+                break;
+            case SCRAMBLING_DUCK_AES_CTR:
+                _scrambler[0] = &_aesctr[0];
+                _scrambler[1] = &_aesctr[1];
+                break;
             default:
                 // Fallback to DVB-CSA2 if no scrambler was previously defined.
                 if (_scrambler[0] == nullptr || _scrambler[1] == nullptr) {
@@ -115,8 +142,18 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
                 return false;
         }
 
-        _scrambling_type = scrambling;
+        // Set scrambling type.
+        if (_scrambling_type != scrambling) {
+            _report.debug(u"switching scrambling type from %s to %s", {DVBNameFromSection(u"ScramblingMode", _scrambling_type), DVBNameFromSection(u"ScramblingMode", scrambling)});
+            _scrambling_type = scrambling;
+        }
     }
+
+    // Make sure the current scramblers notify alerts to this object.
+    _scrambler[0]->setAlertHandler(this);
+    _scrambler[1]->setAlertHandler(this);
+    _scrambler[0]->setCipherId(0);
+    _scrambler[1]->setCipherId(1);
     return true;
 }
 
@@ -133,10 +170,47 @@ void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
 
 void ts::TSScrambling::defineOptions(Args& args) const
 {
+    args.option(u"aes-cbc");
+    args.help(u"aes-cbc",
+              u"Use AES-CBC scrambling instead of DVB-CSA2 (the default). "
+              u"The control words are 16-byte long instead of 8-byte. "
+              u"The residue is left clear. "
+              u"Specify a fixed initialization vector using the --iv option.\n\n"
+              u"Note that this is a non-standard TS scrambling mode. "
+              u"The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA "
+              u"(DVB-CISSA is the same as AES-CBC with a DVB-defined IV). "
+              u"The TSDuck scrambler automatically sets the scrambling_descriptor with "
+              u"user-defined value " + UString::Hexa(uint8_t(SCRAMBLING_DUCK_AES_CBC)) + u".");
+
+    args.option(u"aes-ctr");
+    args.help(u"aes-ctr",
+              u"Use AES-CTR scrambling instead of DVB-CSA2 (the default). "
+              u"The control words are 16-byte long instead of 8-byte. "
+              u"The residue is included in the scrambling. "
+              u"Specify a fixed initialization vector using the --iv option. "
+              u"See the option --ctr-counter-bits for the size of the counter part in the IV.\n\n"
+              u"Note that this is a non-standard TS scrambling mode. "
+              u"The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA. "
+              u"The TSDuck scrambler automatically sets the scrambling_descriptor with "
+              u"user-defined value " + UString::Hexa(uint8_t(SCRAMBLING_DUCK_AES_CTR)) + u".");
+
     args.option(u"atis-idsa");
     args.help(u"atis-idsa",
               u"Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the "
               u"default). The control words are 16-byte long instead of 8-byte.");
+
+    args.option(u"iv", 0, Args::STRING);
+    args.help(u"iv",
+              u"With --aes-cbc or --aes-ctr, specifies a fixed initialization vector for all TS packets. "
+              u"The value must be a string of 32 hexadecimal digits. "
+              u"The default IV is all zeroes.");
+
+    args.option(u"ctr-counter-bits", 0, Args::UNSIGNED);
+    args.help(u"ctr-counter-bits",
+              u"With --aes-ctr, specifies the size in bits of the counter part. "
+              u"In the initialization vector, the fixed nounce part uses the first 128-N bits "
+              u"and the counter part uses the last N bits. "
+              u"By default, the counter part uses the second half of the IV (64 bits).");
 
     args.option(u"cw", 'c', Args::STRING);
     args.help(u"cw",
@@ -150,6 +224,13 @@ void ts::TSScrambling::defineOptions(Args& args) const
               u"digits with --atis-idsa or --dvb-cissa). The next control word is used each time the "
               u"\"scrambling_control\" changes in the TS packets header. When all control "
               u"words are used, the first one is used again, and so on.");
+
+    args.option(u"output-cw-file", 0, Args::STRING);
+    args.help(u"output-cw-file", u"name",
+              u"Specifies a text file to create. "
+              u"Each line of the file will contain a control word in hexadecimal digits. "
+              u"Each time a new control word is used to scramble or descramble packets, it is logged in the file. "
+              u"The created file can be used later using --cw-file.");
 
     args.option(u"dvb-cissa");
     args.help(u"dvb-cissa",
@@ -173,9 +254,17 @@ void ts::TSScrambling::defineOptions(Args& args) const
 
 bool ts::TSScrambling::loadArgs(Args& args)
 {
+    // Number of explicitly defined scrambling algorithms.
+    const int algo_count =
+        args.present(u"atis-idsa") +
+        args.present(u"dvb-cissa") +
+        args.present(u"dvb-csa2") +
+        args.present(u"aes-cbc") +
+        args.present(u"aes-ctr");
+
     // Set the scrambler to use.
-    if (args.present(u"atis-idsa") + args.present(u"dvb-cissa") + args.present(u"dvb-csa2") > 1) {
-        args.error(u"--atis-idsa, --dvb-cissa and --dvb-csa2 are mutally exclusive");
+    if (algo_count > 1) {
+        args.error(u"--atis-idsa, --dvb-cissa, --dvb-csa2, --aes-cbc, --aes-ctr are mutually exclusive");
     }
     else if (args.present(u"atis-idsa")) {
         setScramblingType(SCRAMBLING_ATIS_IIF_IDSA);
@@ -183,16 +272,42 @@ bool ts::TSScrambling::loadArgs(Args& args)
     else if (args.present(u"dvb-cissa")) {
         setScramblingType(SCRAMBLING_DVB_CISSA1);
     }
+    else if (args.present(u"aes-cbc")) {
+        setScramblingType(SCRAMBLING_DUCK_AES_CBC);
+    }
+    else if (args.present(u"aes-ctr")) {
+        setScramblingType(SCRAMBLING_DUCK_AES_CTR);
+    }
     else {
         setScramblingType(SCRAMBLING_DVB_CSA2);
     }
 
     // If an explicit scrambling type is given, the application should probably
     // ignore scrambling descriptors when descrambling.
-    _explicit_type = args.present(u"atis-idsa") || args.present(u"dvb-cissa") || args.present(u"dvb-csa2");
+    _explicit_type = algo_count > 0;
 
     // Set DVB-CSA2 entropy mode regardless of --atis-idsa or --dvb-cissa in case we switch later to DVB-CSA2.
     setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
+
+    // Set AES-CBC/CTR initialization vector. The default is all zeroes.
+    ByteBlock iv(AES::BLOCK_SIZE, 0x00);
+    const UString hex_iv(args.value(u"iv"));
+    if (!hex_iv.empty() && (!hex_iv.hexaDecode(iv) || iv.size() != AES::BLOCK_SIZE)) {
+        args.error(u"invalid initialization vector \"%s\", specify %d hexa digits", {hex_iv, 2 * AES::BLOCK_SIZE});
+    }
+    else if (!_aescbc[0].setIV(iv.data(), iv.size()) ||
+             !_aescbc[1].setIV(iv.data(), iv.size()) ||
+             !_aesctr[0].setIV(iv.data(), iv.size()) ||
+             !_aesctr[1].setIV(iv.data(), iv.size()))
+    {
+        args.error(u"error setting AES initialization vector");
+    }
+
+    // Set the size of the counter part with CTS mode.
+    // The default is zero, meaning half nounce / half counter.
+    const size_t counter_bits = args.intValue<size_t>(u"ctr-counter-bits");
+    _aesctr[0].setCounterBits(counter_bits);
+    _aesctr[1].setCounterBits(counter_bits);
 
     // Get control words as list of strings.
     UStringList lines;
@@ -216,7 +331,7 @@ bool ts::TSScrambling::loadArgs(Args& args)
         it->trim();
         if (!it->empty()) {
             if (!it->hexaDecode(cw) || cw.size() != cwSize()) {
-                args.error(u"invalid control word \"%s\" , specify %d hexa digits", {*it, 2 * cwSize()});
+                args.error(u"invalid control word \"%s\", specify %d hexa digits", {*it, 2 * cwSize()});
             }
             else {
                 _cw_list.push_back(cw);
@@ -227,9 +342,79 @@ bool ts::TSScrambling::loadArgs(Args& args)
         args.verbose(u"loaded %d control words", {_cw_list.size()});
     }
 
-    // Point next CW to end of list.
-    _next_cw = _cw_list.end();
+    // Name of the output file for control words.
+    args.getValue(_out_cw_name, u"output-cw-file");
+
     return args.valid();
+}
+
+
+//----------------------------------------------------------------------------
+// Start the scrambling session.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::start()
+{
+    bool success = true;
+
+    // Point next CW to end of list. Will loop to first one.
+    _next_cw = _cw_list.end();
+
+    // Create the output file for control words.
+    if (!_out_cw_name.empty()) {
+        _out_cw_file.open(_out_cw_name.toUTF8().c_str(), std::ios::out);
+        success = !_out_cw_file.fail();
+        if (!success) {
+            _report.error(u"error creating %s", {_out_cw_name});
+        }
+    }
+
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop the scrambling session.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::stop()
+{
+    // Close the output file for control words, if one was created.
+    if (_out_cw_file.is_open()) {
+        _out_cw_file.close();
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipherAlertInterface.
+//----------------------------------------------------------------------------
+
+bool ts::TSScrambling::handleBlockCipherAlert(BlockCipher& cipher, AlertReason reason)
+{
+    switch (reason) {
+        case FIRST_ENCRYPTION:
+        case FIRST_DECRYPTION: {
+            // First usage of a new CW. Report it on debug and add it in --output-cw-file when necessary.
+            ByteBlock key;
+            cipher.getKey(key);
+            if (!key.empty()) {
+                const UString key_string(UString::Dump(key, UString::SINGLE_LINE));
+                _report.debug(u"starting using CW %s (%s)", {key_string, cipher.cipherId() == 0 ? u"even" : u"odd"});
+                if (_out_cw_file.is_open()) {
+                    _out_cw_file << key_string << std::endl;
+                }
+            }
+            return true;
+        }
+        case ENCRYPTION_EXCEEDED:
+        case DECRYPTION_EXCEEDED:
+        default: {
+            // Not interested in other alerts.
+            return true;
+        }
+    }
 }
 
 

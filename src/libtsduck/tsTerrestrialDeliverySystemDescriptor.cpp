@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

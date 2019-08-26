@@ -86,8 +86,8 @@ ts::DVBInput::DVBInput(TSP* tsp_) :
     _previous_bitrate(0)
 {
     // Define common tuning options
-    duck.defineOptionsForHFBand(*this);
-    _tuner_args.defineOptions(*this);
+    duck.defineArgsForHFBand(*this);
+    _tuner_args.defineArgs(*this);
 }
 
 
@@ -98,8 +98,8 @@ ts::DVBInput::DVBInput(TSP* tsp_) :
 bool ts::DVBInput::getOptions()
 {
     // Get common tuning options from command line
-    duck.loadOptions(*this);
-    _tuner_args.load(*this, duck);
+    duck.loadArgs(*this);
+    _tuner_args.loadArgs(*this, duck);
     return Args::valid();
 }
 

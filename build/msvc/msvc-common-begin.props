@@ -22,7 +22,14 @@
     </ProjectConfiguration>
   </ItemGroup>
 
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
   <Choose>
+    <When Condition="'$(DefaultPlatformToolset)' != ''">
+      <PropertyGroup Label="Configuration">
+        <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+      </PropertyGroup>
+    </When>
     <When Condition="'$(MSBuildToolsVersion)' == '14.0'">
       <PropertyGroup Label="Configuration">
         <PlatformToolset>v140</PlatformToolset>
@@ -38,11 +45,6 @@
         <PlatformToolset>v142</PlatformToolset>
       </PropertyGroup>
     </When>
-    <Otherwise>
-      <PropertyGroup Label="Configuration">
-        <PlatformToolset>v142</PlatformToolset>
-      </PropertyGroup>
-    </Otherwise>
   </Choose>
 
   <ItemDefinitionGroup>

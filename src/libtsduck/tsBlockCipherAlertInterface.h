@@ -28,56 +28,48 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line options for parsing and formatting XML documents.
+//!  Interface to be notified when an alert is raised on a block cipher.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
-#include "tsxmlTweaks.h"
+#include "tsPlatform.h"
 
 namespace ts {
-    namespace xml {
+
+    class BlockCipher;
+
+    //!
+    //! Interface for classes which need to be notified when an alert is raised on a block cipher.
+    //! @ingroup crypto
+    //!
+    class TSDUCKDLL BlockCipherAlertInterface
+    {
+    public:
         //!
-        //! Command line options for parsing and formatting XML documents.
-        //! @ingroup cmd
+        //! Reason for the alert.
         //!
-        class TSDUCKDLL TweaksArgs
-        {
-        public:
-            // Public fields
-            bool strictXML;  //!< Option -\-strict-xml.
-
-            //!
-            //! Default constructor.
-            //!
-            TweaksArgs();
-
-            //!
-            //! Define command line options in an Args.
-            //! @param [in,out] args Command line arguments to update.
-            //!
-            void defineOptions(Args& args) const;
-
-            //!
-            //! Load arguments from command line.
-            //! Args error indicator is set in case of incorrect arguments.
-            //! @param [in,out] args Command line arguments.
-            //! @return True on success, false on error in argument line.
-            //!
-            bool load(Args& args);
-
-            //!
-            //! Set the relevant XML tweaks.
-            //! @param [in,out] tweaks Tweaks to be updated from the command line options.
-            //!
-            void setTweaks(Tweaks& tweaks) const;
-
-            //!
-            //! Get relevant XML tweaks in a default tweaks structure.
-            //! @return Tweaks from the command line options.
-            //!
-            Tweaks tweaks() const;
+        enum AlertReason {
+            FIRST_ENCRYPTION,     //!< First encryption using the current key. Informational only.
+            FIRST_DECRYPTION,     //!< First decryption using the current key. Informational only.
+            ENCRYPTION_EXCEEDED,  //!< Too many encryptions for the current key. Normal processing is error.
+            DECRYPTION_EXCEEDED,  //!< Too many decryptions for the current key. Normal processing is error.
         };
-    }
+
+        //!
+        //! This hook is invoked when an ECM is available.
+        //! It is invoked in the context of an internal thread of the ECMG client object.
+        //! @param [in,out] cipher The block cipher which raised the alert.
+        //! @param [in] reason The reason for the alert.
+        //! @return True when the alert is real and appropriate action shall be taken.
+        //! False to ignore the alert and proceed normally.
+        //! Some alerts are informational only and the return value is ignored.
+        //!
+        virtual bool handleBlockCipherAlert(BlockCipher& cipher, AlertReason reason) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~BlockCipherAlertInterface();
+    };
 }

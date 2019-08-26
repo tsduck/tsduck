@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPv6SlashDescriptor, MY_XML_NAME, MY_TID);
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPv6SlashDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPv6SlashDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_FACTORY_REGISTER(ts::TargetIPv6SlashDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------

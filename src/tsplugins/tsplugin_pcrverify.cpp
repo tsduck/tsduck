@@ -202,6 +202,12 @@ namespace {
             return 0;
         }
 
+        // Adjust second PCR if PCR's have looped back after max value.
+        // Since a PCR is coded on 42 bits, adjusting the value remains within 64 bits.
+        if (ts::WrapUpPCR(pcr1, pcr2)) {
+            pcr2 += ts::PCR_SCALE;
+        }
+
         // Formulas:
         //
         //   epcr2 = expected pcr2 based on bitrate

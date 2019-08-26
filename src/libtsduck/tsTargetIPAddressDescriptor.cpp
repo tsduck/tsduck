@@ -43,8 +43,8 @@ TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::TargetIPAddressDescriptor, MY_XML_NAME, ts
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPAddressDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
 TS_ID_DESCRIPTOR_FACTORY(ts::TargetIPAddressDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
 
-TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPAddressDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TargetIPAddressDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
+TS_FACTORY_REGISTER(ts::TargetIPAddressDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_INT));
+TS_FACTORY_REGISTER(ts::TargetIPAddressDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT));
 
 
 //----------------------------------------------------------------------------

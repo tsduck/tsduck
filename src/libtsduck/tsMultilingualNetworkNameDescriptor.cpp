@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::MultilingualNetworkNameDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::MultilingualNetworkNameDescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::MultilingualNetworkNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::MultilingualNetworkNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

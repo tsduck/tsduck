@@ -81,6 +81,10 @@ namespace ts {
 
         // Set modulation parameters (modulators only). Return true on success, false on error.
         bool setModulation(int& modulation_type);
+
+        // Set preload FIFO size based on a delay, if requested, in ms. Returns true if preload FIFO size is altered,
+        // false otherwise.
+        bool setPreloadFIFOSizeBasedOnDelay();
 #endif
     };
 }

@@ -63,14 +63,14 @@ public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
-    ts::DuckContext       duck;              // TSDuck execution context.
-    ts::UStringVector     infiles;           // Input file names
-    ts::TablesDisplayArgs display;           // Options about displaying tables
-    ts::PagerArgs         pager;             // Output paging options.
-    ts::UDPReceiver       udp;               // Options about receiving UDP tables
-    size_t                max_tables;        // Max number of tables to dump.
-    size_t                max_invalid_udp;   // Max number of invalid UDP messages before giving up.
-    bool                  no_encapsulation;  // Raw sections in UDP messages.
+    ts::DuckContext   duck;              // TSDuck execution context.
+    ts::TablesDisplay display;           // Options about displaying tables
+    ts::PagerArgs     pager;             // Output paging options.
+    ts::UDPReceiver   udp;               // Options about receiving UDP tables
+    ts::UStringVector infiles;           // Input file names
+    size_t            max_tables;        // Max number of tables to dump.
+    size_t            max_invalid_udp;   // Max number of invalid UDP messages before giving up.
+    bool              no_encapsulation;  // Raw sections in UDP messages.
 };
 
 // Destructor.
@@ -80,20 +80,20 @@ Options::~Options() {}
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
     duck(this),
-    infiles(),
     display(duck),
     pager(true, true),
     udp(*this, false, false),
+    infiles(),
     max_tables(0),
     max_invalid_udp(16),
     no_encapsulation(false)
 {
-    duck.defineOptionsForPDS(*this);
-    duck.defineOptionsForStandards(*this);
-    duck.defineOptionsForDVBCharset(*this);
-    pager.defineOptions(*this);
-    display.defineOptions(*this);
-    udp.defineOptions(*this);
+    duck.defineArgsForPDS(*this);
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForDVBCharset(*this);
+    pager.defineArgs(*this);
+    display.defineArgs(*this);
+    udp.defineArgs(*this);
 
     option(u"", 0, STRING);
     help(u"",
@@ -114,10 +114,10 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    duck.loadOptions(*this);
-    pager.load(*this);
-    display.load(*this);
-    udp.load(*this);
+    duck.loadArgs(*this);
+    pager.loadArgs(*this);
+    display.loadArgs(*this);
+    udp.loadArgs(*this);
 
     getValues(infiles, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());
@@ -148,7 +148,6 @@ namespace {
         ts::SocketAddress sender;
         ts::SocketAddress destination;
         ts::ByteBlock packet(ts::IP_MAX_PACKET_SIZE);
-        ts::TablesDisplay display(opt.display);
         ts::Time timestamp;
         ts::SectionPtrVector sections;
 
@@ -175,14 +174,14 @@ namespace {
                     ts::BinaryTable table(sections, false, false);
                     if (table.isValid()) {
                         // Complete table available, dump as a table.
-                        display.displayTable(table) << std::endl;
+                        opt.display.displayTable(table) << std::endl;
                         opt.max_tables--;
                     }
                     else {
                         // Complete table not available, dump as individual sections.
                         for (ts::SectionPtrVector::const_iterator it = sections.begin(); opt.max_tables > 0 && it != sections.end(); ++it) {
                             if (!it->isNull()) {
-                                display.displaySection(**it) << std::endl;
+                                opt.display.displaySection(**it) << std::endl;
                                 opt.max_tables--;
                             }
                         }
@@ -233,10 +232,9 @@ namespace {
 
         if (ok) {
             // Display all sections.
-            ts::TablesDisplay display(opt.display);
             opt.duck.setOutput(&opt.pager.output(opt), false);
             for (ts::SectionPtrVector::const_iterator it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
-                display.displaySection(**it) << std::endl;
+                opt.display.displaySection(**it) << std::endl;
                 opt.max_tables--;
             }
         }

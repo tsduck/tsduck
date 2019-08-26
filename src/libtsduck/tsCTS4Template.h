@@ -66,9 +66,7 @@ ts::UString ts::CTS4<CIPHER>::name() const
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::CTS4<CIPHER>::encrypt(const void* plain, size_t plain_length,
-                               void* cipher, size_t cipher_maxsize,
-                               size_t* cipher_length)
+bool ts::CTS4<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
     if (this->algo == nullptr ||
         this->work.size() < this->block_size ||
@@ -127,9 +125,7 @@ bool ts::CTS4<CIPHER>::encrypt(const void* plain, size_t plain_length,
 //----------------------------------------------------------------------------
 
 template<class CIPHER>
-bool ts::CTS4<CIPHER>::decrypt(const void* cipher, size_t cipher_length,
-                               void* plain, size_t plain_maxsize,
-                               size_t* plain_length)
+bool ts::CTS4<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     if (this->algo == nullptr ||
         this->work.size() < this->block_size ||

@@ -1338,11 +1338,16 @@ namespace ts {
     enum : uint8_t {
         SCRAMBLING_DVB_CSA1      = 0x01, //!< DVB-CSA1
         SCRAMBLING_DVB_CSA2      = 0x02, //!< DVB-CSA2
-        SCRAMBLING_DVB_CSA3_STD  = 0x03, //!< DVB-CSA3, standard mode
-        SCRAMBLING_DVB_CSA3_MIN  = 0x04, //!< DVB-CSA3, minimally enhanced mode
-        SCRAMBLING_DVB_CSA3_FULL = 0x05, //!< DVB-CSA3, fully enhanced mode
+        SCRAMBLING_DVB_CSA3      = 0x03, //!< DVB-CSA3
+        SCRAMBLING_DVB_CSA3_MIN  = 0x04, //!< DVB-CSA3, minimally enhanced mode (obsolete)
+        SCRAMBLING_DVB_CSA3_FULL = 0x05, //!< DVB-CSA3, fully enhanced mode (obsolete)
         SCRAMBLING_DVB_CISSA1    = 0x10, //!< DVB-CISSA v1
         SCRAMBLING_ATIS_IIF_IDSA = 0x70, //!< ATIS IIF IDSA for MPEG-2 TS
+        SCRAMBLING_USER_MIN      = 0x80, //!< First user-defined value.
+        SCRAMBLING_DUCK_AES_CBC  = 0xF0, //!< TSDuck-defined value, AES-CBC (with externally-defined IV).
+        SCRAMBLING_DUCK_AES_CTR  = 0xF1, //!< TSDuck-defined value, AES-CTR (with externally-defined IV).
+        SCRAMBLING_USER_MAX      = 0xFE, //!< Last user-defined value.
+        SCRAMBLING_RESERVED      = 0xFF, //!< Reserved value.
     };
 
     //---------------------------------------------------------------------
@@ -1426,10 +1431,20 @@ namespace ts {
         CASID_MEDIAGUARD_MAX  = 0x01FF,  //!< Maximum CAS Id value for MediaGuard.
         CASID_VIACCESS_MIN    = 0x0500,  //!< Minimum CAS Id value for Viaccess.
         CASID_VIACCESS_MAX    = 0x05FF,  //!< Maximum CAS Id value for Viaccess.
+        CASID_IRDETO_MIN      = 0x0600,  //!< Minimum CAS Id value for Irdeto.
+        CASID_IRDETO_MAX      = 0x06FF,  //!< Maximum CAS Id value for Irdeto.
+        CASID_NDS_MIN         = 0x0900,  //!< Minimum CAS Id value for NDS.
+        CASID_NDS_MAX         = 0x09FF,  //!< Maximum CAS Id value for NDS.
+        CASID_CONAX_MIN       = 0x0B00,  //!< Minimum CAS Id value for Conax.
+        CASID_CONAX_MAX       = 0x0BFF,  //!< Maximum CAS Id value for Conax.
+        CASID_CRYPTOWORKS_MIN = 0x0D00,  //!< Minimum CAS Id value for CryptoWorks (Irdeto).
+        CASID_CRYPTOWORKS_MAX = 0x0DFF,  //!< Maximum CAS Id value for CryptoWorks (Irdeto).
         CASID_NAGRA_MIN       = 0x1800,  //!< Minimum CAS Id value for Nagravision.
         CASID_NAGRA_MAX       = 0x18FF,  //!< Maximum CAS Id value for Nagravision.
         CASID_THALESCRYPT_MIN = 0x4A80,  //!< Minimum CAS Id value for ThalesCrypt.
         CASID_THALESCRYPT_MAX = 0x4A8F,  //!< Maximum CAS Id value for ThalesCrypt.
+        CASID_WIDEVINE_MIN    = 0x4AD4,  //!< Minimum CAS Id value for Widevine CAS (Google).
+        CASID_WIDEVINE_MAX    = 0x4AD5,  //!< Maximum CAS Id value for Widevine CAS (Google).
         CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
     };
 

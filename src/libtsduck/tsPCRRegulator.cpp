@@ -47,6 +47,7 @@ ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
     _started(false),
     _pcr_first(0),
     _pcr_last(0),
+    _pcr_offset(0),
     _clock_first(),
     _clock_last()
 {
@@ -130,8 +131,16 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         // PCR value, this is the reference system clock.
         const uint64_t pcr = pkt.getPCR();
 
+        // Check if the PCR sequence seems valid.
+        // We check that the difference between two PCR's is less than 2 seconds.
+        // Normally, adjacent PCR's are way much closer, but let's be tolerant.
+        constexpr uint64_t max_pcr_diff = 2 * SYSTEM_CLOCK_FREQ; // 2 seconds in PCR units
+        const bool valid_pcr_seq = _started &&
+            ((pcr < _pcr_last && pcr + PCR_SCALE < _pcr_last + max_pcr_diff) ||
+             (pcr > _pcr_last && pcr < _pcr_last + max_pcr_diff));
+
         // Try to detect incorrect PCR sequences (such as cycling input).
-        if (_started && pcr < _pcr_last && !WrapUpPCR(_pcr_last, pcr)) {
+        if (_started && !valid_pcr_seq) {
             _report->warning(u"out of sequence PCR, maybe source was cycling, restarting regulation");
             _started = false;
         }
@@ -142,6 +151,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             _clock_first.getSystemTime();
             _clock_last = _clock_first;
             _pcr_first = pcr;
+            _pcr_offset = 0;
 
             // Compute minimum wait is none is set.
             if (_wait_min <= 0) {
@@ -151,13 +161,21 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         else {
             // Got a PCR after start, need to regulate.
 
+            // Accumulate all PCR wrap-down sequences so that the distance with _pcr_first is a valid duration.
+            // One complete PCR round is only 26.5 hours. So, it it realistic to go through more than one round.
+            // In an uint64_t value, we can accumulate 21664 years in PCR units. So, we can safely assume that
+            // there will be no overflow when accumulating PCR's on 64 bits.
+            if (pcr < _pcr_last) {
+                _pcr_offset += PCR_SCALE;
+            }
+
             // Compute the number of PCR units since the first PCR.
-            // Take care about PCR value wrap-down.
-            const uint64_t pcru = pcr >= _pcr_first ? pcr - _pcr_first : PCR_SCALE + pcr - _pcr_first;
+            const uint64_t pcru = _pcr_offset + pcr - _pcr_first;
 
             // Compute the number of nano-seconds since the first PCR.
+            // In an uint64_t value, we can accumulate 292 years in nano-seconds units.
             // Coded to avoid arithmetic overflow, don't change without thinking twice.
-            const NanoSecond ns = (NanoSecPerMilliSec * pcru) / (SYSTEM_CLOCK_FREQ / MilliSecPerSec);
+            const NanoSecond ns = (NanoSecPerMicroSec * pcru) / (SYSTEM_CLOCK_FREQ / MicroSecPerSec);
 
             // Compute due system clock, the expected system time for this PCR.
             Monotonic clock_due(_clock_first);

@@ -28,52 +28,73 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line arguments for the class PSILogger.
+//!  An interface which is used to filter sections in TablesLogger.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsMPEG.h"
+#include "tsCASFamily.h"
+#include "tsSafePtr.h"
 
 namespace ts {
+
+    class DuckContext;
+    class Section;
+    class Args;
+
     //!
-    //! Command line arguments for the class PSILogger.
+    //! An interface which is used to filter sections in TablesLogger.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL PSILoggerArgs
+    //! This abstract interface must be implemented by classes which
+    //! define filtering rules for TablesLogger. There is one main
+    //! instance which comes from TSDuck. Additional instances may
+    //! be defined by external extensions.
+    //!
+    class TSDUCKDLL TablesLoggerFilterInterface
     {
     public:
         //!
-        //! Constructor.
-        //!
-        PSILoggerArgs();
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~PSILoggerArgs();
-
-        // Public fields, by options.
-        bool    all_versions;   //!< Display all versions of PSI tables.
-        bool    clear;          //!< Clear stream, do not wait for a CAT.
-        bool    cat_only;       //!< Only CAT, ignore other PSI.
-        bool    dump;           //!< Dump all sections.
-        UString output;         //!< Destination name file.
-        bool    use_current;    //!< Use PSI tables with "current" flag.
-        bool    use_next;       //!< Use PSI tables with "next" flag.
-
-        //!
-        //! Define command line options in an Args.
+        //! Define section filtering command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
         //!
-        virtual void defineOptions(Args& args) const;
+        virtual void defineFilterOptions(Args& args) const = 0;
 
         //!
         //! Load arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck context.
         //! @param [in,out] args Command line arguments.
+        //! @param [out] initial_pids Initial PID's that the filter would like to see.
         //! @return True on success, false on error in argument line.
         //!
-        virtual bool load(Args& args);
+        virtual bool loadFilterOptions(DuckContext& duck, Args& args, PIDSet& initial_pids) = 0;
+
+        //!
+        //! Check if a specific section must be filtered and displayed.
+        //! @param [in,out] duck TSDuck context.
+        //! @param [in] section The section to check.
+        //! @param [in] cas The CAS family for this section.
+        //! @param [out] more_pids Additional PID's that the filter would like to see.
+        //! @return True if the section can be displayed, false if it must not be displayed.
+        //! A section is actually displayed if all section filters returned true.
+        //!
+        virtual bool filterSection(DuckContext& duck, const Section& section, CASFamily cas, PIDSet& more_pids) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TablesLoggerFilterInterface();
     };
+
+    //!
+    //! A safe pointer to TablesLogger section filter (not thread-safe).
+    //!
+    typedef SafePtr<TablesLoggerFilterInterface> TablesLoggerFilterPtr;
+
+    //!
+    //! A vector of safe pointers to TablesLogger section filters.
+    //!
+    typedef std::vector<TablesLoggerFilterPtr> TablesLoggerFilterVector;
 }

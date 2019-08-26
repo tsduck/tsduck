@@ -52,13 +52,13 @@ namespace ts {
         DescramblerPlugin(TSP*);
 
         // Implementation of ProcessorPlugin interface.
-        virtual bool start() override;
+        virtual bool getOptions() override;
 
     protected:
         // Implementation of AbstractDescrambler.
         virtual bool checkCADescriptor(uint16_t pmt_cas_id, const ByteBlock& priv) override;
         virtual bool checkECM(const Section& ecm) override;
-        virtual bool decipherECM(const Section& ecm, ByteBlock& cw_even, ByteBlock& cw_odd) override;
+        virtual bool decipherECM(const Section& ecm, CWData& cw_even, CWData& cw_odd) override;
 
     private:
         // Private fields.
@@ -91,16 +91,16 @@ ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Plugin start method.
+// Plugin get options method.
 //----------------------------------------------------------------------------
 
-bool ts::DescramblerPlugin::start()
+bool ts::DescramblerPlugin::getOptions()
 {
     // Load plugin-specific command line arguments.
     _cas_id = intValue<uint16_t>(u"cas-id", 0);
 
     // The invoke superclass to actually start the descrambler.
-    return AbstractDescrambler::start();
+    return AbstractDescrambler::getOptions();
 }
 
 
@@ -130,11 +130,13 @@ bool ts::DescramblerPlugin::checkECM(const Section& ecm)
 // Decipher an ECM.
 //----------------------------------------------------------------------------
 
-bool ts::DescramblerPlugin::decipherECM(const Section& ecm, ByteBlock& cw_even, ByteBlock& cw_odd)
+bool ts::DescramblerPlugin::decipherECM(const Section& ecm, CWData& cw_even, CWData& cw_odd)
 {
     // Clear returned ECM's.
-    cw_even.clear();
-    cw_odd.clear();
+    cw_even.cw.clear();
+    cw_even.iv.clear();
+    cw_odd.cw.clear();
+    cw_odd.iv.clear();
 
     // The ECM content is the section payload.
     const uint8_t* const ecmData = ecm.payload();
@@ -153,9 +155,9 @@ bool ts::DescramblerPlugin::decipherECM(const Section& ecm, ByteBlock& cw_even, 
         return false;
     }
     else {
-        cw_even = clearECM->cw_even;
-        cw_odd = clearECM->cw_odd;
-        tsp->verbose(u"ECM found, even CW: %s, odd CW: %s", {UString::Dump(cw_even, UString::COMPACT), UString::Dump(cw_odd, UString::COMPACT)});
+        cw_even.cw = clearECM->cw_even;
+        cw_odd.cw = clearECM->cw_odd;
+        tsp->verbose(u"ECM found, even CW: %s, odd CW: %s", {UString::Dump(cw_even.cw, UString::COMPACT), UString::Dump(cw_odd.cw, UString::COMPACT)});
         return true;
     }
 }

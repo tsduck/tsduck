@@ -67,9 +67,9 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true)
 {
     // Define all standard analysis options.
-    duck.defineOptionsForStandards(*this);
-    duck.defineOptionsForDVBCharset(*this);
-    pager.defineOptions(*this);
+    duck.defineArgsForStandards(*this);
+    duck.defineArgsForDVBCharset(*this);
+    pager.defineArgs(*this);
     analysis.defineOptions(*this);
 
     option(u"", 0, STRING, 0, 1);
@@ -84,8 +84,8 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Define all standard analysis options.
-    duck.loadOptions(*this);
-    pager.load(*this);
+    duck.loadArgs(*this);
+    pager.loadArgs(*this);
     analysis.load(*this);
 
     infile = value(u"");

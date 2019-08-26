@@ -59,7 +59,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiver::defineOptions(ts::Args& args) const
+void ts::UDPReceiver::defineArgs(ts::Args& args) const
 {
     // [[source@]address:]port can be either a parameter or an option.
     const UChar* const dest_name = _dest_as_param ? u"" : u"ip-udp";
@@ -133,7 +133,7 @@ void ts::UDPReceiver::defineOptions(ts::Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiver::load(ts::Args& args)
+bool ts::UDPReceiver::loadArgs(ts::Args& args)
 {
     // Get destination address.
     UString destination(args.value(_dest_as_param ? u"" : u"ip-udp"));
