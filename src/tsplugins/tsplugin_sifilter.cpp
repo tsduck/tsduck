@@ -137,7 +137,7 @@ ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
 bool ts::SIFilterPlugin::start()
 {
     // Get command line arguments
-    _cas_args.loadArgs(*this);
+    _cas_args.loadArgs(duck, *this);
     _pass_pmt = present(u"pmt");
     _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 

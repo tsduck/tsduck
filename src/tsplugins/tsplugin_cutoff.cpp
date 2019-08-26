@@ -134,7 +134,7 @@ bool ts::CutoffPlugin::getOptions()
     }
 
     // Get UDP options.
-    return _sock.loadArgs(*this) && ok;
+    return _sock.loadArgs(duck, *this) && ok;
 }
 
 

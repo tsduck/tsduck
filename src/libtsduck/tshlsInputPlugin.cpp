@@ -168,7 +168,7 @@ bool ts::hls::InputPlugin::isRealTime()
 bool ts::hls::InputPlugin::getOptions()
 {
     // Decode options.
-    _webArgs.loadArgs(*this);
+    _webArgs.loadArgs(duck, *this);
     getValue(_url, u"");
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");

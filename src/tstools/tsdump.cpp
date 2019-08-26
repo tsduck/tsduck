@@ -35,6 +35,8 @@
 #include "tsMain.h"
 #include "tsTSPacket.h"
 #include "tsPagerArgs.h"
+#include "tsDuckContext.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -50,6 +52,7 @@ public:
     Options(int argc, char *argv[]);
     virtual ~Options();
 
+    ts::DuckContext   duck;        // TSDuck context
     uint32_t          dump_flags;  // Dump options for Hexa and Packet::dump
     bool              raw_file;    // Raw dump of file, not TS packets
     bool              log;         // Option --log
@@ -122,7 +125,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    pager.loadArgs(*this);
+    pager.loadArgs(duck, *this);
 
     getValues(infiles);
     raw_file = present(u"raw-file");

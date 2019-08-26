@@ -99,7 +99,7 @@ bool ts::DVBInput::getOptions()
 {
     // Get common tuning options from command line
     duck.loadArgs(*this);
-    _tuner_args.loadArgs(*this, duck);
+    _tuner_args.loadArgs(duck, *this);
     return Args::valid();
 }
 

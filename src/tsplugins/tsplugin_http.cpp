@@ -126,7 +126,7 @@ bool ts::HttpInput::getOptions()
     _repeat_count = intValue<size_t>(u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
     _reconnect_delay = intValue<MilliSecond>(u"reconnect-delay", 0);
     _ignore_errors = present(u"ignore-errors");
-    _web_args.loadArgs(*this);
+    _web_args.loadArgs(duck, *this);
 
     // Resize the inter-thread packet queue.
     setQueueSize(intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_PACKETS));

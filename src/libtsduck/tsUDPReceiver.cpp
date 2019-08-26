@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUDPReceiver.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -65,7 +66,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args) const
     const UChar* const dest_name = _dest_as_param ? u"" : u"ip-udp";
     const UChar dest_short = _dest_as_param || !_with_short_options ? 0 : 'i';
     const size_t dest_min = _dest_as_param ? 1 : 0;
-    
+
     args.option(dest_name, dest_short, Args::STRING, dest_min, 1);
     args.help(dest_name, u"[address:]port",
               u"The [address:]port describes the destination of UDP packets to receive. "
@@ -133,7 +134,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiver::loadArgs(ts::Args& args)
+bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
 {
     // Get destination address.
     UString destination(args.value(_dest_as_param ? u"" : u"ip-udp"));

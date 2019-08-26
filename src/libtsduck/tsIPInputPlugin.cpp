@@ -89,7 +89,7 @@ bool ts::IPInputPlugin::getOptions()
     // Get command line arguments
     _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
     _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
-    return _sock.loadArgs(*this);
+    return _sock.loadArgs(duck, *this);
 }
 
 

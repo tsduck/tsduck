@@ -33,6 +33,7 @@
 
 #include "tsTSAnalyzerOptions.h"
 #include "tsException.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -71,7 +72,7 @@ ts::TSAnalyzerOptions::~TSAnalyzerOptions()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::defineOptions(Args& args) const
+void ts::TSAnalyzerOptions::defineArgs(Args &args) const
 {
     args.option(u"ts-analysis");
     args.help(u"ts-analysis",
@@ -174,7 +175,7 @@ void ts::TSAnalyzerOptions::defineOptions(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::load(Args& args)
+bool ts::TSAnalyzerOptions::loadArgs(DuckContext &duck, Args &args)
 {
     ts_analysis = args.present(u"ts-analysis");
     service_analysis = args.present(u"service-analysis");
@@ -211,4 +212,6 @@ void ts::TSAnalyzerOptions::load(Args& args)
     {
         ts_analysis = service_analysis = pid_analysis = table_analysis = true;
     }
+
+    return true;
 }

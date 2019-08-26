@@ -27,6 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsArgs.h"
 #include "tsCASSelectionArgs.h"
 #include "tsPIDOperator.h"
 TSDUCK_SOURCE;
@@ -102,7 +103,7 @@ void ts::CASSelectionArgs::defineArgs(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::CASSelectionArgs::loadArgs(Args& args)
+bool ts::CASSelectionArgs::loadArgs(DuckContext& duck, Args& args)
 {
     bool success = true;
 

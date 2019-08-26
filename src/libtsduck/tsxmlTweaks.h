@@ -54,7 +54,7 @@ namespace ts {
 
             // Implementation of ArgsSupplierInterface.
             virtual void defineArgs(Args& args) const override;
-            virtual bool loadArgs(Args& args) override;
+            virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
             //!
             //! If true, use double quotes for attribute values.

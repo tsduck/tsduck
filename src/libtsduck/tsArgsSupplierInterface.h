@@ -33,9 +33,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsPlatform.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! An interface which is used to add options in an Args structure.
     //! @ingroup cmd
@@ -52,10 +56,11 @@ namespace ts {
         //!
         //! Load arguments from command line.
         //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] args Command line arguments.
         //! @return True on success, false on error in argument line.
         //!
-        virtual bool loadArgs(Args& args) = 0;
+        virtual bool loadArgs(DuckContext& duck, Args& args) = 0;
 
         //!
         //! Virtual destructor.

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 #include "tsDVBCharset.h"
 
 namespace ts {
@@ -44,7 +44,7 @@ namespace ts {
     //! The default options are
     //! -\-ts-analysis -\-service-analysis -\-pid-analysis -\-table-analysis
     //!
-    class TSDUCKDLL TSAnalyzerOptions
+    class TSDUCKDLL TSAnalyzerOptions : public ArgsSupplierInterface
     {
     public:
         //!
@@ -85,17 +85,8 @@ namespace ts {
         uint64_t suspect_min_error_count;  //!< Option -\-suspect-min-error-count
         uint64_t suspect_max_consecutive;  //!< Option -\-suspect-max-consecutive
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //!
-        virtual void load(Args& args);
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
     };
 }

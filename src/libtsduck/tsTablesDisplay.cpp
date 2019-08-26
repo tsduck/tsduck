@@ -101,7 +101,7 @@ void ts::TablesDisplay::defineArgs(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::TablesDisplay::loadArgs(Args &args)
+bool ts::TablesDisplay::loadArgs(DuckContext& duck, Args &args)
 {
     _raw_dump = args.present(u"raw-dump");
     _raw_flags = UString::HEXA;

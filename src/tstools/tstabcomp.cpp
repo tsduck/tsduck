@@ -134,7 +134,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    xmlTweaks.loadArgs(*this);
+    xmlTweaks.loadArgs(duck, *this);
 
     getValues(infiles, u"");
     getValue(outfile, u"output");

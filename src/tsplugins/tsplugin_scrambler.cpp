@@ -344,7 +344,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
 
     // ECMG and scrambling options.
     _ecmg_args.defineArgs(*this);
-    _scrambling.defineOptions(*this);
+    _scrambling.defineArgs(*this);
 }
 
 
@@ -375,7 +375,7 @@ bool ts::ScramblerPlugin::getOptions()
     }
 
     // Other common parameters.
-    if (!_ecmg_args.loadArgs(*this) || !_scrambling.loadArgs(*this)) {
+    if (!_ecmg_args.loadArgs(duck, *this) || !_scrambling.loadArgs(duck, *this)) {
         return false;
     }
 
