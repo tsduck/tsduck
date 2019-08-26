@@ -66,7 +66,7 @@ namespace ts {
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
-        virtual bool loadArgs(Args& args) override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!
         //! Return the output device for display.

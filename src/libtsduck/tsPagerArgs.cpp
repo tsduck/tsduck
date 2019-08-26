@@ -33,6 +33,7 @@
 
 #include "tsPagerArgs.h"
 #include "tsNullReport.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -80,7 +81,7 @@ void ts::PagerArgs::defineArgs(Args& args) const
 // Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-bool ts::PagerArgs::loadArgs(Args& args)
+bool ts::PagerArgs::loadArgs(DuckContext& duck, Args& args)
 {
     if (page_by_default) {
         use_pager = !args.present(u"no-pager");

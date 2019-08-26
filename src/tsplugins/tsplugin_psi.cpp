@@ -88,7 +88,7 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
 
 bool ts::PSIPlugin::getOptions()
 {
-    return duck.loadArgs(*this) && _logger.loadArgs(*this) && _display.loadArgs(*this);
+    return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
 

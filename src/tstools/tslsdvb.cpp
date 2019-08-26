@@ -92,7 +92,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Analyze command line options.
     analyze(argc, argv);
-    tuner.loadArgs(*this, duck);
+    tuner.loadArgs(duck, *this);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".

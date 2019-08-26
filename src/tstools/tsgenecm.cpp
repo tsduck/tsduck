@@ -96,7 +96,7 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Analyze parameters.
-    ecmg.loadArgs(*this);
+    ecmg.loadArgs(duck, *this);
     getValue(outFile, u"");
     cpNumber = intValue<uint16_t>(u"cp-number", 0);
     if (!value(u"cw-current").hexaDecode(cwCurrent) || !value(u"cw-next").hexaDecode(cwNext)) {

@@ -162,7 +162,7 @@ bool ts::MPEInjectPlugin::start()
     const UString macAddress(value(u"mac-address"));
     const UString newDestination(value(u"new-destination"));
     const UString newSource(value(u"new-source"));
-    if (!_sock.loadArgs(*this)) {
+    if (!_sock.loadArgs(duck, *this)) {
         return false;
     }
 

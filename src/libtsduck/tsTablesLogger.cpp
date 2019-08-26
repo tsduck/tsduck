@@ -283,7 +283,7 @@ void ts::TablesLogger::defineArgs(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::TablesLogger::loadArgs(Args& args)
+bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
 {
     // Type of output, text is the default.
     _use_xml = args.present(u"xml-output");
@@ -348,7 +348,7 @@ bool ts::TablesLogger::loadArgs(Args& args)
     }
 
     // Load XML options.
-    return _xml_tweaks.loadArgs(args);
+    return _xml_tweaks.loadArgs(duck, args);
 }
 
 

@@ -88,7 +88,7 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 
 bool ts::TablesPlugin::getOptions()
 {
-    return duck.loadArgs(*this) && _logger.loadArgs(*this) && _display.loadArgs(*this);
+    return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
 bool ts::TablesPlugin::start()

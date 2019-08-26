@@ -60,7 +60,7 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& descripti
     _stop_thread(false)
 {
     // Generic scrambling options.
-    _scrambling.defineOptions(*this);
+    _scrambling.defineArgs(*this);
 
     option(u"", 0, STRING, 0, 1);
     help(u"",
@@ -104,7 +104,7 @@ bool ts::AbstractDescrambler::getOptions()
     _synchronous = present(u"synchronous") || !tsp->realtime();
     _swap_cw = present(u"swap-cw");
     getIntValues(_pids, u"pid");
-    if (!_scrambling.loadArgs(*this)) {
+    if (!_scrambling.loadArgs(duck, *this)) {
         return false;
     }
 

@@ -90,9 +90,9 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    pager.loadArgs(*this);
-    logger.loadArgs(*this);
-    display.loadArgs(*this);
+    pager.loadArgs(duck, *this);
+    logger.loadArgs(duck, *this);
+    display.loadArgs(duck, *this);
 
     infile = value(u"");
 

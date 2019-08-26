@@ -142,7 +142,7 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
 bool ts::StuffAnalyzePlugin::start()
 {
     // Get command line arguments
-    _cas_args.loadArgs(*this);
+    _cas_args.loadArgs(duck, *this);
     _output_name = value(u"output-file");
     getIntValues(_analyze_pids, u"pid");
 

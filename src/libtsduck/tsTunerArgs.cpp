@@ -37,6 +37,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsChannelFile.h"
 #include "tsHFBand.h"
+#include "tsArgs.h"
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
@@ -128,7 +129,7 @@ void ts::TunerArgs::reset()
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::TunerArgs::loadArgs(Args& args, DuckContext& duck)
+bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 {
     bool status = true;
     reset();

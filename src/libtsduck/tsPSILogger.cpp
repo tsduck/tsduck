@@ -119,7 +119,7 @@ void ts::PSILogger::defineArgs(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::PSILogger::loadArgs(Args& args)
+bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 {
     _all_versions = args.present(u"all-versions");
     _cat_only = args.present(u"cat-only");

@@ -95,7 +95,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);
     duck.defineArgsForDVBCharset(*this);
-    _analyzer_options.defineOptions(*this);
+    _analyzer_options.defineArgs(*this);
 
     option(u"interval", 'i', POSITIVE);
     help(u"interval",
@@ -126,7 +126,7 @@ bool ts::AnalyzePlugin::start()
 {
     // Load all standard analysis options.
     duck.loadArgs(*this);
-    _analyzer_options.load(*this);
+    _analyzer_options.loadArgs(duck, *this);
 
     _output_name = value(u"output-file");
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);

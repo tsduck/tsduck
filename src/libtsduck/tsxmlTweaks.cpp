@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlTweaks.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -61,7 +62,7 @@ void ts::xml::Tweaks::defineArgs(Args& args) const
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Tweaks::loadArgs(Args& args)
+bool ts::xml::Tweaks::loadArgs(DuckContext& duck, Args& args)
 {
     attributeValueDoubleQuote = true;
     strictAttributeFormatting = true;

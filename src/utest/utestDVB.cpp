@@ -36,6 +36,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
+#include "tsArgs.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 
@@ -116,7 +117,7 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
 
     ts::TunerArgs tuner;
     ts::DuckContext duck;
-    tuner.loadArgs(args, duck);
+    tuner.loadArgs(duck, args);
     ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
     TSUNIT_ASSERT(!ptr.isNull());
     TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());

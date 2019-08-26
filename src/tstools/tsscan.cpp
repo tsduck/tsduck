@@ -233,7 +233,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
 
     analyze(argc, argv);
     duck.loadArgs(*this);
-    tuner_args.loadArgs(*this, duck);
+    tuner_args.loadArgs(duck, *this);
 
     // Type of scanning
     uhf_scan = present(u"uhf-band");

@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsBlockCipherAlertInterface.h"
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 #include "tsCerrReport.h"
 #include "tsTSPacket.h"
 #include "tsDVBCSA2.h"
@@ -63,7 +63,7 @@ namespace ts {
     //! - For decryption, the next key is used each time a new scrambling_control
     //!   value is found in a TS header.
     //!
-    class TSDUCKDLL TSScrambling : private BlockCipherAlertInterface
+    class TSDUCKDLL TSScrambling : public ArgsSupplierInterface, private BlockCipherAlertInterface
     {
     public:
         //!
@@ -87,19 +87,9 @@ namespace ts {
         //!
         TSScrambling(TSScrambling&& other);
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! @param [in,out] args Command line arguments.
-        //! @return True on success, false on error.
-        //! Args error indicator is also set in case of incorrect arguments.
-        //!
-        bool loadArgs(Args& args);
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!
         //! Check if fixed control words were loaded from the command line.

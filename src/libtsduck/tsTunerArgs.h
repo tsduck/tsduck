@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 #include "tsTunerParameters.h"
 #include "tsDuckContext.h"
 #include "tsVariable.h"
@@ -51,7 +51,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL TunerArgs
+    class TSDUCKDLL TunerArgs : public ArgsSupplierInterface
     {
     public:
         // Public fields
@@ -112,6 +112,10 @@ namespace ts {
         //!
         TunerArgs& operator=(const TunerArgs& other) = default;
 
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+
         //!
         //! Check if actual tuning information is set.
         //! @return True if actual tuning information is set.
@@ -125,21 +129,6 @@ namespace ts {
         //! Reset all values, they become "unset"
         //!
         void reset();
-
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineArgs(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @param [in,out] duck TSDuck execution context.
-        //! Required to convert UHF/VHF channels to frequency.
-        //!
-        bool loadArgs(Args& args, DuckContext& duck);
 
         //!
         //! Open a tuner and configure it according to the parameters in this object.
