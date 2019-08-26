@@ -47,7 +47,7 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::CADescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::CADescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -116,9 +116,11 @@ void ts::CADescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 
 void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
-
-    if (size >= 4) {
+    if (size < 4) {
+        display.displayExtraData(data, size, indent);
+    }
+    else {
+        std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
 
         // Extract common part
@@ -131,13 +133,19 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 
         // CA private part.
         if (size > 0) {
-            strm << margin << "Private CA data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
+            // Check if a specific CAS registered its own display routine.
+            DisplayCADescriptorFunction disp = TablesFactory::Instance()->getCADescriptorDisplay(sysid);
+            if (disp != nullptr) {
+                // Use a CAS-specific display routine.
+                disp(display, data, size, indent, tid);
+            }
+            else {
+                // Hexa display of the private part.
+                strm << margin << "Private CA data:" << std::endl
+                     << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
+            }
         }
     }
-
-    display.displayExtraData(data, size, indent);
 }
 
 

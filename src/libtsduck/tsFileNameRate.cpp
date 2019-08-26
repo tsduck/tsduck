@@ -53,12 +53,12 @@ ts::FileNameRate::FileNameRate(const UString& name, MilliSecond rep) :
 // Comparison operators.
 //----------------------------------------------------------------------------
 
-bool ts::FileNameRate::operator==(const FileNameRate& other)
+bool ts::FileNameRate::operator==(const FileNameRate& other) const
 {
     return file_name == other.file_name && file_date == other.file_date && repetition == other.repetition;
 }
 
-bool ts::FileNameRate::operator<(const FileNameRate& other)
+bool ts::FileNameRate::operator<(const FileNameRate& other) const
 {
     return file_name < other.file_name || file_date < other.file_date || repetition < other.repetition;
 }

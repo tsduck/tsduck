@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 #include "tsByteBlock.h"
 #include "tsMPEG.h"
 #include "tsSocketAddress.h"
@@ -44,7 +44,7 @@ namespace ts {
     //! Command line arguments for the class ECMGClient.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL ECMGClientArgs
+    class TSDUCKDLL ECMGClientArgs : public ArgsSupplierInterface
     {
     public:
         //!
@@ -64,18 +64,8 @@ namespace ts {
         int           log_protocol;     //!< -\-log-protocol
         int           log_data;         //!< -\-log-data
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @return True on success, false on error in argument line.
-        //!
-        bool loadArgs(Args& args);
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
     };
 }

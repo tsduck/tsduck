@@ -71,7 +71,7 @@ Options::Options(int argc, char *argv[]) :
     infiles(),
     pager(true, true)
 {
-    pager.defineOptions(*this);
+    pager.defineArgs(*this);
 
     option(u"", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"", u"Any number of input MPEG TS files (standard input if omitted).");
@@ -122,7 +122,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    pager.load(*this);
+    pager.loadArgs(*this);
 
     getValues(infiles);
     raw_file = present(u"raw-file");

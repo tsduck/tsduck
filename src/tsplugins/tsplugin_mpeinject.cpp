@@ -111,7 +111,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     _cc_fixer(AllPIDs, tsp)
 {
     // UDP receiver common options.
-    _sock.defineOptions(*this);
+    _sock.defineArgs(*this);
 
     option(u"mac-address", 0, STRING);
     help(u"mac-address", u"nn:nn:nn:nn:nn:nn",
@@ -162,7 +162,7 @@ bool ts::MPEInjectPlugin::start()
     const UString macAddress(value(u"mac-address"));
     const UString newDestination(value(u"new-destination"));
     const UString newSource(value(u"new-source"));
-    if (!_sock.load(*this)) {
+    if (!_sock.loadArgs(*this)) {
         return false;
     }
 

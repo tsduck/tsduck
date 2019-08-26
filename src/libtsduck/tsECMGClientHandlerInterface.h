@@ -52,7 +52,7 @@ namespace ts {
         virtual void handleECM(const ecmgscs::ECMResponse& response) = 0;
 
         //!
-        //! Virtual desctructor
+        //! Virtual destructor.
         //!
         virtual ~ECMGClientHandlerInterface();
     };

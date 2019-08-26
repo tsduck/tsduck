@@ -28,56 +28,41 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line arguments to display PSI/SI tables.
+//!  The default section filter for TablesLogger.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
-#include "tsCASFamily.h"
-#include "tsTLVSyntax.h"
-#include "tsDVBCharset.h"
-#include "tsDuckContext.h"
+#include "tsTablesLoggerFilterInterface.h"
+#include "tsBinaryTable.h"
 
 namespace ts {
     //!
-    //! Command line arguments to display PSI/SI tables.
-    //! @ingroup cmd
+    //! The default section filter for TablesLogger.
+    //! @ingroup mpeg
     //!
-    class TSDUCKDLL TablesDisplayArgs
+    class TSDUCKDLL TablesLoggerFilter: public TablesLoggerFilterInterface
     {
-        TS_NOBUILD_NOCOPY(TablesDisplayArgs);
+        TS_NOCOPY(TablesLoggerFilter);
     public:
-        // Public fields
-        DuckContext&      duck;             //!< Reference to the associated TSDuck context.
-        bool              raw_dump;         //!< Raw dump of section, no interpretation.
-        uint32_t          raw_flags;        //!< Dump flags in raw mode.
-        TLVSyntaxVector   tlv_syntax;       //!< TLV syntax to apply to unknown sections.
-        size_t            min_nested_tlv;   //!< Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
-
         //!
         //! Default constructor.
-        //! @param [in,out] d TSDuck context.
         //!
-        explicit TablesDisplayArgs(DuckContext& d);
+        TablesLoggerFilter();
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~TablesDisplayArgs();
+        // Implementation of TablesLoggerFilterInterface.
+        virtual void defineFilterOptions(Args& args) const override;
+        virtual bool loadFilterOptions(DuckContext& duck, Args& args, PIDSet& initial_pids) override;
+        virtual bool filterSection(DuckContext& duck, const Section& section, CASFamily cas, PIDSet& more_pids) override;
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @return True on success, false on error in argument line.
-        //!
-        virtual bool load(Args& args);
+    private:
+        bool               _diversified;    // Payload must be diversified.
+        bool               _negate_tid;     // Negate tid filter (exclude selected tids).
+        bool               _negate_tidext;  // Negate tidext filter (exclude selected tidexts).
+        bool               _psi_si;         // Add PSI/SI PID's.
+        PIDSet             _pids;           // PID values to filter.
+        std::set<uint8_t>  _tids;           // TID values to filter.
+        std::set<uint16_t> _tidexts;        // TID-ext values to filter.
+        BinaryTable        _pat;            // Last PAT.
     };
 }

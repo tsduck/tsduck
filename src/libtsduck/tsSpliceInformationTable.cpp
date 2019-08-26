@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 TS_XML_TABLE_FACTORY(ts::SpliceInformationTable, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::SpliceInformationTable, MY_TID, MY_STD);
-TS_ID_SECTION_DISPLAY(ts::SpliceInformationTable::DisplaySection, MY_TID);
+TS_FACTORY_REGISTER(ts::SpliceInformationTable::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------

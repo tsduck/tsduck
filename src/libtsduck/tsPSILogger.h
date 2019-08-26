@@ -33,9 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsArgsSupplierInterface.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
-#include "tsPSILoggerArgs.h"
 
 namespace ts {
     //!
@@ -43,6 +43,7 @@ namespace ts {
     //! @ingroup mpeg
     //!
     class TSDUCKDLL PSILogger :
+        public ArgsSupplierInterface,
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
@@ -50,10 +51,30 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] options PSI logging options.
         //! @param [in,out] display Object to display tables and sections.
         //!
-        PSILogger(PSILoggerArgs& options, TablesDisplay& display);
+        explicit PSILogger(TablesDisplay& display);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~PSILogger();
+
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
+
+        //!
+        //! Open files, start operations.
+        //! The options must have been loaded first.
+        //! @return True on success, false on error.
+        //!
+        bool open();
+
+        //!
+        //! Close all operations.
+        //!
+        void close();
 
         //!
         //! The following method feeds the logger with a TS packet.
@@ -76,7 +97,7 @@ namespace ts {
         //!
         bool completed() const
         {
-            return _abort || (!_opt.all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);
+            return _abort || (!_all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);
         }
 
         //!
@@ -85,7 +106,16 @@ namespace ts {
         void reportDemuxErrors();
 
     private:
-        const PSILoggerArgs& _opt;
+        // Command line options:
+        bool    _all_versions;  // Display all versions of PSI tables.
+        bool    _clear;         // Clear stream, do not wait for a CAT.
+        bool    _cat_only;      // Only CAT, ignore other PSI.
+        bool    _dump;          // Dump all sections.
+        UString _output;        // Destination name file.
+        bool    _use_current;   // Use PSI tables with "current" flag.
+        bool    _use_next;      // Use PSI tables with "next" flag.
+
+        // Working data:
         TablesDisplay&   _display;
         DuckContext&     _duck;
         bool             _abort;

@@ -42,6 +42,7 @@ HEADERS += \
     ../../../src/libtsduck/tsArgMix.h \
     ../../../src/libtsduck/tsArgMixTemplate.h \
     ../../../src/libtsduck/tsArgs.h \
+    ../../../src/libtsduck/tsArgsSupplierInterface.h \
     ../../../src/libtsduck/tsArgsTemplate.h \
     ../../../src/libtsduck/tsArgsWithPlugins.h \
     ../../../src/libtsduck/tsAssociationTagDescriptor.h \
@@ -65,6 +66,7 @@ HEADERS += \
     ../../../src/libtsduck/tsBitRateRegulator.h \
     ../../../src/libtsduck/tsBitStream.h \
     ../../../src/libtsduck/tsBlockCipher.h \
+    ../../../src/libtsduck/tsBlockCipherAlertInterface.h \
     ../../../src/libtsduck/tsBouquetNameDescriptor.h \
     ../../../src/libtsduck/tsByteBlock.h \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
@@ -97,6 +99,8 @@ HEADERS += \
     ../../../src/libtsduck/tsCPDescriptor.h \
     ../../../src/libtsduck/tsCPIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCRC32.h \
+    ../../../src/libtsduck/tsCTR.h \
+    ../../../src/libtsduck/tsCTRTemplate.h \
     ../../../src/libtsduck/tsCTS1.h \
     ../../../src/libtsduck/tsCTS1Template.h \
     ../../../src/libtsduck/tsCTS2.h \
@@ -131,6 +135,8 @@ HEADERS += \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tsDuckConfigFile.h \
     ../../../src/libtsduck/tsDuckContext.h \
+    ../../../src/libtsduck/tsDuckExtension.h \
+    ../../../src/libtsduck/tsDuckExtensionRepository.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
     ../../../src/libtsduck/tsDVBCharset.h \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
@@ -223,6 +229,7 @@ HEADERS += \
     ../../../src/libtsduck/tsjsonString.h \
     ../../../src/libtsduck/tsjsonTrue.h \
     ../../../src/libtsduck/tsjsonValue.h \
+    ../../../src/libtsduck/tsKeyTable.h \
     ../../../src/libtsduck/tsLinkageDescriptor.h \
     ../../../src/libtsduck/tsLNB.h \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
@@ -297,7 +304,6 @@ HEADERS += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsProtectionMessageDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
-    ../../../src/libtsduck/tsPSILoggerArgs.h \
     ../../../src/libtsduck/tsPSIMerger.h \
     ../../../src/libtsduck/tsPushInputPlugin.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
@@ -386,10 +392,11 @@ HEADERS += \
     ../../../src/libtsduck/tsTableHandlerInterface.h \
     ../../../src/libtsduck/tsTables.h \
     ../../../src/libtsduck/tsTablesDisplay.h \
-    ../../../src/libtsduck/tsTablesDisplayArgs.h \
     ../../../src/libtsduck/tsTablesFactory.h \
     ../../../src/libtsduck/tsTablesLogger.h \
-    ../../../src/libtsduck/tsTablesLoggerArgs.h \
+    ../../../src/libtsduck/tsTablesLoggerFilter.h \
+    ../../../src/libtsduck/tsTablesLoggerFilterInterface.h \
+    ../../../src/libtsduck/tsTablesLoggerFilterRepository.h \
     ../../../src/libtsduck/tsTablesPtr.h \
     ../../../src/libtsduck/tsTargetBackgroundGridDescriptor.h \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.h \
@@ -496,7 +503,6 @@ HEADERS += \
     ../../../src/libtsduck/tsxmlNode.h \
     ../../../src/libtsduck/tsxmlText.h \
     ../../../src/libtsduck/tsxmlTweaks.h \
-    ../../../src/libtsduck/tsxmlTweaksArgs.h \
     ../../../src/libtsduck/tsxmlUnknown.h \
     ../../../src/libtsduck/private/tsDektec.h \
     ../../../src/libtsduck/private/tsDektecDevice.h \
@@ -543,6 +549,7 @@ SOURCES += \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
     ../../../src/libtsduck/tsArgs.cpp \
+    ../../../src/libtsduck/tsArgsSupplierInterface.cpp \
     ../../../src/libtsduck/tsArgsWithPlugins.cpp \
     ../../../src/libtsduck/tsAssociationTagDescriptor.cpp \
     ../../../src/libtsduck/tsAsyncReport.cpp \
@@ -563,6 +570,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBinaryTable.cpp \
     ../../../src/libtsduck/tsBitRateRegulator.cpp \
     ../../../src/libtsduck/tsBlockCipher.cpp \
+    ../../../src/libtsduck/tsBlockCipherAlertInterface.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
@@ -613,6 +621,8 @@ SOURCES += \
     ../../../src/libtsduck/tsDTSNeuralDescriptor.cpp \
     ../../../src/libtsduck/tsDuckConfigFile.cpp \
     ../../../src/libtsduck/tsDuckContext.cpp \
+    ../../../src/libtsduck/tsDuckExtension.cpp \
+    ../../../src/libtsduck/tsDuckExtensionRepository.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
@@ -697,6 +707,7 @@ SOURCES += \
     ../../../src/libtsduck/tsjsonString.cpp \
     ../../../src/libtsduck/tsjsonTrue.cpp \
     ../../../src/libtsduck/tsjsonValue.cpp \
+    ../../../src/libtsduck/tsKeyTable.cpp \
     ../../../src/libtsduck/tsLinkageDescriptor.cpp \
     ../../../src/libtsduck/tsLNB.cpp \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.cpp \
@@ -765,7 +776,6 @@ SOURCES += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsProtectionMessageDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
-    ../../../src/libtsduck/tsPSILoggerArgs.cpp \
     ../../../src/libtsduck/tsPSIMerger.cpp \
     ../../../src/libtsduck/tsPushInputPlugin.cpp \
     ../../../src/libtsduck/tsRandomGenerator.cpp \
@@ -841,10 +851,11 @@ SOURCES += \
     ../../../src/libtsduck/tsT2MIPacket.cpp \
     ../../../src/libtsduck/tsTableHandlerInterface.cpp \
     ../../../src/libtsduck/tsTablesDisplay.cpp \
-    ../../../src/libtsduck/tsTablesDisplayArgs.cpp \
     ../../../src/libtsduck/tsTablesFactory.cpp \
     ../../../src/libtsduck/tsTablesLogger.cpp \
-    ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
+    ../../../src/libtsduck/tsTablesLoggerFilter.cpp \
+    ../../../src/libtsduck/tsTablesLoggerFilterInterface.cpp \
+    ../../../src/libtsduck/tsTablesLoggerFilterRepository.cpp \
     ../../../src/libtsduck/tsTargetBackgroundGridDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPSlashDescriptor.cpp \
@@ -937,7 +948,6 @@ SOURCES += \
     ../../../src/libtsduck/tsxmlNode.cpp \
     ../../../src/libtsduck/tsxmlText.cpp \
     ../../../src/libtsduck/tsxmlTweaks.cpp \
-    ../../../src/libtsduck/tsxmlTweaksArgs.cpp \
     ../../../src/libtsduck/tsxmlUnknown.cpp \
     ../../../src/libtsduck/private/tsDektecDevice.cpp \
     ../../../src/libtsduck/private/tsDektecVPD.cpp \

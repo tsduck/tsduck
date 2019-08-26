@@ -53,7 +53,7 @@ ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
     _inbuf()
 {
     // Add UDP receiver common options.
-    _sock.defineOptions(*this);
+    _sock.defineArgs(*this);
 
     option(u"display-interval", 'd', POSITIVE);
     help(u"display-interval",
@@ -89,7 +89,7 @@ bool ts::IPInputPlugin::getOptions()
     // Get command line arguments
     _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
     _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
-    return _sock.load(*this);
+    return _sock.loadArgs(*this);
 }
 
 

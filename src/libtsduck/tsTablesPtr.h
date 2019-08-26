@@ -99,11 +99,10 @@ namespace ts {
     //!
     typedef std::vector<DescriptorPtr> DescriptorPtrVector;
 
-
     //!
     //! Profile of a function to display a section.
-    //! Each subclass should provide a static function named @e DisplaySection
-    //! which displays a section of its table-id.
+    //! Each subclass of AbstractTable should provide a static function named
+    //! @e DisplaySection which displays a section of its table-id.
     //!
     //! @param [in,out] display Display engine.
     //! @param [in] section The section to display.
@@ -112,9 +111,19 @@ namespace ts {
     typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, int indent);
 
     //!
+    //! Profile of a function to display a brief overview ("log") of a section on one line.
+    //! A subclass of AbstractTable may provide a static function for this.
+    //!
+    //! @param [in] section The section to log.
+    //! @param [in] max_bytes Maximum number of bytes to log from the section. 0 means unlimited.
+    //! @return A one-line brief summary of the table.
+    //!
+    typedef UString (*LogSectionFunction)(const Section& section, size_t max_bytes);
+
+    //!
     //! Profile of a function to display a descriptor.
-    //! Each subclass should provide a static function named @e DisplayDescriptor
-    //! which displays a descriptor of its type.
+    //! Each subclass of AbstractDescriptor should provide a static function named
+    //! @e DisplayDescriptor which displays a descriptor of its type.
     //!
     //! @param [in,out] display Display engine.
     //! @param [in] did Descriptor id.
@@ -126,13 +135,18 @@ namespace ts {
     //! vary depending on the table that they are in.
     //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
     //!
-    typedef void (*DisplayDescriptorFunction)(TablesDisplay& display,
-                                              DID did,
-                                              const uint8_t* payload,
-                                              size_t size,
-                                              int indent,
-                                              TID tid,
-                                              PDS pds);
+    typedef void (*DisplayDescriptorFunction)(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+    //!
+    //! Profile of a function to display the private part of a CA_descriptor.
+    //!
+    //! @param [in,out] display Display engine.
+    //! @param [in] data Address of the private part of a CA_descriptor.
+    //! @param [in] size Size in bytes of the private part.
+    //! @param [in] indent Indentation width.
+    //! @param [in] tid Table id of table containing the descriptors (typically CAT or PMT).
+    //!
+    typedef void (*DisplayCADescriptorFunction)(TablesDisplay& display, const uint8_t* data, size_t size, int indent, TID tid);
 
     //!
     //! @hideinitializer
@@ -143,7 +157,17 @@ namespace ts {
         /** @param [in,out] display Display engine.     */ \
         /** @param [in] section The section to display. */ \
         /** @param [in] indent Indentation width.       */ \
-        static void DisplaySection(TablesDisplay& display, const Section& section, int indent)
+        static void DisplaySection(ts::TablesDisplay& display, const ts::Section& section, int indent)
+
+    //!
+    //! @hideinitializer
+    //! Define a LogSection static function.
+    //!
+#define DeclareLogSection()                                         \
+        /** A static method to log a section.                     */ \
+        /** @param [in] section The section to log.               */ \
+        /** @param [in] max_bytes Maximum number of bytes to log. */ \
+        static ts::UString LogSection(const ts::Section& section, size_t max_bytes)
 
     //!
     //! @hideinitializer
@@ -158,5 +182,5 @@ namespace ts {
         /** @param [in] indent Indentation width.                         */ \
         /** @param [in] tid Table id of table containing the descriptors. */ \
         /** @param [in] pds Private Data Specifier.                       */ \
-        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+        static void DisplayDescriptor(ts::TablesDisplay& display, ts::DID did, const uint8_t* payload, size_t size, int indent, ts::TID tid, ts::PDS pds)
 }

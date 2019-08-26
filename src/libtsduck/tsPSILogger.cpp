@@ -40,50 +40,132 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display) :
+ts::PSILogger::PSILogger(TablesDisplay& display) :
+    ArgsSupplierInterface(),
     TableHandlerInterface(),
     SectionHandlerInterface(),
-    _opt(opt),
+    _all_versions(false),
+    _clear(false),
+    _cat_only(false),
+    _dump(false),
+    _output(),
+    _use_current(true),
+    _use_next(false),
     _display(display),
     _duck(_display.duck()),
     _abort(false),
-    _pat_ok(_opt.cat_only),
-    _cat_ok(_opt.clear),
-    _sdt_ok(_opt.cat_only),
+    _pat_ok(_cat_only),
+    _cat_ok(_clear),
+    _sdt_ok(_cat_only),
     _bat_ok(false),
     _mgt_ok(false),
     _expected_pmt(0),
     _received_pmt(0),
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
-    _demux(_duck, this, _opt.dump ? this : nullptr),
+    _demux(_duck, this, _dump ? this : nullptr),
     _standards(STD_NONE)
 {
+}
+
+ts::PSILogger::~PSILogger()
+{
+    close();
+}
+
+
+//----------------------------------------------------------------------------
+// Define command line options in an Args.
+//----------------------------------------------------------------------------
+
+void ts::PSILogger::defineArgs(Args& args) const
+{
+    args.option(u"all-versions", 'a');
+    args.help(u"all-versions",
+              u"Display all versions of PSI tables (need to read the complete "
+              u"transport stream). By default, display only the first version "
+              u"of each PSI table and stop when all expected PSI are extracted.");
+
+    args.option(u"cat-only");
+    args.help(u"cat-only", u"Display only the CAT, ignore other PSI tables.");
+
+    args.option(u"clear", 'c');
+    args.help(u"clear",
+              u"Indicate that this is a clear transport stream, without "
+              u"conditional access information. Useful to avoid reading the "
+              u"complete transport stream, waiting for a non-existent CAT.");
+
+    args.option(u"dump", 'd');
+    args.help(u"dump", u"Dump all PSI sections.");
+
+    args.option(u"exclude-current");
+    args.help(u"exclude-current",
+              u"Exclude PSI tables with \"current\" indicator. "
+              u"This is rarely necessary. See also --include-next.");
+
+    args.option(u"include-next");
+    args.help(u"include-next",
+              u"Include PSI tables with \"next\" indicator. By default, they are excluded.");
+
+    args.option(u"output-file", 'o', Args::STRING);
+    args.help(u"output-file", u"File name for text output.");
+}
+
+
+//----------------------------------------------------------------------------
+// Load arguments from command line.
+//----------------------------------------------------------------------------
+
+bool ts::PSILogger::loadArgs(Args& args)
+{
+    _all_versions = args.present(u"all-versions");
+    _cat_only = args.present(u"cat-only");
+    _clear = args.present(u"clear");
+    _dump = args.present(u"dump");
+    _output = args.value(u"output-file");
+    _use_current = !args.present(u"exclude-current");
+    _use_next = args.present(u"include-next");
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Open / close the PSI logger.
+//----------------------------------------------------------------------------
+
+bool ts::PSILogger::open()
+{
     // Open/create the destination
-    if (!_duck.setOutput(_opt.output)) {
+    if (!_duck.setOutput(_output)) {
         _abort = true;
-        return;
+        return false;
     }
 
     // Specify the PID filters
-    if (!_opt.cat_only) {
+    _demux.reset();
+    if (!_cat_only) {
         _demux.addPID(PID_PAT);   // MPEG
         _demux.addPID(PID_TSDT);  // MPEG
         _demux.addPID(PID_SDT);   // DVB
         _demux.addPID(PID_PSIP);  // ATSC
     }
-    if (!_opt.clear) {
+    if (!_clear) {
         _demux.addPID(PID_CAT);
     }
 
     // Type of sections to get.
-    _demux.setCurrentNext(opt.use_current, opt.use_next);
+    _demux.setCurrentNext(_use_current, _use_next);
 
     // Initial blank line
     _display.duck().out() << std::endl;
+    return true;
+}
+
+void ts::PSILogger::close()
+{
 }
 
 
@@ -142,7 +224,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // Got the PAT.
                 _pat_ok = true;
                 // Stop filtering the PAT PID if we don't need all versions.
-                if (!_opt.all_versions) {
+                if (!_all_versions) {
                     _demux.removePID(pid);
                 }
                 // Add a filter on each referenced PID to get the PMT
@@ -169,7 +251,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // Got the CAT.
                 _cat_ok = true;
                 // Stop filtering the CAT PID if we don't need all versions.
-                if (!_opt.all_versions) {
+                if (!_all_versions) {
                     _demux.removePID(pid);
                 }
             }
@@ -182,7 +264,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_NIT_ACT:  // NIT and PMT are processed identically.
         case TID_PMT: {
             // Stop filtering this PID if we don't need all versions.
-            if (!_opt.all_versions) {
+            if (!_all_versions) {
                 _demux.removePID(pid);
                 _received_pmt++;
             }
@@ -193,7 +275,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
         case TID_NIT_OTH: {
             // Ignore NIT for other networks if only one version required
-            if (_opt.all_versions) {
+            if (_all_versions) {
                 _display.displayTable(table);
                 strm << std::endl;
             }
@@ -205,7 +287,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 // A TSDT is only expected on PID 0x0002
                 strm << UString::Format(u"* Got unexpected TSDT on PID %d (0x%X)", {pid, pid}) << std::endl;
             }
-            else if (!_opt.all_versions) {
+            else if (!_all_versions) {
                 _demux.removePID(pid);
             }
             _display.displayTable(table);
@@ -220,7 +302,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _display.displayTable(table);
                 strm << std::endl;
             }
-            else if (_opt.all_versions || !_sdt_ok) {
+            else if (_all_versions || !_sdt_ok) {
                 _sdt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since a BAT can also be found here.
@@ -232,7 +314,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
         case TID_SDT_OTH: {
             // Ignore SDT for other networks if only one version required
-            if (_opt.all_versions) {
+            if (_all_versions) {
                 _display.displayTable(table);
                 strm << std::endl;
             }
@@ -246,7 +328,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _display.displayTable(table);
                 strm << std::endl;
             }
-            else if (_opt.all_versions || !_bat_ok) {
+            else if (_all_versions || !_bat_ok) {
                 // Got the BAT.
                 _bat_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
@@ -264,7 +346,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _display.displayTable(table);
                 strm << std::endl;
             }
-            else if (_opt.all_versions || !_mgt_ok) {
+            else if (_all_versions || !_mgt_ok) {
                 // Got the MGT.
                 _mgt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions

@@ -58,6 +58,7 @@ namespace ts {
     public:
         // Implementation of ProcessorPlugin interface.
         // If overridden by descrambler subclass, superclass must be explicitly invoked.
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -126,6 +127,23 @@ namespace ts {
         virtual bool checkECM(const Section& ecm) = 0;
 
         //!
+        //! Description of a control word.
+        //!
+        class CWData
+        {
+        public:
+            uint8_t   scrambling;  //!< Scrambling mode, as defined in scrambling_descriptor.
+            ByteBlock cw;          //!< Control word, typically 8 or 16 bytes.
+            ByteBlock iv;          //!< Initialization vector, typically empty or 16 bytes.
+
+            //!
+            //! Constructor.
+            //! @param [in] mode Scrambling mode.
+            //!
+            CWData(uint8_t mode = SCRAMBLING_DVB_CSA2);
+        };
+
+        //!
         //! Decipher an ECM, return up to two control words, even and/or odd.
         //!
         //! Must be implemented by subclasses (concrete descramblers).
@@ -136,12 +154,16 @@ namespace ts {
         //! either an odd CW, even CW or both. Missing CW's shall be empty.
         //!
         //! @param [in] ecm CMT section (typically an ECM).
-        //! @param [out] cw_even Returned even CW. Empty if the ECM contains no even CW.
-        //! @param [out] cw_odd Returned odd CW. Empty if the ECM contains no odd CW.
+        //! @param [in,out] cw_even Returned even CW. Empty if the ECM contains no even CW.
+        //! On input, the scrambling field is set to the current descrambling mode.
+        //! It output, the scrambling field can be updated if the ECM specifies a new one.
+        //! @param [in,out] cw_odd Returned odd CW. Empty if the ECM contains no odd CW.
+        //! On input, the scrambling field is set to the current descrambling mode.
+        //! It output, the scrambling field can be updated if the ECM specifies a new one.
         //! @return True on success, false on error. Missing ECM's (odd or even) in the ECM
         //! shall not be considered as errors. Unable to decipher the ECM is an error.
         //!
-        virtual bool decipherECM(const Section& ecm, ByteBlock& cw_even, ByteBlock& cw_odd) = 0;
+        virtual bool decipherECM(const Section& ecm, CWData& cw_even, CWData& cw_odd) = 0;
 
     protected:
         //!
@@ -201,8 +223,8 @@ namespace ts {
             // -- start of protected area --
             bool          new_ecm;      // New ECM available
             Section       ecm;          // Last received ECM
-            ByteBlock     cw_even;      // Last valid CW (even)
-            ByteBlock     cw_odd;       // Last valid CW (odd)
+            CWData        cw_even;      // Last valid CW (even)
+            CWData        cw_odd;       // Last valid CW (odd)
             // -- end of protected area --
         };
 
@@ -241,6 +263,7 @@ namespace ts {
         bool               _need_ecm;          // We need to get control words from ECM's.
         bool               _abort;             // Error, abort asap.
         bool               _synchronous;       // Synchronous ECM deciphering.
+        bool               _swap_cw;           // Swap even/odd CW from ECM.
         TSScrambling       _scrambling;        // Default descrambling (used with fixed control words).
         PIDSet             _pids;              // Explicit PID's to descramble.
         ServiceDiscovery   _service;           // Service to descramble (by name, id or none).

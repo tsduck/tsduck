@@ -41,3 +41,30 @@ ts::xml::Tweaks::Tweaks() :
     strictTextNodeFormatting(false)
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Define command line options in an Args.
+//----------------------------------------------------------------------------
+
+void ts::xml::Tweaks::defineArgs(Args& args) const
+{
+    args.option(u"strict-xml");
+    args.help(u"strict-xml",
+              u"Save XML documents in strictly conformant XML format. "
+              u"By default, do not escape characters when this is not syntactically "
+              u"necessary to make the XML text more human-readable.");
+}
+
+
+//----------------------------------------------------------------------------
+// Load arguments from command line.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Tweaks::loadArgs(Args& args)
+{
+    attributeValueDoubleQuote = true;
+    strictAttributeFormatting = true;
+    strictTextNodeFormatting = args.present(u"strict-xml");
+    return true;
+}

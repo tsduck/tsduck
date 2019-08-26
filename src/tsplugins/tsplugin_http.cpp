@@ -81,7 +81,7 @@ ts::HttpInput::HttpInput(TSP* tsp_) :
     _request(*tsp),
     _web_args()
 {
-    _web_args.defineOptions(*this);
+    _web_args.defineArgs(*this);
 
     option(u"", 0, STRING, 1, 1);
     help(u"",

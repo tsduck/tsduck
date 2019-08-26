@@ -57,7 +57,7 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     _webArgs(),
     _playlist()
 {
-    _webArgs.defineOptions(*this);
+    _webArgs.defineArgs(*this);
 
     option(u"", 0, STRING, 1, 1);
     help(u"",

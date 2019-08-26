@@ -46,11 +46,11 @@ TSDUCK_SOURCE;
 
 TS_XML_DESCRIPTOR_FACTORY(ts::LogicalChannelNumberDescriptor, MY_XML_NAME);
 TS_ID_DESCRIPTOR_FACTORY(ts::LogicalChannelNumberDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::LogicalChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::LogicalChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
 TS_ID_DESCRIPTOR_FACTORY(ts::LogicalChannelNumberDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::LogicalChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
+TS_FACTORY_REGISTER(ts::LogicalChannelNumberDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------

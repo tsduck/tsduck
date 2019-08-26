@@ -88,11 +88,11 @@ Options::Options(int argc, char *argv[]) :
 #endif
 
     // Add common tuner options.
-    tuner.defineOptions(*this);
+    tuner.defineArgs(*this);
 
     // Analyze command line options.
     analyze(argc, argv);
-    tuner.load(*this, duck);
+    tuner.loadArgs(*this, duck);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".

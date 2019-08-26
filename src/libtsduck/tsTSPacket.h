@@ -719,7 +719,7 @@ namespace ts {
 
         //!
         //! Get the PTS - 33 bits.
-        //! @return The PTS or 0 if not found.
+        //! @return The PTS or INVALID_PTS if not found.
         //!
         uint64_t getPTS() const
         {
@@ -728,7 +728,7 @@ namespace ts {
 
         //!
         //! Get the DTS - 33 bits.
-        //! @return The DTS or 0 if not found.
+        //! @return The DTS or INVALID_DTS if not found.
         //!
         uint64_t getDTS() const
         {
@@ -870,7 +870,7 @@ namespace ts {
         size_t spliceCountdownOffset() const;
         size_t privateDataOffset() const;
 
-        // Get or set PTS or DTS at specified offset. Return 0 if offset is zero.
+        // Get or set PTS or DTS at specified offset. Return INVALID_PTS if offset is zero.
         uint64_t getPDTS(size_t offset) const;
         void setPDTS(uint64_t pdts, size_t offset);
 

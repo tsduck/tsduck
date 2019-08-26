@@ -27,60 +27,18 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsxmlTweaksArgs.h"
+#include "tsDuckExtension.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::xml::TweaksArgs::TweaksArgs() :
-    strictXML(false)
+ts::DuckExtension::DuckExtension(const ts::UString& name, const ts::UString& description, const ts::UStringVector& plugins, const ts::UStringVector& tools) :
+    _name(name),
+    _description(description),
+    _plugins(plugins),
+    _tools(tools)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Define command line options in an Args.
-//----------------------------------------------------------------------------
-
-void ts::xml::TweaksArgs::defineOptions(Args& args) const
-{
-    args.option(u"strict-xml");
-    args.help(u"strict-xml",
-              u"Save XML documents in strictly conformant XML format. "
-              u"By default, do not escape characters when this is not syntactically "
-              u"necessary to make the XML text more human-readable.");
-}
-
-
-//----------------------------------------------------------------------------
-// Load arguments from command line.
-// Args error indicator is set in case of incorrect arguments
-//----------------------------------------------------------------------------
-
-bool ts::xml::TweaksArgs::load(Args& args)
-{
-    strictXML = args.present(u"strict-xml");
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Set the relevant XML tweaks.
-//----------------------------------------------------------------------------
-
-void ts::xml::TweaksArgs::setTweaks(ts::xml::Tweaks& tweaks) const
-{
-    tweaks.attributeValueDoubleQuote = true;
-    tweaks.strictAttributeFormatting = true;
-    tweaks.strictTextNodeFormatting = strictXML;
-}
-
-ts::xml::Tweaks ts::xml::TweaksArgs::tweaks() const
-{
-    Tweaks tw;
-    setTweaks(tw);
-    return tw;
 }

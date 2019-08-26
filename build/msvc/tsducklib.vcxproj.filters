@@ -26,6 +26,9 @@
     <Xml Include="..\..\src\libtsduck\tsduck.channels.model.xml">
       <Filter>Configuration Files</Filter>
     </Xml>
+    <Xml Include="..\..\src\libtsduck\tsduck.keytable.model.xml">
+      <Filter>Configuration Files</Filter>
+    </Xml>
     <Xml Include="..\..\src\libtsduck\tsduck.hfbands.xml">
       <Filter>Configuration Files</Filter>
     </Xml>

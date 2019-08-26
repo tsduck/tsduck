@@ -34,14 +34,14 @@
 
 #pragma once
 #include "tsUDPSocket.h"
-#include "tsArgs.h"
+#include "tsArgsSupplierInterface.h"
 
 namespace ts {
     //!
     //! UDP datagram receiver with common command line options.
     //! @ingroup net
     //!
-    class TSDUCKDLL UDPReceiver: public UDPSocket
+    class TSDUCKDLL UDPReceiver: public UDPSocket, public ArgsSupplierInterface
     {
         TS_NOCOPY(UDPReceiver);
     public:
@@ -54,19 +54,9 @@ namespace ts {
         //!
         explicit UDPReceiver(Report& report = CERR, bool with_short_options = true, bool dest_as_param = true);
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void defineOptions(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //! @return False in case of incorrect arguments.
-        //!
-        virtual bool load(Args& args);
+        // Implementation of ArgsSupplierInterface.
+        virtual void defineArgs(Args& args) const override;
+        virtual bool loadArgs(Args& args) override;
 
         //!
         //! Check if a UDP receiver is specified.
