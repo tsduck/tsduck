@@ -65,6 +65,7 @@ public:
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]"),
+    duck(this),
     dump_flags(0),
     raw_file(false),
     log(false),
