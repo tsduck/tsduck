@@ -2313,6 +2313,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsPIDOperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsPlatform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
