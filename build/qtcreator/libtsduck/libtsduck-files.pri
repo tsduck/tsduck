@@ -761,6 +761,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPESHandlerInterface.cpp \
     ../../../src/libtsduck/tsPESPacket.cpp \
     ../../../src/libtsduck/tsPIDOperator.cpp \
+    ../../../src/libtsduck/tsPlatform.cpp \
     ../../../src/libtsduck/tsPlugin.cpp \
     ../../../src/libtsduck/tsPluginOptions.cpp \
     ../../../src/libtsduck/tsPluginRepository.cpp \

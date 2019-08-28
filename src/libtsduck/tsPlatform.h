@@ -448,6 +448,13 @@
     #error "unknow address size, please update this header file"
 #endif
 
+//!
+//! Defined when the CPU requires strict memory alignment (address must be a multiple of the data size).
+//!
+#if (defined(DOXYGEN) || defined(__ARM_ARCH_5TEJ__)) && !defined(TS_STRICT_MEMORY_ALIGN)
+    #define TS_STRICT_MEMORY_ALIGN 1
+#endif
+
 
 //----------------------------------------------------------------------------
 // Static linking.
@@ -1528,64 +1535,7 @@ namespace ts {
         return (x & 0x00800000) == 0 ? (x & 0x00FFFFFF) : int32_t(uint32_t(x) | 0xFF000000);
     }
 
-    //!
-    //! Inlined function getting an 8-bit unsigned integer from serialized data.
-    //!
-    //! Note: There is no byte-swapping in the serialization / deserialization
-    //! of 8-bit integer data. But this function is provided for consistency.
-    //!
-    //! @param [in] p An address pointing to an 8-bit unsigned integer.
-    //! @return The 8-bit unsigned integer at @a p.
-    //!
-    TSDUCKDLL inline uint8_t GetUInt8(const void* p) {return *(static_cast<const uint8_t*>(p));}
-
-    //!
-    //! Inlined function getting a 16-bit unsigned integer from serialized data in big endian representation.
-    //!
-    //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
-    //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSDUCKDLL inline uint16_t GetUInt16(const void* p) {return CondByteSwap16BE(*(static_cast<const uint16_t*>(p)));}
-
-    //!
-    //! Inlined function getting a 32-bit unsigned integer from serialized data in big endian representation.
-    //!
-    //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
-    //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSDUCKDLL inline uint32_t GetUInt32(const void* p) {return CondByteSwap32BE(*(static_cast<const uint32_t*>(p)));}
-
-    //!
-    //! Inlined function getting a 24-bit unsigned integer from serialized data in big endian representation.
-    //!
-    //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
-    //! @return The 24-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSDUCKDLL inline uint32_t GetUInt24(const void* p) {return GetUInt32(p) >> 8;}
-
-    //!
-    //! Inlined function getting a 64-bit unsigned integer from serialized data in big endian representation.
-    //!
-    //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
-    //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSDUCKDLL inline uint64_t GetUInt64(const void* p) {return CondByteSwap64BE(*(static_cast<const uint64_t*>(p)));}
-
-    //!
-    //! Inlined function getting a 40-bit unsigned integer from serialized data in big endian representation.
-    //!
-    //! @param [in] p An address pointing to a 40-bit unsigned integer in big endian representation.
-    //! @return The 40-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSDUCKDLL inline uint64_t GetUInt40(const void* p) {return GetUInt64(p) >> 24;}
-
-    //!
-    //! Inlined function getting a 48-bit unsigned integer from serialized data in big endian representation.
-    //!
-    //! @param [in] p An address pointing to a 48-bit unsigned integer in big endian representation.
-    //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
-    //!
-    TSDUCKDLL inline uint64_t GetUInt48(const void* p) {return GetUInt64(p) >> 16;}
+#if !defined(TS_STRICT_MEMORY_ALIGN) || defined(DOXYGEN)
 
     //!
     //! Inlined function getting a 16-bit unsigned integer from serialized data in big endian representation.
@@ -1682,6 +1632,219 @@ namespace ts {
     //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
     //!
     TSDUCKDLL inline uint64_t GetUInt48LE(const void* p) {return GetUInt64LE(static_cast<const uint8_t*>(p) - 2) >> 16;}
+
+    //!
+    //! Inlined function serializing a 16-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 16-bit unsigned integer.
+    //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt16BE(void* p, uint16_t i) {*(static_cast<uint16_t*>(p)) = CondByteSwap16BE(i);}
+
+    //!
+    //! Inlined function serializing a 32-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
+    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt32BE(void* p, uint32_t i) {*(static_cast<uint32_t*>(p)) = CondByteSwap32BE(i);}
+
+    //!
+    //! Inlined function serializing a 64-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
+    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt64BE(void* p, uint64_t i) {*(static_cast<uint64_t*>(p)) = CondByteSwap64BE(i);}
+
+    //!
+    //! Inlined function serializing a 16-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 16-bit unsigned integer.
+    //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt16LE(void* p, uint16_t i) {*(static_cast<uint16_t*>(p)) = CondByteSwap16LE(i);}
+
+    //!
+    //! Inlined function serializing a 32-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
+    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt32LE(void* p, uint32_t i) {*(static_cast<uint32_t*>(p)) = CondByteSwap32LE(i);}
+
+    //!
+    //! Inlined function serializing a 64-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
+    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt64LE(void* p, uint64_t i) {*(static_cast<uint64_t*>(p)) = CondByteSwap64LE(i);}
+
+    //!
+    //! Inlined function serializing a 24-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 24-bit unsigned integer.
+    //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt24BE(void* p, uint32_t i)
+    {
+        *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 8));
+        *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i);
+    }
+
+    //!
+    //! Inlined function serializing a 24-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 24-bit unsigned integer.
+    //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt24LE(void* p, uint32_t i)
+    {
+        *(static_cast<uint16_t*>(p)) = CondByteSwap16LE(static_cast<uint16_t>(i));
+        *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i >> 16);
+    }
+
+    //!
+    //! Inlined function serializing a 40-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
+    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt40BE(void* p, uint64_t i)
+    {
+        *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 32);
+        *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+    }
+
+    //!
+    //! Inlined function serializing a 40-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
+    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt40LE(void* p, uint64_t i)
+    {
+        *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+        *(static_cast<uint8_t*>(p) + 4) = static_cast<uint8_t>(i >> 32);
+    }
+
+    //!
+    //! Inlined function serializing a 48-bit unsigned integer data in big endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 48-bit unsigned integer.
+    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt48BE(void* p, uint64_t i)
+    {
+        *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
+        *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 2)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+    }
+
+    //!
+    //! Inlined function serializing a 48-bit unsigned integer data in little endian representation.
+    //!
+    //! @param [out] p An address where to serialize the 48-bit unsigned integer.
+    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in little endian representation.
+    //!
+    TSDUCKDLL inline void PutUInt48LE(void* p, uint64_t i)
+    {
+        *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+        *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
+    }
+
+#else
+
+    // Non-inline versions when strict memory alignment is required.
+
+    TSDUCKDLL uint16_t GetUInt16BE(const void* p);
+    TSDUCKDLL uint32_t GetUInt24BE(const void* p);
+    TSDUCKDLL uint32_t GetUInt32BE(const void* p);
+    TSDUCKDLL uint64_t GetUInt40BE(const void* p);
+    TSDUCKDLL uint64_t GetUInt48BE(const void* p);
+    TSDUCKDLL uint64_t GetUInt64BE(const void* p);
+
+    TSDUCKDLL uint16_t GetUInt16LE(const void* p);
+    TSDUCKDLL uint32_t GetUInt24LE(const void* p);
+    TSDUCKDLL uint32_t GetUInt32LE(const void* p);
+    TSDUCKDLL uint64_t GetUInt40LE(const void* p);
+    TSDUCKDLL uint64_t GetUInt48LE(const void* p);
+    TSDUCKDLL uint64_t GetUInt64LE(const void* p);
+
+    TSDUCKDLL void PutUInt16BE(void* p, uint16_t i);
+    TSDUCKDLL void PutUInt24BE(void* p, uint32_t i);
+    TSDUCKDLL void PutUInt32BE(void* p, uint32_t i);
+    TSDUCKDLL void PutUInt40BE(void* p, uint64_t i);
+    TSDUCKDLL void PutUInt48BE(void* p, uint64_t i);
+    TSDUCKDLL void PutUInt64BE(void* p, uint64_t i);
+
+    TSDUCKDLL void PutUInt16LE(void* p, uint16_t i);
+    TSDUCKDLL void PutUInt24LE(void* p, uint32_t i);
+    TSDUCKDLL void PutUInt32LE(void* p, uint32_t i);
+    TSDUCKDLL void PutUInt40LE(void* p, uint64_t i);
+    TSDUCKDLL void PutUInt48LE(void* p, uint64_t i);
+    TSDUCKDLL void PutUInt64LE(void* p, uint64_t i);
+
+#endif
+
+    //!
+    //! Inlined function getting an 8-bit unsigned integer from serialized data.
+    //!
+    //! Note: There is no byte-swapping in the serialization / deserialization
+    //! of 8-bit integer data. But this function is provided for consistency.
+    //!
+    //! @param [in] p An address pointing to an 8-bit unsigned integer.
+    //! @return The 8-bit unsigned integer at @a p.
+    //!
+    TSDUCKDLL inline uint8_t GetUInt8(const void* p) {return *(static_cast<const uint8_t*>(p));}
+
+    //!
+    //! Inlined function getting a 16-bit unsigned integer from serialized data in big endian representation.
+    //!
+    //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
+    //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSDUCKDLL inline uint16_t GetUInt16(const void* p) {return GetUInt16BE(p);}
+
+    //!
+    //! Inlined function getting a 24-bit unsigned integer from serialized data in big endian representation.
+    //!
+    //! @param [in] p An address pointing to a 24-bit unsigned integer in big endian representation.
+    //! @return The 24-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSDUCKDLL inline uint32_t GetUInt24(const void* p) {return GetUInt24BE(p);}
+
+    //!
+    //! Inlined function getting a 32-bit unsigned integer from serialized data in big endian representation.
+    //!
+    //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
+    //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSDUCKDLL inline uint32_t GetUInt32(const void* p) {return GetUInt32BE(p);}
+
+    //!
+    //! Inlined function getting a 40-bit unsigned integer from serialized data in big endian representation.
+    //!
+    //! @param [in] p An address pointing to a 40-bit unsigned integer in big endian representation.
+    //! @return The 40-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSDUCKDLL inline uint64_t GetUInt40(const void* p) {return GetUInt40BE(p);}
+
+    //!
+    //! Inlined function getting a 48-bit unsigned integer from serialized data in big endian representation.
+    //!
+    //! @param [in] p An address pointing to a 48-bit unsigned integer in big endian representation.
+    //! @return The 48-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSDUCKDLL inline uint64_t GetUInt48(const void* p) {return GetUInt48BE(p);}
+
+    //!
+    //! Inlined function getting a 64-bit unsigned integer from serialized data in big endian representation.
+    //!
+    //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
+    //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
+    //!
+    TSDUCKDLL inline uint64_t GetUInt64(const void* p) {return GetUInt64BE(p);}
 
     //!
     //! Inlined function getting an 8-bit signed integer from serialized data.
@@ -2037,71 +2200,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
     //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSDUCKDLL inline void PutUInt16(void* p, uint16_t i) {*(static_cast<uint16_t*>(p)) = CondByteSwap16BE(i);}
-
-    //!
-    //! Inlined function serializing a 32-bit unsigned integer data in big endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
-    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt32(void* p, uint32_t i) {*(static_cast<uint32_t*>(p)) = CondByteSwap32BE(i);}
-
-    //!
-    //! Inlined function serializing a 64-bit unsigned integer data in big endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
-    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt64(void* p, uint64_t i) {*(static_cast<uint64_t*>(p)) = CondByteSwap64BE(i);}
-
-    //!
-    //! Inlined function serializing a 16-bit unsigned integer data in big endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 16-bit unsigned integer.
-    //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt16BE(void* p, uint16_t i) {*(static_cast<uint16_t*>(p)) = CondByteSwap16BE(i);}
-
-    //!
-    //! Inlined function serializing a 32-bit unsigned integer data in big endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
-    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt32BE(void* p, uint32_t i) {*(static_cast<uint32_t*>(p)) = CondByteSwap32BE(i);}
-
-    //!
-    //! Inlined function serializing a 64-bit unsigned integer data in big endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
-    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt64BE(void* p, uint64_t i) {*(static_cast<uint64_t*>(p)) = CondByteSwap64BE(i);}
-
-    //!
-    //! Inlined function serializing a 16-bit unsigned integer data in little endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 16-bit unsigned integer.
-    //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt16LE(void* p, uint16_t i) {*(static_cast<uint16_t*>(p)) = CondByteSwap16LE(i);}
-
-    //!
-    //! Inlined function serializing a 32-bit unsigned integer data in little endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
-    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt32LE(void* p, uint32_t i) {*(static_cast<uint32_t*>(p)) = CondByteSwap32LE(i);}
-
-    //!
-    //! Inlined function serializing a 64-bit unsigned integer data in little endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
-    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt64LE(void* p, uint64_t i) {*(static_cast<uint64_t*>(p)) = CondByteSwap64LE(i);}
+    TSDUCKDLL inline void PutUInt16(void* p, uint16_t i) {PutUInt16BE(p, i);}
 
     //!
     //! Inlined function serializing a 24-bit unsigned integer data in big endian representation.
@@ -2109,34 +2208,15 @@ namespace ts {
     //! @param [out] p An address where to serialize the 24-bit unsigned integer.
     //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSDUCKDLL inline void PutUInt24BE(void* p, uint32_t i)
-    {
-        *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 8));
-        *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i);
-    }
+    TSDUCKDLL inline void PutUInt24(void* p, uint32_t i) {PutUInt24BE(p, i);}
 
     //!
-    //! Inlined function serializing a 24-bit unsigned integer data in big endian representation.
+    //! Inlined function serializing a 32-bit unsigned integer data in big endian representation.
     //!
-    //! @param [out] p An address where to serialize the 24-bit unsigned integer.
-    //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in big endian representation.
+    //! @param [out] p An address where to serialize the 32-bit unsigned integer.
+    //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSDUCKDLL inline void PutUInt24(void* p, uint32_t i)
-    {
-        PutUInt24BE(p, i);
-    }
-
-    //!
-    //! Inlined function serializing a 24-bit unsigned integer data in little endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 24-bit unsigned integer.
-    //! @param [in]  i The 24-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt24LE(void* p, uint32_t i)
-    {
-        *(static_cast<uint16_t*>(p)) = CondByteSwap16LE(static_cast<uint16_t>(i));
-        *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i >> 16);
-    }
+    TSDUCKDLL inline void PutUInt32(void* p, uint32_t i) {PutUInt32BE(p, i);}
 
     //!
     //! Inlined function serializing a 40-bit unsigned integer data in big endian representation.
@@ -2144,34 +2224,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 40-bit unsigned integer.
     //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSDUCKDLL inline void PutUInt40BE(void* p, uint64_t i)
-    {
-        *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 32);
-        *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap32BE(static_cast<uint32_t>(i));
-    }
-
-    //!
-    //! Inlined function serializing a 40-bit unsigned integer data in big endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
-    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in big endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt40(void* p, uint64_t i)
-    {
-        PutUInt40BE(p, i);
-    }
-
-    //!
-    //! Inlined function serializing a 40-bit unsigned integer data in little endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 40-bit unsigned integer.
-    //! @param [in]  i The 40-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt40LE(void* p, uint64_t i)
-    {
-        *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
-        *(static_cast<uint8_t*>(p) + 4) = static_cast<uint8_t>(i >> 32);
-    }
+    TSDUCKDLL inline void PutUInt40(void* p, uint64_t i) {PutUInt40BE(p, i);}
 
     //!
     //! Inlined function serializing a 48-bit unsigned integer data in big endian representation.
@@ -2179,34 +2232,15 @@ namespace ts {
     //! @param [out] p An address where to serialize the 48-bit unsigned integer.
     //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSDUCKDLL inline void PutUInt48BE(void* p, uint64_t i)
-    {
-        *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
-        *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 2)) = CondByteSwap32BE(static_cast<uint32_t>(i));
-    }
+    TSDUCKDLL inline void PutUInt48(void* p, uint64_t i) {PutUInt48BE(p, i);}
 
     //!
-    //! Inlined function serializing a 48-bit unsigned integer data in big endian representation.
+    //! Inlined function serializing a 64-bit unsigned integer data in big endian representation.
     //!
-    //! @param [out] p An address where to serialize the 48-bit unsigned integer.
-    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in big endian representation.
+    //! @param [out] p An address where to serialize the 64-bit unsigned integer.
+    //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSDUCKDLL inline void PutUInt48(void* p, uint64_t i)
-    {
-        PutUInt48BE(p, i);
-    }
-
-    //!
-    //! Inlined function serializing a 48-bit unsigned integer data in little endian representation.
-    //!
-    //! @param [out] p An address where to serialize the 48-bit unsigned integer.
-    //! @param [in]  i The 48-bit unsigned integer in native byte order to serialize in little endian representation.
-    //!
-    TSDUCKDLL inline void PutUInt48LE(void* p, uint64_t i)
-    {
-        *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
-        *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
-    }
+    TSDUCKDLL inline void PutUInt64(void* p, uint64_t i) {PutUInt64BE(p, i);}
 
     //!
     //! Inlined function serializing an 8-bit signed integer data.
@@ -2388,22 +2422,19 @@ namespace ts {
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    TSDUCKDLL inline INT GetInt(const void* p)
-    {
-        return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
-    }
-
-    //!
-    //! Template function getting an integer from serialized data in big endian representation.
-    //!
-    //! @tparam INT Some integer type.
-    //! @param [in] p An address pointing to an INT in big endian representation.
-    //! @return The INT value in native byte order, deserialized from @a p.
-    //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT GetIntBE(const void* p)
     {
+    #if defined(TS_STRICT_MEMORY_ALIGN)
+        switch (sizeof(INT)) {
+            case 1: return static_cast<INT>(GetUInt8(p));
+            case 2: return static_cast<INT>(GetUInt16BE(p));
+            case 4: return static_cast<INT>(GetUInt32BE(p));
+            case 8: return static_cast<INT>(GetUInt64BE(p));
+            default: assert (false); return 0;
+        }
+    #else
         return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
+    #endif
     }
 
     //!
@@ -2416,7 +2447,17 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT GetIntLE(const void* p)
     {
+    #if defined(TS_STRICT_MEMORY_ALIGN)
+        switch (sizeof(INT)) {
+            case 1: return static_cast<INT>(GetUInt8(p));
+            case 2: return static_cast<INT>(GetUInt16LE(p));
+            case 4: return static_cast<INT>(GetUInt32LE(p));
+            case 8: return static_cast<INT>(GetUInt64LE(p));
+            default: assert (false); return 0;
+        }
+    #else
         return CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
+    #endif
     }
 
     //!
@@ -2424,12 +2465,12 @@ namespace ts {
     //!
     //! @tparam INT Some integer type.
     //! @param [in] p An address pointing to an INT in big endian representation.
-    //! @param [out] i The INT value in native byte order, deserialized from @a p.
+    //! @return The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    TSDUCKDLL inline void GetInt(const void* p, INT& i)
+    TSDUCKDLL inline INT GetInt(const void* p)
     {
-        i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
+        return GetIntBE<INT>(p);
     }
 
     //!
@@ -2442,7 +2483,17 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void GetIntBE(const void* p, INT& i)
     {
+    #if defined(TS_STRICT_MEMORY_ALIGN)
+        switch (sizeof(INT)) {
+            case 1: i = static_cast<INT>(GetUInt8(p)); break;
+            case 2: i = static_cast<INT>(GetUInt16BE(p)); break;
+            case 4: i = static_cast<INT>(GetUInt32BE(p)); break;
+            case 8: i = static_cast<INT>(GetUInt64BE(p)); break;
+            default: assert (false); i = 0;  break;
+        }
+    #else
         i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
+    #endif
     }
 
     //!
@@ -2455,20 +2506,30 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void GetIntLE(const void* p, INT& i)
     {
+    #if defined(TS_STRICT_MEMORY_ALIGN)
+        switch (sizeof(INT)) {
+            case 1: i = static_cast<INT>(GetUInt8(p)); break;
+            case 2: i = static_cast<INT>(GetUInt16LE(p)); break;
+            case 4: i = static_cast<INT>(GetUInt32LE(p)); break;
+            case 8: i = static_cast<INT>(GetUInt64LE(p)); break;
+            default: assert (false); i = 0;  break;
+        }
+    #else
         i = CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
+    #endif
     }
 
     //!
-    //! Template function serializing an integer data in big endian representation.
+    //! Template function getting an integer from serialized data in big endian representation.
     //!
     //! @tparam INT Some integer type.
-    //! @param [out] p An address where to serialize the integer.
-    //! @param [in]  i The INT in native byte order to serialize in big endian representation.
+    //! @param [in] p An address pointing to an INT in big endian representation.
+    //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    TSDUCKDLL inline void PutInt(void* p, INT i)
+    TSDUCKDLL inline void GetInt(const void* p, INT& i)
     {
-        *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
+        GetIntBE<INT>(p, i);
     }
 
     //!
@@ -2481,7 +2542,17 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void PutIntBE(void* p, INT i)
     {
+    #if defined(TS_STRICT_MEMORY_ALIGN)
+        switch (sizeof(INT)) {
+            case 1: PutUInt8(p, static_cast<uint8_t>(i)); break;
+            case 2: PutUInt16BE(p, static_cast<uint16_t>(i)); break;
+            case 4: PutUInt32BE(p, static_cast<uint32_t>(i)); break;
+            case 8: PutUInt64BE(p, static_cast<uint64_t>(i)); break;
+            default: assert (false); break;
+        }
+    #else
         *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
+    #endif
     }
 
     //!
@@ -2494,7 +2565,30 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void PutIntLE(void* p, INT i)
     {
+    #if defined(TS_STRICT_MEMORY_ALIGN)
+        switch (sizeof(INT)) {
+            case 1: PutUInt8(p, static_cast<uint8_t>(i)); break;
+            case 2: PutUInt16LE(p, static_cast<uint16_t>(i)); break;
+            case 4: PutUInt32LE(p, static_cast<uint32_t>(i)); break;
+            case 8: PutUInt64LE(p, static_cast<uint64_t>(i)); break;
+            default: assert (false); break;
+        }
+    #else
         *(static_cast<INT*>(p)) = CondByteSwapLE<INT>(i);
+    #endif
+    }
+
+    //!
+    //! Template function serializing an integer data in big endian representation.
+    //!
+    //! @tparam INT Some integer type.
+    //! @param [out] p An address where to serialize the integer.
+    //! @param [in]  i The INT in native byte order to serialize in big endian representation.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    TSDUCKDLL inline void PutInt(void* p, INT i)
+    {
+        PutIntBE<INT>(p, i);
     }
 
     // Some specializations, for performance
@@ -2863,6 +2957,12 @@ namespace ts {
 
         // "mfence" is SSE2, not supported on all x86 cpus but supported on all x86_64 cpus.
         __asm__ __volatile__ ("mfence" : : : "memory");
+
+#elif defined(TS_GCC) && defined(__ARM_ARCH_5TEJ__)
+
+        // Some flavours of the ARM architecture do not support accessing r15 in user mode.
+        // Simply prevent the compiler from rescheduling instructions (not a true "memory barrier" however).
+        __asm__ __volatile__ ("" : : :  "memory");
 
 #elif defined(TS_GCC) && defined(TS_ARM)
 

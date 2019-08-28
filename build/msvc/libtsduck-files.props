@@ -773,6 +773,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPESHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPESPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPIDOperator.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPlatform.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginRepository.cpp" />
