@@ -180,6 +180,12 @@ namespace ts {
         void getRegisteredDescriptorNames(UStringList& names) const;
 
         //!
+        //! Get the list of all registered additional XML model file names for tables and descriptors.
+        //! @param [out] names List of all registered additional XML model file names.
+        //!
+        void getRegisteredTablesModels(UStringList& names) const;
+
+        //!
         //! A class to register factories and display functions.
         //!
         //! The registration is performed using constructors.
@@ -296,6 +302,16 @@ namespace ts {
             //! @see TS_FACTORY_REGISTER
             //!
             Register(DisplayCADescriptorFunction func, uint16_t minCAS, uint16_t maxCAS);
+
+            //!
+            //! Register an additional XML model file containing definitions for tables and descriptors.
+            //! This file will be merged with the main model.
+            //! @param [in] filename Name of the XML model file. This should be a simple file name,
+            //! without directory. This file will be searched in the same directory as the executable,
+            //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
+            //! then from $PATH.
+            //!
+            Register(const UString& filename);
         };
 
     private:
@@ -309,6 +325,7 @@ namespace ts {
         std::map<uint32_t, LogSectionFunction>           _sectionLogs;               // Key includes TID and CAS.
         std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;
         std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;   // Key is CAS system id.
+        UStringList                                      _xmlModelFiles;             // Additional XML model files for tables
 
         // Build a key in _sectionDisplays and _sectionLogs.
         static uint32_t SectionDisplayIndex(TID id, uint16_t cas);

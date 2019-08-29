@@ -52,7 +52,8 @@ ts::TablesFactory::TablesFactory() :
     _sectionDisplays(),
     _sectionLogs(),
     _descriptorDisplays(),
-    _casIdDescriptorDisplays()
+    _casIdDescriptorDisplays(),
+    _xmlModelFiles()
 {
 }
 
@@ -145,6 +146,11 @@ ts::TablesFactory::Register::Register(DisplayCADescriptorFunction func, uint16_t
     do {
         TablesFactory::Instance()->_casIdDescriptorDisplays.insert(std::make_pair(minCAS, func));
     } while (minCAS++ < maxCAS);
+}
+
+ts::TablesFactory::Register::Register(const UString& filename)
+{
+    TablesFactory::Instance()->_xmlModelFiles.push_back(filename);
 }
 
 
@@ -328,4 +334,9 @@ void ts::TablesFactory::getRegisteredDescriptorNames(UStringList& names) const
     for (std::map<UString,DescriptorFactory>::const_iterator it = _descriptorNames.begin(); it != _descriptorNames.end(); ++it) {
         names.push_back(it->first);
     }
+}
+
+void ts::TablesFactory::getRegisteredTablesModels(UStringList& names) const
+{
+    names = _xmlModelFiles;
 }

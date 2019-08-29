@@ -52,6 +52,10 @@
 //! Default suffix of XML section file names.
 //!
 #define TS_DEFAULT_XML_SECTION_FILE_SUFFIX u".xml"
+//!
+//! File name of the XML model file for tables.
+//!
+#define TS_XML_TABLES_MODEL u"tsduck.tables.model.xml"
 
 namespace ts {
     //!
@@ -342,6 +346,14 @@ namespace ts {
         //! @return The number of tables which were created.
         //!
         size_t packOrphanSections();
+
+        //!
+        //! This static method loads the XML model for tables and descriptors.
+        //! It loads the main model and merges all extensions.
+        //! @param [out] doc XML document which receives the model.
+        //! @return True on success, false on error.
+        //!
+        static bool LoadModel(xml::Document& doc);
 
     private:
         DuckContext&         _duck;            //!< Reference to TSDuck execution context.

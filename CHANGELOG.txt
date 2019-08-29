@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1388
+VERSION 3.19-1393
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,7 +12,7 @@ VERSION 3.19-1388
   * Added default CAS selection options --default-cas-id, --conax, --irdeto,
     --mediaguard, --nagravision, --nds, --safeaccess, --viaccess, --widevine
     to "tspsi", "tstabdump", "tstables" and plugins "psi", "tables".
-  * Added option --extensions to "tsversion".
+  * Added option --extensions to "tsversion" and "tstabcomp".
 
 [BUG] Bug fixes:
 
