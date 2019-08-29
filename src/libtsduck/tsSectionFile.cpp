@@ -324,6 +324,72 @@ bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 
 
 //----------------------------------------------------------------------------
+// This static method loads the XML model for tables and descriptors.
+//----------------------------------------------------------------------------
+
+bool ts::SectionFile::LoadModel(xml::Document& doc)
+{
+    // Load the main model. Use searching rules.
+    if (!doc.load(TS_XML_TABLES_MODEL, true)) {
+        doc.report().error(u"Main model for TSDuck XML files not found: %s", {TS_XML_TABLES_MODEL});
+        return false;
+    }
+
+    // Get the root element in the model.
+    xml::Element* root = doc.rootElement();
+    if (root == nullptr) {
+        doc.report().error(u"Main model for TSDuck XML files is empty: %s", {TS_XML_TABLES_MODEL});
+        return false;
+    }
+
+    // Get the list of all registered extension files.
+    UStringList extfiles;
+    TablesFactory::Instance()->getRegisteredTablesModels(extfiles);
+
+    // Load all extension files. Only report a warning in case of failure.
+    for (auto name = extfiles.begin(); name != extfiles.end(); ++name) {
+        // Load the extension file. Use searching rules.
+        xml::Document extdoc(doc.report());
+        xml::Element* extroot = nullptr;
+        xml::Element* elem = nullptr;
+        if (!extdoc.load(*name, true)) {
+            extdoc.report().error(u"Extension XML model file not found: %s", {*name});
+        }
+        else if ((extroot = extdoc.rootElement()) != nullptr) {
+            // Remove elements one by one.
+            while ((elem = extdoc.rootElement()->firstChildElement()) != nullptr) {
+                if (!elem->name().startWith(u"_")) {
+                    // The element does not start with an underscore.
+                    // Simply move the element inside the main model.
+                    elem->reparent(root);
+                }
+                else {
+                    // The element starts with an underscore.
+                    // We need to merge its content with an element of the same name in the model.
+                    xml::Element* topic = root->findFirstChild(elem->name(), true);
+                    if (topic == nullptr) {
+                        // The topic did not exist in the main model, simply move is here.
+                        elem->reparent(root);
+                    }
+                    else {
+                        // Move all content into the main topic.
+                        xml::Element* e = nullptr;
+                        while ((e = elem->firstChildElement()) != nullptr) {
+                            e->reparent(topic);
+                        }
+                        // Finally, delete the (now empty) element from the extension.
+                        delete elem;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
@@ -355,8 +421,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     xml::Document model(doc.report());
-    if (!model.load(u"tsduck.tables.model.xml", true)) {
-        doc.report().error(u"Model for TSDuck XML files not found");
+    if (!LoadModel(model)) {
         return false;
     }
 

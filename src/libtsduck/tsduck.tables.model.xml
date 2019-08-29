@@ -46,339 +46,347 @@
 -->
 <tsduck>
 
-  <!-- Program Association Table -->
-  <PAT version="uint5, default=0"
-       current="bool, default=true"
-       transport_stream_id="uint16, required"
-       network_PID="uint13, optional">
-    <!-- One per service -->
-    <service service_id="uint16, required" program_map_PID="uint13, required"/>
-  </PAT>
+  <!-- A valid file is composed of a suite of any number of table structures -->
+  <_any in="_tables"/>
 
-  <!-- Conditional Access Table -->
-  <CAT version="uint5, default=0"
-       current="bool, default=true">
-    <_any in="_descriptors"/>
-  </CAT>
+  <!-- Definitions of tables -->
+  <_tables>
 
-  <!-- Program Map Table -->
-  <PMT version="uint5, default=0"
-       current="bool, default=true"
-       service_id="uint16, required"
-       PCR_PID="uint13, default=0x1FFF">
-    <!-- Program-level descriptors -->
-    <_any in="_descriptors"/>
-    <!-- One per elementary stream -->
-    <component stream_type="uint8, required" elementary_PID="uint13, required">
+    <!-- Program Association Table -->
+    <PAT version="uint5, default=0"
+         current="bool, default=true"
+         transport_stream_id="uint16, required"
+         network_PID="uint13, optional">
+      <!-- One per service -->
+      <service service_id="uint16, required" program_map_PID="uint13, required"/>
+    </PAT>
+
+    <!-- Conditional Access Table -->
+    <CAT version="uint5, default=0"
+         current="bool, default=true">
       <_any in="_descriptors"/>
-    </component>
-  </PMT>
+    </CAT>
 
-  <!-- Transport Stream Description Table -->
-  <TSDT version="uint5, default=0"
-        current="bool, default=true">
-    <_any in="_descriptors"/>
-  </TSDT>
-
-  <!-- Network Information Table -->
-  <NIT version="uint5, default=0"
-       current="bool, default=true"
-       network_id="uint16, required"
-       actual="bool, default=true">
-    <!-- Network-level descriptors -->
-    <_any in="_descriptors"/>
-    <!-- One per transport stream -->
-    <transport_stream transport_stream_id="uint16, required"
-                      original_network_id="uint16, required"
-                      preferred_section="uint8, optional">
+    <!-- Program Map Table -->
+    <PMT version="uint5, default=0"
+         current="bool, default=true"
+         service_id="uint16, required"
+         PCR_PID="uint13, default=0x1FFF">
+      <!-- Program-level descriptors -->
       <_any in="_descriptors"/>
-    </transport_stream>
-  </NIT>
+      <!-- One per elementary stream -->
+      <component stream_type="uint8, required" elementary_PID="uint13, required">
+        <_any in="_descriptors"/>
+      </component>
+    </PMT>
 
-  <!-- Bouquet Association Table -->
-  <BAT version="uint5, default=0"
-       current="bool, default=true"
-       bouquet_id="uint16, required">
-    <!-- Bouquet-level descriptors -->
-    <_any in="_descriptors"/>
-    <!-- One per transport stream -->
-    <transport_stream transport_stream_id="uint16, required"
-                      original_network_id="uint16, required"
-                      preferred_section="uint8, optional">
+    <!-- Transport Stream Description Table -->
+    <TSDT version="uint5, default=0"
+          current="bool, default=true">
       <_any in="_descriptors"/>
-    </transport_stream>
-  </BAT>
+    </TSDT>
 
-  <!-- Running Status Table -->
-  <RST>
-    <!-- One per event -->
-    <event transport_stream_id="uint16, required"
-           original_network_id="uint16, required"
-           service_id="uint16, required"
-           event_id="uint16, required"
-           running_status="undefined|not-running|starting|pausing|running|off-air, required"/>
-  </RST>
+    <!-- Network Information Table -->
+    <NIT version="uint5, default=0"
+         current="bool, default=true"
+         network_id="uint16, required"
+         actual="bool, default=true">
+      <!-- Network-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per transport stream -->
+      <transport_stream transport_stream_id="uint16, required"
+                        original_network_id="uint16, required"
+                        preferred_section="uint8, optional">
+        <_any in="_descriptors"/>
+      </transport_stream>
+    </NIT>
 
-  <!-- Service Description Table -->
-  <SDT version="uint5, default=0"
-       current="bool, default=true"
-       transport_stream_id="uint16, required"
-       original_network_id="uint16, required"
-       actual="bool, default=true">
-    <!-- One per service -->
-    <service service_id="uint16, required"
-             EIT_schedule="bool, default=false"
-             EIT_present_following="bool, default=false"
+    <!-- Bouquet Association Table -->
+    <BAT version="uint5, default=0"
+         current="bool, default=true"
+         bouquet_id="uint16, required">
+      <!-- Bouquet-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per transport stream -->
+      <transport_stream transport_stream_id="uint16, required"
+                        original_network_id="uint16, required"
+                        preferred_section="uint8, optional">
+        <_any in="_descriptors"/>
+      </transport_stream>
+    </BAT>
+
+    <!-- Running Status Table -->
+    <RST>
+      <!-- One per event -->
+      <event transport_stream_id="uint16, required"
+             original_network_id="uint16, required"
+             service_id="uint16, required"
+             event_id="uint16, required"
+             running_status="undefined|not-running|starting|pausing|running|off-air, required"/>
+    </RST>
+
+    <!-- Service Description Table -->
+    <SDT version="uint5, default=0"
+         current="bool, default=true"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required"
+         actual="bool, default=true">
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               EIT_schedule="bool, default=false"
+               EIT_present_following="bool, default=false"
+               running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
+               CA_mode="bool, default=false">
+        <_any in="_descriptors"/>
+      </service>
+    </SDT>
+
+    <!-- Event Information Table -->
+    <!-- If type="pf", this is an EITp/f -->
+    <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->
+    <EIT type="pf|uint4, default=pf"
+         version="uint5, default=0"
+         current="bool, default=true"
+         actual="bool, default=true"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required"
+         segment_last_section_number="uint8, ignored (legacy)"
+         last_table_id="uint8, default=same as table id">
+      <!-- One per event -->
+      <event event_id="uint16, required"
+             start_time="YYYY-MM-DD hh:mm:ss, required"
+             duration="hh:mm:ss, required"
              running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
-             CA_mode="bool, default=false">
-      <_any in="_descriptors"/>
-    </service>
-  </SDT>
-
-  <!-- Event Information Table -->
-  <!-- If type="pf", this is an EITp/f -->
-  <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->
-  <EIT type="pf|uint4, default=pf"
-       version="uint5, default=0"
-       current="bool, default=true"
-       actual="bool, default=true"
-       service_id="uint16, required"
-       transport_stream_id="uint16, required"
-       original_network_id="uint16, required"
-       segment_last_section_number="uint8, ignored (legacy)"
-       last_table_id="uint8, default=same as table id">
-    <!-- One per event -->
-    <event event_id="uint16, required"
-           start_time="YYYY-MM-DD hh:mm:ss, required"
-           duration="hh:mm:ss, required"
-           running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
-           CA_mode="bool, default=false"
-           preferred_section="uint8, ignored (legacy)">
-      <_any in="_descriptors"/>
-    </event>
-  </EIT>
-
-  <!-- Time and Date Table -->
-  <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required"/>
-
-  <!-- Time Offset Table -->
-  <TOT UTC_time="YYYY-MM-DD hh:mm:ss, required">
-    <_any in="_descriptors"/>
-  </TOT>
-
-  <!-- DSM-CC Stream Descriptors Table -->
-  <DSMCC_stream_descriptors_table
-      version="uint5, default=0"
-      current="bool, default=true"
-      table_id_extension="uint16, default=0xFFFF">
-    <_any in="_descriptors"/>
-  </DSMCC_stream_descriptors_table>
-
-  <!-- IP/MAC Notification Table -->
-  <INT version="uint5, default=0"
-       current="bool, default=true"
-       action_type="uint8, default=0x01"
-       processing_order="uint8, default=0x00"
-       platform_id="uint24, required">
-    <!-- Plaform-level descriptors -->
-    <_any in="_descriptors"/>
-    <!-- One per device -->
-    <device>
-      <target>
+             CA_mode="bool, default=false"
+             preferred_section="uint8, ignored (legacy)">
         <_any in="_descriptors"/>
-      </target>
-      <operational>
+      </event>
+    </EIT>
+
+    <!-- Time and Date Table -->
+    <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required"/>
+
+    <!-- Time Offset Table -->
+    <TOT UTC_time="YYYY-MM-DD hh:mm:ss, required">
+      <_any in="_descriptors"/>
+    </TOT>
+
+    <!-- DSM-CC Stream Descriptors Table -->
+    <DSMCC_stream_descriptors_table
+        version="uint5, default=0"
+        current="bool, default=true"
+        table_id_extension="uint16, default=0xFFFF">
+      <_any in="_descriptors"/>
+    </DSMCC_stream_descriptors_table>
+
+    <!-- IP/MAC Notification Table -->
+    <INT version="uint5, default=0"
+         current="bool, default=true"
+         action_type="uint8, default=0x01"
+         processing_order="uint8, default=0x00"
+         platform_id="uint24, required">
+      <!-- Plaform-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per device -->
+      <device>
+        <target>
+          <_any in="_descriptors"/>
+        </target>
+        <operational>
+          <_any in="_descriptors"/>
+        </operational>
+      </device>
+    </INT>
+
+    <!-- Application Information Table -->
+    <AIT version="uint5, default=0"
+         current="bool, default=true"
+         test_application_flag="bool, default=true"
+         application_type="uint15, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per application -->
+      <application control_code="uint8, required">
+        <application_identifier organization_id="uint32, required" application_id="uint16, required"/>
         <_any in="_descriptors"/>
-      </operational>
-    </device>
-  </INT>
+      </application>
+    </AIT>
 
-  <!-- Application Information Table -->
-  <AIT version="uint5, default=0"
-       current="bool, default=true"
-       test_application_flag="bool, default=true"
-       application_type="uint15, required">
-    <!-- Common descriptors loop -->
-    <_any in="_descriptors"/>
-    <!-- One per application -->
-    <application control_code="uint8, required">
-      <application_identifier organization_id="uint32, required" application_id="uint16, required"/>
+    <!-- Discontinuity Information Table -->
+    <discontinuity_information_table transition="bool, required"/>
+
+    <!-- Selection Information Table -->
+    <selection_information_table version="uint5, default=0" current="bool, default=true">
+      <!-- Common descriptors loop, for transmission parameters -->
       <_any in="_descriptors"/>
-    </application>
-  </AIT>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               running_status="undefined|not-running|starting|pausing|running|off-air, required">
+        <_any in="_descriptors"/>
+      </service>
+    </selection_information_table>
 
-  <!-- Discontinuity Information Table -->
-  <discontinuity_information_table transition="bool, required"/>
-
-  <!-- Selection Information Table -->
-  <selection_information_table version="uint5, default=0" current="bool, default=true">
-    <!-- Common descriptors loop, for transmission parameters -->
-    <_any in="_descriptors"/>
-    <!-- One per service -->
-    <service service_id="uint16, required"
-             running_status="undefined|not-running|starting|pausing|running|off-air, required">
-      <_any in="_descriptors"/>
-    </service>
-  </selection_information_table>
-
-  <!-- Splice Information Table (ANSI/SCTE 35) -->
-  <splice_information_table
-      protocol_version="uint8, default=0"
-      pts_adjustment="uint33, default=0"
-      tier="uint12, default=0xFFF">
-    <!-- Splice commands, only one of them is allowed -->
-    <splice_null/>
-    <splice_schedule>
-      <!-- One per splice event -->
-      <splice_event
+    <!-- Splice Information Table (ANSI/SCTE 35) -->
+    <splice_information_table
+        protocol_version="uint8, default=0"
+        pts_adjustment="uint33, default=0"
+        tier="uint12, default=0xFFF">
+      <!-- Splice commands, only one of them is allowed -->
+      <splice_null/>
+      <splice_schedule>
+        <!-- One per splice event -->
+        <splice_event
+            splice_event_id="uint32, required"
+            splice_event_cancel="bool, default=false"
+            out_of_network="bool, required when splice_event_cancel is false"
+            utc_splice_time="uint32, required when splice_event_cancel is false and program_splice_flag is to be set"
+            unique_program_id="uint16, required when splice_event_cancel is false"
+            avail_num="uint8, default=0"
+            avails_expected="uint8, default=0">
+          <!-- Optional -->
+          <break_duration auto_return="bool, required" duration="uint33, required"/>
+          <!-- One per component when splice_event_cancel is false and utc_splice_time is not specified -->
+          <component component_tag="uint8, required" utc_splice_time="uint32, required"/>
+        </splice_event>
+      </splice_schedule>
+      <splice_insert
           splice_event_id="uint32, required"
           splice_event_cancel="bool, default=false"
           out_of_network="bool, required when splice_event_cancel is false"
-          utc_splice_time="uint32, required when splice_event_cancel is false and program_splice_flag is to be set"
+          splice_immediate="bool, default=false"
+          pts_time="uint33, required when splice_event_cancel is false and splice_immediate is false and program_splice_flag is to be set"
           unique_program_id="uint16, required when splice_event_cancel is false"
           avail_num="uint8, default=0"
           avails_expected="uint8, default=0">
         <!-- Optional -->
         <break_duration auto_return="bool, required" duration="uint33, required"/>
-        <!-- One per component when splice_event_cancel is false and utc_splice_time is not specified -->
-        <component component_tag="uint8, required" utc_splice_time="uint32, required"/>
-      </splice_event>
-    </splice_schedule>
-    <splice_insert
-        splice_event_id="uint32, required"
-        splice_event_cancel="bool, default=false"
-        out_of_network="bool, required when splice_event_cancel is false"
-        splice_immediate="bool, default=false"
-        pts_time="uint33, required when splice_event_cancel is false and splice_immediate is false and program_splice_flag is to be set"
-        unique_program_id="uint16, required when splice_event_cancel is false"
-        avail_num="uint8, default=0"
-        avails_expected="uint8, default=0">
-      <!-- Optional -->
-      <break_duration auto_return="bool, required" duration="uint33, required"/>
-      <!-- One per component when splice_event_cancel is false and pts_time is not specified -->
-      <component component_tag="uint8, required" pts_time="uint33, required when splice_immediate is false"/>
-    </splice_insert>
-    <time_signal pts_time="uint33, optional"/>
-    <bandwidth_reservation/>
-    <private_command identifier="uint32, required">
-      Hexadecimal digits.
-    </private_command>
-    <!-- Splice descriptors, depend on splice command -->
-    <_any in="_descriptors"/>
-  </splice_information_table>
-
-  <!-- ATSC Master Guide Table -->
-  <MGT version="uint5, default=0" protocol_version="uint8, default=0">
-    <!-- Common descriptors loop -->
-    <_any in="_descriptors"/>
-    <!-- One per table type -->
-    <table type="TVCT-current|TVCT-next|CVCT-current|CVCT-next|ETT|DCCSCT|EIT-0..EIT-127|ETT-0..ETT-127|RRT-1..RRT-255|DCCT-0DCCT-255|uint16, required"
-           PID="uint31, required"
-           version_number="uint5, required"
-           number_bytes="uint32, required">
+        <!-- One per component when splice_event_cancel is false and pts_time is not specified -->
+        <component component_tag="uint8, required" pts_time="uint33, required when splice_immediate is false"/>
+      </splice_insert>
+      <time_signal pts_time="uint33, optional"/>
+      <bandwidth_reservation/>
+      <private_command identifier="uint32, required">
+        Hexadecimal digits.
+      </private_command>
+      <!-- Splice descriptors, depend on splice command -->
       <_any in="_descriptors"/>
-    </table>
-  </MGT>
+    </splice_information_table>
 
-  <!-- ATSC Terrestrial Virtual Channel Table -->
-  <TVCT version="uint5, default=0"
+    <!-- ATSC Master Guide Table -->
+    <MGT version="uint5, default=0" protocol_version="uint8, default=0">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per table type -->
+      <table type="TVCT-current|TVCT-next|CVCT-current|CVCT-next|ETT|DCCSCT|EIT-0..EIT-127|ETT-0..ETT-127|RRT-1..RRT-255|DCCT-0DCCT-255|uint16, required"
+             PID="uint31, required"
+             version_number="uint5, required"
+             number_bytes="uint32, required">
+        <_any in="_descriptors"/>
+      </table>
+    </MGT>
+
+    <!-- ATSC Terrestrial Virtual Channel Table -->
+    <TVCT version="uint5, default=0"
+          current="bool, default=true"
+          protocol_version="uint8, default=0"
+          transport_stream_id="uint16, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per channel -->
+      <channel short_name="string, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"
+               modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
+               carrier_frequency="uint32, default=0"
+               channel_TSID="uint16, required"
+               program_number="uint16, required"
+               ETM_location="uint2, default=0"
+               access_controlled="bool, default=false"
+               hidden="bool, default=false"
+               hide_guide="bool, default=false"
+               service_type="analog|dtv|audio|data|software|uint6, default=dtv"
+               source_id="uint16, required">
+        <_any in="_descriptors"/>
+      </channel>
+    </TVCT>
+
+    <!-- ATSC Cable Virtual Channel Table -->
+    <CVCT version="uint5, default=0"
+          current="bool, default=true"
+          protocol_version="uint8, default=0"
+          transport_stream_id="uint16, required">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per channel -->
+      <channel short_name="string, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"
+               modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
+               carrier_frequency="uint32, default=0"
+               channel_TSID="uint16, required"
+               program_number="uint16, required"
+               ETM_location="uint2, default=0"
+               access_controlled="bool, default=false"
+               hidden="bool, default=false"
+               path_select="uint1, default=0"
+               out_of_band="bool, default=false"
+               hide_guide="bool, default=false"
+               service_type="analog|dtv|audio|data|software|uint6, default=dtv"
+               source_id="uint16, required">
+        <_any in="_descriptors"/>
+      </channel>
+    </CVCT>
+
+    <!-- ATSC System Time Table -->
+    <STT protocol_version="uint8, default=0"
+         system_time="uint32, required"
+         GPS_UTC_offset="uint8, required"
+         DS_status="bool, required"
+         DS_day_of_month="uint5, default=0"
+         DS_hour="uint8, default=0">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+    </STT>
+
+    <!-- Generic short table -->
+    <generic_short_table
+        table_id="uint8, required"
+        private="bool, default=true">
+
+      Generic table with binary payload of one short section,
+      to be used when a specific table is not yet implemented.
+      The body of this element shall contain an even number of
+      hexadecimal digits, the payload of the short section.
+
+      The private indicator shall be false on MPEG-defined sections
+      and preferably true on DVB-defined and user-defined sections.
+
+    </generic_short_table>
+
+    <!-- Generic long table -->
+    <generic_long_table
+        table_id="uint8, required"
+        table_id_ext="uint16, default=0xFFFF"
+        version="uint5, default=0"
         current="bool, default=true"
-        protocol_version="uint8, default=0"
-        transport_stream_id="uint16, required">
-    <!-- Common descriptors loop -->
-    <_any in="_descriptors"/>
-    <!-- One per channel -->
-    <channel short_name="string, required"
-             major_channel_number="uint10, required"
-             minor_channel_number="uint10, required"
-             modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
-             carrier_frequency="uint32, default=0"
-             channel_TSID="uint16, required"
-             program_number="uint16, required"
-             ETM_location="uint2, default=0"
-             access_controlled="bool, default=false"
-             hidden="bool, default=false"
-             hide_guide="bool, default=false"
-             service_type="analog|dtv|audio|data|software|uint6, default=dtv"
-             source_id="uint16, required">
-      <_any in="_descriptors"/>
-    </channel>
-  </TVCT>
+        private="bool, default=true">
 
-  <!-- ATSC Cable Virtual Channel Table -->
-  <CVCT version="uint5, default=0"
-        current="bool, default=true"
-        protocol_version="uint8, default=0"
-        transport_stream_id="uint16, required">
-    <!-- Common descriptors loop -->
-    <_any in="_descriptors"/>
-    <!-- One per channel -->
-    <channel short_name="string, required"
-             major_channel_number="uint10, required"
-             minor_channel_number="uint10, required"
-             modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
-             carrier_frequency="uint32, default=0"
-             channel_TSID="uint16, required"
-             program_number="uint16, required"
-             ETM_location="uint2, default=0"
-             access_controlled="bool, default=false"
-             hidden="bool, default=false"
-             path_select="uint1, default=0"
-             out_of_band="bool, default=false"
-             hide_guide="bool, default=false"
-             service_type="analog|dtv|audio|data|software|uint6, default=dtv"
-             source_id="uint16, required">
-      <_any in="_descriptors"/>
-    </channel>
-  </CVCT>
+      Generic table with binary payload of long sections,
+      to be used when a specific table is not yet implemented.
 
-  <!-- ATSC System Time Table -->
-  <STT protocol_version="uint8, default=0"
-       system_time="uint32, required"
-       GPS_UTC_offset="uint8, required"
-       DS_status="bool, required"
-       DS_day_of_month="uint5, default=0"
-       DS_hour="uint8, default=0">
-    <!-- Common descriptors loop -->
-    <_any in="_descriptors"/>
-  </STT>
+      The private indicator shall be false on MPEG-defined sections
+      and preferably true on DVB-defined and user-defined sections.
 
-  <!-- Generic short table -->
-  <generic_short_table
-      table_id="uint8, required"
-      private="bool, default=true">
+      <!-- One per section -->
+      <section>
+        The body of the section elements shall contain an even number of
+        hexadecimal digits, the payload of the long section. The CRC32
+        field is not part of this payload, it will be recomputed.
+      </section>
+    </generic_long_table>
 
-    Generic table with binary payload of one short section,
-    to be used when a specific table is not yet implemented.
-    The body of this element shall contain an even number of
-    hexadecimal digits, the payload of the short section.
-
-    The private indicator shall be false on MPEG-defined sections
-    and preferably true on DVB-defined and user-defined sections.
-
-  </generic_short_table>
-
-  <!-- Generic long table -->
-  <generic_long_table
-      table_id="uint8, required"
-      table_id_ext="uint16, default=0xFFFF"
-      version="uint5, default=0"
-      current="bool, default=true"
-      private="bool, default=true">
-
-    Generic table with binary payload of long sections,
-    to be used when a specific table is not yet implemented.
-
-    The private indicator shall be false on MPEG-defined sections
-    and preferably true on DVB-defined and user-defined sections.
-
-    <!-- One per section -->
-    <section>
-      The body of the section elements shall contain an even number of
-      hexadecimal digits, the payload of the long section. The CRC32
-      field is not part of this payload, it will be recomputed.
-    </section>
-  </generic_long_table>
+  </_tables>
 
   <!-- Definitions of descriptors -->
   <_descriptors>
