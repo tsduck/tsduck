@@ -1,6 +1,9 @@
 # Makefile for TSDuck sample extension.
 # The TSDuck development package must have been installed.
 
+# Default target is build all.
+default: all
+
 # TSDuck definitions.
 ifeq ($(shell uname -s),Darwin) # Mac
     SYSPREFIX := /usr/local
@@ -46,6 +49,9 @@ all: $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS)
 	@true
 clean:
 	rm -rf *.o *.so $(TOOLS)
+
+$(LIBEXT_SO): $(LIBOBJS)
+$(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)
 
 # Installation: all shared libraries and executables are installed in the system "bin".
 # This is typically where TSDuck is installed (required to find extensions and plugins).

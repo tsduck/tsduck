@@ -312,6 +312,16 @@ namespace ts {
             //! then from $PATH.
             //!
             Register(const UString& filename);
+
+            //!
+            //! Register an additional XML model file containing definitions for tables and descriptors.
+            //! This file will be merged with the main model.
+            //! @param [in] filename Name of the XML model file. This should be a simple file name,
+            //! without directory. This file will be searched in the same directory as the executable,
+            //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
+            //! then from $PATH.
+            //!
+            Register(const UChar* filename);
         };
 
     private:

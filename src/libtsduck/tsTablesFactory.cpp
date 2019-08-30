@@ -153,6 +153,11 @@ ts::TablesFactory::Register::Register(const UString& filename)
     TablesFactory::Instance()->_xmlModelFiles.push_back(filename);
 }
 
+ts::TablesFactory::Register::Register(const UChar* filename)
+{
+    TablesFactory::Instance()->_xmlModelFiles.push_back(UString(filename));
+}
+
 
 //----------------------------------------------------------------------------
 // Get registered items.
