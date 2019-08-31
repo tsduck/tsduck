@@ -303,16 +303,20 @@ namespace ts {
         }
 
         //!
+        //! This static method checks if a data area of at least 3 bytes can be the start of a long section.
+        //! @param [in] data Address of the data area.
+        //! @param [in] size Size in bytes of the data area.
+        //! @return True if the section is a long one.
+        //!
+        static bool StartLongSection(const uint8_t* data, size_t size);
+
+        //!
         //! Check if the section is a long one.
         //! @return True if the section is a long one.
         //!
         bool isLongSection() const
         {
-            if (_is_valid) {
-                return (((*_data)[1] & 0x80) != 0) && tableId() != TID_ST;
-            }
-
-            return false;
+            return _is_valid && StartLongSection(_data->data(), _data->size());
         }
 
         //!
@@ -321,7 +325,7 @@ namespace ts {
         //!
         bool isShortSection() const
         {
-            return _is_valid ? ((*_data)[1] & 0x80) == 0 : false;
+            return _is_valid && !isLongSection();
         }
 
         //!
@@ -330,7 +334,7 @@ namespace ts {
         //!
         bool isPrivateSection() const
         {
-            return _is_valid ? ((*_data)[1] & 0x40) != 0 : false;
+            return _is_valid && ((*_data)[1] & 0x40) != 0;
         }
 
         //!
@@ -357,7 +361,7 @@ namespace ts {
         //!
         bool isCurrent() const
         {
-            return isLongSection() ? ((*_data)[5] & 0x01) != 0 : false;
+            return isLongSection() && ((*_data)[5] & 0x01) != 0;
         }
 
         //!
@@ -366,7 +370,7 @@ namespace ts {
         //!
         bool isNext() const
         {
-            return isLongSection() ? ((*_data)[5] & 0x01) == 0 : false;
+            return isLongSection() && ((*_data)[5] & 0x01) == 0;
         }
 
         //!

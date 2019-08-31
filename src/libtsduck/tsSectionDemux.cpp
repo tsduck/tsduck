@@ -389,9 +389,8 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         bool section_ok = true;
         ETID etid(ts_start[0]);
-        uint16_t section_length = GetUInt16(ts_start + 1);
-        bool long_header = ((section_length & 0x8000) != 0) && etid.tid != TID_ST;
-        section_length = (section_length & 0x0FFF) + SHORT_SECTION_HEADER_SIZE;
+        const bool long_header = Section::StartLongSection(ts_start, ts_size);
+        uint16_t section_length = (GetUInt16(ts_start + 1) & 0x0FFF) + SHORT_SECTION_HEADER_SIZE;
 
         // Lose synchronization when invalid section length.
 

@@ -373,6 +373,19 @@ ts::Standards ts::Section::definingStandards() const
 
 
 //----------------------------------------------------------------------------
+// Check if a data area of at least 3 bytes can be the start of a long section.
+//----------------------------------------------------------------------------
+
+bool ts::Section::StartLongSection(const uint8_t* data, size_t size)
+{
+    // According to MPEG, a long section has bit section_syntax_indicator set to 1.
+    // However, the DVB spec is incompatible with MPEG for the Stuffing Table (ST).
+    // In a DVB-ST, the section is always a short one, regardless of the section_syntax_indicator.
+    return data != nullptr && size >= MIN_SHORT_SECTION_SIZE && (data[1] & 0x80) != 0 && data[0] != TID_ST;
+}
+
+
+//----------------------------------------------------------------------------
 // Check if the section has a "diversified" payload.
 //----------------------------------------------------------------------------
 
@@ -396,7 +409,7 @@ void ts::Section::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
     }
 }
 
-void ts::Section::setVersion (uint8_t version, bool recompute_crc)
+void ts::Section::setVersion(uint8_t version, bool recompute_crc)
 {
     if (isLongSection()) {
         (*_data)[5] = ((*_data)[5] & 0xC1) | uint8_t((version & 0x1F) << 1);
