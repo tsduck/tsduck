@@ -59,7 +59,7 @@ foo::FootPlugin::FootPlugin(ts::TSP* t) :
     option(u"id", 'i', UINT16);
     help(u"id", u"Modify the foo_id in the FOOT with the specified value.");
 
-    option(u"name", 'n', UINT16);
+    option(u"name", 'n', STRING);
     help(u"name", u"Modify the name in the FOOT with the specified value.");
 }
 
@@ -126,6 +126,7 @@ void foo::FootPlugin::modifyTable(ts::BinaryTable& table, bool& is_target, bool&
         reinsert = false;
         return;
     }
+    tsp->verbose(u"modifying a FOOT, PID 0x%X, foo_id: 0x%X", {table.sourcePID(), foot.foo_id});
 
     // Modify global values.
     if (_set_id) {

@@ -6,15 +6,15 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"foo_descriptor"  // XML name is <foo_descriptor>
 #define MY_DID foo::DID_FOO            // Descriptor id
 #define MY_STD ts::STD_NONE            // Not defined in any standard.
 
+// This is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
 TS_XML_DESCRIPTOR_FACTORY(foo::FooDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(foo::FooDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(foo::FooDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(foo::FooDescriptor, ts::EDID::Private(MY_DID, 0));
+TS_FACTORY_REGISTER(foo::FooDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, 0));
 
 
 //----------------------------------------------------------------------------

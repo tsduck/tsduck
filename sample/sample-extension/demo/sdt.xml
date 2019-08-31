@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <SDT transport_stream_id="0x0001" original_network_id="0x1000">
+    <service service_id="0x0001" running_status="running" CA_mode="true">
+      <service_descriptor service_type="0x01" service_provider_name="TSDuck" service_name="Foo Demo"/>
+    </service>
+  </SDT>
+</tsduck>

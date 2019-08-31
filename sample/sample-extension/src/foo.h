@@ -1,4 +1,4 @@
-// Base definitions for the sample TSDuck "foo" extention.
+// Base definitions for the sample TSDuck "foo" extension.
 
 #pragma once
 #include "tsPlatform.h"

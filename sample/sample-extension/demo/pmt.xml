@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PMT service_id="0x0001" PCR_PID="0x0101">
+
+    <CA_descriptor CA_system_id="0xF004" CA_PID="0x0103">
+      <private_data>
+        01 23 45 67 89
+      </private_data>
+    </CA_descriptor>
+
+    <component stream_type="0x1B" elementary_PID="0x0101"/>
+    <component stream_type="0x06" elementary_PID="0x0102">
+      <AC3_descriptor component_type="0x42"/>
+      <ISO_639_language_descriptor>
+        <language code="eng" audio_type="0x01"/>
+      </ISO_639_language_descriptor>
+      <foo_descriptor name="foolish-service"/>
+    </component>
+    <component stream_type="0x05" elementary_PID="0x0104">
+      <registration_descriptor format_identifier="0x464F4F54"/>
+    </component>
+
+  </PMT>
+</tsduck>
