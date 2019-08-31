@@ -308,7 +308,11 @@ namespace ts {
         //!
         bool isLongSection() const
         {
-            return _is_valid ? ((*_data)[1] & 0x80) != 0 : false;
+            if (_is_valid) {
+                return (((*_data)[1] & 0x80) != 0) && tableId() != TID_ST;
+            }
+
+            return false;
         }
 
         //!
