@@ -242,7 +242,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& display, 
         for (bool valid = true; valid && numEntries > 0 && size >= 2; numEntries--) {
 
             strm << margin << UString::Format(u"- Preselection id: %d", {data[0] >> 3}) << std::endl
-                 << margin << "  Audio rendering indication: " << DVBNameFromSection(u"AudioPreselectionRendering", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl
+                 << margin << "  Audio rendering indication: " << NameFromSection(u"AudioPreselectionRendering", data[0] & 0x07, names::DECIMAL_FIRST) << std::endl
                  << margin << "  Audio description: " << UString::YesNo((data[1] & 0x80) != 0) << std::endl
                  << margin << "  Spoken subtitles: " << UString::YesNo((data[1] & 0x40) != 0) << std::endl
                  << margin << "  Dialogue enhancement: " << UString::YesNo((data[1] & 0x20) != 0) << std::endl

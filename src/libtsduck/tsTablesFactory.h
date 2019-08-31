@@ -186,8 +186,13 @@ namespace ts {
         void getRegisteredTablesModels(UStringList& names) const;
 
         //!
-        //! A class to register factories and display functions.
+        //! Get the list of all registered additional names files.
+        //! @param [out] names List of all registered additional names files.
         //!
+        void getRegisteredNamesFiles(UStringList& names) const;
+
+        //!
+        //! A class to register factories and display functions.
         //! The registration is performed using constructors.
         //! Thus, it is possible to perform a registration in the declaration of a static object.
         //!
@@ -302,7 +307,17 @@ namespace ts {
             //! @see TS_FACTORY_REGISTER
             //!
             Register(DisplayCADescriptorFunction func, uint16_t minCAS, uint16_t maxCAS);
+        };
 
+        //!
+        //! A class to register additional XML model files to merge with the main model for tables and descriptors.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in the declaration of a static object.
+        //!
+        class TSDUCKDLL RegisterXML
+        {
+            TS_NOBUILD_NOCOPY(RegisterXML);
+        public:
             //!
             //! Register an additional XML model file containing definitions for tables and descriptors.
             //! This file will be merged with the main model.
@@ -310,18 +325,31 @@ namespace ts {
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
+            //! @see TS_FACTORY_REGISTER_XML
             //!
-            Register(const UString& filename);
+            RegisterXML(const UString& filename);
+        };
 
+
+        //!
+        //! A class to register additional names files to merge with the names file.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in the declaration of a static object.
+        //!
+        class TSDUCKDLL RegisterNames
+        {
+            TS_NOBUILD_NOCOPY(RegisterNames);
+        public:
             //!
-            //! Register an additional XML model file containing definitions for tables and descriptors.
-            //! This file will be merged with the main model.
-            //! @param [in] filename Name of the XML model file. This should be a simple file name,
+            //! Register an additional names file.
+            //! This file will be merged with the main names files.
+            //! @param [in] filename Name of the names file. This should be a simple file name,
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
+            //! @see TS_FACTORY_REGISTER_NAMES
             //!
-            Register(const UChar* filename);
+            RegisterNames(const UString& filename);
         };
 
     private:
@@ -335,7 +363,8 @@ namespace ts {
         std::map<uint32_t, LogSectionFunction>           _sectionLogs;               // Key includes TID and CAS.
         std::map<EDID, DisplayDescriptorFunction>        _descriptorDisplays;
         std::map<uint16_t, DisplayCADescriptorFunction>  _casIdDescriptorDisplays;   // Key is CAS system id.
-        UStringList                                      _xmlModelFiles;             // Additional XML model files for tables
+        UStringList                                      _xmlModelFiles;             // Additional XML model files for tables.
+        UStringList                                      _namesFiles;                // Additional names files.
 
         // Build a key in _sectionDisplays and _sectionLogs.
         static uint32_t SectionDisplayIndex(TID id, uint16_t cas);
@@ -368,6 +397,20 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a table or descriptor.
 //!
 #define TS_FACTORY_REGISTER static ts::TablesFactory::Register TS_UNIQUE_NAME(_Registrar)
+
+//!
+//! @hideinitializer
+//! Registration of an extension XML model file inside the ts::TablesFactory singleton.
+//! This macro is typically used in the .cpp file of a table or descriptor.
+//!
+#define TS_FACTORY_REGISTER_XML static ts::TablesFactory::RegisterXML TS_UNIQUE_NAME(_Registrar)
+
+//!
+//! @hideinitializer
+//! Registration of an extension names file inside the ts::TablesFactory singleton.
+//! This macro is typically used in the .cpp file of a table or descriptor.
+//!
+#define TS_FACTORY_REGISTER_NAMES static ts::TablesFactory::RegisterNames TS_UNIQUE_NAME(_Registrar)
 
 //!
 //! @hideinitializer

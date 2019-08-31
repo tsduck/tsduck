@@ -148,7 +148,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
             if ((flags & 0x80) && size >= 1) { // AAC_type
                 uint8_t type = data[0];
                 data++; size--;
-                strm << margin << "AAC type: " << DVBNameFromSection(u"ComponentType", 0x6F00 | type, names::HEXA_FIRST, 8) << std::endl;
+                strm << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | type, names::HEXA_FIRST, 8) << std::endl;
             }
             if (size > 0) {
                 strm << margin << "Additional information:" << std::endl

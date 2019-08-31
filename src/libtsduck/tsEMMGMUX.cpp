@@ -179,7 +179,7 @@ void ts::emmgmux::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
 
 ts::UString ts::emmgmux::Errors::Name(uint16_t status)
 {
-    return DVBNameFromSection(u"EmmgPdgMuxErrors", status, names::HEXA_FIRST);
+    return NameFromSection(u"EmmgPdgMuxErrors", status, names::HEXA_FIRST);
 }
 
 

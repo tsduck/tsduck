@@ -106,7 +106,7 @@ void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
     if (size >= 2) {
         const uint8_t mode = GetUInt8(data);
         data += 2; size -= 2;
-        strm << margin << UString::Format(u"Stream mode: %s", {DVBNameFromSection(u"DSMCCStreamMode", mode, names::HEXA_FIRST)}) << std::endl;
+        strm << margin << UString::Format(u"Stream mode: %s", {NameFromSection(u"DSMCCStreamMode", mode, names::HEXA_FIRST)}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

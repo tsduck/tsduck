@@ -133,7 +133,7 @@ void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         strm << margin
              << UString::Format(u"Multiple frame rate: %s, frame rate: %s",
                                 {UString::TrueFalse((data[0] & 0x80) != 0),
-                                 DVBNameFromSection(u"FrameRate", (data[0] >> 3) & 0x0F, names::FIRST)})
+                                 NameFromSection(u"FrameRate", (data[0] >> 3) & 0x0F, names::FIRST)})
              << std::endl
              << margin
              << UString::Format(u"MPEG-1 only: %s, constained parameter: %s, still picture: %s",
@@ -144,7 +144,7 @@ void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         data++; size--;
         if (!mp1only && size >= 2) {
             strm << margin << UString::Format(u"Profile and level: 0x%X (%d)", {data[0], data[0]}) << std::endl
-                 << margin << "Chroma format: " << DVBNameFromSection(u"ChromaFormat", (data[1] >> 6) & 0x03, names::FIRST) << std::endl
+                 << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", (data[1] >> 6) & 0x03, names::FIRST) << std::endl
                  << margin << "Frame rate extension: " << UString::TrueFalse((data[1] & 0x20) != 0) << std::endl;
             data += 2; size -= 2;
         }

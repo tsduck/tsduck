@@ -108,7 +108,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         strm << margin << UString::Format(u"Ancillary data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
-                strm << margin << "  " << DVBNameFromSection(u"AncillaryDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
+                strm << margin << "  " << NameFromSection(u"AncillaryDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
             }
         }
     }

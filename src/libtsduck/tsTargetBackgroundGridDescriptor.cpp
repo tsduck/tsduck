@@ -113,7 +113,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& displa
              << UString::Format(u"Size: %dx%d, aspect ratio: %s",
                                 {(x >> 18) & 0x3FFF,
                                  (x >> 4) & 0x3FFF,
-                                 DVBNameFromSection(u"AspectRatio", x & 0x0F, names::DECIMAL_FIRST)})
+                                 NameFromSection(u"AspectRatio", x & 0x0F, names::DECIMAL_FIRST)})
              << std::endl;
         data += 4; size -= 4;
     }

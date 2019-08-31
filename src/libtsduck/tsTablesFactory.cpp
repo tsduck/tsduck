@@ -53,7 +53,8 @@ ts::TablesFactory::TablesFactory() :
     _sectionLogs(),
     _descriptorDisplays(),
     _casIdDescriptorDisplays(),
-    _xmlModelFiles()
+    _xmlModelFiles(),
+    _namesFiles()
 {
 }
 
@@ -148,14 +149,14 @@ ts::TablesFactory::Register::Register(DisplayCADescriptorFunction func, uint16_t
     } while (minCAS++ < maxCAS);
 }
 
-ts::TablesFactory::Register::Register(const UString& filename)
+ts::TablesFactory::RegisterXML::RegisterXML(const UString& filename)
 {
     TablesFactory::Instance()->_xmlModelFiles.push_back(filename);
 }
 
-ts::TablesFactory::Register::Register(const UChar* filename)
+ts::TablesFactory::RegisterNames::RegisterNames(const UString& filename)
 {
-    TablesFactory::Instance()->_xmlModelFiles.push_back(UString(filename));
+    TablesFactory::Instance()->_namesFiles.push_back(filename);
 }
 
 
@@ -344,4 +345,9 @@ void ts::TablesFactory::getRegisteredDescriptorNames(UStringList& names) const
 void ts::TablesFactory::getRegisteredTablesModels(UStringList& names) const
 {
     names = _xmlModelFiles;
+}
+
+void ts::TablesFactory::getRegisteredNamesFiles(UStringList &names) const
+{
+    names = _namesFiles;
 }

@@ -147,12 +147,12 @@ void NamesTest::afterTest()
 
 void NamesTest::testConfigFile()
 {
-    debug() << "NamesTest: DVB configuration file: " << ts::NamesDVB::Instance()->configurationFile() << std::endl
+    debug() << "NamesTest: DVB configuration file: " << ts::NamesMain::Instance()->configurationFile() << std::endl
                  << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
 
-    TSUNIT_ASSERT(!ts::NamesDVB::Instance()->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(ts::NamesDVB::Instance()->configurationFile()));
-    TSUNIT_EQUAL(0, ts::NamesDVB::Instance()->errorCount());
+    TSUNIT_ASSERT(!ts::NamesMain::Instance()->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(ts::NamesMain::Instance()->configurationFile()));
+    TSUNIT_EQUAL(0, ts::NamesMain::Instance()->errorCount());
 
     TSUNIT_ASSERT(!ts::NamesOUI::Instance()->configurationFile().empty());
     TSUNIT_ASSERT(ts::FileExists(ts::NamesOUI::Instance()->configurationFile()));

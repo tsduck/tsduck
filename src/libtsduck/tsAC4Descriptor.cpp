@@ -167,7 +167,7 @@ void ts::AC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
             data++; size--;
             strm << margin
                  << UString::Format(u"Dialog enhancement enabled: %d, channel mode: %s",
-                                    {(type >> 7) & 0x01, DVBNameFromSection(u"AC4ChannelMode", (type >> 5) & 0x03, names::FIRST)})
+                                    {(type >> 7) & 0x01, NameFromSection(u"AC4ChannelMode", (type >> 5) & 0x03, names::FIRST)})
                  << std::endl;
         }
         if ((flags & 0x40) != 0 && size >= 1) {

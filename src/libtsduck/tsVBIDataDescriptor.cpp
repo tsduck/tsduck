@@ -115,7 +115,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         if (length > size) {
             length = size;
         }
-        strm << margin << "Data service id: " << DVBNameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
+        strm << margin << "Data service id: " << NameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
         if (!EntryHasReservedBytes(data_id)) {
             while (length > 0) {
                 const uint8_t field_parity = (data[0] >> 5) & 0x01;

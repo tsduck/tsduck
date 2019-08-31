@@ -318,7 +318,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& display, 
 
     if (size >= 3) {
         const uint16_t proto = GetUInt16(data);
-        strm << margin << "Protocol id: " << DVBNameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl
+        strm << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl
              << margin << UString::Format(u"Transport protocol label: 0x%X (%d)", {data[2], data[2]}) << std::endl;
         data += 3; size -= 3;
 

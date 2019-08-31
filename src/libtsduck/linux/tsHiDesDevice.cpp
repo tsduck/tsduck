@@ -177,7 +177,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 
     // HiDes status can be a negative value. Zero means no error.
     if (driver_status != 0) {
-        msg = DVBNameFromSection(u"HiDesError", std::abs(driver_status), names::HEXA_FIRST);
+        msg = NameFromSection(u"HiDesError", std::abs(driver_status), names::HEXA_FIRST);
     }
 
     // In case errno was also set.
