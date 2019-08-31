@@ -94,6 +94,28 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
 
 
 //----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::AbstractTablePlugin::getOptions()
+{
+    _incr_version = present(u"increment-version");
+    _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
+    _bitrate = intValue<BitRate>(u"bitrate", _default_bitrate);
+    _inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
+    _set_version = present(u"new-version");
+    _new_version = intValue<uint8_t>(u"new-version", 0);
+
+    if (present(u"create") && present(u"create-after")) {
+        tsp->error(u"options --create and --create-after are mutually exclusive");
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Set a new PID to process.
 //----------------------------------------------------------------------------
 
@@ -116,19 +138,6 @@ void ts::AbstractTablePlugin::setPID(PID pid)
 
 bool ts::AbstractTablePlugin::start()
 {
-    // Get option values
-    _incr_version = present(u"increment-version");
-    _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
-    _bitrate = intValue<BitRate>(u"bitrate", _default_bitrate);
-    _inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
-    _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t>(u"new-version", 0);
-
-    if (present(u"create") && present(u"create-after")) {
-        tsp->error(u"options --create and --create-after are mutually exclusive");
-        return false;
-    }
-
     // Initialize the demux and packetizer
     _demux.reset();
     _demux.addPID(_pid);

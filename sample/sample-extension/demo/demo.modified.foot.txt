@@ -1,0 +1,12 @@
+
+* FOOT, TID 240 (0xF0), PID 260 (0x0104)
+  Version: 0, sections: 1, total size: 66 bytes
+  - Section 0:
+    Foo id: 0x0008 (8), name: "modified-name"
+    - Descriptor 0: Foo (0xE8, 232), 18 bytes
+      Name: "foolish-descriptor"
+    - Descriptor 1: Extension Descriptor (0x7F, 127), 16 bytes
+      Extended descriptor: Message (0x08, 8)
+      Message id: 32, language: eng
+      Message: "The message"
+

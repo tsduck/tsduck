@@ -7,7 +7,7 @@
     <FOOT version="uint5, default=0"
           current="bool, default=true"
           foo_id="uint16, required"
-          name="string, default=''">
+          name="string, optional">
       <_any in="_descriptors"/>
     </FOOT>
   </_tables>
