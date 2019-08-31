@@ -101,7 +101,7 @@ void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& display
     const std::string margin(indent, ' ');
 
     if (size >= 1) {
-        strm << margin << "Alignment type: " << DVBNameFromSection(u"DataStreamAlignment", data[0], names::BOTH_FIRST) << std::endl;
+        strm << margin << "Alignment type: " << NameFromSection(u"DataStreamAlignment", data[0], names::BOTH_FIRST) << std::endl;
         data++; size--;
     }
 

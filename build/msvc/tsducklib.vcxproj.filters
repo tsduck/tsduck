@@ -37,7 +37,7 @@
     </Xml>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\libtsduck\tsduck.dvb.names">
+    <None Include="..\..\src\libtsduck\tsduck.names">
       <Filter>Configuration Files</Filter>
     </None>
     <None Include="..\..\src\libtsduck\tsduck.oui.names">

@@ -108,7 +108,7 @@ void ts::AdaptationFieldDataDescriptor::DisplayDescriptor(TablesDisplay& display
         strm << margin << UString::Format(u"Adaptation field data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
-                strm << margin << "  " << DVBNameFromSection(u"AdaptationFieldDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
+                strm << margin << "  " << NameFromSection(u"AdaptationFieldDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
             }
         }
     }

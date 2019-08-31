@@ -18,7 +18,7 @@ linux {
 }
 
 DISTFILES += \
-    ../../../src/libtsduck/tsduck.dvb.names \
+    ../../../src/libtsduck/tsduck.names \
     ../../../src/libtsduck/tsduck.oui.names \
     ../../../src/libtsduck/tsduck.channels.model.xml \
     ../../../src/libtsduck/tsduck.tables.model.xml \

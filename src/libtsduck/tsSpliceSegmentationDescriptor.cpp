@@ -319,14 +319,14 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& display,
         ok = size >= 2 && size >= size_t(5 + data[1]);
         if (ok) {
             const size_t upid_size = data[1];
-            strm << margin << UString::Format(u"Segmentation upid type: %s, %d bytes", {DVBNameFromSection(u"SpliceSegmentationUpIdType", data[0], names::HEXA_FIRST), upid_size}) << std::endl;
+            strm << margin << UString::Format(u"Segmentation upid type: %s, %d bytes", {NameFromSection(u"SpliceSegmentationUpIdType", data[0], names::HEXA_FIRST), upid_size}) << std::endl;
             if (upid_size > 0) {
                 strm << UString::Dump(data + 2, upid_size, UString::BPL, indent + 2, 16);
             }
             data += 2 + upid_size; size -= 2 + upid_size;
 
             type_id = data[0];
-            strm << margin << UString::Format(u"Segmentation type id: %s", {DVBNameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl
+            strm << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl
                  << margin << UString::Format(u"Segment number: %d, expected segments: %d", {data[1], data[2]}) << std::endl;
             data += 3; size -= 3;
         }

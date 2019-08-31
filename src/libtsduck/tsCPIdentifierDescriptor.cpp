@@ -148,7 +148,7 @@ void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
     while (size >= 2) {
         const uint16_t id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << "CP System Id: " << DVBNameFromSection(u"CPSystemId", id, names::FIRST) << std::endl;
+        strm << margin << "CP System Id: " << NameFromSection(u"CPSystemId", id, names::FIRST) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

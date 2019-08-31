@@ -464,7 +464,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& display, const ts
     }
     else {
         // Unencrypted packet, can display everything.
-        strm << margin << UString::Format(u"Command type: %s, size: %d bytes", {DVBNameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST), cmd_length}) << std::endl;
+        strm << margin << UString::Format(u"Command type: %s, size: %d bytes", {NameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST), cmd_length}) << std::endl;
 
         // Display the command body. Format some commands, simply dump others.
         if (cmd_length > size) {

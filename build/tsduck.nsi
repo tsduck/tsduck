@@ -142,14 +142,15 @@ Section "Tools & Plugins" SectionTools
     !else
         File "${BinDir}\ts*.dll"
     !endif
-    File "${RootDir}\src\libtsduck\tsduck.*.xml"
-    File "${RootDir}\src\libtsduck\tsduck.*.names"
+    File "${RootDir}\src\libtsduck\tsduck*.xml"
+    File "${RootDir}\src\libtsduck\tsduck*.names"
 
     ; Delete obsolete files from previous versions.
     Delete "$INSTDIR\bin\tsgentab.exe"
     Delete "$INSTDIR\bin\tsgentab*.dll"
     Delete "$INSTDIR\bin\tsduck.xml"
     Delete "$INSTDIR\bin\tsduck.channels.xml"
+    Delete "$INSTDIR\bin\tsduck.dvb.names"
 
 SectionEnd
 

@@ -174,7 +174,7 @@ void ts::ecmgscs::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
 
 ts::UString ts::ecmgscs::Errors::Name(uint16_t status)
 {
-    return DVBNameFromSection(u"EcmgScsErrors", status, names::HEXA_FIRST);
+    return NameFromSection(u"EcmgScsErrors", status, names::HEXA_FIRST);
 }
 
 

@@ -842,7 +842,7 @@ ts::UString ts::SpliceInjectPlugin::SpliceCommand::toString() const
     }
     else {
         // Command name.
-        UString name(DVBNameFromSection(u"SpliceCommandType", sit.splice_command_type));
+        UString name(NameFromSection(u"SpliceCommandType", sit.splice_command_type));
         if (sit.splice_command_type == SPLICE_INSERT) {
             name.append(sit.splice_insert.splice_out ? u" out" : u" in");
         }

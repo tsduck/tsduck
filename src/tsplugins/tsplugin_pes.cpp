@@ -534,7 +534,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
 
     // Now display the SEI.
     std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
-    out << UString::Format(u"* PID 0x%X, SEI type %s", {pkt.getSourcePID(), DVBNameFromSection(u"AVCSEIType", sei_type, names::FIRST)})
+    out << UString::Format(u"* PID 0x%X, SEI type %s", {pkt.getSourcePID(), NameFromSection(u"AVCSEIType", sei_type, names::FIRST)})
         << std::endl
         << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size})
         << std::endl;
