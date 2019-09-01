@@ -44,10 +44,13 @@ TOOLS := $(filter-out tsplugin_% tslibext_% $(HEADERS),$(SOURCES))
 LIBSOURCES := $(filter-out $(TOOLS) $(PLUGINS_SRC),$(SOURCES))
 LIBOBJS    := $(addsuffix .o,$(LIBSOURCES))
 
+# Configuration files.
+CONFIGS := $(wildcard *.xml *.names)
+
 # Main target: build all.
 all: $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS)
 	@true
-clean:
+clean distclean:
 	rm -rf *.o *.so $(TOOLS)
 
 $(LIBEXT_SO): $(LIBOBJS)
@@ -58,10 +61,4 @@ $(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)
 install: all
 	install -d -m 755 $(DESTDIR)$(SYSPREFIX)/bin
 	install -m 755 $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS) $(DESTDIR)$(SYSPREFIX)/bin
-
-# Display make variables for debug purposes.
-listvars:
-	@true
-	$(foreach v, \
-	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
-	  $(info $(v) = "$($(v))"))
+	install -m 644 $(CONFIGS) $(DESTDIR)$(SYSPREFIX)/bin
