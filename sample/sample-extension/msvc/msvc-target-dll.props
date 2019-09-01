@@ -16,6 +16,13 @@
     <ClCompile>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>TS_WINVER_FILETYPE=VFT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ResourceCompile Include="foo.rc" />
+  </ItemGroup>
 
 </Project>
