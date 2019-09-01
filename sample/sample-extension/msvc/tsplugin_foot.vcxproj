@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+
+  <ItemGroup>
+    <ClCompile Include="..\src\tsplugin_foot.cpp" />
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4CFDE490-D446-4CC5-84BB-CD6CC4AF4391}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsplugin_foot</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-use-foodll.props" />
+    <Import Project="msvc-target-dll.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+
+</Project>
