@@ -34,5 +34,4 @@ namespace foo {
         CASID_FOO_MIN = 0xF001,  // Minimum CAS Id value for FooCAS.
         CASID_FOO_MAX = 0xF008,  // Maximum CAS Id value for FooCAS.
     };
-
 }

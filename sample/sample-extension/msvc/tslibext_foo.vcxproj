@@ -11,6 +11,7 @@
     <ClInclude Include="..\src\fooCAS.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\tslibext_foo.cpp" />
     <ClCompile Include="..\src\fooDescriptor.cpp" />
     <ClCompile Include="..\src\fooFilter.cpp" />
     <ClCompile Include="..\src\fooTable.cpp" />
