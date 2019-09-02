@@ -1,0 +1,11 @@
+#!/bin/bash
+# TSDuck sample Foo extension post-installation script on Ubuntu and Debian systems.
+
+if [[ "$1" = "configure" ]]; then
+    # Fix file permissions and ownership.
+    chown root:root {{EXECS}} {{SHLIBS}} {{CONFIGS}}
+    chmod 0755 2>/dev/null {{EXECS}}
+    chmod 0644 2>/dev/null {{SHLIBS}} {{CONFIGS}}
+fi
+
+exit 0
