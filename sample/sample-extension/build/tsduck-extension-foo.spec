@@ -42,4 +42,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/tslibext_foo.so
 %{_bindir}/tslibext_foo.xml
 %{_bindir}/tslibext_foo.names
-%doc doc/foo.pdf
+%doc doc/tsduck-extension-foo.pdf

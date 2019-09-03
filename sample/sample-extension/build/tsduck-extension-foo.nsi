@@ -135,11 +135,11 @@ Section "Install"
     ; Documentation
     CreateDirectory "$INSTDIR\doc"
     SetOutPath "$INSTDIR\doc"
-    File "${DocDir}\foo.pdf"
+    File "${DocDir}\tsduck-extension-foo.pdf"
 
     ; Create shortcuts in start menu (documentation only, same as TSDuck).
     CreateDirectory "$SMPROGRAMS\TSDuck"
-    CreateShortCut "$SMPROGRAMS\TSDuck\${DocLinkName}.lnk" "$INSTDIR\doc\foo.pdf"
+    CreateShortCut "$SMPROGRAMS\TSDuck\${DocLinkName}.lnk" "$INSTDIR\doc\tsduck-extension-foo.pdf"
 
     ; Store installation folder in registry.
     WriteRegStr HKLM "${ProductKey}" "InstallDir" $INSTDIR
@@ -149,6 +149,7 @@ Section "Install"
 
     ; Declare uninstaller in "Add/Remove Software" control panel
     WriteRegStr HKLM "${UninstallKey}" "DisplayName" "${FullName}"
+    WriteRegStr HKLM "${UninstallKey}" "Publisher" "${AuthorName}"
     WriteRegStr HKLM "${UninstallKey}" "DisplayVersion" "${tsduckVersion}"
     WriteRegStr HKLM "${UninstallKey}" "DisplayIcon" "$INSTDIR\${ShortName}-Uninstall.exe"
     WriteRegStr HKLM "${UninstallKey}" "UninstallString" "$INSTDIR\${ShortName}-Uninstall.exe"
@@ -173,7 +174,7 @@ Section "Uninstall"
     Delete "$0\bin\tslibext_foo.dll"
     Delete "$0\bin\tslibext_foo.xml"
     Delete "$0\bin\tslibext_foo.names"
-    Delete "$0\doc\foo.pdf"
+    Delete "$0\doc\tsduck-extension-foo.pdf"
     Delete "$0\${ShortName}-Uninstall.exe"
 
     ; Delete directories which are not empty.
