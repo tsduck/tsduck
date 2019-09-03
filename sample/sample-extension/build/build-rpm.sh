@@ -7,7 +7,7 @@ INSTALLERDIR="$ROOTDIR/installers"
 RPMBUILDROOT="$HOME/rpmbuild"
 
 NAME=tsduck-extension-foo
-SPECFILE="$BUILDDIR/foo.spec"
+SPECFILE="$BUILDDIR/tsduck-extension-foo.spec"
 VERSION="$(tsversion)"
 MAJOR=$(sed <<<$VERSION -e 's/-.*//')
 COMMIT=$(sed <<<$VERSION -e 's/.*-//')

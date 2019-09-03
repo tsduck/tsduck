@@ -26,11 +26,11 @@ CONFIGS=$(cd "$TMPDIR"; find . \( -name '*.xml' -o -name '*.names' \) -printf ' 
 mkdir "$TMPDIR/DEBIAN"
 sed -e "s|{{VERSION}}|$VERSION|g" \
     -e "s|{{ARCH}}|$ARCH|g" \
-    "$BUILDDIR/foo.control" >"$TMPDIR/DEBIAN/control"
+    "$BUILDDIR/tsduck-extension-foo.control" >"$TMPDIR/DEBIAN/control"
 sed -e "s|{{EXECS}}|$EXECS|g" \
     -e "s|{{SHLIBS}}|$SHLIBS|g" \
     -e "s|{{CONFIGS}}|$CONFIGS|g" \
-    "$BUILDDIR/foo.postinst" >"$TMPDIR/DEBIAN/postinst"
+    "$BUILDDIR/tsduck-extension-foo.postinst" >"$TMPDIR/DEBIAN/postinst"
 chmod a+x "$TMPDIR/DEBIAN/postinst"
 dpkg --build "$TMPDIR" "$INSTALLERDIR"
 rm -rf "$TMPDIR"
