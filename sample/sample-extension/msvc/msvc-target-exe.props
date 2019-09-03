@@ -25,7 +25,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ResourceCompile Include="foo.rc" />
+    <ResourceCompile Include="tsduck-extension-foo.rc" />
   </ItemGroup>
 
 </Project>

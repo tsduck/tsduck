@@ -4,7 +4,7 @@ param([switch]$NoPause = $false)
 
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $ProjDir = (Join-Path $RootDir "msvc")
-$SolutionFileName = (Join-Path $ProjDir "foo.sln")
+$SolutionFileName = (Join-Path $ProjDir "tsduck-extension-foo.sln")
 
 # Lower process priority so that the build does not eat up all CPU.
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"

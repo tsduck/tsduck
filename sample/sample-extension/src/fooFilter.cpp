@@ -57,14 +57,19 @@ bool foo::FooFilter::loadFilterOptions(ts::DuckContext& duck, ts::Args& args, ts
 
 bool foo::FooFilter::filterSection(ts::DuckContext& duck, const ts::Section& section, uint16_t cas, ts::PIDSet& more_pids)
 {
-    const ts::TID tid = section.tableId();
-
-    // A 'foo_id' can be present in a FOOT or in an ECM or EMM coming from FooCAS.
-    const bool isFooCAS = cas >= CASID_FOO_MIN && cas <= CASID_FOO_MAX;
-    const bool isECMM = tid >= ts::TID_CAS_FIRST && tid <= ts::TID_CAS_LAST;
-    if (tid != TID_FOOT && (!isECMM || !isFooCAS)) {
-        // We do not care about those sections, let other filters decide.
+    // If we have no filtering criteria set, then let other filters decide.
+    if (_ids.empty()) {
         return true;
+    }
+
+    // At this point, we must have a matching 'foo_id' in the section.
+    // A 'foo_id' can be present in a FOOT or in an ECM or EMM coming from FooCAS.
+    const ts::TID tid = section.tableId();
+    const bool isECMM = tid >= ts::TID_CAS_FIRST && tid <= ts::TID_CAS_LAST;
+    const bool isFooCAS = cas >= CASID_FOO_MIN && cas <= CASID_FOO_MAX;
+    if (tid != TID_FOOT && (!isECMM || !isFooCAS)) {
+        // There is no 'foo_id' at all in those sections.
+        return false;
     }
 
     // Get the foo_id value.
@@ -85,6 +90,6 @@ bool foo::FooFilter::filterSection(ts::DuckContext& duck, const ts::Section& sec
     // Is this a selected foo_id?
     const bool id_set = _ids.find(foo_id) != _ids.end();
 
-    // The section may be displayed if either no foo_id was specified or the value matches.
-    return _ids.empty() || (id_set && !_negate_id) || (!id_set && _negate_id);
+    // The section may be displayed if the value matches (or the opposite with --negate-foo-id).
+    return (id_set && !_negate_id) || (!id_set && _negate_id);
 }

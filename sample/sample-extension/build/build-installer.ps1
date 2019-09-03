@@ -6,7 +6,7 @@ $RootDir = (Split-Path -Parent $PSScriptRoot)
 $MsvcDir = (Join-Path $RootDir "msvc")
 $SrcDir = (Join-Path $RootDir "src")
 $InstallerDir = (Join-Path $RootDir "installers")
-$Script = (Join-Path $PSScriptRoot "foo.nsi")
+$Script = (Join-Path $PSScriptRoot "tsduck-extension-foo.nsi")
 
 # Lower process priority so that the build does not eat up all CPU.
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
