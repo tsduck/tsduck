@@ -1,4 +1,4 @@
-# Makefile for TSDuck sample extension.
+# Makefile for TSDuck extension.
 # The TSDuck development package must have been installed.
 
 # Default target is build all.
@@ -61,4 +61,4 @@ $(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)
 install: all
 	install -d -m 755 $(DESTDIR)$(SYSPREFIX)/bin
 	install -m 755 $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS) $(DESTDIR)$(SYSPREFIX)/bin
-	install -m 644 $(CONFIGS) $(DESTDIR)$(SYSPREFIX)/bin
+	$(if $(CONFIGS),install -m 644 $(CONFIGS) $(DESTDIR)$(SYSPREFIX)/bin,@true)
