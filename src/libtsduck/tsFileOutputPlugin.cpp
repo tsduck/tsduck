@@ -37,6 +37,8 @@ TSDUCK_SOURCE;
 
 ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
+    _name(),
+    _flags(TSFileOutput::NONE),
     _file()
 {
     option(u"", 0, STRING, 0, 1);
@@ -54,9 +56,22 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
 // Output plugin methods
 //----------------------------------------------------------------------------
 
+bool ts::FileOutputPlugin::getOptions()
+{
+    getValue(_name);
+    _flags = TSFileOutput::SHARE;
+    if (present(u"append")) {
+        _flags |= TSFileOutput::APPEND;
+    }
+    if (present(u"keep")) {
+        _flags |= TSFileOutput::KEEP;
+    }
+    return true;
+}
+
 bool ts::FileOutputPlugin::start()
 {
-    return _file.open(value(u""), present(u"append"), present(u"keep"), *tsp);
+    return _file.open(_name, _flags, *tsp);
 }
 
 bool ts::FileOutputPlugin::stop()

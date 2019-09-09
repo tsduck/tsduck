@@ -58,10 +58,10 @@ ts::TSFileOutputResync::~TSFileOutputResync()
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::open(const UString& filename, bool append, bool keep, Report& report)
+bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Report& report)
 {
     // Invoke superclass for actual file opening.
-    const bool ok = TSFileOutput::open(filename, append, keep, report);
+    const bool ok = TSFileOutput::open(filename, flags, report);
 
     // Reset continuity counters.
     if (ok) {

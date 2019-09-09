@@ -56,14 +56,23 @@ namespace ts {
         virtual ~TSFileOutput();
 
         //!
+        //! Flags for open().
+        //!
+        enum OpenFlags {
+            NONE   = 0x0000,   //!< No option.
+            APPEND = 0x0001,   //!< Append packets to an existing file.
+            KEEP   = 0x0002,   //!< Keep previous file with same name. Fail if it already exists.
+            SHARE  = 0x0004,   //!< Open with shared read for other processes. Windows only. Always shared on Unix.
+        };
+
+        //!
         //! Open or create the file.
         //! @param [in] filename File name. If empty, use standard output.
-        //! @param [in] append Append packets to an existing file.
-        //! @param [in] keep Keep previous file with same name. Fail if it already exists.
+        //! @param [in] flags Bit mask of open flags.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const UString& filename, bool append, bool keep, Report& report);
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report);
 
         //!
         //! Close the file.
@@ -146,3 +155,5 @@ namespace ts {
         static const UString stdoutName;  // File string for standard output.
     };
 }
+
+TS_FLAGS_OPERATORS(ts::TSFileOutput::OpenFlags)

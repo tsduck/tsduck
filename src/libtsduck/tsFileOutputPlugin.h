@@ -52,11 +52,14 @@ namespace ts {
         FileOutputPlugin(TSP* tsp);
 
         // Implementation of plugin API
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        TSFileOutput _file;
+        UString                 _name;
+        TSFileOutput::OpenFlags _flags;
+        TSFileOutput            _file;
     };
 }

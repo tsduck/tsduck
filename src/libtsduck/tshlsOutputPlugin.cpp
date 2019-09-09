@@ -230,7 +230,7 @@ bool ts::hls::OutputPlugin::createNextSegment()
 
     // Create the segment file.
     tsp->verbose(u"creating media segment %s", {fileName});
-    if (!_segmentFile.open(fileName, false, false, *tsp)) {
+    if (!_segmentFile.open(fileName, TSFileOutput::SHARE, *tsp)) {
         return false;
     }
 
