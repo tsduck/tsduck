@@ -62,7 +62,7 @@ ts::TSFileOutput::TSFileOutput() :
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Report& report)
+bool ts::TSFileOutput::open(const UString& filename, OpenFlags flags, Report& report)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -76,15 +76,16 @@ bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Rep
 #if defined(TS_WINDOWS)
 
     // Windows implementation
-    ::DWORD flags;
-    if (keep) {
-        flags = CREATE_NEW;
+    ::DWORD winflags = 0;
+    ::DWORD shared = (flags & SHARE) != 0 ? FILE_SHARE_READ : 0;
+    if ((flags & KEEP) != 0) {
+        winflags = CREATE_NEW;
     }
-    else if (append) {
-        flags = OPEN_ALWAYS;
+    else if ((flags & APPEND) != 0) {
+        winflags = OPEN_ALWAYS;
     }
     else {
-        flags = CREATE_ALWAYS;
+        winflags = CREATE_ALWAYS;
     }
 
     if (_filename.empty()) {
@@ -92,11 +93,11 @@ bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Rep
     }
     else {
         // Create file
-        _handle = ::CreateFile(_filename.toUTF8().c_str(), GENERIC_WRITE, 0, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
+        _handle = ::CreateFile(_filename.toUTF8().c_str(), GENERIC_WRITE, shared, NULL, winflags, FILE_ATTRIBUTE_NORMAL, NULL);
         got_error = _handle == INVALID_HANDLE_VALUE;
         error_code = LastErrorCode();
         // Move to end of file if --append
-        if (!got_error && append && ::SetFilePointer(_handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
+        if (!got_error && (flags & APPEND) != 0 && ::SetFilePointer(_handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
             // SetFilePointer error
             got_error = true;
             error_code = LastErrorCode();
@@ -107,24 +108,24 @@ bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Rep
 #else
 
     // UNIX implementation
-    int flags = O_CREAT | O_WRONLY | O_LARGEFILE;
+    int uflags = O_CREAT | O_WRONLY | O_LARGEFILE;
     const mode_t mode = 0666; // -rw-rw-rw (minus umask)
 
-    if (keep) {
-        flags |= O_EXCL;
+    if ((flags & KEEP) != 0) {
+        uflags |= O_EXCL;
     }
-    else if (append) {
-        flags |= O_APPEND;
+    else if ((flags & APPEND) != 0) {
+        uflags |= O_APPEND;
     }
     else {
-        flags |= O_TRUNC;
+        uflags |= O_TRUNC;
     }
 
     if (_filename.empty()) {
         _fd = STDOUT_FILENO;
     }
     else {
-        _fd = ::open(_filename.toUTF8().c_str(), flags, mode);
+        _fd = ::open(_filename.toUTF8().c_str(), uflags, mode);
         got_error = _fd < 0;
         error_code = LastErrorCode();
         report.debug(u"creating file %s, fd=%d, error_code=%d", {filename, _fd, error_code});

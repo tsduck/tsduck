@@ -60,7 +60,7 @@ namespace ts {
         virtual ~TSFileOutputResync();
 
         // Overrides TSFileOutput methods
-        virtual bool open(const UString& filename, bool append, bool keep, Report& report) override;
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report) override;
 
         //!
         //! Write TS packets to the file.
