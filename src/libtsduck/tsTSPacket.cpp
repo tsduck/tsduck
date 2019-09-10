@@ -807,6 +807,48 @@ void ts::TSPacket::setPDTS(uint64_t pdts, size_t offset)
 
 
 //----------------------------------------------------------------------------
+// Check if this packet has the same payload as another one.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::samePayload(const TSPacket& other) const
+{
+    if (!hasPayload() || !other.hasPayload()) {
+        return false;
+    }
+    else {
+        const size_t plsize = getPayloadSize();
+        return other.getPayloadSize() == plsize && ::memcmp(getPayload(), other.getPayload(), plsize) == 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if this packet is a duplicate as another one.
+//----------------------------------------------------------------------------
+
+bool ts::TSPacket::isDuplicate(const TSPacket& other) const
+{
+    // - There is no duplicate packets in null packets.
+    // - Duplicate packets must have a payload.
+    // - The 4-byte TS header of duplicate packets are always identical
+    //   (same PID, CC, presence or AF and payload).
+    // - The next 2 bytes must also be identical: either there is an AF and
+    //   these two bytes are AF size and flags, or there no AF and this is the
+    //   start of the payload. In both cases, they be must identical.
+    // - Specifically, if the AF flag are present and identical, the two
+    //   packets have both a PCR or no PCR at all.
+    // - The PCR, if present, can be different in duplicate packets.
+    // - If the PCR is present, it must be at offset 6 and is 6 bytes long.
+
+    const size_t offset = hasPCR() ? 12 : 6;
+    return hasPayload() &&
+        getPID() != PID_NULL &&
+        ::memcmp(b, other.b, 6) == 0 &&
+        ::memcmp(b + offset, other.b + offset, PKT_SIZE - offset) == 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Error message fragment indicating the number of packets previously
 // read in a binary file
 //----------------------------------------------------------------------------

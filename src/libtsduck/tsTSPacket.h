@@ -754,6 +754,23 @@ namespace ts {
         }
 
         //!
+        //! Check if this packet has the same payload as another one.
+        //! @param [in] other The other packet to compare.
+        //! @return True if the two packets have a payload and these payloads are identical.
+        //!
+        bool samePayload(const TSPacket& other) const;
+
+        //!
+        //! Check if this packet is a duplicate as another one.
+        //! A valid "true" pair of duplicate packets is made of two consecutive packets with
+        //! same continuity counter and same payload. It must also have the same adaptation field,
+        //! with the exception of the PCR which can (should?) be different.
+        //! @param [in] other The other packet to compare.
+        //! @return True if the two packets have same PID, same CC and same payload.
+        //!
+        bool isDuplicate(const TSPacket& other) const;
+
+        //!
         //! Read a packet from standard streams (binary mode).
         //! @param [in,out] strm A standard stream in input mode.
         //! @param [in] check_sync If true, the sync byte of the input packet is checked.

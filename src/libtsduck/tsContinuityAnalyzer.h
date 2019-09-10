@@ -207,11 +207,11 @@ namespace ts {
         class PIDState
         {
         public:
-            PIDState();           // Constructor
-            uint8_t first_cc;     // First CC value in a PID.
-            uint8_t last_cc_in;   // Last input CC value in a PID.
-            uint8_t last_cc_out;  // Last output CC value in a PID.
-            size_t  dup_count;    // Consecutive duplicate count.
+            PIDState();            // Constructor
+            uint8_t  first_cc;     // First CC value in a PID.
+            uint8_t  last_cc_out;  // Last output CC value in a PID.
+            size_t   dup_count;    // Consecutive duplicate count.
+            TSPacket last_pkt_in;  // Last input packet (before modification, if any).
         };
 
         // A map of PID state, indexed by PID.
@@ -232,6 +232,7 @@ namespace ts {
         PIDStateMap   _pid_states;        // State of all PID's.
 
         // Internal version of feedPacket.
+        // The packet is modified only is update is true.
         bool feedPacketInternal(TSPacket* pkt, bool update);
 
         // Build the first part of an error message.

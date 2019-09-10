@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1407
+VERSION 3.19-1410
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -18,6 +18,8 @@ VERSION 3.19-1407
 
   * In plugin "hides", the bandwidth was incorrectly set to 5 MHz when 6 MHz
     was requested.
+  * In plugin "continuity", packets were incorrectly detected as duplicate
+    when they had the same continuity counter but distinct content.
 
 -------------------------------------------------------------------------------
 
