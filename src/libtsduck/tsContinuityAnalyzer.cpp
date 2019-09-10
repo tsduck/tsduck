@@ -54,9 +54,9 @@ ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* rep
 
 ts::ContinuityAnalyzer::PIDState::PIDState() :
     first_cc(INVALID_CC),
-    last_cc_in(INVALID_CC),
     last_cc_out(INVALID_CC),
-    dup_count(0)
+    dup_count(0),
+    last_pkt_in()
 {
 }
 
@@ -171,7 +171,7 @@ ts::UString ts::ContinuityAnalyzer::linePrefix(PID pid) const
 
 
 //----------------------------------------------------------------------------
-// Detect error on packet.
+// Detect / fix error on packet.
 //----------------------------------------------------------------------------
 
 bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
@@ -185,11 +185,19 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
 
         // Get or create PID context.
         PIDState& state(_pid_states[pid]);
+        const bool new_pid = state.first_cc == INVALID_CC;
 
+        // Remember initial characteristics of the input packet.
+        const uint8_t last_cc_in = new_pid ? INVALID_CC : state.last_pkt_in.getCC();
         const uint8_t cc = pkt->getCC();
         const bool has_payload = pkt->hasPayload();
+        const bool has_discontinuity = pkt->getDiscontinuityIndicator();
+        const bool duplicated = !new_pid && !has_discontinuity && pkt->isDuplicate(state.last_pkt_in);
 
-        if (state.first_cc == INVALID_CC) {
+        // Save input packet as originally received.
+        state.last_pkt_in = *pkt;
+
+        if (new_pid) {
             // First packet on this PID
             state.first_cc = cc;
         }
@@ -202,11 +210,11 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                 result = false;
             }
         }
-        else if (pkt->getDiscontinuityIndicator()) {
+        else if (has_discontinuity) {
             // Discontinuity indicator is set, ignore any discontinuity.
             state.dup_count = 0;
         }
-        else if (cc == state.last_cc_in && has_payload) {
+        else if (duplicated) {
             // Duplicate packet.
             if (++state.dup_count >= 2) {
                 // The standard allows at most 2 duplicate packets.
@@ -226,17 +234,17 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
         }
         else {
             // Compute expected CC for this packet.
-            const uint8_t good_cc_in = has_payload ? ((state.last_cc_in + 1) & CC_MASK) : state.last_cc_in;
+            const uint8_t good_cc_in = has_payload ? ((last_cc_in + 1) & CC_MASK) : last_cc_in;
             const uint8_t good_cc_out = has_payload ? ((state.last_cc_out + 1) & CC_MASK) : state.last_cc_out;
 
             if (cc != good_cc_in) {
                 if (_display_errors) {
                     // Display a specific message depending on the error.
-                    if (!has_payload && cc == ((state.last_cc_in + 1) & CC_MASK)) {
+                    if (!has_payload && cc == ((last_cc_in + 1) & CC_MASK)) {
                         _report->log(_severity, u"%s, incorrect CC increment without payload", {linePrefix(pid)});
                     }
                     else {
-                        _report->log(_severity, u"%s, missing %d packets", {linePrefix(pid), MissingPackets(state.last_cc_in, cc)});
+                        _report->log(_severity, u"%s, missing %d packets", {linePrefix(pid), MissingPackets(last_cc_in, cc)});
                     }
                 }
                 _error_count++;
@@ -251,7 +259,6 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
         }
 
         // Save actual CC for next time.
-        state.last_cc_in = cc;
         state.last_cc_out = pkt->getCC();
         _processed_packets++;
     }
