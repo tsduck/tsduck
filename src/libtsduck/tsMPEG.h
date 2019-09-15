@@ -895,6 +895,7 @@ namespace ts {
 
         // Valid in SCTE context:
 
+        TID_SCTE18_EAS    = 0xD8, //!< Table id for SCTE 18 Emergency Alert System
         TID_SCTE35_SIT    = 0xFC, //!< Table id for SCTE 35 Splice Information Table
     };
 
@@ -1112,6 +1113,12 @@ namespace ts {
         DID_UNT_SUBGROUP_ASSOC  = 0x0B, //!< DID for UNT ssu_subgroup_association_descriptor
         DID_UNT_ENHANCED_MSG    = 0x0C, //!< DID for UNT enhanced_message_descriptor
         DID_UNT_SSU_URI         = 0x0D, //!< DID for UNT ssu_uri_descriptor
+
+        // Valid in AES (Emergency Alert System, SCTE 18).
+
+        DID_EAS_INBAND_DETAILS  = 0x00,  //!< DID for SCTE 18 In-Band Details Channel Descriptor
+        DID_EAS_INBAND_EXCEPTS  = 0x01,  //!< DID for SCTE 18 In-Band Exceptions Channel Descriptor
+        DID_EAS_AUDIO_FILE      = 0x02,  //!< DID for SCTE 18 Audio File Descriptor
 
         // Valid in a SIT (Splice Information Table, SCTE 35).
 
