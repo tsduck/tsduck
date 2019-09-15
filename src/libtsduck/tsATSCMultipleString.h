@@ -216,28 +216,41 @@ namespace ts {
         size_t serialize(DuckContext& duck, uint8_t*& data, size_t& size, size_t max_size = NPOS) const;
 
         //!
+        //! Serialize a binary multiple_string_structure and append to a byte block.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] data Byte bloc where to serialize the structure. The structure is added at the end.
+        //! @param [in] max_size Max size to serialize.
+        //! @return The number of serialized bytes.
+        //!
+        size_t serialize(DuckContext& duck, ByteBlock& data, size_t max_size = NPOS) const;
+
+        //!
         //! Deserialize a binary multiple_string_structure.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in,out] data Address of the structure to deserialize.
+        //! @param [in,out] buffer Address of the structure to deserialize.
         //! On return, it is updated to point after the structure.
-        //! @param [in,out] size Size in bytes of the buffer.
+        //! @param [in,out] buffer_size Size in bytes of the data buffer.
         //! On return, it is updated to the remaining size in the buffer.
-        //! @param [in] max_size Max size to deserialize, possibly lower than the buffer size.
+        //! @param [in] mss_size Size of the multiple_string_structure to deserialize,
+        //! possibly lower than the buffer size. If lower than @a buffer_size, adjust
+        //! @a data and @a buffer_size to skip @a mss_size bytes.
         //! @return True if the structure was successfully deserialized.
         //!
-        bool deserialize(DuckContext& duck, const uint8_t*& data, size_t& size, size_t max_size = NPOS);
+        bool deserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size = NPOS);
 
         //!
         //! A static method to display a bianry multiple_string_structure.
         //! @param [in,out] display Display engine.
         //! @param [in] indent Indentation width.
-        //! @param [in,out] data Address of the binary structure to display.
+        //! @param [in,out] buffer Address of the binary structure to display.
         //! On return, it is updated to point after the structure.
-        //! @param [in,out] size Size in bytes of the buffer.
+        //! @param [in,out] buffer_size Size in bytes of the data buffer.
         //! On return, it is updated to the remaining size in the buffer.
-        //! @param [in] max_size Max size to deserialize, possibly lower than the buffer size.
+        //! @param [in] mss_size Size of the multiple_string_structure to deserialize,
+        //! possibly lower than the buffer size. If lower than @a buffer_size, adjust
+        //! @a data and @a buffer_size to skip @a mss_size bytes.
         //!
-        static void Display(TablesDisplay& display, const UString& title, int indent, const uint8_t*& data, size_t& size, size_t max_size = NPOS);
+        static void Display(TablesDisplay& display, const UString& title, int indent, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size = NPOS);
 
     private:
         class StringElement

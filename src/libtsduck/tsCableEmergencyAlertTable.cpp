@@ -198,11 +198,56 @@ void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const B
         return;
     }
     alert_message_time_remaining = data[0];
+    const uint32_t start = GetUInt32(data + 1);
+    event_start_time = start == 0 ? Time::Epoch : Time::GPSSecondsToUTC(start);
+    event_duration = GetUInt16(data + 5);
+    alert_priority = data[8] & 0x0F;
+    details_OOB_source_ID = GetUInt16(data + 9);
+    details_major_channel_number = GetUInt16(data + 11) & 0x03FF;
+    details_minor_channel_number = GetUInt16(data + 13) & 0x03FF;
+    audio_OOB_source_ID = GetUInt16(data + 15);
+    const size_t alert_len = GetUInt16(data + 17);
+    data += 19; remain -= 19;
 
+    // Alert text.
+    if (!alert_text.deserialize(duck, data, remain, alert_len)) {
+        return;
+    }
 
-    //@@@@
+    // List of locations.
+    if (remain < 1 || remain < 1 + 3 * size_t(*data)) {
+        return;
+    }
+    size_t count = *data++;
+    remain--;
 
-    // Process descriptor list.
+    while (count-- > 0) {
+        locations.push_back(Location(data[0], data[1] >> 4, GetUInt16(data + 1) & 0x03FF));
+        data += 3; remain -= 3;
+    }
+
+    // List of exceptions.
+    if (remain < 1 || remain < 1 + 5 * size_t(*data)) {
+        return;
+    }
+    count = *data++;
+    remain--;
+
+    while (count-- > 0) {
+        if ((data[0] & 0x80) != 0) {
+            // In-band reference
+            exceptions.push_back(Exception(GetUInt16(data + 1) & 0x03FF, GetUInt16(data + 3) & 0x03FF));
+        }
+        else {
+            exceptions.push_back(Exception(GetUInt16(data + 3)));
+        }
+        data += 5; remain -= 5;
+    }
+
+    // Descriptor list.
+    if (remain < 2) {
+        return;
+    }
     const size_t desc_len = GetUInt16(data) & 0x03FF;
     data += 2; remain -= 2;
     if (desc_len > remain) {
@@ -229,9 +274,85 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     PutUInt8(data, protocol_version);
     PutUInt16(data + 1, EAS_event_ID);
 
-    //@@@@@@@@@@@
+    // Encode exactly 3 characters for EAS_originator_code.
+    for (size_t i = 0; i < 3; ++i) {
+        data[3 + i] = uint8_t(i < EAS_originator_code.size() ? EAS_originator_code[i] : SPACE);
+    }
+    data += 6; remain -= 6;
+
+    // Where to store the length of EAS_event_code.
+    size_t len = std::min<size_t>(EAS_event_code.size(), 255);
+    *data++ = uint8_t(len);
+    remain--;
+    for (size_t i = 0; i < len; ++i) {
+        *data++ = uint8_t(EAS_event_code[i]);
+        remain--;
+    }
+
+    // Where to store the length of nature_of_activation_text.
+    if (remain < 1) {
+        return;
+    }
+    uint8_t* len_addr = data++;
+    remain--;
+    *len_addr = uint8_t(nature_of_activation_text.serialize(duck, data, remain, 255));
+    
+    // A large portion of fixed fields
+    if (remain < 19) {
+        return;
+    }
+    PutUInt8(data, alert_message_time_remaining);
+    PutUInt32(data + 1, event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds()));
+    PutUInt16(data + 5, event_duration);
+    PutUInt16(data + 7, 0xFFF0 | alert_priority);
+    PutUInt16(data + 9, details_OOB_source_ID);
+    PutUInt16(data + 11, 0xFC00 | details_major_channel_number);
+    PutUInt16(data + 13, 0xFC00 | details_minor_channel_number);
+    PutUInt16(data + 15, audio_OOB_source_ID);
+    len_addr = data + 17; // place-holder for alert_text length;
+    data += 19; remain -= 19;
+
+    PutUInt16(len_addr, uint16_t(alert_text.serialize(duck, data, remain)));
+
+    // Serialize locations.
+    if (remain < 1) {
+        return;
+    }
+    len_addr = data; // address of location_code_count
+    *data++ = 0;
+    remain--;
+    for (auto it = locations.begin(); remain >= 3 && it != locations.end(); ++it) {
+        PutUInt8(data, it->state_code);
+        PutUInt16(data + 1, (uint16_t(it->county_subdivision) << 12) | 0x0C00 | (it->county_code & 0x03FF));
+        data += 3; remain -= 3;
+        (*len_addr)++; // increment number of serialized locations
+    }
+
+    // Serialize exceptions.
+    if (remain < 1) {
+        return;
+    }
+    len_addr = data; // address of exception_count
+    *data++ = 0;
+    remain--;
+    for (auto it = exceptions.begin(); remain >= 5 && it != exceptions.end(); ++it) {
+        PutUInt8(data, it->in_band ? 0xFF : 0x7F);
+        if (it->in_band) {
+            PutUInt16(data + 1, 0xFC00 | it->exception_major_channel_number);
+            PutUInt16(data + 3, 0xFC00 | it->exception_minor_channel_number);
+        }
+        else {
+            PutUInt16(data + 1, 0xFFFF);
+            PutUInt16(data + 3, it->exception_OOB_source_ID);
+        }
+        data += 5; remain -= 5;
+        (*len_addr)++; // increment number of serialized exceptions
+    }
 
     // Insert descriptors (all or some, depending on the remaining space).
+    if (remain < 2) {
+        return;
+    }
     descs.lengthSerialize(data, remain, 0, 0x003F, 10);
 
     // Add one single section to the table.
@@ -262,7 +383,9 @@ void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* roo
     if (alert_message_time_remaining != 0) {
         root->setIntAttribute(u"alert_message_time_remaining", alert_message_time_remaining, false);
     }
-    root->setDateTimeAttribute(u"event_start_time", event_start_time);
+    if (event_start_time != Time::Epoch) {
+        root->setDateTimeAttribute(u"event_start_time", event_start_time);
+    }
     if (event_duration != 0) {
         root->setIntAttribute(u"event_duration", event_duration, false);
     }
@@ -320,7 +443,7 @@ void ts::CableEmergencyAlertTable::fromXML(DuckContext& duck, const xml::Element
         element->getAttribute(EAS_event_code, u"EAS_event_code", true, UString(), 0, 255) &&
         nature_of_activation_text.fromXML(duck, element, u"nature_of_activation_text", false) &&
         element->getIntAttribute<uint8_t>(alert_message_time_remaining, u"alert_message_time_remaining", false, 0, 0, 120) &&
-        element->getDateTimeAttribute(event_start_time, u"event_start_time", true) &&
+        element->getDateTimeAttribute(event_start_time, u"event_start_time", false, Time::Epoch) &&
         element->getIntAttribute<uint16_t>(event_duration, u"event_duration", false, 0, 0, 6000) &&
         element->getIntAttribute<uint8_t>(alert_priority, u"alert_priority", true, 0, 0, 15) &&
         element->getIntAttribute<uint16_t>(details_OOB_source_ID, u"details_OOB_source_ID", false) &&
@@ -378,16 +501,117 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
+    bool ok = size >= 7;
 
-    // Fixed past
-    if (size < 7) {
-        display.displayExtraData(data, size, indent);
-        return;
+    if (ok) {
+        const uint8_t protocol_version = data[0];
+        const uint16_t event_id = GetUInt16(data + 1);
+        const UString orig_code(UString::FromUTF8(reinterpret_cast<const char*>(data + 3), 3));
+        size_t len = data[6];
+        data += 7; size -= 7;
+        if (len > size) {
+            len = size;
+        }
+        const UString event_code(UString::FromUTF8(reinterpret_cast<const char*>(data), len));
+        data += len; size -= len;
+
+        strm << margin << UString::Format(u"Protocol version: 0x%X (%d)", {protocol_version, protocol_version}) << std::endl
+             << margin << UString::Format(u"EAS event id: 0x%X (%d)", {event_id, event_id}) << std::endl
+             << margin << UString::Format(u"Originator code: \"%s\", event code: \"%s\"", {orig_code, event_code}) << std::endl;
+
+        if (size > 0) {
+            len = *data++;
+            size--;
+            ATSCMultipleString::Display(display, u"Nature of activation: ", indent, data, size, len);
+        }
+
+        ok = size >= 17;
+
+        if (ok) {
+            const uint8_t remaining = data[0];
+            const uint32_t start_value = GetUInt32(data + 1);
+            const Time start_time(Time::GPSSecondsToUTC(start_value));
+            const uint16_t duration = GetUInt16(data + 5);
+            const uint8_t priority = data[8] & 0x0F;
+            const uint16_t details_oob = GetUInt16(data + 9);
+            const uint16_t details_major = GetUInt16(data + 11) & 0x03FF;
+            const uint16_t details_minor = GetUInt16(data + 13) & 0x03FF;
+            const uint16_t audio_oob = GetUInt16(data + 15);
+            data += 17; size -= 17;
+
+            strm << margin
+                 << UString::Format(u"Remaining: %d seconds, start time: %s, duration: %d minutes", {remaining, start_value == 0 ? u"immediate" : start_time.format(Time::DATETIME), duration})
+                 << std::endl
+                 << margin
+                 << UString::Format(u"Details: OOB id: 0x%X (%d), major.minor: %d.%d", {details_oob, details_oob, details_major, details_minor})
+                 << std::endl
+                 << margin
+                 << UString::Format(u"Audio: OOB id: 0x%X (%d)", {audio_oob, audio_oob})
+                 << std::endl;
+
+            ok = size >= 2;
+        }
+
+        if (ok) {
+            len = GetUInt16(data);
+            data += 2; size -= 2;
+            ATSCMultipleString::Display(display, u"Alert text: ", indent, data, size, len);
+            ok = size >= 1;
+        }
+
+        if (ok) {
+            // Display locations.
+            len = *data++;
+            size--;
+            strm << margin << UString::Format(u"Number of locations: %d", {len}) << std::endl;
+            while (ok && len-- > 0) {
+                ok = size >= 3;
+                if (ok) {
+                    const uint8_t state = data[0];
+                    const uint8_t subd = data[1] >> 4;
+                    const uint16_t county = GetUInt16(data + 1) & 0xFC00;
+                    strm << margin
+                         << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, names::VALUE)})
+                         << std::endl;
+
+                }
+                data += 3; size -= 3;
+            }
+            ok = ok && size >= 1;
+        }
+
+        if (ok) {
+            // Display exceptions.
+            len = *data++;
+            size--;
+            strm << margin << UString::Format(u"Number of exceptions: %d", {len}) << std::endl;
+            while (ok && len-- > 0) {
+                ok = size >= 5;
+                if (ok) {
+                    const bool inband = (data[0] && 0x80) != 0;
+                    strm << margin << UString::Format(u"  In-band: %s", {inband});
+                    if (inband) {
+                        strm << UString::Format(u", exception major.minor: %d.%d", {GetUInt16(data + 1) & 0x03FF, GetUInt16(data + 3) & 0x03FF}) << std::endl;
+                    }
+                    else {
+                        strm << UString::Format(u", exception OOB id: 0x%X (%d)", {GetUInt16(data + 3), GetUInt16(data + 3)}) << std::endl;
+                    }
+                }
+                data += 5; size -= 5;
+            }
+            ok = ok && size >= 2;
+        }
+
+        if (ok) {
+            len = GetUInt16(data) & 0x03FF;
+            data += 2; size -= 2;
+            if (len > size) {
+                len = size;
+            }
+            display.displayDescriptorList(section, data, len, indent);
+            data += len; size -= len;
+        }
     }
 
-    // Fixed part
-    const uint8_t protocol_version = data[0];
-    //@@@@@@@@@
-
-    strm << margin << UString::Format(u"Protocol version: 0x%X (%d)", {protocol_version, protocol_version}) << std::endl;
+    display.displayExtraData(data, size, indent);
 }

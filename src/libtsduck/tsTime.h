@@ -300,6 +300,7 @@ namespace ts {
             MINUTE      = 0x10,  //!< Display the minutes.
             SECOND      = 0x20,  //!< Display the seconds.
             TIME        = HOUR | MINUTE | SECOND,  //!< Display the hours, minutes and seconds.
+            DATETIME    = DATE | TIME,  //!< Display the year, month, day, hours, minutes and seconds.
             MILLISECOND = 0x40,  //!< Display the milliseconds.
             ALL         = DATE | TIME | MILLISECOND,  //!< Display all fields.
         };
@@ -597,6 +598,12 @@ namespace ts {
         static const Time UnixEpoch;
 
         //!
+        //! Constant representing the GPS Epoch, 1980-01-06.
+        //! It is assumed to be representable in all operating systems.
+        //!
+        static const Time GPSEpoch;
+
+        //!
         //! Constant representing the End Of Time (at least on this operating system).
         //!
         static const Time Apocalypse;
@@ -619,6 +626,36 @@ namespace ts {
         //! This value can be displayed on a Linux system using the command: `date +%s --date 1980-01-06utc`
         //!
         static const Second UnixEpochToGPS = 315964800;
+
+        //!
+        //! This static routine converts a UNIX @c time_t to a UTC time.
+        //!
+        //! @param [in] unixTime A UNIX @c time_t value. Must be unsigned. Can be 32 or 64 bits.
+        //! @return The corresponding UTC time.
+        //!
+        static Time UnixTimeToUTC(uint64_t unixTime);
+
+        //!
+        //! Convert this time in a UNIX @c time_t.
+        //!
+        //! @return The corresponding Unix time on 64 bits.
+        //!
+        uint64_t toUnixTime() const;
+
+        //!
+        //! This static routine converts a number of GPS seconds to a UTC time.
+        //!
+        //! @param [in] gps The number of seconds since the GPS Epoch (1980-01-06).
+        //! @return The corresponding UTC time.
+        //!
+        static Time GPSSecondsToUTC(Second gps);
+
+        //!
+        //! Convert this time to a number of seconds since 1980-01-06, the GPS epoch.
+        //!
+        //! @return The corresponding number of seconds on 64 bits.
+        //!
+        Second toGPSSeconds() const;
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         //!
@@ -643,14 +680,6 @@ namespace ts {
         //!
         static Time Win32FileTimeToUTC(const ::FILETIME& fileTime);
 #endif
-
-        //!
-        //! This static routine converts a UNIX @c time_t to a UTC time.
-        //!
-        //! @param [in] unixTime A UNIX @c time_t value. Must be unsigned. Can be 32 or 64 bits.
-        //! @return The corresponding UTC time.
-        //!
-        static Time UnixTimeToUTC(const uint64_t unixTime);
 
 #if defined(TS_UNIX) || defined(DOXYGEN)
         //!

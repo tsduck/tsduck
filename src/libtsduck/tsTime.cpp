@@ -65,6 +65,9 @@ const ts::MilliSecond ts::Time::JulianEpochOffset =
     #error "unsupported operating system"
 #endif
 
+// The GPS Epoch.
+const ts::Time ts::Time::GPSEpoch(ts::Time::UnixEpoch + UnixEpochToGPS * ts::MilliSecPerSec);
+
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -421,13 +424,34 @@ ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 
 
 //----------------------------------------------------------------------------
-// This static routine converts a UNIX time_t to a UTC time
+// Converts with UNIX time_t
 //----------------------------------------------------------------------------
 
 ts::Time ts::Time::UnixTimeToUTC(const uint64_t t)
 {
     // The value t is a number of seconds since Jan 1st 1970.
     return Time(UnixEpoch._value + (Second(t) * 1000 * TICKS_PER_MS));
+}
+
+uint64_t ts::Time::toUnixTime() const
+{
+    return _value < UnixEpoch._value ? 0 : (_value - UnixEpoch._value) / (1000 * TICKS_PER_MS);
+}
+
+
+//----------------------------------------------------------------------------
+// Converts with GPS time.
+//----------------------------------------------------------------------------
+
+ts::Time ts::Time::GPSSecondsToUTC(Second gps)
+{
+    // The value t is a number of seconds since Jan 6th 1980.
+    return Time(GPSEpoch._value + (gps * 1000 * TICKS_PER_MS));
+}
+
+ts::Second ts::Time::toGPSSeconds() const
+{
+    return _value < GPSEpoch._value ? 0 : (_value - GPSEpoch._value) / (1000 * TICKS_PER_MS);
 }
 
 
