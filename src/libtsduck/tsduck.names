@@ -2960,3 +2960,17 @@ Bits = 6
 0x03 = ATSC Audio
 0x04 = ATSC Data Only Service
 0x05 = ATSC Software Download Service
+
+[EASCountySubdivision]
+# in SCTE 18 emergency alert messages
+Bits = 4
+0 = All or unspecified
+1 = Northwest
+2 = North Central
+3 = Northeast
+4 = West Central
+5 = Central
+6 = East Central
+7 = Southwest
+8 = South Central
+9 = Southeast

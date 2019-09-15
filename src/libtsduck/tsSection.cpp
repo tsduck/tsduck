@@ -266,7 +266,7 @@ size_t ts::Section::SectionSize(const void* content, size_t content_size)
 
 void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation crc_op)
 {
-    initialize (pid);
+    initialize(pid);
     _data = bbp;
 
     // Basic validity check using section size

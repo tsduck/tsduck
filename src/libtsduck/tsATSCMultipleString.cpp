@@ -255,6 +255,7 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size
     // Remember location for number of strings:
     uint8_t* const start = data;
     size_t num_strings = 0;
+    *data++ = 0; size--; max_size--;
 
     // Here, we serialize all strings as one segment each, with uncompressed encoding.
     // The maximum number of string is 255 since its number is encoded on one byte.
@@ -310,6 +311,77 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size
 
 
 //----------------------------------------------------------------------------
+// Serialize a binary multiple_string_structure and append to a byte block.
+//----------------------------------------------------------------------------
+
+size_t ts::ATSCMultipleString::serialize(DuckContext& duck, ByteBlock& data, size_t max_size) const
+{
+    // Need at least one byte to serialize.
+    if (max_size == 0) {
+        return 0;
+    }
+
+    const size_t start_index = data.size();
+    size_t num_strings = 0;
+    data.appendUInt8(0); // place-holder for number of strings.
+    max_size--;
+
+    // Here, we serialize all strings as one segment each, with uncompressed encoding.
+    // The maximum number of string is 255 since its number is encoded on one byte.
+    for (auto str = _strings.begin(); num_strings < 255 && str != _strings.end(); ++str) {
+
+        // Need at least 7 bytes per string.
+        if (max_size < 7) {
+            break;
+        }
+
+        // Encode exactly 3 characters for language.
+        for (size_t i = 0; i < 3; ++i) {
+            const UChar c = i < str->language.size() ? str->language[i] : SPACE;
+            data.appendUInt8(c < 256 ? uint8_t(c) : uint8_t(SPACE));
+        }
+
+        // Fixed part:
+        data.appendUInt8(1);  // number of segments
+        data.appendUInt8(0);  // compression type = no compression
+        const uint8_t mode = EncodingMode(str->text);
+        data.appendUInt8(mode);
+        const size_t nbytes_index = data.size();
+        data.appendUInt8(0);  // place-holder for number of bytes
+        max_size -= 7;
+
+        // Encode the text string.
+        if (mode == MODE_UTF16) {
+            // Two bytes per char, max 128 chars.
+            for (size_t i = 0; max_size >= 2 && i < 128 && i < str->text.size(); ++i) {
+                data.appendUInt16(str->text[i]);
+                max_size -= 2;
+            }
+        }
+        else {
+            // One byte per char, max 256 chars.
+            for (size_t i = 0; max_size >= 1 && i < 256 && i < str->text.size(); ++i) {
+                data.appendUInt8(uint8_t(str->text[i] & 0x00FF));
+                max_size--;
+            }
+        }
+
+        // Update number of bytes.
+        data[nbytes_index] = uint8_t(data.size() - nbytes_index - 1);
+
+        // This string is complete.
+        num_strings++;
+    }
+
+    // Update number of strings.
+    data[start_index] = uint8_t(num_strings);
+
+    // Return the number of serialized bytes.
+    return data.size() - start_index;
+}
+
+
+//----------------------------------------------------------------------------
 // Decode a string element.
 //----------------------------------------------------------------------------
 
@@ -343,7 +415,7 @@ bool ts::ATSCMultipleString::DecodeString(StringElement& elem, const uint8_t*& d
 
 bool ts::ATSCMultipleString::DecodeSegment(UString& segment, const uint8_t*& data, size_t& size, size_t& max_size, bool display)
 {
-    if (data == nullptr || size < 3 || max_size < 3 || size < 3 + data[2] || max_size < 3 + data[2]) {
+    if (data == nullptr || size < 3 || max_size < 3 || size < 3U + size_t(data[2]) || max_size < 3U + size_t(data[2])) {
         return false;
     }
 
@@ -386,27 +458,33 @@ bool ts::ATSCMultipleString::DecodeSegment(UString& segment, const uint8_t*& dat
 // Deserialize a binary multiple_string_structure.
 //----------------------------------------------------------------------------
 
-bool ts::ATSCMultipleString::deserialize(DuckContext& duck, const uint8_t*& data, size_t& size, size_t max_size)
+bool ts::ATSCMultipleString::deserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size)
 {
     clear();
 
     // Get number of strings.
-    if (data == nullptr || size == 0 || max_size == 0) {
+    if (buffer == nullptr || buffer_size == 0 || mss_size == 0) {
         return false;
     }
-    size_t num_strings = *data++;
-    size --; max_size--;
+    size_t num_strings = *buffer++;
+    buffer_size--; mss_size--;
     _strings.reserve(num_strings);
 
     // Loop on input strings.
     while (num_strings-- > 0) {
         StringElement elem;
-        if (DecodeString(elem, data, size, max_size, false)) {
+        if (DecodeString(elem, buffer, buffer_size, mss_size, false)) {
             _strings.push_back(elem);
         }
         else {
             return false;
         }
+    }
+
+    // Adjust unused data in multiple_string_structure (mss), if an mss size was specified.
+    if (mss_size > 0 && mss_size <= buffer_size) {
+        buffer += mss_size;
+        buffer_size -= mss_size;
     }
 
     return true;
@@ -417,23 +495,29 @@ bool ts::ATSCMultipleString::deserialize(DuckContext& duck, const uint8_t*& data
 // A static method to display a bianry multiple_string_structure.
 //----------------------------------------------------------------------------
 
-void ts::ATSCMultipleString::Display(TablesDisplay& display, const UString& title, int indent, const uint8_t*& data, size_t& size, size_t max_size)
+void ts::ATSCMultipleString::Display(TablesDisplay& display, const UString& title, int indent, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size)
 {
-    if (data != nullptr && size > 0 && max_size > 0) {
+    if (buffer != nullptr && buffer_size > 0 && mss_size > 0) {
 
         std::ostream& strm(display.duck().out());
         const std::string margin(indent, ' ');
         StringElement elem;
 
-        size_t num_strings = *data++;
-        size --; max_size--;
+        // Get number of strings.
+        size_t num_strings = *buffer++;
+        buffer_size --; mss_size--;
+        strm << margin << title << "Number of strings: " << num_strings << std::endl;
 
-        strm << margin << title << "number of strings: " << num_strings << std::endl;
+        // Loop on input strings.
+        while (num_strings-- > 0 && DecodeString(elem, buffer, buffer_size, mss_size, true)) {
+            strm << margin << "  Language: \"" << elem.language << "\", text: \"" << elem.text << "\"" << std::endl;
+        }
 
-        while (num_strings-- > 0 && DecodeString(elem, data, size, max_size, false)) {
-            strm << margin << "  language: \"" << elem.language << "\", text: \"" << elem.text << "\"" << std::endl;
+        // Adjust unused data in multiple_string_structure (mss), if an mss size was specified.
+        if (mss_size > 0 && mss_size <= buffer_size) {
+            display.displayExtraData(buffer, mss_size, indent + 2);
+            buffer += mss_size;
+            buffer_size -= mss_size;
         }
     }
-
-    display.displayExtraData(data, size, indent);
 }

@@ -58,7 +58,7 @@ namespace ts {
         UString              EAS_event_code;               //!< Event code, usually a 3-character code but not required.
         ATSCMultipleString   nature_of_activation_text;    //!< Event short description.
         uint8_t              alert_message_time_remaining; //!< Remaining number of seconds, 0 to 120.
-        Time                 event_start_time;             //!< Event start time.
+        Time                 event_start_time;             //!< Event start time or Time::Epoch if immediate.
         uint16_t             event_duration;               //!< Event duration in minutes 0 or 15 to 6000.
         uint8_t              alert_priority;               //!< 4 bits, alert priority
         uint16_t             details_OOB_source_ID;        //!< 0 or id of channel carrying details.
