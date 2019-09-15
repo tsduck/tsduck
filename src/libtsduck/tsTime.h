@@ -612,6 +612,14 @@ namespace ts {
         //!
         static const MilliSecond JulianEpochOffset;
 
+        //!
+        //! Number of seconds between 1970-01-01 and 1980-01-06.
+        //! This is the difference between ATSC time and Unix time.
+        //! The ATSC system time is the number of GPS seconds since 00:00:00 UTC, January 6th, 1980.
+        //! This value can be displayed on a Linux system using the command: `date +%s --date 1980-01-06utc`
+        //!
+        static const Second UnixEpochToGPS = 315964800;
+
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         //!
         //! This static routine converts a Win32 @c FILETIME to @c MilliSecond (Microsoft Windows only).

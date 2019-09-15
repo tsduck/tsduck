@@ -49,6 +49,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgsWithPlugins.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAssociationTagDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsATSCMultipleString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioLanguageOptions.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.h" />
@@ -72,6 +73,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsBouquetNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsByteBlock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCableEmergencyAlertTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCADescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h" />
@@ -565,6 +567,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsArgsWithPlugins.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAssociationTagDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsATSCMultipleString.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioLanguageOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.cpp" />
@@ -586,6 +589,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsBouquetNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsByteBlock.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCableEmergencyAlertTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCADescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.cpp" />

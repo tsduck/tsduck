@@ -85,6 +85,7 @@ Bits = 8
 0xCD = STT (ATSC)
 0xD3 = DCCT (ATSC)
 0xD4 = DCCSCT (ATSC)
+0xD8 = Cable Emergency Alert (ATSC)
 0xFC = SCTE 35 Splice Information
 0xFF = Forbidden TID 0xFF
 # CAS-specific values, most significant byte is a CAS family.
@@ -511,6 +512,10 @@ Bits = 8
 0x74FFFFFFFF15 = AIT Simple Application Location
 0x74FFFFFFFF16 = AIT Application Usage
 0x74FFFFFFFF17 = AIT Simple Application Boundary
+# Valid in AES (0xD8, Emergency Alert System, SCTE 18):
+0xD8FFFFFFFF00 = SCTE 18 EAS In-Band Details Channel
+0xD8FFFFFFFF01 = SCTE 18 EAS In-Band Exceptions Channel
+0xD8FFFFFFFF02 = SCTE 18 EAS Audio File
 # Valid in an SIT (0xFC, Splice Information Table, ANSI / SCTE 35):
 0xFCFFFFFFFF00 = SCTE 35 Avail
 0xFCFFFFFFFF01 = SCTE 35 DTMF

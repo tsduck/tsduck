@@ -47,6 +47,7 @@ HEADERS += \
     ../../../src/libtsduck/tsArgsWithPlugins.h \
     ../../../src/libtsduck/tsAssociationTagDescriptor.h \
     ../../../src/libtsduck/tsAsyncReport.h \
+    ../../../src/libtsduck/tsATSCMultipleString.h \
     ../../../src/libtsduck/tsAudioAttributes.h \
     ../../../src/libtsduck/tsAudioLanguageOptions.h \
     ../../../src/libtsduck/tsAudioPreselectionDescriptor.h \
@@ -70,6 +71,7 @@ HEADERS += \
     ../../../src/libtsduck/tsBouquetNameDescriptor.h \
     ../../../src/libtsduck/tsByteBlock.h \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsCableEmergencyAlertTable.h \
     ../../../src/libtsduck/tsCADescriptor.h \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCarouselIdentifierDescriptor.h \
@@ -553,6 +555,7 @@ SOURCES += \
     ../../../src/libtsduck/tsArgsWithPlugins.cpp \
     ../../../src/libtsduck/tsAssociationTagDescriptor.cpp \
     ../../../src/libtsduck/tsAsyncReport.cpp \
+    ../../../src/libtsduck/tsATSCMultipleString.cpp \
     ../../../src/libtsduck/tsAudioAttributes.cpp \
     ../../../src/libtsduck/tsAudioLanguageOptions.cpp \
     ../../../src/libtsduck/tsAudioPreselectionDescriptor.cpp \
@@ -574,6 +577,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsCableEmergencyAlertTable.cpp \
     ../../../src/libtsduck/tsCADescriptor.cpp \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCarouselIdentifierDescriptor.cpp \

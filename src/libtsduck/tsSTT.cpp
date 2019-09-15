@@ -43,12 +43,6 @@ TS_ID_TABLE_FACTORY(ts::STT, MY_TID, MY_STD);
 TS_FACTORY_REGISTER(ts::STT::DisplaySection, MY_TID);
 
 
-// The ATSC system time is the number of GPS seconds since 00:00:00 UTC, January 6th, 1980.
-// Number of seconds between 1970-01-01 and 1980-01-06.
-// Can be displayed on a Linux system using the command: date +%s --date 1980-01-06utc
-#define UNIX_TO_GPS_EPOCH 315964800
-
-
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
@@ -104,7 +98,7 @@ ts::Time ts::STT::utcTime() const
     else {
         // Add difference between 1970 and 180 to convert from GPS to UTC.
         // Then substract GPS-UTC offset (see ATSC A/65 section 6.1).
-        return Time::UnixTimeToUTC(system_time + UNIX_TO_GPS_EPOCH - GPS_UTC_offset);
+        return Time::UnixTimeToUTC(system_time + Time::UnixEpochToGPS - GPS_UTC_offset);
     }
 }
 
@@ -211,7 +205,7 @@ void ts::STT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Fixed part.
         const uint32_t time = GetUInt32(data + 1);
         const uint8_t offset = data[5];
-        const Time utc(Time::UnixTimeToUTC(time + UNIX_TO_GPS_EPOCH - offset));
+        const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS - offset));
 
         strm << margin << UString::Format(u"Protocol version: %d", {data[0]}) << std::endl
              << margin << UString::Format(u"System time: 0x%X (%d), GPS-UTC offset: 0x%X (%d)", {time, time, offset, offset}) << std::endl
