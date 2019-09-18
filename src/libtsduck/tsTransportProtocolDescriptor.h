@@ -119,9 +119,12 @@ namespace ts {
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
         virtual void deserialize(DuckContext&, const Descriptor&) override;
-        virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
         // When the protocol id is a known one, try to transfer the selector bytes

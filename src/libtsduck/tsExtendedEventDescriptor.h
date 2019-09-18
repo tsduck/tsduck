@@ -91,13 +91,6 @@ namespace ts {
         //!
         static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharset* charset = nullptr);
 
-        // Inherited methods
-        virtual void serialize(DuckContext&, Descriptor&) const override;
-        virtual void deserialize(DuckContext&, const Descriptor&) override;
-        virtual void buildXML(DuckContext&, xml::Element*) const override;
-        virtual void fromXML(DuckContext&, const xml::Element*) override;
-        DeclareDisplayDescriptor();
-
         //!
         //! An item entry.
         //!
@@ -114,5 +107,15 @@ namespace ts {
             //!
             Entry(const UString& desc_ = UString(), const UString& item_ = UString()) : item_description(desc_), item(item_) {}
         };
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
 }

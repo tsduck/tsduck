@@ -1119,6 +1119,7 @@ namespace ts {
         DID_EAS_INBAND_DETAILS  = 0x00,  //!< DID for SCTE 18 In-Band Details Channel Descriptor
         DID_EAS_INBAND_EXCEPTS  = 0x01,  //!< DID for SCTE 18 In-Band Exceptions Channel Descriptor
         DID_EAS_AUDIO_FILE      = 0x02,  //!< DID for SCTE 18 Audio File Descriptor
+        DID_EAS_METADATA        = 0x03,  //!< DID for SCTE 18 / SCTE 164 Emergency Alert Metadata Descriptor
 
         // Valid in a SIT (Splice Information Table, SCTE 35).
 

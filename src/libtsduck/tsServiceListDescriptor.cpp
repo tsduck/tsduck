@@ -83,18 +83,12 @@ ts::ServiceListDescriptor::ServiceListDescriptor(int service_id, int service_typ
 
 void ts::ServiceListDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16 (it->service_id);
-        bbp->appendUInt8 (it->service_type);
+    ByteBlockPtr bbp(serializeStart());
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        bbp->appendUInt16(it->service_id);
+        bbp->appendUInt8(it->service_type);
     }
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -111,7 +105,7 @@ void ts::ServiceListDescriptor::deserialize(DuckContext& duck, const Descriptor&
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 3) {
-            entries.push_back (Entry (GetUInt16 (data), data[2]));
+            entries.push_back(Entry(GetUInt16(data), data[2]));
             data += 3;
             size -= 3;
         }

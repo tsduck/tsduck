@@ -66,6 +66,10 @@
     REF_TYPE(EacemPreferredNameIdentifierDescriptor);
     REF_TYPE(EacemPreferredNameListDescriptor);
     REF_TYPE(EacemStreamIdentifierDescriptor);
+    REF_TYPE(EASAudioFileDescriptor);
+    REF_TYPE(EASInbandDetailsChannelDescriptor);
+    REF_TYPE(EASInbandExceptionChannelsDescriptor);
+    REF_TYPE(EASMetadataDescriptor);
     REF_TYPE(ECMRepetitionRateDescriptor);
     REF_TYPE(EnhancedAC3Descriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);

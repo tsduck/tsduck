@@ -245,10 +245,10 @@ uint8_t ts::ATSCMultipleString::EncodingMode(const UString& text)
 // Serialize a binary multiple_string_structure.
 //----------------------------------------------------------------------------
 
-size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size_t& size, size_t max_size) const
+size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size_t& size, size_t max_size, bool ignore_empty) const
 {
     // Need at least one byte to serialize.
-    if (data == nullptr || size == 0 || max_size == 0) {
+    if (data == nullptr || size == 0 || max_size == 0 || (ignore_empty && empty())) {
         return 0;
     }
 
@@ -314,10 +314,10 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size
 // Serialize a binary multiple_string_structure and append to a byte block.
 //----------------------------------------------------------------------------
 
-size_t ts::ATSCMultipleString::serialize(DuckContext& duck, ByteBlock& data, size_t max_size) const
+size_t ts::ATSCMultipleString::serialize(DuckContext& duck, ByteBlock& data, size_t max_size, bool ignore_empty) const
 {
     // Need at least one byte to serialize.
-    if (max_size == 0) {
+    if (max_size == 0 || (ignore_empty && empty())) {
         return 0;
     }
 
@@ -458,9 +458,14 @@ bool ts::ATSCMultipleString::DecodeSegment(UString& segment, const uint8_t*& dat
 // Deserialize a binary multiple_string_structure.
 //----------------------------------------------------------------------------
 
-bool ts::ATSCMultipleString::deserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size)
+bool ts::ATSCMultipleString::deserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size, bool ignore_empty)
 {
     clear();
+
+    // Check valid empty structure.
+    if (ignore_empty && (buffer_size == 0 || mss_size == 0)) {
+        return true;
+    }
 
     // Get number of strings.
     if (buffer == nullptr || buffer_size == 0 || mss_size == 0) {

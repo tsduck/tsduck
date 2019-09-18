@@ -156,6 +156,10 @@ HEADERS += \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.h \
     ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.h \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsEASAudioFileDescriptor.h \
+    ../../../src/libtsduck/tsEASInbandDetailsChannelDescriptor.h \
+    ../../../src/libtsduck/tsEASInbandExceptionChannelsDescriptor.h \
+    ../../../src/libtsduck/tsEASMetadataDescriptor.h \
     ../../../src/libtsduck/tsECB.h \
     ../../../src/libtsduck/tsECBTemplate.h \
     ../../../src/libtsduck/tsECMGClient.h \
@@ -642,6 +646,10 @@ SOURCES += \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.cpp \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsEASAudioFileDescriptor.cpp \
+    ../../../src/libtsduck/tsEASInbandDetailsChannelDescriptor.cpp \
+    ../../../src/libtsduck/tsEASInbandExceptionChannelsDescriptor.cpp \
+    ../../../src/libtsduck/tsEASMetadataDescriptor.cpp \
     ../../../src/libtsduck/tsECMGClient.cpp \
     ../../../src/libtsduck/tsECMGClientArgs.cpp \
     ../../../src/libtsduck/tsECMGClientHandlerInterface.cpp \
