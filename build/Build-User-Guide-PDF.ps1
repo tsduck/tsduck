@@ -114,20 +114,23 @@ $word.Visible = $False
 $doc = $word.Documents.Open($DocIn)
 
 # Update the document properties.
+Write-Output "Updating document fields"
 Set-CustomDocumentProperties $doc $PropVersion $Version
 Set-CustomDocumentProperties $doc $PropDate "${CurrentMonth} ${CurrentYear}"
 Set-CustomDocumentProperties $doc $PropCopyright "${InitialCopyrightYear}-${CurrentYear}"
 
-# Update main content fo the document.
+# Update main content of the document.
 [void]$doc.Fields.Update()
 
 # Iterate through sections and update header and footer.
+Write-Output "Updating headers and footers"
 foreach ($sect in $doc.Sections) {
     [void]$sect.Headers.Item(1).Range.Fields.Update()
     [void]$sect.Footers.Item(1).Range.Fields.Update()
 }
 
 # Update tables of contents.
+Write-Output "Updating tables of contents"
 foreach ($table in $doc.TablesOfContents) {
     [void]$table.Update()
 }

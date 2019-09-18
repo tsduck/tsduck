@@ -399,8 +399,12 @@ bool ts::xml::Element::getAttribute(UString& value,
 bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool required, bool defValue) const
 {
     UString str;
-    if (!getAttribute(str, name, required, UString::TrueFalse(defValue))) {
+    if (!getAttribute(str, name, required)) {
         return false;
+    }
+    else if (!required && str.empty()) {
+        value = defValue;
+        return true;
     }
     else if (str.similar(u"true") || str.similar(u"yes") || str.similar(u"1")) {
         value = true;
@@ -475,8 +479,12 @@ bool ts::xml::Element::getEnumAttribute(int& value, const Enumeration& definitio
 bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bool required, const Time& defValue) const
 {
     UString str;
-    if (!getAttribute(str, name, required, Attribute::DateTimeToString(defValue))) {
+    if (!getAttribute(str, name, required)) {
         return false;
+    }
+    if (!required && str.empty()) {
+        value = defValue;
+        return true;
     }
 
     // Analyze the time string.
@@ -495,8 +503,12 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
 bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool required, Second defValue) const
 {
     UString str;
-    if (!getAttribute(str, name, required, Attribute::TimeToString(defValue))) {
+    if (!getAttribute(str, name, required)) {
         return false;
+    }
+    if (!required && str.empty()) {
+        value = defValue;
+        return true;
     }
 
     // Analyze the time string.

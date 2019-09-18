@@ -108,17 +108,17 @@ ts::CableEmergencyAlertTable::Location::Location(uint8_t state, uint8_t sub, uin
 
 ts::CableEmergencyAlertTable::Exception::Exception(uint16_t oob) :
     in_band(false),
-    exception_major_channel_number(0),
-    exception_minor_channel_number(0),
-    exception_OOB_source_ID(oob)
+    major_channel_number(0),
+    minor_channel_number(0),
+    OOB_source_ID(oob)
 {
 }
 
 ts::CableEmergencyAlertTable::Exception::Exception(uint16_t major, uint16_t minor) :
     in_band(true),
-    exception_major_channel_number(major),
-    exception_minor_channel_number(minor),
-    exception_OOB_source_ID(0)
+    major_channel_number(major),
+    minor_channel_number(minor),
+    OOB_source_ID(0)
 {
 }
 
@@ -189,7 +189,7 @@ void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const B
     data += event_len + 1; remain -= event_len + 1;
 
     // Activation text
-    if (!nature_of_activation_text.deserialize(duck, data, remain, activ_len)) {
+    if (!nature_of_activation_text.deserialize(duck, data, remain, activ_len, true)) {
         return;
     }
 
@@ -210,7 +210,7 @@ void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const B
     data += 19; remain -= 19;
 
     // Alert text.
-    if (!alert_text.deserialize(duck, data, remain, alert_len)) {
+    if (!alert_text.deserialize(duck, data, remain, alert_len, true)) {
         return;
     }
 
@@ -295,7 +295,7 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     }
     uint8_t* len_addr = data++;
     remain--;
-    *len_addr = uint8_t(nature_of_activation_text.serialize(duck, data, remain, 255));
+    *len_addr = uint8_t(nature_of_activation_text.serialize(duck, data, remain, 255, true));
     
     // A large portion of fixed fields
     if (remain < 19) {
@@ -312,7 +312,7 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     len_addr = data + 17; // place-holder for alert_text length;
     data += 19; remain -= 19;
 
-    PutUInt16(len_addr, uint16_t(alert_text.serialize(duck, data, remain)));
+    PutUInt16(len_addr, uint16_t(alert_text.serialize(duck, data, remain, NPOS, true)));
 
     // Serialize locations.
     if (remain < 1) {
@@ -338,12 +338,12 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     for (auto it = exceptions.begin(); remain >= 5 && it != exceptions.end(); ++it) {
         PutUInt8(data, it->in_band ? 0xFF : 0x7F);
         if (it->in_band) {
-            PutUInt16(data + 1, 0xFC00 | it->exception_major_channel_number);
-            PutUInt16(data + 3, 0xFC00 | it->exception_minor_channel_number);
+            PutUInt16(data + 1, 0xFC00 | it->major_channel_number);
+            PutUInt16(data + 3, 0xFC00 | it->minor_channel_number);
         }
         else {
             PutUInt16(data + 1, 0xFFFF);
-            PutUInt16(data + 3, it->exception_OOB_source_ID);
+            PutUInt16(data + 3, it->OOB_source_ID);
         }
         data += 5; remain -= 5;
         (*len_addr)++; // increment number of serialized exceptions
@@ -394,10 +394,10 @@ void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* roo
         root->setIntAttribute(u"details_OOB_source_ID", details_OOB_source_ID, true);
     }
     if (details_major_channel_number != 0) {
-        root->setIntAttribute(u"details_major_channel_number", details_major_channel_number, true);
+        root->setIntAttribute(u"details_major_channel_number", details_major_channel_number, false);
     }
     if (details_minor_channel_number != 0) {
-        root->setIntAttribute(u"details_minor_channel_number", details_minor_channel_number, true);
+        root->setIntAttribute(u"details_minor_channel_number", details_minor_channel_number, false);
     }
     if (audio_OOB_source_ID != 0) {
         root->setIntAttribute(u"audio_OOB_source_ID", audio_OOB_source_ID, true);
@@ -412,11 +412,11 @@ void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* roo
     for (auto it = exceptions.begin(); it != exceptions.end(); ++it) {
         xml::Element* e = root->addElement(u"exception");
         if (it->in_band) {
-            e->setIntAttribute(u"exception_major_channel_number", it->exception_major_channel_number, true);
-            e->setIntAttribute(u"exception_minor_channel_number", it->exception_minor_channel_number, true);
+            e->setIntAttribute(u"major_channel_number", it->major_channel_number, false);
+            e->setIntAttribute(u"minor_channel_number", it->minor_channel_number, false);
         }
         else {
-            e->setIntAttribute(u"exception_OOB_source_ID", it->exception_OOB_source_ID, true);
+            e->setIntAttribute(u"OOB_source_ID", it->OOB_source_ID, true);
         }
     }
     descs.toXML(duck, root);
@@ -453,7 +453,7 @@ void ts::CableEmergencyAlertTable::fromXML(DuckContext& duck, const xml::Element
         alert_text.fromXML(duck, element, u"alert_text", false) &&
         element->getChildren(locs, u"location", 1, 31) &&
         element->getChildren(exceps, u"exception", 0, 255) &&
-        descs.fromXML(duck, others, element, u"location,exception,nature_of_activation_text");
+        descs.fromXML(duck, others, element, u"location,exception,alert_text,nature_of_activation_text");
 
     for (size_t i = 0; _is_valid && i < locs.size(); ++i) {
         Location loc;
@@ -469,16 +469,16 @@ void ts::CableEmergencyAlertTable::fromXML(DuckContext& duck, const xml::Element
     for (size_t i = 0; _is_valid && i < exceps.size(); ++i) {
         Exception exc;
         bool wrong = false;
-        exc.in_band = exceps[i]->hasAttribute(u"exception_major_channel_number") && exceps[i]->hasAttribute(u"exception_minor_channel_number");
+        exc.in_band = exceps[i]->hasAttribute(u"major_channel_number") && exceps[i]->hasAttribute(u"minor_channel_number");
         if (exc.in_band) {
-            wrong = exceps[i]->hasAttribute(u"exception_OOB_source_ID");
+            wrong = exceps[i]->hasAttribute(u"OOB_source_ID");
             _is_valid =
-                exceps[i]->getIntAttribute<uint16_t>(exc.exception_major_channel_number, u"exception_major_channel_number", true, 0, 0, 0x03FF) &&
-                exceps[i]->getIntAttribute<uint16_t>(exc.exception_minor_channel_number, u"exception_minor_channel_number", true, 0, 0, 0x03FF);
+                exceps[i]->getIntAttribute<uint16_t>(exc.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
+                exceps[i]->getIntAttribute<uint16_t>(exc.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF);
         }
         else {
-            wrong = exceps[i]->hasAttribute(u"exception_major_channel_number") || exceps[i]->hasAttribute(u"exception_minor_channel_number");
-            _is_valid = exceps[i]->getIntAttribute<uint16_t>(exc.exception_OOB_source_ID, u"exception_OOB_source_ID", true);
+            wrong = exceps[i]->hasAttribute(u"major_channel_number") || exceps[i]->hasAttribute(u"minor_channel_number");
+            _is_valid = exceps[i]->getIntAttribute<uint16_t>(exc.OOB_source_ID, u"OOB_source_ID", true);
         }
         if (wrong) {
             _is_valid = false;
@@ -569,7 +569,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
                 if (ok) {
                     const uint8_t state = data[0];
                     const uint8_t subd = data[1] >> 4;
-                    const uint16_t county = GetUInt16(data + 1) & 0xFC00;
+                    const uint16_t county = GetUInt16(data + 1) & 0x03FF;
                     strm << margin
                          << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, names::VALUE)})
                          << std::endl;
@@ -588,7 +588,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
             while (ok && len-- > 0) {
                 ok = size >= 5;
                 if (ok) {
-                    const bool inband = (data[0] && 0x80) != 0;
+                    const bool inband = (data[0] & 0x80) != 0;
                     strm << margin << UString::Format(u"  In-band: %s", {inband});
                     if (inband) {
                         strm << UString::Format(u", exception major.minor: %d.%d", {GetUInt16(data + 1) & 0x03FF, GetUInt16(data + 3) & 0x03FF}) << std::endl;

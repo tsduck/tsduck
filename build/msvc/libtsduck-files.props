@@ -158,6 +158,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEASAudioFileDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEASInbandDetailsChannelDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEASInbandExceptionChannelsDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEASMetadataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECBTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGClient.h" />
@@ -654,6 +658,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsEASAudioFileDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsEASInbandDetailsChannelDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsEASInbandExceptionChannelsDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsEASMetadataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClientArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClientHandlerInterface.cpp" />

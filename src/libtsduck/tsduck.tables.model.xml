@@ -304,9 +304,9 @@
       <!-- Up to 255 exception structures -->
       <!-- Specify either exception_major_channel_number+exception_minor_channel_number or exception_OOB_source_ID -->
       <exception
-          exception_major_channel_number="uint10, optional"
-          exception_minor_channel_number="uint10, optional"
-          exception_OOB_source_ID="uint16, optional"/>
+          major_channel_number="uint10, optional"
+          minor_channel_number="uint10, optional"
+          OOB_source_ID="uint16, optional"/>
       <_any in="_descriptors"/>
     </cable_emergency_alert_table>
 
@@ -762,6 +762,36 @@
     </eacem_preferred_name_list_descriptor>
 
     <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
+
+    <EAS_audio_file_descriptor>
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- One entry per audio file -->
+      <file audio_format="uint7, required"
+            file_name="string, optional"
+            audio_source="uint8, required"
+            program_number="uint16, optional"
+            carousel_id="uint32, optional"
+            application_id="uint16, optional"
+            download_id="uint32, optional"
+            module_id="uint32, optional"/>
+    </EAS_audio_file_descriptor>
+
+    <EAS_inband_details_channel_descriptor
+        details_RF_channel="uint8, required"
+        details_program_number="uint16, required">
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+    </EAS_inband_details_channel_descriptor>
+
+    <EAS_inband_exception_channels_descriptor>
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- One entry per exception channel -->
+      <exception RF_channel="uint8, required" program_number="uint16, required"/>
+    </EAS_inband_exception_channels_descriptor>
+
+    <EAS_metadata_descriptor fragment_number="uint8, default=1">
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- The text inside this element is an XML fragment -->
+    </EAS_metadata_descriptor>
 
     <ECM_repetition_rate_descriptor
         CA_system_id="uint16, required"

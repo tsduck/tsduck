@@ -95,10 +95,10 @@ namespace ts {
         class TSDUCKDLL Exception
         {
         public:
-            bool     in_band;                        //!< When true, use in-band major/minor id, when false use OOB source id.
-            uint16_t exception_major_channel_number; //!< 10 bits, major channel id.
-            uint16_t exception_minor_channel_number; //!< 10 bits, minor channel id.
-            uint16_t exception_OOB_source_ID;        //!< Id of out-of-band service.
+            bool     in_band;               //!< When true, use in-band major/minor id, when false use OOB source id.
+            uint16_t major_channel_number;  //!< 10 bits, major channel id.
+            uint16_t minor_channel_number;  //!< 10 bits, minor channel id.
+            uint16_t OOB_source_ID;         //!< Id of out-of-band service.
 
             //!
             //! Constructor.
