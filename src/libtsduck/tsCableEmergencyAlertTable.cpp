@@ -543,6 +543,9 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& display, const 
                  << UString::Format(u"Remaining: %d seconds, start time: %s, duration: %d minutes", {remaining, start_value == 0 ? u"immediate" : start_time.format(Time::DATETIME), duration})
                  << std::endl
                  << margin
+                 << UString::Format(u"Alert priority: %d", {priority})
+                 << std::endl
+                 << margin
                  << UString::Format(u"Details: OOB id: 0x%X (%d), major.minor: %d.%d", {details_oob, details_oob, details_major, details_minor})
                  << std::endl
                  << margin
