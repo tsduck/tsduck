@@ -63,7 +63,7 @@ operating system and upgrades TSDuck.
 ### License
 
 TSDuck is distributed under the terms of the Simplified BSD License.
-See the file `LICENSE.txt` for details.
+See the file `LICENSE` for details.
 
 *Copyright (c) 2005-2019, Thierry Lelegard*<br/>
 *All rights reserved*
