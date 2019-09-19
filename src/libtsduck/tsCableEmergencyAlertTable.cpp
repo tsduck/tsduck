@@ -323,7 +323,7 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     remain--;
     for (auto it = locations.begin(); remain >= 3 && it != locations.end(); ++it) {
         PutUInt8(data, it->state_code);
-        PutUInt16(data + 1, (uint16_t(it->county_subdivision) << 12) | 0x0C00 | (it->county_code & 0x03FF));
+        PutUInt16(data + 1, uint16_t((uint16_t(it->county_subdivision) << 12) | 0x0C00 | (it->county_code & 0x03FF)));
         data += 3; remain -= 3;
         (*len_addr)++; // increment number of serialized locations
     }
