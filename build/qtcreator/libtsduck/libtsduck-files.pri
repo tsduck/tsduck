@@ -90,6 +90,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCipherChainingTemplate.h \
     ../../../src/libtsduck/tsCOM.h \
     ../../../src/libtsduck/tsComponentDescriptor.h \
+    ../../../src/libtsduck/tsComponentNameDescriptor.h \
     ../../../src/libtsduck/tsCondition.h \
     ../../../src/libtsduck/tsConfigFile.h \
     ../../../src/libtsduck/tsConfigSection.h \
@@ -177,6 +178,7 @@ HEADERS += \
     ../../../src/libtsduck/tsETID.h \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.h \
     ../../../src/libtsduck/tsException.h \
+    ../../../src/libtsduck/tsExtendedChannelNameDescriptor.h \
     ../../../src/libtsduck/tsExtendedEventDescriptor.h \
     ../../../src/libtsduck/tsExternalApplicationAuthorizationDescriptor.h \
     ../../../src/libtsduck/tsExternalESIdDescriptor.h \
@@ -347,6 +349,7 @@ HEADERS += \
     ../../../src/libtsduck/tsServiceDiscovery.h \
     ../../../src/libtsduck/tsServiceIdentifierDescriptor.h \
     ../../../src/libtsduck/tsServiceListDescriptor.h \
+    ../../../src/libtsduck/tsServiceLocationDescriptor.h \
     ../../../src/libtsduck/tsServiceMoveDescriptor.h \
     ../../../src/libtsduck/tsServiceRelocatedDescriptor.h \
     ../../../src/libtsduck/tsServiceTemplate.h \
@@ -595,6 +598,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCipherChaining.cpp \
     ../../../src/libtsduck/tsCOM.cpp \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
+    ../../../src/libtsduck/tsComponentNameDescriptor.cpp \
     ../../../src/libtsduck/tsCondition.cpp \
     ../../../src/libtsduck/tsConfigFile.cpp \
     ../../../src/libtsduck/tsConfigSection.cpp \
@@ -663,6 +667,7 @@ SOURCES += \
     ../../../src/libtsduck/tsEnumeration.cpp \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.cpp \
     ../../../src/libtsduck/tsException.cpp \
+    ../../../src/libtsduck/tsExtendedChannelNameDescriptor.cpp \
     ../../../src/libtsduck/tsExtendedEventDescriptor.cpp \
     ../../../src/libtsduck/tsExternalApplicationAuthorizationDescriptor.cpp \
     ../../../src/libtsduck/tsExternalESIdDescriptor.cpp \
@@ -817,6 +822,7 @@ SOURCES += \
     ../../../src/libtsduck/tsServiceDiscovery.cpp \
     ../../../src/libtsduck/tsServiceIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsServiceListDescriptor.cpp \
+    ../../../src/libtsduck/tsServiceLocationDescriptor.cpp \
     ../../../src/libtsduck/tsServiceMoveDescriptor.cpp \
     ../../../src/libtsduck/tsServiceRelocatedDescriptor.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \

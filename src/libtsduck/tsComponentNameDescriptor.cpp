@@ -27,31 +27,30 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsIPMACPlatformNameDescriptor.h"
+#include "tsComponentNameDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"IPMAC_platform_name_descriptor"
-#define MY_DID ts::DID_INT_PF_NAME
-#define MY_TID ts::TID_INT
-#define MY_STD ts::STD_DVB
+#define MY_XML_NAME u"component_name_descriptor"
+#define MY_DID ts::DID_ATSC_COMPONENT_NAME
+#define MY_PDS ts::PDS_ATSC
+#define MY_STD ts::STD_ATSC
 
-TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::IPMACPlatformNameDescriptor, MY_XML_NAME, MY_TID);
-TS_ID_DESCRIPTOR_FACTORY(ts::IPMACPlatformNameDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
-TS_FACTORY_REGISTER(ts::IPMACPlatformNameDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_XML_DESCRIPTOR_FACTORY(ts::ComponentNameDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ComponentNameDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::ComponentNameDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const UString& lang, const UString& name) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    language_code(lang),
-    text(name)
+ts::ComponentNameDescriptor::ComponentNameDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    component_name_string()
 {
     _is_valid = true;
 }
@@ -61,8 +60,8 @@ ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(const UString& lang
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(DuckContext& duck, const Descriptor& desc) :
-    IPMACPlatformNameDescriptor()
+ts::ComponentNameDescriptor::ComponentNameDescriptor(DuckContext& duck, const Descriptor& desc) :
+    ComponentNameDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -72,16 +71,11 @@ ts::IPMACPlatformNameDescriptor::IPMACPlatformNameDescriptor(DuckContext& duck, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ComponentNameDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    if (SerializeLanguageCode(*bbp, language_code)) {
-        bbp->append(duck.toDVB(text));
-        serializeEnd(desc, bbp);
-    }
-    else {
-        desc.invalidate();
-    }
+    component_name_string.serialize(duck, *bbp);
+    serializeEnd(desc, bbp);
 }
 
 
@@ -89,17 +83,12 @@ void ts::IPMACPlatformNameDescriptor::serialize(DuckContext& duck, Descriptor& d
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ComponentNameDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
+    component_name_string.clear();
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-
-    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 3;
-
-    if (_is_valid) {
-        language_code = DeserializeLanguageCode(data);
-        text = duck.fromDVB(data + 3, size - 3);
-    }
+    _is_valid = desc.isValid() && desc.tag() == _tag && component_name_string.deserialize(duck, data, size);
 }
 
 
@@ -107,17 +96,9 @@ void ts::IPMACPlatformNameDescriptor::deserialize(DuckContext& duck, const Descr
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ComponentNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
-    const std::string margin(indent, ' ');
-
-    if (size >= 3) {
-        strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl
-             << margin << "Platform name: " << display.duck().fromDVB(data + 3, size - 3) << std::endl;
-        size = 0;
-    }
-
+    ATSCMultipleString::Display(display, u"Component name: ", indent, data, size);
     display.displayExtraData(data, size, indent);
 }
 
@@ -126,10 +107,9 @@ void ts::IPMACPlatformNameDescriptor::DisplayDescriptor(TablesDisplay& display, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::ComponentNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setAttribute(u"language_code", language_code);
-    root->setAttribute(u"text", text);
+    component_name_string.toXML(duck, root, u"component_name_string", true);
 }
 
 
@@ -137,10 +117,9 @@ void ts::IPMACPlatformNameDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::ComponentNameDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getAttribute(language_code, u"language_code", true, UString(), 3, 3) &&
-        element->getAttribute(text, u"text", true, UString(), 0, MAX_DESCRIPTOR_SIZE - 5);
+        component_name_string.fromXML(duck, element, u"component_name_string", false);
 }

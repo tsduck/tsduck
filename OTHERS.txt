@@ -1,10 +1,13 @@
-This software is released under the terms of the license which is commonly
-referred to as "BSD 2-Clause License" or "Simplified BSD License" or
-"FreeBSD License". See http://opensource.org/licenses/BSD-2-Clause
+                        Licenses of third-party software
 
                               --------------------
 
-                        Licenses of third-party software
+The TSDuck software is released under the terms of the license which is commonly
+referred to as "BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+See file LICENSE.txt and http://opensource.org/licenses/BSD-2-Clause
+
+TSDuck includes parts of other libraries, either in source or binary form. The
+license for these third-party software are described below.
 
                                 ==== DTAPI ====
 

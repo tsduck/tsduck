@@ -28,47 +28,37 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a DVB AC-3_descriptor
+//!  Representation of an ATSC component_name_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsATSCMultipleString.h"
 
 namespace ts {
     //!
-    //! Representation of a DVB AC-3_descriptor.
-    //! @see ETSI 300 468, D.3.
+    //! Representation of an ATSC component_name_descriptor.
+    //! @see ATSC A/65, section 6.9.7.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AC3Descriptor : public AbstractDescriptor
+    class TSDUCKDLL ComponentNameDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type;   //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> bsid;             //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> mainid;           //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> asvc;             //!< See ETSI 300 468, D.3.
-        ByteBlock         additional_info;  //!< See ETSI 300 468, D.3.
+        ATSCMultipleString component_name_string;    //!< Component name.
 
         //!
         //! Default constructor.
         //!
-        AC3Descriptor();
+        ComponentNameDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AC3Descriptor(DuckContext& duck, const Descriptor& bin);
-
-        //!
-        //! Merge inside this object missing information which can be found in other object.
-        //! @param [in] other Other object to get missing information from.
-        //!
-        void merge(const AC3Descriptor& other);
+        ComponentNameDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

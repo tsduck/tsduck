@@ -120,7 +120,7 @@ void ts::AudioPreselectionDescriptor::serialize(DuckContext& duck, Descriptor& d
                          (it->aux_component_tags.empty() ? 0x00 : 0x02) |
                          (it->future_extension.empty() ? 0x00 : 0x01));
 
-        if (!it->ISO_639_language_code.empty() && !SerializeLanguageCode(duck, *bbp, it->ISO_639_language_code)) {
+        if (!it->ISO_639_language_code.empty() && !SerializeLanguageCode(*bbp, it->ISO_639_language_code)) {
             desc.invalidate();
             return;
         }

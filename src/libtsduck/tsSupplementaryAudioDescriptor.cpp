@@ -87,7 +87,7 @@ void ts::SupplementaryAudioDescriptor::serialize(DuckContext& duck, Descriptor& 
                      uint8_t((editorial_classification & 0x1F) << 2) |
                      0x02 |
                      (language_code.empty() ? 0x00 : 0x01));
-    if (!language_code.empty() && !SerializeLanguageCode(duck, *bbp, language_code)) {
+    if (!language_code.empty() && !SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -123,7 +123,7 @@ void ts::SupplementaryAudioDescriptor::deserialize(DuckContext& duck, const Desc
             _is_valid = false;
             return;
         }
-        language_code = UString::FromDVB(data, 3);
+        language_code = DeserializeLanguageCode(data);
         data += 3; size -= 3;
     }
 
@@ -197,7 +197,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
         }
         strm << std::endl;
         if (lang_present && size >= 3) {
-            strm << margin << "Language: " << UString::FromDVB(data, 3) << std::endl;
+            strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
         }
         if (size > 0) {

@@ -120,7 +120,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const uint8_t page = data[4];
         Entry e;
         e.setFullNumber(mag, page);
-        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {UString::FromDVB(data, 3), type, type}) << std::endl
+        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {DeserializeLanguageCode(data), type, type}) << std::endl
              << margin << "Type: " << names::TeletextType(type) << std::endl
              << margin << "Magazine: " << int(mag) << ", page: " << int(page) << ", full page: " << e.page_number << std::endl;
         data += 5; size -= 5;
@@ -139,7 +139,7 @@ void ts::TeletextDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->language_code)) {
+        if (!SerializeLanguageCode(*bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -168,7 +168,7 @@ void ts::TeletextDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 
     while (size >= 5) {
         Entry entry;
-        entry.language_code = UString::FromDVB(data, 3);
+        entry.language_code = DeserializeLanguageCode(data);
         entry.teletext_type = data[3] >> 3;
         entry.setFullNumber(data[3] & 0x07, data[4]);
         entries.push_back(entry);

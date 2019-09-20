@@ -296,7 +296,7 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     uint8_t* len_addr = data++;
     remain--;
     *len_addr = uint8_t(nature_of_activation_text.serialize(duck, data, remain, 255, true));
-    
+
     // A large portion of fixed fields
     if (remain < 19) {
         return;

@@ -86,7 +86,7 @@ void ts::LocalTimeOffsetDescriptor::serialize(DuckContext& duck, Descriptor& des
     ByteBlockPtr bbp(serializeStart());
 
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->country)) {
+        if (!SerializeLanguageCode(*bbp, it->country)) {
             desc.invalidate();
             return;
         }
@@ -116,7 +116,7 @@ void ts::LocalTimeOffsetDescriptor::deserialize(DuckContext& duck, const Descrip
         size_t size = desc.payloadSize();
         while (size >= 13) {
             Region region;
-            region.country = UString::FromDVB(data, 3);
+            region.country = DeserializeLanguageCode(data);
             region.region_id = data[3] >> 2;
             const uint8_t polarity = data[3] & 0x01;
             int hours = DecodeBCD(data[4]);
@@ -147,7 +147,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
     while (size >= 3) {
         // Country code is a 3-byte string
-        strm << margin << "Country code: " << UString::FromDVB(data, 3) << std::endl;
+        strm << margin << "Country code: " << DeserializeLanguageCode(data) << std::endl;
         data += 3; size -= 3;
         if (size >= 1) {
             uint8_t region_id = *data >> 2;

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an AC-4_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsAC4Descriptor.h"
 #include "tsDescriptor.h"

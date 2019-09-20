@@ -45,6 +45,7 @@
     REF_TYPE(CarouselIdentifierDescriptor);
     REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
+    REF_TYPE(ComponentNameDescriptor);
     REF_TYPE(ContentDescriptor);
     REF_TYPE(CopyrightDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);
@@ -73,6 +74,7 @@
     REF_TYPE(ECMRepetitionRateDescriptor);
     REF_TYPE(EnhancedAC3Descriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
+    REF_TYPE(ExtendedChannelNameDescriptor);
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
@@ -119,6 +121,7 @@
     REF_TYPE(ServiceDescriptor);
     REF_TYPE(ServiceIdentifierDescriptor);
     REF_TYPE(ServiceListDescriptor);
+    REF_TYPE(ServiceLocationDescriptor);
     REF_TYPE(ServiceMoveDescriptor);
     REF_TYPE(ServiceRelocatedDescriptor);
     REF_TYPE(ShortEventDescriptor);

@@ -87,7 +87,7 @@ void ts::MultilingualServiceNameDescriptor::serialize(DuckContext& duck, Descrip
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->language)) {
+        if (!SerializeLanguageCode(*bbp, it->language)) {
             desc.invalidate();
             return;
         }
@@ -111,7 +111,7 @@ void ts::MultilingualServiceNameDescriptor::deserialize(DuckContext& duck, const
     entries.clear();
 
     while (_is_valid && size >= 4) {
-        const UString lang(UString::FromDVB(data, 3));
+        const UString lang(DeserializeLanguageCode(data));
         const size_t prov_len = data[3];
         data += 4; size -= 4;
         _is_valid = prov_len + 1 <= size;
@@ -141,7 +141,7 @@ void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& dis
     while (size >= 4) {
         const size_t prov_len = std::min<size_t>(data[3], size - 4);
         strm << margin
-             << "Language: " << UString::FromDVB(data, 3)
+             << "Language: " << DeserializeLanguageCode(data)
              << ", provider: \"" << display.duck().fromDVB(data + 4, prov_len) << "\"";
         data += 4 + prov_len; size -= 4 + prov_len;
         if (size >= 1) {

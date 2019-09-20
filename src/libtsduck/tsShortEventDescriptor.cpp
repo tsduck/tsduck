@@ -133,7 +133,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList& 
 void ts::ShortEventDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -156,7 +156,7 @@ void ts::ShortEventDescriptor::deserialize(DuckContext& duck, const Descriptor& 
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    language_code = UString::FromDVB(data, 3);
+    language_code = DeserializeLanguageCode(data);
     data += 3; size -= 3;
 
     event_name = duck.fromDVBWithByteLength(data, size);
@@ -175,7 +175,7 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        const UString lang(UString::FromDVB(data, 3));
+        const UString lang(DeserializeLanguageCode(data));
         data += 3; size -= 3;
         const UString name(display.duck().fromDVBWithByteLength(data, size));
         const UString text(display.duck().fromDVBWithByteLength(data, size));
