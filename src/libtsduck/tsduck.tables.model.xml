@@ -75,7 +75,7 @@
       <!-- Program-level descriptors -->
       <_any in="_descriptors"/>
       <!-- One per elementary stream -->
-      <component stream_type="uint8, required" elementary_PID="uint13, required">
+      <component stream_type="uint8, required" elementary_PID="uint13, require">
         <_any in="_descriptors"/>
       </component>
     </PMT>
@@ -635,6 +635,13 @@
         language_code="char3, required"
         text="string, optional"/>
 
+    <component_name_descriptor>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <component_name_string>
+        <string language="char3, required" text="string, required"/>
+      </component_name_string>
+    </component_name_descriptor>
+
     <content_descriptor>
       <!-- One per classification -->
       <content content_nibble_level_1="uint4, required"
@@ -822,6 +829,13 @@
                service_id="uint16, required"
                eutelsat_channel_number="uint10, required"/>
     </eutelsat_channel_number_descriptor>
+
+    <extended_channel_name_descriptor>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <long_channel_name_text>
+        <string language="char3, required" text="string, required"/>
+      </long_channel_name_text>
+    </extended_channel_name_descriptor>
 
     <extended_event_descriptor
         descriptor_number="uint8, required"
@@ -1121,6 +1135,13 @@
       <service service_id="uint16, required"
                service_type="uint8, required"/>
     </service_list_descriptor>
+
+    <service_location_descriptor PCR_PID="uint13, optional">
+      <!-- One per component -->
+      <component stream_type="uint8, required"
+                 elementary_PID="uint13, required"
+                 ISO_639_language_code="char3, optional"/>
+    </service_location_descriptor>
 
     <service_move_descriptor
         new_original_network_id="uint16, required"

@@ -85,7 +85,7 @@ void ts::EacemPreferredNameListDescriptor::serialize(DuckContext& duck, Descript
 {
     ByteBlockPtr bbp(serializeStart());
     for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        if (!SerializeLanguageCode(duck, *bbp, it1->first)) {
+        if (!SerializeLanguageCode(*bbp, it1->first)) {
             desc.invalidate();
             return;
         }
@@ -115,7 +115,7 @@ void ts::EacemPreferredNameListDescriptor::deserialize(DuckContext& duck, const 
         // Loop on languages.
         while (size >= 4) {
             // Get language and name count.
-            const UString lang(UString::FromDVB(data, 3));
+            const UString lang(DeserializeLanguageCode(data));
             uint8_t count = data[3];
             data += 4; size -= 4;
 
@@ -148,7 +148,7 @@ void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
-        const UString lang(UString::FromDVB(data, 3));
+        const UString lang(DeserializeLanguageCode(data));
         uint8_t count = data[3];
         data += 4; size -= 4;
 

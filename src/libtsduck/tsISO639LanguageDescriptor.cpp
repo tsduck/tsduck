@@ -96,7 +96,7 @@ void ts::ISO639LanguageDescriptor::serialize(DuckContext& duck, Descriptor& desc
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->language_code)) {
+        if (!SerializeLanguageCode(*bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -120,7 +120,7 @@ void ts::ISO639LanguageDescriptor::deserialize(DuckContext& duck, const Descript
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back(Entry(UString::FromDVB(data, 3), data[3]));
+            entries.push_back(Entry(DeserializeLanguageCode(data), data[3]));
             data += 4;
             size -= 4;
         }
@@ -139,7 +139,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 
     while (size >= 4) {
         const uint8_t type = data[3];
-        strm << margin << "Language: " << UString::FromDVB(data, 3)
+        strm << margin << "Language: " << DeserializeLanguageCode(data)
              << ", Type: " << names::AudioType(type, names::FIRST) << std::endl;
         data += 4; size -= 4;
     }

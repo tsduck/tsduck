@@ -132,8 +132,14 @@ bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
 // This static method serializes a 3-byte language or country code.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractSignalization::SerializeLanguageCode(DuckContext& duck, ByteBlock& bb, const UString& str)
+bool ts::AbstractSignalization::SerializeLanguageCode(ByteBlock& bb, const UString& str, bool allow_empty)
 {
+    // Process empty strings as zeroes when allowed.
+    if (allow_empty && str.empty()) {
+        bb.appendUInt24(0);
+        return true;
+    }
+
     // All country codes are encoded in ASCII, no exception allowed.
     bool ok = str.size() == 3;
     for (size_t i = 0; ok && i < 3; ++i) {
@@ -143,6 +149,20 @@ bool ts::AbstractSignalization::SerializeLanguageCode(DuckContext& duck, ByteBlo
         bb.append(uint8_t(str[i]));
     }
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// This static method deserializes a 3-byte language or country code.
+//----------------------------------------------------------------------------
+
+ts::UString ts::AbstractSignalization::DeserializeLanguageCode(const uint8_t* data)
+{
+    UString str;
+    for (size_t i = 0; data != nullptr && i < 3 && data[i] >= 0x20 && data[i] <= 0x7F; ++i) {
+        str.push_back(UChar(data[i]));
+    }
+    return str;
 }
 
 

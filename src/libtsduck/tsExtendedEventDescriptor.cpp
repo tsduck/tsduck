@@ -92,7 +92,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
             len = uint8_t(size);
         }
         if (tag == MY_DID && len >= 4) {
-            const UString lang(UString::FromDVB(data + 1, 3));
+            const UString lang(DeserializeLanguageCode(data + 1));
             SizeMap::iterator it(desc_last.find(lang));
             if (it == desc_last.end()) {
                 desc_last[lang] = 0;
@@ -116,7 +116,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
             len = uint8_t(size);
         }
         if (tag == MY_DID && len >= 4) {
-            const UString lang(UString::FromDVB(data + 1, 3));
+            const UString lang(DeserializeLanguageCode(data + 1));
             data[0] = uint8_t((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
             desc_index[lang]++;
         }
@@ -216,7 +216,7 @@ void ts::ExtendedEventDescriptor::serialize(DuckContext& duck, Descriptor& desc)
     ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt8(uint8_t(descriptor_number << 4) | (last_descriptor_number & 0x0F));
-    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -255,7 +255,7 @@ void ts::ExtendedEventDescriptor::deserialize(DuckContext& duck, const Descripto
 
     descriptor_number = data[0] >> 4;
     last_descriptor_number = data[0] & 0x0F;
-    language_code = UString::FromDVB(data + 1, 3);
+    language_code = DeserializeLanguageCode(data + 1);
     size_t items_length = data[4];
     data += 5; size -= 5;
     _is_valid = items_length < size;
@@ -293,7 +293,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 
     if (size >= 5) {
         const uint8_t desc_num = data[0];
-        const UString lang(UString::FromDVB(data + 1, 3));
+        const UString lang(DeserializeLanguageCode(data + 1));
         size_t length = data[4];
         data += 5; size -= 5;
         if (length > size) {

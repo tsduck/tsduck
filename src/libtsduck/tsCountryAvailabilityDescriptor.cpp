@@ -95,7 +95,7 @@ void ts::CountryAvailabilityDescriptor::serialize(DuckContext& duck, Descriptor&
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(country_availability ? 0xFF : 0x7F);
     for (size_t n = 0; n < country_codes.size(); ++n) {
-        if (!SerializeLanguageCode(duck, *bbp, country_codes[n])) {
+        if (!SerializeLanguageCode(*bbp, country_codes[n])) {
             desc.invalidate();
             return;
         }
@@ -119,7 +119,7 @@ void ts::CountryAvailabilityDescriptor::deserialize(DuckContext& duck, const Des
         country_availability = (data[0] & 0x80) != 0;
         data++; size--;
         while (size >= 3) {
-            country_codes.push_back(UString::FromDVB(data, 3));
+            country_codes.push_back(DeserializeLanguageCode(data));
             data += 3;
             size -= 3;
         }
@@ -141,7 +141,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
         data += 1; size -= 1;
         strm << margin << "Available: " << UString::YesNo(available) << std::endl;
         while (size >= 3) {
-            strm << margin << "Country code: \"" << UString::FromDVB(data, 3) << "\"" << std::endl;
+            strm << margin << "Country code: \"" << DeserializeLanguageCode(data) << "\"" << std::endl;
             data += 3; size -= 3;
         }
     }

@@ -28,47 +28,66 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a DVB AC-3_descriptor
+//!  Representation of an ATSC service_location_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of a DVB AC-3_descriptor.
-    //! @see ETSI 300 468, D.3.
+    //! Representation of an ATSC service_location_descriptor.
+    //! @see ATSC A/65, section 6.9.5.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AC3Descriptor : public AbstractDescriptor
+    class TSDUCKDLL ServiceLocationDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! Service PID entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            uint8_t stream_type;            //!< Stream type, same as in PMT.
+            PID     elementary_PID;         //!< Component PID.
+            UString ISO_639_language_code;  //!< 3-character language code.
+
+            //!
+            //! Default constructor.
+            //! @param [in] type Stream type.
+            //! @param [in] pid Component PID.
+            //! @param [in] lang 3-character language code.
+            //!
+            Entry(uint8_t type = 0, PID pid = PID_NULL, const UString& lang = UString());
+        };
+
+        //!
+        //! List of service entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 42;
+
         // Public members:
-        Variable<uint8_t> component_type;   //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> bsid;             //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> mainid;           //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> asvc;             //!< See ETSI 300 468, D.3.
-        ByteBlock         additional_info;  //!< See ETSI 300 468, D.3.
+        PID       PCR_PID;  //!< PID containing PCR's in the service.
+        EntryList entries;  //!< The list of PID entries.
 
         //!
         //! Default constructor.
         //!
-        AC3Descriptor();
+        ServiceLocationDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AC3Descriptor(DuckContext& duck, const Descriptor& bin);
-
-        //!
-        //! Merge inside this object missing information which can be found in other object.
-        //! @param [in] other Other object to get missing information from.
-        //!
-        void merge(const AC3Descriptor& other);
+        ServiceLocationDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

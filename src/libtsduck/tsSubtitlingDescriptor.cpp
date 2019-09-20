@@ -96,7 +96,7 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         uint8_t type = data[3];
         uint16_t comp_page = GetUInt16(data + 4);
         uint16_t ancil_page = GetUInt16(data + 6);
-        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {display.duck().fromDVB(data, 3), type, type}) << std::endl
+        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {DeserializeLanguageCode(data), type, type}) << std::endl
              << margin << "Type: " << names::SubtitlingType(type) << std::endl
              << margin << UString::Format(u"Composition page: %d (0x%X), Ancillary page: %d (0x%X)", {comp_page, comp_page, ancil_page, ancil_page}) << std::endl;
         data += 8; size -= 8;
@@ -115,7 +115,7 @@ void ts::SubtitlingDescriptor::serialize(DuckContext& duck, Descriptor& desc) co
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->language_code)) {
+        if (!SerializeLanguageCode(*bbp, it->language_code)) {
             desc.invalidate();
             return;
         }
@@ -145,7 +145,7 @@ void ts::SubtitlingDescriptor::deserialize(DuckContext& duck, const Descriptor& 
 
     while (size >= 8) {
         Entry entry;
-        entry.language_code = UString::FromDVB(data, 3);
+        entry.language_code = DeserializeLanguageCode(data);
         entry.subtitling_type = data[3];
         entry.composition_page_id = GetUInt16(data + 4);
         entry.ancillary_page_id = GetUInt16(data + 6);

@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an AC-3_descriptor
-//
-//----------------------------------------------------------------------------
 
 #include "tsAC3Descriptor.h"
 #include "tsDescriptor.h"

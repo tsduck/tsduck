@@ -84,7 +84,7 @@ void ts::AbstractMultilingualDescriptor::serialize(DuckContext& duck, Descriptor
 
     // Serialize the multi-lingual name loop.
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->language)) {
+        if (!SerializeLanguageCode(*bbp, it->language)) {
             desc.invalidate();
             return;
         }
@@ -112,7 +112,7 @@ void ts::AbstractMultilingualDescriptor::deserialize(DuckContext& duck, const De
     // Deserialize the multillingual name loop.
     while (_is_valid && size >= 4) {
         // Always default DVB character set for language code.
-        const UString lang(UString::FromDVB(data, 3));
+        const UString lang(DeserializeLanguageCode(data));
         const size_t len = data[3];
         data += 4; size -= 4;
         _is_valid = len <= size;
@@ -137,7 +137,7 @@ void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& displa
     while (size >= 4) {
         const size_t len = std::min<size_t>(data[3], size - 4);
         strm << margin
-             << "Language: " << UString::FromDVB(data, 3)
+             << "Language: " << DeserializeLanguageCode(data)
              << ", name: \"" << display.duck().fromDVB(data + 4, len) << "\""
              << std::endl;
         data += 4 + len; size -= 4 + len;

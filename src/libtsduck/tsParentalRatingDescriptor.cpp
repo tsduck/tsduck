@@ -97,7 +97,7 @@ void ts::ParentalRatingDescriptor::serialize(DuckContext& duck, Descriptor& desc
     ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (!SerializeLanguageCode(duck, *bbp, it->country_code)) {
+        if (!SerializeLanguageCode(*bbp, it->country_code)) {
             desc.invalidate();
             return;
         }
@@ -121,7 +121,7 @@ void ts::ParentalRatingDescriptor::deserialize(DuckContext& duck, const Descript
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back(Entry(UString::FromDVB(data, 3), data[3]));
+            entries.push_back(Entry(DeserializeLanguageCode(data), data[3]));
             data += 4;
             size -= 4;
         }
@@ -140,7 +140,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 
     while (size >= 4) {
         const uint8_t rating = data[3];
-        strm << margin << "Country code: " << UString::FromDVB(data, 3)
+        strm << margin << "Country code: " << DeserializeLanguageCode(data)
              << UString::Format(u", rating: 0x%X ", {rating});
         if (rating == 0) {
             strm << "(undefined)";

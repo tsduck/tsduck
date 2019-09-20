@@ -99,7 +99,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         DataBroadcastIdDescriptor::DisplaySelectorBytes(display, data, slength, indent, dbid);
         data += slength; size -= slength;
         if (size >= 3) {
-            strm << margin << "Language: " << UString::FromDVB(data, 3) << std::endl;
+            strm << margin << "Language: " << DeserializeLanguageCode(data) << std::endl;
             data += 3; size -= 3;
             strm << margin << "Description: \"" << display.duck().fromDVBWithByteLength(data, size) << "\"" << std::endl;
         }
@@ -121,7 +121,7 @@ void ts::DataBroadcastDescriptor::serialize(DuckContext& duck, Descriptor& desc)
     bbp->appendUInt8(component_tag);
     bbp->appendUInt8(int8_t(selector_bytes.size()));
     bbp->append(selector_bytes);
-    if (!SerializeLanguageCode(duck, *bbp, language_code)) {
+    if (!SerializeLanguageCode(*bbp, language_code)) {
         desc.invalidate();
         return;
     }
@@ -160,7 +160,7 @@ void ts::DataBroadcastDescriptor::deserialize(DuckContext& duck, const Descripto
     selector_bytes.copy(data, length);
     data += length; size -= length;
 
-    language_code = UString::FromDVB(data, 3);
+    language_code = DeserializeLanguageCode(data);
     data += 3; size -= 3;
     text = duck.fromDVBWithByteLength(data, size);
     _is_valid = size == 0;

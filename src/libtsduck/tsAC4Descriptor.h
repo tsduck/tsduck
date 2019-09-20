@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an AC-4_descriptor
+//!  Representation of a DVB AC-4_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@
 
 namespace ts {
     //!
-    //! Representation of an AC-4_descriptor.
+    //! Representation of a DVB AC-4_descriptor.
     //! @see ETSI 300 468, D.7.
     //! @ingroup descriptor
     //!
