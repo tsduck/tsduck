@@ -27,35 +27,37 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTimeShiftedServiceDescriptor.h"
+#include "tsGenreDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsNames.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"time_shifted_service_descriptor"
-#define MY_DID ts::DID_TIME_SHIFT_SERVICE
-#define MY_STD ts::STD_DVB
+#define MY_XML_NAME u"genre_descriptor"
+#define MY_DID ts::DID_ATSC_GENRE
+#define MY_PDS ts::PDS_ATSC
+#define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::TimeShiftedServiceDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::GenreDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::GenreDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::GenreDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    reference_service_id(0)
+ts::GenreDescriptor::GenreDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    attributes()
 {
     _is_valid = true;
 }
 
-ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& desc) :
-    TimeShiftedServiceDescriptor()
+ts::GenreDescriptor::GenreDescriptor(DuckContext& duck, const Descriptor& desc) :
+    GenreDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -65,10 +67,11 @@ ts::TimeShiftedServiceDescriptor::TimeShiftedServiceDescriptor(DuckContext& duck
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::GenreDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt16(reference_service_id);
+    bbp->appendUInt8(uint8_t(0xE0 | (attributes.size() & 0x1F)));
+    bbp->append(attributes);
     serializeEnd(desc, bbp);
 }
 
@@ -77,13 +80,21 @@ void ts::TimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descriptor& 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::GenreDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 2;
+    attributes.clear();
+
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size > 0;
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        reference_service_id = GetUInt16(data);
+        const size_t count = data[0] & 0x1F;
+        _is_valid = 1 + count <= size;
+        if (_is_valid) {
+            attributes.copy(data + 1, count);
+        }
     }
 }
 
@@ -92,15 +103,20 @@ void ts::TimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Desc
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.duck().out());
-    const std::string margin(indent, ' ');
+    if (size > 0) {
+        std::ostream& strm(display.duck().out());
+        const std::string margin(indent, ' ');
 
-    if (size >= 2) {
-        const uint16_t service = GetUInt16(data);
-        data += 2; size -= 2;
-        strm << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl;
+        size_t count = data[0] & 0x1F;
+        data++; size--;
+
+        strm << margin << UString::Format(u"Attribute count: %d", {count}) << std::endl;
+        while (count > 0 && size > 0) {
+            strm << margin << " - Attribute: " << NameFromSection(u"ATSCGenreCode", data[0], names::FIRST) << std::endl;
+            data++; size--; count--;
+        }
     }
 
     display.displayExtraData(data, size, indent);
@@ -111,9 +127,11 @@ void ts::TimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::GenreDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"reference_service_id", reference_service_id, true);
+    for (size_t i = 0; i < attributes.size(); ++i) {
+        root->addElement(u"attribute")->setIntAttribute(u"value", attributes[i], true);
+    }
 }
 
 
@@ -121,9 +139,20 @@ void ts::TimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Element*
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TimeShiftedServiceDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::GenreDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
+    attributes.clear();
+    xml::ElementVector children;
+
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true);
+        element->getChildren(children, u"attribute", 0, 0x1F);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        uint8_t attr = 0;
+        _is_valid = children[i]->getIntAttribute<uint8_t>(attr, u"value", true);
+        if (_is_valid) {
+            attributes.push_back(attr);
+        }
+    }
 }

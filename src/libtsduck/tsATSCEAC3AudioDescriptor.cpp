@@ -160,7 +160,7 @@ void ts::ATSCEAC3AudioDescriptor::serialize(DuckContext& duck, Descriptor& desc)
     if (substream3.set() && !SerializeLanguageCode(*bbp, substream3_lang)) {
         return; // invalid language code size
     }
-    bbp->append (additional_info);
+    bbp->append(additional_info);
     serializeEnd(desc, bbp);
 }
 

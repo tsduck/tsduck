@@ -34,6 +34,8 @@
     REF_TYPE(AssociationTagDescriptor);
     REF_TYPE(ATSCAC3AudioStreamDescriptor);
     REF_TYPE(ATSCEAC3AudioDescriptor);
+    REF_TYPE(ATSCStuffingDescriptor);
+    REF_TYPE(ATSCTimeShiftedServiceDescriptor);
     REF_TYPE(AudioPreselectionDescriptor);
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
@@ -42,6 +44,7 @@
     REF_TYPE(CableDeliverySystemDescriptor);
     REF_TYPE(CADescriptor);
     REF_TYPE(CAIdentifierDescriptor);
+    REF_TYPE(CaptionServiceDescriptor);
     REF_TYPE(CarouselIdentifierDescriptor);
     REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
@@ -67,6 +70,8 @@
     REF_TYPE(DVBHTMLApplicationLocationDescriptor);
     REF_TYPE(DVBJApplicationDescriptor);
     REF_TYPE(DVBJApplicationLocationDescriptor);
+    REF_TYPE(DVBStuffingDescriptor);
+    REF_TYPE(DVBTimeShiftedServiceDescriptor);
     REF_TYPE(EacemPreferredNameIdentifierDescriptor);
     REF_TYPE(EacemPreferredNameListDescriptor);
     REF_TYPE(EacemStreamIdentifierDescriptor);
@@ -80,6 +85,7 @@
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(ExternalApplicationAuthorizationDescriptor);
     REF_TYPE(ExternalESIdDescriptor);
+    REF_TYPE(GenreDescriptor);
     REF_TYPE(GraphicsConstraintsDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCTimingAndHRDDescriptor);
@@ -115,6 +121,7 @@
     REF_TYPE(PrivateDataIndicatorDescriptor);
     REF_TYPE(PrivateDataSpecifierDescriptor);
     REF_TYPE(ProtectionMessageDescriptor);
+    REF_TYPE(RedistributionControlDescriptor);
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
     REF_TYPE(SatelliteDeliverySystemDescriptor);
@@ -141,7 +148,6 @@
     REF_TYPE(StreamEventDescriptor);
     REF_TYPE(StreamIdentifierDescriptor);
     REF_TYPE(StreamModeDescriptor);
-    REF_TYPE(StuffingDescriptor);
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
     REF_TYPE(SystemClockDescriptor);
@@ -160,7 +166,6 @@
     REF_TYPE(TeletextDescriptor);
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);
-    REF_TYPE(TimeShiftedServiceDescriptor);
     REF_TYPE(TimeSliceFECIdentifierDescriptor);
     REF_TYPE(TransportProtocolDescriptor);
     REF_TYPE(TransportStreamDescriptor);

@@ -28,20 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ATSC stuffing_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 19
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1426
+#include "tsAbstractDescriptor.h"
+#include "tsByteBlock.h"
+
+namespace ts {
+    //!
+    //! Representation of an ATSC stuffing_descriptor.
+    //! @see ATSC A/65, section 6.9.8.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL ATSCStuffingDescriptor : public AbstractDescriptor
+    {
+    public:
+        // Public members:
+        ByteBlock stuffing;   //!< Stuffing data.
+
+        //!
+        //! Default constructor.
+        //!
+        ATSCStuffingDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ATSCStuffingDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(DuckContext&, Descriptor&) const override;
+        virtual void deserialize(DuckContext&, const Descriptor&) override;
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}
