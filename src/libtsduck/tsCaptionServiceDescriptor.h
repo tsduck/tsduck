@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a time_shifted_service_descriptor.
+//!  Representation of an ATSC caption_service_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,27 +37,56 @@
 
 namespace ts {
     //!
-    //! Representation of a time_shifted_service_descriptor.
-    //! @see ETSI 300 468, 6.2.45.
+    //! Representation of an ATSC caption_service_descriptor.
+    //! @see ATSC A/65, section 6.9.2.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL TimeShiftedServiceDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CaptionServiceDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! Service entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            UString  language;                //!< 3-character language code.
+            bool     digital_cc;              //!< Digital closed captions (vs. analog).
+            bool     line21_field;            //!< When digital_cc == false.
+            uint8_t  caption_service_number;  //!< When digital_cc == true.
+            bool     easy_reader;             //!< Easy_reader type CC.
+            bool     wide_aspect_ratio;       //!< 16:9 vs. 4:3.
+            
+            //!
+            //! Default constructor.
+            //!
+            Entry();
+        };
+
+        //!
+        //! List of service entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of entries to fit the count on 5 bits.
+        //!
+        static const size_t MAX_ENTRIES = 31;
+
         // Public members:
-        uint16_t reference_service_id;  //!< Reference service.
+        EntryList entries;  //!< The list of service entries.
 
         //!
         //! Default constructor.
         //!
-        TimeShiftedServiceDescriptor();
+        CaptionServiceDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        TimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& bin);
+        CaptionServiceDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

@@ -148,6 +148,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsATSCMultipleString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsATSCStuffingDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsATSCTimeShiftedServiceDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -224,6 +230,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsCaptionServiceDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h">
@@ -469,6 +478,12 @@
     <ClInclude Include="..\..\src\libtsduck\tsDVBJApplicationLocationDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDVBStuffingDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsDVBTimeShiftedServiceDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDVS042.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -572,6 +587,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsForkPipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsGenreDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h">
@@ -955,6 +973,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsRandomGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsRedistributionControlDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsRegistrationDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1159,9 +1180,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsSTT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1316,9 +1334,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.h">
@@ -1725,6 +1740,12 @@
     <ClCompile Include="..\..\src\libtsduck\tsATSCMultipleString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsATSCStuffingDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsATSCTimeShiftedServiceDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1795,6 +1816,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsCaptionServiceDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.cpp">
@@ -1986,6 +2010,12 @@
     <ClCompile Include="..\..\src\libtsduck\tsDVBJApplicationLocationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDVBStuffingDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsDVBTimeShiftedServiceDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2071,6 +2101,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsForkPipe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsGenreDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp">
@@ -2433,6 +2466,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsRandomGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsRedistributionControlDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsRegistrationDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2604,9 +2640,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsSTT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2752,9 +2785,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.cpp">

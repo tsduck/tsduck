@@ -657,6 +657,16 @@
         symbol_rate="SymbolRate, required"
         FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none, required"/>
 
+    <caption_service_descriptor>
+      <!-- One per service -->
+      <service language="char3, required"
+               digital_cc="bool, required"
+               line21_field="bool, optional"
+               caption_service_number="uint6, required"
+               easy_reader="bool, required"
+               wide_aspect_ratio="bool, required"/>
+    </caption_service_descriptor>
+
     <carousel_identifier_descriptor carousel_id="uint32, required">
       <private_data>
         Hexadecimal content
@@ -939,6 +949,11 @@
 
     <external_ES_ID_descriptor external_ES_ID="uint16, required"/>
 
+    <genre_descriptor>
+      <!-- One per attribute -->
+      <attribute value="uint8, required"/>
+    </genre_descriptor>
+
     <graphics_constraints_descriptor
         can_run_without_visible_ui="bool, required"
         handles_configuration_changed="bool, required"
@@ -1173,6 +1188,12 @@
       <component tag="uint8, required"/>
     </protection_message_descriptor>
 
+    <redistribution_control_descriptor>
+      <rc_information>
+        Hexadecimal content
+      </rc_information>
+    </redistribution_control_descriptor>
+
     <registration_descriptor format_identifier="uint32, required">
       <additional_identification_info>
         Hexadecimal content (optional element)
@@ -1306,9 +1327,18 @@
 
     <stream_identifier_descriptor component_tag="uint8, required"/>
 
+    <DVB_stuffing_descriptor>
+      Hexadecimal content
+    </DVB_stuffing_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
     <stuffing_descriptor>
       Hexadecimal content
     </stuffing_descriptor>
+
+    <ATSC_stuffing_descriptor>
+      Hexadecimal content
+    </ATSC_stuffing_descriptor>
 
     <subtitling_descriptor>
       <!-- One per subtitle -->
@@ -1443,7 +1473,17 @@
         reference_service_id="uint16, required"
         reference_event_id="uint16, required"/>
 
+    <DVB_time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+    <!-- Previous version, still accepted for compatibility -->
     <time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+    <ATSC_time_shifted_service_descriptor>
+      <!-- One per service -->
+      <service time_shift="uint10, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"/>
+    </ATSC_time_shifted_service_descriptor>
 
     <time_slice_fec_identifier_descriptor
         time_slicing="bool, required"

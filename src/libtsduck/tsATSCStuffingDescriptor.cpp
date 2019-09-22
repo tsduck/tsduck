@@ -27,41 +27,36 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsStuffingDescriptor.h"
+#include "tsATSCStuffingDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"stuffing_descriptor"
-#define MY_DID ts::DID_STUFFING
-#define MY_STD ts::STD_DVB
+#define MY_XML_NAME u"ATSC_stuffing_descriptor"
+#define MY_DID ts::DID_ATSC_STUFFING
+#define MY_PDS ts::PDS_ATSC
+#define MY_STD ts::STD_ATSC
 
-TS_XML_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::StuffingDescriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::StuffingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::ATSCStuffingDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ATSCStuffingDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_FACTORY_REGISTER(ts::ATSCStuffingDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
-ts::StuffingDescriptor::StuffingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     stuffing()
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
-ts::StuffingDescriptor::StuffingDescriptor(DuckContext& duck, const Descriptor& desc) :
-    StuffingDescriptor()
+ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor(DuckContext& duck, const Descriptor& desc) :
+    ATSCStuffingDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -71,7 +66,7 @@ ts::StuffingDescriptor::StuffingDescriptor(DuckContext& duck, const Descriptor& 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::ATSCStuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->append(stuffing);
@@ -83,12 +78,15 @@ void ts::StuffingDescriptor::serialize(DuckContext& duck, Descriptor& desc) cons
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::ATSCStuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
         stuffing.copy(desc.payload(), desc.payloadSize());
+    }
+    else {
+        stuffing.clear();
     }
 }
 
@@ -97,7 +95,7 @@ void ts::StuffingDescriptor::deserialize(DuckContext& duck, const Descriptor& de
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::ATSCStuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
@@ -110,7 +108,7 @@ void ts::StuffingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::ATSCStuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     if (!stuffing.empty()) {
         root->addHexaText(stuffing);
@@ -122,7 +120,7 @@ void ts::StuffingDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StuffingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::ATSCStuffingDescriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     stuffing.clear();
     _is_valid = checkXMLName(element) && element->getHexaText(stuffing, 0, 255);

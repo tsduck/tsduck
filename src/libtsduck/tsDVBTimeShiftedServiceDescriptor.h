@@ -28,37 +28,36 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a stuffing_descriptor
+//!  Representation of a DVB time_shifted_service_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsUString.h"
 
 namespace ts {
     //!
-    //! Representation of a stuffing_descriptor.
-    //! @see ETSI 300 468, 6.2.40.
+    //! Representation of a DVB time_shifted_service_descriptor.
+    //! @see ETSI 300 468, 6.2.45.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL StuffingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBTimeShiftedServiceDescriptor : public AbstractDescriptor
     {
     public:
-        // StuffingDescriptor public members:
-        ByteBlock stuffing;   //!< Stuffing data.
+        // Public members:
+        uint16_t reference_service_id;  //!< Reference service.
 
         //!
         //! Default constructor.
         //!
-        StuffingDescriptor();
+        DVBTimeShiftedServiceDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        StuffingDescriptor(DuckContext& duck, const Descriptor& bin);
+        DVBTimeShiftedServiceDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

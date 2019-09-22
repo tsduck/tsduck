@@ -50,6 +50,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsATSCAC3AudioStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCEAC3AudioDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCMultipleString.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsATSCStuffingDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsATSCTimeShiftedServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioLanguageOptions.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.h" />
@@ -76,6 +78,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCableEmergencyAlertTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCADescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCaptionServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASDateTemplate.h" />
@@ -157,6 +160,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationLocationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBJApplicationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBJApplicationLocationDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBStuffingDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBTimeShiftedServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042Template.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.h" />
@@ -192,6 +197,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsFileOutputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFilePacketPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsForkPipe.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsGenreDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h" />
@@ -319,6 +325,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPSIMerger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPushInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRandomGenerator.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsRedistributionControlDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRegistrationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRegistry.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReport.h" />
@@ -387,7 +394,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsStreamModeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringifyInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSTT.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.h" />
@@ -440,7 +446,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsThreadAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTime.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlv.h" />
@@ -577,6 +582,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsATSCAC3AudioStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCEAC3AudioDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCMultipleString.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsATSCStuffingDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsATSCTimeShiftedServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioLanguageOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioPreselectionDescriptor.cpp" />
@@ -601,6 +608,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCableEmergencyAlertTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCADescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCaptionServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCarouselIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASFamily.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASMapper.cpp" />
@@ -664,6 +672,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationLocationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBJApplicationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBJApplicationLocationDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBStuffingDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBTimeShiftedServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />
@@ -693,6 +703,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsFileOutputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFilePacketPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsForkPipe.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsGenreDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGraphicsConstraintsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
@@ -813,6 +824,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPSIMerger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPushInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRandomGenerator.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsRedistributionControlDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRegistrationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRegistry.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReport.cpp" />
@@ -870,7 +882,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsStreamModeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStringifyInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSTT.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.cpp" />
@@ -920,7 +931,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />

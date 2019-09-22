@@ -48,6 +48,8 @@ HEADERS += \
     ../../../src/libtsduck/tsATSCAC3AudioStreamDescriptor.h \
     ../../../src/libtsduck/tsATSCEAC3AudioDescriptor.h \
     ../../../src/libtsduck/tsATSCMultipleString.h \
+    ../../../src/libtsduck/tsATSCStuffingDescriptor.h \
+    ../../../src/libtsduck/tsATSCTimeShiftedServiceDescriptor.h \
     ../../../src/libtsduck/tsAudioAttributes.h \
     ../../../src/libtsduck/tsAudioLanguageOptions.h \
     ../../../src/libtsduck/tsAudioPreselectionDescriptor.h \
@@ -74,6 +76,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCableEmergencyAlertTable.h \
     ../../../src/libtsduck/tsCADescriptor.h \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsCaptionServiceDescriptor.h \
     ../../../src/libtsduck/tsCarouselIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCASDate.h \
     ../../../src/libtsduck/tsCASDateTemplate.h \
@@ -155,6 +158,8 @@ HEADERS += \
     ../../../src/libtsduck/tsDVBHTMLApplicationLocationDescriptor.h \
     ../../../src/libtsduck/tsDVBJApplicationDescriptor.h \
     ../../../src/libtsduck/tsDVBJApplicationLocationDescriptor.h \
+    ../../../src/libtsduck/tsDVBStuffingDescriptor.h \
+    ../../../src/libtsduck/tsDVBTimeShiftedServiceDescriptor.h \
     ../../../src/libtsduck/tsDVS042.h \
     ../../../src/libtsduck/tsDVS042Template.h \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.h \
@@ -190,6 +195,7 @@ HEADERS += \
     ../../../src/libtsduck/tsFileOutputPlugin.h \
     ../../../src/libtsduck/tsFilePacketPlugin.h \
     ../../../src/libtsduck/tsForkPipe.h \
+    ../../../src/libtsduck/tsGenreDescriptor.h \
     ../../../src/libtsduck/tsGitHubRelease.h \
     ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.h \
     ../../../src/libtsduck/tsGrid.h \
@@ -317,6 +323,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPSIMerger.h \
     ../../../src/libtsduck/tsPushInputPlugin.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
+    ../../../src/libtsduck/tsRedistributionControlDescriptor.h \
     ../../../src/libtsduck/tsRegistrationDescriptor.h \
     ../../../src/libtsduck/tsRegistry.h \
     ../../../src/libtsduck/tsReport.h \
@@ -385,7 +392,6 @@ HEADERS += \
     ../../../src/libtsduck/tsStreamModeDescriptor.h \
     ../../../src/libtsduck/tsStringifyInterface.h \
     ../../../src/libtsduck/tsSTT.h \
-    ../../../src/libtsduck/tsStuffingDescriptor.h \
     ../../../src/libtsduck/tsSubRipGenerator.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
@@ -438,7 +444,6 @@ HEADERS += \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
     ../../../src/libtsduck/tsTimeShiftedEventDescriptor.h \
-    ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.h \
     ../../../src/libtsduck/tsTimeSliceFECIdentifierDescriptor.h \
     ../../../src/libtsduck/tsTimeTrackerDemux.h \
     ../../../src/libtsduck/tstlv.h \
@@ -565,6 +570,8 @@ SOURCES += \
     ../../../src/libtsduck/tsATSCAC3AudioStreamDescriptor.cpp \
     ../../../src/libtsduck/tsATSCEAC3AudioDescriptor.cpp \
     ../../../src/libtsduck/tsATSCMultipleString.cpp \
+    ../../../src/libtsduck/tsATSCStuffingDescriptor.cpp \
+    ../../../src/libtsduck/tsATSCTimeShiftedServiceDescriptor.cpp \
     ../../../src/libtsduck/tsAudioAttributes.cpp \
     ../../../src/libtsduck/tsAudioLanguageOptions.cpp \
     ../../../src/libtsduck/tsAudioPreselectionDescriptor.cpp \
@@ -589,6 +596,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCableEmergencyAlertTable.cpp \
     ../../../src/libtsduck/tsCADescriptor.cpp \
     ../../../src/libtsduck/tsCAIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsCaptionServiceDescriptor.cpp \
     ../../../src/libtsduck/tsCarouselIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCASFamily.cpp \
     ../../../src/libtsduck/tsCASMapper.cpp \
@@ -652,6 +660,8 @@ SOURCES += \
     ../../../src/libtsduck/tsDVBHTMLApplicationLocationDescriptor.cpp \
     ../../../src/libtsduck/tsDVBJApplicationDescriptor.cpp \
     ../../../src/libtsduck/tsDVBJApplicationLocationDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBStuffingDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBTimeShiftedServiceDescriptor.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.cpp \
     ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \
@@ -681,6 +691,7 @@ SOURCES += \
     ../../../src/libtsduck/tsFileOutputPlugin.cpp \
     ../../../src/libtsduck/tsFilePacketPlugin.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
+    ../../../src/libtsduck/tsGenreDescriptor.cpp \
     ../../../src/libtsduck/tsGitHubRelease.cpp \
     ../../../src/libtsduck/tsGraphicsConstraintsDescriptor.cpp \
     ../../../src/libtsduck/tsGrid.cpp \
@@ -801,6 +812,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPSIMerger.cpp \
     ../../../src/libtsduck/tsPushInputPlugin.cpp \
     ../../../src/libtsduck/tsRandomGenerator.cpp \
+    ../../../src/libtsduck/tsRedistributionControlDescriptor.cpp \
     ../../../src/libtsduck/tsRegistrationDescriptor.cpp \
     ../../../src/libtsduck/tsRegistry.cpp \
     ../../../src/libtsduck/tsReport.cpp \
@@ -858,7 +870,6 @@ SOURCES += \
     ../../../src/libtsduck/tsStreamModeDescriptor.cpp \
     ../../../src/libtsduck/tsStringifyInterface.cpp \
     ../../../src/libtsduck/tsSTT.cpp \
-    ../../../src/libtsduck/tsStuffingDescriptor.cpp \
     ../../../src/libtsduck/tsSubRipGenerator.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
@@ -908,7 +919,6 @@ SOURCES += \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
     ../../../src/libtsduck/tsTimeShiftedEventDescriptor.cpp \
-    ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.cpp \
     ../../../src/libtsduck/tsTimeSliceFECIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsTimeTrackerDemux.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \

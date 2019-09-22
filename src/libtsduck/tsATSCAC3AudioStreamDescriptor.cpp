@@ -143,7 +143,7 @@ void ts::ATSCAC3AudioStreamDescriptor::serialize(DuckContext& duck, Descriptor& 
     }
 
     // Trailing info.
-    bbp->append (additional_info);
+    bbp->append(additional_info);
     serializeEnd(desc, bbp);
 }
 
