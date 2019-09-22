@@ -165,11 +165,19 @@ namespace ts {
         //! @param [in] count Maximum number of characters to encode.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        virtual size_t encode(uint8_t*& buffer,
-                              size_t& size,
-                              const UString& str,
-                              size_t start = 0,
-                              size_t count = NPOS) const = 0;
+        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = NPOS) const = 0;
+
+        //!
+        //! Encode a C++ Unicode string into a DVB string as a ByteBlock.
+        //!
+        //! Unmappable characters are skipped.
+        //!
+        //! @param [in] str The string to encode.
+        //! @param [in] start Starting offset in @a str.
+        //! @param [in] count Maximum number of characters to encode.
+        //! @return A ByteBlock containing the encoded string.
+        //!
+        ByteBlock encoded(const UString& str, size_t start = 0, size_t count = NPOS) const;
 
         //!
         //! Virtual destructor.

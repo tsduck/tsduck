@@ -50,16 +50,16 @@ namespace ts {
         //! Values can be or'ed.
         //!
         enum Flags {
-            NAME          = 0x0000,   //! Name only, no value. This is the default.
-            VALUE         = 0x0001,   //! Include the value: "name (value)".
-            FIRST         = 0x0002,   //! Same with value first: "value (name)".
-            HEXA          = 0x0004,   //! Value in hexadecimal. This is the default.
-            DECIMAL       = 0x0008,   //! Value in decimal. Both DECIMAL and HEXA can be specified.
-            BOTH          = HEXA | DECIMAL,          //! Value in decimal and hexadecimal.
-            HEXA_FIRST    = FIRST | HEXA,            //! Value in hexadecimal in first position.
-            DECIMAL_FIRST = FIRST | DECIMAL,         //! Value in decimal in first position.
-            BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //! Value in decimal and hexadecimal in first position.
-            ALTERNATE     = 0x0010,                  //! Display an alternate integer value.
+            NAME          = 0x0000,   //!< Name only, no value. This is the default.
+            VALUE         = 0x0001,   //!< Include the value: "name (value)".
+            FIRST         = 0x0002,   //!< Same with value first: "value (name)".
+            HEXA          = 0x0004,   //!< Value in hexadecimal. This is the default.
+            DECIMAL       = 0x0008,   //!< Value in decimal. Both DECIMAL and HEXA can be specified.
+            BOTH          = HEXA | DECIMAL,          //!< Value in decimal and hexadecimal.
+            HEXA_FIRST    = FIRST | HEXA,            //!< Value in hexadecimal in first position.
+            DECIMAL_FIRST = FIRST | DECIMAL,         //!< Value in decimal in first position.
+            BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
+            ALTERNATE     = 0x0010,                  //!< Display an alternate integer value.
         };
 
         //!

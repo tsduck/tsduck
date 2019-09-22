@@ -443,6 +443,17 @@
       </additional_info>
     </AAC_descriptor>
 
+    <DVB_AC3_descriptor
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_AC3_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
     <AC3_descriptor
         component_type="uint8, optional"
         bsid="uint8, optional"
@@ -453,6 +464,37 @@
       </additional_info>
     </AC3_descriptor>
 
+    <ATSC_AC3_audio_stream_descriptor
+        sample_rate_code="uint3, required"
+        bsid="uint5, required"
+        bit_rate_code="uint6, required"
+        surround_mode="uint2, required"
+        bsmod="uint3, required"
+        num_channels="uint4, required"
+        full_svc="bool, required"
+        mainid="uint3, optional"
+        priority="uint2, optional"
+        asvcflags="uint8, optional"
+        text="string, optional"
+        language="char3, optional"
+        language_2="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </ATSC_AC3_audio_stream_descriptor>
+
+    <DVB_AC4_descriptor
+        ac4_dialog_enhancement_enabled="bool, optional"
+        ac4_channel_mode="uint2, optional">
+      <ac4_dsi_toc>
+        Hexadecimal content
+      </ac4_dsi_toc>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_AC4_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
     <AC4_descriptor
         ac4_dialog_enhancement_enabled="bool, optional"
         ac4_channel_mode="uint2, optional">
@@ -808,6 +850,21 @@
       </private_data>
     </ECM_repetition_rate_descriptor>
 
+    <DVB_enhanced_AC3_descriptor
+        mixinfoexists="bool, required"
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_enhanced_AC3_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
     <enhanced_AC3_descriptor
         mixinfoexists="bool, required"
         component_type="uint8, optional"
@@ -821,6 +878,28 @@
         Hexadecimal content
       </additional_info>
     </enhanced_AC3_descriptor>
+
+    <ATSC_EAC3_audio_descriptor
+        mixinfoexists="bool, required"
+        full_service="bool, required"
+        audio_service_type="uint3, required"
+        number_of_channels="uint3, required"
+        bsid="uint5, optional"
+        priority="uint2, optional"
+        mainid="uint3, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional"
+        language="char3, optional"
+        language_2="char3, optional"
+        substream1_lang="char3, optional"
+        substream2_lang="char3, optional"
+        substream3_lang="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </ATSC_EAC3_audio_descriptor>
 
     <eutelsat_channel_number_descriptor>
       <!-- One per service -->

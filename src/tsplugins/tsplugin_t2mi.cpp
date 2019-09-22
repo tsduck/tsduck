@@ -180,7 +180,7 @@ bool ts::T2MIPlugin::getOptions()
     getValue(_outfile_name, u"output-file");
 
     // Output file open flags.
-    _outfile_flags = TSFileOutput::SHARE;
+    _outfile_flags = TSFileOutput::SHARED;
     if (present(u"append")) {
         _outfile_flags |= TSFileOutput::APPEND;
     }

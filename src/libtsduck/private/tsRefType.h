@@ -22,8 +22,6 @@
     REF_TYPE(TVCT);
 
     REF_TYPE(AACDescriptor);
-    REF_TYPE(AC3Descriptor);
-    REF_TYPE(AC4Descriptor);
     REF_TYPE(AdaptationFieldDataDescriptor);
     REF_TYPE(AncillaryDataDescriptor);
     REF_TYPE(ApplicationDescriptor);
@@ -34,6 +32,8 @@
     REF_TYPE(ApplicationStorageDescriptor);
     REF_TYPE(ApplicationUsageDescriptor);
     REF_TYPE(AssociationTagDescriptor);
+    REF_TYPE(ATSCAC3AudioStreamDescriptor);
+    REF_TYPE(ATSCEAC3AudioDescriptor);
     REF_TYPE(AudioPreselectionDescriptor);
     REF_TYPE(AudioStreamDescriptor);
     REF_TYPE(AVCTimingAndHRDDescriptor);
@@ -59,6 +59,9 @@
     REF_TYPE(DIILocationDescriptor);
     REF_TYPE(DTSDescriptor);
     REF_TYPE(DTSNeuralDescriptor);
+    REF_TYPE(DVBAC3Descriptor);
+    REF_TYPE(DVBAC4Descriptor);
+    REF_TYPE(DVBEnhancedAC3Descriptor);
     REF_TYPE(DVBHTMLApplicationBoundaryDescriptor);
     REF_TYPE(DVBHTMLApplicationDescriptor);
     REF_TYPE(DVBHTMLApplicationLocationDescriptor);
@@ -72,7 +75,6 @@
     REF_TYPE(EASInbandExceptionChannelsDescriptor);
     REF_TYPE(EASMetadataDescriptor);
     REF_TYPE(ECMRepetitionRateDescriptor);
-    REF_TYPE(EnhancedAC3Descriptor);
     REF_TYPE(EutelsatChannelNumberDescriptor);
     REF_TYPE(ExtendedChannelNameDescriptor);
     REF_TYPE(ExtendedEventDescriptor);

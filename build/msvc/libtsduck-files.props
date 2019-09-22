@@ -24,8 +24,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTableTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsAC3Descriptor.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsAC4Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAES.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAIT.h" />
@@ -49,6 +47,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgsWithPlugins.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAssociationTagDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsATSCAC3AudioStreamDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsATSCEAC3AudioDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCMultipleString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAudioLanguageOptions.h" />
@@ -143,12 +143,15 @@
     <ClInclude Include="..\..\src\libtsduck\tsDuckExtension.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckExtensionRepository.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDuckProtocol.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBAC3Descriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBAC4Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF16.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF8.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCISSA.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBCSA2.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBEnhancedAC3Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationBoundaryDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVBHTMLApplicationLocationDescriptor.h" />
@@ -175,7 +178,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsEITProcessor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEMMGClient.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEMMGMUX.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnumeration.h" />
     <ClInclude Include="..\..\src\libtsduck\tsETID.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEutelsatChannelNumberDescriptor.h" />
@@ -554,8 +556,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTablePlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsAC4Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAdaptationFieldDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAIT.cpp" />
@@ -574,6 +574,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsArgsWithPlugins.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAssociationTagDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsATSCAC3AudioStreamDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsATSCEAC3AudioDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCMultipleString.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAudioLanguageOptions.cpp" />
@@ -648,12 +650,15 @@
     <ClCompile Include="..\..\src\libtsduck\tsDuckExtension.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckExtensionRepository.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDuckProtocol.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBAC3Descriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBAC4Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF16.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF8.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCISSA.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBCSA2.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBEnhancedAC3Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationBoundaryDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDVBHTMLApplicationLocationDescriptor.cpp" />
@@ -675,7 +680,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsEITProcessor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGMUX.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEnumeration.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEutelsatChannelNumberDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsException.cpp" />

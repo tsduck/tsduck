@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a DVB AC-4_descriptor
+//!  Representation of an ATSC E-AC-3_audio_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,30 +38,48 @@
 
 namespace ts {
     //!
-    //! Representation of a DVB AC-4_descriptor.
-    //! @see ETSI 300 468, D.7.
+    //! Representation of an ATSC E-AC-3_audio_descriptor.
+    //! @see A/52, G.3.5.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AC4Descriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCEAC3AudioDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<bool>    ac4_dialog_enhancement_enabled; //!< See ETSI 300 468, D.7.
-        Variable<uint8_t> ac4_channel_mode;               //!< 2 bits, see ETSI 300 468, D.7.
-        ByteBlock         ac4_dsi_toc;                    //!< See ETSI 300 468, D.7.
-        ByteBlock         additional_info;                //!< See ETSI 300 468, D.7.
+        bool              mixinfoexists;       //!< See A/52, G.3.5.
+        bool              full_service;        //!< See A/52, G.3.5.
+        uint8_t           audio_service_type;  //!< 3 bits, see A/52, G.3.5.
+        uint8_t           number_of_channels;  //!< 3 bits, see A/52, G.3.5.
+        Variable<uint8_t> bsid;                //!< 5 bits, see A/52, G.3.5.
+        Variable<uint8_t> priority;            //!< 2 bits, see A/52, G.3.5.
+        Variable<uint8_t> mainid;              //!< 3 bits, see A/52, G.3.5.
+        Variable<uint8_t> asvc;                //!< See A/52, G.3.5.
+        Variable<uint8_t> substream1;          //!< See A/52, G.3.5.
+        Variable<uint8_t> substream2;          //!< See A/52, G.3.5.
+        Variable<uint8_t> substream3;          //!< See A/52, G.3.5.
+        UString           language;            //!< 3 chars, see A/52, G.3.5.
+        UString           language_2;          //!< 3 chars, see A/52, G.3.5.
+        UString           substream1_lang;     //!< 3 chars, see A/52, G.3.5.
+        UString           substream2_lang;     //!< 3 chars, see A/52, G.3.5.
+        UString           substream3_lang;     //!< 3 chars, see A/52, G.3.5.
+        ByteBlock         additional_info;     //!< See A/52, G.3.5.
 
         //!
         //! Default constructor.
         //!
-        AC4Descriptor();
+        ATSCEAC3AudioDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AC4Descriptor(DuckContext& duck, const Descriptor& bin);
+        ATSCEAC3AudioDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        //!
+        //! Clear the content of this object.
+        //!
+        void clear();
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;

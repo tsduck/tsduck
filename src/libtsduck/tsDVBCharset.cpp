@@ -30,6 +30,7 @@
 #include "tsDVBCharset.h"
 #include "tsAlgorithm.h"
 #include "tsSingletonManager.h"
+#include "tsByteBlock.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -127,6 +128,27 @@ size_t ts::DVBCharset::encodeTableCode(uint8_t*& buffer, size_t& size) const
     buffer += codeSize;
     size -= codeSize;
     return codeSize;
+}
+
+
+//----------------------------------------------------------------------------
+// Encode a C++ Unicode string into a DVB string as a ByteBlock.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock ts::DVBCharset::encoded(const UString& str, size_t start, size_t count) const
+{
+    // The maximum number of DVB bytes per character is 4 (worst case in UTF-8).
+    ByteBlock bb(UString::UTF8_CHAR_MAX_SIZE * std::min(str.length() - start, count));
+
+    // Convert the string.
+    uint8_t* buffer = bb.data();
+    size_t size = bb.size();
+    encode(buffer, size, str, start, count);
+
+    // Truncate unused bytes.
+    assert(size <= bb.size());
+    bb.resize(bb.size() - size);
+    return bb;
 }
 
 

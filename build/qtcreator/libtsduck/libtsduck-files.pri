@@ -22,8 +22,6 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractTableTemplate.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
-    ../../../src/libtsduck/tsAC3Descriptor.h \
-    ../../../src/libtsduck/tsAC4Descriptor.h \
     ../../../src/libtsduck/tsAdaptationFieldDataDescriptor.h \
     ../../../src/libtsduck/tsAES.h \
     ../../../src/libtsduck/tsAIT.h \
@@ -47,6 +45,8 @@ HEADERS += \
     ../../../src/libtsduck/tsArgsWithPlugins.h \
     ../../../src/libtsduck/tsAssociationTagDescriptor.h \
     ../../../src/libtsduck/tsAsyncReport.h \
+    ../../../src/libtsduck/tsATSCAC3AudioStreamDescriptor.h \
+    ../../../src/libtsduck/tsATSCEAC3AudioDescriptor.h \
     ../../../src/libtsduck/tsATSCMultipleString.h \
     ../../../src/libtsduck/tsAudioAttributes.h \
     ../../../src/libtsduck/tsAudioLanguageOptions.h \
@@ -141,12 +141,15 @@ HEADERS += \
     ../../../src/libtsduck/tsDuckExtension.h \
     ../../../src/libtsduck/tsDuckExtensionRepository.h \
     ../../../src/libtsduck/tsDuckProtocol.h \
+    ../../../src/libtsduck/tsDVBAC3Descriptor.h \
+    ../../../src/libtsduck/tsDVBAC4Descriptor.h \
     ../../../src/libtsduck/tsDVBCharset.h \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
     ../../../src/libtsduck/tsDVBCharsetUTF16.h \
     ../../../src/libtsduck/tsDVBCharsetUTF8.h \
     ../../../src/libtsduck/tsDVBCISSA.h \
     ../../../src/libtsduck/tsDVBCSA2.h \
+    ../../../src/libtsduck/tsDVBEnhancedAC3Descriptor.h \
     ../../../src/libtsduck/tsDVBHTMLApplicationBoundaryDescriptor.h \
     ../../../src/libtsduck/tsDVBHTMLApplicationDescriptor.h \
     ../../../src/libtsduck/tsDVBHTMLApplicationLocationDescriptor.h \
@@ -173,7 +176,6 @@ HEADERS += \
     ../../../src/libtsduck/tsEITProcessor.h \
     ../../../src/libtsduck/tsEMMGClient.h \
     ../../../src/libtsduck/tsEMMGMUX.h \
-    ../../../src/libtsduck/tsEnhancedAC3Descriptor.h \
     ../../../src/libtsduck/tsEnumeration.h \
     ../../../src/libtsduck/tsETID.h \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.h \
@@ -542,8 +544,6 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractTablePlugin.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
-    ../../../src/libtsduck/tsAC3Descriptor.cpp \
-    ../../../src/libtsduck/tsAC4Descriptor.cpp \
     ../../../src/libtsduck/tsAdaptationFieldDataDescriptor.cpp \
     ../../../src/libtsduck/tsAES.cpp \
     ../../../src/libtsduck/tsAIT.cpp \
@@ -562,6 +562,8 @@ SOURCES += \
     ../../../src/libtsduck/tsArgsWithPlugins.cpp \
     ../../../src/libtsduck/tsAssociationTagDescriptor.cpp \
     ../../../src/libtsduck/tsAsyncReport.cpp \
+    ../../../src/libtsduck/tsATSCAC3AudioStreamDescriptor.cpp \
+    ../../../src/libtsduck/tsATSCEAC3AudioDescriptor.cpp \
     ../../../src/libtsduck/tsATSCMultipleString.cpp \
     ../../../src/libtsduck/tsAudioAttributes.cpp \
     ../../../src/libtsduck/tsAudioLanguageOptions.cpp \
@@ -636,12 +638,15 @@ SOURCES += \
     ../../../src/libtsduck/tsDuckExtension.cpp \
     ../../../src/libtsduck/tsDuckExtensionRepository.cpp \
     ../../../src/libtsduck/tsDuckProtocol.cpp \
+    ../../../src/libtsduck/tsDVBAC3Descriptor.cpp \
+    ../../../src/libtsduck/tsDVBAC4Descriptor.cpp \
     ../../../src/libtsduck/tsDVBCharset.cpp \
     ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF16.cpp \
     ../../../src/libtsduck/tsDVBCharsetUTF8.cpp \
     ../../../src/libtsduck/tsDVBCISSA.cpp \
     ../../../src/libtsduck/tsDVBCSA2.cpp \
+    ../../../src/libtsduck/tsDVBEnhancedAC3Descriptor.cpp \
     ../../../src/libtsduck/tsDVBHTMLApplicationBoundaryDescriptor.cpp \
     ../../../src/libtsduck/tsDVBHTMLApplicationDescriptor.cpp \
     ../../../src/libtsduck/tsDVBHTMLApplicationLocationDescriptor.cpp \
@@ -663,7 +668,6 @@ SOURCES += \
     ../../../src/libtsduck/tsEITProcessor.cpp \
     ../../../src/libtsduck/tsEMMGClient.cpp \
     ../../../src/libtsduck/tsEMMGMUX.cpp \
-    ../../../src/libtsduck/tsEnhancedAC3Descriptor.cpp \
     ../../../src/libtsduck/tsEnumeration.cpp \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.cpp \
     ../../../src/libtsduck/tsException.cpp \

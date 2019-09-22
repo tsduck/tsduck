@@ -113,12 +113,15 @@ ts::xml::Element* ts::AbstractSignalization::toXML(DuckContext& duck, xml::Eleme
 // Check that an XML element has the right name for this table.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
+bool ts::AbstractSignalization::checkXMLName(const xml::Element* element, const UChar* legacy_name) const
 {
     if (element == nullptr) {
         return false;
     }
     else if (element->name().similar(_xml_name)) {
+        return true;
+    }
+    else if (legacy_name != nullptr && element->name().similar(legacy_name)) {
         return true;
     }
     else {

@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAC4Descriptor.h"
+#include "tsDVBAC4Descriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -35,21 +35,23 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"AC4_descriptor"
+#define MY_XML_NAME u"DVB_AC4_descriptor"
+#define MY_XML_NAME_LEGACY u"AC4_descriptor"
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_AC4
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::AC4Descriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::AC4Descriptor, ts::EDID::ExtensionDVB(MY_EDID));
-TS_FACTORY_REGISTER(ts::AC4Descriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_XML_DESCRIPTOR_FACTORY(ts::DVBAC4Descriptor, MY_XML_NAME);
+TS_XML_DESCRIPTOR_FACTORY(ts::DVBAC4Descriptor, MY_XML_NAME_LEGACY);
+TS_ID_DESCRIPTOR_FACTORY(ts::DVBAC4Descriptor, ts::EDID::ExtensionDVB(MY_EDID));
+TS_FACTORY_REGISTER(ts::DVBAC4Descriptor::DisplayDescriptor, ts::EDID::ExtensionDVB(MY_EDID));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::AC4Descriptor::AC4Descriptor() :
+ts::DVBAC4Descriptor::DVBAC4Descriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ac4_dialog_enhancement_enabled(),
     ac4_channel_mode(),
@@ -64,8 +66,8 @@ ts::AC4Descriptor::AC4Descriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AC4Descriptor::AC4Descriptor(DuckContext& duck, const Descriptor& desc) :
-    AC4Descriptor()
+ts::DVBAC4Descriptor::DVBAC4Descriptor(DuckContext& duck, const Descriptor& desc) :
+    DVBAC4Descriptor()
 {
     deserialize(duck, desc);
 }
@@ -75,7 +77,7 @@ ts::AC4Descriptor::AC4Descriptor(DuckContext& duck, const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBAC4Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(MY_EDID);
@@ -96,7 +98,7 @@ void ts::AC4Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBAC4Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
@@ -146,7 +148,7 @@ void ts::AC4Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     // Important: With extension descriptors, the DisplayDescriptor() function is called
     // with extension payload. Meaning that data points after descriptor_tag_extension.
@@ -190,7 +192,7 @@ void ts::AC4Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::DVBAC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setOptionalBoolAttribute(u"ac4_dialog_enhancement_enabled", ac4_dialog_enhancement_enabled);
     root->setOptionalIntAttribute(u"ac4_channel_mode", ac4_channel_mode);
@@ -207,10 +209,10 @@ void ts::AC4Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC4Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::DVBAC4Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element) &&
+        checkXMLName(element, MY_XML_NAME_LEGACY) &&
         element->getOptionalBoolAttribute(ac4_dialog_enhancement_enabled, u"ac4_dialog_enhancement_enabled") &&
         element->getOptionalIntAttribute<uint8_t>(ac4_channel_mode, u"ac4_channel_mode", 0, 3) &&
         element->getHexaTextChild(ac4_dsi_toc, u"ac4_dsi_toc", false, 0, MAX_DESCRIPTOR_SIZE - 6) &&

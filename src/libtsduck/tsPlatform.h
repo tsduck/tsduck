@@ -718,16 +718,17 @@ TS_GCC_NOWARNING(unused-parameter)          // Unused parameters are frequent wi
     TS_GCC_NOWARNING(psabi)
 #endif
 
-TS_LLVM_NOWARNING(deprecated)               // Most of these messages are informational only.
-TS_LLVM_NOWARNING(unused-parameter)         // Unused parameters are frequent with overrides.
-TS_LLVM_NOWARNING(global-constructors)      // Do not warn about static/global objects being constructed.
-TS_LLVM_NOWARNING(exit-time-destructors)    // Do not warn about static/global objects being destructed.
+TS_LLVM_NOWARNING(deprecated)                     // Most of these messages are informational only.
+TS_LLVM_NOWARNING(unused-parameter)               // Unused parameters are frequent with overrides.
+TS_LLVM_NOWARNING(global-constructors)            // Do not warn about static/global objects being constructed.
+TS_LLVM_NOWARNING(exit-time-destructors)          // Do not warn about static/global objects being destructed.
 TS_LLVM_NOWARNING(inconsistent-missing-destructor-override) // Requesting "override" for destructors is idiotic, simply.
-TS_LLVM_NOWARNING(covered-switch-default)   // Allow "default" in "switch" after all enum values to catch invalid binary values.
-TS_LLVM_NOWARNING(sign-conversion)          // Too many occurences since pointer arithmetics is signed, opposite from size_t.
-TS_LLVM_NOWARNING(padded)                   // Fo not care if padding is required between class fields.
-TS_LLVM_NOWARNING(reserved-id-macro)        // We sometimes use underscores at the beginning of identifiers.
-TS_LLVM_NOWARNING(c++98-compat-pedantic)    // Require C++11, no need for C++98 compatibility.
+TS_LLVM_NOWARNING(covered-switch-default)         // Allow "default" in "switch" after all enum values to catch invalid binary values.
+TS_LLVM_NOWARNING(sign-conversion)                // Too many occurences since pointer arithmetics is signed, opposite from size_t.
+TS_LLVM_NOWARNING(padded)                         // Do not care if padding is required between class fields.
+TS_LLVM_NOWARNING(reserved-id-macro)              // We sometimes use underscores at the beginning of identifiers.
+TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++11, no need for C++98 compatibility.
+TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 
 TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
