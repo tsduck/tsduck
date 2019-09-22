@@ -234,7 +234,7 @@ void ts::ATSCAC3AudioStreamDescriptor::deserialize(DuckContext& duck, const Desc
     const bool has_language = (data[0] & 0x80) != 0;
     const bool has_language_2 = (data[0] & 0x40) != 0;
     data++; size--;
-    _is_valid = size >= (has_language ? 3 : 0) + (has_language_2 ? 3 : 0);
+    _is_valid = size >= size_t((has_language ? 3 : 0) + (has_language_2 ? 3 : 0));
 
     // End of descriptor allowed here
     if (!_is_valid || size == 0) {
@@ -334,7 +334,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& display,
             has_lang2 = (data[0] & 0x40) != 0;
             data++; size--;
         }
-        bool ok = size >= (has_lang ? 3 : 0) + (has_lang2 ? 3 : 0);
+        bool ok = size >= size_t((has_lang ? 3 : 0) + (has_lang2 ? 3 : 0));
 
         // Deserialize languages.
         if (ok && has_lang) {
