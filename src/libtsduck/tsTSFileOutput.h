@@ -62,7 +62,7 @@ namespace ts {
             NONE   = 0x0000,   //!< No option.
             APPEND = 0x0001,   //!< Append packets to an existing file.
             KEEP   = 0x0002,   //!< Keep previous file with same name. Fail if it already exists.
-            SHARE  = 0x0004,   //!< Open with shared read for other processes. Windows only. Always shared on Unix.
+            SHARED = 0x0004,   //!< Open with shared read for other processes. Windows only. Always shared on Unix.
         };
 
         //!

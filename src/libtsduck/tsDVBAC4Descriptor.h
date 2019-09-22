@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a DVB AC-3_descriptor
+//!  Representation of a DVB AC-4_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -38,37 +38,30 @@
 
 namespace ts {
     //!
-    //! Representation of a DVB AC-3_descriptor.
-    //! @see ETSI 300 468, D.3.
+    //! Representation of a DVB AC-4_descriptor.
+    //! @see ETSI 300 468, D.7.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL AC3Descriptor : public AbstractDescriptor
+    class TSDUCKDLL DVBAC4Descriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type;   //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> bsid;             //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> mainid;           //!< See ETSI 300 468, D.3.
-        Variable<uint8_t> asvc;             //!< See ETSI 300 468, D.3.
-        ByteBlock         additional_info;  //!< See ETSI 300 468, D.3.
+        Variable<bool>    ac4_dialog_enhancement_enabled; //!< See ETSI 300 468, D.7.
+        Variable<uint8_t> ac4_channel_mode;               //!< 2 bits, see ETSI 300 468, D.7.
+        ByteBlock         ac4_dsi_toc;                    //!< See ETSI 300 468, D.7.
+        ByteBlock         additional_info;                //!< See ETSI 300 468, D.7.
 
         //!
         //! Default constructor.
         //!
-        AC3Descriptor();
+        DVBAC4Descriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AC3Descriptor(DuckContext& duck, const Descriptor& bin);
-
-        //!
-        //! Merge inside this object missing information which can be found in other object.
-        //! @param [in] other Other object to get missing information from.
-        //!
-        void merge(const AC3Descriptor& other);
+        DVBAC4Descriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
@@ -80,4 +73,9 @@ namespace ts {
         // Inherited methods
         virtual void buildXML(DuckContext&, xml::Element*) const override;
     };
+
+    //!
+    //! Legacy name for a DVB AC-4_descriptor.
+    //!
+    typedef DVBAC4Descriptor AC4Descriptor;
 }

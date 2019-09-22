@@ -45,7 +45,7 @@ TS_FACTORY_REGISTER(ts::ExtendedChannelNameDescriptor::DisplayDescriptor, ts::ED
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor() :
@@ -54,11 +54,6 @@ ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor() :
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor(DuckContext& duck, const Descriptor& desc) :
     ExtendedChannelNameDescriptor()

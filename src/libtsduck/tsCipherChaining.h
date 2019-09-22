@@ -60,11 +60,11 @@ namespace ts {
 
         //!
         //! Set a new initialization vector.
-        //! @param [in] iv Address of IV.
+        //! @param [in] iv_data Address of IV.
         //! @param [in] iv_length IV length in bytes.
         //! @return True on success, false on error.
         //!
-        virtual bool setIV(const void* iv, size_t iv_length);
+        virtual bool setIV(const void* iv_data, size_t iv_length);
 
         //!
         //! Get the minimum IV sizes in bytes.

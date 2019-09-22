@@ -169,9 +169,10 @@ namespace ts {
         //!
         //! Check that an XML element has the right name for this table.
         //! @param [in] element XML element to check.
+        //! @param [in] legacy_name If not null, specifies an alternate legacy name.
         //! @return True on success, false on error.
         //!
-        bool checkXMLName(const xml::Element* element) const;
+        bool checkXMLName(const xml::Element* element, const UChar* legacy_name = nullptr) const;
 
         //!
         //! This static method serializes a DVB string with a required fixed size.

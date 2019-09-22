@@ -460,7 +460,7 @@ void Stuffer::stuff()
     assert(_tstamp2.set());
 
     // Create output file
-    if (!_output.open(_opt.output_file, ts::TSFileOutput::SHARE, _opt)) {
+    if (!_output.open(_opt.output_file, ts::TSFileOutput::SHARED, _opt)) {
         fatalError();
     }
 

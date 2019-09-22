@@ -72,11 +72,11 @@ namespace ts {
         //! The method setIV() sets the IV for @e long blocks (longer than the block size)
         //! and @e short blocks (shorter than the block size). The latter can then
         //! be overwritten using setShortIV().
-        //! @param [in] iv Address of IV.
+        //! @param [in] iv_data Address of IV.
         //! @param [in] iv_length IV length in bytes.
         //! @return True on success, false on error.
         //!
-        virtual bool setShortIV(const void* iv, size_t iv_length);
+        virtual bool setShortIV(const void* iv_data, size_t iv_length);
 
         // Implementation of BlockCipher and CipherChaining interfaces.
         // For some reason, doxygen is unable to automatically inherit the
@@ -90,7 +90,7 @@ namespace ts {
         virtual bool residueAllowed() const override;
 
         //! @copydoc ts::CipherChaining::setIV()
-        virtual bool setIV(const void* iv, size_t iv_length) override;
+        virtual bool setIV(const void* iv_, size_t iv_length) override;
 
         //! @copydoc ts::BlockCipher::name()
         virtual UString name() const override;

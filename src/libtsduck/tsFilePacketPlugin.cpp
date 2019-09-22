@@ -59,7 +59,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
-    _flags = TSFileOutput::SHARE;
+    _flags = TSFileOutput::SHARED;
     if (present(u"append")) {
         _flags |= TSFileOutput::APPEND;
     }

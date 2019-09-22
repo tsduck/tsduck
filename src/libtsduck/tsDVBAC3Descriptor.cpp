@@ -26,12 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an enhanced_AC-3_descriptor
-//
-//----------------------------------------------------------------------------
 
-#include "tsEnhancedAC3Descriptor.h"
+#include "tsDVBAC3Descriptor.h"
 #include "tsDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
@@ -39,36 +35,47 @@
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"enhanced_AC3_descriptor"
-#define MY_DID ts::DID_ENHANCED_AC3
+#define MY_XML_NAME u"DVB_AC3_descriptor"
+#define MY_XML_NAME_LEGACY u"AC3_descriptor"
+#define MY_DID ts::DID_AC3
 #define MY_STD ts::STD_DVB
 
-TS_XML_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, ts::EDID::Standard(MY_DID));
-TS_FACTORY_REGISTER(ts::EnhancedAC3Descriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::DVBAC3Descriptor, MY_XML_NAME);
+TS_XML_DESCRIPTOR_FACTORY(ts::DVBAC3Descriptor, MY_XML_NAME_LEGACY);
+TS_ID_DESCRIPTOR_FACTORY(ts::DVBAC3Descriptor, ts::EDID::Standard(MY_DID));
+TS_FACTORY_REGISTER(ts::DVBAC3Descriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+
+// For compatibility:
+TS_XML_DESCRIPTOR_FACTORY(ts::DVBAC3Descriptor, u"AC3_descriptor");
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Default constructor:
 //----------------------------------------------------------------------------
 
-ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
+ts::DVBAC3Descriptor::DVBAC3Descriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_type(),
     bsid(),
     mainid(),
     asvc(),
-    mixinfoexists(false),
-    substream1(),
-    substream2(),
-    substream3(),
     additional_info()
 {
     _is_valid = true;
 }
 
-ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
-    EnhancedAC3Descriptor()
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::DVBAC3Descriptor::DVBAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    component_type(),
+    bsid(),
+    mainid(),
+    asvc(),
+    additional_info()
 {
     deserialize(duck, desc);
 }
@@ -78,7 +85,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor(DuckContext& duck, const Descri
 // Merge inside this object missing information which can be found in other object
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::merge(const EnhancedAC3Descriptor& other)
+void ts::DVBAC3Descriptor::merge(const DVBAC3Descriptor& other)
 {
     if (!component_type.set()) {
         component_type = other.component_type;
@@ -92,16 +99,6 @@ void ts::EnhancedAC3Descriptor::merge(const EnhancedAC3Descriptor& other)
     if (!asvc.set()) {
         asvc = other.asvc;
     }
-    mixinfoexists = mixinfoexists || other.mixinfoexists;
-    if (!substream1.set()) {
-        substream1 = other.substream1;
-    }
-    if (!substream2.set()) {
-        substream2 = other.substream2;
-    }
-    if (!substream3.set()) {
-        substream3 = other.substream3;
-    }
     if (additional_info.empty()) {
         additional_info = other.additional_info;
     }
@@ -112,7 +109,7 @@ void ts::EnhancedAC3Descriptor::merge(const EnhancedAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
+void ts::DVBAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -120,11 +117,7 @@ void ts::EnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) c
     bbp->appendUInt8 ((component_type.set() ? 0x80 : 0x00) |
                       (bsid.set()           ? 0x40 : 0x00) |
                       (mainid.set()         ? 0x20 : 0x00) |
-                      (asvc.set()           ? 0x10 : 0x00) |
-                      (mixinfoexists        ? 0x08 : 0x00) |
-                      (substream1.set()     ? 0x04 : 0x00) |
-                      (substream2.set()     ? 0x02 : 0x00) |
-                      (substream3.set()     ? 0x01 : 0x00));
+                      (asvc.set()           ? 0x10 : 0x00));
     if (component_type.set()) {
         bbp->appendUInt8 (component_type.value());
     }
@@ -136,15 +129,6 @@ void ts::EnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) c
     }
     if (asvc.set()) {
         bbp->appendUInt8 (asvc.value());
-    }
-    if (substream1.set()) {
-        bbp->appendUInt8 (substream1.value());
-    }
-    if (substream2.set()) {
-        bbp->appendUInt8 (substream2.value());
-    }
-    if (substream3.set()) {
-        bbp->appendUInt8 (substream3.value());
     }
     bbp->append (additional_info);
 
@@ -159,7 +143,7 @@ void ts::EnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) c
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
+void ts::DVBAC3Descriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
@@ -167,16 +151,12 @@ void ts::EnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor&
     bsid.reset();
     mainid.reset();
     asvc.reset();
-    substream1.reset();
-    substream2.reset();
-    substream3.reset();
     additional_info.clear();
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         const uint8_t flags = *data;
-        mixinfoexists = (flags & 0x08) != 0;
         data++; size--;
         if ((flags & 0x80) != 0 && size >= 1) {
             component_type = *data;
@@ -194,18 +174,6 @@ void ts::EnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor&
             asvc = *data;
             data++; size--;
         }
-        if ((flags & 0x04) != 0 && size >= 1) {
-            substream1 = *data;
-            data++; size--;
-        }
-        if ((flags & 0x02) != 0 && size >= 1) {
-            substream2 = *data;
-            data++; size--;
-        }
-        if ((flags & 0x01) != 0 && size >= 1) {
-            substream3 = *data;
-            data++; size--;
-        }
         additional_info.copy (data, size);
     }
 }
@@ -215,7 +183,7 @@ void ts::EnhancedAC3Descriptor::deserialize(DuckContext& duck, const Descriptor&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.duck().out());
     const std::string margin(indent, ' ');
@@ -223,7 +191,6 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
     if (size >= 1) {
         uint8_t flags = data[0];
         data++; size--;
-
         if ((flags & 0x80) && size >= 1) { // component_type
             uint8_t type = data[0];
             data++; size--;
@@ -244,24 +211,6 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
             data++; size--;
             strm << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
         }
-        if (flags & 0x08) {
-            strm << margin << "Substream 0: Mixing control metadata" << std::endl;
-        }
-        if ((flags & 0x04) && size >= 1) { // substream1
-            uint8_t type = data[0];
-            data++; size--;
-            strm << margin << "Substream 1: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
-        }
-        if ((flags & 0x02) && size >= 1) { // substream2
-            uint8_t type = data[0];
-            data++; size--;
-            strm << margin << "Substream 2: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
-        }
-        if ((flags & 0x01) && size >= 1) { // substream3
-            uint8_t type = data[0];
-            data++; size--;
-            strm << margin << "Substream 3: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
-        }
         if (size > 0) {
             strm << margin << "Additional information:" << std::endl
                  << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
@@ -277,16 +226,12 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::DVBAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setBoolAttribute(u"mixinfoexists", mixinfoexists);
     root->setOptionalIntAttribute(u"component_type", component_type, true);
     root->setOptionalIntAttribute(u"bsid", bsid, true);
     root->setOptionalIntAttribute(u"mainid", mainid, true);
     root->setOptionalIntAttribute(u"asvc", asvc, true);
-    root->setOptionalIntAttribute(u"substream1", substream1, true);
-    root->setOptionalIntAttribute(u"substream2", substream2, true);
-    root->setOptionalIntAttribute(u"substream3", substream3, true);
     if (!additional_info.empty()) {
         root->addElement(u"additional_info")->addHexaText(additional_info);
     }
@@ -297,17 +242,13 @@ void ts::EnhancedAC3Descriptor::buildXML(DuckContext& duck, xml::Element* root) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
+void ts::DVBAC3Descriptor::fromXML(DuckContext& duck, const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(element) &&
-        element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
+        checkXMLName(element, MY_XML_NAME_LEGACY) &&
         element->getOptionalIntAttribute(component_type, u"component_type") &&
         element->getOptionalIntAttribute(bsid, u"bsid") &&
         element->getOptionalIntAttribute(mainid, u"mainid") &&
         element->getOptionalIntAttribute(asvc, u"asvc") &&
-        element->getOptionalIntAttribute(substream1, u"substream1") &&
-        element->getOptionalIntAttribute(substream2, u"substream2") &&
-        element->getOptionalIntAttribute(substream3, u"substream3") &&
         element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

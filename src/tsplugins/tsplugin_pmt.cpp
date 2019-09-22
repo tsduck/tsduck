@@ -42,8 +42,8 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsRegistrationDescriptor.h"
-#include "tsAC3Descriptor.h"
-#include "tsEnhancedAC3Descriptor.h"
+#include "tsDVBAC3Descriptor.h"
+#include "tsDVBEnhancedAC3Descriptor.h"
 #include "tsCueIdentifierDescriptor.h"
 TSDUCK_SOURCE;
 
@@ -601,7 +601,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 smi->second.stream_type = ST_PES_PRIV;
                 if (smi->second.descs.search(DID_AC3) == smi->second.descs.count()) {
                     // No AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(duck, AC3Descriptor());
+                    smi->second.descs.add(duck, DVBAC3Descriptor());
                 }
             }
         }
@@ -614,7 +614,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
                 smi->second.stream_type = ST_PES_PRIV;
                 if (smi->second.descs.search (DID_ENHANCED_AC3) == smi->second.descs.count()) {
                     // No enhanced_AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(duck, EnhancedAC3Descriptor());
+                    smi->second.descs.add(duck, DVBEnhancedAC3Descriptor());
                 }
             }
         }

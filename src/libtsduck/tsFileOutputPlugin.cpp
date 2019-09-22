@@ -59,7 +59,7 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
 bool ts::FileOutputPlugin::getOptions()
 {
     getValue(_name);
-    _flags = TSFileOutput::SHARE;
+    _flags = TSFileOutput::SHARED;
     if (present(u"append")) {
         _flags |= TSFileOutput::APPEND;
     }

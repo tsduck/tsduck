@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an enhanced_AC-3_descriptor
+//!  Representation of an ATSC AC-3_audio_stream_descriptor.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,41 +38,45 @@
 
 namespace ts {
     //!
-    //! Representation of an enhanced_AC-3_descriptor.
-    //! @see ETSI 300 468, D.5.
+    //! Representation of an ATSC AC-3_audio_stream_descriptor.
+    //! @see A/52, A.4.3.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL EnhancedAC3Descriptor : public AbstractDescriptor
+    class TSDUCKDLL ATSCAC3AudioStreamDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type;  //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> bsid;            //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> mainid;          //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> asvc;            //!< See ETSI 300 468, D.5.
-        bool              mixinfoexists;   //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> substream1;      //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> substream2;      //!< See ETSI 300 468, D.5.
-        Variable<uint8_t> substream3;      //!< See ETSI 300 468, D.5.
-        ByteBlock         additional_info; //!< See ETSI 300 468, D.5.
+        uint8_t   sample_rate_code;  //!< 3 bits, see A/52, A.4.3.
+        uint8_t   bsid;              //!< 5 bits, see A/52, A.4.3.
+        uint8_t   bit_rate_code;     //!< 6 bits, see A/52, A.4.3.
+        uint8_t   surround_mode;     //!< 2 bits, see A/52, A.4.3.
+        uint8_t   bsmod;             //!< 3 bits, see A/52, A.4.3.
+        uint8_t   num_channels;      //!< 4 bits, see A/52, A.4.3.
+        bool      full_svc;          //!< See A/52, A.4.3.
+        uint8_t   mainid;            //!< 3 bits, if bsmod < 2, see A/52, A.4.3.
+        uint8_t   priority;          //!< 2 bits, if bsmod < 2, see A/52, A.4.3.
+        uint8_t   asvcflags;         //!< 8 bits, if bsmod >= 2, see A/52, A.4.3.
+        UString   text;              //!< See A/52, A.4.3.
+        UString   language;          //!< 3 chars, optional, see A/52, A.4.3.
+        UString   language_2;        //!< 3 chars, optional, see A/52, A.4.3.
+        ByteBlock additional_info;   //!< See A/52, A.4.3.
 
         //!
         //! Default constructor.
         //!
-        EnhancedAC3Descriptor();
+        ATSCAC3AudioStreamDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        EnhancedAC3Descriptor(DuckContext& duck, const Descriptor& bin);
+        ATSCAC3AudioStreamDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
-        //! Merge inside this object missing information which can be found in other object.
-        //! @param [in] other Other object to get missing information from.
+        //! Clear the content of this object.
         //!
-        void merge(const EnhancedAC3Descriptor& other);
+        void clear();
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
