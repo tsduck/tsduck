@@ -90,7 +90,7 @@ namespace ts {
         virtual bool residueAllowed() const override;
 
         //! @copydoc ts::CipherChaining::setIV()
-        virtual bool setIV(const void* iv_, size_t iv_length) override;
+        virtual bool setIV(const void* iv_data, size_t iv_length) override;
 
         //! @copydoc ts::BlockCipher::name()
         virtual UString name() const override;
