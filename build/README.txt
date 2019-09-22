@@ -79,6 +79,10 @@ Build scripts on Windows
   PowerShell script by double-clicking on it (the default action is to edit
   script files with notepad).
 
+- WindowsCompileLowPriority.reg : A registry file which add definitions to
+  force compilation and link processes to run with a lower priority to avoid
+  killing the system while compiling using Visual Studio.
+
 Project files for Linux and macOS
 ---------------------------------
 - build-project-files.sh : This shell script is the Unix equivalent of
