@@ -455,6 +455,10 @@ ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& des
         return _pids[pid] = new PIDContext(pid, description);
     }
     else {
+        // If the PID was marked as unreferenced, now use actual description.
+        if (p->description == UNREFERENCED && description != UNREFERENCED) {
+            p->description = description;
+        }
         return p;
     }
 }
