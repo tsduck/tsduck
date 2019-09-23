@@ -46,8 +46,11 @@
 // So, with MSC only, instead of storing a reference to the external string
 // object, we will keep a copy of it. This has a significant performance penalty,
 // so this method is used only with MSC.
+//
+// A fix was first introduced with Visual Studio 2019 16.4.0 Preview 1.0
+// (_MSC_FULL_VER = 192428117, _MSC_VER = 1924, _MSC_BUILD = 0).
 
-#if defined(TS_MSC) && !defined(NON_CONFORMANT_CXX11_TEMPLIFE) && !defined(DOXYGEN)
+#if defined(_MSC_VER) && (_MSC_VER < 1924) && !defined(NON_CONFORMANT_CXX11_TEMPLIFE) && !defined(DOXYGEN)
 #define NON_CONFORMANT_CXX11_TEMPLIFE 1
 #endif
 
