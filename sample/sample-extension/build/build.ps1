@@ -25,22 +25,11 @@ function Exit-Script
 }
 
 # Find MSBuild.exe.
-$MSBuild = ""
-$MSBuildPath = ($env:Path -split ";") + @(
-    'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64',
-    'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin',
-    'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64',
-    'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin',
-    'C:\Program Files (x86)\MSBuild\14.0\Bin\amd64',
-    'C:\Program Files (x86)\MSBuild\14.0\Bin'
-) | Where-Object {$_}
-foreach ($dir in $MSBuildPath) {
-    $path = (Join-Path $dir "MSBuild.exe")
-    if (Test-Path $path) {
-        $MSBuild = $path
-        break
-    }
-}
+$MSBuild = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include MSBuild.exe -ErrorAction Ignore |
+           ForEach-Object { (Get-Command $_).FileVersionInfo } |
+           Sort-Object -Unique -Property FileVersion |
+           ForEach-Object { $_.FileName} |
+           Select-Object -Last 1
 if (-not $MSBuild) {
     Exit-Script -NoPause:$NoPause "MSBuild not found"
 }

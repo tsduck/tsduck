@@ -27,16 +27,7 @@ function Exit-Script
 }
 
 # Locate NSIS, the Nullsoft Scriptable Installation System.
-# Find MSBuild.exe.
-$NSIS = ""
-$NSISPath = ($env:Path -split ";") + @('C:\Program Files\NSIS', 'C:\Program Files (x86)\NSIS') | Where-Object {$_}
-foreach ($dir in $NSISPath) {
-    $path = (Join-Path $dir "makensis.exe")
-    if (Test-Path $path) {
-        $NSIS = $path
-        break
-    }
-}
+$NSIS = Get-Item "C:\Program Files*\NSIS\makensis.exe" | ForEach-Object { $_.FullName} | Select-Object -Last 1
 if (-not $NSIS) {
     Exit-Script -NoPause:$NoPause "NSIS not found"
 }

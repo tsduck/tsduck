@@ -127,10 +127,29 @@ if (-not $NoSource) {
     }
 }
 
-# Locate NSIS, the Nullsoft Scriptable Installation System.
+# Collect files for the installers.
 if (-not $NoInstaller) {
-    $NsisExe = Get-FileInPath makensis.exe "$env:Path;C:\Program Files\NSIS;C:\Program Files (x86)\NSIS"
-    $NsisScript = Join-Path $PSScriptRoot "tsduck.nsi"
+    # Locate NSIS, the Nullsoft Scriptable Installation System.
+    $NSIS = Get-Item "C:\Program Files*\NSIS\makensis.exe" | ForEach-Object { $_.FullName} | Select-Object -Last 1
+    if (-not $NSIS) {
+        Exit-Script -NoPause:$NoPause "NSIS not found"
+    }
+}
+
+# MSVC redistributable installer.
+if (-not $NoInstaller -or -not $NoPortable) {
+    Write-Output "Searching MSVC Redistributable Libraries Installers..."
+    $VCRedist32 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*86.exe" -ErrorAction Ignore |
+                  ForEach-Object { (Get-Command $_).FileVersionInfo } |
+                  Sort-Object -Unique -Property FileVersion  |
+                  ForEach-Object { $_.FileName} | Select-Object -Last 1
+    $VCRedist64 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*64.exe" -ErrorAction Ignore |
+                  ForEach-Object { (Get-Command $_).FileVersionInfo } |
+                  Sort-Object -Unique -Property FileVersion  |
+                  ForEach-Object { $_.FileName} | Select-Object -Last 1
+    if (-not $VCRedist32 -or -not $VCRedist64) {
+        Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries Installers not found"
+    }
 }
 
 # Get version name.
@@ -138,22 +157,16 @@ $Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#
 $Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
 $Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
 $Version = "${Major}.${Minor}-${Commit}"
+$VersionInfo = "${Major}.${Minor}.${Commit}.0"
 
 # Lower process priority so that the build does not eat up all CPU.
 if (-not $NoLowPriority) {
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 }
 
-# Specific options to build without Teletext support.
-if ($NoTeletext) {
-    $NsisOptTeletext = "/DNoTeletext"
-}
-else {
-    $NsisOptTeletext =""
-}
-
 # Build the project.
 if (-not $NoBuild) {
+    Write-Output "Compiling..."
     Push-Location
     & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
     $Code = $LastExitCode
@@ -163,22 +176,45 @@ if (-not $NoBuild) {
     }
 }
 
-# Download redistributable libraries, if not already downloaded.
-if (-not $NoInstaller) {
-    & (Join-MultiPath @($MsvcDir, "redist", "Download-Vcredist.ps1")) -NoPause
+# A function to build a binary installer.
+function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist)
+{
+    Write-Output "Building installer for $Arch..."
+
+    # Full bin directory.
+    $BinDir = (Join-Path $MsvcDir "Release-${BinSuffix}")
+
+    # NSIS script for this project.
+    $NsisScript = Join-Path $PSScriptRoot "tsduck.nsi"
+
+    # Base name of the MSVC redistributable.
+    $VCRedistName = (Get-Item $VCRedist).Name
+
+    # Specific options to build without Teletext support.
+    if ($NoTeletext) {
+        $NsisOptTeletext = "/DNoTeletext"
+    }
+    else {
+        $NsisOptTeletext =""
+    }
+
+    # Build the binary installer.
+    & $NSIS /V2 $NsisOptTeletext /D${Arch} /DBinDir=$BinDir /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
 
 # Build binary installers.
 if (-not $NoInstaller -and $Win32) {
-    & $NsisExe /V2 $NsisOptTeletext $NsisScript
+    Build-Binary "Win32" "Win32" $VCRedist32
 }
 if (-not $NoInstaller -and $Win64) {
-    & $NsisExe /V2 $NsisOptTeletext /DWin64 $NsisScript
+    Build-Binary "x64" "Win64" $VCRedist64
 }
 
 # A function to build a portable package.
-function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$VcRedist)
+function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$VCRedist)
 {
+    Write-Output "Building portable installer for $InstallerSuffix..."
+
     # Full bin directory.
     $BinDir = (Join-Path $MsvcDir "Release-${BinSuffix}")
 
@@ -206,7 +242,7 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
 
         $TempSetup = (New-Directory @($TempRoot, "setup"))
         Copy-Item (Join-Path $BinDir "setpath.exe") -Destination $TempSetup
-        Copy-Item (Join-Multipath @($MsvcDir, "redist", $VcRedist)) -Destination $TempSetup
+        Copy-Item $VCRedist -Destination $TempSetup
 
         if ($NoTeletext) {
             Get-ChildItem $TempBin -Recurse -Include "tsplugin_teletext.*" | Remove-Item -Force -ErrorAction Ignore
@@ -226,14 +262,15 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
 
 # Build portable packages.
 if (-not $NoPortable -and $Win32) {
-    Build-Portable "Win32" "Win32" "vcredist32.exe"
+    Build-Portable "Win32" "Win32" $VCRedist32
 }
 if (-not $NoPortable -and $Win64) {
-    Build-Portable "x64" "Win64" "vcredist64.exe"
+    Build-Portable "x64" "Win64" $VCRedist64
 }
 
 # Build the source archives.
 if (-not $NoSource) {
+    Write-Output "Building source archive..."
 
     # Source archive name.
     $SrcArchive = (Join-Path $InstallerDir "TSDuck-${Version}-src.zip")
