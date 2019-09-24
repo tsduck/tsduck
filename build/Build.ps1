@@ -115,6 +115,9 @@ if (-not $NoLowPriority) {
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 }
 
+# Find MSBuild
+$MSBuild = (Find-MSBuild)
+
 # Update git repository if requested.
 if ($GitPull) {
     # Search git command.
@@ -136,7 +139,6 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
     else {
         $OptTeletext =""
     }
-    $MSBuild = (Find-MSBuild)
     & $MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target 
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"

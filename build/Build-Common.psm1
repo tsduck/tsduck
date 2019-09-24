@@ -379,18 +379,21 @@ Export-ModuleMember -Function New-ZipFile
   Find MSBuild.exe, regardless of Visual Studion version.
 
  .OUTPUTS
-  Return the first MSBuild.exe which is found or exit script if none is found.
+  Return the MSBuild.exe with the highest version or exit script if none is found.
 #>
 function Find-MSBuild
 {
-    return Get-FileInPath "MSBuild.exe" @(
-        $env:Path,
-        'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64',
-        'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin',
-        'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64',
-        'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin',
-        'C:\Program Files (x86)\MSBuild\14.0\Bin\amd64',
-        'C:\Program Files (x86)\MSBuild\14.0\Bin'
-    )
+    $MSRoots = @("C:\Program Files*\MSBuild", "C:\Program Files*\Microsoft Visual Studio")
+
+    $Path = Get-ChildItem -Recurse -Path $MSRoots -Include MSBuild.exe -ErrorAction Ignore |
+            ForEach-Object { (Get-Command $_).FileVersionInfo } |
+            Sort-Object -Unique -Property FileVersion |
+            ForEach-Object { $_.FileName} |
+            Select-Object -Last 1
+
+    if (-not $Path) {
+        Exit-Script -NoPause:$NoPause "$File not found"
+    }
+    return $Path
 }
 Export-ModuleMember -Function Find-MSBuild
