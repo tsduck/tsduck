@@ -91,6 +91,8 @@ void ts::ATSCTimeShiftedServiceDescriptor::serialize(DuckContext& duck, Descript
 
 void ts::ATSCTimeShiftedServiceDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
+    entries.clear();
+
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 

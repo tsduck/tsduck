@@ -49,6 +49,7 @@
     REF_TYPE(CIAncillaryDataDescriptor);
     REF_TYPE(ComponentDescriptor);
     REF_TYPE(ComponentNameDescriptor);
+    REF_TYPE(ContentAdvisoryDescriptor);
     REF_TYPE(ContentDescriptor);
     REF_TYPE(CopyrightDescriptor);
     REF_TYPE(CountryAvailabilityDescriptor);

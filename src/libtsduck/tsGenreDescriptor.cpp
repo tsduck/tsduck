@@ -50,7 +50,7 @@ TS_FACTORY_REGISTER(ts::GenreDescriptor::DisplayDescriptor, ts::EDID::Private(MY
 //----------------------------------------------------------------------------
 
 ts::GenreDescriptor::GenreDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     attributes()
 {
     _is_valid = true;

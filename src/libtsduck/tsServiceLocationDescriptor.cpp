@@ -50,7 +50,7 @@ TS_FACTORY_REGISTER(ts::ServiceLocationDescriptor::DisplayDescriptor, ts::EDID::
 //----------------------------------------------------------------------------
 
 ts::ServiceLocationDescriptor::ServiceLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     PCR_PID(PID_NULL),
     entries()
 {

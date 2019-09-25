@@ -83,6 +83,7 @@
 #include "tsCIAncillaryDataDescriptor.h"
 #include "tsComponentDescriptor.h"
 #include "tsComponentNameDescriptor.h"
+#include "tsContentAdvisoryDescriptor.h"
 #include "tsContentDescriptor.h"
 #include "tsCopyrightDescriptor.h"
 #include "tsCountryAvailabilityDescriptor.h"

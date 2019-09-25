@@ -49,7 +49,7 @@ TS_FACTORY_REGISTER(ts::ExtendedChannelNameDescriptor::DisplayDescriptor, ts::ED
 //----------------------------------------------------------------------------
 
 ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     long_channel_name_text()
 {
     _is_valid = true;

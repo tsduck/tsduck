@@ -49,7 +49,7 @@ TS_FACTORY_REGISTER(ts::ComponentNameDescriptor::DisplayDescriptor, ts::EDID::Pr
 //----------------------------------------------------------------------------
 
 ts::ComponentNameDescriptor::ComponentNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     component_name_string()
 {
     _is_valid = true;

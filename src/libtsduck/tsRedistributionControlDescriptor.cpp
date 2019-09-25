@@ -50,7 +50,7 @@ TS_FACTORY_REGISTER(ts::RedistributionControlDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::RedistributionControlDescriptor::RedistributionControlDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     rc_information()
 {
     _is_valid = true;

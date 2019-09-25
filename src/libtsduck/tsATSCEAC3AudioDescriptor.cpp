@@ -50,7 +50,7 @@ TS_FACTORY_REGISTER(ts::ATSCEAC3AudioDescriptor::DisplayDescriptor, ts::EDID::Pr
 //----------------------------------------------------------------------------
 
 ts::ATSCEAC3AudioDescriptor::ATSCEAC3AudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     mixinfoexists(false),
     full_service(false),
     audio_service_type(0),
