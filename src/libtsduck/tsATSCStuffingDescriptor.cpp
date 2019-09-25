@@ -49,7 +49,7 @@ TS_FACTORY_REGISTER(ts::ATSCStuffingDescriptor::DisplayDescriptor, ts::EDID::Pri
 //----------------------------------------------------------------------------
 
 ts::ATSCStuffingDescriptor::ATSCStuffingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     stuffing()
 {
     _is_valid = true;

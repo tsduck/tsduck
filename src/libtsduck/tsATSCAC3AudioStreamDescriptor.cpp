@@ -52,7 +52,7 @@ TS_FACTORY_REGISTER(ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor, ts::EDI
 //----------------------------------------------------------------------------
 
 ts::ATSCAC3AudioStreamDescriptor::ATSCAC3AudioStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     sample_rate_code(0),
     bsid(0),
     bit_rate_code(0),

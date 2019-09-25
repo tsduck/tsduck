@@ -118,6 +118,7 @@
 #include "tsCondition.h"
 #include "tsConfigFile.h"
 #include "tsConfigSection.h"
+#include "tsContentAdvisoryDescriptor.h"
 #include "tsContentDescriptor.h"
 #include "tsContinuityAnalyzer.h"
 #include "tsCopyrightDescriptor.h"
