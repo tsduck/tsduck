@@ -49,6 +49,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAsyncReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCAC3AudioStreamDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCEAC3AudioDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsATSCEIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCMultipleString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCStuffingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsATSCTimeShiftedServiceDescriptor.h" />
@@ -583,6 +584,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAsyncReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCAC3AudioStreamDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCEAC3AudioDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsATSCEIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCMultipleString.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCStuffingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsATSCTimeShiftedServiceDescriptor.cpp" />

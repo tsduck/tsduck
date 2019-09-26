@@ -47,6 +47,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAsyncReport.h \
     ../../../src/libtsduck/tsATSCAC3AudioStreamDescriptor.h \
     ../../../src/libtsduck/tsATSCEAC3AudioDescriptor.h \
+    ../../../src/libtsduck/tsATSCEIT.h \
     ../../../src/libtsduck/tsATSCMultipleString.h \
     ../../../src/libtsduck/tsATSCStuffingDescriptor.h \
     ../../../src/libtsduck/tsATSCTimeShiftedServiceDescriptor.h \
@@ -571,6 +572,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAsyncReport.cpp \
     ../../../src/libtsduck/tsATSCAC3AudioStreamDescriptor.cpp \
     ../../../src/libtsduck/tsATSCEAC3AudioDescriptor.cpp \
+    ../../../src/libtsduck/tsATSCEIT.cpp \
     ../../../src/libtsduck/tsATSCMultipleString.cpp \
     ../../../src/libtsduck/tsATSCStuffingDescriptor.cpp \
     ../../../src/libtsduck/tsATSCTimeShiftedServiceDescriptor.cpp \

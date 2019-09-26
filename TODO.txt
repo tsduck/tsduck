@@ -65,8 +65,6 @@ TSDuck - List of features to be implemented or fixed
 
   ATSC A/65 (Program and System Information Protocol)
   - 6.4     Rating Region Table (RRT)
-  - 6.5     Event Information Table (EIT, ATSC version)
-  - 6.6     Extended Text Table (ETT)
   - 6.7     Directed Channel Change Table (DCCT)
   - 6.8     DCC Selection Code Table (DCCSCT)
   - 6.9.10  DCC_departing_request_descriptor
