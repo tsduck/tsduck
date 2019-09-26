@@ -33,6 +33,7 @@
 #pragma once
 
 #include "tsAIT.h"
+#include "tsATSCEIT.h"
 #include "tsBAT.h"
 #include "tsCableEmergencyAlertTable.h"
 #include "tsCAT.h"

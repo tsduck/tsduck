@@ -72,6 +72,7 @@
 #include "tsAsyncReport.h"
 #include "tsATSCAC3AudioStreamDescriptor.h"
 #include "tsATSCEAC3AudioDescriptor.h"
+#include "tsATSCEIT.h"
 #include "tsATSCMultipleString.h"
 #include "tsATSCStuffingDescriptor.h"
 #include "tsATSCTimeShiftedServiceDescriptor.h"
