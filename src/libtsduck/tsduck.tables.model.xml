@@ -386,6 +386,17 @@
       <_any in="_descriptors"/>
     </STT>
 
+    <!-- ATSC Extended Text Table -->
+    <ETT version="uint5, default=0"
+         protocol_version="uint8, default=0"
+         ETT_table_id_extension="uint16, required"
+         ETM_id="uint32, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <extended_text_message>
+        <string language="char3, required" text="string, required"/>
+      </extended_text_message>
+    </ETT>
+
     <!-- Generic short table -->
     <generic_short_table
         table_id="uint8, required"

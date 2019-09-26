@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an ATSC Extended Text Table (ETT)
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 19
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1430
+#include "tsAbstractLongTable.h"
+#include "tsATSCMultipleString.h"
+
+namespace ts {
+    //!
+    //! Representation of an ATSC Extended Text Table (ETT)
+    //! @see ATSC A/65, section 6.6.
+    //! @ingroup table
+    //!
+    class TSDUCKDLL ETT : public AbstractLongTable
+    {
+    public:
+        // ETT public members:
+        uint16_t           ETT_table_id_extension;  //!< Table extension, for ETT segmentation.
+        uint8_t            protocol_version;        //!< ATSC protocol version.
+        uint32_t           ETM_id;                  //!< Extended text message id.
+        ATSCMultipleString extended_text_message;   //!< Extended text message.
+
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //!
+        ETT(uint8_t version = 0);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        ETT(DuckContext& duck, const BinaryTable& table);
+
+        // Inherited methods
+        virtual void fromXML(DuckContext&, const xml::Element*) override;
+        DeclareDisplaySection();
+
+    protected:
+        // Inherited methods
+        virtual void serializeContent(DuckContext&, BinaryTable&) const override;
+        virtual void deserializeContent(DuckContext&, const BinaryTable&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+    };
+}

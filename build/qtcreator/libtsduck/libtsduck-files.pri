@@ -184,6 +184,7 @@ HEADERS += \
     ../../../src/libtsduck/tsEMMGMUX.h \
     ../../../src/libtsduck/tsEnumeration.h \
     ../../../src/libtsduck/tsETID.h \
+    ../../../src/libtsduck/tsETT.h \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.h \
     ../../../src/libtsduck/tsException.h \
     ../../../src/libtsduck/tsExtendedChannelNameDescriptor.h \
@@ -681,6 +682,7 @@ SOURCES += \
     ../../../src/libtsduck/tsEMMGClient.cpp \
     ../../../src/libtsduck/tsEMMGMUX.cpp \
     ../../../src/libtsduck/tsEnumeration.cpp \
+    ../../../src/libtsduck/tsETT.cpp \
     ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.cpp \
     ../../../src/libtsduck/tsException.cpp \
     ../../../src/libtsduck/tsExtendedChannelNameDescriptor.cpp \

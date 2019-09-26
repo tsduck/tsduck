@@ -186,6 +186,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsEMMGMUX.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnumeration.h" />
     <ClInclude Include="..\..\src\libtsduck\tsETID.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsETT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEutelsatChannelNumberDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsException.h" />
     <ClInclude Include="..\..\src\libtsduck\tsExtendedChannelNameDescriptor.h" />
@@ -693,6 +694,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsEMMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGMUX.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEnumeration.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsETT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEutelsatChannelNumberDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsException.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsExtendedChannelNameDescriptor.cpp" />
