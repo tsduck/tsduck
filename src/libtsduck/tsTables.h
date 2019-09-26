@@ -40,6 +40,7 @@
 #include "tsDiscontinuityInformationTable.h"
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsEIT.h"
+#include "tsETT.h"
 #include "tsINT.h"
 #include "tsMGT.h"
 #include "tsNIT.h"

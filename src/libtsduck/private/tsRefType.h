@@ -6,6 +6,7 @@
     REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);
+    REF_TYPE(ETT);
     REF_TYPE(INT);
     REF_TYPE(MGT);
     REF_TYPE(NIT);

@@ -195,6 +195,7 @@
 #include "tsEMMGMUX.h"
 #include "tsEnumeration.h"
 #include "tsETID.h"
+#include "tsETT.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsException.h"
 #include "tsExtendedChannelNameDescriptor.h"
