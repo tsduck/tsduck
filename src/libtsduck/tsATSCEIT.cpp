@@ -152,21 +152,16 @@ void ts::ATSCEIT::deserializeContent(DuckContext& duck, const BinaryTable& table
 
 
 //----------------------------------------------------------------------------
-// Serialization
-//----------------------------------------------------------------------------
-
-void ts::ATSCEIT::serializeContent(DuckContext& duck, BinaryTable& table) const
-{
-    //@@@@@@@@@@@@
-}
-
-
-//----------------------------------------------------------------------------
 // Private method: Add a new section to a table being serialized.
 //----------------------------------------------------------------------------
 
-void ts::ATSCEIT::addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const
+void ts::ATSCEIT::addSection(BinaryTable& table, int& section_number, size_t& event_count, uint8_t* payload, uint8_t*& data, size_t& remain) const
 {
+    // Update fixed part and event count in this section.
+    payload[0] = protocol_version;
+    payload[1] = uint8_t(event_count);
+
+    // Add a new section in the table.
     table.addSection(new Section(_table_id,
                                  true,         // is_private_section
                                  source_id,    // tid_ext
@@ -177,15 +172,76 @@ void ts::ATSCEIT::addSection(BinaryTable& table, int& section_number, uint8_t* p
                                  payload,
                                  data - payload)); // payload_size,
 
-    // Reinitialize pointers.
-    remain += data - payload;
-    data = payload;
+    // Reinitialize payload pointers after fixed part (start of the first event).
+    remain += data - payload - 2;
+    data = payload + 2;
+
+    // Reset event count in payload, move to next section.
+    event_count = 0;
     section_number++;
 }
 
 
 //----------------------------------------------------------------------------
-// A static method to display an ATSCEIT section.
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::ATSCEIT::serializeContent(DuckContext& duck, BinaryTable& table) const
+{
+    // Build the sections one by one, starting at first event (offset 2).
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t* data = payload + 2;
+    size_t remain = sizeof(payload) - 2;
+
+    // Count sections and events in sections (reset in addSection()).
+    int section_number = 0;
+    size_t event_count = 0;
+
+    // Add all events.
+    for (auto it = events.begin(); it != events.end(); ++it) {
+        const Event& event(it->second);
+
+        // Pre-serialize the title_text. Its max size is 255 bytes since its size must fit in a byte.
+        ByteBlock title;
+        event.title_text.serialize(duck, title, 255, true);
+
+        // According to A/65, an event shall entirely fit into one section.
+        // We try to serialize the current event and if it does not fit, close
+        // the current section and open a new one. Of course, if one event is
+        // so large that it cannot fit alone in a section, it will be truncated.
+        const size_t descs_size = event.descs.binarySize();
+        if (event_count > 0 && 10 + title.size() + 2 + descs_size > remain) {
+            addSection(table, section_number, event_count, payload, data, remain);
+        }
+
+        // At this point, the free space is sufficient to store at least the fixed part and title string.
+        // If this is the first event in the payload, it is still possible that the descriptor list does
+        // not fit (will be truncated).
+        assert(remain >= 10 + title.size() + 2);
+
+        // Serialize fixed part and title.
+        PutUInt16(data, 0xC000 | event.event_id);
+        PutUInt32(data + 2, uint32_t(event.start_time.toGPSSeconds()));
+        PutUInt24(data + 6, 0x00C00000 | (uint32_t(event.ETM_location & 0x03) << 20) | (event.length_in_seconds & 0x000FFFFF));
+        PutUInt8(data + 9, uint8_t(title.size()));
+        ::memcpy(data + 10, title.data(), title.size());
+        data += 10 + title.size();
+        remain -= 10 + title.size();
+
+        // Serialize descriptors with 2-byte length prefix.
+        event.descs.lengthSerialize(data, remain);
+        event_count++;
+    }
+
+    // Add partial section (if there is one)
+    if (data > payload + 2 || table.sectionCount() == 0) {
+        addSection(table, section_number, event_count, payload, data, remain);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// A static method to display an ATSC EIT section.
 //----------------------------------------------------------------------------
 
 void ts::ATSCEIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
@@ -214,18 +270,18 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& display, const ts::Section& sect
         const size_t title_length = data[9];
         data += 10; size -= 10;
 
-        strm << margin << UString::Format(u"Event Id: 0x%X (%d)", {evid, evid}) << std::endl
-             << margin << "Start UTC: " << start.format(Time::DATETIME) << std::endl
-             << margin << UString::Format(u"ETM location: %d", {loc}) << std::endl
-             << margin << UString::Format(u"Duration: %d seconds", {length}) << std::endl;
+        strm << margin << UString::Format(u"- Event Id: 0x%X (%d)", {evid, evid}) << std::endl
+             << margin << "  Start UTC: " << start.format(Time::DATETIME) << std::endl
+             << margin << UString::Format(u"  ETM location: %d", {loc}) << std::endl
+             << margin << UString::Format(u"  Duration: %d seconds", {length}) << std::endl;
 
-        ATSCMultipleString::Display(display, u"Title text: ", indent, data, size, title_length);
+        ATSCMultipleString::Display(display, u"Title text: ", indent + 2, data, size, title_length);
 
         size_t info_length = GetUInt16(data) & 0x0FFF;
         data += 2; size -= 2;
 
         info_length = std::min(info_length, size);
-        display.displayDescriptorList(section, data, info_length, indent);
+        display.displayDescriptorList(section, data, info_length, indent + 2);
         data += info_length; size -= info_length;
         event_count--;
     }
@@ -241,8 +297,8 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& display, const ts::Section& sect
 void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
-    root->setIntAttribute(u"source_id", source_id);
-    root->setIntAttribute(u"protocol_version", protocol_version, true);
+    root->setIntAttribute(u"source_id", source_id, true);
+    root->setIntAttribute(u"protocol_version", protocol_version);
 
     for (auto it = events.begin(); it != events.end(); ++it) {
         xml::Element* e = root->addElement(u"event");
@@ -277,7 +333,7 @@ void ts::ATSCEIT::fromXML(DuckContext& duck, const xml::Element* element)
         Event& event(events.newEntry());
         xml::ElementVector titles;
         _is_valid =
-            children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true) &&
+            children[i]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
             children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
             children[i]->getIntAttribute<uint8_t>(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
             children[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
