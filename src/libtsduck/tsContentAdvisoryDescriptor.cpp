@@ -148,7 +148,7 @@ void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             strm << margin << UString::Format(u"- Rating region: 0x%X (%d), number of dimensions: %d", {data[0], data[0], dim_count}) << std::endl;
             data += 2; size -= 2;
             while (size >= 2 && dim_count > 0) {
-                strm << margin << UString::Format(u"    Rating dimension j: 0x%X (%d), rating value: 0x%X (%d)", {data[0], data[0], data[1] & 0x0F, data[1] & 0x0F}) << std::endl;
+                strm << margin << UString::Format(u"    Rating dimension j: 0x%X (%d), rating value: %d", {data[0], data[0], data[1] & 0x0F}) << std::endl;
                 data += 2; size -= 2; dim_count--;
             }
             if (size >= 1) {
