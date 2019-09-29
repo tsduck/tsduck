@@ -144,6 +144,10 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         // This allows interpretation of ATSC descriptors in MPEG-defined tables (eg. PMT).
         return PDS_ATSC;
     }
+    else if ((_accStandards & STD_ISDB) != 0) {
+        // Same principle fir ISDB.
+        return PDS_ISDB;
+    }
     else {
         // Really no PDS to use.
         return 0;
@@ -357,6 +361,13 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"useful when ATSC-related stuff are found in the TS before the first "
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "
                   u"descriptors is found before the first ATSC MGT or VCT.");
+
+        args.option(u"isdb", 0);
+        args.help(u"isdb",
+                  u"Assume that the transport stream is an ISDB one. ISDB streams are normally "
+                  u"automatically detected from their signalization. This option is only "
+                  u"useful when ISDB-related stuff are found in the TS before the first "
+                  u"ISDB-specific table.");
     }
 
     // Options relating to default CAS identification.

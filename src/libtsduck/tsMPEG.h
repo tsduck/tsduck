@@ -329,6 +329,16 @@ namespace ts {
         PID_PSIP       = 0x1FFB, //!< PID for ATSC Program and System Information Protocol (contains most ATSC tables)
         PID_ATSC_LAST  = 0x1FFE, //!< Last reserved PID for ATSC.
 
+        // Valid in ISDB context:
+
+        PID_DCT        = 0x0017, //!< PID for ISDB Download Control Table
+        PID_PCAT       = 0x0022, //!< PID for ISDB Partial Content Announcement Table
+        PID_SDTT       = 0x0023, //!< PID for ISDB Software Download Trigger Table
+        PID_BIT        = 0x0024, //!< PID for ISDB Broadcaster Information Table
+        PID_NBIT       = 0x0025, //!< PID for ISDB Network Board Information Table
+        PID_LDT        = 0x0025, //!< PID for ISDB Linked Description Table
+        PID_CDT        = 0x0029, //!< PID for ISDB Common Data Table
+
         // Valid in all MPEG contexts:
 
         PID_NULL       = 0x1FFF, //!< PID for Null packets (stuffing)
@@ -897,6 +907,21 @@ namespace ts {
 
         TID_SCTE18_EAS    = 0xD8, //!< Table id for SCTE 18 Emergency Alert System
         TID_SCTE35_SIT    = 0xFC, //!< Table id for SCTE 35 Splice Information Table
+
+        // Valid in ISDB context:
+
+        TID_DCT           = 0xC0, //!< Table id for Download Control Table (ISDB)
+        TID_DLT           = 0xC1, //!< Table id for DownLoad Table (ISDB)
+        TID_PCAT          = 0xC2, //!< Table id for Partial Content Announcement Table (ISDB)
+        TID_SDTT          = 0xC3, //!< Table id for Software Download Trigger Table (ISDB)
+        TID_BIT           = 0xC4, //!< Table id for Broadcaster Information Table (ISDB)
+        TID_NBIT_BODY     = 0xC5, //!< Table id for Network Board Information Table (body) (ISDB)
+        TID_NBIT_INFO     = 0xC6, //!< Table id for Network Board Information Table (reference information) (ISDB)
+        TID_LDT           = 0xC7, //!< Table id for Linked Description Table (ISDB)
+        TID_CDT           = 0xC8, //!< Table id for Common Data Table (ISDB)
+        TID_LIT           = 0xD0, //!< Table id for Local Event Information Table (ISDB)
+        TID_ERT           = 0xD1, //!< Table id for Event Relation Table (ISDB)
+        TID_ITT           = 0xD2, //!< Table id for Index Transmission Table (ISDB)
     };
 
     constexpr size_t TID_MAX = 0x100; //!< Maximum number of TID values.
@@ -917,7 +942,8 @@ namespace ts {
         PDS_LOGIWAYS  = 0x000000A2, //!< Private data specifier for Logiways.
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
-        PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII)
+        PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
+        PDS_ISDB      = 0x49534442, //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
