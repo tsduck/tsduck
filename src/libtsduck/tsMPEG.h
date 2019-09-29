@@ -1140,7 +1140,7 @@ namespace ts {
         DID_UNT_ENHANCED_MSG    = 0x0C, //!< DID for UNT enhanced_message_descriptor
         DID_UNT_SSU_URI         = 0x0D, //!< DID for UNT ssu_uri_descriptor
 
-        // Valid in AES (Emergency Alert System, SCTE 18).
+        // Valid in EAS (Emergency Alert System, SCTE 18).
 
         DID_EAS_INBAND_DETAILS  = 0x00,  //!< DID for SCTE 18 In-Band Details Channel Descriptor
         DID_EAS_INBAND_EXCEPTS  = 0x01,  //!< DID for SCTE 18 In-Band Exceptions Channel Descriptor

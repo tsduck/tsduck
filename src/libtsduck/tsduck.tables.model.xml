@@ -813,6 +813,20 @@
 
     <data_stream_alignment_descriptor alignment_type="uint8, required"/>
 
+    <dcc_arriving_request_descriptor dcc_arriving_request_type="uint8, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <dcc_arriving_request_text>
+        <string language="char3, required" text="string, required"/>
+      </dcc_arriving_request_text>
+    </dcc_arriving_request_descriptor>
+
+    <dcc_departing_request_descriptor dcc_departing_request_type="uint8, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <dcc_departing_request_text>
+        <string language="char3, required" text="string, required"/>
+      </dcc_departing_request_text>
+    </dcc_departing_request_descriptor>
+
     <deferred_association_tags_descriptor
         transport_stream_id="uint16, required"
         program_number="uint16, required">

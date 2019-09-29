@@ -66,5 +66,3 @@ TSDuck - List of features to be implemented or fixed
   ATSC A/65 (Program and System Information Protocol)
   - 6.7     Directed Channel Change Table (DCCT)
   - 6.8     DCC Selection Code Table (DCCSCT)
-  - 6.9.10  DCC_departing_request_descriptor
-  - 6.9.11  DCC_arriving_request_descriptor
