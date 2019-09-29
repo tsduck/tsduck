@@ -28,94 +28,108 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an ATSC Master Guide Table (MGT)
+//!  Representation of an ATSC DCC Selection Code Table (DCCSCT).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractLongTable.h"
+#include "tsATSCMultipleString.h"
 #include "tsDescriptorList.h"
-#include "tsSingletonManager.h"
 #include "tsEnumeration.h"
 
 namespace ts {
     //!
-    //! Representation of an ATSC Master Guide Table (MGT)
-    //! @see ATSC A/65, section 6.2.
+    //! Representation of an ATSC Directed Channel Change Selection Code Table (DCCSCT).
+    //! @see ATSC A/65, section 6.8.
     //! @ingroup table
     //!
-    class TSDUCKDLL MGT : public AbstractLongTable
+    class TSDUCKDLL DCCSCT : public AbstractLongTable
     {
     public:
         //!
-        //! Description of a table type.
+        //! Define types of updates.
+        //!
+        enum UpdateType : uint8_t {
+            new_genre_category = 0x01,  //!< Genre table update.
+            new_state          = 0x02,  //!< Addition to state code data.
+            new_county         = 0x03,  //!< Addition to county code data.
+        };
+            
+        //!
+        //! Description of an update.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        struct TSDUCKDLL TableType : public EntryWithDescriptors
+        class TSDUCKDLL Update : public EntryWithDescriptors
         {
-            uint16_t table_type;                 //!< Referenced table type (this is not a table id).
-            PID      table_type_PID;             //!< PID carrying this referenced table.
-            uint8_t  table_type_version_number;  //!< 5 bits, version_number of the referenced table.
-            uint32_t number_bytes;               //!< Size in bytes of the referenced table.
+        public:
+            UpdateType         update_type;                    //!< Update type.
+            uint8_t            genre_category_code;            //!< When update_type == new_genre_category.
+            ATSCMultipleString genre_category_name_text;       //!< When update_type == new_genre_category.
+            uint8_t            dcc_state_location_code;        //!< When update_type == new_state.
+            ATSCMultipleString dcc_state_location_code_text;   //!< When update_type == new_state.
+            uint8_t            state_code;                     //!< When update_type == new_county.
+            uint16_t           dcc_county_location_code;       //!< 10 bits. When update_type == new_county.
+            ATSCMultipleString dcc_county_location_code_text;  //!< When update_type == new_county.
 
             //!
             //! Constructor.
-            //! @param [in] table Parent MGT.
+            //! @param [in] table Parent DCCSCT.
+            //! @param [in] type Update type.
             //!
-            explicit TableType(const AbstractTable* table);
+            explicit Update(const AbstractTable* table, UpdateType type = UpdateType(0));
 
         private:
             // Inaccessible operations.
-            TableType() = delete;
-            TableType(const TableType&) = delete;
+            Update() = delete;
+            Update(const Update&) = delete;
         };
 
         //!
         //! List of table types.
         //!
-        typedef EntryWithDescriptorsList<TableType> TableTypeList;
+        typedef EntryWithDescriptorsList<Update> UpdateList;
 
-        // MGT public members:
+        // DCCSCT public members:
+        uint16_t       dccsct_type;       //!< DCCSCT type (zero by default, the only valid value).
         uint8_t        protocol_version;  //!< ATSC protocol version.
-        TableTypeList  tables;            //!< List of table types which are described in this MGT.
+        UpdateList     updates;           //!< List of updates.
         DescriptorList descs;             //!< Main descriptor list.
 
         //!
         //! Default constructor.
         //! @param [in] version Table version number.
         //!
-        MGT(uint8_t version = 0);
+        DCCSCT(uint8_t version = 0);
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        MGT(const MGT& other);
+        DCCSCT(const DCCSCT& other);
 
         //!
         //! Constructor from a binary table.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] table Binary table to deserialize.
         //!
-        MGT(DuckContext& duck, const BinaryTable& table);
+        DCCSCT(DuckContext& duck, const BinaryTable& table);
 
         //!
         //! Assignment operator.
         //! @param [in] other Other instance to copy.
         //! @return A reference to this object.
         //!
-        MGT& operator=(const MGT& other) = default;
+        DCCSCT& operator=(const DCCSCT& other) = default;
+
+        //!
+        //! Clear the content of the table.
+        //!
+        void clear();
 
         // Inherited methods
         virtual void fromXML(DuckContext&, const xml::Element*) override;
         DeclareDisplaySection();
-
-        //!
-        //! Get the name for a 16-bit table type from an MGT.
-        //! @param [in] table_type Table type value.
-        //! @return The corresponding name.
-        //!
-        static UString TableTypeName(uint16_t table_type);
 
     protected:
         // Inherited methods
@@ -124,11 +138,6 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
 
     private:
-        // An Enumeration object for table_type.
-        // Need a specific constructor because of the large list of values.
-        class TableTypeEnum : public Enumeration
-        {
-            TS_DECLARE_SINGLETON(TableTypeEnum);
-        };
+        static const Enumeration UpdateTypeNames;
     };
 }

@@ -38,6 +38,7 @@
 #include "tsCableEmergencyAlertTable.h"
 #include "tsCAT.h"
 #include "tsCVCT.h"
+#include "tsDCCSCT.h"
 #include "tsDiscontinuityInformationTable.h"
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsEIT.h"

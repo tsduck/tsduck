@@ -127,6 +127,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDCCArrivingRequestDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDCCDepartingRequestDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDCCSCT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecControl.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecDeviceInfo.h" />
@@ -647,6 +648,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDataStreamAlignmentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDCCArrivingRequestDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDCCDepartingRequestDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDCCSCT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDeferredAssociationTagsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecControl.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecDeviceInfo.cpp" />

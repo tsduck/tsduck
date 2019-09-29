@@ -443,6 +443,35 @@
       </event>
     </ATSC_EIT>
 
+    <!-- ATSC DCC Selection Code Table -->
+    <DCCSCT version="uint5, default=0"
+            protocol_version="uint8, default=0"
+            dccsct_type="uint16, default=0">
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per update -->
+      <update update_type="new_genre_category|new_state|new_county|uint8, required"
+              genre_category_code="uint8, required when update_type == new_genre_category"
+              dcc_state_location_code="uint8, required when update_type == new_state"
+              state_code="uint8, required when update_type == new_county"
+              dcc_county_location_code="uint10, required when update_type == new_county">
+        <!-- Update descriptors loop -->
+        <_any in="_descriptors"/>
+        <!-- ATSC multiple_string_structure(), required when update_type == new_genre_category -->
+        <genre_category_name_text>
+          <string language="char3, required" text="string, required"/>
+        </genre_category_name_text>
+        <!-- ATSC multiple_string_structure(), required when update_type == new_state -->
+        <dcc_state_location_code_text>
+          <string language="char3, required" text="string, required"/>
+        </dcc_state_location_code_text>
+        <!-- ATSC multiple_string_structure(), required when update_type == new_county -->
+        <dcc_county_location_code_text>
+          <string language="char3, required" text="string, required"/>
+        </dcc_county_location_code_text>
+      </update>
+    </DCCSCT>
+
     <!-- Generic short table -->
     <generic_short_table
         table_id="uint8, required"
