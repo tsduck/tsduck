@@ -118,10 +118,9 @@ void ts::ContentAdvisoryDescriptor::deserialize(DuckContext& duck, const Descrip
                 entry.rating_values[data[0]] = data[1] & 0x0F;
                 data += 2; size -= 2; dim_count--;
             }
-            if (size >= 1) {
-                size_t len = data[0];
-                data++; size--;
-                entry.rating_description.deserialize(duck, data, size, len, true);
+            if (!entry.rating_description.lengthDeserialize(duck, data, size)) {
+                _is_valid = false;
+                break;
             }
             entries.push_back(entry);
             reg_count--;

@@ -64,7 +64,6 @@ TSDuck - List of features to be implemented or fixed
   - 5.2.1.1  TTML subtitling descriptor
 
   ATSC A/65 (Program and System Information Protocol)
-  - 6.4     Rating Region Table (RRT)
   - 6.7     Directed Channel Change Table (DCCT)
   - 6.8     DCC Selection Code Table (DCCSCT)
   - 6.9.10  DCC_departing_request_descriptor

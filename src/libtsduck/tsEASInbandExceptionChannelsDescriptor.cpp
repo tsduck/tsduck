@@ -43,6 +43,10 @@ TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::EASInbandExceptionChannelsDescriptor, MY_X
 TS_ID_DESCRIPTOR_FACTORY(ts::EASInbandExceptionChannelsDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 TS_FACTORY_REGISTER(ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const size_t ts::EASInbandExceptionChannelsDescriptor::MAX_ENTRIES;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructors

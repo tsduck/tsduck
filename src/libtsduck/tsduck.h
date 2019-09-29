@@ -344,6 +344,7 @@
 #include "tsReportWithPrefix.h"
 #include "tsResidentBuffer.h"
 #include "tsRingNode.h"
+#include "tsRRT.h"
 #include "tsRST.h"
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsSafePtr.h"

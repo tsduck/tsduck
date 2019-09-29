@@ -309,7 +309,7 @@ void ts::VCT::addSection(BinaryTable& table,
 void ts::VCT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections one by one.
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     int section_number = 0;
     uint8_t* data = payload;
     size_t remain = sizeof(payload);

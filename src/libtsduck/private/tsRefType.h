@@ -13,6 +13,7 @@
     REF_TYPE(NIT);
     REF_TYPE(PAT);
     REF_TYPE(PMT);
+    REF_TYPE(RRT);
     REF_TYPE(RST);
     REF_TYPE(SDT);
     REF_TYPE(SelectionInformationTable);

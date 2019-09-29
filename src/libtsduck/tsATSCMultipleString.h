@@ -227,6 +227,23 @@ namespace ts {
         size_t serialize(DuckContext& duck, ByteBlock& data, size_t max_size = NPOS, bool ignore_empty = false) const;
 
         //!
+        //! Serialize a binary multiple_string_structure with a leading byte length.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] data Address of the buffer where to serialize the structure.
+        //! On return, it is updated to point after the structure.
+        //! @param [in,out] size Size in bytes of the buffer.
+        //! On return, it is updated to the remaining size in the buffer.
+        //!
+        void lengthSerialize(DuckContext& duck, uint8_t*& data, size_t& size) const;
+
+        //!
+        //! Serialize a binary multiple_string_structure and append to a byte block with a leading byte length.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] data Byte bloc where to serialize the structure. The structure is added at the end.
+        //!
+        void lengthSerialize(DuckContext& duck, ByteBlock& data) const;
+
+        //!
         //! Deserialize a binary multiple_string_structure.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] buffer Address of the structure to deserialize.
@@ -240,6 +257,17 @@ namespace ts {
         //! @return True if the structure was successfully deserialized.
         //!
         bool deserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size, size_t mss_size = NPOS, bool ignore_empty = false);
+
+        //!
+        //! Deserialize a binary multiple_string_structure with a leading byte length.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] buffer Address of the structure to deserialize.
+        //! On return, it is updated to point after the structure.
+        //! @param [in,out] buffer_size Size in bytes of the data buffer.
+        //! On return, it is updated to the remaining size in the buffer.
+        //! @return True if the structure was successfully deserialized.
+        //!
+        bool lengthDeserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size);
 
         //!
         //! A static method to display a binary multiple_string_structure.

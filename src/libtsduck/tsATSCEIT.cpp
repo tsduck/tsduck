@@ -126,10 +126,9 @@ void ts::ATSCEIT::deserializeContent(DuckContext& duck, const BinaryTable& table
             event.start_time = Time::GPSSecondsToUTC(GetUInt32(data + 2));
             event.ETM_location = (data[6] >> 4) & 0x03;
             event.length_in_seconds = GetUInt24(data + 6) & 0x000FFFFF;
-            const size_t title_length = data[9];
-            data += 10; remain -= 10;
+            data += 9; remain -= 9;
 
-            if (!event.title_text.deserialize(duck, data, remain, title_length, true)) {
+            if (!event.title_text.lengthDeserialize(duck, data, remain)) {
                 return;
             }
 
@@ -189,7 +188,7 @@ void ts::ATSCEIT::addSection(BinaryTable& table, int& section_number, size_t& ev
 void ts::ATSCEIT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the sections one by one, starting at first event (offset 2).
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload + 2;
     size_t remain = sizeof(payload) - 2;
 

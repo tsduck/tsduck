@@ -47,6 +47,7 @@
 #include "tsNIT.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
+#include "tsRRT.h"
 #include "tsRST.h"
 #include "tsSDT.h"
 #include "tsSelectionInformationTable.h"
