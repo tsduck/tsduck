@@ -96,6 +96,8 @@
 #include "tsDataBroadcastDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsDataStreamAlignmentDescriptor.h"
+#include "tsDCCArrivingRequestDescriptor.h"
+#include "tsDCCDepartingRequestDescriptor.h"
 #include "tsDeferredAssociationTagsDescriptor.h"
 #include "tsDIILocationDescriptor.h"
 #include "tsDTSDescriptor.h"

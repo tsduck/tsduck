@@ -411,7 +411,8 @@ void ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, ts::ByteBloc
     const size_t len_index = data.size();
     data.appendUInt8(0);
     // Serialize the string.
-    data[len_index] = uint8_t(serialize(duck, data, 255, true));
+    const size_t len = serialize(duck, data, 255, true);
+    data[len_index] = uint8_t(len);
 }
 
 

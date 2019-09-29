@@ -123,6 +123,8 @@ HEADERS += \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.h \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.h \
     ../../../src/libtsduck/tsDataStreamAlignmentDescriptor.h \
+    ../../../src/libtsduck/tsDCCArrivingRequestDescriptor.h \
+    ../../../src/libtsduck/tsDCCDepartingRequestDescriptor.h \
     ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.h \
     ../../../src/libtsduck/tsDektecControl.h \
     ../../../src/libtsduck/tsDektecDeviceInfo.h \
@@ -631,6 +633,8 @@ SOURCES += \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.cpp \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsDataStreamAlignmentDescriptor.cpp \
+    ../../../src/libtsduck/tsDCCArrivingRequestDescriptor.cpp \
+    ../../../src/libtsduck/tsDCCDepartingRequestDescriptor.cpp \
     ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.cpp \
     ../../../src/libtsduck/tsDektecControl.cpp \
     ../../../src/libtsduck/tsDektecDeviceInfo.cpp \
