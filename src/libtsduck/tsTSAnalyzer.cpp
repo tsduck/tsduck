@@ -340,6 +340,42 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
             optional = true;
             carry_section = true;
             break;
+        case PID_DCT:
+            description = u"ISDB DCT";
+            referenced = true;
+            optional = true;
+            carry_section = true;
+            break;
+        case PID_PCAT:
+            description = u"ISDB PCAT";
+            referenced = true;
+            optional = true;
+            carry_section = true;
+            break;
+        case PID_SDTT:
+            description = u"ISDB SDTT";
+            referenced = true;
+            optional = true;
+            carry_section = true;
+            break;
+        case PID_BIT:
+            description = u"ISDB BIT";
+            referenced = true;
+            optional = true;
+            carry_section = true;
+            break;
+        case PID_NBIT:
+            description = u"ISDB NBIT/LDT";
+            referenced = true;
+            optional = true;
+            carry_section = true;
+            break;
+        case PID_CDT:
+            description = u"ISDB CDT";
+            referenced = true;
+            optional = true;
+            carry_section = true;
+            break;
         default:
             break;
     }
