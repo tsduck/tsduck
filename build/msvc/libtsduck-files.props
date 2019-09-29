@@ -341,6 +341,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsResidentBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBufferTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRingNode.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsRRT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRST.h" />
     <ClInclude Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
@@ -837,6 +838,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsReportHandler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReportWithPrefix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsRRT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />

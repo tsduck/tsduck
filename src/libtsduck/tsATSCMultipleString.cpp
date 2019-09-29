@@ -271,32 +271,41 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size
             const UChar c = i < str->language.size() ? str->language[i] : SPACE;
             data[i] = c < 256 ? uint8_t(c) : uint8_t(SPACE);
         }
+        data += 3; size -= 3; max_size -= 3;
 
-        // Fixed part:
-        data[3] = 1;  // number of segments
-        data[4] = 0;  // compression type = no compression
-        const uint8_t mode = data[5] = EncodingMode(str->text);
-        uint8_t* const nbytes = data + 6;  // place-holder for number of bytes
-        data += 7; size -= 7; max_size -= 7;
-
-        // Encode the text string.
-        if (mode == MODE_UTF16) {
-            // Two bytes per char, max 128 chars.
-            for (size_t i = 0; size >= 2 && max_size >= 2 && i < 128 && i < str->text.size(); ++i) {
-                PutUInt16(data, uint16_t(str->text[i]));
-                data += 2; size -= 2; max_size -= 2;
-            }
+        // Encode the string.
+        if (str->text.empty()) {
+            // Encoding an empty string with zero segment is more efficient.
+            data[0] = 0;  // number of segments
+            data++; size--; max_size--;
         }
         else {
-            // One byte per char, max 256 chars.
-            for (size_t i = 0; size >= 1 && max_size >= 1 && i < 256 && i < str->text.size(); ++i) {
-                *data++ = uint8_t(str->text[i] & 0x00FF);
-                size--; max_size--;
-            }
-        }
+            // Fixed part:
+            data[0] = 1;  // number of segments
+            data[1] = 0;  // compression type = no compression
+            const uint8_t mode = data[2] = EncodingMode(str->text);
+            uint8_t* const nbytes = data + 3;  // place-holder for number of bytes
+            data += 4; size -= 4; max_size -= 4;
 
-        // Update number of bytes.
-        *nbytes = uint8_t(data - nbytes - 1);
+            // Encode the text string.
+            if (mode == MODE_UTF16) {
+                // Two bytes per char, max 128 chars.
+                for (size_t i = 0; size >= 2 && max_size >= 2 && i < 128 && i < str->text.size(); ++i) {
+                    PutUInt16(data, uint16_t(str->text[i]));
+                    data += 2; size -= 2; max_size -= 2;
+                }
+            }
+            else {
+                // One byte per char, max 256 chars.
+                for (size_t i = 0; size >= 1 && max_size >= 1 && i < 256 && i < str->text.size(); ++i) {
+                    *data++ = uint8_t(str->text[i] & 0x00FF);
+                    size--; max_size--;
+                }
+            }
+
+            // Update number of bytes.
+            *nbytes = uint8_t(data - nbytes - 1);
+        }
 
         // This string is complete.
         num_strings++;
@@ -378,6 +387,49 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, ByteBlock& data, siz
 
     // Return the number of serialized bytes.
     return data.size() - start_index;
+}
+
+
+//----------------------------------------------------------------------------
+// Serialize a binary multiple_string_structure with a leading byte length.
+//----------------------------------------------------------------------------
+
+void ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, uint8_t*& data, size_t& size) const
+{
+    if (data != nullptr && size > 0) {
+        // Placeholder for byte length.
+        uint8_t* len_addr = data++;
+        size--;
+        // Serialize the string.
+        *len_addr = uint8_t(serialize(duck, data, size, 255, true));
+    }
+}
+
+void ts::ATSCMultipleString::lengthSerialize(ts::DuckContext& duck, ts::ByteBlock& data) const
+{
+    // Placeholder for byte length.
+    const size_t len_index = data.size();
+    data.appendUInt8(0);
+    // Serialize the string.
+    data[len_index] = uint8_t(serialize(duck, data, 255, true));
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialize a binary multiple_string_structure with a leading byte length.
+//----------------------------------------------------------------------------
+
+bool ts::ATSCMultipleString::lengthDeserialize(DuckContext& duck, const uint8_t*& buffer, size_t& buffer_size)
+{
+    if (buffer == nullptr || buffer_size == 0) {
+        clear();
+        return false; // no valid string
+    }
+    else {
+        const size_t len = *buffer++;
+        buffer_size--;
+        return deserialize(duck, buffer, buffer_size, len, true);
+    }
 }
 
 

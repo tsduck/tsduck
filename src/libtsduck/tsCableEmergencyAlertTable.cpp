@@ -185,11 +185,10 @@ void ts::CableEmergencyAlertTable::deserializeContent(DuckContext& duck, const B
         return;
     }
     EAS_event_code.assignFromUTF8(reinterpret_cast<const char*>(data), event_len);
-    const size_t activ_len = data[event_len];
-    data += event_len + 1; remain -= event_len + 1;
+    data += event_len; remain -= event_len;
 
     // Activation text
-    if (!nature_of_activation_text.deserialize(duck, data, remain, activ_len, true)) {
+    if (!nature_of_activation_text.lengthDeserialize(duck, data, remain)) {
         return;
     }
 
@@ -289,13 +288,7 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
         remain--;
     }
 
-    // Where to store the length of nature_of_activation_text.
-    if (remain < 1) {
-        return;
-    }
-    uint8_t* len_addr = data++;
-    remain--;
-    *len_addr = uint8_t(nature_of_activation_text.serialize(duck, data, remain, 255, true));
+    nature_of_activation_text.lengthSerialize(duck, data, remain);
 
     // A large portion of fixed fields
     if (remain < 19) {
@@ -309,7 +302,7 @@ void ts::CableEmergencyAlertTable::serializeContent(DuckContext& duck, BinaryTab
     PutUInt16(data + 11, 0xFC00 | details_major_channel_number);
     PutUInt16(data + 13, 0xFC00 | details_minor_channel_number);
     PutUInt16(data + 15, audio_OOB_source_ID);
-    len_addr = data + 17; // place-holder for alert_text length;
+    uint8_t* len_addr = data + 17; // place-holder for alert_text length;
     data += 19; remain -= 19;
 
     PutUInt16(len_addr, uint16_t(alert_text.serialize(duck, data, remain, NPOS, true)));

@@ -108,7 +108,7 @@ void ts::ETT::deserializeContent(DuckContext& duck, const BinaryTable& table)
 void ts::ETT::serializeContent(DuckContext& duck, BinaryTable& table) const
 {
     // Build the section. Note that an ETT is not allowed to use more than one section, see A/65, section 6.2.
-    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    uint8_t payload[MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data = payload;
     size_t remain = sizeof(payload);
 
