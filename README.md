@@ -8,13 +8,13 @@ TSDuck is used in digital television systems for test, monitoring, integration, 
 
 In practice, TSDuck is used for:
 
-- Transport stream acquisition or transmodulation, including DVB, ASI and IP multicast.
+- Transport stream acquisition or transmodulation, including DVB, ATSC, ASI and IP multicast.
 - Analyze transport streams, PSI/SI signalization, bitrates, timestamps.
 - Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
 - On-the-fly transformation or injection of content and signalization.
 - Modify, remove, rename, extract services.
-- Work on live transport streams, DVB-S/C/T, ASI, IP-TV, HTTP, HLS or offline transport stream files.
-- Use specialized hardware such as cheap DVB tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators.
+- Work on live transport streams, DVB-S/C/T, ATSC, ASI, IP-TV, HTTP, HLS or offline transport stream files.
+- Use specialized hardware such as cheap DVB or ATSC tuners (USB, PCI), professional Dektec devices, cheap HiDes modulators.
 - Re-route transport streams to other applications.
 - Extract or inject Multi-Protocol Encapsulation (MPE) between TS and UDP/IP.
 - Analyze and inject SCTE 35 splice information.
@@ -41,7 +41,7 @@ TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs
 All utilities and plugins accept the option `--help` to display their syntax.
 
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
-These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB
+These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC
 signalization and many other features. See the [programming guide](https://tsduck.io/doxy/)
 and its [tutorial](https://tsduck.io/doxy/libtutorial.html).
 
