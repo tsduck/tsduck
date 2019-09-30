@@ -39,6 +39,7 @@
 #include "tsCAT.h"
 #include "tsCVCT.h"
 #include "tsDCCSCT.h"
+#include "tsDCCT.h"
 #include "tsDiscontinuityInformationTable.h"
 #include "tsDSMCCStreamDescriptorsTable.h"
 #include "tsEIT.h"

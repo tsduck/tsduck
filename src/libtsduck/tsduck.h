@@ -141,6 +141,7 @@
 #include "tsDCCArrivingRequestDescriptor.h"
 #include "tsDCCDepartingRequestDescriptor.h"
 #include "tsDCCSCT.h"
+#include "tsDCCT.h"
 #include "tsDeferredAssociationTagsDescriptor.h"
 #include "tsDektecControl.h"
 #include "tsDektecDeviceInfo.h"
