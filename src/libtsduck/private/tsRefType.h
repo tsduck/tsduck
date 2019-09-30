@@ -5,6 +5,7 @@
     REF_TYPE(CAT);
     REF_TYPE(CVCT);
     REF_TYPE(DCCSCT);
+    REF_TYPE(DCCT);
     REF_TYPE(DiscontinuityInformationTable);
     REF_TYPE(DSMCCStreamDescriptorsTable);
     REF_TYPE(EIT);

@@ -126,6 +126,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDCCArrivingRequestDescriptor.h \
     ../../../src/libtsduck/tsDCCDepartingRequestDescriptor.h \
     ../../../src/libtsduck/tsDCCSCT.h \
+    ../../../src/libtsduck/tsDCCT.h \
     ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.h \
     ../../../src/libtsduck/tsDektecControl.h \
     ../../../src/libtsduck/tsDektecDeviceInfo.h \
@@ -637,6 +638,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDCCArrivingRequestDescriptor.cpp \
     ../../../src/libtsduck/tsDCCDepartingRequestDescriptor.cpp \
     ../../../src/libtsduck/tsDCCSCT.cpp \
+    ../../../src/libtsduck/tsDCCT.cpp \
     ../../../src/libtsduck/tsDeferredAssociationTagsDescriptor.cpp \
     ../../../src/libtsduck/tsDektecControl.cpp \
     ../../../src/libtsduck/tsDektecDeviceInfo.cpp \

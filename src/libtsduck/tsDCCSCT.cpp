@@ -30,7 +30,6 @@
 #include "tsDCCSCT.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
-#include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -45,9 +44,9 @@ TS_ID_TABLE_FACTORY(ts::DCCSCT, MY_TID, MY_STD);
 TS_FACTORY_REGISTER(ts::DCCSCT::DisplaySection, MY_TID);
 
 const ts::Enumeration ts::DCCSCT::UpdateTypeNames({
-    {u"new_genre_category", 0x01},
-    {u"new_state",          0x02},
-    {u"new_county",         0x03},
+    {u"new_genre_category", ts::DCCSCT::new_genre_category},
+    {u"new_state",          ts::DCCSCT::new_state},
+    {u"new_county",         ts::DCCSCT::new_county},
 });
 
 
@@ -235,7 +234,7 @@ void ts::DCCSCT::serializeContent(DuckContext& duck, BinaryTable& table) const
     data[1] = uint8_t(updates.size());
     data += 2; remain -= 2;
 
-    // Add description of all table types.
+    // Add description of all updates.
     for (auto it = updates.begin(); it != updates.end() && remain >= 2; ++it) {
         const Update& upd(it->second);
 
@@ -279,7 +278,7 @@ void ts::DCCSCT::serializeContent(DuckContext& duck, BinaryTable& table) const
         // Update update_data_length
         *data_length_addr = uint8_t(data - data_length_addr - 1);
 
-        // Insert descriptor list for this table type (with leading length field)
+        // Insert descriptor list for this updates (with leading length field)
         size_t next_index = upd.descs.lengthSerialize(data, remain, 0, 0x003F, 10);
         if (next_index < upd.descs.count()) {
             // Not enough space to serialize all descriptors in the section.
@@ -460,7 +459,7 @@ void ts::DCCSCT::fromXML(DuckContext& duck, const xml::Element* element)
         descs.fromXML(duck, children, element, u"update");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
-        // Add a new TableType at the end of the list.
+        // Add a new Update at the end of the list.
         Update& upd(updates.newEntry());
         xml::ElementVector unused;
         _is_valid =

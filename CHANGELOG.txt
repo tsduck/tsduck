@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1410
+VERSION 3.19-1438
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -13,6 +13,7 @@ VERSION 3.19-1410
     --mediaguard, --nagravision, --nds, --safeaccess, --viaccess, --widevine
     to "tspsi", "tstabdump", "tstables" and plugins "psi", "tables".
   * Added option --extensions to "tsversion" and "tstabcomp".
+  * Complete ATSC signalization, as defined in A/65, is now supported.
 
 [BUG] Bug fixes:
 

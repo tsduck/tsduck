@@ -62,6 +62,3 @@ TSDuck - List of features to be implemented or fixed
 
   ETSI EN 303 560 (TTML subtitling systems)
   - 5.2.1.1  TTML subtitling descriptor
-
-  ATSC A/65 (Program and System Information Protocol)
-  - 6.7     Directed Channel Change Table (DCCT)
