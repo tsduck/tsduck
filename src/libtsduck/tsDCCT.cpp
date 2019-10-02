@@ -277,7 +277,7 @@ void ts::DCCT::serializeContent(DuckContext& duck, BinaryTable& table) const
     // Add one single section in the table
     table.addSection(new Section(MY_TID,           // tid
                                  true,             // is_private_section
-                                 (uint16_t(dcc_subtype) << 8) | dcc_id, // tid_ext
+                                 uint16_t((uint16_t(dcc_subtype) << 8) | dcc_id), // tid_ext
                                  version,
                                  is_current,       // should be true
                                  0,                // section_number,
