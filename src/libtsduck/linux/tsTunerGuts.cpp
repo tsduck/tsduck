@@ -63,20 +63,20 @@ class ts::Tuner::Guts
 {
     TS_NOBUILD_NOCOPY(Guts);
 private:
-    Tuner*              _tuner;            // Parent tuner.
+    Tuner*              _tuner;           // Parent tuner.
 public:
-    UString             _frontend_name;    // Frontend device name
-    UString             _demux_name;       // Demux device name
-    UString             _dvr_name;         // DVR device name
-    int                 _frontend_fd;      // Frontend device file descriptor
-    int                 _demux_fd;         // Demux device file descriptor
-    int                 _dvr_fd;           // DVR device file descriptor
-    unsigned long       _demux_bufsize;    // Demux device buffer size
-    ::dvb_frontend_info _fe_info;          // Front-end characteristics
-    MilliSecond         _signal_poll;
-    int                 _rt_signal;        // Receive timeout signal number
-    ::timer_t           _rt_timer;         // Receive timeout timer
-    bool                _rt_timer_valid;   // Receive timeout timer was created
+    UString             frontend_name;    // Frontend device name
+    UString             demux_name;       // Demux device name
+    UString             dvr_name;         // DVR device name
+    int                 frontend_fd;      // Frontend device file descriptor
+    int                 demux_fd;         // Demux device file descriptor
+    int                 dvr_fd;           // DVR device file descriptor
+    unsigned long       demux_bufsize;    // Demux device buffer size
+    ::dvb_frontend_info fe_info;          // Front-end characteristics
+    MilliSecond         signal_poll;
+    int                 rt_signal;        // Receive timeout signal number
+    ::timer_t           rt_timer;         // Receive timeout timer
+    bool                rt_timer_valid;   // Receive timeout timer was created
 
     // Constructor and destructor.
     Guts(Tuner* tuner);
@@ -114,18 +114,18 @@ public:
 
 ts::Tuner::Guts::Guts(Tuner* tuner) :
     _tuner(tuner),
-    _frontend_name(),
-    _demux_name(),
-    _dvr_name(),
-    _frontend_fd(-1),
-    _demux_fd(-1),
-    _dvr_fd(-1),
-    _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
-    _fe_info(),
-    _signal_poll(DEFAULT_SIGNAL_POLL),
-    _rt_signal(-1),
-    _rt_timer(nullptr),
-    _rt_timer_valid(false)
+    frontend_name(),
+    demux_name(),
+    dvr_name(),
+    frontend_fd(-1),
+    demux_fd(-1),
+    dvr_fd(-1),
+    demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
+    fe_info(),
+    signal_poll(DEFAULT_SIGNAL_POLL),
+    rt_signal(-1),
+    rt_timer(nullptr),
+    rt_timer_valid(false)
 {
 }
 
@@ -157,7 +157,7 @@ void ts::Tuner::deleteGuts()
 
 void ts::Tuner::setSignalPoll(MilliSecond t)
 {
-    _guts->_signal_poll = t;
+    _guts->signal_poll = t;
 }
 
 
@@ -167,7 +167,7 @@ void ts::Tuner::setSignalPoll(MilliSecond t)
 
 void ts::Tuner::setDemuxBufferSize(size_t s)
 {
-    _guts->_demux_bufsize = s;
+    _guts->demux_bufsize = s;
 }
 
 
@@ -295,35 +295,35 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     else if (frontend_nb != 0) {
         _device_name += UString::Format(u":%d", {frontend_nb});
     }
-    _guts->_frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
-    _guts->_demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
-    _guts->_dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
+    _guts->frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
+    _guts->demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
+    _guts->dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
 
     // Open DVB adapter frontend. The frontend device is opened in non-blocking mode.
     // All configuration and setup operations are non-blocking anyway.
     // Reading events, however, is a blocking operation.
 
-    if ((_guts->_frontend_fd = ::open(_guts->_frontend_name.toUTF8().c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
-        report.error(u"error opening %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if ((_guts->frontend_fd = ::open(_guts->frontend_name.toUTF8().c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
+        report.error(u"error opening %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return false;
     }
 
     // Get characteristics of the frontend
 
-    if (::ioctl(_guts->_frontend_fd, FE_GET_INFO, &_guts->_fe_info) < 0) {
-        report.error(u"error getting info on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->frontend_fd, FE_GET_INFO, &_guts->fe_info) < 0) {
+        report.error(u"error getting info on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return close(report) || false;
     }
-    _guts->_fe_info.name[sizeof(_guts->_fe_info.name) - 1] = 0;
-    _device_info = UString::FromUTF8(_guts->_fe_info.name);
+    _guts->fe_info.name[sizeof(_guts->fe_info.name) - 1] = 0;
+    _device_info = UString::FromUTF8(_guts->fe_info.name);
     clearDeliverySystems();
 
-    switch (_guts->_fe_info.type) {
+    switch (_guts->fe_info.type) {
         case ::FE_QPSK:
             _tuner_type = DVB_S;
             addDeliverySystem(DS_DVB_S);
 #if TS_DVB_API_VERSION >= 501
-            if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
+            if ((_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
                 addDeliverySystem(DS_DVB_S2);
             }
 #endif
@@ -332,7 +332,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
             _tuner_type = DVB_C;
             addDeliverySystem(DS_DVB_C);
 #if TS_DVB_API_VERSION >= 501
-            if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
+            if ((_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
                 addDeliverySystem(DS_DVB_C2);
             }
 #endif
@@ -341,7 +341,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
             _tuner_type = DVB_T;
             addDeliverySystem(DS_DVB_T);
 #if TS_DVB_API_VERSION >= 501
-            if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
+            if ((_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
                 addDeliverySystem(DS_DVB_T2);
             }
 #endif
@@ -350,22 +350,22 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
             _tuner_type = ATSC;
             break;
         default:
-            report.error(u"unsupported frontend type %d on %s (%s)", {_guts->_fe_info.type, _guts->_frontend_name, _guts->_fe_info.name});
+            report.error(u"unsupported frontend type %d on %s (%s)", {_guts->fe_info.type, _guts->frontend_name, _guts->fe_info.name});
             return close(report) || false;
     }
 
     // Open DVB adapter DVR (tap for TS packets) and adapter demux
 
     if (_info_only) {
-        _guts->_dvr_fd = _guts->_demux_fd = -1;
+        _guts->dvr_fd = _guts->demux_fd = -1;
     }
     else {
-        if ((_guts->_dvr_fd = ::open(_guts->_dvr_name.toUTF8().c_str(), O_RDONLY)) < 0) {
-            report.error(u"error opening %s: %s", {_guts->_dvr_name, ErrorCodeMessage()});
+        if ((_guts->dvr_fd = ::open(_guts->dvr_name.toUTF8().c_str(), O_RDONLY)) < 0) {
+            report.error(u"error opening %s: %s", {_guts->dvr_name, ErrorCodeMessage()});
             return close(report) || false;
         }
-        if ((_guts->_demux_fd = ::open(_guts->_demux_name.toUTF8().c_str(), O_RDWR)) < 0) {
-            report.error(u"error opening %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
+        if ((_guts->demux_fd = ::open(_guts->demux_name.toUTF8().c_str(), O_RDWR)) < 0) {
+            report.error(u"error opening %s: %s", {_guts->demux_name, ErrorCodeMessage()});
             return close(report) || false;
         }
     }
@@ -381,30 +381,30 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 bool ts::Tuner::close(Report& report)
 {
     // Stop the demux
-    if (_guts->_demux_fd >= 0 && ::ioctl(_guts->_demux_fd, DMX_STOP) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
+    if (_guts->demux_fd >= 0 && ::ioctl(_guts->demux_fd, DMX_STOP) < 0) {
+        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
     }
 
     // Close DVB adapter devices
-    if (_guts->_dvr_fd >= 0) {
-        ::close(_guts->_dvr_fd);
-        _guts->_dvr_fd = -1;
+    if (_guts->dvr_fd >= 0) {
+        ::close(_guts->dvr_fd);
+        _guts->dvr_fd = -1;
     }
-    if (_guts->_demux_fd >= 0) {
-        ::close(_guts->_demux_fd);
-        _guts->_demux_fd = -1;
+    if (_guts->demux_fd >= 0) {
+        ::close(_guts->demux_fd);
+        _guts->demux_fd = -1;
     }
-    if (_guts->_frontend_fd >= 0) {
-        ::close(_guts->_frontend_fd);
-        _guts->_frontend_fd = -1;
+    if (_guts->frontend_fd >= 0) {
+        ::close(_guts->frontend_fd);
+        _guts->frontend_fd = -1;
     }
 
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
-    _guts->_frontend_name.clear();
-    _guts->_demux_name.clear();
-    _guts->_dvr_name.clear();
+    _guts->frontend_name.clear();
+    _guts->demux_name.clear();
+    _guts->dvr_name.clear();
 
     return true;
 }
@@ -418,13 +418,13 @@ bool ts::Tuner::Guts::getFrontendStatus(::fe_status_t& status, Report& report)
 {
     status = FE_ZERO;
     errno = 0;
-    bool ok = ::ioctl(_frontend_fd, FE_READ_STATUS, &status) == 0;
+    bool ok = ::ioctl(frontend_fd, FE_READ_STATUS, &status) == 0;
     int err = errno;
     if (ok || (!ok && err == EBUSY && status != FE_ZERO)) {
         return true;
     }
     else {
-        report.error(u"error reading status on %s: %s", {_frontend_name, ErrorCodeMessage(err)});
+        report.error(u"error reading status on %s: %s", {frontend_name, ErrorCodeMessage(err)});
         return false;
     }
 }
@@ -461,8 +461,8 @@ int ts::Tuner::signalStrength(Report& report)
     }
 
     uint16_t strength;
-    if (::ioctl(_guts->_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
-        report.error(u"error reading signal strength on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
+        report.error(u"error reading signal strength on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return -1;
     }
 
@@ -507,7 +507,7 @@ ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBS(TunerParametersDVBS& params)
     props.add(DTV_STREAM_ID);
 #endif
 
-    if (::ioctl(_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
         return LastErrorCode();
     }
 
@@ -551,7 +551,7 @@ ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBC(TunerParametersDVBC& params)
     props.add(DTV_INNER_FEC);
     props.add(DTV_MODULATION);
 
-    if (::ioctl(_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
         return LastErrorCode();
     }
 
@@ -585,7 +585,7 @@ ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBT(TunerParametersDVBT& params)
     props.add(DTV_STREAM_ID);
 #endif
 
-    if (::ioctl(_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
         return LastErrorCode();
     }
 
@@ -617,7 +617,7 @@ ts::ErrorCode ts::Tuner::Guts::getCurrentTuningATSC(TunerParametersATSC& params)
     props.add(DTV_INVERSION);
     props.add(DTV_MODULATION);
 
-    if (::ioctl(_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
         return LastErrorCode();
     }
 
@@ -705,7 +705,7 @@ void ts::Tuner::Guts::discardFrontendEvents(Report& report)
 {
     ::dvb_frontend_event event;
     report.debug(u"starting discarding frontend events");
-    while (::ioctl(_frontend_fd, FE_GET_EVENT, &event) >= 0) {
+    while (::ioctl(frontend_fd, FE_GET_EVENT, &event) >= 0) {
         report.debug(u"one frontend event discarded");
     }
     report.debug(u"finished discarding frontend events");
@@ -718,10 +718,10 @@ void ts::Tuner::Guts::discardFrontendEvents(Report& report)
 
 bool ts::Tuner::Guts::tune(DTVProperties& props, Report& report)
 {
-    report.debug(u"tuning on %s", {_frontend_name});
+    report.debug(u"tuning on %s", {frontend_name});
     props.report(report, Severity::Debug);
-    if (::ioctl(_frontend_fd, FE_SET_PROPERTY, props.getIoctlParam()) < 0) {
-        report.error(u"tuning error on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(frontend_fd, FE_SET_PROPERTY, props.getIoctlParam()) < 0) {
+        report.error(u"tuning error on %s: %s", {frontend_name, ErrorCodeMessage()});
         return false;
     }
     return true;
@@ -779,13 +779,13 @@ bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report
     delay.tv_nsec = 15000000; // 15 ms
 
     // Stop 22 kHz continuous tone (was on if previously tuned on high band)
-    if (ioctl_fe_set_tone(_frontend_fd, SEC_TONE_OFF) < 0) {
+    if (ioctl_fe_set_tone(frontend_fd, SEC_TONE_OFF) < 0) {
         report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
         return false;
     }
 
     // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
-    if (ioctl_fe_set_voltage(_frontend_fd, params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18) < 0) {
+    if (ioctl_fe_set_voltage(frontend_fd, params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18) < 0) {
         report.error(u"DVB frontend FE_SET_VOLTAGE error: %s", {ErrorCodeMessage()});
         return false;
     }
@@ -805,7 +805,7 @@ bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report
     //      mailing list suggests that the szap code should be (satellite_number & 0x01).
     //      In reply to this report, the answer was "thanks, committed" but it does
     //      not appear to be committed. Here, we use the "probably correct" code.
-    if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
+    if (ioctl_fe_diseqc_send_burst(frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
         report.error(u"DVB frontend FE_DISEQC_SEND_BURST error: %s", {ErrorCodeMessage()});
         return false;
     }
@@ -827,7 +827,7 @@ bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report
     cmd.msg[4] = 0x00;  // Unused
     cmd.msg[5] = 0x00;  // Unused
 
-    if (::ioctl(_frontend_fd, FE_DISEQC_SEND_MASTER_CMD, &cmd) < 0) {
+    if (::ioctl(frontend_fd, FE_DISEQC_SEND_MASTER_CMD, &cmd) < 0) {
         report.error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {ErrorCodeMessage()});
         return false;
     }
@@ -836,7 +836,7 @@ bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report
     ::nanosleep(&delay, nullptr);
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
-    if (::ioctl_fe_set_tone(_frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {
+    if (::ioctl_fe_set_tone(frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {
         report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
         return false;
     }
@@ -1052,8 +1052,8 @@ bool ts::Tuner::start(Report& report)
     // Set demux buffer size (default value is 2 kB, fine for sections,
     // completely undersized for full TS capture.
 
-    if (::ioctl(_guts->_demux_fd, DMX_SET_BUFFER_SIZE, _guts->_demux_bufsize) < 0) {
-        report.error(u"error setting buffer size on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->demux_fd, DMX_SET_BUFFER_SIZE, _guts->demux_bufsize) < 0) {
+        report.error(u"error setting buffer size on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -1076,15 +1076,15 @@ bool ts::Tuner::start(Report& report)
     filter.pes_type = DMX_PES_OTHER;    // Any type of PES
     filter.flags = DMX_IMMEDIATE_START; // Start capture immediately
 
-    if (::ioctl(_guts->_demux_fd, DMX_SET_PES_FILTER, &filter) < 0) {
-        report.error(u"error setting filter on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->demux_fd, DMX_SET_PES_FILTER, &filter) < 0) {
+        report.error(u"error setting filter on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
         return false;
     }
 
     // Wait for input signal locking if a non-zero timeout is specified.
 
     bool signal_ok = true;
-    for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _guts->_signal_poll) {
+    for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _guts->signal_poll) {
 
         // Read the frontend status
         ::fe_status_t status = FE_ZERO;
@@ -1097,7 +1097,7 @@ bool ts::Tuner::start(Report& report)
         }
 
         // Wait the polling time
-        SleepThread(_guts->_signal_poll < remain_ms ? _guts->_signal_poll : remain_ms);
+        SleepThread(_guts->signal_poll < remain_ms ? _guts->signal_poll : remain_ms);
     }
 
     // If the timeout has expired, error
@@ -1125,8 +1125,8 @@ bool ts::Tuner::stop(Report& report)
     }
 
     // Stop the demux
-    if (::ioctl(_guts->_demux_fd, DMX_STOP) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->demux_fd, DMX_STOP) < 0) {
+        report.error(u"error stopping demux on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -1155,9 +1155,9 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
 {
     if (timeout > 0) {
         // Set an actual receive timer.
-        if (_guts->_rt_signal < 0) {
+        if (_guts->rt_signal < 0) {
             // Allocate one real-time signal.
-            if ((_guts->_rt_signal = SignalAllocator::Instance()->allocate()) < 0) {
+            if ((_guts->rt_signal = SignalAllocator::Instance()->allocate()) < 0) {
                 report.error(u"cannot set tuner receive timer, no more signal available");
                 return false;
             }
@@ -1167,25 +1167,25 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = empty_signal_handler;
-            if (::sigaction(_guts->_rt_signal, &sac, nullptr) < 0) {
+            if (::sigaction(_guts->rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error setting tuner receive timer signal: %s", {ErrorCodeMessage()});
-                SignalAllocator::Instance()->release(_guts->_rt_signal);
-                _guts->_rt_signal = -1;
+                SignalAllocator::Instance()->release(_guts->rt_signal);
+                _guts->rt_signal = -1;
                 return false;
             }
         }
 
         // Create a timer which triggers the signal
-        if (!_guts->_rt_timer_valid) {
+        if (!_guts->rt_timer_valid) {
             ::sigevent sev;
             TS_ZERO(sev);
             sev.sigev_notify = SIGEV_SIGNAL;
-            sev.sigev_signo = _guts->_rt_signal;
-            if (::timer_create(CLOCK_REALTIME, &sev, &_guts->_rt_timer) < 0) {
+            sev.sigev_signo = _guts->rt_signal;
+            if (::timer_create(CLOCK_REALTIME, &sev, &_guts->rt_timer) < 0) {
                 report.error(u"error creating tuner receive timer: %s", {ErrorCodeMessage()});
                 return false;
             }
-            _guts->_rt_timer_valid = true;
+            _guts->rt_timer_valid = true;
         }
 
         // Now ready to process receive timeout
@@ -1198,25 +1198,25 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
         bool ok = true;
 
         // Disable and release signal
-        if (_guts->_rt_signal >= 0) {
+        if (_guts->rt_signal >= 0) {
             // Ignore further signal delivery
             struct ::sigaction sac;
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = SIG_IGN;
-            if (::sigaction(_guts->_rt_signal, &sac, nullptr) < 0) {
+            if (::sigaction(_guts->rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error ignoring tuner receive timer signal: %s", {ErrorCodeMessage()});
                 ok = false;
             }
             // Release signal
-            SignalAllocator::Instance()->release(_guts->_rt_signal);
-            _guts->_rt_signal = -1;
+            SignalAllocator::Instance()->release(_guts->rt_signal);
+            _guts->rt_signal = -1;
         }
 
         // Disarm and delete timer
-        if (_guts->_rt_timer_valid) {
-            _guts->_rt_timer_valid = false;
-            if (::timer_delete(_guts->_rt_timer) < 0) {
+        if (_guts->rt_timer_valid) {
+            _guts->rt_timer_valid = false;
+            if (::timer_delete(_guts->rt_timer) < 0) {
                 report.error(u"error deleting tuner receive timer: %s", {ErrorCodeMessage()});
                 ok = false;
             }
@@ -1248,7 +1248,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
     // Set deadline if receive timeout in effect
     Time time_limit;
     if (_receive_timeout > 0) {
-        assert(_guts->_rt_timer_valid);
+        assert(_guts->rt_timer_valid);
         // Arm the receive timer.
         // Note that _receive_timeout is in milliseconds and ::itimerspec is in nanoseconds.
         ::itimerspec timeout;
@@ -1256,7 +1256,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_value.tv_nsec = (unsigned long) (1000000 * (_receive_timeout % 1000));
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
-        if (::timer_settime(_guts->_rt_timer, 0, &timeout, nullptr) < 0) {
+        if (::timer_settime(_guts->rt_timer, 0, &timeout, nullptr) < 0) {
             report.error(u"error arming tuner receive timer: %s", {ErrorCodeMessage()});
             return 0;
         }
@@ -1269,7 +1269,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 
         // Read some data
         bool got_overflow = false;
-        ssize_t insize = ::read(_guts->_dvr_fd, data + got_size, req_size - got_size);
+        ssize_t insize = ::read(_guts->dvr_fd, data + got_size, req_size - got_size);
 
         if (insize > 0) {
             // Normal case: some data were read
@@ -1291,7 +1291,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
             got_overflow = true;
         }
         else {
-            report.error(u"receive error on %s: %s", {_guts->_dvr_name, ErrorCodeMessage()});
+            report.error(u"receive error on %s: %s", {_guts->dvr_name, ErrorCodeMessage()});
             break;
         }
 
@@ -1326,7 +1326,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_value.tv_nsec = 0;
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
-        if (::timer_settime(_guts->_rt_timer, 0, &timeout, nullptr) < 0) {
+        if (::timer_settime(_guts->rt_timer, 0, &timeout, nullptr) < 0) {
             report.error(u"error disarming tuner receive timer: %s", {ErrorCodeMessage()});
         }
     }
@@ -1524,29 +1524,29 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Read Bit Error Rate
     uint32_t ber = 0;
-    if (::ioctl(_guts->_frontend_fd, FE_READ_BER, &ber) < 0) {
-        report.error(u"ioctl FE_READ_BER on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->frontend_fd, FE_READ_BER, &ber) < 0) {
+        report.error(u"ioctl FE_READ_BER on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         ber = 0;
     }
 
     // Read Signal/Noise Ratio
     uint16_t snr = 0;
-    if (::ioctl(_guts->_frontend_fd, FE_READ_SNR, &snr) < 0) {
-        report.error(u"ioctl FE_READ_SNR on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->frontend_fd, FE_READ_SNR, &snr) < 0) {
+        report.error(u"ioctl FE_READ_SNR on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         snr = 0;
     }
 
     // Read signal strength
     uint16_t strength = 0;
-    if (::ioctl(_guts->_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
-        report.error(u"ioctl FE_READ_SIGNAL_STRENGTH on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
+        report.error(u"ioctl FE_READ_SIGNAL_STRENGTH on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         strength = 0;
     }
 
     // Read uncorrected blocks
     uint32_t ublocks = 0;
-    if (::ioctl(_guts->_frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &ublocks) < 0) {
-        report.error(u"ioctl FE_READ_UNCORRECTED_BLOCKS on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &ublocks) < 0) {
+        report.error(u"ioctl FE_READ_UNCORRECTED_BLOCKS on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         ublocks = 0;
     }
 
@@ -1559,7 +1559,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     Display(strm, margin, u"Uncorrected blocks", UString::Decimal(ublocks),  u"");
 
     // Display frequency characteristics
-    const uint64_t hz_factor = _guts->_fe_info.type == ::FE_QPSK ? 1000 : 1;
+    const uint64_t hz_factor = _guts->fe_info.type == ::FE_QPSK ? 1000 : 1;
     strm << margin << "Frequencies:" << std::endl;
     if (params_dvbs != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbs->frequency), u"Hz");
@@ -1582,10 +1582,10 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     if (params_atsc != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_atsc->frequency), u"Hz");
     }
-    Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _guts->_fe_info.frequency_min), u"Hz");
-    Display(strm, margin, u"  Max", UString::Decimal(hz_factor * _guts->_fe_info.frequency_max), u"Hz");
-    Display(strm, margin, u"  Step", UString::Decimal(hz_factor * _guts->_fe_info.frequency_stepsize), u"Hz");
-    Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _guts->_fe_info.frequency_tolerance), u"Hz");
+    Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _guts->fe_info.frequency_min), u"Hz");
+    Display(strm, margin, u"  Max", UString::Decimal(hz_factor * _guts->fe_info.frequency_max), u"Hz");
+    Display(strm, margin, u"  Step", UString::Decimal(hz_factor * _guts->fe_info.frequency_stepsize), u"Hz");
+    Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _guts->fe_info.frequency_tolerance), u"Hz");
 
     // Display symbol rate characteristics.
 
@@ -1594,9 +1594,9 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"  Current",
                  UString::Decimal(params_dvbs != nullptr ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
                  u"sym/s");
-        Display(strm, margin, u"  Min", UString::Decimal(_guts->_fe_info.symbol_rate_min), u"sym/s");
-        Display(strm, margin, u"  Max", UString::Decimal(_guts->_fe_info.symbol_rate_max), u"sym/s");
-        Display(strm, margin, u"  Tolerance", UString::Decimal(_guts->_fe_info.symbol_rate_tolerance), u"sym/s");
+        Display(strm, margin, u"  Min", UString::Decimal(_guts->fe_info.symbol_rate_min), u"sym/s");
+        Display(strm, margin, u"  Max", UString::Decimal(_guts->fe_info.symbol_rate_max), u"sym/s");
+        Display(strm, margin, u"  Tolerance", UString::Decimal(_guts->fe_info.symbol_rate_tolerance), u"sym/s");
     }
 
     // Frontend-specific information
@@ -1629,7 +1629,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Display general capabilities
     strm << std::endl;
-    DisplayFlags(strm, margin, u"Capabilities", uint32_t(_guts->_fe_info.caps), enum_fe_caps);
+    DisplayFlags(strm, margin, u"Capabilities", uint32_t(_guts->fe_info.caps), enum_fe_caps);
 
     return strm;
 }
