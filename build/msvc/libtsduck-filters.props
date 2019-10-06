@@ -2919,6 +2919,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsTSSpeedMetrics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsTuner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTunerArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -3054,7 +3057,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\windows\tsTuner.cpp">
+    <ClCompile Include="..\..\src\libtsduck\windows\tsTunerGuts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\windows\tsWebRequestGuts.cpp">

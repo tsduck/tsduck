@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  DVB tuner.
+//!  Digital TV tuner.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,40 +38,26 @@
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsTunerParameters.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBT.h"
-#include "tsTunerParametersATSC.h"
-
-#if defined(TS_LINUX) || defined(DOXYGEN)
-#include "tsDTVProperties.h"
-#endif
-
-#if defined(TS_WINDOWS) || defined(DOXYGEN)
-#include "tsDirectShowGraph.h"
-#include "tsSinkFilter.h"
-#include "tsComPtr.h"
-#endif
 
 namespace ts {
 
     class Tuner;
 
     //!
-    //! Safe pointer to a DVB tuner (not thread-safe).
+    //! Safe pointer to a tuner (not thread-safe).
     //!
     typedef SafePtr<Tuner, NullMutex> TunerPtr;
 
     //!
-    //! Vector of safe pointers to DVB tuners (not thread-safe).
+    //! Vector of safe pointers to tuners (not thread-safe).
     //!
     typedef std::vector<TunerPtr> TunerPtrVector;
 
     //!
-    //! Implementation of a DVB tuner.
+    //! Implementation of a digital TV tuner.
     //! @ingroup hardware
     //!
-    //! The syntax of a DVB tuner "device name" depends on the operating system.
+    //! The syntax of a tuner "device name" depends on the operating system.
     //!
     //! Linux:
     //! - Syntax: /dev/dvb/adapterA[:F[:M[:V]]]
@@ -157,6 +143,7 @@ namespace ts {
 
         //!
         //! Get the tuner type.
+        // @@@@@ Deprecated
         //! @return The tuner type.
         //!
         TunerType tunerType() const
@@ -165,23 +152,23 @@ namespace ts {
         }
 
         //!
-        //! Set of delivery systems which are supported by the tuner.
-        //! @return The set of delivery systems which are supported by the tuner.
-        //!
-        DeliverySystemSet deliverySystems() const
-        {
-            return _delivery_systems;
-        }
-
-        //!
         //! Check if the tuner supports the specified delivery system.
         //! @param [in] ds The delivery system to check.
         //! @return True if the tuner supports the specified delivery system.
         //!
-        bool hasDeliverySystem(DeliverySystem ds) const
-        {
-            return _delivery_systems.test(size_t(ds));
-        }
+        bool hasDeliverySystem(DeliverySystem ds) const;
+
+        //!
+        //! Set of delivery systems which are supported by the tuner.
+        //! @return The set of delivery systems which are supported by the tuner.
+        //!
+        DeliverySystemSet deliverySystems() const;
+
+        //!
+        //! Set of delivery systems which are supported by the tuner, as a string.
+        //! @return The set of delivery systems which are supported by the tuner.
+        //!
+        UString deliverySystemsString() const;
 
         //!
         //! Get the device name of the tuner.
@@ -274,7 +261,7 @@ namespace ts {
         //!
         //! Default timeout before getting a signal on start.
         //!
-        static const MilliSecond DEFAULT_SIGNAL_TIMEOUT = 5000; // 5 seconds
+        static constexpr MilliSecond DEFAULT_SIGNAL_TIMEOUT = 5000; // 5 seconds
 
         //!
         //! Set the timeout before getting a signal on start.
@@ -319,53 +306,37 @@ namespace ts {
         }
 
 #if defined(TS_LINUX) || defined(DOXYGEN) // Linux-specific operations
-
         //!
         //! Default poll interval for signal timeout (Linux-specific).
         //!
-        static const MilliSecond DEFAULT_SIGNAL_POLL = 100;
+        static constexpr MilliSecond DEFAULT_SIGNAL_POLL = 100;
 
         //!
         //! Set the poll interval for signal timeout (Linux-specific).
         //! Must be set before start().
         //! @param [in] t Poll interval in milliseconds.
         //!
-        void setSignalPoll(MilliSecond t)
-        {
-            _signal_poll = t;
-        }
+        void setSignalPoll(MilliSecond t);
 
         //!
         //! Default demux buffer size in bytes (Linux-specific).
         //!
-        static const size_t DEFAULT_DEMUX_BUFFER_SIZE = 1024 * 1024;  // 1 MB
+        static constexpr size_t DEFAULT_DEMUX_BUFFER_SIZE = 1024 * 1024;  // 1 MB
 
         //!
         //! Set the demux buffer size in bytes.
         //! Must be set before start().
         //! @param [in] s The demux buffer size in bytes.
         //!
-        void setDemuxBufferSize(size_t s)
-        {
-            _demux_bufsize = s;
-        }
-
-        //!
-        //! Perform a tune operation (Linux-specific).
-        //! @param [in,out] props DTV properties.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        bool tune(DTVProperties& props, Report& report);
+        void setDemuxBufferSize(size_t s);
 #endif
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN) // Windows-specific operations
-
         //!
         //! Default max number of queued media samples (Windows-specific).
         //! @see setSinkQueueSize().
         //!
-        static const size_t DEFAULT_SINK_QUEUE_SIZE = 1000;  // media samples
+        static constexpr size_t DEFAULT_SINK_QUEUE_SIZE = 1000;  // media samples
 
         //!
         //! Set the max number of queued media samples (Windows-specific).
@@ -373,10 +344,7 @@ namespace ts {
         //! @param [in] s Max number of media samples in the queue between
         //! the graph thread and the application thread.
         //!
-        void setSinkQueueSize(size_t s)
-        {
-            _sink_queue_size = s;
-        }
+        void setSinkQueueSize(size_t s);
 #endif
 
         //!
@@ -389,127 +357,23 @@ namespace ts {
         std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report);
 
     private:
+        // System-specific parts are stored in a private structure.
+        // This is done to avoid inclusion of specialized headers in this public file.
+        class SystemGuts;
 
-        // Portable properties
+        // Allocate and deallocate guts (depend on implementations).
+        void allocateGuts();
+        void deleteGuts();
+
         bool              _is_open;
         bool              _info_only;
-        TunerType         _tuner_type;
+        TunerType         _tuner_type;     // @@@@@ Deprecated
         UString           _device_name;    // Used to open the tuner
         UString           _device_info;    // Device-specific, can be empty
         MilliSecond       _signal_timeout;
         bool              _signal_timeout_silent;
         MilliSecond       _receive_timeout;
         DeliverySystemSet _delivery_systems;
-
-#if defined(TS_LINUX) // Linux properties
-
-        UString             _frontend_name;    // Frontend device name
-        UString             _demux_name;       // Demux device name
-        UString             _dvr_name;         // DVR device name
-        int                 _frontend_fd;      // Frontend device file descriptor
-        int                 _demux_fd;         // Demux device file descriptor
-        int                 _dvr_fd;           // DVR device file descriptor
-        unsigned long       _demux_bufsize;    // Demux device buffer size
-        ::dvb_frontend_info _fe_info;          // Front-end characteristics
-        MilliSecond         _signal_poll;
-        int                 _rt_signal;        // Receive timeout signal number
-        ::timer_t           _rt_timer;         // Receive timeout timer
-        bool                _rt_timer_valid;   // Receive timeout timer was created
-
-        // Get current tuning parameters for specific tuners, return system error code
-        ErrorCode getCurrentTuningDVBS(TunerParametersDVBS&);
-        ErrorCode getCurrentTuningDVBC(TunerParametersDVBC&);
-        ErrorCode getCurrentTuningDVBT(TunerParametersDVBT&);
-        ErrorCode getCurrentTuningATSC(TunerParametersATSC&);
-
-        // Clear tuner, return true on success, false on error
-        bool dtvClear(Report&);
-
-        // Discard all pending frontend events
-        void discardFrontendEvents(Report&);
-
-        // Tune for specific tuners, return true on success, false on error
-        bool tuneDVBS(const TunerParametersDVBS&, Report&);
-        bool tuneDVBC(const TunerParametersDVBC&, Report&);
-        bool tuneDVBT(const TunerParametersDVBT&, Report&);
-        bool tuneATSC(const TunerParametersATSC&, Report&);
-
-        // Get frontend status, encapsulate weird error management.
-        bool getFrontendStatus(::fe_status_t&, Report&);
-
-        // Convert between TSDuck and Linux delivery systems.
-        DeliverySystem fromLinuxDeliverySystem(::fe_delivery_system);
-        ::fe_delivery_system toLinuxDeliverySystem(DeliverySystem);
-
-#endif // linux
-
-#if defined(TS_WINDOWS) // Windows properties
-
-        // A DirectShow graph for TS capture is usually made of the following filters:
-        // - Network provider (typically "Microsoft DVBx Network Provider")
-        // - Tuner (typically provided by tuner hardware vendor as "BDA driver")
-        // - Receiver (optional, also provided by tuner hardware vendor)
-        // - Tee filter, creating two branches:
-        // - Branch A: actual capture of TS packets
-        //   - SinkFiler (provided by TSDuck)
-        // - Branch B: MPEG-2 demux, actually unused but required by the graph
-        //   - MPEG-2 demultiplexer
-        //   - TIF (Transport Information Filter)
-
-        size_t                  _sink_queue_size;     // Media sample queue size
-        DirectShowGraph         _graph;               // The filter graph
-        ComPtr<SinkFilter>      _sink_filter;         // Sink filter to TSDuck
-        ComPtr<::IBaseFilter>   _provider_filter;     // Network provider filter
-        ComPtr<::IBDA_NetworkProvider> _net_provider; // ... interface of provider_filter
-        ComPtr<::ITuner>        _tuner;               // ... interface of provider_filter
-        ComPtr<::ITuningSpace>  _tuning_space;        // ... associated to provider_filter
-        UString                 _tuning_space_fname;  // ... friendly name
-        UString                 _tuning_space_uname;  // ... unique name
-        ComPtr<::IBaseFilter>   _tuner_filter;        // Tuner filter
-        std::vector<ComPtr<::IBDA_DigitalDemodulator>>  _demods;   // ... all its demod interfaces
-        std::vector<ComPtr<::IBDA_DigitalDemodulator2>> _demods2;  // ... all its demod (2nd gen) interfaces
-        std::vector<ComPtr<::IBDA_SignalStatistics>>    _sigstats; // ... all its signal stat interfaces
-        std::vector<ComPtr<::IKsPropertySet>>           _tunprops; // ... all its property set interfaces
-
-        // Try to build the graph.
-        // Return true on success, false on error
-        bool buildGraph(::IMoniker* tuner_moniker, Report&);
-
-        // Try to build the part of the graph starting at the tee filter.
-        // The specified base filter is either the tuner filter or some
-        // other intermediate receiver filter downstream the tuner.
-        // Return true on success, false on error.
-        bool buildCaptureGraph(const ComPtr <::IBaseFilter>&, Report&);
-
-        // Internal tune method, works also if the tuner is not in open state.
-        // Return true on success, false on errors
-        bool internalTune(const TunerParameters&, Report&);
-
-        // Get signal strength in mdB.
-        // Return true if found, false if not found.
-        bool getSignalStrength_mdB(::LONG&);
-
-        // Locate all known interfaces in a pin or node of the tuner filter.
-        // Add found interfaces in _demods, _demods2, _sigstats, _tunprops.
-        // Ignore errors.
-        template <class COMCLASS>
-        void findTunerSubinterfaces(ComPtr<COMCLASS>&);
-
-        // Search criteria for properties.
-        enum PropSearch {psFIRST, psLAST, psLOWEST, psHIGHEST};
-
-        // Search all IKsPropertySet in the tuner until the specified data is found.
-        // Return true if found, false if not found.
-        template <typename T>
-        bool searchTunerProperty(const ::GUID& propset, ::DWORD propid, T& value, PropSearch);
-
-        // Find one or more tuners. Exactly one of Tuner* or TunerPtrVector* must be non-zero.
-        // If Tuner* is non-zero, find the first tuner (matching _device_name if not empty).
-        // If _device_name is ":integer", use integer as device index in list of DVB devices.
-        // If TunerPtrVector* is non- zero, find all tuners in the system.
-        // Return true on success, false on error.
-        static bool FindTuners(Tuner*, TunerPtrVector*, Report&);
-
-#endif // windows
+        SystemGuts*       _guts;           // System-specific data
     };
 }

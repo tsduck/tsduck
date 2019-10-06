@@ -963,6 +963,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTSScanner.cpp \
     ../../../src/libtsduck/tsTSScrambling.cpp \
     ../../../src/libtsduck/tsTSSpeedMetrics.cpp \
+    ../../../src/libtsduck/tsTuner.cpp \
     ../../../src/libtsduck/tsTunerArgs.cpp \
     ../../../src/libtsduck/tsTunerParameters.cpp \
     ../../../src/libtsduck/tsTunerParametersATSC.cpp \
@@ -1011,7 +1012,7 @@ linux {
         ../../../src/libtsduck/linux/tsDTVProperties.cpp \
         ../../../src/libtsduck/linux/tsHiDesDevice.cpp \
         ../../../src/libtsduck/linux/tsSignalAllocator.cpp \
-        ../../../src/libtsduck/linux/tsTuner.cpp \
+        ../../../src/libtsduck/linux/tsTunerGuts.cpp \
 
 }
 
@@ -1023,7 +1024,7 @@ mac {
         ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/mac/tsHiDesDevice.cpp \
         ../../../src/libtsduck/mac/tsMacPList.cpp \
-        ../../../src/libtsduck/mac/tsTuner.cpp \
+        ../../../src/libtsduck/mac/tsTunerGuts.cpp \
 
 }
 
@@ -1049,7 +1050,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsHiDesDevice.cpp \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
-        ../../../src/libtsduck/windows/tsTuner.cpp \
+        ../../../src/libtsduck/windows/tsTunerGuts.cpp \
         ../../../src/libtsduck/windows/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/windows/tsWinUtils.cpp \
 

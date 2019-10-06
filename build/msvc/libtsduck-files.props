@@ -975,6 +975,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTSScanner.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSScrambling.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSSpeedMetrics.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTuner.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTunerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTunerParameters.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTunerParametersATSC.cpp" />
@@ -1020,7 +1021,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsHiDesDevice.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\windows\tsTuner.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\windows\tsTunerGuts.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsWebRequestGuts.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsWinUtils.cpp" />
   </ItemGroup>
