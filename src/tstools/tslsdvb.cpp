@@ -116,11 +116,6 @@ namespace {
             return;
         }
 
-        // Get tuner information.
-        const ts::UString info(tuner.deviceInfo());
-        bool something = !info.empty();
-        const ts::DeliverySystemSet systems(tuner.deliverySystems());
-
         // Display name. On Windows, since names are weird, always display
         // the adapter number and use quotes around tuner name.
 #if defined(TS_WINDOWS)
@@ -135,20 +130,12 @@ namespace {
 #endif
 
         // Display tuner information.
+        const ts::UString info(tuner.deviceInfo());
         std::cout << " (";
-        if (something) {
-            std::cout << info;
+        if (!info.empty()) {
+            std::cout << info << ", ";
         }
-        for (size_t ds = 0; ds < systems.size(); ++ds) {
-            if (systems.test(ds)) {
-                if (something) {
-                    std::cout << ", ";
-                }
-                std::cout << ts::DeliverySystemEnum.name(int(ds));
-                something = true;
-            }
-        }
-        std::cout << ")" << std::endl;
+        std::cout << tuner.deliverySystemsString() << ")" << std::endl;
 
         // Display verbose information
         if (opt.verbose()) {

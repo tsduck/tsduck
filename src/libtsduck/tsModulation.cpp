@@ -71,40 +71,43 @@ const ts::Enumeration ts::TunerTypeEnum({
 });
 
 const ts::Enumeration ts::DeliverySystemEnum({
-    {u"undefined", ts::DS_UNDEFINED},
-    {u"DVB-S",     ts::DS_DVB_S},
-    {u"DVB-S2",    ts::DS_DVB_S2},
-    {u"DVB-T",     ts::DS_DVB_T},
-    {u"DVB-T2",    ts::DS_DVB_T2},
-    {u"DVB-C",     ts::DS_DVB_C},
-    {u"DVB-C/AC",  ts::DS_DVB_C_ANNEX_AC},
-    {u"DVB-C/B",   ts::DS_DVB_C_ANNEX_B},
-    {u"DVB-C2",    ts::DS_DVB_C2},
-    {u"DVB-H",     ts::DS_DVB_H},
-    {u"ISDB-S",    ts::DS_ISDB_S},
-    {u"ISDB-T",    ts::DS_ISDB_T},
-    {u"ISDB-C",    ts::DS_ISDB_C},
-    {u"ATSC",      ts::DS_ATSC},
-    {u"ATSC-MH",   ts::DS_ATSC_MH},
-    {u"DMB-TH",    ts::DS_DMB_TH},
-    {u"CMMB",      ts::DS_CMMB},
-    {u"DAB",       ts::DS_DAB},
-    {u"DSS",       ts::DS_DSS},
+    {u"undefined",   ts::DS_UNDEFINED},
+    {u"DVB-S",       ts::DS_DVB_S},
+    {u"DVB-S2",      ts::DS_DVB_S2},
+    {u"DVB-S-Turbo", ts::DS_DVB_S_TURBO},
+    {u"DVB-T",       ts::DS_DVB_T},
+    {u"DVB-T2",      ts::DS_DVB_T2},
+    {u"DVB-C/A",     ts::DS_DVB_C_ANNEX_A},
+    {u"DVB-C/B",     ts::DS_DVB_C_ANNEX_A},
+    {u"DVB-C/C",     ts::DS_DVB_C_ANNEX_C},
+    {u"DVB-C2",      ts::DS_DVB_C2},
+    {u"DVB-H",       ts::DS_DVB_H},
+    {u"ISDB-S",      ts::DS_ISDB_S},
+    {u"ISDB-T",      ts::DS_ISDB_T},
+    {u"ISDB-C",      ts::DS_ISDB_C},
+    {u"ATSC",        ts::DS_ATSC},
+    {u"ATSC-MH",     ts::DS_ATSC_MH},
+    {u"DTMB",        ts::DS_DTMB},
+    {u"CMMB",        ts::DS_CMMB},
+    {u"DAB",         ts::DS_DAB},
+    {u"DSS",         ts::DS_DSS},
 });
 
 const ts::Enumeration ts::ModulationEnum({
-    {u"QPSK",    ts::QPSK},
-    {u"8-PSK",   ts::PSK_8},
-    {u"QAM",     ts::QAM_AUTO},
-    {u"16-QAM",  ts::QAM_16},
-    {u"32-QAM",  ts::QAM_32},
-    {u"64-QAM",  ts::QAM_64},
-    {u"128-QAM", ts::QAM_128},
-    {u"256-QAM", ts::QAM_256},
-    {u"8-VSB",   ts::VSB_8},
-    {u"16-VSB",  ts::VSB_16},
-    {u"16-APSK", ts::APSK_16},
-    {u"32-APSK", ts::APSK_32},
+    {u"QPSK",     ts::QPSK},
+    {u"8-PSK",    ts::PSK_8},
+    {u"QAM",      ts::QAM_AUTO},
+    {u"16-QAM",   ts::QAM_16},
+    {u"32-QAM",   ts::QAM_32},
+    {u"64-QAM",   ts::QAM_64},
+    {u"128-QAM",  ts::QAM_128},
+    {u"256-QAM",  ts::QAM_256},
+    {u"8-VSB",    ts::VSB_8},
+    {u"16-VSB",   ts::VSB_16},
+    {u"16-APSK",  ts::APSK_16},
+    {u"32-APSK",  ts::APSK_32},
+    {u"DQPSK",    ts::DQPSK},
+    {u"4-QAM-NR", ts::QAM_4_NR},
 });
 
 const ts::Enumeration ts::InnerFECEnum({
@@ -168,6 +171,8 @@ const ts::Enumeration ts::TransmissionModeEnum({
     {u"1K",             ts::TM_1K},
     {u"16K",            ts::TM_16K},
     {u"32K",            ts::TM_32K},
+    {u"C=1",            ts::TM_C1},
+    {u"C=3780",         ts::TM_C3780},
 });
 
 const ts::Enumeration ts::GuardIntervalEnum({
@@ -179,6 +184,9 @@ const ts::Enumeration ts::GuardIntervalEnum({
     {u"1/128",   ts::GUARD_1_128},
     {u"19/128",  ts::GUARD_19_128},
     {u"19/256",  ts::GUARD_19_256},
+    {u"PN-420",  ts::GUARD_PN420},
+    {u"PN-595",  ts::GUARD_PN595},
+    {u"PN-945",  ts::GUARD_PN945},
 });
 
 const ts::Enumeration ts::HierarchyEnum({
@@ -222,6 +230,8 @@ uint32_t ts::BitsPerSymbol(Modulation modulation)
         case VSB_16:   return 4;  // 16 states = 4 bits
         case APSK_16:  return 4;  // 16 states = 4 bits
         case APSK_32:  return 5;  // 32 states = 5 bits
+        case DQPSK:    return 2;  // Q = 4 states = 2 bits
+        case QAM_4_NR: return 2;  // 4 states = 2 bits
         default:       return 0;  // Unknown
     }
 }
@@ -294,6 +304,9 @@ uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
         case GUARD_1_128:  return 1;
         case GUARD_19_128: return 19;
         case GUARD_19_256: return 19;
+        case GUARD_PN420:  return 0; // unknown
+        case GUARD_PN595:  return 0; // unknown
+        case GUARD_PN945:  return 0; // unknown
         case GUARD_AUTO:   return 0; // unknown
         default:           return 0; // unknown
     }
@@ -310,6 +323,9 @@ uint32_t ts::GuardIntervalDivider(GuardInterval guard)
         case GUARD_1_128:  return 128;
         case GUARD_19_128: return 128;
         case GUARD_19_256: return 256;
+        case GUARD_PN420:  return 0; // unknown
+        case GUARD_PN595:  return 0; // unknown
+        case GUARD_PN945:  return 0; // unknown
         case GUARD_AUTO:   return 0; // unknown
         default:           return 0; // unknown
     }

@@ -27,7 +27,7 @@
 //
 //-----------------------------------------------------------------------------
 //
-//  DVB tuner. Linux implementation
+// Linux implementation of the ts::Tuner class.
 //
 //-----------------------------------------------------------------------------
 
@@ -38,6 +38,11 @@
 #include "tsSignalAllocator.h"
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
+#include "tsDTVProperties.h"
+#include "tsTunerParametersDVBS.h"
+#include "tsTunerParametersDVBC.h"
+#include "tsTunerParametersDVBT.h"
+#include "tsTunerParametersATSC.h"
 TSDUCK_SOURCE;
 
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
@@ -45,10 +50,125 @@ TSDUCK_SOURCE;
 #define FE_ZERO (::fe_status_t(0))
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
-const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_POLL;
-const size_t ts::Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
+constexpr ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_POLL;
+constexpr size_t ts::Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
 #endif
+
+
+//-----------------------------------------------------------------------------
+// Linux version of the syste guts class.
+//-----------------------------------------------------------------------------
+
+class ts::Tuner::SystemGuts
+{
+    TS_NOBUILD_NOCOPY(SystemGuts);
+private:
+    Tuner*              _tuner;            // Parent tuner.
+public:
+    UString             _frontend_name;    // Frontend device name
+    UString             _demux_name;       // Demux device name
+    UString             _dvr_name;         // DVR device name
+    int                 _frontend_fd;      // Frontend device file descriptor
+    int                 _demux_fd;         // Demux device file descriptor
+    int                 _dvr_fd;           // DVR device file descriptor
+    unsigned long       _demux_bufsize;    // Demux device buffer size
+    ::dvb_frontend_info _fe_info;          // Front-end characteristics
+    MilliSecond         _signal_poll;
+    int                 _rt_signal;        // Receive timeout signal number
+    ::timer_t           _rt_timer;         // Receive timeout timer
+    bool                _rt_timer_valid;   // Receive timeout timer was created
+
+    // Constructor and destructor.
+    SystemGuts(Tuner* tuner);
+    ~SystemGuts();
+
+    // Get current tuning parameters for specific tuners, return system error code
+    ErrorCode getCurrentTuningDVBS(TunerParametersDVBS&);
+    ErrorCode getCurrentTuningDVBC(TunerParametersDVBC&);
+    ErrorCode getCurrentTuningDVBT(TunerParametersDVBT&);
+    ErrorCode getCurrentTuningATSC(TunerParametersATSC&);
+
+    // Clear tuner, return true on success, false on error
+    bool dtvClear(Report&);
+
+    // Discard all pending frontend events
+    void discardFrontendEvents(Report&);
+
+    // Tune for specific tuners, return true on success, false on error
+    bool tuneDVBS(const TunerParametersDVBS&, Report&);
+    bool tuneDVBC(const TunerParametersDVBC&, Report&);
+    bool tuneDVBT(const TunerParametersDVBT&, Report&);
+    bool tuneATSC(const TunerParametersATSC&, Report&);
+
+    // Get frontend status, encapsulate weird error management.
+    bool getFrontendStatus(::fe_status_t&, Report&);
+
+    // Perform a tune operation.
+    bool tune(DTVProperties& props, Report& report);
+};
+
+
+//-----------------------------------------------------------------------------
+// System guts constructor and destructor.
+//-----------------------------------------------------------------------------
+
+ts::Tuner::SystemGuts::SystemGuts(Tuner* tuner) :
+    _tuner(tuner),
+    _frontend_name(),
+    _demux_name(),
+    _dvr_name(),
+    _frontend_fd(-1),
+    _demux_fd(-1),
+    _dvr_fd(-1),
+    _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
+    _fe_info(),
+    _signal_poll(DEFAULT_SIGNAL_POLL),
+    _rt_signal(-1),
+    _rt_timer(nullptr),
+    _rt_timer_valid(false)
+{
+}
+
+ts::Tuner::SystemGuts::~SystemGuts()
+{
+    // Cleanup receive timer resources
+    _tuner->setReceiveTimeout(0, NULLREP);
+}
+
+
+//-----------------------------------------------------------------------------
+// System guts allocation.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::allocateGuts()
+{
+    _guts = new SystemGuts(this);
+}
+
+void ts::Tuner::deleteGuts()
+{
+    delete _guts;
+}
+
+
+//-----------------------------------------------------------------------------
+// Set the poll interval for signal timeout.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::setSignalPoll(MilliSecond t)
+{
+    _guts->_signal_poll = t;
+}
+
+
+//-----------------------------------------------------------------------------
+// Set the demux buffer size in bytes.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::setDemuxBufferSize(size_t s)
+{
+    _guts->_demux_bufsize = s;
+}
 
 
 //-----------------------------------------------------------------------------
@@ -99,62 +219,6 @@ namespace {
 
 
 //-----------------------------------------------------------------------------
-// Destructor
-//-----------------------------------------------------------------------------
-
-ts::Tuner::~Tuner()
-{
-    // Close tuner devices if open
-    close(NULLREP);
-
-    // Cleanup receive timer resources
-    setReceiveTimeout(0, NULLREP);
-}
-
-
-//-----------------------------------------------------------------------------
-// Default constructor,
-//-----------------------------------------------------------------------------
-
-ts::Tuner::Tuner(const UString& device_name) :
-    _is_open(false),
-    _info_only(true),
-    _tuner_type(DVB_T),
-    _device_name(device_name),
-    _device_info(),
-    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent(false),
-    _receive_timeout(0),
-    _delivery_systems(),
-    _frontend_name(),
-    _demux_name(),
-    _dvr_name(),
-    _frontend_fd(-1),
-    _demux_fd(-1),
-    _dvr_fd(-1),
-    _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
-    _fe_info(),
-    _signal_poll(DEFAULT_SIGNAL_POLL),
-    _rt_signal(-1),
-    _rt_timer(nullptr),
-    _rt_timer_valid(false)
-{
-}
-
-
-//-----------------------------------------------------------------------------
-// Constructor from one device name.
-//-----------------------------------------------------------------------------
-
-ts::Tuner::Tuner(const UString& device_name, bool info_only, Report& report) :
-    Tuner(device_name)
-{
-    // Flawfinder: ignore: this is our open(), not ::open().
-    this->open(device_name, info_only, report);
-}
-
-
-//-----------------------------------------------------------------------------
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
@@ -189,11 +253,10 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-// Flawfinder: ignore: this is our open(), not ::open().
 bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 {
     if (_is_open) {
-        report.error(u"DVB tuner already open");
+        report.error(u"tuner already open");
         return false;
     }
 
@@ -232,55 +295,54 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     else if (frontend_nb != 0) {
         _device_name += UString::Format(u":%d", {frontend_nb});
     }
-    _frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
-    _demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
-    _dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
+    _guts->_frontend_name = fields[0] + UString::Format(u"/frontend%d", {frontend_nb});
+    _guts->_demux_name = fields[0] + UString::Format(u"/demux%d", {demux_nb});
+    _guts->_dvr_name = fields[0] + UString::Format(u"/dvr%d", {dvr_nb});
 
     // Open DVB adapter frontend. The frontend device is opened in non-blocking mode.
     // All configuration and setup operations are non-blocking anyway.
     // Reading events, however, is a blocking operation.
 
-    // Flawfinder: ignore: trusted open()
-    if ((_frontend_fd = ::open(_frontend_name.toUTF8().c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
-        report.error(u"error opening %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if ((_guts->_frontend_fd = ::open(_guts->_frontend_name.toUTF8().c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
+        report.error(u"error opening %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         return false;
     }
 
     // Get characteristics of the frontend
 
-    if (::ioctl(_frontend_fd, FE_GET_INFO, &_fe_info) < 0) {
-        report.error(u"error getting info on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_frontend_fd, FE_GET_INFO, &_guts->_fe_info) < 0) {
+        report.error(u"error getting info on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         return close(report) || false;
     }
-    _fe_info.name[sizeof(_fe_info.name) - 1] = 0;
-    _device_info = UString::FromUTF8(_fe_info.name);
-    _delivery_systems.reset();
+    _guts->_fe_info.name[sizeof(_guts->_fe_info.name) - 1] = 0;
+    _device_info = UString::FromUTF8(_guts->_fe_info.name);
+    _delivery_systems.clear();
 
-    switch (_fe_info.type) {
+    switch (_guts->_fe_info.type) {
         case ::FE_QPSK:
             _tuner_type = DVB_S;
-            _delivery_systems.set(DS_DVB_S);
+            _delivery_systems.insert(DS_DVB_S);
 #if TS_DVB_API_VERSION >= 501
-            if ((_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.set(DS_DVB_S2);
+            if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
+                _delivery_systems.insert(DS_DVB_S2);
             }
 #endif
             break;
         case ::FE_QAM:
             _tuner_type = DVB_C;
-            _delivery_systems.set(DS_DVB_C);
+            _delivery_systems.insert(DS_DVB_C);
 #if TS_DVB_API_VERSION >= 501
-            if ((_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.set(DS_DVB_C2);
+            if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
+                _delivery_systems.insert(DS_DVB_C2);
             }
 #endif
             break;
         case ::FE_OFDM:
             _tuner_type = DVB_T;
-            _delivery_systems.set(DS_DVB_T);
+            _delivery_systems.insert(DS_DVB_T);
 #if TS_DVB_API_VERSION >= 501
-            if ((_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.set(DS_DVB_T2);
+            if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
+                _delivery_systems.insert(DS_DVB_T2);
             }
 #endif
             break;
@@ -288,24 +350,22 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
             _tuner_type = ATSC;
             break;
         default:
-            report.error(u"unsupported frontend type %d on %s (%s)", {_fe_info.type, _frontend_name, _fe_info.name});
+            report.error(u"unsupported frontend type %d on %s (%s)", {_guts->_fe_info.type, _guts->_frontend_name, _guts->_fe_info.name});
             return close(report) || false;
     }
 
     // Open DVB adapter DVR (tap for TS packets) and adapter demux
 
     if (_info_only) {
-        _dvr_fd = _demux_fd = -1;
+        _guts->_dvr_fd = _guts->_demux_fd = -1;
     }
     else {
-        // Flawfinder: ignore: trusted ::open().
-        if ((_dvr_fd = ::open(_dvr_name.toUTF8().c_str(), O_RDONLY)) < 0) {
-            report.error(u"error opening %s: %s", {_dvr_name, ErrorCodeMessage()});
+        if ((_guts->_dvr_fd = ::open(_guts->_dvr_name.toUTF8().c_str(), O_RDONLY)) < 0) {
+            report.error(u"error opening %s: %s", {_guts->_dvr_name, ErrorCodeMessage()});
             return close(report) || false;
         }
-        // Flawfinder: ignore: trusted ::open().
-        if ((_demux_fd = ::open(_demux_name.toUTF8().c_str(), O_RDWR)) < 0) {
-            report.error(u"error opening %s: %s", {_demux_name, ErrorCodeMessage()});
+        if ((_guts->_demux_fd = ::open(_guts->_demux_name.toUTF8().c_str(), O_RDWR)) < 0) {
+            report.error(u"error opening %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
             return close(report) || false;
         }
     }
@@ -321,30 +381,30 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 bool ts::Tuner::close(Report& report)
 {
     // Stop the demux
-    if (_demux_fd >= 0 && ::ioctl(_demux_fd, DMX_STOP) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_demux_name, ErrorCodeMessage()});
+    if (_guts->_demux_fd >= 0 && ::ioctl(_guts->_demux_fd, DMX_STOP) < 0) {
+        report.error(u"error stopping demux on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
     }
 
     // Close DVB adapter devices
-    if (_dvr_fd >= 0) {
-        ::close(_dvr_fd);
-        _dvr_fd = -1;
+    if (_guts->_dvr_fd >= 0) {
+        ::close(_guts->_dvr_fd);
+        _guts->_dvr_fd = -1;
     }
-    if (_demux_fd >= 0) {
-        ::close(_demux_fd);
-        _demux_fd = -1;
+    if (_guts->_demux_fd >= 0) {
+        ::close(_guts->_demux_fd);
+        _guts->_demux_fd = -1;
     }
-    if (_frontend_fd >= 0) {
-        ::close(_frontend_fd);
-        _frontend_fd = -1;
+    if (_guts->_frontend_fd >= 0) {
+        ::close(_guts->_frontend_fd);
+        _guts->_frontend_fd = -1;
     }
 
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
-    _frontend_name.clear();
-    _demux_name.clear();
-    _dvr_name.clear();
+    _guts->_frontend_name.clear();
+    _guts->_demux_name.clear();
+    _guts->_dvr_name.clear();
 
     return true;
 }
@@ -354,7 +414,7 @@ bool ts::Tuner::close(Report& report)
 // Get frontend status, encapsulate weird error management.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getFrontendStatus(::fe_status_t& status, Report& report)
+bool ts::Tuner::SystemGuts::getFrontendStatus(::fe_status_t& status, Report& report)
 {
     status = FE_ZERO;
     errno = 0;
@@ -377,12 +437,12 @@ bool ts::Tuner::getFrontendStatus(::fe_status_t& status, Report& report)
 bool ts::Tuner::signalLocked(Report& report)
 {
     if (!_is_open) {
-        report.error(u"DVB tuner not open");
+        report.error(u"tuner not open");
         return false;
     }
     else {
         ::fe_status_t status = FE_ZERO;
-        getFrontendStatus(status, report);
+        _guts->getFrontendStatus(status, report);
         return (status & ::FE_HAS_LOCK) != 0;
     }
 }
@@ -401,8 +461,8 @@ int ts::Tuner::signalStrength(Report& report)
     }
 
     uint16_t strength;
-    if (::ioctl(_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
-        report.error(u"error reading signal strength on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
+        report.error(u"error reading signal strength on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         return -1;
     }
 
@@ -429,7 +489,7 @@ int ts::Tuner::signalQuality(Report& report)
 // Get current tuning parameters for DVB-S tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::getCurrentTuningDVBS(TunerParametersDVBS& params)
+ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBS(TunerParametersDVBS& params)
 {
     // Note: it is useless to get the frequency of a DVB-S tuner since it
     // returns the intermediate frequency and there is no unique satellite
@@ -454,7 +514,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS(TunerParametersDVBS& params)
     params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
     params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
     params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
-    params.delivery_system = fromLinuxDeliverySystem(::fe_delivery_system(props.getByCommand(DTV_DELIVERY_SYSTEM)));
+    params.delivery_system = DeliverySystem(props.getByCommand(DTV_DELIVERY_SYSTEM));
     params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
     params.pilots = Pilot(props.getByCommand(DTV_PILOT));
     params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
@@ -482,7 +542,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS(TunerParametersDVBS& params)
 // Get current tuning parameters for DVB-C tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::getCurrentTuningDVBC(TunerParametersDVBC& params)
+ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBC(TunerParametersDVBC& params)
 {
     DTVProperties props;
     props.add(DTV_FREQUENCY);
@@ -509,7 +569,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBC(TunerParametersDVBC& params)
 // Get current tuning parameters for DVB-T tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::getCurrentTuningDVBT(TunerParametersDVBT& params)
+ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBT(TunerParametersDVBT& params)
 {
     DTVProperties props;
     props.add(DTV_FREQUENCY);
@@ -550,7 +610,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBT(TunerParametersDVBT& params)
 // Get current tuning parameters for ATSC tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::getCurrentTuningATSC(TunerParametersATSC& params)
+ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningATSC(TunerParametersATSC& params)
 {
     DTVProperties props;
     props.add(DTV_FREQUENCY);
@@ -601,25 +661,25 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
                 tpp->satellite_number = TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
                 tpp->lnb.setUniversalLNB();
             }
-            error = getCurrentTuningDVBS(*tpp);
+            error = _guts->getCurrentTuningDVBS(*tpp);
             break;
         }
         case DVB_C: {
             TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*>(&params);
             assert(tpp != nullptr);
-            error = getCurrentTuningDVBC(*tpp);
+            error = _guts->getCurrentTuningDVBC(*tpp);
             break;
         }
         case DVB_T: {
             TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*>(&params);
             assert(tpp != nullptr);
-            error = getCurrentTuningDVBT(*tpp);
+            error = _guts->getCurrentTuningDVBT(*tpp);
             break;
         }
         case ATSC: {
             TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*>(&params);
             assert(tpp != nullptr);
-            error = getCurrentTuningATSC(*tpp);
+            error = _guts->getCurrentTuningATSC(*tpp);
             break;
         }
         default: {
@@ -641,7 +701,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 // Discard all pending frontend events
 //-----------------------------------------------------------------------------
 
-void ts::Tuner::discardFrontendEvents(Report& report)
+void ts::Tuner::SystemGuts::discardFrontendEvents(Report& report)
 {
     ::dvb_frontend_event event;
     report.debug(u"starting discarding frontend events");
@@ -656,7 +716,7 @@ void ts::Tuner::discardFrontendEvents(Report& report)
 // Tune operation, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(DTVProperties& props, Report& report)
+bool ts::Tuner::SystemGuts::tune(DTVProperties& props, Report& report)
 {
     report.debug(u"tuning on %s", {_frontend_name});
     props.report(report, Severity::Debug);
@@ -672,7 +732,7 @@ bool ts::Tuner::tune(DTVProperties& props, Report& report)
 // Clear tuner, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::dtvClear(Report& report)
+bool ts::Tuner::SystemGuts::dtvClear(Report& report)
 {
     DTVProperties props;
     props.add(DTV_CLEAR);
@@ -684,7 +744,7 @@ bool ts::Tuner::dtvClear(Report& report)
 // Tune for DVB-S tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
+bool ts::Tuner::SystemGuts::tuneDVBS(const TunerParametersDVBS& params, Report& report)
 {
     // Clear tuner state.
     if (!dtvClear(report)) {
@@ -796,7 +856,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     discardFrontendEvents(report);
 
     DTVProperties props;
-    props.add(DTV_DELIVERY_SYSTEM, uint32_t(toLinuxDeliverySystem(params.delivery_system)));
+    props.add(DTV_DELIVERY_SYSTEM, uint32_t(params.delivery_system));
     props.add(DTV_FREQUENCY, intermediate_frequency);
     props.add(DTV_MODULATION, uint32_t(params.modulation));
     props.add(DTV_SYMBOL_RATE, params.symbol_rate);
@@ -827,7 +887,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
 // Tune for DVB-C tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneDVBC(const TunerParametersDVBC& params, Report& report)
+bool ts::Tuner::SystemGuts::tuneDVBC(const TunerParametersDVBC& params, Report& report)
 {
     if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
@@ -856,7 +916,7 @@ bool ts::Tuner::tuneDVBC(const TunerParametersDVBC& params, Report& report)
 // Tune for DVB-T tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
+bool ts::Tuner::SystemGuts::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 {
     if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
@@ -904,7 +964,7 @@ bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 // Tune for ATSC tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneATSC(const TunerParametersATSC& params, Report& report)
+bool ts::Tuner::SystemGuts::tuneATSC(const TunerParametersATSC& params, Report& report)
 {
     if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report)) {
@@ -952,22 +1012,22 @@ bool ts::Tuner::tune(const TunerParameters& params, Report& report)
         case DVB_S: {
             const TunerParametersDVBS* tpp = dynamic_cast<const TunerParametersDVBS*>(&params);
             assert(tpp != nullptr);
-            return tuneDVBS(*tpp, report);
+            return _guts->tuneDVBS(*tpp, report);
         }
         case DVB_C: {
             const TunerParametersDVBC* tpp = dynamic_cast<const TunerParametersDVBC*>(&params);
             assert(tpp != nullptr);
-            return tuneDVBC(*tpp, report);
+            return _guts->tuneDVBC(*tpp, report);
         }
         case DVB_T: {
             const TunerParametersDVBT* tpp = dynamic_cast<const TunerParametersDVBT*>(&params);
             assert(tpp != nullptr);
-            return tuneDVBT(*tpp, report);
+            return _guts->tuneDVBT(*tpp, report);
         }
         case ATSC: {
             const TunerParametersATSC* tpp = dynamic_cast<const TunerParametersATSC*>(&params);
             assert(tpp != nullptr);
-            return tuneATSC(*tpp, report);
+            return _guts->tuneATSC(*tpp, report);
         }
         default: {
             report.error(u"cannot convert %s parameters to Linux DVB parameters", {TunerTypeEnum.name(_tuner_type)});
@@ -992,8 +1052,8 @@ bool ts::Tuner::start(Report& report)
     // Set demux buffer size (default value is 2 kB, fine for sections,
     // completely undersized for full TS capture.
 
-    if (::ioctl(_demux_fd, DMX_SET_BUFFER_SIZE, _demux_bufsize) < 0) {
-        report.error(u"error setting buffer size on %s: %s", {_demux_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_demux_fd, DMX_SET_BUFFER_SIZE, _guts->_demux_bufsize) < 0) {
+        report.error(u"error setting buffer size on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -1016,19 +1076,19 @@ bool ts::Tuner::start(Report& report)
     filter.pes_type = DMX_PES_OTHER;    // Any type of PES
     filter.flags = DMX_IMMEDIATE_START; // Start capture immediately
 
-    if (::ioctl(_demux_fd, DMX_SET_PES_FILTER, &filter) < 0) {
-        report.error(u"error setting filter on %s: %s", {_demux_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_demux_fd, DMX_SET_PES_FILTER, &filter) < 0) {
+        report.error(u"error setting filter on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
         return false;
     }
 
     // Wait for input signal locking if a non-zero timeout is specified.
 
     bool signal_ok = true;
-    for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _signal_poll) {
+    for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _guts->_signal_poll) {
 
         // Read the frontend status
         ::fe_status_t status = FE_ZERO;
-        getFrontendStatus(status, report);
+        _guts->getFrontendStatus(status, report);
 
         // If the input signal is locked, cool...
         signal_ok = (status & FE_HAS_LOCK) != 0;
@@ -1037,14 +1097,14 @@ bool ts::Tuner::start(Report& report)
         }
 
         // Wait the polling time
-        SleepThread(_signal_poll < remain_ms ? _signal_poll : remain_ms);
+        SleepThread(_guts->_signal_poll < remain_ms ? _guts->_signal_poll : remain_ms);
     }
 
     // If the timeout has expired, error
 
     if (!signal_ok) {
         report.log(_signal_timeout_silent ? Severity::Debug : Severity::Error,
-                   u"no input DVB signal lock after %d milliseconds", {_signal_timeout});
+                   u"no input signal lock after %d milliseconds", {_signal_timeout});
         return false;
     }
 
@@ -1065,8 +1125,8 @@ bool ts::Tuner::stop(Report& report)
     }
 
     // Stop the demux
-    if (::ioctl(_demux_fd, DMX_STOP) < 0) {
-        report.error(u"error stopping demux on %s: %s", {_demux_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_demux_fd, DMX_STOP) < 0) {
+        report.error(u"error stopping demux on %s: %s", {_guts->_demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -1095,9 +1155,9 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
 {
     if (timeout > 0) {
         // Set an actual receive timer.
-        if (_rt_signal < 0) {
+        if (_guts->_rt_signal < 0) {
             // Allocate one real-time signal.
-            if ((_rt_signal = SignalAllocator::Instance()->allocate()) < 0) {
+            if ((_guts->_rt_signal = SignalAllocator::Instance()->allocate()) < 0) {
                 report.error(u"cannot set tuner receive timer, no more signal available");
                 return false;
             }
@@ -1107,25 +1167,25 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = empty_signal_handler;
-            if (::sigaction(_rt_signal, &sac, nullptr) < 0) {
+            if (::sigaction(_guts->_rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error setting tuner receive timer signal: %s", {ErrorCodeMessage()});
-                SignalAllocator::Instance()->release(_rt_signal);
-                _rt_signal = -1;
+                SignalAllocator::Instance()->release(_guts->_rt_signal);
+                _guts->_rt_signal = -1;
                 return false;
             }
         }
 
         // Create a timer which triggers the signal
-        if (!_rt_timer_valid) {
+        if (!_guts->_rt_timer_valid) {
             ::sigevent sev;
             TS_ZERO(sev);
             sev.sigev_notify = SIGEV_SIGNAL;
-            sev.sigev_signo = _rt_signal;
-            if (::timer_create(CLOCK_REALTIME, &sev, &_rt_timer) < 0) {
+            sev.sigev_signo = _guts->_rt_signal;
+            if (::timer_create(CLOCK_REALTIME, &sev, &_guts->_rt_timer) < 0) {
                 report.error(u"error creating tuner receive timer: %s", {ErrorCodeMessage()});
                 return false;
             }
-            _rt_timer_valid = true;
+            _guts->_rt_timer_valid = true;
         }
 
         // Now ready to process receive timeout
@@ -1138,25 +1198,25 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
         bool ok = true;
 
         // Disable and release signal
-        if (_rt_signal >= 0) {
+        if (_guts->_rt_signal >= 0) {
             // Ignore further signal delivery
             struct ::sigaction sac;
             TS_ZERO(sac);
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = SIG_IGN;
-            if (::sigaction(_rt_signal, &sac, nullptr) < 0) {
+            if (::sigaction(_guts->_rt_signal, &sac, nullptr) < 0) {
                 report.error(u"error ignoring tuner receive timer signal: %s", {ErrorCodeMessage()});
                 ok = false;
             }
             // Release signal
-            SignalAllocator::Instance()->release(_rt_signal);
-            _rt_signal = -1;
+            SignalAllocator::Instance()->release(_guts->_rt_signal);
+            _guts->_rt_signal = -1;
         }
 
         // Disarm and delete timer
-        if (_rt_timer_valid) {
-            _rt_timer_valid = false;
-            if (::timer_delete(_rt_timer) < 0) {
+        if (_guts->_rt_timer_valid) {
+            _guts->_rt_timer_valid = false;
+            if (::timer_delete(_guts->_rt_timer) < 0) {
                 report.error(u"error deleting tuner receive timer: %s", {ErrorCodeMessage()});
                 ok = false;
             }
@@ -1188,7 +1248,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
     // Set deadline if receive timeout in effect
     Time time_limit;
     if (_receive_timeout > 0) {
-        assert(_rt_timer_valid);
+        assert(_guts->_rt_timer_valid);
         // Arm the receive timer.
         // Note that _receive_timeout is in milliseconds and ::itimerspec is in nanoseconds.
         ::itimerspec timeout;
@@ -1196,7 +1256,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_value.tv_nsec = (unsigned long) (1000000 * (_receive_timeout % 1000));
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
-        if (::timer_settime(_rt_timer, 0, &timeout, nullptr) < 0) {
+        if (::timer_settime(_guts->_rt_timer, 0, &timeout, nullptr) < 0) {
             report.error(u"error arming tuner receive timer: %s", {ErrorCodeMessage()});
             return 0;
         }
@@ -1209,7 +1269,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 
         // Read some data
         bool got_overflow = false;
-        ssize_t insize = ::read(_dvr_fd, data + got_size, req_size - got_size);
+        ssize_t insize = ::read(_guts->_dvr_fd, data + got_size, req_size - got_size);
 
         if (insize > 0) {
             // Normal case: some data were read
@@ -1231,7 +1291,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
             got_overflow = true;
         }
         else {
-            report.error(u"receive error on %s: %s", {_dvr_name, ErrorCodeMessage()});
+            report.error(u"receive error on %s: %s", {_guts->_dvr_name, ErrorCodeMessage()});
             break;
         }
 
@@ -1266,7 +1326,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_value.tv_nsec = 0;
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
-        if (::timer_settime(_rt_timer, 0, &timeout, nullptr) < 0) {
+        if (::timer_settime(_guts->_rt_timer, 0, &timeout, nullptr) < 0) {
             report.error(u"error disarming tuner receive timer: %s", {ErrorCodeMessage()});
         }
     }
@@ -1450,7 +1510,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Read current status, ignore errors.
     ::fe_status_t status = FE_ZERO;
-    getFrontendStatus(status, report);
+    _guts->getFrontendStatus(status, report);
 
     // Read current tuning parameters
     TunerParametersPtr params(TunerParameters::Factory(_tuner_type));
@@ -1464,29 +1524,29 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Read Bit Error Rate
     uint32_t ber = 0;
-    if (::ioctl(_frontend_fd, FE_READ_BER, &ber) < 0) {
-        report.error(u"ioctl FE_READ_BER on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_frontend_fd, FE_READ_BER, &ber) < 0) {
+        report.error(u"ioctl FE_READ_BER on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         ber = 0;
     }
 
     // Read Signal/Noise Ratio
     uint16_t snr = 0;
-    if (::ioctl(_frontend_fd, FE_READ_SNR, &snr) < 0) {
-        report.error(u"ioctl FE_READ_SNR on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_frontend_fd, FE_READ_SNR, &snr) < 0) {
+        report.error(u"ioctl FE_READ_SNR on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         snr = 0;
     }
 
     // Read signal strength
     uint16_t strength = 0;
-    if (::ioctl(_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
-        report.error(u"ioctl FE_READ_SIGNAL_STRENGTH on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
+        report.error(u"ioctl FE_READ_SIGNAL_STRENGTH on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         strength = 0;
     }
 
     // Read uncorrected blocks
     uint32_t ublocks = 0;
-    if (::ioctl(_frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &ublocks) < 0) {
-        report.error(u"ioctl FE_READ_UNCORRECTED_BLOCKS on %s: %s", {_frontend_name, ErrorCodeMessage()});
+    if (::ioctl(_guts->_frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &ublocks) < 0) {
+        report.error(u"ioctl FE_READ_UNCORRECTED_BLOCKS on %s: %s", {_guts->_frontend_name, ErrorCodeMessage()});
         ublocks = 0;
     }
 
@@ -1499,7 +1559,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     Display(strm, margin, u"Uncorrected blocks", UString::Decimal(ublocks),  u"");
 
     // Display frequency characteristics
-    const uint64_t hz_factor = _fe_info.type == ::FE_QPSK ? 1000 : 1;
+    const uint64_t hz_factor = _guts->_fe_info.type == ::FE_QPSK ? 1000 : 1;
     strm << margin << "Frequencies:" << std::endl;
     if (params_dvbs != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_dvbs->frequency), u"Hz");
@@ -1522,10 +1582,10 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     if (params_atsc != nullptr) {
         Display(strm, margin, u"  Current", UString::Decimal(params_atsc->frequency), u"Hz");
     }
-    Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _fe_info.frequency_min), u"Hz");
-    Display(strm, margin, u"  Max", UString::Decimal(hz_factor * _fe_info.frequency_max), u"Hz");
-    Display(strm, margin, u"  Step", UString::Decimal(hz_factor * _fe_info.frequency_stepsize), u"Hz");
-    Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _fe_info.frequency_tolerance), u"Hz");
+    Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _guts->_fe_info.frequency_min), u"Hz");
+    Display(strm, margin, u"  Max", UString::Decimal(hz_factor * _guts->_fe_info.frequency_max), u"Hz");
+    Display(strm, margin, u"  Step", UString::Decimal(hz_factor * _guts->_fe_info.frequency_stepsize), u"Hz");
+    Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _guts->_fe_info.frequency_tolerance), u"Hz");
 
     // Display symbol rate characteristics.
 
@@ -1534,9 +1594,9 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"  Current",
                  UString::Decimal(params_dvbs != nullptr ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
                  u"sym/s");
-        Display(strm, margin, u"  Min", UString::Decimal(_fe_info.symbol_rate_min), u"sym/s");
-        Display(strm, margin, u"  Max", UString::Decimal(_fe_info.symbol_rate_max), u"sym/s");
-        Display(strm, margin, u"  Tolerance", UString::Decimal(_fe_info.symbol_rate_tolerance), u"sym/s");
+        Display(strm, margin, u"  Min", UString::Decimal(_guts->_fe_info.symbol_rate_min), u"sym/s");
+        Display(strm, margin, u"  Max", UString::Decimal(_guts->_fe_info.symbol_rate_max), u"sym/s");
+        Display(strm, margin, u"  Tolerance", UString::Decimal(_guts->_fe_info.symbol_rate_tolerance), u"sym/s");
     }
 
     // Frontend-specific information
@@ -1569,59 +1629,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
 
     // Display general capabilities
     strm << std::endl;
-    DisplayFlags(strm, margin, u"Capabilities", uint32_t(_fe_info.caps), enum_fe_caps);
+    DisplayFlags(strm, margin, u"Capabilities", uint32_t(_guts->_fe_info.caps), enum_fe_caps);
 
     return strm;
-}
-
-
-//-----------------------------------------------------------------------------
-// Convert between TSDuck and Linux delivery systems.
-//-----------------------------------------------------------------------------
-
-ts::DeliverySystem ts::Tuner::fromLinuxDeliverySystem(::fe_delivery_system ds)
-{
-    switch (ds) {
-        case ::SYS_DVBC_ANNEX_AC: return DS_DVB_C_ANNEX_AC;
-        case ::SYS_DVBC_ANNEX_B:  return DS_DVB_C_ANNEX_B;
-        case ::SYS_DVBT:   return DS_DVB_T;
-        case ::SYS_DSS:    return DS_DSS;
-        case ::SYS_DVBS:   return DS_DVB_S;
-        case ::SYS_DVBS2:  return DS_DVB_S2;
-        case ::SYS_DVBH:   return DS_DVB_H;
-        case ::SYS_ISDBT:  return DS_ISDB_T;
-        case ::SYS_ISDBS:  return DS_ISDB_S;
-        case ::SYS_ISDBC:  return DS_ISDB_C;
-        case ::SYS_ATSC:   return DS_ATSC;
-        case ::SYS_ATSCMH: return DS_ATSC_MH;
-        case ::SYS_DMBTH:  return DS_DMB_TH;
-        case ::SYS_CMMB:   return DS_CMMB;
-        case ::SYS_DAB:    return DS_DAB;
-        default:           return DS_UNDEFINED;
-    }
-}
-
-::fe_delivery_system ts::Tuner::toLinuxDeliverySystem(DeliverySystem ds)
-{
-    switch (ds) {
-        case DS_DVB_S:   return ::SYS_DVBS;
-        case DS_DVB_S2:  return ::SYS_DVBS2;
-        case DS_DVB_T:   return ::SYS_DVBT;
-        case DS_DVB_T2:  return ::SYS_DVBT;  // or ::SYS_UNDEFINED, which one is best ?
-        case DS_DVB_C:   return ::SYS_DVBC_ANNEX_AC;
-        case DS_DVB_C_ANNEX_AC: return ::SYS_DVBC_ANNEX_AC;
-        case DS_DVB_C_ANNEX_B:  return ::SYS_DVBC_ANNEX_B;
-        case DS_DVB_C2:  return ::SYS_DVBC_ANNEX_AC;  // or ::SYS_UNDEFINED, which one is best ?
-        case DS_DVB_H:   return ::SYS_DVBH;
-        case DS_ISDB_S:  return ::SYS_ISDBS;
-        case DS_ISDB_T:  return ::SYS_ISDBT;
-        case DS_ISDB_C:  return ::SYS_ISDBC;
-        case DS_ATSC:    return ::SYS_ATSC;
-        case DS_ATSC_MH: return ::SYS_ATSCMH;
-        case DS_DMB_TH:  return ::SYS_DMBTH;
-        case DS_CMMB:    return ::SYS_CMMB;
-        case DS_DAB:     return ::SYS_DAB;
-        case DS_DSS:     return ::SYS_DSS;
-        default:         return ::SYS_UNDEFINED;
-    }
 }
