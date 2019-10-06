@@ -86,6 +86,16 @@ ts::DeliverySystemSet ts::Tuner::deliverySystems() const
     return _delivery_systems;
 }
 
+void ts::Tuner::clearDeliverySystems()
+{
+    _delivery_systems.clear();
+}
+
+void ts::Tuner::addDeliverySystem(DeliverySystem ds)
+{
+    _delivery_systems.insert(ds);
+}
+
 bool ts::Tuner::hasDeliverySystem(DeliverySystem ds) const
 {
     return _delivery_systems.find(ds) != _delivery_systems.end();

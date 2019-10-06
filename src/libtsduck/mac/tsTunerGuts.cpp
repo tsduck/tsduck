@@ -40,13 +40,13 @@ TSDUCK_SOURCE;
 #define ERROR(ret) report.error(u"Digital tuners are not implemented on macOS"); return (ret)
 
 // There is nothing in system guts but we need to allocate something.
-class ts::Tuner::SystemGuts
+class ts::Tuner::Guts
 {
 };
 
 void ts::Tuner::allocateGuts()
 {
-    _guts = new SystemGuts;
+    _guts = new Guts;
 }
 void ts::Tuner::deleteGuts()
 {

@@ -8,7 +8,6 @@
 --frequency 10818000000 --polarity V --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 10832000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 10847000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
---frequency 10862000000 --polarity H --symbol-rate 23500000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 10876000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 10891000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 10906000000 --polarity V --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
@@ -17,7 +16,6 @@
 --frequency 10964000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 10979000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 10994000000 --polarity H --symbol-rate 22000000 --fec 5/6 --delivery DVB-S2 --modulation 8-PSK
---frequency 11023000000 --polarity H --symbol-rate 23500000 --fec 3/4 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11038000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 11053000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11068000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
@@ -39,6 +37,7 @@
 --frequency 11362000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11377000000 --polarity V --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11391000000 --polarity H --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
+--frequency 11406000000 --polarity V --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11421000000 --polarity H --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 11436000000 --polarity V --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11464000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
@@ -46,6 +45,7 @@
 --frequency 11509000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 11538000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 11553000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
+--frequency 11568000000 --polarity V --symbol-rate 23000000 --fec 3/4 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11582000000 --polarity H --symbol-rate 22000000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11597000000 --polarity V --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
 --frequency 11612000000 --polarity H --symbol-rate 22000000 --fec 5/6 --delivery DVB-S --modulation QPSK
@@ -56,6 +56,7 @@
 --frequency 11720000000 --polarity H --symbol-rate 27500000 --fec 9/10 --delivery DVB-S2 --modulation QPSK
 --frequency 11739000000 --polarity V --symbol-rate 27500000 --fec 3/4 --delivery DVB-S --modulation QPSK
 --frequency 11758000000 --polarity H --symbol-rate 27500000 --fec 9/10 --delivery DVB-S2 --modulation QPSK
+--frequency 11778000000 --polarity V --symbol-rate 30000000 --fec 9/10 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11798000000 --polarity H --symbol-rate 27500000 --fec 9/10 --delivery DVB-S2 --modulation QPSK
 --frequency 11817000000 --polarity V --symbol-rate 29700000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 11836000000 --polarity H --symbol-rate 27500000 --fec 3/4 --delivery DVB-S --modulation QPSK
@@ -113,6 +114,7 @@
 --frequency 18573000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 18577000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 18581000000 --polarity V --symbol-rate 3330000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
+--frequency 18585000000 --polarity V --symbol-rate 3630000 --fec 1/2 --delivery DVB-S2 --modulation QPSK
 --frequency 18592000000 --polarity V --symbol-rate 3330000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 18607000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation QPSK
 --frequency 18611000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation QPSK
@@ -123,6 +125,8 @@
 --frequency 18631000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 18635000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation QPSK
 --frequency 18643000000 --polarity V --symbol-rate 3630000 --fec 2/3 --delivery DVB-S2 --modulation QPSK
+--frequency 18710000000 --polarity V --symbol-rate 3330000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 18754000000 --polarity H --symbol-rate 4500000 --fec 3/4 --delivery DVB-S --modulation QPSK
 --frequency 18760000000 --polarity H --symbol-rate 5500000 --fec 2/3 --delivery DVB-S2 --modulation 8-PSK
 --frequency 18766000000 --polarity H --symbol-rate 3110000 --fec 1/2 --delivery DVB-S2 --modulation 8-PSK
+--frequency 18774000000 --polarity H --symbol-rate 5500000 --fec 4/5 --delivery DVB-S2 --modulation QPSK
