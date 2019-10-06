@@ -359,11 +359,15 @@ namespace ts {
     private:
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
+        class Guts;
 
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
         void deleteGuts();
+
+        // Clear all or add a delivery system to the tuner.
+        void clearDeliverySystems();
+        void addDeliverySystem(DeliverySystem ds);
 
         bool              _is_open;
         bool              _info_only;
@@ -374,6 +378,6 @@ namespace ts {
         bool              _signal_timeout_silent;
         MilliSecond       _receive_timeout;
         DeliverySystemSet _delivery_systems;
-        SystemGuts*       _guts;           // System-specific data
+        Guts*             _guts;           // System-specific data
     };
 }

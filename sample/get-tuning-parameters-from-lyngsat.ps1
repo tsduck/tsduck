@@ -166,7 +166,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
 
 # Get the description of a few satellites.
 ParseLyngSat "https://www.lyngsat.com/Astra-1KR-1L-1M-1N.html" "LyngSat-Astra-19.2E.txt"
-ParseLyngSat "https://www.lyngsat.com/Eutelsat-Hot-Bird-13B-13C-13E.html" "LyngSat-HotBird-13E.txt"
+ParseLyngSat "https://www.lyngsat.com/Hotbird-13B-13C-13E.html" "LyngSat-HotBird-13E.txt"
 ParseLyngSat "https://www.lyngsat.com/Eutelsat-5-West-A.html" "LyngSat-AtlanticBird-5W.txt"
 
 # Exit script.

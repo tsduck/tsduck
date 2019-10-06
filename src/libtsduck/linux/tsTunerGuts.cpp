@@ -59,9 +59,9 @@ constexpr size_t ts::Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
 // Linux version of the syste guts class.
 //-----------------------------------------------------------------------------
 
-class ts::Tuner::SystemGuts
+class ts::Tuner::Guts
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(Guts);
 private:
     Tuner*              _tuner;            // Parent tuner.
 public:
@@ -79,8 +79,8 @@ public:
     bool                _rt_timer_valid;   // Receive timeout timer was created
 
     // Constructor and destructor.
-    SystemGuts(Tuner* tuner);
-    ~SystemGuts();
+    Guts(Tuner* tuner);
+    ~Guts();
 
     // Get current tuning parameters for specific tuners, return system error code
     ErrorCode getCurrentTuningDVBS(TunerParametersDVBS&);
@@ -112,7 +112,7 @@ public:
 // System guts constructor and destructor.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::SystemGuts::SystemGuts(Tuner* tuner) :
+ts::Tuner::Guts::Guts(Tuner* tuner) :
     _tuner(tuner),
     _frontend_name(),
     _demux_name(),
@@ -129,7 +129,7 @@ ts::Tuner::SystemGuts::SystemGuts(Tuner* tuner) :
 {
 }
 
-ts::Tuner::SystemGuts::~SystemGuts()
+ts::Tuner::Guts::~Guts()
 {
     // Cleanup receive timer resources
     _tuner->setReceiveTimeout(0, NULLREP);
@@ -142,7 +142,7 @@ ts::Tuner::SystemGuts::~SystemGuts()
 
 void ts::Tuner::allocateGuts()
 {
-    _guts = new SystemGuts(this);
+    _guts = new Guts(this);
 }
 
 void ts::Tuner::deleteGuts()
@@ -316,33 +316,33 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     }
     _guts->_fe_info.name[sizeof(_guts->_fe_info.name) - 1] = 0;
     _device_info = UString::FromUTF8(_guts->_fe_info.name);
-    _delivery_systems.clear();
+    clearDeliverySystems();
 
     switch (_guts->_fe_info.type) {
         case ::FE_QPSK:
             _tuner_type = DVB_S;
-            _delivery_systems.insert(DS_DVB_S);
+            addDeliverySystem(DS_DVB_S);
 #if TS_DVB_API_VERSION >= 501
             if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.insert(DS_DVB_S2);
+                addDeliverySystem(DS_DVB_S2);
             }
 #endif
             break;
         case ::FE_QAM:
             _tuner_type = DVB_C;
-            _delivery_systems.insert(DS_DVB_C);
+            addDeliverySystem(DS_DVB_C);
 #if TS_DVB_API_VERSION >= 501
             if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.insert(DS_DVB_C2);
+                addDeliverySystem(DS_DVB_C2);
             }
 #endif
             break;
         case ::FE_OFDM:
             _tuner_type = DVB_T;
-            _delivery_systems.insert(DS_DVB_T);
+            addDeliverySystem(DS_DVB_T);
 #if TS_DVB_API_VERSION >= 501
             if ((_guts->_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.insert(DS_DVB_T2);
+                addDeliverySystem(DS_DVB_T2);
             }
 #endif
             break;
@@ -414,7 +414,7 @@ bool ts::Tuner::close(Report& report)
 // Get frontend status, encapsulate weird error management.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::getFrontendStatus(::fe_status_t& status, Report& report)
+bool ts::Tuner::Guts::getFrontendStatus(::fe_status_t& status, Report& report)
 {
     status = FE_ZERO;
     errno = 0;
@@ -489,7 +489,7 @@ int ts::Tuner::signalQuality(Report& report)
 // Get current tuning parameters for DVB-S tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBS(TunerParametersDVBS& params)
+ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBS(TunerParametersDVBS& params)
 {
     // Note: it is useless to get the frequency of a DVB-S tuner since it
     // returns the intermediate frequency and there is no unique satellite
@@ -542,7 +542,7 @@ ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBS(TunerParametersDVBS& p
 // Get current tuning parameters for DVB-C tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBC(TunerParametersDVBC& params)
+ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBC(TunerParametersDVBC& params)
 {
     DTVProperties props;
     props.add(DTV_FREQUENCY);
@@ -569,7 +569,7 @@ ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBC(TunerParametersDVBC& p
 // Get current tuning parameters for DVB-T tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBT(TunerParametersDVBT& params)
+ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBT(TunerParametersDVBT& params)
 {
     DTVProperties props;
     props.add(DTV_FREQUENCY);
@@ -610,7 +610,7 @@ ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningDVBT(TunerParametersDVBT& p
 // Get current tuning parameters for ATSC tuners, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::SystemGuts::getCurrentTuningATSC(TunerParametersATSC& params)
+ts::ErrorCode ts::Tuner::Guts::getCurrentTuningATSC(TunerParametersATSC& params)
 {
     DTVProperties props;
     props.add(DTV_FREQUENCY);
@@ -701,7 +701,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 // Discard all pending frontend events
 //-----------------------------------------------------------------------------
 
-void ts::Tuner::SystemGuts::discardFrontendEvents(Report& report)
+void ts::Tuner::Guts::discardFrontendEvents(Report& report)
 {
     ::dvb_frontend_event event;
     report.debug(u"starting discarding frontend events");
@@ -716,7 +716,7 @@ void ts::Tuner::SystemGuts::discardFrontendEvents(Report& report)
 // Tune operation, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::tune(DTVProperties& props, Report& report)
+bool ts::Tuner::Guts::tune(DTVProperties& props, Report& report)
 {
     report.debug(u"tuning on %s", {_frontend_name});
     props.report(report, Severity::Debug);
@@ -732,7 +732,7 @@ bool ts::Tuner::SystemGuts::tune(DTVProperties& props, Report& report)
 // Clear tuner, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::dtvClear(Report& report)
+bool ts::Tuner::Guts::dtvClear(Report& report)
 {
     DTVProperties props;
     props.add(DTV_CLEAR);
@@ -744,7 +744,7 @@ bool ts::Tuner::SystemGuts::dtvClear(Report& report)
 // Tune for DVB-S tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::tuneDVBS(const TunerParametersDVBS& params, Report& report)
+bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report)
 {
     // Clear tuner state.
     if (!dtvClear(report)) {
@@ -887,7 +887,7 @@ bool ts::Tuner::SystemGuts::tuneDVBS(const TunerParametersDVBS& params, Report& 
 // Tune for DVB-C tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::tuneDVBC(const TunerParametersDVBC& params, Report& report)
+bool ts::Tuner::Guts::tuneDVBC(const TunerParametersDVBC& params, Report& report)
 {
     if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
@@ -916,7 +916,7 @@ bool ts::Tuner::SystemGuts::tuneDVBC(const TunerParametersDVBC& params, Report& 
 // Tune for DVB-T tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::tuneDVBT(const TunerParametersDVBT& params, Report& report)
+bool ts::Tuner::Guts::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 {
     if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
@@ -964,7 +964,7 @@ bool ts::Tuner::SystemGuts::tuneDVBT(const TunerParametersDVBT& params, Report& 
 // Tune for ATSC tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::SystemGuts::tuneATSC(const TunerParametersATSC& params, Report& report)
+bool ts::Tuner::Guts::tuneATSC(const TunerParametersATSC& params, Report& report)
 {
     if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report)) {
