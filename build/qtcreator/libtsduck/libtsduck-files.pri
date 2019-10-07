@@ -270,6 +270,7 @@ HEADERS += \
     ../../../src/libtsduck/tsMGT.h \
     ../../../src/libtsduck/tsMJD.h \
     ../../../src/libtsduck/tsModulation.h \
+    ../../../src/libtsduck/tsModulationArgs.h \
     ../../../src/libtsduck/tsMonotonic.h \
     ../../../src/libtsduck/tsMPEDemux.h \
     ../../../src/libtsduck/tsMPEG.h \
@@ -767,6 +768,7 @@ SOURCES += \
     ../../../src/libtsduck/tsMGT.cpp \
     ../../../src/libtsduck/tsMJD.cpp \
     ../../../src/libtsduck/tsModulation.cpp \
+    ../../../src/libtsduck/tsModulationArgs.cpp \
     ../../../src/libtsduck/tsMonotonic.cpp \
     ../../../src/libtsduck/tsMPEDemux.cpp \
     ../../../src/libtsduck/tsMPEG.cpp \
@@ -1005,6 +1007,7 @@ SOURCES += \
 linux {
     HEADERS += \
         ../../../src/libtsduck/linux/tsDTVProperties.h \
+        ../../../src/libtsduck/linux/tsDTVPropertiesTemplate.h \
         ../../../src/libtsduck/linux/tsSignalAllocator.h \
 
     SOURCES += \

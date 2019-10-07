@@ -316,43 +316,17 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     }
     _guts->fe_info.name[sizeof(_guts->fe_info.name) - 1] = 0;
     _device_info = UString::FromUTF8(_guts->fe_info.name);
-    clearDeliverySystems();
 
-    switch (_guts->fe_info.type) {
-        case ::FE_QPSK:
-            _tuner_type = DVB_S;
-            addDeliverySystem(DS_DVB_S);
-#if TS_DVB_API_VERSION >= 501
-            if ((_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                addDeliverySystem(DS_DVB_S2);
-            }
-#endif
-            break;
-        case ::FE_QAM:
-            _tuner_type = DVB_C;
-            addDeliverySystem(DS_DVB_C);
-#if TS_DVB_API_VERSION >= 501
-            if ((_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                addDeliverySystem(DS_DVB_C2);
-            }
-#endif
-            break;
-        case ::FE_OFDM:
-            _tuner_type = DVB_T;
-            addDeliverySystem(DS_DVB_T);
-#if TS_DVB_API_VERSION >= 501
-            if ((_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                addDeliverySystem(DS_DVB_T2);
-            }
-#endif
-            break;
-        case ::FE_ATSC:
-            _tuner_type = ATSC;
-            break;
-        default:
-            report.error(u"unsupported frontend type %d on %s (%s)", {_guts->fe_info.type, _guts->frontend_name, _guts->fe_info.name});
-            return close(report) || false;
+    // Get the set of delivery systems for this frontend.
+
+    clearDeliverySystems();
+    DTVProperties props;
+    props.add(DTV_ENUM_DELSYS);
+    if (::ioctl(_guts->frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+        report.error(u"error getting delivery systems of %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
+        return close(report) || false;
     }
+    props.getValuesByCommand(_delivery_systems, DTV_ENUM_DELSYS);
 
     // Open DVB adapter DVR (tap for TS packets) and adapter demux
 
@@ -640,52 +614,39 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
         return false;
     }
 
-    // Check subclass of TunerParameters
-
-    if (params.tunerType() != _tuner_type) {
-        report.error(u"inconsistent tuner parameter type");
-        return false;
-    }
-
     // Get transponder tuning information
 
     ErrorCode error = SYS_SUCCESS;
 
-    switch (_tuner_type) {
-        case DVB_S: {
-            TunerParametersDVBS* tpp = dynamic_cast<TunerParametersDVBS*>(&params);
-            assert(tpp != nullptr);
-            if (reset_unknown) {
-                tpp->frequency = 0;
-                tpp->polarity = TunerParametersDVBS::DEFAULT_POLARITY;
-                tpp->satellite_number = TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
-                tpp->lnb.setUniversalLNB();
-            }
-            error = _guts->getCurrentTuningDVBS(*tpp);
-            break;
+    if (hasDeliverySystem(DS_DVB_S)) {
+        TunerParametersDVBS* tpp = dynamic_cast<TunerParametersDVBS*>(&params);
+        assert(tpp != nullptr);
+        if (reset_unknown) {
+            tpp->frequency = 0;
+            tpp->polarity = TunerParametersDVBS::DEFAULT_POLARITY;
+            tpp->satellite_number = TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
+            tpp->lnb.setUniversalLNB();
         }
-        case DVB_C: {
-            TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*>(&params);
-            assert(tpp != nullptr);
-            error = _guts->getCurrentTuningDVBC(*tpp);
-            break;
-        }
-        case DVB_T: {
-            TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*>(&params);
-            assert(tpp != nullptr);
-            error = _guts->getCurrentTuningDVBT(*tpp);
-            break;
-        }
-        case ATSC: {
-            TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*>(&params);
-            assert(tpp != nullptr);
-            error = _guts->getCurrentTuningATSC(*tpp);
-            break;
-        }
-        default: {
-            report.error(u"cannot convert Linux DVB parameters to %s parameters", {TunerTypeEnum.name(_tuner_type)});
-            return false;
-        }
+        error = _guts->getCurrentTuningDVBS(*tpp);
+    }
+    else if (hasDeliverySystem(DS_DVB_C)) {
+        TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*>(&params);
+        assert(tpp != nullptr);
+        error = _guts->getCurrentTuningDVBC(*tpp);
+    }
+    else if (hasDeliverySystem(DS_DVB_T)) {
+        TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*>(&params);
+        assert(tpp != nullptr);
+        error = _guts->getCurrentTuningDVBT(*tpp);
+    }
+    else if (hasDeliverySystem(DS_ATSC)) {
+        TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*>(&params);
+        assert(tpp != nullptr);
+        error = _guts->getCurrentTuningATSC(*tpp);
+    }
+    else {
+        report.error(u"no supported tuning parameters in %s", {deliverySystemsString()});
+        return false;
     }
 
     if (error != SYS_SUCCESS) {
@@ -999,41 +960,35 @@ bool ts::Tuner::tune(const TunerParameters& params, Report& report)
         return false;
     }
 
-    // Check subclass of TunerParameters
-
-    if (params.tunerType() != _tuner_type) {
-        report.error(u"inconsistent tuner parameter type");
-        return false;
-    }
-
     // Dispatch depending on tuner type
 
-    switch (_tuner_type) {
-        case DVB_S: {
-            const TunerParametersDVBS* tpp = dynamic_cast<const TunerParametersDVBS*>(&params);
-            assert(tpp != nullptr);
+    if (hasDeliverySystem(DS_DVB_S)) {
+        const TunerParametersDVBS* tpp = dynamic_cast<const TunerParametersDVBS*>(&params);
+        if (tpp != nullptr) {
             return _guts->tuneDVBS(*tpp, report);
         }
-        case DVB_C: {
-            const TunerParametersDVBC* tpp = dynamic_cast<const TunerParametersDVBC*>(&params);
-            assert(tpp != nullptr);
+    }
+    else if (hasDeliverySystem(DS_DVB_C)) {
+        const TunerParametersDVBC* tpp = dynamic_cast<const TunerParametersDVBC*>(&params);
+        if (tpp != nullptr) {
             return _guts->tuneDVBC(*tpp, report);
         }
-        case DVB_T: {
-            const TunerParametersDVBT* tpp = dynamic_cast<const TunerParametersDVBT*>(&params);
-            assert(tpp != nullptr);
+    }
+    else if (hasDeliverySystem(DS_DVB_T)) {
+        const TunerParametersDVBT* tpp = dynamic_cast<const TunerParametersDVBT*>(&params);
+        if (tpp != nullptr) {
             return _guts->tuneDVBT(*tpp, report);
         }
-        case ATSC: {
-            const TunerParametersATSC* tpp = dynamic_cast<const TunerParametersATSC*>(&params);
-            assert(tpp != nullptr);
+    }
+    else if (hasDeliverySystem(DS_ATSC)) {
+        const TunerParametersATSC* tpp = dynamic_cast<const TunerParametersATSC*>(&params);
+        if (tpp != nullptr) {
             return _guts->tuneATSC(*tpp, report);
         }
-        default: {
-            report.error(u"cannot convert %s parameters to Linux DVB parameters", {TunerTypeEnum.name(_tuner_type)});
-            return false;
-        }
     }
+
+    report.error(u"inconsistent tuner parameter type");
+    return false;
 }
 
 

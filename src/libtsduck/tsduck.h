@@ -278,6 +278,7 @@
 #include "tsMGT.h"
 #include "tsMJD.h"
 #include "tsModulation.h"
+#include "tsModulationArgs.h"
 #include "tsMonotonic.h"
 #include "tsMPEDemux.h"
 #include "tsMPEG.h"

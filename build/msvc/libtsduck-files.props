@@ -272,6 +272,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsMGT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMJD.h" />
     <ClInclude Include="..\..\src\libtsduck\tsModulation.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsModulationArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMonotonic.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEG.h" />
@@ -779,6 +780,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMGT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMJD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsModulation.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsModulationArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMonotonic.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEG.cpp" />
