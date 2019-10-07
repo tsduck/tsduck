@@ -35,7 +35,7 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const uint32_t ts::DTVProperties::UNKNOWN;
+constexpr uint32_t ts::DTVProperties::UNKNOWN;
 #endif
 
 
@@ -63,7 +63,7 @@ ts::DTVProperties::~DTVProperties()
 // Add a new property. Return index in property buffer.
 //-----------------------------------------------------------------------------
 
-size_t ts::DTVProperties::add (uint32_t cmd, uint32_t data)
+size_t ts::DTVProperties::add(uint32_t cmd, uint32_t data)
 {
     assert (_prop_head.num < DTV_IOCTL_MAX_MSGS);
     _prop_buffer[_prop_head.num].cmd = cmd;
@@ -77,10 +77,10 @@ size_t ts::DTVProperties::add (uint32_t cmd, uint32_t data)
 // or count() if not found.
 //-----------------------------------------------------------------------------
 
-size_t ts::DTVProperties::search (uint32_t cmd) const
+size_t ts::DTVProperties::search(uint32_t cmd) const
 {
     size_t i;
-    for (i = 0; i < size_t (_prop_head.num) && _prop_buffer[i].cmd != cmd; i++) {
+    for (i = 0; i < size_t(_prop_head.num) && _prop_buffer[i].cmd != cmd; i++) {
     }
     return i;
 }
@@ -90,9 +90,14 @@ size_t ts::DTVProperties::search (uint32_t cmd) const
 // Get the value of a property in the buffer or UNKNOWN if not found
 //-----------------------------------------------------------------------------
 
+uint32_t ts::DTVProperties::getByIndex(size_t index) const
+{
+    return index >= size_t(_prop_head.num) ? UNKNOWN : _prop_buffer[index].u.data;
+}
+
 uint32_t ts::DTVProperties::getByCommand(uint32_t cmd) const
 {
-    for (size_t i = 0; i < size_t (_prop_head.num); i++) {
+    for (size_t i = 0; i < size_t(_prop_head.num); i++) {
         if (_prop_buffer[i].cmd == cmd) {
             return _prop_buffer[i].u.data;
         }

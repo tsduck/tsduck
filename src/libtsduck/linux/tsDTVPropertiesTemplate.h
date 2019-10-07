@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2019, Thierry Lelegard
@@ -25,23 +25,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 19
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1445
+
+//-----------------------------------------------------------------------------
+// Get the multiple values of a property in the buffer.
+//-----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::DTVProperties::getValuesByCommand(std::set<INT>& values& values, uint32_t cmd) const
+{
+    values.clear();
+    for (size_t i = 0; i < size_t(_prop_head.num); i++) {
+        if (_prop_buffer[i].cmd == cmd) {
+            getValuesByIndex(values, i);
+            break;
+        }
+    }
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::DTVProperties::getValuesByIndex(std::set<INT>& values, size_t index) const
+{
+    values.clear();
+    if (index < size_t(_prop_head.num)) {
+        assert(sizeof(_prop_buffer[index].u.buffer.data[0]) == 1);
+        const size_t count = std::min<size_t>(sizeof(_prop_buffer[index].u.buffer.data), _prop_buffer[index].u.buffer.len);
+        for (size_t i = 0; i < count; ++i) {
+            values.insert(INT(_prop_buffer[index].u.buffer.data[i]));
+        }
+    }
+}

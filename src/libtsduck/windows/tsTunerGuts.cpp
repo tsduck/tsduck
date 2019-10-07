@@ -209,7 +209,7 @@ void ts::Tuner::setSinkQueueSize(size_t s)
 
 bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 {
-    return Guts::FindTuners(0, &tuners, report);
+    return Guts::FindTuners(nullptr, &tuners, report);
 }
 
 
@@ -224,7 +224,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         return false;
     }
     _device_name = device_name;
-    if (!Guts::FindTuners(this, 0, report)) {
+    if (!Guts::FindTuners(this, nullptr, report)) {
         return false;
     }
     else if (_is_open) {
@@ -295,7 +295,7 @@ bool ts::Tuner::Guts::searchTunerProperty(VALTYPE& retvalue, PropSearch searchty
 //-----------------------------------------------------------------------------
 
 template <typename VALTYPE, typename IVALTYPE, class FILTER>
-bool ts::Tuner::Guts::searchProperty(VALTYPE& retvalue, 
+bool ts::Tuner::Guts::searchProperty(VALTYPE& retvalue,
                                      PropSearch searchtype,
                                      const std::vector<ComPtr<FILTER>>& ivector,
                                      ::HRESULT (FILTER::*getmethod)(IVALTYPE*),

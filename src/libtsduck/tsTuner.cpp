@@ -40,11 +40,10 @@ constexpr ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
 // Constructors
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const UString& device_name) :
+ts::Tuner::Tuner() :
     _is_open(false),
     _info_only(true),
-    _tuner_type(DVB_T),
-    _device_name(device_name),
+    _device_name(),
     _device_info(),
     _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
     _signal_timeout_silent(false),
@@ -57,7 +56,7 @@ ts::Tuner::Tuner(const UString& device_name) :
 }
 
 ts::Tuner::Tuner(const UString& device_name, bool info_only, Report& report) :
-    Tuner(device_name)
+    Tuner()
 {
     this->open(device_name, info_only, report);
 }
@@ -96,6 +95,11 @@ void ts::Tuner::addDeliverySystem(DeliverySystem ds)
     _delivery_systems.insert(ds);
 }
 
+bool ts::Tuner::hasDeliverySystem() const
+{
+    return !_delivery_systems.empty();
+}
+
 bool ts::Tuner::hasDeliverySystem(DeliverySystem ds) const
 {
     return _delivery_systems.find(ds) != _delivery_systems.end();
@@ -109,4 +113,19 @@ ts::UString ts::Tuner::deliverySystemsString() const
     }
     std::sort(str.begin(), str.end());
     return str.empty() ? u"none" : UString::Join(str);
+}
+
+
+//-----------------------------------------------------------------------------
+// Set portable timeout properties.
+//-----------------------------------------------------------------------------
+
+void ts::Tuner::setSignalTimeout(MilliSecond t)
+{
+    _signal_timeout = t;
+}
+
+void ts::Tuner::setSignalTimeoutSilent(bool silent)
+{
+    _signal_timeout_silent = silent;
 }

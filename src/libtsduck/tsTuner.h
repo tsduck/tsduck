@@ -69,6 +69,16 @@ namespace ts {
     //! Windows:
     //! - DirectShow/BDA tuner filter name
     //!
+    //! A note on history: In older versions of TSDuck, a tuner had a single "type"
+    //! (DVT-T, DVB-S, etc.). There was also a specific subclass of tuner parameters
+    //! for each type of tuner. With the advent of multi-standard tuners (DVB-T and
+    //! DVB-C for instance), this was no longer appropriate. Now, each tuner device
+    //! has a set of supported delivery systems. There is one single class containing
+    //! all tuning parameters for all delivery systems. The selected delivery system
+    //! is one of these parameter. To tune a device, we now provide an instance of
+    //! the ModulationArgs class. If the tuner supports the target delivery system, it
+    //! picks the appropriate parameters for the selected delivery system.
+    //!
     class TSDUCKDLL Tuner
     {
         TS_NOCOPY(Tuner);
@@ -83,9 +93,8 @@ namespace ts {
 
         //!
         //! Default constructor.
-        //! @param [in] device_name Tuner device name.
         //!
-        Tuner(const UString& device_name = UString());
+        Tuner();
 
         //!
         //! Destructor.
@@ -126,30 +135,20 @@ namespace ts {
         //! Check if the tuner is open.
         //! @return True if the tuner is open.
         //!
-        bool isOpen() const
-        {
-            return _is_open;
-        }
+        bool isOpen() const { return _is_open; }
 
         //!
         //! Get the open mode.
         //! @return True if the tuner is open to fetch information only.
         //! In that case, the tuner cannot receive streams.
         //!
-        bool infoOnly() const
-        {
-            return _info_only;
-        }
+        bool infoOnly() const { return _info_only; }
 
         //!
-        //! Get the tuner type.
-        // @@@@@ Deprecated
-        //! @return The tuner type.
+        //! Check if the tuner supports at least one delivery system.
+        //! @return True if the tuner supports at least one delivery system.
         //!
-        TunerType tunerType() const
-        {
-            return _tuner_type;
-        }
+        bool hasDeliverySystem() const;
 
         //!
         //! Check if the tuner supports the specified delivery system.
@@ -174,19 +173,13 @@ namespace ts {
         //! Get the device name of the tuner.
         //! @return The device name of the tuner.
         //!
-        UString deviceName() const
-        {
-            return _device_name;
-        }
+        UString deviceName() const { return _device_name; }
 
         //!
         //! Device-specific information.
         //! @return A string with device-specific information. Can be empty.
         //!
-        UString deviceInfo() const
-        {
-            return _device_info;
-        }
+        UString deviceInfo() const { return _device_info; }
 
         //!
         //! Check if a signal is present and locked.
@@ -269,10 +262,7 @@ namespace ts {
         //! Must be set before start().
         //! @param [in] t Number of milliseconds to wait after start() before receiving a signal.
         //!
-        void setSignalTimeout(MilliSecond t)
-        {
-            _signal_timeout = t;
-        }
+        void setSignalTimeout(MilliSecond t);
 
         //!
         //! Set if an error should be reported on timeout before getting a signal on start.
@@ -280,10 +270,7 @@ namespace ts {
         //! @param [in] silent If true, no error message will be reported if no signal is
         //! received after the timeout on start.
         //!
-        void setSignalTimeoutSilent(bool silent)
-        {
-            _signal_timeout_silent = silent;
-        }
+        void setSignalTimeoutSilent(bool silent);
 
         //!
         //! Set the timeout for receive operations.
@@ -300,10 +287,7 @@ namespace ts {
         //! @return The timeout for receive operation.
         //! @see setReceiveTimeout()
         //!
-        MilliSecond receiveTimeout() const
-        {
-            return _receive_timeout;
-        }
+        MilliSecond receiveTimeout() const { return _receive_timeout; }
 
 #if defined(TS_LINUX) || defined(DOXYGEN) // Linux-specific operations
         //!
@@ -371,7 +355,6 @@ namespace ts {
 
         bool              _is_open;
         bool              _info_only;
-        TunerType         _tuner_type;     // @@@@@ Deprecated
         UString           _device_name;    // Used to open the tuner
         UString           _device_info;    // Device-specific, can be empty
         MilliSecond       _signal_timeout;

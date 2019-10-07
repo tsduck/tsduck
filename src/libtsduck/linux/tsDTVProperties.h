@@ -89,10 +89,27 @@ namespace ts {
         //! @param [in] index Index in buffer.
         //! @return The data value at @a index or @link UNKNOWN @endlink if out of range.
         //!
-        uint32_t getByIndex(size_t index) const
-        {
-            return index >= size_t(_prop_head.num) ? UNKNOWN : _prop_buffer[index].u.data;
-        }
+        uint32_t getByIndex(size_t index) const;
+
+        //!
+        //! Get the multiple values of a property in the buffer.
+        //! To be used with properties which return a set of integer values.
+        //! @tparam INT An integer or enum type, any size, signed or unsigned.
+        //! @param [out] values A set receiving all integer values.
+        //! @param [in] cmd Command code.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        void getValuesByCommand(std::set<INT>& values, uint32_t cmd) const;
+
+        //!
+        //! Get the multiple values of a property at a specified index.
+        //! To be used with properties which return a set of integer values.
+        //! @tparam INT An integer or enum type, any size, signed or unsigned.
+        //! @param [out] values A set receiving all integer values.
+        //! @param [in] index Index in buffer.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        void getValuesByIndex(std::set<INT>& values, size_t index) const;
 
         //!
         //! Get the address of the @c dtv_properties structure for @c ioctl() call.
@@ -115,7 +132,7 @@ namespace ts {
         //!
         //! Returned value for unknown data.
         //!
-        static const uint32_t UNKNOWN = ~0;
+        static constexpr uint32_t UNKNOWN = ~0;
 
         //!
         //! Display the content of the object (for debug purpose).
@@ -137,3 +154,5 @@ namespace ts {
         ::dtv_properties _prop_head;
     };
 }
+
+#include "tsDTVPropertiesTemplate.h"

@@ -28,65 +28,39 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line arguments for DVB tuners
+//!  Parameters for tuners and their command-line definitions.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
-#include "tsTunerParameters.h"
-#include "tsDuckContext.h"
-#include "tsVariable.h"
-#include "tsModulation.h"
-#include "tsLNB.h"
+#include "tsModulationArgs.h"
 
 namespace ts {
 
     class Tuner;
 
     //!
-    //! Command line arguments for DVB tuners.
-    //! @ingroup cmd
+    //! Parameters for tuners and their command-line definitions.
+    //! @ingroup hardware
     //!
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL TunerArgs : public ArgsSupplierInterface
+    class TSDUCKDLL TunerArgs : public ModulationArgs
     {
     public:
         // Public fields
-        UString                     device_name;        //!< Name of tuner device.
-        MilliSecond                 signal_timeout;     //!< Signal locking timeout in milliseconds.
-        MilliSecond                 receive_timeout;    //!< Packet received timeout in milliseconds.
+        UString     device_name;        //!< Name of tuner device.
+        MilliSecond signal_timeout;     //!< Signal locking timeout in milliseconds.
+        MilliSecond receive_timeout;    //!< Packet received timeout in milliseconds.
 #if defined(TS_LINUX) || defined(DOXYGEN)
-        size_t                      demux_buffer_size;  //!< Demux buffer size in bytes (Linux-specific).
+        size_t      demux_buffer_size;  //!< Demux buffer size in bytes (Linux-specific).
 #endif
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
-        size_t                      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
+        size_t      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
 #endif
-        Variable<UString>           channel_name;       //!< Use transponder containing this channel.
-        Variable<UString>           tuning_file_name;   //!< Where channel_name is located.
-        Variable<uint64_t>          frequency;          //!< Frequency in Hz.
-        Variable<Polarization>      polarity;           //!< Polarity.
-        Variable<LNB>               lnb;                //!< Local dish LNB for frequency adjustment.
-        Variable<SpectralInversion> inversion;          //!< Spectral inversion.
-        Variable<uint32_t>          symbol_rate;        //!< Symbol rate.
-        Variable<InnerFEC>          inner_fec;          //!< Error correction.
-        Variable<size_t>            satellite_number;   //!< For DiSeqC (usually 0).
-        Variable<Modulation>        modulation;         //!< Constellation or modulation type.
-        Variable<BandWidth>         bandwidth;          //!< Bandwidth.
-        Variable<InnerFEC>          fec_hp;             //!< High priority stream code rate.
-        Variable<InnerFEC>          fec_lp;             //!< Low priority stream code rate.
-        Variable<TransmissionMode>  transmission_mode;  //!< Transmission mode.
-        Variable<GuardInterval>     guard_interval;     //!< Guard interval.
-        Variable<Hierarchy>         hierarchy;          //!< Hierarchy.
-        Variable<DeliverySystem>    delivery_system;    //!< Delivery system (DS_DVB_*).
-        Variable<Pilot>             pilots;             //!< Presence of pilots (DVB-S2 only).
-        Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
-        Variable<uint32_t>          plp;                //!< Physical Layer Pipe (PLP) identification (DVB-T2 only).
-        Variable<uint32_t>          isi;                //!< Input Stream Id (ISI) (DVB-S2 only).
-        Variable<uint32_t>          pls_code;           //!< Physical Layer Scrambling (PLS) code (DVB-S2 only).
-        Variable<PLSMode>           pls_mode;           //!< Physical Layer Scrambling (PLS) mode (DVB-S2 only).
+        UString     channel_name;       //!< Use transponder containing this channel.
+        UString     tuning_file_name;   //!< Where channel_name is located.
 
         //!
         //! Default constructor.
@@ -95,40 +69,12 @@ namespace ts {
         //!
         TunerArgs(bool info_only = false, bool allow_short_options = true);
 
-        //!
-        //! Copy constructor.
-        //! Use default implementation, just tell the compiler we understand
-        //! the consequences of copying a pointer member.
-        //! @param [in] other The other instance to copy.
-        //!
-        TunerArgs(const TunerArgs& other) = default;
-
-        //!
-        //! Assignment operator.
-        //! Use default implementation, just tell the compiler we understand
-        //! the consequences of copying a pointer member.
-        //! @param [in] other The other instance to copy.
-        //! @return A reference to this object.
-        //!
-        TunerArgs& operator=(const TunerArgs& other) = default;
-
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
-        //!
-        //! Check if actual tuning information is set.
-        //! @return True if actual tuning information is set.
-        //!
-        bool hasTuningInfo() const
-        {
-            return frequency.set() || channel_name.set();
-        }
-
-        //!
-        //! Reset all values, they become "unset"
-        //!
-        void reset();
+        // Overridden from superclass.
+        virtual void reset() override;
 
         //!
         //! Open a tuner and configure it according to the parameters in this object.
@@ -139,16 +85,14 @@ namespace ts {
         bool configureTuner(Tuner& tuner, Report& report) const;
 
         //!
-        //! Tune to the specified parameters.
-        //! @param [in,out] tuner The tuner to configure.
-        //! @param [out] params Safe pointer to tuning parameters.
+        //! If a channel name was specified instead of modulation parameters, load its description from the channel file.
+        //! @param [in] systems The possible delivery systems, typically from a tuner.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const;
+        bool resolveChannel(const DeliverySystemSet& systems, Report& report);
 
-    private:
-        bool _info_only;
-        bool _allow_short_options;
+    protected:
+        const bool _info_only;
     };
 }
