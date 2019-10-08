@@ -39,6 +39,9 @@
 #include "tsLNB.h"
 
 namespace ts {
+
+    class Descriptor;
+
     //!
     //! Modulation parameters for tuners and their command-line definitions.
     //! @ingroup hardware
@@ -75,7 +78,7 @@ namespace ts {
         Variable<LNB> lnb;
         //!
         //! Spectral inversion.
-        //! Applies to: DVB-T/T2, DVB-S/S2, DVB-C (A,B,C), ISDB-T, ISDB-S.
+        //! Applies to: DVB-T/T2, DVB-S/S2, DVB-C (A,B,C), ATSC, ISDB-T, ISDB-S.
         //!
         Variable<SpectralInversion> inversion;
         //!
@@ -105,7 +108,7 @@ namespace ts {
         //!
         static constexpr InnerFEC DEFAULT_INNER_FEC = FEC_AUTO;
         //!
-        //! For DiSeqC (usually 0).
+        //! Satellite index for DiSeqC switches.
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
         Variable<size_t> satellite_number;
@@ -123,39 +126,71 @@ namespace ts {
         //!
         static constexpr Modulation DEFAULT_MODULATION_DVBS = QPSK;
         //!
+        //! Default value for modulation on terrestrial.
+        //!
+        static constexpr Modulation DEFAULT_MODULATION_DVBT = QAM_64;
+        //!
         //! Default value for modulation on cable.
         //!
         static constexpr Modulation DEFAULT_MODULATION_DVBC = QAM_64;
+        //!
+        //! Default value for modulation on ATSC.
+        //!
+        static constexpr Modulation DEFAULT_MODULATION_ATSC = VSB_8;
         //!
         //! Bandwidth.
         //! Applies to: DVB-T/T2, ATSC, ISDB-T.
         //!
         Variable<BandWidth> bandwidth;
         //!
+        //! Default value for bandwidth on DVBT.
+        //!
+        static constexpr BandWidth DEFAULT_BANDWIDTH_DVBT = BW_8_MHZ;
+        //!
         //! High priority stream code rate.
         //! Applies to: DVB-T/T2.
         //!
         Variable<InnerFEC> fec_hp;
+        //!
+        //! Default value for fec_hp.
+        //!
+        static constexpr InnerFEC DEFAULT_FEC_HP = FEC_AUTO;
         //!
         //! Low priority stream code rate.
         //! Applies to: DVB-T/T2.
         //!
         Variable<InnerFEC> fec_lp;
         //!
+        //! Default value for fec_lp.
+        //!
+        static constexpr InnerFEC DEFAULT_FEC_LP = FEC_AUTO;
+        //!
         //! Transmission mode.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
         Variable<TransmissionMode> transmission_mode;
+        //!
+        //! Default value for transmission_mode on DVBT.
+        //!
+        static constexpr TransmissionMode DEFAULT_TRANSMISSION_MODE_DVBT = TM_8K;
         //!
         //! Guard interval.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
         Variable<GuardInterval> guard_interval;
         //!
+        //! Default value for guard_interval on DVBT.
+        //!
+        static constexpr GuardInterval DEFAULT_GUARD_INTERVAL_DVBT = GUARD_1_32;
+        //!
         //! Hierarchy.
         //! Applies to: DVB-T/T2.
         //!
         Variable<Hierarchy> hierarchy;
+        //!
+        //! Default value for hierarchy.
+        //!
+        static constexpr Hierarchy DEFAULT_HIERARCHY = HIERARCHY_NONE;
         //!
         //! Presence of pilots.
         //! Applies to: DVB-S2.
@@ -181,7 +216,11 @@ namespace ts {
         //!
         Variable<uint32_t> plp;
         //!
-        //! Input Stream Id (ISI) (DVB-S2 only).
+        //! Default value for PLP id.
+        //!
+        static constexpr uint32_t DEFAULT_PLP = PLP_DISABLE;
+        //!
+        //! Input Stream Id (ISI).
         //! Applies to: DVB-S2.
         //!
         Variable<uint32_t> isi;
@@ -190,7 +229,7 @@ namespace ts {
         //!
         static constexpr uint32_t DEFAULT_ISI = ISI_DISABLE;
         //!
-        //! Physical Layer Scrambling (PLS) code (DVB-S2 only).
+        //! Physical Layer Scrambling (PLS) code.
         //! Applies to: DVB-S2.
         //!
         Variable<uint32_t> pls_code;
@@ -199,7 +238,7 @@ namespace ts {
         //!
         static constexpr uint32_t DEFAULT_PLS_CODE = 0;
         //!
-        //! Physical Layer Scrambling (PLS) mode (DVB-S2 only).
+        //! Physical Layer Scrambling (PLS) mode.
         //! Applies to: DVB-S2.
         //!
         Variable<PLSMode> pls_mode;
@@ -251,6 +290,24 @@ namespace ts {
         //! @return True if any modulation options is set.
         //!
         bool hasModulationArgs() const;
+
+        //!
+        //! Check the validity of the delivery system or set a default one.
+        //! @param [in] systems The possible delivery systems, typically from a tuner.
+        //! If the delivery system is already defined, it must be in this set.
+        //! If it is not defined, the first delivery system is used.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool resolveDeliverySystem(const DeliverySystemSet& systems, Report& report);
+
+        //!
+        //! Fill modulation parameters from a delivery system descriptor.
+        //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+        //! @return True on success, false if the descriptor was not correctly analyzed or is not
+        //! a delivery system descriptor.
+        //!
+        bool fromDeliveryDescriptor(const Descriptor& desc);
 
     protected:
         const bool _allow_short_options;
