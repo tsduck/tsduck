@@ -29,10 +29,12 @@
 
 #include "tsModulationArgs.h"
 #include "tsDuckContext.h"
+#include "tsDescriptor.h"
 #include "tsHFBand.h"
 #include "tsArgs.h"
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
+#include "tsBCD.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -41,11 +43,19 @@ constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_INNER_FEC;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBS;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBC;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBS;
+constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBT;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBC;
+constexpr ts::BandWidth         ts::ModulationArgs::DEFAULT_BANDWIDTH_DVBT;
+constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_HP;
+constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_LP;
+constexpr ts::TransmissionMode  ts::ModulationArgs::DEFAULT_TRANSMISSION_MODE_DVBT;
+constexpr ts::GuardInterval     ts::ModulationArgs::DEFAULT_GUARD_INTERVAL_DVBT;
+constexpr ts::Hierarchy         ts::ModulationArgs::DEFAULT_HIERARCHY;
 constexpr ts::Polarization      ts::ModulationArgs::DEFAULT_POLARITY;
 constexpr size_t                ts::ModulationArgs::DEFAULT_SATELLITE_NUMBER;
 constexpr ts::Pilot             ts::ModulationArgs::DEFAULT_PILOTS;
 constexpr ts::RollOff           ts::ModulationArgs::DEFAULT_ROLL_OFF;
+constexpr uint32_t              ts::ModulationArgs::DEFAULT_PLP;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_ISI;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_PLS_CODE;
 constexpr ts::PLSMode           ts::ModulationArgs::DEFAULT_PLS_MODE;
@@ -141,6 +151,221 @@ bool ts::ModulationArgs::hasModulationArgs() const
         isi.set() ||
         pls_code.set() ||
         pls_mode.set();
+}
+
+
+//----------------------------------------------------------------------------
+// Check the validity of the delivery system or set a default one.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems, Report& report)
+{
+    if (delivery_system.set()) {
+        if (systems.find(delivery_system.value()) == systems.end()) {
+            report.error(u"delivery system %s is not supported by this tuner", {DeliverySystemEnum.name(delivery_system.value())});
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    else {
+        // Delivery system not set, use the first one as default value.
+        if (systems.empty()) {
+            report.error(u"this tuner has no default delivery system");
+            return false;
+        }
+        else {
+            delivery_system = *systems.begin();
+            report.debug(u"using %s as default delivery system", {DeliverySystemEnum.name(delivery_system.value())});
+            return true;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Fill modulation parameters from a delivery system descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
+{
+    // Completely clear previous content.
+    reset();
+
+    // Filter out invalid descriptors.
+    if (!desc.isValid()) {
+        return false;
+    }
+
+    // Analyze descriptor.
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+    bool status = true;
+
+    switch (desc.tag()) {
+        case DID_SAT_DELIVERY: {
+            // TODO: Check S2_satellite_delivery_system_descriptor to get multistream id and PLS code. What about PLS mode?
+            status = size >= 11;
+            if (status) {
+                frequency = uint64_t(DecodeBCD(data, 8)) * 10000;
+                symbol_rate = DecodeBCD(data + 7, 7) * 100;
+                // Polarity.
+                switch ((data[6] >> 5) & 0x03) {
+                    case 0: polarity = POL_HORIZONTAL; break;
+                    case 1: polarity = POL_VERTICAL; break;
+                    case 2: polarity = POL_LEFT; break;
+                    case 3: polarity = POL_RIGHT; break;
+                    default: assert(false);
+                }
+                // Inner FEC.
+                switch (data[10] & 0x0F) {
+                    case 1:  inner_fec = FEC_1_2; break;
+                    case 2:  inner_fec = FEC_2_3; break;
+                    case 3:  inner_fec = FEC_3_4; break;
+                    case 4:  inner_fec = FEC_5_6; break;
+                    case 5:  inner_fec = FEC_7_8; break;
+                    case 6:  inner_fec = FEC_8_9; break;
+                    case 7:  inner_fec = FEC_3_5; break;
+                    case 8:  inner_fec = FEC_4_5; break;
+                    case 9:  inner_fec = FEC_9_10; break;
+                    case 15: inner_fec = FEC_NONE; break;
+                    default: inner_fec = FEC_AUTO; break;
+                }
+                // Modulation type.
+                switch (data[6] & 0x03) {
+                    case 0: modulation = QAM_AUTO; break;
+                    case 1: modulation = QPSK; break;
+                    case 2: modulation = PSK_8; break;
+                    case 3: modulation = QAM_16; break;
+                    default: assert(false);
+                }
+                // Modulation system.
+                switch ((data[6] >> 2) & 0x01) {
+                    case 0:
+                        delivery_system = DS_DVB_S;
+                        roll_off = ROLLOFF_AUTO;
+                        break;
+                    case 1:
+                        delivery_system = DS_DVB_S2;
+                        // Roll off.
+                        switch ((data[6] >> 3) & 0x03) {
+                            case 0: roll_off = ROLLOFF_35; break;
+                            case 1: roll_off = ROLLOFF_25; break;
+                            case 2: roll_off = ROLLOFF_20; break;
+                            case 3: roll_off = ROLLOFF_AUTO; break;
+                            default: assert(false);
+                        }
+                        break;
+                    default:
+                        assert(false);
+                }
+            }
+            break;
+        }
+        case DID_CABLE_DELIVERY: {
+            status = size >= 11;
+            if (status) {
+                delivery_system = DS_DVB_C;
+                frequency = uint64_t(DecodeBCD(data, 8)) * 100;
+                symbol_rate = DecodeBCD(data + 7, 7) * 100;
+                switch (data[10] & 0x0F) {
+                    case 1:  inner_fec = FEC_1_2; break;
+                    case 2:  inner_fec = FEC_2_3; break;
+                    case 3:  inner_fec = FEC_3_4; break;
+                    case 4:  inner_fec = FEC_5_6; break;
+                    case 5:  inner_fec = FEC_7_8; break;
+                    case 6:  inner_fec = FEC_8_9; break;
+                    case 7:  inner_fec = FEC_3_5; break;
+                    case 8:  inner_fec = FEC_4_5; break;
+                    case 9:  inner_fec = FEC_9_10; break;
+                    case 15: inner_fec = FEC_NONE; break;
+                    default: inner_fec = FEC_AUTO; break;
+                }
+                switch (data[6]) {
+                    case 1:  modulation = QAM_16; break;
+                    case 2:  modulation = QAM_32; break;
+                    case 3:  modulation = QAM_64; break;
+                    case 4:  modulation = QAM_128; break;
+                    case 5:  modulation = QAM_256; break;
+                    default: modulation = QAM_AUTO; break;
+                }
+            }
+            break;
+        }
+        case DID_TERREST_DELIVERY:  {
+            status = size >= 11;
+            if (status) {
+                uint64_t freq = GetUInt32(data);
+                uint8_t bwidth = data[4] >> 5;
+                uint8_t constel = data[5] >> 6;
+                uint8_t hier = (data[5] >> 3) & 0x07;
+                uint8_t rate_hp = data[5] & 0x07;
+                uint8_t rate_lp = data[6] >> 5;
+                uint8_t guard = (data[6] >> 3) & 0x03;
+                uint8_t transm = (data[6] >> 1) & 0x03;
+                delivery_system = DS_DVB_T;
+                frequency = freq == 0xFFFFFFFF ? 0 : freq * 10;
+                switch (bwidth) {
+                    case 0:  bandwidth = BW_8_MHZ; break;
+                    case 1:  bandwidth = BW_7_MHZ; break;
+                    case 2:  bandwidth = BW_6_MHZ; break;
+                    case 3:  bandwidth = BW_5_MHZ; break;
+                    default: bandwidth = BW_AUTO; break;
+                }
+                switch (rate_hp) {
+                    case 0:  fec_hp = FEC_1_2; break;
+                    case 1:  fec_hp = FEC_2_3; break;
+                    case 2:  fec_hp = FEC_3_4; break;
+                    case 3:  fec_hp = FEC_5_6; break;
+                    case 4:  fec_hp = FEC_7_8; break;
+                    default: fec_hp = FEC_AUTO; break;
+                }
+                switch (rate_lp) {
+                    case 0:  fec_lp = FEC_1_2; break;
+                    case 1:  fec_lp = FEC_2_3; break;
+                    case 2:  fec_lp = FEC_3_4; break;
+                    case 3:  fec_lp = FEC_5_6; break;
+                    case 4:  fec_lp = FEC_7_8; break;
+                    default: fec_lp = FEC_AUTO; break;
+                }
+                switch (constel) {
+                    case 0:  modulation = QPSK; break;
+                    case 1:  modulation = QAM_16; break;
+                    case 2:  modulation = QAM_64; break;
+                    default: modulation = QAM_AUTO; break;
+                }
+                switch (transm) {
+                    case 0:  transmission_mode = TM_2K; break;
+                    case 1:  transmission_mode = TM_8K; break;
+                    case 2:  transmission_mode = TM_4K; break;
+                    default: transmission_mode = TM_AUTO; break;
+                }
+                switch (guard) {
+                    case 0:  guard_interval = GUARD_1_32; break;
+                    case 1:  guard_interval = GUARD_1_16; break;
+                    case 2:  guard_interval = GUARD_1_8; break;
+                    case 3:  guard_interval = GUARD_1_4; break;
+                    default: guard_interval = GUARD_AUTO; break;
+                }
+                switch (hier & 0x03) {
+                    case 0:  hierarchy = HIERARCHY_NONE; break;
+                    case 1:  hierarchy = HIERARCHY_1; break;
+                    case 2:  hierarchy = HIERARCHY_2; break;
+                    case 3:  hierarchy = HIERARCHY_4; break;
+                    default: hierarchy = HIERARCHY_AUTO; break;
+                }
+            }
+            break;
+        }
+        default: {
+            // Not a valid delivery descriptor.
+            status = false;
+            break;
+        }
+    }
+
+    return status;
 }
 
 
