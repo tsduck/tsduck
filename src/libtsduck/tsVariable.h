@@ -124,6 +124,16 @@ namespace ts {
         bool set() const { return _access != nullptr; }
 
         //!
+        //! Set a value if the variable is currently unset.
+        //! Do nothing if the variable is already initialized.
+        //!
+        //! @param [in] def A default @a T value if the variable is uninitialized.
+        //! @return True if the variable was not initialized and the default value was set,
+        //! false if the variable was already initialized.
+        //!
+        bool setDefault(const T& def);
+
+        //!
         //! Reset the value.
         //!
         //! This object becomes uninitialized if it was not already.
