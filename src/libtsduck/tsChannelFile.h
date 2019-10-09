@@ -33,11 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTunerParameters.h"
-#include "tsTunerParametersATSC.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBT.h"
+#include "tsModulationArgs.h"
 #include "tsService.h"
 #include "tsxmlDocument.h"
 #include "tsxmlTweaks.h"
@@ -158,17 +154,16 @@ namespace ts {
         class TSDUCKDLL TransportStream
         {
         public:
-            uint16_t           id;    //!< Transport Stream Id.
-            uint16_t           onid;  //!< Original Network Id.
-            TunerParametersPtr tune;  //!< Tuner parameters for the transport stream.
+            uint16_t       id;    //!< Transport Stream Id.
+            uint16_t       onid;  //!< Original Network Id.
+            ModulationArgs tune;  //!< Tuner parameters for the transport stream.
 
             //!
             //! Default constructor.
             //! @param [in] id Transport Stream Id.
             //! @param [in] onid Original Network Id.
-            //! @param [in] tune Tuner parameters for the transport stream.
             //!
-            TransportStream(uint16_t id = 0, uint16_t onid = 0, const TunerParametersPtr& tune = TunerParametersPtr());
+            TransportStream(uint16_t id = 0, uint16_t onid = 0);
 
             //!
             //! Clear all services.
@@ -241,15 +236,13 @@ namespace ts {
         class TSDUCKDLL Network
         {
         public:
-            uint16_t  id;    //!< Network Id.
-            TunerType type;  //!< Network distribution type (same as tuner type).
+            uint16_t id;    //!< Network Id.
 
             //!
             //! Default constructor.
             //! @param [in] id Network Id.
-            //! @param [in] type Network distribution type (same as tuner type).
             //!
-            Network(uint16_t id = 0, TunerType type = DVB_S);
+            Network(uint16_t id = 0);
 
             //!
             //! Clear all transport streams.
@@ -306,18 +299,16 @@ namespace ts {
         //!
         //! Get a network by id and type in the file.
         //! @param [in] id Network identifier.
-        //! @param [in] type Network type.
         //! @return A safe pointer to the network or a null pointer if the specified network does not exist.
         //!
-        NetworkPtr networkById(uint16_t id, TunerType type) const;
+        NetworkPtr networkById(uint16_t id) const;
 
         //!
         //! Get or create a network.
         //! @param [in] id Network identifier.
-        //! @param [in] type Network type.
         //! @return A safe pointer to the network, never a null pointer.
         //!
-        NetworkPtr networkGetOrCreate(uint16_t id, TunerType type);
+        NetworkPtr networkGetOrCreate(uint16_t id);
 
         //!
         //! Search a service by name in any network of the file.
@@ -338,7 +329,7 @@ namespace ts {
                            bool strict = true,
                            Report& report = CERR) const
         {
-            return searchServiceInternal(net, ts, srv, DVB_S, name, strict, false, report);
+            return searchService(net, ts, srv, DeliverySystemSet(), name, strict, report);
         }
 
         //!
@@ -346,7 +337,7 @@ namespace ts {
         //! @param [out] net Returned network of the service.
         //! @param [out] ts Returned transport stream of the service.
         //! @param [out] srv Returned service.
-        //! @param [in] type Search only these tuner types.
+        //! @param [in] delsys Search only for these delivery systems. If empty, search any network.
         //! @param [in] name Service name.
         //! @param [in] strict If true, search exactly @a name.
         //! If false, the comparison is case-insensitive and spaces are ignored.
@@ -357,42 +348,38 @@ namespace ts {
         bool searchService(NetworkPtr& net,
                            TransportStreamPtr& ts,
                            ServicePtr& srv,
-                           TunerType type,
+                           const DeliverySystemSet& delsys,
                            const UString& name,
                            bool strict = true,
-                           Report& report = CERR) const
-        {
-            return searchServiceInternal(net, ts, srv, type, name, strict, true, report);
-        }
+                           Report& report = CERR) const;
 
         //!
         //! Get tuner parameters from a service name in any network of the file.
+        //! @param [out] tune Returned modulation parameters.
         //! @param [in] name Service name.
         //! @param [in] strict If true, search exactly @a name.
         //! If false, the comparison is case-insensitive and spaces are ignored.
         //! If false, @a name can also be "major.minor" for ATSC services.
         //! @param [in,out] report Where to report errors.
-        //! @return A safe pointer to the tuner parameters or a null pointer if the specified service does not exist.
+        //! @return True on success, false if the specified service does not exist.
         //!
-        TunerParametersPtr serviceToTuning(const UString& name, bool strict = true, Report& report = CERR) const
+        bool serviceToTuning(ModulationArgs& tune, const UString& name, bool strict = true, Report& report = CERR) const
         {
-            return serviceToTuningInternal(DVB_S, name, strict, false, report);
+            return serviceToTuning(tune, DeliverySystemSet(), name, strict, report);
         }
 
         //!
         //! Get tuner parameters from a service name in any network of a given type of the file.
-        //! @param [in] type Search only these tuner types.
+        //! @param [out] tune Returned modulation parameters.
+        //! @param [in] delsys Search only for these delivery systems. If empty, search any network.
         //! @param [in] name Service name.
         //! @param [in] strict If true, search exactly @a name.
         //! If false, the comparison is case-insensitive and spaces are ignored.
         //! If false, @a name can also be "major.minor" for ATSC services.
         //! @param [in,out] report Where to report errors.
-        //! @return A safe pointer to the tuner parameters or a null pointer if the specified service does not exist.
+        //! @return True on success, false if the specified service does not exist.
         //!
-        TunerParametersPtr serviceToTuning(TunerType type, const UString& name, bool strict = true, Report& report = CERR) const
-        {
-            return serviceToTuningInternal(type, name, strict, true, report);
-        }
+        bool serviceToTuning(ModulationArgs& tune, const DeliverySystemSet& delsys, const UString& name, bool strict = true, Report& report = CERR) const;
 
     private:
         NetworkVector _networks;    // List of networks in the configuration.
@@ -404,16 +391,5 @@ namespace ts {
 
         // Generate an XML document from the content of this object.
         bool generateDocument(xml::Document& doc) const;
-
-        // Common code for searchService
-        TunerParametersPtr serviceToTuningInternal(TunerType type, const UString& name, bool strict, bool useTunerType, Report& report) const;
-        bool searchServiceInternal(NetworkPtr& net,
-                                   TransportStreamPtr& ts,
-                                   ServicePtr& srv,
-                                   TunerType type,
-                                   const UString& name,
-                                   bool strict,
-                                   bool useTunerType,
-                                   Report& report) const;
     };
 }

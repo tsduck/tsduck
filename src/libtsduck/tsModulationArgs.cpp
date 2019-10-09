@@ -35,7 +35,10 @@
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
 #include "tsBCD.h"
+#include "tsDektec.h"
 TSDUCK_SOURCE;
+
+const ts::LNB& ts::ModulationArgs::DEFAULT_LNB(ts::LNB::Universal);
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::SpectralInversion ts::ModulationArgs::DEFAULT_INVERSION;
@@ -155,6 +158,86 @@ bool ts::ModulationArgs::hasModulationArgs() const
 
 
 //----------------------------------------------------------------------------
+// Set the default values for the delivery system.
+//----------------------------------------------------------------------------
+
+void ts::ModulationArgs::setDefaultValues()
+{
+    switch (delivery_system.value(DS_UNDEFINED)) {
+        case DS_DVB_S2:
+            // DVB-S2 specific options.
+            pilots.setDefault(DEFAULT_PILOTS);
+            roll_off.setDefault(DEFAULT_ROLL_OFF);
+            isi.setDefault(DEFAULT_ISI);
+            pls_code.setDefault(DEFAULT_PLS_CODE);
+            pls_mode.setDefault(DEFAULT_PLS_MODE);
+            TS_FALLTHROUGH
+        case DS_DVB_S_TURBO:
+            // DVB-S2 and DVB-S/Turbo common options.
+            modulation.setDefault(DEFAULT_MODULATION_DVBS);
+            TS_FALLTHROUGH
+        case DS_DVB_S:
+            // DVB-S2, DVB-S/Turbo and DVB-S common options.
+            frequency.setDefault(0);
+            inversion.setDefault(DEFAULT_INVERSION);
+            polarity.setDefault(DEFAULT_POLARITY);
+            symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_DVBS);
+            inner_fec.setDefault(DEFAULT_INNER_FEC);
+            lnb.setDefault(DEFAULT_LNB);
+            satellite_number.setDefault(DEFAULT_SATELLITE_NUMBER);
+            break;
+        case DS_DVB_T2:
+            // DVB-S2 specific options.
+            plp.setDefault(DEFAULT_PLP);
+            TS_FALLTHROUGH
+        case DS_DVB_T:
+            // DVB-T2 and DVB-T common options.
+            frequency.setDefault(0);
+            inversion.setDefault(DEFAULT_INVERSION);
+            bandwidth.setDefault(DEFAULT_BANDWIDTH_DVBT);
+            fec_hp.setDefault(DEFAULT_FEC_HP);
+            fec_lp.setDefault(DEFAULT_FEC_LP);
+            modulation.setDefault(DEFAULT_MODULATION_DVBT);
+            transmission_mode.setDefault(DEFAULT_TRANSMISSION_MODE_DVBT);
+            guard_interval.setDefault(DEFAULT_GUARD_INTERVAL_DVBT);
+            hierarchy.setDefault(DEFAULT_HIERARCHY);
+            break;
+        case DS_DVB_C_ANNEX_A:
+        case DS_DVB_C_ANNEX_C:
+            // DVB-C annex A,C common options (don't apply to annex B).
+            inner_fec.setDefault(DEFAULT_INNER_FEC);
+            symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_DVBC);
+            TS_FALLTHROUGH
+        case DS_DVB_C_ANNEX_B:
+            // DVB-C annex A,B,C common options.
+            frequency.setDefault(0);
+            inversion.setDefault(DEFAULT_INVERSION);
+            modulation.setDefault(DEFAULT_MODULATION_DVBC);
+            break;
+        case DS_ATSC:
+            frequency.setDefault(0);
+            inversion.setDefault(DEFAULT_INVERSION);
+            modulation.setDefault(DEFAULT_MODULATION_ATSC);
+            break;
+        case DS_DVB_C2:
+        case DS_DVB_H:
+        case DS_ISDB_S:
+        case DS_ISDB_T:
+        case DS_ISDB_C:
+        case DS_ATSC_MH:
+        case DS_DTMB:
+        case DS_CMMB:
+        case DS_DAB:
+        case DS_DSS:
+        case DS_UNDEFINED:
+        default:
+            // Unsupported so far.
+            break;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Check the validity of the delivery system or set a default one.
 //----------------------------------------------------------------------------
 
@@ -181,6 +264,231 @@ bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems,
             return true;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// This protected method computes the theoretical useful bitrate of a
+// transponder, based on 188-bytes packets, for QPSK or QAM modulation.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::ModulationArgs::TheoreticalBitrateForModulation(Modulation modulation, InnerFEC fec, uint32_t symbol_rate)
+{
+    const uint64_t bitpersym = BitsPerSymbol(modulation);
+    const uint64_t fec_mul = FECMultiplier(fec);
+    const uint64_t fec_div = FECDivider(fec);
+
+    // Compute bitrate. The estimated bitrate is based on 204-bit packets (include 16-bit Reed-Solomon code).
+    // We return a bitrate based on 188-bit packets.
+
+    return fec_div == 0 ? 0 : BitRate((uint64_t(symbol_rate) * bitpersym * fec_mul * 188) / (fec_div * 204));
+}
+
+
+//----------------------------------------------------------------------------
+// Theoretical bitrate computation.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
+{
+    BitRate bitrate = 0;
+    const DeliverySystem delsys = delivery_system.value(DS_UNDEFINED);
+
+    switch (delsys) {
+        case DS_ATSC: {
+            // Only two modulation values are available for ATSC.
+            const Modulation mod = modulation.value(DEFAULT_MODULATION_ATSC);
+            if (mod == VSB_8) {
+                bitrate = 19392658;
+            }
+            else if (mod == VSB_16) {
+                bitrate = 38785317;
+            }
+            break;
+        }
+        case DS_DVB_C_ANNEX_A:
+        case DS_DVB_C_ANNEX_C: {
+            // Applies only to annex A and C, not B.
+            bitrate = TheoreticalBitrateForModulation(modulation.value(DEFAULT_MODULATION_DVBC), inner_fec.value(DEFAULT_INNER_FEC), symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBC));
+            break;
+        }
+        case DS_DVB_S:
+        case DS_DVB_S_TURBO:
+        case DS_DVB_S2: {
+            const uint32_t symrate = symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS);
+            // Let the Dektec API compute the TS rate if we have a Dektec library.
+            #if !defined(TS_NO_DTAPI)
+                int brate = 0, mod = 0, param0 = 0, param1 = 0, param2 = 0;
+                if (convertToDektecModulation(mod, param0, param1, param2) && Dtapi::DtapiModPars2TsRate(brate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK) {
+                    // Successfully found Dektec modulation parameters and computed TS bitrate
+                    bitrate = BitRate(brate);
+                }
+            #endif
+            // Otherwise, don't know how to compute DVB-S2 bitrate...
+            if (bitrate == 0 && delsys == DS_DVB_S) {
+                bitrate = TheoreticalBitrateForModulation(modulation.value(DEFAULT_MODULATION_DVBS), inner_fec.value(DEFAULT_INNER_FEC), symrate);
+            }
+            break;
+        }
+        case DS_DVB_T:
+        case DS_DVB_T2: {
+            // DVB-T2 and DVB-T common options.
+            const uint64_t bitpersym = BitsPerSymbol(modulation.value(DEFAULT_MODULATION_DVBT));
+            const uint64_t fec_mul = FECMultiplier(fec_hp.value(DEFAULT_FEC_HP));
+            const uint64_t fec_div = FECDivider(fec_hp.value(DEFAULT_FEC_HP));
+            const uint64_t guard_mul = GuardIntervalMultiplier(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT));
+            const uint64_t guard_div = GuardIntervalDivider(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT));
+            const uint64_t bw = BandWidthValueHz(bandwidth.value(DEFAULT_BANDWIDTH_DVBT));
+
+            if (hierarchy.value(DEFAULT_HIERARCHY) != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
+                return 0; // unknown bitrate
+            }
+
+            // Compute symbol rate, then bitrate
+            // Reference: ETSI EN 300 744 V1.5.1
+            // (DVB; Framing structure, channel coding and modulation for digital terrestrial television).
+            //
+            //  BW = bandwidth in Hz
+            //  BM = bandwidth in MHz = BW / 1000000
+            //  TM = transmission mode in K
+            //  GI = guard interval = GIM/GID
+            //  T  = OFDM elementary period = 7 / (8*BM) micro-seconds
+            //  TU = useful symbol duration = TM * 1024 * T
+            //  TG = guard duration = TU * GI
+            //  TS = symbol duration = TG + TU = TU * (1 + GI) = (TU * (GID + GIM)) / GID
+            //  K  = number of _active_ carriers = TM * 756
+            //  SR = symbol rate
+            //     = K / TS  symbols/micro-second
+            //     = 1000000 * K / TS  symbols/second
+            //     = (1000000 * TM * 756 * GID) / (TU * (GID + GIM))
+            //     = (1000000 * TM * 756 * GID) / (TM * 1024 * T * (GID + GIM))
+            //     = (1000000 * 756 * GID) / (1024 * T * (GID + GIM))
+            //     = (1000000 * 756 * GID * 8 * BM) / (1024 * 7 * (GID + GIM))
+            //     = (6048 * GID * BW) / (7168 * (GID + GIM))
+            //
+            // Compute bitrate. The estimated bitrate is based on 204-bit packets
+            // (include 16-bit Reed-Solomon code). We return a bitrate based on
+            // 188-bit packets.
+            //
+            // BPS = bits/symbol
+            // FEC = forward error correction = FECM/FECD
+            // BR = useful bit rate
+            //    = SR * BPS * FEC * 188/204
+            //    = (SR * BPS * FECM * 188) / (FECD * 204)
+            //    = (6048 * GID * BW * BPS * FECM * 188) / (7168 * (GID + GIM) * FECD * 204)
+            //    = (1137024 * GID * BW * BPS * FECM) / (1462272 * (GID + GIM) * FECD)
+            // And 1137024 / 1462272 = 423 / 544
+
+            bitrate = BitRate((423 * guard_div * bw * bitpersym * fec_mul) / (544 * (guard_div + guard_mul) * fec_div));
+            break;
+        }
+        case DS_DVB_C_ANNEX_B:
+        case DS_DVB_C2:
+        case DS_DVB_H:
+        case DS_ISDB_S:
+        case DS_ISDB_T:
+        case DS_ISDB_C:
+        case DS_ATSC_MH:
+        case DS_DTMB:
+        case DS_CMMB:
+        case DS_DAB:
+        case DS_DSS:
+        case DS_UNDEFINED:
+        default: {
+            // Unknown bitrate or unsupported so far.
+            break;
+        }
+    }
+
+    return bitrate;
+}
+
+
+//----------------------------------------------------------------------------
+// Attempt to convert the tuning parameters for Dektec modulator cards.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
+{
+#if defined(TS_NO_DTAPI)
+    // No Dektec library.
+    return false;
+#else
+    // Not all enum values used in switch, intentionally.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(switch-default)
+    TS_LLVM_NOWARNING(switch-enum)
+    TS_MSC_NOWARNING(4061)
+
+    // Currently, we can only convert DVB-S/S2 parameters to Dektec modulation parameters.
+    const DeliverySystem delsys = delivery_system.value(DS_UNDEFINED);
+
+    // Determine modulation type.
+    switch (delsys) {
+        case DS_DVB_S:
+            modulation_type = DTAPI_MOD_DVBS_QPSK;
+            break;
+        case DS_DVB_S2:
+            switch (modulation.value(DEFAULT_MODULATION_DVBS)) {
+                case QPSK:    modulation_type = DTAPI_MOD_DVBS2_QPSK; break;
+                case PSK_8:   modulation_type = DTAPI_MOD_DVBS2_8PSK; break;
+                case APSK_16: modulation_type = DTAPI_MOD_DVBS2_16APSK; break;
+                case APSK_32: modulation_type = DTAPI_MOD_DVBS2_32APSK; break;
+                default: return false; // unsupported
+            }
+            break;
+        default:
+            return false; // unsupported
+    }
+
+    // Determine convolution code rate
+    switch (inner_fec.value(DEFAULT_INNER_FEC)) {
+        case FEC_1_2:  param0 = DTAPI_MOD_1_2; break;
+        case FEC_1_3:  param0 = DTAPI_MOD_1_3; break;
+        case FEC_1_4:  param0 = DTAPI_MOD_1_4; break;
+        case FEC_2_3:  param0 = DTAPI_MOD_2_3; break;
+        case FEC_2_5:  param0 = DTAPI_MOD_2_5; break;
+        case FEC_3_4:  param0 = DTAPI_MOD_3_4; break;
+        case FEC_3_5:  param0 = DTAPI_MOD_3_5; break;
+        case FEC_4_5:  param0 = DTAPI_MOD_4_5; break;
+        case FEC_5_6:  param0 = DTAPI_MOD_5_6; break;
+        case FEC_6_7:  param0 = DTAPI_MOD_6_7; break;
+        case FEC_7_8:  param0 = DTAPI_MOD_7_8; break;
+        case FEC_8_9:  param0 = DTAPI_MOD_8_9; break;
+        case FEC_9_10: param0 = DTAPI_MOD_9_10; break;
+        default: return false; // unsupported
+    }
+
+    // Additional parameters param1 and param2
+    switch (delsys) {
+        case DS_DVB_S: {
+            param1 = param2 = 0;
+            break;
+        }
+        case DS_DVB_S2: {
+            param1 = pilots.value(DEFAULT_PILOTS) == PILOT_ON ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
+            // Assume long FEC frame for broadcast service (should be updated by caller if necessary).
+            param1 |= DTAPI_MOD_S2_LONGFRM;
+            // Roll-off
+            switch (roll_off.value(DEFAULT_ROLL_OFF)) {
+                case ROLLOFF_AUTO: param1 |= DTAPI_MOD_ROLLOFF_AUTO; break;
+                case ROLLOFF_20:   param1 |= DTAPI_MOD_ROLLOFF_20; break;
+                case ROLLOFF_25:   param1 |= DTAPI_MOD_ROLLOFF_25; break;
+                case ROLLOFF_35:   param1 |= DTAPI_MOD_ROLLOFF_35; break;
+            }
+            // Physical layer scrambling initialization sequence
+            param2 = int(pls_code.value(DEFAULT_PLS_CODE));
+            break;
+        }
+        default: {
+            return false; // unsupported
+        }
+    }
+
+    return true;
+    TS_POP_WARNING()
+
+#endif // TS_NO_DTAPI
 }
 
 
@@ -478,61 +786,93 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
 
 void ts::ModulationArgs::defineArgs(Args& args) const
 {
-    // Tuning options.
-    args.option(u"bandwidth", 0, BandWidthEnum);
-    args.help(u"bandwidth",
-              u"Used for DVB-T/T2 tuners only. The default is \"8-MHz\".");
-
     args.option(u"delivery-system", 0, DeliverySystemEnum);
     args.help(u"delivery-system",
-              u"Used for DVB-S and DVB-S2 tuners only. Which delivery system to use. "
-              u"The default is \"DVB-S\".");
-
-    args.option(u"fec-inner", 0, InnerFECEnum);
-    args.help(u"fec-inner",
-              u"Used for DVB-S/S2 and DVB-C tuners only. Inner Forward Error Correction. "
-              u"The default is \"auto\".");
+              u"Specify which delivery system to use. By default, use the default system for the tuner.");
 
     args.option(u"frequency", _allow_short_options ? 'f' : 0, Args::UNSIGNED);
     args.help(u"frequency", u"Carrier frequency in Hz (all tuners). There is no default.");
 
-    args.option(u"guard-interval", 0, GuardIntervalEnum);
-    args.help(u"guard-interval", u"Used for DVB-T/T2 tuners only. The default is \"1/32\".");
-
-    args.option(u"hierarchy", 0, HierarchyEnum);
-    args.help(u"hierarchy", u"Used for DVB-T/T2 tuners only. The default is \"none\".");
-
-    args.option(u"high-priority-fec", 0, InnerFECEnum);
-    args.help(u"high-priority-fec",
-              u"Used for DVB-T/T2 tuners only. "
-              u"Error correction for high priority streams. "
-              u"The default is \"auto\".");
+    args.option(u"polarity", 0, PolarizationEnum);
+    args.help(u"polarity",
+              u"Used for satellite tuners only. "
+              u"Polarity. The default is \"vertical\".");
 
     args.option(u"lnb", 0, Args::STRING);
     args.help(u"lnb", u"low_freq[,high_freq,switch_freq]",
-              u"Used for DVB-S and DVB-S2 tuners only. "
+              u"Used for satellite tuners only. "
               u"Description of the LNB.  All frequencies are in MHz. "
               u"low_freq and high_freq are the frequencies of the local oscillators. "
               u"switch_freq is the limit between the low and high band. "
               u"high_freq and switch_freq are used for dual-band LNB's only. "
               u"The default is a universal LNB: low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.");
 
-    args.option(u"low-priority-fec", 0, InnerFECEnum);
-    args.help(u"low-priority-fec",
-              u"Used for DVB-T/T2 tuners only. "
-              u"Error correction for low priority streams. "
+    args.option(u"spectral-inversion", 0, SpectralInversionEnum);
+    args.help(u"spectral-inversion",
+              u"Spectral inversion. The default is \"auto\".");
+
+    args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
+    args.help(u"symbol-rate",
+              u"Used for satellite and cable tuners only. "
+              u"Symbol rate in symbols/second. The default is " + UString::Decimal(DEFAULT_SYMBOL_RATE_DVBS) +
+              u" sym/s for satellite and " + UString::Decimal(DEFAULT_SYMBOL_RATE_DVBC) +
+              u" sym/s for cable. ");
+
+    args.option(u"fec-inner", 0, InnerFECEnum);
+    args.help(u"fec-inner",
+              u"Used for satellite and cable tuners only. Inner Forward Error Correction. "
               u"The default is \"auto\".");
+
+    args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
+    args.help(u"satellite-number",
+              u"Used for satellite tuners only. Satellite/dish number. "
+              u"Must be 0 to 3 with DiSEqC switches and 0 to 1 fornon-DiSEqC switches. The default is 0.");
 
     args.option(u"modulation", _allow_short_options ? 'm' : 0, ModulationEnum);
     args.help(u"modulation",
-              u"Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners. "
-              u"Modulation type. "
-              u"The default is \"64-QAM\" for DVB-T/T2 and DVB-C, \"QPSK\" for DVB-S2, \"8-VSB\" for ATSC.");
+              u"Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.  Modulation type. The default is \"" +
+              ModulationEnum.name(DEFAULT_MODULATION_DVBT) + u"\" for DVB-T/T2, \"" +
+              ModulationEnum.name(DEFAULT_MODULATION_DVBC) + u"\" for DVB-C, \"" +
+              ModulationEnum.name(DEFAULT_MODULATION_DVBS) + u"\" for DVB-S2, \"" +
+              ModulationEnum.name(DEFAULT_MODULATION_ATSC) + u"\" for ATSC.");
+
+    args.option(u"bandwidth", 0, BandWidthEnum);
+    args.help(u"bandwidth",
+              u"Used for terrestrial tuners only. Bandwidth. The default is \"" +
+              BandWidthEnum.name(DEFAULT_BANDWIDTH_DVBT) + u"\" for DVB-T/T2.");
+
+    args.option(u"high-priority-fec", 0, InnerFECEnum);
+    args.help(u"high-priority-fec",
+              u"Used for DVB-T/T2 tuners only.Error correction for high priority streams. "
+              u"The default is \"auto\".");
+
+    args.option(u"low-priority-fec", 0, InnerFECEnum);
+    args.help(u"low-priority-fec",
+              u"Used for DVB-T/T2 tuners only. Error correction for low priority streams. "
+              u"The default is \"auto\".");
+
+    args.option(u"transmission-mode", 0, TransmissionModeEnum);
+    args.help(u"transmission-mode",
+              u"Used for terrestrial tuners only. Transmission mode. The default is \"" +
+              TransmissionModeEnum.name(DEFAULT_TRANSMISSION_MODE_DVBT) + u"\" for DVB-T/T2.");
+
+    args.option(u"guard-interval", 0, GuardIntervalEnum);
+    args.help(u"guard-interval",
+              u"Used for terrestrial tuners only. Guard interval. The default is \"" +
+              GuardIntervalEnum.name(DEFAULT_GUARD_INTERVAL_DVBT) + u"\" for DVB-T/T2.");
+
+    args.option(u"hierarchy", 0, HierarchyEnum);
+    args.help(u"hierarchy", u"Used for DVB-T/T2 tuners only. The default is \"none\".");
 
     args.option(u"pilots", 0, PilotEnum);
     args.help(u"pilots",
               u"Used for DVB-S2 tuners only. Presence of pilots frames. "
               u"The default is \"off\". ");
+
+    args.option(u"roll-off", 0, RollOffEnum);
+    args.help(u"roll-off",
+              u"Used for DVB-S2 tuners only. Roll-off factor. "
+              u"The default is \"0.35\" (implied for DVB-S, default for DVB-S2).");
 
     args.option(u"plp", 0, Args::UINT8);
     args.help(u"plp",
@@ -540,22 +880,6 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Physical Layer Pipe (PLP) number to select, from 0 to 255. "
               u"The default is to keep the entire stream, without PLP selection. "
               u"Warning: this option is supported on Linux only.");
-
-    args.option(u"polarity", 0, PolarizationEnum);
-    args.help(u"polarity",
-              u"Used for DVB-S and DVB-S2 tuners only. "
-              u"Polarity. The default is \"vertical\".");
-
-    args.option(u"roll-off", 0, RollOffEnum);
-    args.help(u"roll-off",
-              u"Used for DVB-S2 tuners only. Roll-off factor. "
-              u"The default is \"0.35\" (implied for DVB-S, default for DVB-S2).");
-
-    args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
-    args.help(u"satellite-number",
-              u"Used for DVB-S and DVB-S2 tuners only. "
-              u"Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for "
-              u"non-DiSEqC switches. The default is 0.");
 
     args.option(u"isi", 0, Args::UINT8);
     args.help(u"isi",
@@ -575,23 +899,6 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Used for DVB-S2 tuners only. "
               u"Physical Layer Scrambling (PLS) mode. With multistream only. The default is ROOT. "
               u"Warning: this option is supported on Linux only.");
-
-    args.option(u"spectral-inversion", 0, SpectralInversionEnum);
-    args.help(u"spectral-inversion",
-              u"Spectral inversion. The default is \"auto\".");
-
-    args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
-    args.help(u"symbol-rate",
-              u"Used for DVB-S, DVB-S2 and DVB-C tuners only. "
-              u"Symbol rate in symbols/second. The default is " +
-              UString::Decimal(DEFAULT_SYMBOL_RATE_DVBS) +
-              u" sym/s for satellite and " +
-              UString::Decimal(DEFAULT_SYMBOL_RATE_DVBC) +
-              u" sym/s for cable. ");
-
-    args.option(u"transmission-mode", 0, TransmissionModeEnum);
-    args.help(u"transmission-mode",
-              u"Used for DVB-T tuners only. Transmission mode. The default is \"8K\".");
 
     // UHF/VHF frequency bands options.
     args.option(u"uhf-channel", 0, Args::POSITIVE);

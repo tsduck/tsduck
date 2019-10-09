@@ -36,6 +36,7 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
+#include "tsMPEG.h"
 #include "tsLNB.h"
 
 namespace ts {
@@ -76,6 +77,10 @@ namespace ts {
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
         Variable<LNB> lnb;
+        //!
+        //! Default value for lnb.
+        //!
+        static const LNB& DEFAULT_LNB;
         //!
         //! Spectral inversion.
         //! Applies to: DVB-T/T2, DVB-S/S2, DVB-C (A,B,C), ATSC, ISDB-T, ISDB-S.
@@ -139,7 +144,7 @@ namespace ts {
         static constexpr Modulation DEFAULT_MODULATION_ATSC = VSB_8;
         //!
         //! Bandwidth.
-        //! Applies to: DVB-T/T2, ATSC, ISDB-T.
+        //! Applies to: DVB-T/T2, ISDB-T.
         //!
         Variable<BandWidth> bandwidth;
         //!
@@ -248,6 +253,7 @@ namespace ts {
         static constexpr PLSMode DEFAULT_PLS_MODE = PLS_ROOT;
 
         //@@  Missing values for ISDB-T:
+        //@@
         //@@    DTV_ISDBT_LAYER_ENABLED
         //@@    DTV_ISDBT_PARTIAL_RECEPTION
         //@@    DTV_ISDBT_SOUND_BROADCASTING
@@ -268,13 +274,14 @@ namespace ts {
         //@@    DTV_ISDBT_LAYERC_TIME_INTERLEAVING
         //@@
         //@@  Missing values for ISDB-S:
+        //@@
         //@@    DTV_ISDBS_TS_ID
 
         //!
         //! Default constructor.
         //! @param [in] allow_short_options If true, allow short one-letter options.
         //!
-        ModulationArgs(bool allow_short_options = true);
+        explicit ModulationArgs(bool allow_short_options = true);
 
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
@@ -302,6 +309,20 @@ namespace ts {
         bool resolveDeliverySystem(const DeliverySystemSet& systems, Report& report);
 
         //!
+        //! Set the default values for unset parameters, according to the delivery system.
+        //! Do nothing if the delivery system is unset.
+        //!
+        void setDefaultValues();
+
+        //!
+        //! Theoretical bitrate computation.
+        //! @return The theoretical useful bitrate of a transponder, based on 188-bytes packets,
+        //! in bits/second. If the characteristics of the transponder are not sufficient to compute
+        //! the bitrate, return 0.
+        //!
+        BitRate theoreticalBitrate() const;
+
+        //!
         //! Fill modulation parameters from a delivery system descriptor.
         //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
         //! @return True on success, false if the descriptor was not correctly analyzed or is not
@@ -309,7 +330,28 @@ namespace ts {
         //!
         bool fromDeliveryDescriptor(const Descriptor& desc);
 
+        //!
+        //! Attempt to convert the tuning parameters in modulation parameters for Dektec modulator cards.
+        //! @param [out] modulation_type Modulation type (DTAPI_MOD_* value).
+        //! @param [out] param0 Modulation-specific paramter 0.
+        //! @param [out] param1 Modulation-specific paramter 1.
+        //! @param [out] param2 Modulation-specific paramter 2.
+        //! @return True on success, false on error (includes unsupported operation).
+        //!
+        bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const;
+
     protected:
         const bool _allow_short_options;
+
+        //!
+        //! Theoretical useful bitrate for QPSK or QAM modulation.
+        //! This protected static method computes the theoretical useful bitrate of a
+        //! transponder, based on 188-bytes packets, for QPSK or QAM modulation.
+        //! @param [in] mod Modulation type.
+        //! @param [in] fec Inner FEC.
+        //! @param [in] symbol_rate Symbol rate.
+        //! @return Theoretical useful bitrate in bits/second or zero on error.
+        //!
+        static BitRate TheoreticalBitrateForModulation(Modulation mod, InnerFEC fec, uint32_t symbol_rate);
     };
 }

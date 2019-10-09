@@ -581,6 +581,15 @@
 // Compiler warnings
 //----------------------------------------------------------------------------
 
+//!
+//! This macro should preceed an intentional fallthrough in a switch expression.
+//!
+#if defined(TS_GCC)
+    #define TS_FALLTHROUGH __attribute__((fallthrough));
+#else
+    #define TS_FALLTHROUGH /* fallthrough */
+#endif
+
 #if defined(DOXYGEN)
 
 //!

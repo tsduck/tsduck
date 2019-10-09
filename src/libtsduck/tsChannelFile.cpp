@@ -59,17 +59,16 @@ ts::ChannelFile::Service::Service(uint16_t id_) :
 {
 }
 
-ts::ChannelFile::TransportStream::TransportStream(uint16_t id_, uint16_t onid_, const TunerParametersPtr& tune_) :
-    id(id_),
-    onid(onid_),
-    tune(tune_),
+ts::ChannelFile::TransportStream::TransportStream(uint16_t ts, uint16_t on) :
+    id(ts),
+    onid(on),
+    tune(),
     _services()
 {
 }
 
-ts::ChannelFile::Network::Network(uint16_t id_, TunerType type_) :
-    id(id_),
-    type(type_),
+ts::ChannelFile::Network::Network(uint16_t net) :
+    id(net),
     _ts()
 {
 }
@@ -249,25 +248,25 @@ ts::ChannelFile::NetworkPtr ts::ChannelFile::networkByIndex(size_t index) const
     return index < _networks.size() ? _networks[index] : NetworkPtr();
 }
 
-ts::ChannelFile::NetworkPtr ts::ChannelFile::networkById(uint16_t id, TunerType type) const
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkById(uint16_t id) const
 {
     for (size_t i = 0; i < _networks.size(); ++i) {
         const NetworkPtr& net(_networks[i]);
         assert(!net.isNull());
-        if (net->id == id && net->type == type) {
+        if (net->id == id) {
             return net;
         }
     }
     return NetworkPtr(); // not found, null pointer.
 }
 
-ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id, TunerType type)
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id)
 {
     // Try to get an existing transport stream.
-    NetworkPtr net(networkById(id, type));
+    NetworkPtr net(networkById(id));
     if (net.isNull()) {
         // Not found, create a new network.
-        net = new Network(id, type);
+        net = new Network(id);
         CheckNonNull(net.pointer());
         _networks.push_back(net);
     }
@@ -279,22 +278,28 @@ ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id, Tun
 // Search a service by name in any network of a given type of the file.
 //----------------------------------------------------------------------------
 
-ts::TunerParametersPtr ts::ChannelFile::serviceToTuningInternal(TunerType type, const UString& name, bool strict, bool useTunerType, Report& report) const
+bool ts::ChannelFile::serviceToTuning(ModulationArgs& tune, const DeliverySystemSet& delsys, const UString& name, bool strict, Report& report) const
 {
     NetworkPtr net;
     TransportStreamPtr ts;
     ServicePtr srv;
-    return searchServiceInternal(net, ts, srv, type, name, strict, useTunerType, report) ? ts->tune : TunerParametersPtr();
+    if (searchService(net, ts, srv, delsys, name, strict, report)) {
+        tune = ts->tune;
+        return true;
+    }
+    else {
+        tune.reset();
+        return false;
+    }
 }
 
-bool ts::ChannelFile::searchServiceInternal(NetworkPtr& net,
-                                            TransportStreamPtr& ts,
-                                            ServicePtr& srv,
-                                            TunerType type,
-                                            const UString& name,
-                                            bool strict,
-                                            bool useTunerType,
-                                            Report& report) const
+bool ts::ChannelFile::searchService(NetworkPtr& net,
+                                    TransportStreamPtr& ts,
+                                    ServicePtr& srv,
+                                    const DeliverySystemSet& delsys,
+                                    const UString& name,
+                                    bool strict,
+                                    Report& report) const
 {
     // Clear output parameters.
     net.clear();
@@ -305,11 +310,13 @@ bool ts::ChannelFile::searchServiceInternal(NetworkPtr& net,
     for (size_t inet = 0; inet < _networks.size(); ++inet) {
         const NetworkPtr& pnet(_networks[inet]);
         assert(!pnet.isNull());
-        if (!useTunerType || pnet->type == type) {
-            // Inspect this network, loop through all transport stream.
-            for (size_t its = 0; its < pnet->tsCount(); ++its) {
-                const TransportStreamPtr& pts(pnet->tsByIndex(its));
-                assert(!pts.isNull());
+        // Inspect this network, loop through all transport stream.
+        for (size_t its = 0; its < pnet->tsCount(); ++its) {
+            const TransportStreamPtr& pts(pnet->tsByIndex(its));
+            assert(!pts.isNull());
+            // Check if this TS has an acceptable delivery system.
+            // If the input delsys is empty, accept any delivery system.
+            if (delsys.empty() || (pts->tune.delivery_system.set() && delsys.find(pts->tune.delivery_system.value()) != delsys.end())) {
                 srv = pts->serviceByName(name, strict);
                 if (!srv.isNull()) {
                     net = pnet;

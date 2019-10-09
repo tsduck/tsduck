@@ -63,13 +63,6 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::TunerTypeEnum({
-    {u"DVB-S",  ts::DVB_S},
-    {u"DVB-C",  ts::DVB_C},
-    {u"DVB-T",  ts::DVB_T},
-    {u"ATSC",   ts::ATSC},
-});
-
 const ts::Enumeration ts::DeliverySystemEnum({
     {u"undefined",   ts::DS_UNDEFINED},
     {u"DVB-S",       ts::DS_DVB_S},

@@ -68,33 +68,6 @@ namespace ts {
     TSDUCKDLL bool CheckModEnum(int value, const UString& name, const Enumeration& conv, Report& report);
 
     //!
-    //! Known tuner types.
-    //!
-    //! "Second generation" tuners are included in their base category:
-    //! DVB_S includes DVB-S and DVB-S2, DVB_T includes DVB-T and DVB-T2, etc.
-    //!
-    // @@@@@ TODO: Deprecated, should disappear in a future version.
-    //
-    enum TunerType {
-#if defined(TS_LINUX) && !defined(DOXYGEN)
-        DVB_S  = ::FE_QPSK,
-        DVB_C  = ::FE_QAM,
-        DVB_T  = ::FE_OFDM,
-        ATSC   = ::FE_ATSC,
-#else
-        DVB_S,   //!< DVB-S, DVB-S2
-        DVB_C,   //!< DVB-C, DVB-C2
-        DVB_T,   //!< DVB-T, DVB-T2
-        ATSC,    //!< ATSC
-#endif
-    };
-
-    //!
-    //! Enumeration description of ts::TunerType.
-    //!
-    TSDUCKDLL extern const Enumeration TunerTypeEnum;
-
-    //!
     //! Delivery systems.
     //!
     enum DeliverySystem {
