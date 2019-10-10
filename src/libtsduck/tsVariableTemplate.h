@@ -131,9 +131,9 @@ const T& ts::Variable<T>::value() const
 {
     if (_access != nullptr) {
         return *_access;
-            }
+    }
     else {
-                throw UninitializedVariable(u"uninitialized variable");
+        throw UninitializedVariable(u"uninitialized variable");
     }
 }
 

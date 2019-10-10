@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsTSPacket.h"
-#include "tsModulation.h"
+#include "tsModulationArgs.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsTunerParameters.h"
@@ -210,7 +210,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(const TunerParameters& params, Report& report);
+        bool tune(const ModulationArgs& params, Report& report);
 
         //!
         //! Start receiving packets.
@@ -249,7 +249,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report);
+        bool getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report);
 
         //!
         //! Default timeout before getting a signal on start.

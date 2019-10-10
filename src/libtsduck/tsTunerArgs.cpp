@@ -263,7 +263,8 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
 
 
 //----------------------------------------------------------------------------
-// If a channel name was specified instead of modulation parameters, load its description from the channel file.
+// If a channel name was specified instead of modulation parameters,
+// load its description from the channel file.
 //----------------------------------------------------------------------------
 
 bool ts::TunerArgs::resolveChannel(const DeliverySystemSet& systems, Report& report)
