@@ -66,8 +66,11 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
 
     // Locked space starts at next page boundary after allocated base:
     // Its size is the next multiple of page size after requested_size:
+    // Be sure to use size_t (unsigned) instead of ptrdiff_t (signed)
+    // to perform arithmetics on pointers because we use modulo operations.
 
-    _locked_base = char_ptr(RoundUp(ptrdiff_t(_allocated_base), ptrdiff_t(page_size)));
+    assert(sizeof(size_t) == sizeof(char_ptr));
+    _locked_base = char_ptr(RoundUp(size_t(_allocated_base), page_size));
     _locked_size = RoundUp(requested_size, page_size);
 
     _base = new (_locked_base) T[elem_count];
@@ -79,8 +82,8 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     assert(_locked_base + _locked_size <= _allocated_base + _allocated_size);
     assert(requested_size <= _locked_size);
     assert(_locked_size <= _allocated_size);
-    assert(ptrdiff_t(_locked_base) % page_size == 0);
-    assert(ptrdiff_t(_locked_base) == ptrdiff_t(_base));
+    assert(size_t(_locked_base) % page_size == 0);
+    assert(size_t(_locked_base) == size_t(_base));
     assert(char_ptr(_base + elem_count) <= _locked_base + _locked_size);
     assert(_locked_size % page_size == 0);
 

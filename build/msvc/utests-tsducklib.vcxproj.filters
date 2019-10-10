@@ -85,6 +85,9 @@
     <ClCompile Include="..\..\src\utest\utestFatal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\utest\utestIntegerUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\utest\utestInterrupt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

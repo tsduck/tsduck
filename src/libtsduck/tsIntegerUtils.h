@@ -46,8 +46,11 @@ namespace ts {
     //! case of underflow or overflow, the result is the min or max
     //! value of the type, respectively.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    INT BoundedAdd(INT a, INT b);
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    INT BoundedAdd(INT a, INT b); // unsigned version
+
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    INT BoundedAdd(INT a, INT b); // signed version
 
     //!
     //! Perform a bounded subtraction without overflow.
@@ -58,34 +61,37 @@ namespace ts {
     //! case of underflow or overflow, the result is the min or max
     //! value of the type, respectively.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    INT BoundedSub(INT a, INT b);
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    INT BoundedSub(INT a, INT b); // unsigned version
+
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    INT BoundedSub(INT a, INT b); // signed version
 
     //!
     //! Round @a x down to previous multiple of a factor @a f.
     //! @tparam INT An integer type.
     //! @param [in] x An integer value.
-    //! @param [in] f A factor.
+    //! @param [in] f A factor (its absolute value is used if negative).
     //! @return The value @a x rounded down to previous multiple of @a f.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    inline INT RoundDown(INT x, INT f)
-    {
-        return x - x % f;
-    }
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    inline INT RoundDown(INT x, INT f); // unsigned version
+
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    inline INT RoundDown(INT x, INT f); // signed version
 
     //!
     //! Round @a x up to next multiple of a factor @a f.
     //! @tparam INT An integer type.
     //! @param [in] x An integer value.
-    //! @param [in] f A factor.
+    //! @param [in] f A factor (its absolute value is used if negative).
     //! @return The value @a x rounded up to next multiple of @a f.
     //!
-    template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    inline INT RoundUp(INT x, INT f)
-    {
-        return RoundDown(x + f - 1, f);
-    }
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    inline INT RoundUp(INT x, INT f); // unsigned version
+
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    inline INT RoundUp(INT x, INT f); // signed version
 
     //!
     //! Compute the maximum width of the decimal representation of an integer type.
