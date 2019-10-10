@@ -56,8 +56,8 @@ $(OBJDIR)/setenv.sh: Makefile
 
 .PHONY: test
 test: execs
-	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest
-	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest_static
+	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest $(UTESTFLAGS)
+	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest_static $(UTESTFLAGS)
 
 .PHONY: install install-devel
 install install-devel:
