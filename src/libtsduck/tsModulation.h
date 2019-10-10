@@ -36,6 +36,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsEnumeration.h"
+#include "tsVariable.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -66,6 +67,27 @@ namespace ts {
     //! to @a report.
     //!
     TSDUCKDLL bool CheckModEnum(int value, const UString& name, const Enumeration& conv, Report& report);
+
+    //!
+    //! Check if an optional enumeration value is supported by the native implementation.
+    //!
+    //! @param [in] value A variable object containing an enumeration value from on the
+    //! enumeration types in file @link tsModulation.h @endlink.
+    //! @param [in] name The name of the feature or enumeration type (eg.
+    //! "FEC", "guard interval", etc.) Used to report errors.
+    //! @param [in] conv The ts::Enumeration instance for the enumeration type.
+    //! Used to report errors.
+    //! @param [in] report Where to report errors.
+    //! @return True if either @a value is not set or its value is supported on the operating system.
+    //! False if the value is set and the feature is not supported. In this case, an error message is reported
+    //! to @a report.
+    //! @see CheckModEnum()
+    //!
+    template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
+    bool CheckModVar(const Variable<ENUM>& value,const UString& name, const Enumeration& conv, Report& report)
+    {
+        return !value.set() || CheckModEnum(int(value.value()), name, conv, report);
+    }
 
     //!
     //! Delivery systems.
@@ -121,6 +143,14 @@ namespace ts {
     //! Enumeration description of ts::DeliverySystem.
     //!
     TSDUCKDLL extern const Enumeration DeliverySystemEnum;
+
+    //!
+    //! Check if a delivery system is a satellite one.
+    //! This can be used to check if dish manipulations are required.
+    //! @param [in] sys The delivery system to check.
+    //! @return True if @a sys is a satellite system, false otherwise.
+    //!
+    TSDUCKDLL bool IsSatelliteDelivery(DeliverySystem sys);
 
     //!
     //! A set of delivery system values (ts::DeliverySystem).

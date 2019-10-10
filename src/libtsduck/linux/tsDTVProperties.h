@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsReport.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
@@ -57,10 +58,12 @@ namespace ts {
         //! Get the number of properties in the buffer.
         //! @return The number of properties in the buffer.
         //!
-        size_t count() const
-        {
-            return size_t(_prop_head.num);
-        }
+        size_t count() const { return size_t(_prop_head.num); }
+
+        //!
+        //! Clear all previously added commands.
+        //!
+        void clear() { _prop_head.num = 0; }
 
         //!
         //! Add a new property.
@@ -69,6 +72,19 @@ namespace ts {
         //! @return The index in property buffer.
         //!
         size_t add(uint32_t cmd, uint32_t data = -1);
+
+        //!
+        //! Add a new property if a variable is set.
+        //! @param [in] cmd Command code.
+        //! @param [in] data Optional command data.
+        //!
+        template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
+        void addVar(uint32_t cmd, const Variable<ENUM>& data)
+        {
+            if (data.set()) {
+                add(cmd, uint32_t(data.value()));
+            }
+        }
 
         //!
         //! Search a property in the buffer.
@@ -115,19 +131,13 @@ namespace ts {
         //! Get the address of the @c dtv_properties structure for @c ioctl() call.
         //! @return The address of the @c dtv_properties structure.
         //!
-        const ::dtv_properties* getIoctlParam() const
-        {
-            return &_prop_head;
-        }
+        const ::dtv_properties* getIoctlParam() const { return &_prop_head; }
 
         //!
         //! Get the address of the @c dtv_properties structure for @c ioctl() call.
         //! @return The address of the @c dtv_properties structure.
         //!
-        ::dtv_properties* getIoctlParam()
-        {
-            return &_prop_head;
-        }
+        ::dtv_properties* getIoctlParam() { return &_prop_head; }
 
         //!
         //! Returned value for unknown data.

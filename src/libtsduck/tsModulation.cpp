@@ -60,6 +60,25 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 
 
 //----------------------------------------------------------------------------
+// Check if a delivery system is a satellite one.
+//----------------------------------------------------------------------------
+
+bool ts::IsSatelliteDelivery(DeliverySystem sys)
+{
+    switch (sys) {
+        case DS_DVB_S:
+        case DS_DVB_S2:
+        case DS_DVB_S_TURBO:
+        case DS_ISDB_S:
+        case DS_DSS:
+            return true;
+        default:
+            return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 

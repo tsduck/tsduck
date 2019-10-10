@@ -76,11 +76,11 @@ int ts::Tuner::signalQuality(Report& report)
 {
     ERROR(-1);
 }
-bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report)
+bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
 {
     ERROR(false);
 }
-bool ts::Tuner::tune(const TunerParameters& params, Report& report)
+bool ts::Tuner::tune(const ModulationArgs& params, Report& report)
 {
     ERROR(false);
 }

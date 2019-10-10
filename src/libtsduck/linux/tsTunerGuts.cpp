@@ -39,10 +39,6 @@
 #include "tsNullReport.h"
 #include "tsMemoryUtils.h"
 #include "tsDTVProperties.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBT.h"
-#include "tsTunerParametersATSC.h"
 TSDUCK_SOURCE;
 
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
@@ -82,29 +78,23 @@ public:
     Guts(Tuner* tuner);
     ~Guts();
 
-    // Get current tuning parameters for specific tuners, return system error code
-    ErrorCode getCurrentTuningDVBS(TunerParametersDVBS&);
-    ErrorCode getCurrentTuningDVBC(TunerParametersDVBC&);
-    ErrorCode getCurrentTuningDVBT(TunerParametersDVBT&);
-    ErrorCode getCurrentTuningATSC(TunerParametersATSC&);
-
     // Clear tuner, return true on success, false on error
     bool dtvClear(Report&);
 
     // Discard all pending frontend events
     void discardFrontendEvents(Report&);
 
-    // Tune for specific tuners, return true on success, false on error
-    bool tuneDVBS(const TunerParametersDVBS&, Report&);
-    bool tuneDVBC(const TunerParametersDVBC&, Report&);
-    bool tuneDVBT(const TunerParametersDVBT&, Report&);
-    bool tuneATSC(const TunerParametersATSC&, Report&);
-
     // Get frontend status, encapsulate weird error management.
     bool getFrontendStatus(::fe_status_t&, Report&);
 
+    // Get current tuning information.
+    bool getCurrentTuning(ModulationArgs&, bool reset_unknown, Report&);
+
     // Perform a tune operation.
-    bool tune(DTVProperties& props, Report& report);
+    bool tune(DTVProperties&, Report&);
+
+    // Setup the dish for satellite tuners.
+    bool dishControl(const ModulationArgs&, Report&);
 };
 
 
@@ -460,146 +450,155 @@ int ts::Tuner::signalQuality(Report& report)
 
 
 //-----------------------------------------------------------------------------
-// Get current tuning parameters for DVB-S tuners, return system error code
+// Get current tuning parameters, return system error code
 //-----------------------------------------------------------------------------
 
-ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBS(TunerParametersDVBS& params)
+bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
 {
-    // Note: it is useless to get the frequency of a DVB-S tuner since it
-    // returns the intermediate frequency and there is no unique satellite
-    // frequency for a given intermediate frequency.
-
+    // Get the current delivery system
     DTVProperties props;
-    props.add(DTV_INVERSION);
-    props.add(DTV_SYMBOL_RATE);
-    props.add(DTV_INNER_FEC);
     props.add(DTV_DELIVERY_SYSTEM);
-    props.add(DTV_MODULATION);
-    props.add(DTV_PILOT);
-    props.add(DTV_ROLLOFF);
-#if defined(DTV_STREAM_ID)
-    props.add(DTV_STREAM_ID);
-#endif
-
     if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-        return LastErrorCode();
+        const ErrorCode err = LastErrorCode();
+        report.error(u"error getting current delivery system from tuner: %s", {ErrorCodeMessage(err)});
+        return false;
     }
+    const DeliverySystem delsys = DeliverySystem(props.getByCommand(DTV_DELIVERY_SYSTEM));
 
-    params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
-    params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
-    params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
-    params.delivery_system = DeliverySystem(props.getByCommand(DTV_DELIVERY_SYSTEM));
-    params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
-    params.pilots = Pilot(props.getByCommand(DTV_PILOT));
-    params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
+    // Get specific tuning parameters
+    switch (delsys) {
+        case DS_DVB_S:
+        case DS_DVB_S2:
+        case DS_DVB_S_TURBO: {
+            // Note: it is useless to get the frequency of a DVB-S tuner since it
+            // returns the intermediate frequency and there is no unique satellite
+            // frequency for a given intermediate frequency.
+            if (reset_unknown) {
+                params.frequency = 0;
+                params.polarity = ModulationArgs::DEFAULT_POLARITY;
+                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
+                params.lnb = ModulationArgs::DEFAULT_LNB;
+            }
 
-    // Use default multistream selection info in case it is undefined.
-    params.isi = ISI_DISABLE;
-    params.pls_code = TunerParametersDVBS::DEFAULT_PLS_CODE;
-    params.pls_mode = TunerParametersDVBS::DEFAULT_PLS_MODE;
+            props.clear();
+            props.add(DTV_INVERSION);
+            props.add(DTV_SYMBOL_RATE);
+            props.add(DTV_INNER_FEC);
+            props.add(DTV_DELIVERY_SYSTEM);
+            props.add(DTV_MODULATION);
+            props.add(DTV_PILOT);
+            props.add(DTV_ROLLOFF);
+            props.add(DTV_STREAM_ID);
 
-#if defined(DTV_STREAM_ID)
-    // With the Linux DVB API, all multistream selection info are passed in the "stream id".
-    const uint32_t id = props.getByCommand(DTV_STREAM_ID);
-    if (id != DTVProperties::UNKNOWN) {
-        params.isi = id & 0x000000FF;
-        params.pls_code = (id >> 8) & 0x0003FFFF;
-        params.pls_mode = PLSMode(id >> 26);
+            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+                const ErrorCode err = LastErrorCode();
+                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                return false;
+            }
+
+            params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
+            params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
+            params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
+            params.delivery_system = DeliverySystem(props.getByCommand(DTV_DELIVERY_SYSTEM));
+            params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
+            params.pilots = Pilot(props.getByCommand(DTV_PILOT));
+            params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
+
+            // With the Linux DVB API, all multistream selection info are passed in the "stream id".
+            const uint32_t id = props.getByCommand(DTV_STREAM_ID);
+            params.isi = id & 0x000000FF;
+            params.pls_code = (id >> 8) & 0x0003FFFF;
+            params.pls_mode = PLSMode(id >> 26);
+            return true;
+        }
+        case DS_DVB_T:
+        case DS_DVB_T2: {
+            props.clear();
+            props.add(DTV_FREQUENCY);
+            props.add(DTV_INVERSION);
+            props.add(DTV_BANDWIDTH_HZ);
+            props.add(DTV_CODE_RATE_HP);
+            props.add(DTV_CODE_RATE_LP);
+            props.add(DTV_MODULATION);
+            props.add(DTV_TRANSMISSION_MODE);
+            props.add(DTV_GUARD_INTERVAL);
+            props.add(DTV_HIERARCHY);
+            props.add(DTV_STREAM_ID);
+
+            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+                const ErrorCode err = LastErrorCode();
+                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                return false;
+            }
+
+            params.frequency = props.getByCommand(DTV_FREQUENCY);
+            params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
+            params.bandwidth = BandWidthCodeFromHz(props.getByCommand(DTV_BANDWIDTH_HZ));
+            params.fec_hp = InnerFEC(props.getByCommand(DTV_CODE_RATE_HP));
+            params.fec_lp = InnerFEC(props.getByCommand(DTV_CODE_RATE_LP));
+            params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
+            params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
+            params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
+            params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
+            params.plp = props.getByCommand(DTV_STREAM_ID);
+            return true;
+        }
+        case DS_DVB_C_ANNEX_A:
+        case DS_DVB_C_ANNEX_B:
+        case DS_DVB_C_ANNEX_C:
+        case DS_DVB_C2: {
+            props.clear();
+            props.add(DTV_FREQUENCY);
+            props.add(DTV_INVERSION);
+            props.add(DTV_SYMBOL_RATE);
+            props.add(DTV_INNER_FEC);
+            props.add(DTV_MODULATION);
+
+            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+                const ErrorCode err = LastErrorCode();
+                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                return false;
+            }
+
+            params.frequency = props.getByCommand(DTV_FREQUENCY);
+            params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
+            params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
+            params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
+            params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
+            return true;
+        }
+        case DS_ATSC: {
+            props.clear();
+            props.add(DTV_FREQUENCY);
+            props.add(DTV_INVERSION);
+            props.add(DTV_MODULATION);
+
+            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+                const ErrorCode err = LastErrorCode();
+                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                return false;
+            }
+
+            params.frequency = props.getByCommand(DTV_FREQUENCY);
+            params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
+            params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
+            return true;
+        }
+        case DS_ISDB_S:
+        case DS_ISDB_T:
+        case DS_ISDB_C:
+        case DS_DVB_H:
+        case DS_ATSC_MH:
+        case DS_DTMB:
+        case DS_CMMB:
+        case DS_DAB:
+        case DS_DSS:
+        case DS_UNDEFINED:
+        default:  {
+            report.error(u"cannot get current tuning for delivery system %s", {DeliverySystemEnum.name(delsys)});
+            return false;
+        }
     }
-#endif
-
-    return SYS_SUCCESS;
-}
-
-
-//-----------------------------------------------------------------------------
-// Get current tuning parameters for DVB-C tuners, return system error code
-//-----------------------------------------------------------------------------
-
-ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBC(TunerParametersDVBC& params)
-{
-    DTVProperties props;
-    props.add(DTV_FREQUENCY);
-    props.add(DTV_INVERSION);
-    props.add(DTV_SYMBOL_RATE);
-    props.add(DTV_INNER_FEC);
-    props.add(DTV_MODULATION);
-
-    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-        return LastErrorCode();
-    }
-
-    params.frequency = props.getByCommand(DTV_FREQUENCY);
-    params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
-    params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
-    params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
-    params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
-
-    return SYS_SUCCESS;
-}
-
-
-//-----------------------------------------------------------------------------
-// Get current tuning parameters for DVB-T tuners, return system error code
-//-----------------------------------------------------------------------------
-
-ts::ErrorCode ts::Tuner::Guts::getCurrentTuningDVBT(TunerParametersDVBT& params)
-{
-    DTVProperties props;
-    props.add(DTV_FREQUENCY);
-    props.add(DTV_INVERSION);
-    props.add(DTV_BANDWIDTH_HZ);
-    props.add(DTV_CODE_RATE_HP);
-    props.add(DTV_CODE_RATE_LP);
-    props.add(DTV_MODULATION);
-    props.add(DTV_TRANSMISSION_MODE);
-    props.add(DTV_GUARD_INTERVAL);
-    props.add(DTV_HIERARCHY);
-#if defined(DTV_STREAM_ID)
-    props.add(DTV_STREAM_ID);
-#endif
-
-    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-        return LastErrorCode();
-    }
-
-    params.frequency = props.getByCommand(DTV_FREQUENCY);
-    params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
-    params.bandwidth = BandWidthCodeFromHz(props.getByCommand(DTV_BANDWIDTH_HZ));
-    params.fec_hp = InnerFEC(props.getByCommand(DTV_CODE_RATE_HP));
-    params.fec_lp = InnerFEC(props.getByCommand(DTV_CODE_RATE_LP));
-    params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
-    params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
-    params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
-    params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
-#if defined(DTV_STREAM_ID)
-    params.plp = props.getByCommand(DTV_STREAM_ID);
-#endif
-
-    return SYS_SUCCESS;
-}
-
-
-//-----------------------------------------------------------------------------
-// Get current tuning parameters for ATSC tuners, return system error code
-//-----------------------------------------------------------------------------
-
-ts::ErrorCode ts::Tuner::Guts::getCurrentTuningATSC(TunerParametersATSC& params)
-{
-    DTVProperties props;
-    props.add(DTV_FREQUENCY);
-    props.add(DTV_INVERSION);
-    props.add(DTV_MODULATION);
-
-    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-        return LastErrorCode();
-    }
-
-    params.frequency = props.getByCommand(DTV_FREQUENCY);
-    params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
-    params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
-
-    return SYS_SUCCESS;
 }
 
 
@@ -607,54 +606,15 @@ ts::ErrorCode ts::Tuner::Guts::getCurrentTuningATSC(TunerParametersATSC& params)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report)
+bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
 {
-    if (!_is_open) {
-        report.error(u"DVB tuner not open");
-        return false;
-    }
-
-    // Get transponder tuning information
-
-    ErrorCode error = SYS_SUCCESS;
-
-    if (hasDeliverySystem(DS_DVB_S)) {
-        TunerParametersDVBS* tpp = dynamic_cast<TunerParametersDVBS*>(&params);
-        assert(tpp != nullptr);
-        if (reset_unknown) {
-            tpp->frequency = 0;
-            tpp->polarity = TunerParametersDVBS::DEFAULT_POLARITY;
-            tpp->satellite_number = TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
-            tpp->lnb.setUniversalLNB();
-        }
-        error = _guts->getCurrentTuningDVBS(*tpp);
-    }
-    else if (hasDeliverySystem(DS_DVB_C)) {
-        TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*>(&params);
-        assert(tpp != nullptr);
-        error = _guts->getCurrentTuningDVBC(*tpp);
-    }
-    else if (hasDeliverySystem(DS_DVB_T)) {
-        TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*>(&params);
-        assert(tpp != nullptr);
-        error = _guts->getCurrentTuningDVBT(*tpp);
-    }
-    else if (hasDeliverySystem(DS_ATSC)) {
-        TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*>(&params);
-        assert(tpp != nullptr);
-        error = _guts->getCurrentTuningATSC(*tpp);
+    if (_is_open) {
+        return _guts->getCurrentTuning(params, reset_unknown, report);
     }
     else {
-        report.error(u"no supported tuning parameters in %s", {deliverySystemsString()});
+        report.error(u"tuner not open");
         return false;
     }
-
-    if (error != SYS_SUCCESS) {
-        report.error(u"error getting DVB frontend parameters : %s", {ErrorCodeMessage(error)});
-        return false;
-    }
-
-    return true;
 }
 
 
@@ -682,7 +642,8 @@ bool ts::Tuner::Guts::tune(DTVProperties& props, Report& report)
     report.debug(u"tuning on %s", {frontend_name});
     props.report(report, Severity::Debug);
     if (::ioctl(frontend_fd, FE_SET_PROPERTY, props.getIoctlParam()) < 0) {
-        report.error(u"tuning error on %s: %s", {frontend_name, ErrorCodeMessage()});
+        const ErrorCode err = LastErrorCode();
+        report.error(u"tuning error on %s: %s", {frontend_name, ErrorCodeMessage(err)});
         return false;
     }
     return true;
@@ -702,18 +663,11 @@ bool ts::Tuner::Guts::dtvClear(Report& report)
 
 
 //-----------------------------------------------------------------------------
-// Tune for DVB-S tuners, return true on success, false on error
+// Setup the dish for satellite tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report)
+bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, Report& report)
 {
-    // Clear tuner state.
-    if (!dtvClear(report)) {
-        return false;
-    }
-
-    // For satellite, control the dish first
-    //
     // Extracted from DVB/doc/HOWTO-use-the-frontend-api:
     //
     // Before you set the frontend parameters you have to setup DiSEqC switches
@@ -775,14 +729,14 @@ bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report
     ::nanosleep(&delay, nullptr);
 
     // Send DiSEqC commands. See DiSEqC spec ...
-    const bool high_band = params.lnb.useHighBand(params.frequency);
+    const bool high_band = params.lnb.value().useHighBand(params.frequency.value());
     ::dvb_diseqc_master_cmd cmd;
     cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
     cmd.msg[0] = 0xE0;  // Command from master, no reply expected, first transmission
     cmd.msg[1] = 0x10;  // Any LNB or switcher (master to all)
     cmd.msg[2] = 0x38;  // Write to port group 0
     cmd.msg[3] = 0xF0 | // Clear all 4 flags first, then set according to next 4 bits
-        ((uint8_t(params.satellite_number) << 2) & 0x0F) |
+        ((uint8_t(params.satellite_number.value()) << 2) & 0x0F) |
         (params.polarity == POL_VERTICAL ? 0x00 : 0x02) |
         (high_band ? 0x01 : 0x00);
     cmd.msg[4] = 0x00;  // Unused
@@ -801,194 +755,146 @@ bool ts::Tuner::Guts::tuneDVBS(const TunerParametersDVBS& params, Report& report
         report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
         return false;
     }
-
-    // End of dish setup, now configure the tuner
-    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
-        !CheckModEnum(params.pilots, u"pilots", PilotEnum, report) ||
-        !CheckModEnum(params.roll_off, u"roll-off factor", RollOffEnum, report)) {
-        return false;
-    }
-
-    // For DVB-S/S2, Linux DVB API uses an intermediate frequency in kHz
-    const uint32_t intermediate_frequency = uint32_t(params.lnb.intermediateFrequency(params.frequency) / 1000);
-
-    discardFrontendEvents(report);
-
-    DTVProperties props;
-    props.add(DTV_DELIVERY_SYSTEM, uint32_t(params.delivery_system));
-    props.add(DTV_FREQUENCY, intermediate_frequency);
-    props.add(DTV_MODULATION, uint32_t(params.modulation));
-    props.add(DTV_SYMBOL_RATE, params.symbol_rate);
-    props.add(DTV_INNER_FEC, uint32_t(params.inner_fec));
-    props.add(DTV_INVERSION, uint32_t(params.inversion));
-    props.add(DTV_ROLLOFF, uint32_t(params.roll_off));
-    props.add(DTV_PILOT, uint32_t(params.pilots));
-    if (params.isi != ISI_DISABLE) {
-#if defined(DTV_STREAM_ID)
-        // With the Linux DVB API, all multistream selection info are passed in the "stream id".
-        const uint32_t id =
-            (uint32_t(params.pls_mode) << 26) |
-            ((params.pls_code & 0x0003FFFF) << 8) |
-            (params.isi & 0x000000FF);
-        report.debug(u"using DVB-S2 multi-stream id 0x%X (%d)", {id, id});
-        props.add(DTV_STREAM_ID, id);
-#else
-        report.warning(u"DVB-S2 multi-stream selection disabled on this version of Linux");
-#endif
-    }
-    props.add(DTV_TUNE);
-
-    return tune(props, report);
-}
-
-
-//-----------------------------------------------------------------------------
-// Tune for DVB-C tuners, return true on success, false on error
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::Guts::tuneDVBC(const TunerParametersDVBC& params, Report& report)
-{
-    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report)) {
-        return false;
-    }
-
-    discardFrontendEvents(report);
-
-    if (!dtvClear(report)) {
-        return false;
-    }
-    DTVProperties props;
-    props.add(DTV_FREQUENCY, uint32_t(params.frequency));
-    props.add(DTV_MODULATION, uint32_t(params.modulation));
-    props.add(DTV_INVERSION, uint32_t(params.inversion));
-    props.add(DTV_INNER_FEC, uint32_t(params.inner_fec));
-    props.add(DTV_SYMBOL_RATE, params.symbol_rate);
-    props.add(DTV_TUNE);
-
-    return tune(props, report);
-}
-
-
-//-----------------------------------------------------------------------------
-// Tune for DVB-T tuners, return true on success, false on error
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::Guts::tuneDVBT(const TunerParametersDVBT& params, Report& report)
-{
-    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
-        !CheckModEnum(params.fec_hp, u"FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.fec_lp, u"FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, u"constellation", ModulationEnum, report) ||
-        !CheckModEnum(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) ||
-        !CheckModEnum(params.guard_interval, u"guard interval", GuardIntervalEnum, report) ||
-        !CheckModEnum(params.hierarchy, u"hierarchy", HierarchyEnum, report)) {
-        return false;
-    }
-
-    discardFrontendEvents(report);
-
-    if (!dtvClear(report)) {
-        return false;
-    }
-    DTVProperties props;
-    const uint32_t bwhz = BandWidthValueHz(params.bandwidth);
-    props.add(DTV_FREQUENCY, uint32_t(params.frequency));
-    props.add(DTV_MODULATION, uint32_t(params.modulation));
-    props.add(DTV_INVERSION, uint32_t(params.inversion));
-    if (bwhz > 0) {
-        props.add(DTV_BANDWIDTH_HZ, bwhz);
-    }
-    props.add(DTV_CODE_RATE_HP, uint32_t(params.fec_hp));
-    props.add(DTV_CODE_RATE_LP, uint32_t(params.fec_lp));
-    props.add(DTV_TRANSMISSION_MODE, uint32_t(params.transmission_mode));
-    props.add(DTV_GUARD_INTERVAL, uint32_t(params.guard_interval));
-    props.add(DTV_HIERARCHY, uint32_t(params.hierarchy));
-    if (params.plp != PLP_DISABLE) {
-#if defined(DTV_STREAM_ID)
-        props.add(DTV_STREAM_ID, uint32_t(params.plp));
-#else
-        report.warning(u"DVB-T2 PLP selection disabled on this version of Linux");
-#endif
-    }
-    props.add(DTV_TUNE);
-
-    return tune(props, report);
-}
-
-
-//-----------------------------------------------------------------------------
-// Tune for ATSC tuners, return true on success, false on error
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::Guts::tuneATSC(const TunerParametersATSC& params, Report& report)
-{
-    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report)) {
-        return false;
-    }
-
-    discardFrontendEvents(report);
-
-    if (!dtvClear(report)) {
-        return false;
-    }
-
-    DTVProperties props;
-    props.add(DTV_FREQUENCY, uint32_t(params.frequency));
-    props.add(DTV_MODULATION, uint32_t(params.modulation));
-    props.add(DTV_INVERSION, uint32_t(params.inversion));
-    props.add(DTV_TUNE);
-
-    return tune(props, report);
+    return true;
 }
 
 
 //-----------------------------------------------------------------------------
 // Tune to the specified parameters and start receiving.
-// Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(const TunerParameters& params, Report& report)
+bool ts::Tuner::tune(const ModulationArgs& in_params, Report& report)
 {
     if (!_is_open) {
-        report.error(u"DVB tuner not open");
+        report.error(u"tuner not open");
         return false;
     }
 
-    // Dispatch depending on tuner type
+    // Set all unset tuning parameters to their default value.
+    ModulationArgs params(in_params);
+    params.setDefaultValues();
 
-    if (hasDeliverySystem(DS_DVB_S)) {
-        const TunerParametersDVBS* tpp = dynamic_cast<const TunerParametersDVBS*>(&params);
-        if (tpp != nullptr) {
-            return _guts->tuneDVBS(*tpp, report);
-        }
-    }
-    else if (hasDeliverySystem(DS_DVB_C)) {
-        const TunerParametersDVBC* tpp = dynamic_cast<const TunerParametersDVBC*>(&params);
-        if (tpp != nullptr) {
-            return _guts->tuneDVBC(*tpp, report);
-        }
-    }
-    else if (hasDeliverySystem(DS_DVB_T)) {
-        const TunerParametersDVBT* tpp = dynamic_cast<const TunerParametersDVBT*>(&params);
-        if (tpp != nullptr) {
-            return _guts->tuneDVBT(*tpp, report);
-        }
-    }
-    else if (hasDeliverySystem(DS_ATSC)) {
-        const TunerParametersATSC* tpp = dynamic_cast<const TunerParametersATSC*>(&params);
-        if (tpp != nullptr) {
-            return _guts->tuneATSC(*tpp, report);
-        }
+    if (!params.delivery_system.set()) {
+        report.error(u"no tuning delivery specified");
+        return false;
     }
 
-    report.error(u"inconsistent tuner parameter type");
-    return false;
+    // Check if all specified values are supported on the operating system.
+    if (!CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
+        !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
+        !CheckModVar(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
+        !CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) ||
+        !CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) ||
+        !CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) ||
+        !CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, report) ||
+        !CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, report) ||
+        !CheckModVar(params.pilots, u"pilots", PilotEnum, report) ||
+        !CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, report))
+    {
+        return false;
+    }
+
+    // Clear tuner state.
+    _guts->discardFrontendEvents(report);
+    if (!_guts->dtvClear(report)) {
+        return false;
+    }
+
+    // For all tuners except satellite, the frequency is in Hz, on 32 bits.
+    uint32_t freq = uint32_t(params.frequency.value());
+
+    // In case of satellite delivery, we need to control the dish.
+    if (IsSatelliteDelivery(params.delivery_system.value())) {
+        // For satellite, Linux DVB API uses an intermediate frequency in kHz
+        freq = uint32_t(params.lnb.value().intermediateFrequency(params.frequency.value()) / 1000);
+        // Setup the dish (polarity, band).
+        if (!_guts->dishControl(params, report)) {
+            return false;
+        }
+        // Clear tuner state again.
+        _guts->discardFrontendEvents(report);
+    }
+
+    // The bandwidth, when set, is in Hz.
+    const uint32_t bwhz = params.bandwidth.set() ? BandWidthValueHz(params.bandwidth.value()) : 0;
+
+    // Now build a list of tuning parameters.
+    // The delivery system and frequency are required everywhere.
+    DTVProperties props;
+    props.add(DTV_DELIVERY_SYSTEM, uint32_t(params.delivery_system.value()));
+    props.add(DTV_FREQUENCY, freq);
+
+    // Other parameters depend on tuner type
+    switch (params.delivery_system.value()) {
+        case DS_DVB_S:
+        case DS_DVB_S2:
+        case DS_DVB_S_TURBO: {
+            props.addVar(DTV_MODULATION, params.modulation);
+            props.addVar(DTV_SYMBOL_RATE, params.symbol_rate);
+            props.addVar(DTV_INNER_FEC, params.inner_fec);
+            props.addVar(DTV_INVERSION, params.inversion);
+            props.addVar(DTV_ROLLOFF, params.roll_off);
+            props.addVar(DTV_PILOT, params.pilots);
+            if (params.isi.set() && params.isi.value() != ISI_DISABLE) {
+                // With the Linux DVB API, all multistream selection info are passed in the "stream id".
+                const uint32_t id =
+                    (uint32_t(params.pls_mode.value(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
+                    ((params.pls_code.value(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
+                    (params.isi.value() & 0x000000FF);
+                report.debug(u"using DVB-S2 multi-stream id 0x%X (%d)", {id, id});
+                props.add(DTV_STREAM_ID, id);
+            }
+            break;
+        }
+        case DS_DVB_T:
+        case DS_DVB_T2: {
+            props.addVar(DTV_MODULATION, params.modulation);
+            props.addVar(DTV_INVERSION, params.inversion);
+            if (bwhz > 0) {
+                props.add(DTV_BANDWIDTH_HZ, bwhz);
+            }
+            props.addVar(DTV_CODE_RATE_HP, params.fec_hp);
+            props.addVar(DTV_CODE_RATE_LP, params.fec_lp);
+            props.addVar(DTV_TRANSMISSION_MODE, params.transmission_mode));
+            props.addVar(DTV_GUARD_INTERVAL, params.guard_interval);
+            props.addVar(DTV_HIERARCHY, params.hierarchy);
+            props.addVar(DTV_STREAM_ID, params.plp);
+            break;
+        }
+        case DS_DVB_C_ANNEX_A:
+        case DS_DVB_C_ANNEX_B:
+        case DS_DVB_C_ANNEX_C:
+        case DS_DVB_C2: {
+            props.addVar(DTV_MODULATION, params.modulation);
+            props.addVar(DTV_INVERSION, params.inversion);
+            props.addVar(DTV_INNER_FEC, params.inner_fec);
+            props.addVar(DTV_SYMBOL_RATE, params.symbol_rate);
+            break;
+        }
+        case DS_ATSC: {
+            props.addVar(DTV_MODULATION, params.modulation);
+            props.addVar(DTV_INVERSION, params.inversion);
+            break;
+        }
+        case DS_ISDB_S:
+        case DS_ISDB_T:
+        case DS_ISDB_C:
+        case DS_DVB_H:
+        case DS_ATSC_MH:
+        case DS_DTMB:
+        case DS_CMMB:
+        case DS_DAB:
+        case DS_DSS:
+        case DS_UNDEFINED:
+        default:  {
+            report.error(u"cannot tune on delivery system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
+            return false;
+        }
+    }
+
+    props.add(DTV_TUNE);
+    return _guts->tune(props, report);
 }
 
 
