@@ -29,46 +29,38 @@
 
 #pragma once
 
-//
-// In this module, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
-// capability of the type (is_signed, etc.) But, for each instantiation of INT, the corresponding
-// expression is constant and the Microsoft compiler complains about that.
-//
-TS_PUSH_WARNING()
-TS_MSC_NOWARNING(4127)  // warning C4127: conditional expression is constant
-
-
 //----------------------------------------------------------------------------
 // Perform a bounded addition without overflow.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
 INT ts::BoundedAdd(INT a, INT b)
 {
-    if (std::numeric_limits<INT>::is_signed) {
-        // Signed addition.
-        const INT c = a + b;
-        if (a > 0 && b > 0 && c <= 0) {
-            // Overflow.
-            return std::numeric_limits<INT>::max();
-        }
-        else if (a < 0 && b < 0 && c >= 0) {
-            // Underflow.
-            return std::numeric_limits<INT>::min();
-        }
-        else {
-            return c;
-        }
+    // Unsigned addition.
+    if (a > std::numeric_limits<INT>::max() - b) {
+        // Overflow.
+        return std::numeric_limits<INT>::max();
     }
     else {
-        // Unsigned addition.
-        if (a > std::numeric_limits<INT>::max() - b) {
-            // Overflow.
-            return std::numeric_limits<INT>::max();
-        }
-        else {
-            return a + b;
-        }
+        return a + b;
+    }
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+INT ts::BoundedAdd(INT a, INT b)
+{
+    // Signed addition.
+    const INT c = a + b;
+    if (a > 0 && b > 0 && c <= 0) {
+        // Overflow.
+        return std::numeric_limits<INT>::max();
+    }
+    else if (a < 0 && b < 0 && c >= 0) {
+        // Underflow.
+        return std::numeric_limits<INT>::min();
+    }
+    else {
+        return c;
     }
 }
 
@@ -77,34 +69,64 @@ INT ts::BoundedAdd(INT a, INT b)
 // Perform a bounded subtraction without overflow.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
 INT ts::BoundedSub(INT a, INT b)
 {
-    if (std::numeric_limits<INT>::is_signed) {
-        // Signed subtraction.
-        const INT c = a - b;
-        if (a > 0 && b < 0 && c <= 0) {
-            // Overflow.
-            return std::numeric_limits<INT>::max();
-        }
-        else if (a < 0 && b > 0 && c >= 0) {
-            // Underflow.
-            return std::numeric_limits<INT>::min();
-        }
-        else {
-            return c;
-        }
+    // Unsigned subtraction.
+    if (a < b) {
+        // Underflow.
+        return 0;
     }
     else {
-        // Unsigned subtraction.
-        if (a < b) {
-            // Underflow.
-            return 0;
-        }
-        else {
-            return a - b;
-        }
+        return a - b;
     }
 }
 
-TS_POP_WARNING()
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+INT ts::BoundedSub(INT a, INT b)
+{
+    // Signed subtraction.
+    const INT c = a - b;
+    if (a > 0 && b < 0 && c <= 0) {
+        // Overflow.
+        return std::numeric_limits<INT>::max();
+    }
+    else if (a < 0 && b > 0 && c >= 0) {
+        // Underflow.
+        return std::numeric_limits<INT>::min();
+    }
+    else {
+        return c;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Rounding integers up and down.
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+inline INT ts::RoundDown(INT x, INT f)
+{
+    return f == 0 ? x : x - x % f;
+}
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+inline INT ts::RoundDown(INT x, INT f)
+{
+    f = INT(std::abs(f));
+    return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
+}
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+inline INT ts::RoundUp(INT x, INT f)
+{
+    return f == 0 ? x : x + (f - x % f) % f;
+}
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+inline INT ts::RoundUp(INT x, INT f)
+{
+    f = INT(std::abs(f));
+    return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);
+}

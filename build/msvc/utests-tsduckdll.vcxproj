@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\src\utest\utestFatal.cpp" />
     <ClCompile Include="..\..\src\utest\utestGrid.cpp" />
     <ClCompile Include="..\..\src\utest\utestGuard.cpp" />
+    <ClCompile Include="..\..\src\utest\utestIntegerUtils.cpp" />
     <ClCompile Include="..\..\src\utest\utestInterrupt.cpp" />
     <ClCompile Include="..\..\src\utest\utestJSON.cpp" />
     <ClCompile Include="..\..\src\utest\utestMessageQueue.cpp" />
