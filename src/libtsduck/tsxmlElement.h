@@ -310,6 +310,21 @@ namespace ts {
             }
 
             //!
+            //! Set an optional attribute with an enumeration attribute to a node.
+            //! @tparam ENUM An enum type.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+            //!
+            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
+            void setOptionalEnumAttribute(const Enumeration& definition, const UString& name, const Variable<ENUM>& value)
+            {
+                if (value.set()) {
+                    refAttribute(name).setEnum(definition, int(value.value()));
+                }
+            }
+
+            //!
             //! Set an enumeration attribute of a node.
             //! @tparam INT An integer type.
             //! @param [in] definition The definition of enumeration values.
@@ -450,7 +465,7 @@ namespace ts {
             //!
             //! Get an optional integer attribute of an XML element.
             //! @tparam INT An integer type.
-            //! @param [out] value Returned value of the attribute. If the attribute is ot present, the variable is reset.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
             //! @param [in] name Name of the attribute.
             //! @param [in] minValue Minimum allowed value for the attribute.
             //! @param [in] maxValue Maximum allowed value for the attribute.
@@ -461,6 +476,32 @@ namespace ts {
                                          const UString& name,
                                          INT minValue = std::numeric_limits<INT>::min(),
                                          INT maxValue = std::numeric_limits<INT>::max()) const;
+
+            //!
+            //! Get an optional integer attribute of an XML element.
+            //! getVariableIntAttribute() is different from getOptionalIntAttribute() in the result.
+            //! With getOptionalIntAttribute(), if the attribute is missing, the Variable is unset.
+            //! With getVariableIntAttribute(), if the attribute is missing, the Variable is set with the default value.
+            //! @tparam INT An integer type.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            bool getVariableIntAttribute(Variable<INT>& value,
+                                         const UString& name,
+                                         bool required = false,
+                                         INT defValue = 0,
+                                         INT minValue = std::numeric_limits<INT>::min(),
+                                         INT maxValue = std::numeric_limits<INT>::max()) const
+            {
+                value.setDefault(defValue);
+                return getIntAttribute(value.value(), name, required, defValue, minValue, maxValue);
+            }
 
             //!
             //! Get an enumeration attribute of an XML element.
@@ -477,7 +518,7 @@ namespace ts {
             //!
             //! Get an enumeration attribute of an XML element.
             //! Integer literals and integer values are accepted in the attribute.
-            //! @tparam INT An integer type.
+            //! @tparam INT An integer or enum type.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] definition The definition of enumeration values.
             //! @param [in] name Name of the attribute.
@@ -485,22 +526,41 @@ namespace ts {
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
             bool getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required = false, INT defValue = INT(0)) const;
 
             //!
-            //! Get an enumeration attribute of an XML element.
+            //! Get an optional enumeration attribute of an XML element.
             //! Integer literals and integer values are accepted in the attribute.
-            //! @tparam ENUM An enumeration type.
-            //! @param [out] value Returned value of the attribute.
+            //! @tparam INT An integer or enum type.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Name of the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+            bool getOptionalIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name) const;
+
+            //!
+            //! Get an optional enumeration attribute of an XML element.
+            //! Integer literals and integer values are accepted in the attribute.
+            //! getVariableIntEnumAttribute() is different from getOptionalIntEnumAttribute() in the result.
+            //! With getOptionalIntEnumAttribute(), if the attribute is missing, the Variable is unset.
+            //! With getVariableIntEnumAttribute(), if the attribute is missing, the Variable is set with the default value.
+            //! @tparam INT An integer or enum type.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
             //! @param [in] definition The definition of enumeration values.
             //! @param [in] name Name of the attribute.
             //! @param [in] required If true, generate an error if the attribute is not found.
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
-            bool getIntEnumAttribute(ENUM& value, const Enumeration& definition, const UString& name, bool required = false, ENUM defValue = ENUM(0)) const;
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+            bool getVariableIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name, bool required = false, INT defValue = INT(0)) const
+            {
+                value.setDefault(defValue);
+                return getIntEnumAttribute(value.value(), definition, name, required, defValue);
+            }
 
             //!
             //! Get a date/time attribute of an XML element.

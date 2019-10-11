@@ -92,7 +92,7 @@ namespace ts {
         //!
         bool resolveChannel(const DeliverySystemSet& systems, Report& report);
 
-    protected:
-        const bool _info_only;
+    private:
+        bool _info_only;
     };
 }

@@ -584,7 +584,9 @@
 //!
 //! This macro should preceed an intentional fallthrough in a switch expression.
 //!
-#if defined(TS_GCC)
+#if defined(TS_LLVM)
+    #define TS_FALLTHROUGH OS_FALLTHROUGH;
+#elif defined(TS_GCC)
     #define TS_FALLTHROUGH __attribute__((fallthrough));
 #else
     #define TS_FALLTHROUGH /* fallthrough */

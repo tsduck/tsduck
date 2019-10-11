@@ -678,6 +678,119 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(const Descriptor& desc)
 
 
 //----------------------------------------------------------------------------
+// Format a short description (frequency and essential parameters).
+//----------------------------------------------------------------------------
+
+ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength, int quality) const
+{
+    // Strength and quality as a string.
+    UString qual_string;
+    if (strength >= 0) {
+        qual_string = UString::Format(u"strength: %d%%", {strength});
+    }
+    if (quality >= 0) {
+        if (!qual_string.empty()) {
+            qual_string += u", ";
+        }
+        qual_string += UString::Format(u"quality: %d%%", {quality});
+    }
+
+    // Don't know what to describe without delivery system or frequency.
+    if (!delivery_system.set() || !frequency.set()) {
+        return qual_string;
+    }
+
+    UString desc;
+    switch (TunerTypeOf(delivery_system.value())) {
+        case TT_DVB_T: {
+            // Try to resolve UHF/VHF channels.
+            const UChar* band = nullptr;
+            uint32_t channel = 0;
+            int32_t offset = 0;
+
+            // Get UHF and VHF band descriptions in the default region.
+            const ts::HFBand* uhf = duck.uhfBand();
+            const ts::HFBand* vhf = duck.vhfBand();
+
+            if (uhf->inBand(frequency.value(), true)) {
+                band = u"UHF";
+                channel = uhf->channelNumber(frequency.value());
+                offset = uhf->offsetCount(frequency.value());
+            }
+            else if (vhf->inBand(frequency.value(), true)) {
+                band = u"VHF";
+                channel = vhf->channelNumber(frequency.value());
+                offset = vhf->offsetCount(frequency.value());
+            }
+
+            if (band != nullptr) {
+                desc += UString::Format(u"%s channel %d", {band, channel});
+                if (offset != 0) {
+                    desc += UString::Format(u", offset %+d", {offset});
+                }
+                desc += u" (";
+            }
+            desc += UString::Format(u"%'d Hz", {frequency.value()});
+            if (band != nullptr) {
+                desc += u")";
+            }
+
+            if (plp != PLP_DISABLE) {
+                desc += UString::Format(u", PLP %d", {plp.value()});
+            }
+            break;
+        }
+        case TT_DVB_S: {
+            // Display frequency and polarity.
+            desc = UString::Format(u"%'d Hz", {frequency.value()});
+            if (polarity.set()) {
+                switch (polarity.value()) {
+                    case POL_HORIZONTAL:
+                        desc += u" H";
+                        break;
+                    case POL_VERTICAL:
+                        desc += u" V";
+                        break;
+                    case POL_LEFT:
+                        desc += u" L";
+                        break;
+                    case POL_RIGHT:
+                        desc += u" R";
+                        break;
+                    case POL_AUTO:
+                    case POL_NONE:
+                    default:
+                        break;
+                }
+            }
+            if (delivery_system != DS_DVB_S) {
+                desc += u" (" + DeliverySystemEnum.name(delivery_system.value());
+                if (modulation != QAM_AUTO) {
+                    desc += u", " + ModulationEnum.name(modulation.value());
+                }
+                desc += u")";
+            }
+            break;
+        }
+        case TT_ATSC:
+        case TT_DVB_C:
+        case TT_UNDEFINED:
+        default: {
+            // Generic display.
+            desc = UString::Format(u"%'d Hz", {frequency.value()});
+            break;
+        }
+    }
+
+    // Final string.
+    if (!qual_string.empty()) {
+        desc += u", " + qual_string;
+    }
+    return desc;
+}
+
+
+//----------------------------------------------------------------------------
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 

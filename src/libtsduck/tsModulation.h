@@ -145,6 +145,29 @@ namespace ts {
     TSDUCKDLL extern const Enumeration DeliverySystemEnum;
 
     //!
+    //! A subset of ts::DeliverySystem describing types of tuners.
+    //!
+    enum TunerType {
+        TT_UNDEFINED = DS_UNDEFINED,
+        TT_DVB_S     = DS_DVB_S,
+        TT_DVB_T     = DS_DVB_T,
+        TT_DVB_C     = DS_DVB_C,
+        TT_ATSC      = DS_ATSC,
+    };
+
+    //!
+    //! Enumeration description for the subset of ts::DeliverySystem describing types of tuners.
+    //!
+    TSDUCKDLL extern const Enumeration TunerTypeEnum;
+
+    //!
+    //! Get the tuner type of a delivery system.
+    //! @param [in] system Delivery system.
+    //! @return Corresponding tuner type or DS_UNDEFINED if there is no corresponding tuner type.
+    //!
+    TSDUCKDLL TunerType TunerTypeOf(DeliverySystem system);
+
+    //!
     //! Check if a delivery system is a satellite one.
     //! This can be used to check if dish manipulations are required.
     //! @param [in] sys The delivery system to check.
