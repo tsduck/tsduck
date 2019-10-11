@@ -252,7 +252,7 @@ namespace ts {
         //!
         static constexpr PLSMode DEFAULT_PLS_MODE = PLS_ROOT;
 
-        //@@  Missing values for ISDB-T:
+        //@@  Future values for ISDB-T:
         //@@
         //@@    DTV_ISDBT_LAYER_ENABLED
         //@@    DTV_ISDBT_PARTIAL_RECEPTION
@@ -273,7 +273,7 @@ namespace ts {
         //@@    DTV_ISDBT_LAYERC_SEGMENT_COUNT
         //@@    DTV_ISDBT_LAYERC_TIME_INTERLEAVING
         //@@
-        //@@  Missing values for ISDB-S:
+        //@@  Future values for ISDB-S:
         //@@
         //@@    DTV_ISDBS_TS_ID
 
@@ -340,8 +340,21 @@ namespace ts {
         //!
         bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const;
 
+        //!
+        //! Format a short description (frequency and essential parameters).
+        //! @param [out] duck TSDuck execution context.
+        //! @param [in] strength Signal strength in percent. Ignored if negative.
+        //! @param [in] quality Signal quality in percent. Ignored if negative.
+        //! @return A description string.
+        //!
+        UString shortDescription(DuckContext& duck, int strength = -1, int quality = -1) const;
+
     protected:
-        const bool _allow_short_options;
+        //!
+        //! Check if one-letter short command line options are allowed.
+        //! @return True if one-letter short command line options are allowed.
+        //!
+        bool allowShortOptions() const { return _allow_short_options; }
 
         //!
         //! Theoretical useful bitrate for QPSK or QAM modulation.
@@ -353,5 +366,8 @@ namespace ts {
         //! @return Theoretical useful bitrate in bits/second or zero on error.
         //!
         static BitRate TheoreticalBitrateForModulation(Modulation mod, InnerFEC fec, uint32_t symbol_rate);
+
+    private:
+        bool _allow_short_options;
     };
 }

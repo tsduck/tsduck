@@ -146,7 +146,7 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 void ts::TunerArgs::defineArgs(Args& args) const
 {
     // Tuner identification.
-    args.option(u"adapter", _allow_short_options ? u'a' : 0, Args::UNSIGNED);
+    args.option(u"adapter", allowShortOptions() ? u'a' : 0, Args::UNSIGNED);
     args.help(u"adapter", u"N",
 #if defined(TS_LINUX)
               u"Specifies the Linux DVB adapter N (/dev/dvb/adapterN). "
@@ -155,7 +155,7 @@ void ts::TunerArgs::defineArgs(Args& args) const
 #endif
               u"This option can be used instead of device name.");
 
-    args.option(u"device-name", _allow_short_options ? u'd' : 0, Args::STRING);
+    args.option(u"device-name", allowShortOptions() ? u'd' : 0, Args::STRING);
     args.help(u"device-name", u"name",
 #if defined(TS_LINUX)
               u"Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]] "
@@ -206,7 +206,7 @@ void ts::TunerArgs::defineArgs(Args& args) const
         ModulationArgs::defineArgs(args);
 
         // Tuning using a channel configuration file.
-        args.option(u"channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
+        args.option(u"channel-transponder", allowShortOptions() ? 'c' : 0, Args::STRING);
         args.help(u"channel-transponder", u"name",
                   u"Tune to the transponder containing the specified channel. The channel name "
                   u"is not case-sensitive and blanks are ignored. The channel is searched in a "

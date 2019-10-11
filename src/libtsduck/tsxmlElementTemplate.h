@@ -46,7 +46,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
 
     // Attribute found, get its value.
     UString str(attr.value());
-    INT val;
+    INT val = INT(0);
     if (!str.toInteger(val, u",")) {
         _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
@@ -65,7 +65,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
 template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
 bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT minValue, INT maxValue) const
 {
-    INT val = 0;
+    INT val = INT(0);
     const bool ok = getIntAttribute<INT>(val, name, required, defValue, minValue, maxValue);
     if (ok) {
         value = ENUM(val);
@@ -82,7 +82,7 @@ bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool re
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UString& name, INT minValue, INT maxValue) const
 {
-    INT v = 0;
+    INT v = INT(0);
     if (!hasAttribute(name)) {
         // Attribute not present, ok.
         value.reset();
@@ -105,7 +105,7 @@ bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UStri
 // Get an enumeration attribute of an XML element.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
 bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required, INT defValue) const
 {
     int v = 0;
@@ -114,11 +114,23 @@ bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& defini
     return ok;
 }
 
-template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*>
-bool ts::xml::Element::getIntEnumAttribute(ENUM& value, const Enumeration& definition, const UString& name, bool required, ENUM defValue) const
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+bool ts::xml::Element::getOptionalIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name) const
 {
-    int v = 0;
-    const bool ok = getEnumAttribute(v, definition, name, required, int(defValue));
-    value = ok ? ENUM(v) : defValue;
-    return ok;
+    INT v = INT(0);
+    if (!hasAttribute(name)) {
+        // Attribute not present, ok.
+        value.reset();
+        return true;
+    }
+    else if (getIntEnumAttribute<INT>(v, definition, name, false)) {
+        // Attribute present, correct value.
+        value = v;
+        return true;
+    }
+    else {
+        // Attribute present, incorrect value.
+        value.reset();
+        return false;
+    }
 }

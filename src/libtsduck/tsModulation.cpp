@@ -65,6 +65,9 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 
 bool ts::IsSatelliteDelivery(DeliverySystem sys)
 {
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(switch-enum) // ignore all non-satellite values
+
     switch (sys) {
         case DS_DVB_S:
         case DS_DVB_S2:
@@ -74,6 +77,45 @@ bool ts::IsSatelliteDelivery(DeliverySystem sys)
             return true;
         default:
             return false;
+    }
+
+    TS_POP_WARNING()
+}
+
+
+//----------------------------------------------------------------------------
+// Get the tuner type of a delivery system.
+//----------------------------------------------------------------------------
+
+ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
+{
+    switch (system) {
+        case DS_DVB_S:
+        case DS_DVB_S2:
+        case DS_DVB_S_TURBO:
+            return TT_DVB_S;
+        case DS_DVB_T:
+        case DS_DVB_T2:
+            return TT_DVB_T;
+        case DS_DVB_C_ANNEX_A:
+        case DS_DVB_C_ANNEX_B:
+        case DS_DVB_C_ANNEX_C:
+        case DS_DVB_C2:
+            return TT_DVB_C;
+        case DS_ATSC:
+            return TT_ATSC;
+        case DS_ISDB_S:
+        case DS_ISDB_T:
+        case DS_ISDB_C:
+        case DS_DVB_H:
+        case DS_ATSC_MH:
+        case DS_DTMB:
+        case DS_CMMB:
+        case DS_DAB:
+        case DS_DSS:
+        case DS_UNDEFINED:
+        default:
+            return TT_UNDEFINED;
     }
 }
 
@@ -103,6 +145,13 @@ const ts::Enumeration ts::DeliverySystemEnum({
     {u"CMMB",        ts::DS_CMMB},
     {u"DAB",         ts::DS_DAB},
     {u"DSS",         ts::DS_DSS},
+});
+
+const ts::Enumeration ts::TunerTypeEnum({
+    {u"DVB-S", ts::TT_DVB_S},
+    {u"DVB-T", ts::TT_DVB_T},
+    {u"DVB-C", ts::TT_DVB_C},
+    {u"ATSC",  ts::TT_ATSC},
 });
 
 const ts::Enumeration ts::ModulationEnum({

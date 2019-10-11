@@ -236,13 +236,15 @@ namespace ts {
         class TSDUCKDLL Network
         {
         public:
-            uint16_t id;    //!< Network Id.
+            uint16_t  id;    //!< Network Id.
+            TunerType type;  //!< Tuner type (a subset of delivery system).
 
             //!
             //! Default constructor.
             //! @param [in] id Network Id.
+            //! @param [in] typ Tuner type.
             //!
-            Network(uint16_t id = 0);
+            Network(uint16_t id = 0, TunerType typ = TT_UNDEFINED);
 
             //!
             //! Clear all transport streams.
@@ -391,5 +393,9 @@ namespace ts {
 
         // Generate an XML document from the content of this object.
         bool generateDocument(xml::Document& doc) const;
+
+        // Convert modulation parameters to and from XML.
+        bool fromXML(ModulationArgs& mod, const xml::Element* element, TunerType tunerType);
+        xml::Element* toXML(const ModulationArgs& mod, xml::Element* parent) const;
     };
 }

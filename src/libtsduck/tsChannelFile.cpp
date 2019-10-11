@@ -67,8 +67,9 @@ ts::ChannelFile::TransportStream::TransportStream(uint16_t ts, uint16_t on) :
 {
 }
 
-ts::ChannelFile::Network::Network(uint16_t net) :
+ts::ChannelFile::Network::Network(uint16_t net, TunerType typ) :
     id(net),
+    type(typ),
     _ts()
 {
 }
@@ -471,18 +472,14 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                         // Add the service in the transport stream.
                         ts->addService(srv, SHARE, true);
                     }
-                    else if (!ts->tune.isNull()) {
+                    else if (ts->tune.hasModulationArgs()) {
                         // Tuner parameters already set.
                         doc.report().error(u"Invalid <%s> at line %d, at most one set of tuner parameters is allowed in <ts>", {e->name(), e->lineNumber()});
                         success = false;
                     }
-                    else {
-                        // Try to set tuning parameters from this element.
-                        ts->tune = TunerParameters::FromXML(e);
-                        if (ts->tune.isNull()) {
-                            doc.report().error(u"Invalid <%s> at line %d", {e->name(), e->lineNumber()});
-                            success = false;
-                        }
+                    else if (!fromXML(ts->tune, e, net->type)) {
+                        doc.report().error(u"Invalid <%s> at line %d", {e->name(), e->lineNumber()});
+                        success = false;
                     }
                 }
             }
@@ -555,9 +552,9 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
                 xts->setIntAttribute(u"onid", ts->onid, true);
             }
 
-            // Set tuner parameters. No error if null (this is just an incomplete description).
-            if (!ts->tune.isNull()) {
-                ts->tune->toXML(xts);
+            // Set tuner parameters. No error if unset (this is just an incomplete description).
+            if (ts->tune.hasModulationArgs()) {
+                toXML(ts->tune, xts);
             }
 
             // Format all services.
@@ -581,4 +578,171 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
         }
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert modulation parameters from XML.
+//----------------------------------------------------------------------------
+
+bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, TunerType tunerType)
+{
+    // Clear parameter area.
+    mod.reset();
+
+    // Handle all expected modulation arguments structures.
+    if (elem == nullptr) {
+        return false;
+    }
+    else if (elem->name().similar(u"dvbs")) {
+        return
+            elem->getOptionalIntAttribute<size_t>(mod.satellite_number, u"satellite", 0, 3) &&
+            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 27500000) &&
+            elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QPSK) &&
+            elem->getVariableIntEnumAttribute(mod.delivery_system, DeliverySystemEnum, u"system", false, DS_DVB_S) &&
+            elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
+            elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion") &&
+            elem->getOptionalIntEnumAttribute(mod.polarity, PolarizationEnum, u"polarity") &&
+            (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.pilots, PilotEnum, u"pilots")) &&
+            (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.roll_off, RollOffEnum, u"rolloff")) &&
+            (mod.delivery_system == DS_DVB_S || elem->getOptionalIntAttribute<uint32_t>(mod.isi, u"isi")) &&
+            (mod.delivery_system == DS_DVB_S || elem->getOptionalIntAttribute<uint32_t>(mod.pls_code, u"PLS_code")) &&
+            (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.pls_mode, PLSModeEnum, u"PLS_mode"));
+    }
+    else if (elem->name().similar(u"dvbt")) {
+        return
+            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+            elem->getOptionalIntEnumAttribute(mod.bandwidth, BandWidthEnum, u"bandwidth") &&
+            elem->getOptionalIntEnumAttribute(mod.transmission_mode, TransmissionModeEnum, u"transmission") &&
+            elem->getOptionalIntEnumAttribute(mod.guard_interval, GuardIntervalEnum, u"guard") &&
+            elem->getOptionalIntEnumAttribute(mod.fec_hp, InnerFECEnum, u"HPFEC") &&
+            elem->getOptionalIntEnumAttribute(mod.fec_lp, InnerFECEnum, u"LPFEC") &&
+            elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion") &&
+            elem->getOptionalIntEnumAttribute(mod.hierarchy, HierarchyEnum, u"hierarchy") &&
+            elem->getOptionalIntAttribute<uint32_t>(mod.plp, u"PLP", 0, 255);
+    }
+    else if (elem->name().similar(u"dvbc")) {
+        return
+            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 6900000) &&
+            elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+            elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
+            elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
+    }
+    else if (elem->name().similar(u"atsc")) {
+        return
+            elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
+            elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, VSB_8) &&
+            elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
+    }
+    else {
+        // Not a valid modulation parameters node.
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert modulation parameters from XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element* parent) const
+{
+    const DeliverySystem delsys = mod.delivery_system.value(DS_UNDEFINED);
+
+    switch (TunerTypeOf(delsys)) {
+        case TT_DVB_S: {
+            xml::Element* e = parent->addElement(u"dvbs");
+            if (mod.satellite_number != 0) {
+                e->setOptionalIntAttribute(u"satellite", mod.satellite_number, false);
+            }
+            e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
+            e->setOptionalIntAttribute(u"symbolrate", mod.symbol_rate, false);
+            e->setOptionalEnumAttribute(ModulationEnum, u"modulation", mod.modulation);
+            if (delsys != DS_DVB_S) {
+                e->setOptionalEnumAttribute(DeliverySystemEnum, u"system", mod.delivery_system);
+            }
+            if (mod.polarity != POL_AUTO) {
+                e->setOptionalEnumAttribute(PolarizationEnum, u"polarity", mod.polarity);
+            }
+            if (mod.inversion != SPINV_AUTO) {
+                e->setOptionalEnumAttribute(SpectralInversionEnum, u"inversion", mod.inversion);
+            }
+            if (mod.inner_fec != FEC_AUTO) {
+                e->setOptionalEnumAttribute(InnerFECEnum, u"FEC", mod.inner_fec);
+            }
+            if (delsys == DS_DVB_S2 && mod.pilots != PILOT_AUTO) {
+                e->setOptionalEnumAttribute(PilotEnum, u"pilots", mod.pilots);
+            }
+            if (delsys == DS_DVB_S2 && mod.roll_off != ROLLOFF_AUTO) {
+                e->setOptionalEnumAttribute(RollOffEnum, u"rolloff", mod.roll_off);
+            }
+            if (delsys == DS_DVB_S2 && mod.isi != ISI_DISABLE) {
+                e->setOptionalIntAttribute(u"ISI", mod.isi, false);
+                e->setOptionalIntAttribute(u"PLS_code", mod.pls_code, false);
+                e->setOptionalEnumAttribute(PLSModeEnum, u"PLS_mode", mod.pls_mode);
+            }
+            return e;
+        }
+        case TT_DVB_T: {
+            xml::Element* e = parent->addElement(u"dvbt");
+            e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
+            if (mod.modulation != QAM_AUTO) {
+                e->setOptionalEnumAttribute(ModulationEnum, u"modulation", mod.modulation);
+            }
+            if (mod.fec_hp != FEC_AUTO) {
+                e->setOptionalEnumAttribute(InnerFECEnum, u"HPFEC", mod.fec_hp);
+            }
+            if (mod.fec_lp != FEC_AUTO) {
+                e->setOptionalEnumAttribute(InnerFECEnum, u"LPFEC", mod.fec_lp);
+            }
+            if (mod.bandwidth != BW_AUTO) {
+                e->setOptionalEnumAttribute(BandWidthEnum, u"bandwidth", mod.bandwidth);
+            }
+            if (mod.transmission_mode != TM_AUTO) {
+                e->setOptionalEnumAttribute(TransmissionModeEnum, u"transmission", mod.transmission_mode);
+            }
+            if (mod.guard_interval != GUARD_AUTO) {
+                e->setOptionalEnumAttribute(GuardIntervalEnum, u"guard", mod.guard_interval);
+            }
+            if (mod.hierarchy != HIERARCHY_AUTO) {
+                e->setOptionalEnumAttribute(HierarchyEnum, u"hierarchy", mod.hierarchy);
+            }
+            if (mod.plp != PLP_DISABLE) {
+                e->setOptionalIntAttribute(u"PLP", mod.plp, false);
+            }
+            if (mod.inversion != SPINV_AUTO) {
+                e->setOptionalEnumAttribute(SpectralInversionEnum, u"inversion", mod.inversion);
+            }
+            return e;
+        }
+        case TT_DVB_C: {
+            xml::Element* e = parent->addElement(u"dvbc");
+            e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
+            e->setOptionalIntAttribute(u"symbolrate", mod.symbol_rate, false);
+            e->setOptionalEnumAttribute(ModulationEnum, u"modulation", mod.modulation);
+            if (mod.inner_fec != FEC_AUTO) {
+                e->setOptionalEnumAttribute(InnerFECEnum, u"FEC", mod.inner_fec);
+            }
+            if (mod.inversion != SPINV_AUTO) {
+                e->setOptionalEnumAttribute(SpectralInversionEnum, u"inversion", mod.inversion);
+            }
+            return e;
+        }
+        case TT_ATSC: {
+            xml::Element* e = parent->addElement(u"atsc");
+            e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
+            e->setOptionalEnumAttribute(ModulationEnum, u"modulation", mod.modulation);
+            if (mod.inversion != SPINV_AUTO) {
+                e->setOptionalEnumAttribute(SpectralInversionEnum, u"inversion", mod.inversion);
+            }
+            return e;
+        }
+        case TT_UNDEFINED:
+        default: {
+            return nullptr;
+        }
+    }
 }
