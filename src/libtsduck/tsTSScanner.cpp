@@ -71,9 +71,8 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
     }
 
     // Get current tuning parameters.
-    _tparams = TunerParameters::Factory(tuner.tunerType());
-    if (!_tparams.isNull() && !tuner.getCurrentTuning(*_tparams, true, _report)) {
-        _tparams.clear();
+    if (!tuner.getCurrentTuning(_tparams, true, _report)) {
+        _tparams.reset();
     }
 
     // Deadline for table collection

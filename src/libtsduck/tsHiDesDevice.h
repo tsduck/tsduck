@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsHiDesDeviceInfo.h"
-#include "tsTunerParametersDVBT.h"
+#include "tsModulationArgs.h"
 #include "tsTSPacket.h"
 #include "tsCerrReport.h"
 #include "tsAbortInterface.h"
@@ -153,7 +153,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(const TunerParametersDVBT& params, Report& report = CERR);
+        bool tune(const ModulationArgs& params, Report& report = CERR);
 
         //!
         //! Start transmission (after having set tuning parameters).

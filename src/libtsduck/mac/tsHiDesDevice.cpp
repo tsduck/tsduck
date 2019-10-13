@@ -105,7 +105,7 @@ bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
     return NotImplemented(report);
 }
 
-bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
+bool ts::HiDesDevice::tune(const ModulationArgs& params, Report& report)
 {
     return NotImplemented(report);
 }

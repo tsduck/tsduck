@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsTunerParameters.h"
+#include "tsModulationArgs.h"
 #include "tsMPEG.h"
 
 namespace ts {

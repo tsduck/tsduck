@@ -274,6 +274,7 @@ bool ts::TunerArgs::resolveChannel(const DeliverySystemSet& systems, Report& rep
         return true;
     }
     else {
-        return false; //@@@@@@@@@@@ to do
+        ChannelFile file;
+        return file.load(tuning_file_name, report) && file.serviceToTuning(*this, systems, channel_name, false, report);
     }
 }

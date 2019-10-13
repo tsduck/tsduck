@@ -249,25 +249,25 @@ ts::ChannelFile::NetworkPtr ts::ChannelFile::networkByIndex(size_t index) const
     return index < _networks.size() ? _networks[index] : NetworkPtr();
 }
 
-ts::ChannelFile::NetworkPtr ts::ChannelFile::networkById(uint16_t id) const
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkById(uint16_t id, TunerType type) const
 {
     for (size_t i = 0; i < _networks.size(); ++i) {
         const NetworkPtr& net(_networks[i]);
         assert(!net.isNull());
-        if (net->id == id) {
+        if (net->id == id && (type == TT_UNDEFINED || net->type == type)) {
             return net;
         }
     }
     return NetworkPtr(); // not found, null pointer.
 }
 
-ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id)
+ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id, TunerType type)
 {
     // Try to get an existing transport stream.
-    NetworkPtr net(networkById(id));
+    NetworkPtr net(networkById(id, type));
     if (net.isNull()) {
         // Not found, create a new network.
-        net = new Network(id);
+        net = new Network(id, type);
         CheckNonNull(net.pointer());
         _networks.push_back(net);
     }
@@ -365,10 +365,10 @@ ts::UString ts::ChannelFile::DefaultFileName()
 bool ts::ChannelFile::load(const UString& fileName, Report& report)
 {
     clear();
-    _fileName = fileName;
+    _fileName = fileName.empty() ? DefaultFileName() : fileName;
     xml::Document doc(report);
     doc.setTweaks(_xmlTweaks);
-    return doc.load(fileName, false) && parseDocument(doc);
+    return doc.load(_fileName, false) && parseDocument(doc);
 }
 
 bool ts::ChannelFile::load(std::istream& strm, Report& report)
@@ -595,6 +595,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
         return false;
     }
     else if (elem->name().similar(u"dvbs")) {
+        mod.delivery_system = DS_DVB_S;
         return
             elem->getOptionalIntAttribute<size_t>(mod.satellite_number, u"satellite", 0, 3) &&
             elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
@@ -611,6 +612,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
             (mod.delivery_system == DS_DVB_S || elem->getOptionalIntEnumAttribute(mod.pls_mode, PLSModeEnum, u"PLS_mode"));
     }
     else if (elem->name().similar(u"dvbt")) {
+        mod.delivery_system = DS_DVB_T;
         return
             elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QAM_64) &&
@@ -624,6 +626,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
             elem->getOptionalIntAttribute<uint32_t>(mod.plp, u"PLP", 0, 255);
     }
     else if (elem->name().similar(u"dvbc")) {
+        mod.delivery_system = DS_DVB_C;
         return
             elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
             elem->getVariableIntAttribute<uint32_t>(mod.symbol_rate, u"symbolrate", false, 6900000) &&
@@ -632,6 +635,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
             elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
     }
     else if (elem->name().similar(u"atsc")) {
+        mod.delivery_system = DS_ATSC;
         return
             elem->getVariableIntAttribute<uint64_t>(mod.frequency, u"frequency", true) &&
             elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, VSB_8) &&

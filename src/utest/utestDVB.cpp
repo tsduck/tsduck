@@ -31,11 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsLNB.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
+#include "tsDuckContext.h"
 #include "tsArgs.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
@@ -63,7 +60,7 @@ public:
 
 private:
     static void displayLNB(const ts::LNB& lnb, const ts::UString& name);
-    static void testParameters(const ts::TunerParameters& params);
+    static void testParameters(ts::DeliverySystem delsys);
 };
 
 TSUNIT_REGISTER(DVBTest);
@@ -96,53 +93,52 @@ void DVBTest::testTunerArgs()
     debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
-void DVBTest::testParameters(const ts::TunerParameters& params)
+void DVBTest::testParameters(ts::DeliverySystem delsys)
 {
-    debug() << "DVBTest: Default TunerParameters, type: " << ts::TunerTypeEnum.name(params.tunerType()) << std::endl;
+    debug() << "DVBTest: Default TunerParameters, type: " << ts::DeliverySystemEnum.name(delsys) << std::endl;
 
-    ts::TunerParametersPtr ptr(ts::TunerParameters::Factory(params.tunerType()));
-    TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());
+    ts::ModulationArgs params;
+    params.delivery_system = delsys;
+    params.frequency = 1000000;
+    params.setDefaultValues();
+    TSUNIT_ASSERT(params.hasModulationArgs());
 
     const ts::UString opts(params.toPluginOptions());
     debug() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
-    TSUNIT_ASSERT(ptr->toPluginOptions() == opts);
-
     ts::Args args;
-    ts::TunerArgs tuner_args;
-    tuner_args.defineArgs(args);
+    ts::TunerArgs targs1;
+    targs1.defineArgs(args);
+
     ts::UStringVector args_vec;
     opts.split(args_vec, u' ');
     TSUNIT_ASSERT(args.analyze(u"", args_vec));
 
-    ts::TunerArgs tuner;
     ts::DuckContext duck;
-    tuner.loadArgs(duck, args);
-    ptr = ts::TunerParameters::FromTunerArgs(params.tunerType(), tuner, args);
-    TSUNIT_ASSERT(!ptr.isNull());
-    TSUNIT_ASSERT(ptr->tunerType() == params.tunerType());
-    TSUNIT_ASSERT(ptr->toPluginOptions() == opts);
+    TSUNIT_ASSERT(targs1.loadArgs(duck, args));
+    TSUNIT_ASSERT(targs1.toPluginOptions() == opts);
 }
 
 void DVBTest::testTunerParams()
 {
-    testParameters(ts::TunerParametersDVBS());
-    testParameters(ts::TunerParametersDVBC());
-    testParameters(ts::TunerParametersDVBT());
+    testParameters(ts::DS_DVB_S);
+    testParameters(ts::DS_DVB_C);
+    testParameters(ts::DS_DVB_T);
+    testParameters(ts::DS_ATSC);
 }
 
 void DVBTest::displayLNB(const ts::LNB& lnb, const ts::UString& name)
 {
     debug() << "DVBTest: Test LNB: " << name << std::endl
-                 << "  convert to string: " << lnb << std::endl
-                 << "  hasHighBand: " << lnb.hasHighBand() << std::endl
-                 << "  lowFrequency: " << lnb.lowFrequency() << std::endl
-                 << "  highFrequency: " << lnb.highFrequency() << std::endl
-                 << "  switchFrequency: " << lnb.switchFrequency() << std::endl
-                 << "  useHighBand (8 GHz): " << lnb.useHighBand(TS_UCONST64(8000000000)) << std::endl
-                 << "  intermediateFrequency (8 GHz): " << lnb.intermediateFrequency(TS_UCONST64(8000000000)) << std::endl
-                 << "  useHighBand (12 GHz): " << lnb.useHighBand(TS_UCONST64(12000000000)) << std::endl
-                 << "  intermediateFrequency (12 GHz): " << lnb.intermediateFrequency(TS_UCONST64(12000000000)) << std::endl;
+            << "  convert to string: " << lnb << std::endl
+            << "  hasHighBand: " << lnb.hasHighBand() << std::endl
+            << "  lowFrequency: " << lnb.lowFrequency() << std::endl
+            << "  highFrequency: " << lnb.highFrequency() << std::endl
+            << "  switchFrequency: " << lnb.switchFrequency() << std::endl
+            << "  useHighBand (8 GHz): " << lnb.useHighBand(TS_UCONST64(8000000000)) << std::endl
+            << "  intermediateFrequency (8 GHz): " << lnb.intermediateFrequency(TS_UCONST64(8000000000)) << std::endl
+            << "  useHighBand (12 GHz): " << lnb.useHighBand(TS_UCONST64(12000000000)) << std::endl
+            << "  intermediateFrequency (12 GHz): " << lnb.intermediateFrequency(TS_UCONST64(12000000000)) << std::endl;
 }
 
 void DVBTest::testLNB()

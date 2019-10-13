@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsObject.h"
 #include "tsArgsSupplierInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
@@ -42,6 +43,12 @@
 namespace ts {
 
     class Descriptor;
+    class ModulationArgs;
+
+    //!
+    //! Safe pointer for ModulationArgs (thread-safe).
+    //!
+    typedef SafePtr<ModulationArgs, Mutex> ModulationArgsPtr;
 
     //!
     //! Modulation parameters for tuners and their command-line definitions.
@@ -50,7 +57,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL ModulationArgs : public ArgsSupplierInterface
+    class TSDUCKDLL ModulationArgs : public Object, public ArgsSupplierInterface
     {
     public:
         //!
@@ -348,6 +355,24 @@ namespace ts {
         //! @return A description string.
         //!
         UString shortDescription(DuckContext& duck, int strength = -1, int quality = -1) const;
+
+        //!
+        //! Format the modulation parameters as command line arguments.
+        //! @param [in] no_local When true, the "local" options are not included.
+        //! The local options are related to the local equipment (--lnb for instance)
+        //! and may vary from one system to another for the same transponder.
+        //! @return A string containing a command line options for the "dvb" tsp plugin.
+        //!
+        UString toPluginOptions(bool no_local = false) const;
+
+        //!
+        //! Display a description of the modulation paramters on a stream, line by line.
+        //! @param [in,out] strm Where to display the parameters.
+        //! @param [in] margin Left margin to display.
+        //! @param [in] verbose When false, display only essentials parameters.
+        //! When true, display all parameters.
+        //!
+        void display(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const;
 
     protected:
         //!
