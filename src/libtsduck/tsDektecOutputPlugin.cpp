@@ -1083,54 +1083,23 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
     const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository(u"tsp.dvb.params") : nullptr);
+    const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.pointer());
+    ModulationArgs other_args;
 
-    // Various views of the input modulation parameters (at most one is non-zero)
-    const TunerParameters*     input_dvb  = dynamic_cast <const TunerParameters*>(input_params.pointer());
-    const TunerParametersDVBS* input_dvbs = dynamic_cast <const TunerParametersDVBS*>(input_dvb);
-    const TunerParametersDVBC* input_dvbc = dynamic_cast <const TunerParametersDVBC*>(input_dvb);
-    const TunerParametersDVBT* input_dvbt = dynamic_cast <const TunerParametersDVBT*>(input_dvb);
-    const TunerParametersATSC* input_atsc = dynamic_cast <const TunerParametersATSC*>(input_dvb);
+    // Modulation type is initially unknown.
+    modulation_type = DTAPI_MOD_TYPE_UNK;
 
     // Adjust default modulation type from input plugin
-    if (input_dvb != nullptr) {
-        tsp->debug(u"found input modulator parameters: %s %s", {TunerTypeEnum.name(input_dvb->tunerType()), input_dvb->toPluginOptions()});
-        if (input_dvbs != nullptr) {
-            if (input_dvbs->delivery_system == DS_DVB_S) {
-                modulation_type = DTAPI_MOD_DVBS_QPSK;
-            }
-            else if (input_dvbs->delivery_system == DS_DVB_S2 && input_dvbs->modulation == QPSK) {
-                modulation_type = DTAPI_MOD_DVBS2_QPSK;
-            }
-            else if (input_dvbs->delivery_system == DS_DVB_S2 && input_dvbs->modulation == PSK_8) {
-                modulation_type = DTAPI_MOD_DVBS2_8PSK;
-            }
-        }
-        else if (input_dvbc != nullptr) {
-            // Only some values are present in the switch..
-            TS_PUSH_WARNING()
-            TS_LLVM_NOWARNING(switch-enum)
-            TS_MSC_NOWARNING(4061)
-            switch (input_dvbc->modulation) {
-                case QAM_16:  modulation_type = DTAPI_MOD_QAM16;  break;
-                case QAM_32:  modulation_type = DTAPI_MOD_QAM32;  break;
-                case QAM_64:  modulation_type = DTAPI_MOD_QAM64;  break;
-                case QAM_128: modulation_type = DTAPI_MOD_QAM128; break;
-                case QAM_256: modulation_type = DTAPI_MOD_QAM256; break;
-                default: break;
-            }
-            TS_POP_WARNING()
-        }
-        else if (input_dvbt != nullptr) {
-            modulation_type = DTAPI_MOD_DVBT;
-        }
-        else if (input_atsc != nullptr) {
-            modulation_type = DTAPI_MOD_ATSC;
-        }
+    if (input != nullptr) {
+        tsp->debug(u"found input modulator parameters: %s", {input->toPluginOptions()});
+        // Get corresponding Dektec modulation type.
+        // The variable is unchanged if no valid value is found.
+        input->getDektecModulationType(modulation_type);
     }
 
     // Get user-specified modulation
     modulation_type = intValue<int>(u"modulation", modulation_type);
-    if (modulation_type < 0) {
+    if (modulation_type == DTAPI_MOD_TYPE_UNK) {
         return startError(u"unspecified modulation type for " + _guts->device.model, DTAPI_OK);
     }
 
@@ -1138,6 +1107,9 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     int symbol_rate = intValue<int>(u"symbol-rate", -1);
     if (present(u"bitrate") && present(u"symbol-rate")) {
         return startError(u"options --symbol-rate and --bitrate are mutually exclusive", DTAPI_OK);
+    }
+    else if (symbol_rate <= 0 && input != nullptr && input->symbol_rate.set()) {
+        symbol_rate = int(input->symbol_rate.value());
     }
 
     // Get LNB description, in case --satellite-frequency is used
@@ -1155,8 +1127,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
     // Get UHF/VHF frequency layout.
     const UString region(value(u"hf-band-region"));
-    const HFBand* uhf = HFBand::GetBand(region, HFBand::UHF, *tsp);
-    const HFBand* vhf = HFBand::GetBand(region, HFBand::VHF, *tsp);
+    const HFBand* uhf = duck.uhfBand();
+    const HFBand* vhf = duck.vhfBand();
 
     // Compute carrier frequency
     uint64_t frequency = 0;
@@ -1178,17 +1150,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     else if (present(u"frequency")) {
         frequency = intValue<uint64_t>(u"frequency", 0);
     }
-    else if (input_dvbs != nullptr) {
-        frequency = input_dvbs->frequency;
-    }
-    else if (input_dvbt != nullptr) {
-        frequency = input_dvbt->frequency;
-    }
-    else if (input_dvbc != nullptr) {
-        frequency = input_dvbc->frequency;
-    }
-    else if (input_atsc != nullptr) {
-        frequency = input_atsc->frequency;
+    else if (input != nullptr) {
+        frequency = input->frequency.value(0);
     }
     if (frequency == 0) {
         return startError(u"unspecified frequency (required for modulator devices)", DTAPI_OK);
@@ -1202,18 +1165,9 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         case DTAPI_MOD_DVBS_BPSK: {
             // Various types of DVB-S
             int fec = DTAPI_MOD_3_4;
-            if (input_dvbs != nullptr) {
-                symbol_rate = input_dvbs->symbol_rate;
-                switch (input_dvbs->inner_fec) {
-                    case FEC_1_2: fec = DTAPI_MOD_1_2; break;
-                    case FEC_2_3: fec = DTAPI_MOD_2_3; break;
-                    case FEC_3_4: fec = DTAPI_MOD_3_4; break;
-                    case FEC_4_5: fec = DTAPI_MOD_4_5; break;
-                    case FEC_5_6: fec = DTAPI_MOD_5_6; break;
-                    case FEC_6_7: fec = DTAPI_MOD_6_7; break;
-                    case FEC_7_8: fec = DTAPI_MOD_7_8; break;
-                    default: break;
-                }
+            if (input != nullptr) {
+                // fec is unmodified if no valid value is found.
+                input->getDektecCodeRate(fec);
             }
             fec = intValue<int>(u"convolutional-rate", fec);
             tsp->verbose(u"using DVB-S FEC " + DektecFEC.name(fec));
@@ -1235,28 +1189,13 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             // Various types of DVB-S2
             int fec = DTAPI_MOD_3_4;
             int pilots = present(u"pilots") ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
-            if (input_dvbs != nullptr) {
-                symbol_rate = input_dvbs->symbol_rate;
-                switch (input_dvbs->pilots) {
+            if (input != nullptr) {
+                // fec is unmodified if no valid value is found.
+                input->getDektecCodeRate(fec);
+                switch (input->pilots.value(PILOT_AUTO)) {
                     case PILOT_ON:  pilots = DTAPI_MOD_S2_PILOTS; break;
                     case PILOT_OFF: pilots = DTAPI_MOD_S2_NOPILOTS; break;
                     case PILOT_AUTO: break;
-                    default: break;
-                }
-                switch (input_dvbs->inner_fec) {
-                    case FEC_1_2: fec = DTAPI_MOD_1_2; break;
-                    case FEC_1_3: fec = DTAPI_MOD_1_3; break;
-                    case FEC_1_4: fec = DTAPI_MOD_1_4; break;
-                    case FEC_2_3: fec = DTAPI_MOD_2_3; break;
-                    case FEC_2_5: fec = DTAPI_MOD_2_5; break;
-                    case FEC_3_4: fec = DTAPI_MOD_3_4; break;
-                    case FEC_3_5: fec = DTAPI_MOD_3_5; break;
-                    case FEC_4_5: fec = DTAPI_MOD_4_5; break;
-                    case FEC_5_6: fec = DTAPI_MOD_5_6; break;
-                    case FEC_6_7: fec = DTAPI_MOD_6_7; break;
-                    case FEC_7_8: fec = DTAPI_MOD_7_8; break;
-                    case FEC_8_9: fec = DTAPI_MOD_8_9; break;
-                    case FEC_9_10: fec = DTAPI_MOD_9_10; break;
                     default: break;
                 }
             }
@@ -1301,51 +1240,51 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             int constel = DTAPI_MOD_DVBT_QAM64;
             int guard = DTAPI_MOD_DVBT_G_1_32;
             int tr_mode = DTAPI_MOD_DVBT_8K;
-            BitrateDifferenceDVBT params;
-            if (use_input_modulation && input_dvbt == nullptr && _guts->cur_bitrate > 0) {
+            if (use_input_modulation && input == nullptr && _guts->cur_bitrate > 0) {
                 // --input-modulation is specified but input plugin is not a DVB-T tuner,
                 // use input bitrate to determine modulation parameters.
                 BitrateDifferenceDVBTList params_list;
                 BitrateDifferenceDVBT::EvaluateToBitrate(params_list, _guts->cur_bitrate);
                 if (!params_list.empty()) {
-                    params = params_list.front();
-                    input_dvbt = &params;
+                    other_args = params_list.front().tune;
+                    input = &other_args;
                 }
             }
-            if (input_dvbt != nullptr) {
-                switch (input_dvbt->fec_hp) {
-                    case FEC_1_2: fec = DTAPI_MOD_1_2; break;
-                    case FEC_2_3: fec = DTAPI_MOD_2_3; break;
-                    case FEC_3_4: fec = DTAPI_MOD_3_4; break;
-                    case FEC_5_6: fec = DTAPI_MOD_5_6; break;
-                    case FEC_7_8: fec = DTAPI_MOD_7_8; break;
-                    default: break;
+            if (input != nullptr) {
+                ModulationArgs::ToDektecCodeRate(fec, input->fec_hp.value(FEC_NONE));
+                if (input->bandwidth.set()) {
+                    switch (input->bandwidth.value()) {
+                        case BW_8_MHZ: bw = DTAPI_MOD_DVBT_8MHZ; break;
+                        case BW_7_MHZ: bw = DTAPI_MOD_DVBT_7MHZ; break;
+                        case BW_6_MHZ: bw = DTAPI_MOD_DVBT_6MHZ; break;
+                        case BW_5_MHZ: bw = DTAPI_MOD_DVBT_5MHZ; break;
+                        default: break;
+                    }
                 }
-                switch (input_dvbt->bandwidth) {
-                    case BW_8_MHZ: bw = DTAPI_MOD_DVBT_8MHZ; break;
-                    case BW_7_MHZ: bw = DTAPI_MOD_DVBT_7MHZ; break;
-                    case BW_6_MHZ: bw = DTAPI_MOD_DVBT_6MHZ; break;
-                    case BW_5_MHZ: bw = DTAPI_MOD_DVBT_5MHZ; break;
-                    default: break;
+                if (input->modulation.set()) {
+                    switch (input->modulation.value()) {
+                        case QPSK:   constel = DTAPI_MOD_DVBT_QPSK;  break;
+                        case QAM_16: constel = DTAPI_MOD_DVBT_QAM16; break;
+                        case QAM_64: constel = DTAPI_MOD_DVBT_QAM64; break;
+                        default: break;
+                    }
                 }
-                switch (input_dvbt->modulation) {
-                    case QPSK:   constel = DTAPI_MOD_DVBT_QPSK;  break;
-                    case QAM_16: constel = DTAPI_MOD_DVBT_QAM16; break;
-                    case QAM_64: constel = DTAPI_MOD_DVBT_QAM64; break;
-                    default: break;
+                if (input->guard_interval.set()) {
+                    switch (input->guard_interval.value()) {
+                        case GUARD_1_32: guard = DTAPI_MOD_DVBT_G_1_32; break;
+                        case GUARD_1_16: guard = DTAPI_MOD_DVBT_G_1_16; break;
+                        case GUARD_1_8:  guard = DTAPI_MOD_DVBT_G_1_8;  break;
+                        case GUARD_1_4:  guard = DTAPI_MOD_DVBT_G_1_4;  break;
+                        default: break;
+                    }
                 }
-                switch (input_dvbt->guard_interval) {
-                    case GUARD_1_32: guard = DTAPI_MOD_DVBT_G_1_32; break;
-                    case GUARD_1_16: guard = DTAPI_MOD_DVBT_G_1_16; break;
-                    case GUARD_1_8:  guard = DTAPI_MOD_DVBT_G_1_8;  break;
-                    case GUARD_1_4:  guard = DTAPI_MOD_DVBT_G_1_4;  break;
-                    default: break;
-                }
-                switch (input_dvbt->transmission_mode) {
-                    case TM_2K: tr_mode = DTAPI_MOD_DVBT_2K; break;
-                    case TM_4K: tr_mode = DTAPI_MOD_DVBT_4K; break;
-                    case TM_8K: tr_mode = DTAPI_MOD_DVBT_8K; break;
-                    default: break;
+                if (input->transmission_mode.set()) {
+                    switch (input->transmission_mode.value()) {
+                        case TM_2K: tr_mode = DTAPI_MOD_DVBT_2K; break;
+                        case TM_4K: tr_mode = DTAPI_MOD_DVBT_4K; break;
+                        case TM_8K: tr_mode = DTAPI_MOD_DVBT_8K; break;
+                        default: break;
+                    }
                 }
             }
             fec = intValue<int>(u"convolutional-rate", fec);
@@ -1440,8 +1379,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
         case DTAPI_MOD_ATSC: {
             int constel = DTAPI_MOD_ATSC_VSB8;
-            if (input_atsc != nullptr) {
-                switch (input_atsc->modulation) {
+            if (input != nullptr && input->modulation.set()) {
+                switch (input->modulation.value()) {
                     case VSB_8:  constel = DTAPI_MOD_ATSC_VSB8;  break;
                     case VSB_16: constel = DTAPI_MOD_ATSC_VSB16; break;
                     default: break;

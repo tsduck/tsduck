@@ -80,7 +80,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
 {
     ERROR(false);
 }
-bool ts::Tuner::tune(const ModulationArgs& params, Report& report)
+bool ts::Tuner::tune(ModulationArgs& params, Report& report)
 {
     ERROR(false);
 }
@@ -100,7 +100,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 {
     ERROR(false);
 }
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, const UString& margin, Report& report)
 {
     ERROR(strm);
 }

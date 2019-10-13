@@ -756,7 +756,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, const UString& margin, Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");

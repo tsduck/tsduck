@@ -406,10 +406,10 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
 
 
 //----------------------------------------------------------------------------
-// Attempt to convert the tuning parameters for Dektec modulator cards.
+// Attempt to get a "modulation type" for Dektec modulator cards.
 //----------------------------------------------------------------------------
 
-bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
+bool ts::ModulationArgs::getDektecModulationType(int& type) const
 {
 #if defined(TS_NO_DTAPI)
     // No Dektec library.
@@ -421,73 +421,130 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
     TS_LLVM_NOWARNING(switch-enum)
     TS_MSC_NOWARNING(4061)
 
-    // Currently, we can only convert DVB-S/S2 parameters to Dektec modulation parameters.
-    const DeliverySystem delsys = delivery_system.value(DS_UNDEFINED);
-
     // Determine modulation type.
-    switch (delsys) {
-        case DS_DVB_S:
-            modulation_type = DTAPI_MOD_DVBS_QPSK;
-            break;
+    bool supported = true;
+    switch (delivery_system.value(DS_UNDEFINED)) {
+        case DS_DVB_S:   type = DTAPI_MOD_DVBS_QPSK; break;
+        case DS_DVB_T:   type = DTAPI_MOD_DVBT; break;
+        case DS_DVB_T2:  type = DTAPI_MOD_DVBT2; break;
+        case DS_ATSC:    type = DTAPI_MOD_ATSC; break;
+        case DS_ATSC_MH: type = DTAPI_MOD_ATSC_MH; break;
+        case DS_ISDB_S:  type = DTAPI_MOD_ISDBS; break;
+        case DS_ISDB_T:  type = DTAPI_MOD_ISDBT; break;
+        case DS_DVB_C2:  type = DTAPI_MOD_DVBC2; break;
+        case DS_DAB:     type = DTAPI_MOD_DAB; break;
+        case DS_CMMB:    type = DTAPI_MOD_CMMB; break;
         case DS_DVB_S2:
             switch (modulation.value(DEFAULT_MODULATION_DVBS)) {
-                case QPSK:    modulation_type = DTAPI_MOD_DVBS2_QPSK; break;
-                case PSK_8:   modulation_type = DTAPI_MOD_DVBS2_8PSK; break;
-                case APSK_16: modulation_type = DTAPI_MOD_DVBS2_16APSK; break;
-                case APSK_32: modulation_type = DTAPI_MOD_DVBS2_32APSK; break;
-                default: return false; // unsupported
+                case QPSK:    type = DTAPI_MOD_DVBS2_QPSK; break;
+                case PSK_8:   type = DTAPI_MOD_DVBS2_8PSK; break;
+                case APSK_16: type = DTAPI_MOD_DVBS2_16APSK; break;
+                case APSK_32: type = DTAPI_MOD_DVBS2_32APSK; break;
+                default:      type = DTAPI_MOD_DVBS2; break;
+            }
+            break;
+        case DS_DVB_C_ANNEX_A:
+        case DS_DVB_C_ANNEX_B:
+        case DS_DVB_C_ANNEX_C:
+            switch (modulation.value(QAM_AUTO)) {
+                case QAM_16:  type = DTAPI_MOD_QAM16;  break;
+                case QAM_32:  type = DTAPI_MOD_QAM32;  break;
+                case QAM_64:  type = DTAPI_MOD_QAM64;  break;
+                case QAM_128: type = DTAPI_MOD_QAM128; break;
+                case QAM_256: type = DTAPI_MOD_QAM256; break;
+                default: supported = false; break;
             }
             break;
         default:
-            return false; // unsupported
+            supported = false;
+            break;
     }
+    return supported;
 
-    // Determine convolution code rate
-    switch (inner_fec.value(DEFAULT_INNER_FEC)) {
-        case FEC_1_2:  param0 = DTAPI_MOD_1_2; break;
-        case FEC_1_3:  param0 = DTAPI_MOD_1_3; break;
-        case FEC_1_4:  param0 = DTAPI_MOD_1_4; break;
-        case FEC_2_3:  param0 = DTAPI_MOD_2_3; break;
-        case FEC_2_5:  param0 = DTAPI_MOD_2_5; break;
-        case FEC_3_4:  param0 = DTAPI_MOD_3_4; break;
-        case FEC_3_5:  param0 = DTAPI_MOD_3_5; break;
-        case FEC_4_5:  param0 = DTAPI_MOD_4_5; break;
-        case FEC_5_6:  param0 = DTAPI_MOD_5_6; break;
-        case FEC_6_7:  param0 = DTAPI_MOD_6_7; break;
-        case FEC_7_8:  param0 = DTAPI_MOD_7_8; break;
-        case FEC_8_9:  param0 = DTAPI_MOD_8_9; break;
-        case FEC_9_10: param0 = DTAPI_MOD_9_10; break;
-        default: return false; // unsupported
+    TS_POP_WARNING()
+#endif // TS_NO_DTAPI
+}
+
+
+//----------------------------------------------------------------------------
+// Attempt to get a "FEC type" for Dektec modulator cards.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::getDektecCodeRate(int& fec) const
+{
+    return ToDektecCodeRate(fec, inner_fec.value(DEFAULT_INNER_FEC));
+}
+
+bool ts::ModulationArgs::ToDektecCodeRate(int& fec, InnerFEC in_enum)
+{
+#if defined(TS_NO_DTAPI)
+    // No Dektec library.
+    return false;
+#else
+    // Not all enum values used in switch, intentionally.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(switch-default)
+    TS_LLVM_NOWARNING(switch-enum)
+    TS_MSC_NOWARNING(4061)
+
+    bool supported = true;
+    switch (in_enum) {
+        case FEC_1_2:  fec = DTAPI_MOD_1_2; break;
+        case FEC_1_3:  fec = DTAPI_MOD_1_3; break;
+        case FEC_1_4:  fec = DTAPI_MOD_1_4; break;
+        case FEC_2_3:  fec = DTAPI_MOD_2_3; break;
+        case FEC_2_5:  fec = DTAPI_MOD_2_5; break;
+        case FEC_3_4:  fec = DTAPI_MOD_3_4; break;
+        case FEC_3_5:  fec = DTAPI_MOD_3_5; break;
+        case FEC_4_5:  fec = DTAPI_MOD_4_5; break;
+        case FEC_5_6:  fec = DTAPI_MOD_5_6; break;
+        case FEC_6_7:  fec = DTAPI_MOD_6_7; break;
+        case FEC_7_8:  fec = DTAPI_MOD_7_8; break;
+        case FEC_8_9:  fec = DTAPI_MOD_8_9; break;
+        case FEC_9_10: fec = DTAPI_MOD_9_10; break;
+        default: supported = false; break;
+    }
+    return supported;
+
+    TS_POP_WARNING()
+#endif // TS_NO_DTAPI
+}
+
+
+//----------------------------------------------------------------------------
+// Attempt to convert the tuning parameters for Dektec modulator cards.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
+{
+#if defined(TS_NO_DTAPI)
+    // No Dektec library.
+    return false;
+#else
+    // Get known parameters.
+    if (!getDektecModulationType(modulation_type) || !getDektecCodeRate(param0)) {
+        return false;
     }
 
     // Additional parameters param1 and param2
-    switch (delsys) {
-        case DS_DVB_S: {
-            param1 = param2 = 0;
-            break;
+    param1 = param2 = 0;
+    if (delivery_system == DS_DVB_S2) {
+        param1 = pilots.value(DEFAULT_PILOTS) == PILOT_ON ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
+        // Assume long FEC frame for broadcast service (should be updated by caller if necessary).
+        param1 |= DTAPI_MOD_S2_LONGFRM;
+        // Roll-off
+        switch (roll_off.value(DEFAULT_ROLL_OFF)) {
+            case ROLLOFF_AUTO: param1 |= DTAPI_MOD_ROLLOFF_AUTO; break;
+            case ROLLOFF_20:   param1 |= DTAPI_MOD_ROLLOFF_20; break;
+            case ROLLOFF_25:   param1 |= DTAPI_MOD_ROLLOFF_25; break;
+            case ROLLOFF_35:   param1 |= DTAPI_MOD_ROLLOFF_35; break;
+            default: break;
         }
-        case DS_DVB_S2: {
-            param1 = pilots.value(DEFAULT_PILOTS) == PILOT_ON ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
-            // Assume long FEC frame for broadcast service (should be updated by caller if necessary).
-            param1 |= DTAPI_MOD_S2_LONGFRM;
-            // Roll-off
-            switch (roll_off.value(DEFAULT_ROLL_OFF)) {
-                case ROLLOFF_AUTO: param1 |= DTAPI_MOD_ROLLOFF_AUTO; break;
-                case ROLLOFF_20:   param1 |= DTAPI_MOD_ROLLOFF_20; break;
-                case ROLLOFF_25:   param1 |= DTAPI_MOD_ROLLOFF_25; break;
-                case ROLLOFF_35:   param1 |= DTAPI_MOD_ROLLOFF_35; break;
-            }
-            // Physical layer scrambling initialization sequence
-            param2 = int(pls_code.value(DEFAULT_PLS_CODE));
-            break;
-        }
-        default: {
-            return false; // unsupported
-        }
+        // Physical layer scrambling initialization sequence
+        param2 = int(pls_code.value(DEFAULT_PLS_CODE));
     }
 
     return true;
-    TS_POP_WARNING()
 
 #endif // TS_NO_DTAPI
 }

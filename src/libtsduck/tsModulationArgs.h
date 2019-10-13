@@ -338,11 +338,33 @@ namespace ts {
         bool fromDeliveryDescriptor(const Descriptor& desc);
 
         //!
+        //! Attempt to get a "modulation type" for Dektec modulator cards.
+        //! @param [out] type Modulation type (DTAPI_MOD_* value). Unchanged in case of error.
+        //! @return True on success, false on error (includes unsupported operation).
+        //!
+        bool getDektecModulationType(int& type) const;
+
+        //!
+        //! Attempt to get a "FEC type" for Dektec modulator cards.
+        //! @param [out] fec FEC type (DTAPI_MOD_* value). Unchanged in case of error.
+        //! @return True on success, false on error (includes unsupported operation).
+        //!
+        bool getDektecCodeRate(int& fec) const;
+
+        //!
+        //! Convert a InnerFEC value into a "FEC type" for Dektec modulator cards.
+        //! @param [out] out Returned FEC type (DTAPI_MOD_* value). Unchanged in case of error.
+        //! @param [out] in Input FEC type (enum type).
+        //! @return True on success, false on error (includes unsupported operation).
+        //!
+        static bool ToDektecCodeRate(int& out, InnerFEC in);
+
+        //!
         //! Attempt to convert the tuning parameters in modulation parameters for Dektec modulator cards.
         //! @param [out] modulation_type Modulation type (DTAPI_MOD_* value).
-        //! @param [out] param0 Modulation-specific paramter 0.
-        //! @param [out] param1 Modulation-specific paramter 1.
-        //! @param [out] param2 Modulation-specific paramter 2.
+        //! @param [out] param0 Modulation-specific parameter 0.
+        //! @param [out] param1 Modulation-specific parameter 1.
+        //! @param [out] param2 Modulation-specific parameter 2.
         //! @return True on success, false on error (includes unsupported operation).
         //!
         bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const;

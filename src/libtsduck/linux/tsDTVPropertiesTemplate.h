@@ -34,7 +34,7 @@
 //-----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
-void ts::DTVProperties::getValuesByCommand(std::set<INT>& values& values, uint32_t cmd) const
+void ts::DTVProperties::getValuesByCommand(std::set<INT>& values, uint32_t cmd) const
 {
     values.clear();
     for (size_t i = 0; i < size_t(_prop_head.num); i++) {

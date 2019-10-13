@@ -170,6 +170,12 @@ namespace ts {
         UString deliverySystemsString() const;
 
         //!
+        //! Get the "default" delivery system of the tuner.
+        //! @return The default delivery system of the tuner.
+        //!
+        DeliverySystem defaultDeliverySystem() const;
+
+        //!
         //! Get the device name of the tuner.
         //! @return The device name of the tuner.
         //!
@@ -206,11 +212,11 @@ namespace ts {
 
         //!
         //! Tune to the specified parameters.
-        //! @param [in] params Tuning parameters.
+        //! @param [in,out] params Tuning parameters. Updated with missing default values.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(const ModulationArgs& params, Report& report);
+        bool tune(ModulationArgs& params, Report& report);
 
         //!
         //! Start receiving packets.
@@ -333,12 +339,13 @@ namespace ts {
 
         //!
         //! Display the characteristics and status of the tuner.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] strm Output text stream.
         //! @param [in] margin Left margin to display.
         //! @param [in,out] report Where to report errors.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report);
+        std::ostream& displayStatus(DuckContext& duck, std::ostream& strm, const UString& margin, Report& report);
 
     private:
         // System-specific parts are stored in a private structure.
@@ -353,6 +360,18 @@ namespace ts {
         void clearDeliverySystems();
         void addDeliverySystem(DeliverySystem ds);
 
+        // Check the consistency of tune() parameters.
+        // Return full parameters with default values.
+        // Return true on success, false on error.
+        bool checkTuneParameters(ModulationArgs& params, Report& report) const;
+
+        // List of delivery systems, from most preferred to least preferred.
+        // This list is used to find the default delivery system of a tuner
+        // and to build the list of supported delivery systems in order of
+        // preference.
+        static const std::list<DeliverySystem> _preferred_order;
+
+        // Private members.
         bool              _is_open;
         bool              _info_only;
         UString           _device_name;    // Used to open the tuner
