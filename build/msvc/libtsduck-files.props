@@ -69,6 +69,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsBCD.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBetterSystemRandomGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBinaryTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsBitrateDifferenceDVBT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBitRateRegulator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBitStream.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBlockCipher.h" />
@@ -490,12 +491,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsTSSpeedMetrics.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTuner.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTunerArgs.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTunerParameters.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTunerParametersATSC.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTunerParametersBitrateDiffDVBT.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTunerParametersDVBC.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTunerParametersDVBS.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTunerParametersDVBT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTVCT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUDPReceiver.h" />
@@ -609,6 +604,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsBCD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBetterSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBinaryTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsBitrateDifferenceDVBT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBitRateRegulator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBlockCipher.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBlockCipherAlertInterface.cpp" />
@@ -979,12 +975,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsTSSpeedMetrics.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTuner.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTunerArgs.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTunerParameters.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTunerParametersATSC.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTunerParametersBitrateDiffDVBT.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTunerParametersDVBC.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTunerParametersDVBS.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTunerParametersDVBT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTVCT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUDPReceiver.cpp" />

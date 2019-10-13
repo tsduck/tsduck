@@ -26,13 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A variant of DVB-T tuners parameters with an offset between a target
-//  bitrate and their theoretical bitrate
-//
-//----------------------------------------------------------------------------
 
-#include "tsTunerParametersBitrateDiffDVBT.h"
+#include "tsBitrateDifferenceDVBT.h"
 #include "tsModulation.h"
 #include "tsGuard.h"
 TSDUCK_SOURCE;
@@ -42,27 +37,10 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TunerParametersBitrateDiffDVBT::TunerParametersBitrateDiffDVBT() :
-    TunerParametersDVBT (),
-    bitrate_diff (0)
+ts::BitrateDifferenceDVBT::BitrateDifferenceDVBT() :
+    tune(),
+    bitrate_diff(0)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Virtual assignment
-//----------------------------------------------------------------------------
-
-void ts::TunerParametersBitrateDiffDVBT::copy(const TunerParameters& obj)
-{
-    const TunerParametersBitrateDiffDVBT* other = dynamic_cast <const TunerParametersBitrateDiffDVBT*> (&obj);
-    if (other == nullptr) {
-        throw IncompatibleTunerParametersError(u"BitrateDiff DVBT != " + TunerTypeEnum.name(obj.tunerType()));
-    }
-    else {
-        TunerParametersDVBT::copy(obj); // superclass
-        this->bitrate_diff = other->bitrate_diff;
-    }
 }
 
 
@@ -90,51 +68,51 @@ namespace {
 // Comparison operator for list sort.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParametersBitrateDiffDVBT::operator< (const TunerParametersBitrateDiffDVBT& other) const
+bool ts::BitrateDifferenceDVBT::operator<(const BitrateDifferenceDVBT& other) const
 {
-    // If distance from target bitrate is different, use lowest
-    if (::abs (bitrate_diff) != ::abs (other.bitrate_diff)) {
-        return ::abs (bitrate_diff) < ::abs (other.bitrate_diff);
+    // If distance from target bitrate is different, use lowest.
+    if (std::abs(bitrate_diff) != std::abs(other.bitrate_diff)) {
+        return std::abs(bitrate_diff) < std::abs(other.bitrate_diff);
     }
 
     // The two sets of parameters have the same distance from the target bitrate.
     // Consider other modulation parameters to select a "better" set of parameters.
-    if (bandwidth != other.bandwidth) {
+    if (tune.bandwidth != other.tune.bandwidth) {
         for (size_t i = 0; i < pref_bw_size; ++i) {
-            if (bandwidth == pref_bw[i]) {
+            if (tune.bandwidth == pref_bw[i]) {
                 return true; // this < other
             }
-            if (other.bandwidth == pref_bw[i]) {
+            if (other.tune.bandwidth == pref_bw[i]) {
                 return false; // other < this
             }
         }
     }
-    if (modulation != other.modulation) {
+    if (tune.modulation != other.tune.modulation) {
         for (size_t i = 0; i < pref_mod_size; ++i) {
-            if (modulation == pref_mod[i]) {
+            if (tune.modulation == pref_mod[i]) {
                 return true; // this < other
             }
-            if (other.modulation == pref_mod[i]) {
+            if (other.tune.modulation == pref_mod[i]) {
                 return false; // other < this
             }
         }
     }
-    if (fec_hp != other.fec_hp) {
+    if (tune.fec_hp != other.tune.fec_hp) {
         for (size_t i = 0; i < pref_fec_size; ++i) {
-            if (fec_hp == pref_fec[i]) {
+            if (tune.fec_hp == pref_fec[i]) {
                 return true; // this < other
             }
-            if (other.fec_hp == pref_fec[i]) {
+            if (other.tune.fec_hp == pref_fec[i]) {
                 return false; // other < this
             }
         }
     }
-    if (guard_interval != other.guard_interval) {
+    if (tune.guard_interval != other.tune.guard_interval) {
         for (size_t i = 0; i < pref_guard_size; ++i) {
-            if (guard_interval == pref_guard[i]) {
+            if (tune.guard_interval == pref_guard[i]) {
                 return true; // this < other
             }
-            if (other.guard_interval == pref_guard[i]) {
+            if (other.tune.guard_interval == pref_guard[i]) {
                 return false; // other < this
             }
         }
@@ -150,22 +128,22 @@ bool ts::TunerParametersBitrateDiffDVBT::operator< (const TunerParametersBitrate
 // bitrate difference from a given target bitrate.
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersBitrateDiffDVBT::EvaluateToBitrate (TunerParametersBitrateDiffDVBTList& list, BitRate bitrate)
+void ts::BitrateDifferenceDVBT::EvaluateToBitrate(BitrateDifferenceDVBTList& list, BitRate bitrate)
 {
     list.clear();
-    TunerParametersBitrateDiffDVBT params;
+    BitrateDifferenceDVBT params;
 
     // Build a list of all possible modulation parameters for this bitrate.
     for (size_t i_mod = 0; i_mod < pref_mod_size; ++i_mod) {
-        params.modulation = pref_mod[i_mod];
+        params.tune.modulation = pref_mod[i_mod];
         for (size_t i_fec = 0; i_fec < pref_fec_size; ++i_fec) {
-            params.fec_hp = pref_fec[i_fec];
+            params.tune.fec_hp = pref_fec[i_fec];
             for (size_t i_guard = 0; i_guard < pref_guard_size; ++i_guard) {
-                params.guard_interval = pref_guard[i_guard];
+                params.tune.guard_interval = pref_guard[i_guard];
                 for (size_t i_bw = 0; i_bw < pref_bw_size; ++i_bw) {
-                    params.bandwidth = pref_bw[i_bw];
-                    params.bitrate_diff = int (bitrate) - int (params.theoreticalBitrate());
-                    list.push_back (params);
+                    params.tune.bandwidth = pref_bw[i_bw];
+                    params.bitrate_diff = int(bitrate) - int(params.tune.theoreticalBitrate());
+                    list.push_back(params);
                 }
             }
         }

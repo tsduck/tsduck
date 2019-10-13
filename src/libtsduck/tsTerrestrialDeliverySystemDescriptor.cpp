@@ -33,7 +33,6 @@
 
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsTunerParametersDVBT.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"

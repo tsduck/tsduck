@@ -36,8 +36,8 @@
 #include "tsTSPacket.h"
 #include "tsModulationArgs.h"
 #include "tsAbortInterface.h"
+#include "tsSafePtr.h"
 #include "tsReport.h"
-#include "tsTunerParameters.h"
 
 namespace ts {
 

@@ -33,7 +33,7 @@
 
 #include "tsMain.h"
 #include "tsHFBand.h"
-#include "tsTunerParametersBitrateDiffDVBT.h"
+#include "tsBitrateDifferenceDVBT.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
@@ -325,7 +325,8 @@ int MainCode(int argc, char *argv[])
 
     // Compute TS bitrate from modulation parameters
     if (opt.fec_hp != ts::FEC_AUTO && opt.guard_interval != ts::GUARD_AUTO) {
-        ts::TunerParametersDVBT params;
+        ts::ModulationArgs params;
+        params.delivery_system = ts::DS_DVB_T;
         params.bandwidth = opt.bandwidth;
         params.fec_hp = opt.fec_hp;
         params.modulation = opt.constellation;
@@ -344,35 +345,35 @@ int MainCode(int argc, char *argv[])
     if (opt.bitrate > 0) {
 
         // Build a list of all possible modulation parameters for this bitrate.
-        ts::TunerParametersBitrateDiffDVBTList params_list;
-        ts::TunerParametersBitrateDiffDVBT::EvaluateToBitrate(params_list, opt.bitrate);
+        ts::BitrateDifferenceDVBTList params_list;
+        ts::BitrateDifferenceDVBT::EvaluateToBitrate(params_list, opt.bitrate);
 
         // Display all relevant parameters, up to max_guess
         // (in case of equal differences, display them all)
         int last_diff = 0;
         size_t count = 0;
-        for (ts::TunerParametersBitrateDiffDVBTList::const_iterator it = params_list.begin();
-             it != params_list.end() && (count < opt.max_guess || ::abs(it->bitrate_diff) == ::abs(last_diff));
-             ++it, ++count) {
-
+        for (auto it = params_list.begin();
+             it != params_list.end() && (count < opt.max_guess || std::abs(it->bitrate_diff) == std::abs(last_diff));
+             ++it, ++count)
+        {
             last_diff = it->bitrate_diff;
             if (opt.simple) {
-                std::cout << it->theoreticalBitrate() << std::endl
-                          << ts::BandWidthEnum.name(it->bandwidth) << std::endl
-                          << ts::InnerFECEnum.name(it->fec_hp) << std::endl
-                          << ts::ModulationEnum.name(it->modulation) << std::endl
-                          << ts::GuardIntervalEnum.name(it->guard_interval) << std::endl;
+                std::cout << it->tune.theoreticalBitrate() << std::endl
+                          << ts::BandWidthEnum.name(it->tune.bandwidth.value()) << std::endl
+                          << ts::InnerFECEnum.name(it->tune.fec_hp.value()) << std::endl
+                          << ts::ModulationEnum.name(it->tune.modulation.value()) << std::endl
+                          << ts::GuardIntervalEnum.name(it->tune.guard_interval.value()) << std::endl;
             }
             else {
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display(u"Nominal bitrate", ts::UString::Decimal(it->theoreticalBitrate()), u"b/s");
+                Display(u"Nominal bitrate", ts::UString::Decimal(it->tune.theoreticalBitrate()), u"b/s");
                 Display(u"Bitrate difference", ts::UString::Decimal(it->bitrate_diff), u"b/s");
-                Display(u"Bandwidth", ts::BandWidthEnum.name(it->bandwidth), u"");
-                Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->fec_hp), u"");
-                Display(u"Constellation", ts::ModulationEnum.name(it->modulation), u"");
-                Display(u"Guard interval", ts::GuardIntervalEnum.name(it->guard_interval), u"");
+                Display(u"Bandwidth", ts::BandWidthEnum.name(it->tune.bandwidth.value()), u"");
+                Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->tune.fec_hp.value()), u"");
+                Display(u"Constellation", ts::ModulationEnum.name(it->tune.modulation.value()), u"");
+                Display(u"Guard interval", ts::GuardIntervalEnum.name(it->tune.guard_interval.value()), u"");
             }
         }
     }

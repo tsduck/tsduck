@@ -57,7 +57,7 @@ namespace ts {
         //!
         //! Constructor.
         //! The transport stream is scanned be the constructor.
-        //! The collected data cna be fetched later.
+        //! The collected data can be fetched later.
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the scanner.
         //! @param [in,out] tuner A tuner which is already tuned to the expected channel.
         //! @param [in] timeout Execution timeout in milliseconds.
@@ -76,7 +76,7 @@ namespace ts {
         //! Get the tuner parameters of the transport stream.
         //! @param [out] tp Returned safe pointer to the tuner parameters.
         //!
-        void getTunerParameters(TunerParametersPtr& tp) const {tp = _tparams;}
+        void getTunerParameters(ModulationArgs& tp) const {tp = _tparams;}
 
         //!
         //! Get the PAT of the transport stream.
@@ -110,17 +110,17 @@ namespace ts {
         void getVCT(SafePtr<VCT>& vct) const {vct = _vct;}
 
     private:
-        DuckContext&       _duck;
-        Report&            _report;
-        bool               _pat_only;
-        bool               _completed;
-        SectionDemux       _demux;
-        TunerParametersPtr _tparams;
-        SafePtr<PAT>       _pat;
-        SafePtr<SDT>       _sdt;
-        SafePtr<NIT>       _nit;
-        SafePtr<MGT>       _mgt;
-        SafePtr<VCT>       _vct;
+        DuckContext&   _duck;
+        Report&        _report;
+        bool           _pat_only;
+        bool           _completed;
+        SectionDemux   _demux;
+        ModulationArgs _tparams;
+        SafePtr<PAT>   _pat;
+        SafePtr<SDT>   _sdt;
+        SafePtr<NIT>   _nit;
+        SafePtr<MGT>   _mgt;
+        SafePtr<VCT>   _vct;
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

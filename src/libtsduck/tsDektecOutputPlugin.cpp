@@ -32,11 +32,7 @@
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
 #include "tsHFBand.h"
-#include "tsTunerParameters.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersBitrateDiffDVBT.h"
-#include "tsTunerParametersATSC.h"
+#include "tsBitrateDifferenceDVBT.h"
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
@@ -1305,12 +1301,12 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             int constel = DTAPI_MOD_DVBT_QAM64;
             int guard = DTAPI_MOD_DVBT_G_1_32;
             int tr_mode = DTAPI_MOD_DVBT_8K;
-            TunerParametersBitrateDiffDVBT params;
+            BitrateDifferenceDVBT params;
             if (use_input_modulation && input_dvbt == nullptr && _guts->cur_bitrate > 0) {
                 // --input-modulation is specified but input plugin is not a DVB-T tuner,
                 // use input bitrate to determine modulation parameters.
-                TunerParametersBitrateDiffDVBTList params_list;
-                TunerParametersBitrateDiffDVBT::EvaluateToBitrate(params_list, _guts->cur_bitrate);
+                BitrateDifferenceDVBTList params_list;
+                BitrateDifferenceDVBT::EvaluateToBitrate(params_list, _guts->cur_bitrate);
                 if (!params_list.empty()) {
                     params = params_list.front();
                     input_dvbt = &params;
@@ -1678,7 +1674,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                 // those packets that are still in the FIFO are likely connected with those that were just
                 // drained, and we want to keep them together in terms of when they are transmitted if possible.
                 status = _guts->chan.SetTxControl(DTAPI_TXCTRL_HOLD);
-                if (status != DTAPI_OK) { 
+                if (status != DTAPI_OK) {
                     tsp->error(u"output device start send error: " + DektecStrError(status));
                     return false;
                 }

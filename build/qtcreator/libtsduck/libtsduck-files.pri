@@ -67,6 +67,7 @@ HEADERS += \
     ../../../src/libtsduck/tsBCD.h \
     ../../../src/libtsduck/tsBetterSystemRandomGenerator.h \
     ../../../src/libtsduck/tsBinaryTable.h \
+    ../../../src/libtsduck/tsBitrateDifferenceDVBT.h \
     ../../../src/libtsduck/tsBitRateRegulator.h \
     ../../../src/libtsduck/tsBitStream.h \
     ../../../src/libtsduck/tsBlockCipher.h \
@@ -488,12 +489,6 @@ HEADERS += \
     ../../../src/libtsduck/tsTSSpeedMetrics.h \
     ../../../src/libtsduck/tsTuner.h \
     ../../../src/libtsduck/tsTunerArgs.h \
-    ../../../src/libtsduck/tsTunerParameters.h \
-    ../../../src/libtsduck/tsTunerParametersATSC.h \
-    ../../../src/libtsduck/tsTunerParametersBitrateDiffDVBT.h \
-    ../../../src/libtsduck/tsTunerParametersDVBC.h \
-    ../../../src/libtsduck/tsTunerParametersDVBS.h \
-    ../../../src/libtsduck/tsTunerParametersDVBT.h \
     ../../../src/libtsduck/tsTVCT.h \
     ../../../src/libtsduck/tsUChar.h \
     ../../../src/libtsduck/tsUDPReceiver.h \
@@ -597,6 +592,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBCD.cpp \
     ../../../src/libtsduck/tsBetterSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsBinaryTable.cpp \
+    ../../../src/libtsduck/tsBitrateDifferenceDVBT.cpp \
     ../../../src/libtsduck/tsBitRateRegulator.cpp \
     ../../../src/libtsduck/tsBlockCipher.cpp \
     ../../../src/libtsduck/tsBlockCipherAlertInterface.cpp \
@@ -967,12 +963,6 @@ SOURCES += \
     ../../../src/libtsduck/tsTSSpeedMetrics.cpp \
     ../../../src/libtsduck/tsTuner.cpp \
     ../../../src/libtsduck/tsTunerArgs.cpp \
-    ../../../src/libtsduck/tsTunerParameters.cpp \
-    ../../../src/libtsduck/tsTunerParametersATSC.cpp \
-    ../../../src/libtsduck/tsTunerParametersBitrateDiffDVBT.cpp \
-    ../../../src/libtsduck/tsTunerParametersDVBC.cpp \
-    ../../../src/libtsduck/tsTunerParametersDVBS.cpp \
-    ../../../src/libtsduck/tsTunerParametersDVBT.cpp \
     ../../../src/libtsduck/tsTVCT.cpp \
     ../../../src/libtsduck/tsUChar.cpp \
     ../../../src/libtsduck/tsUDPReceiver.cpp \

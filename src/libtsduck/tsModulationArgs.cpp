@@ -48,6 +48,7 @@ constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBC;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBS;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBT;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBC;
+constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_ATSC;
 constexpr ts::BandWidth         ts::ModulationArgs::DEFAULT_BANDWIDTH_DVBT;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_HP;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_LP;
@@ -787,6 +788,184 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
         desc += u", " + qual_string;
     }
     return desc;
+}
+
+
+//----------------------------------------------------------------------------
+// Display a description of the paramters on a stream, line by line.
+//----------------------------------------------------------------------------
+
+void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, bool verbose) const
+{
+    if (frequency.set() && frequency != 0) {
+        strm << margin << "Carrier frequency: " << UString::Decimal(frequency.value()) << " Hz" << std::endl;
+    }
+    if (inversion.set() && inversion != SPINV_AUTO) {
+        strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
+    }
+    if (modulation.set() && modulation != QAM_AUTO) {
+        strm << margin << "Modulation: " << ModulationEnum.name(modulation.value()) << std::endl;
+    }
+
+    switch (TunerTypeOf(delivery_system.value())) {
+        case TT_DVB_C: {
+            if (symbol_rate.set() && symbol_rate != 0) {
+                strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
+            }
+            if (inner_fec.set() && inner_fec != FEC_AUTO) {
+                strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
+            }
+            break;
+        }
+        case TT_DVB_T: {
+            if (fec_hp.set() && fec_hp != FEC_AUTO) {
+                strm << margin << "HP streams FEC: " << InnerFECEnum.name(fec_hp.value()) << std::endl;
+            }
+            if (fec_lp.set() && fec_lp != FEC_AUTO) {
+                strm << margin << "LP streams FEC: " << InnerFECEnum.name(fec_lp.value()) << std::endl;
+            }
+            if (guard_interval.set() && guard_interval != GUARD_AUTO) {
+                strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
+            }
+            if (bandwidth.set() && bandwidth != BW_AUTO) {
+                strm << margin << "Bandwidth: " << BandWidthEnum.name(bandwidth.value()) << std::endl;
+            }
+            if (transmission_mode.set() && transmission_mode != TM_AUTO) {
+                strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
+            }
+            if (hierarchy.set() && hierarchy != HIERARCHY_AUTO) {
+                strm << margin << "Hierarchy: " << HierarchyEnum.name(hierarchy.value()) << std::endl;
+            }
+            break;
+        }
+        case TT_DVB_S: {
+            if (polarity.set() && polarity != POL_AUTO) {
+                strm << margin << "Polarity: " << PolarizationEnum.name(polarity.value()) << std::endl;
+            }
+            if (inversion.set() && inversion != SPINV_AUTO) {
+                strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
+            }
+            if (symbol_rate.set() && symbol_rate != 0) {
+                strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
+            }
+            if (inner_fec.set() && inner_fec != ts::FEC_AUTO) {
+                strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
+            }
+            if (isi.set() && isi != ISI_DISABLE) {
+                strm << margin << "Input stream id: " << isi.value() << std::endl
+                     << margin << "PLS code: " << pls_code.value(DEFAULT_PLS_CODE) << std::endl
+                     << margin << "PLS mode: "<< PLSModeEnum.name(pls_mode.value(DEFAULT_PLS_MODE)) << std::endl;
+            }
+            if ((verbose || delivery_system != DS_DVB_S) && pilots.set() && pilots != PILOT_AUTO) {
+                strm << margin << "Pilots: " << PilotEnum.name(pilots.value()) << std::endl;
+            }
+            if ((verbose || delivery_system != DS_DVB_S) && roll_off.set() && roll_off != ROLLOFF_AUTO) {
+                strm << margin << "Roll-off: " << RollOffEnum.name(roll_off.value()) << std::endl;
+            }
+            if (verbose) {
+                strm << margin << "LNB: " << UString(lnb.value(DEFAULT_LNB)) << std::endl;
+            }
+            if (verbose) {
+                strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
+            }
+            break;
+        }
+        case TT_ATSC:
+        case TT_UNDEFINED:
+        default: {
+            break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Format the modulation parameters as command line arguments.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
+{
+    // Don't know what to describe without delivery system or frequency.
+    if (!delivery_system.set() || !frequency.set()) {
+        return UString();
+    }
+
+    // Delivery system and frequency are common options and always come first.
+    UString opt(UString::Format(u"--delivery-system %s --frequency %'d", {DeliverySystemEnum.name(delivery_system.value()), frequency.value()}));
+
+    // All other options depend on the tuner type.
+    switch (TunerTypeOf(delivery_system.value())) {
+        case TT_ATSC: {
+            opt += UString::Format(u" --modulation %s", {ModulationEnum.name(modulation.value(DEFAULT_MODULATION_ATSC))});
+            break;
+        }
+        case TT_DVB_C: {
+            opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --modulation %s", {
+                                   symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBC),
+                                   InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
+                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBC))});
+            break;
+        }
+        case TT_DVB_T: {
+            opt += UString::Format(u" --modulation %s"
+                                   u" --high-priority-fec %s"
+                                   u" --low-priority-fec %s"
+                                   u" --bandwidth %s"
+                                   u" --transmission-mode %s"
+                                   u" --guard-interval %s"
+                                   u" --hierarchy %s", {
+                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBT)),
+                                   InnerFECEnum.name(fec_hp.value(DEFAULT_FEC_HP)),
+                                   InnerFECEnum.name(fec_lp.value(DEFAULT_FEC_LP)),
+                                   BandWidthEnum.name(bandwidth.value(DEFAULT_BANDWIDTH_DVBT)),
+                                   TransmissionModeEnum.name(transmission_mode.value(DEFAULT_TRANSMISSION_MODE_DVBT)),
+                                   GuardIntervalEnum.name(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT)),
+                                   HierarchyEnum.name(hierarchy.value(DEFAULT_HIERARCHY))});
+            if (plp.set() && plp != PLP_DISABLE) {
+                opt += UString::Format(u" --plp %d", {plp.value()});
+            }
+            break;
+        }
+        case TT_DVB_S: {
+            opt += UString::Format(u" --symbol-rate %'d"
+                                   u" --fec-inner %s"
+                                   u" --polarity %s"
+                                   u" --modulation %s"
+                                   u" --pilots %s"
+                                   u" --roll-off %s", {
+                                   symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
+                                   InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
+                                   PolarizationEnum.name(polarity.value(DEFAULT_POLARITY)),
+                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBS)),
+                                   PilotEnum.name(pilots.value(DEFAULT_PILOTS)),
+                                   RollOffEnum.name(roll_off.value(DEFAULT_ROLL_OFF))});
+            if (isi.set() && isi != DEFAULT_ISI) {
+                opt += UString::Format(u" --isi %d", {isi.value()});
+            }
+            if (pls_code.set() && pls_code != DEFAULT_PLS_CODE) {
+                opt += UString::Format(u" --pls-code %d", {pls_code.value()});
+            }
+            if (pls_mode.set() && pls_mode != DEFAULT_PLS_MODE) {
+                opt += UString::Format(u" --pls-mode %s", {PLSModeEnum.name(pls_mode.value())});
+            }
+            if (!no_local) {
+                opt += UString::Format(u" --lnb %s --satellite-number %d", {UString(lnb.value(DEFAULT_LNB)), satellite_number.value()});
+            }
+            break;
+        }
+        case TT_UNDEFINED:
+        default: {
+            break;
+        }
+    }
+
+    // Add spectral inversion (common option).
+    if (inversion.set() && inversion != DEFAULT_INVERSION) {
+        opt += u" --spectral-inversion ";
+        opt += SpectralInversionEnum.name(inversion.value());
+    }
+
+    return opt;
 }
 
 

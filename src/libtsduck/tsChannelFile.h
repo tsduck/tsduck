@@ -77,7 +77,7 @@ namespace ts {
 
         //!
         //! Load an XML file.
-        //! @param [in] fileName XML file name.
+        //! @param [in] fileName XML file name. If empty, use the default file name.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
@@ -301,16 +301,18 @@ namespace ts {
         //!
         //! Get a network by id and type in the file.
         //! @param [in] id Network identifier.
+        //! @param [in] type Network type.
         //! @return A safe pointer to the network or a null pointer if the specified network does not exist.
         //!
-        NetworkPtr networkById(uint16_t id) const;
+        NetworkPtr networkById(uint16_t id, TunerType type) const;
 
         //!
         //! Get or create a network.
         //! @param [in] id Network identifier.
+        //! @param [in] type Network type.
         //! @return A safe pointer to the network, never a null pointer.
         //!
-        NetworkPtr networkGetOrCreate(uint16_t id);
+        NetworkPtr networkGetOrCreate(uint16_t id, TunerType type);
 
         //!
         //! Search a service by name in any network of the file.

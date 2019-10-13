@@ -364,8 +364,8 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
         // Loop on all descriptors for the current TS
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
-            TunerParametersPtr tp(TunerParameters::FromDeliveryDescriptor(*dlist[i]));
-            if (!tp.isNull()) {
+            ModulationArgs tp;
+            if (tp.fromDeliveryDescriptor(*dlist[i])) {
 
                 // Output --dvb-options.
                 if (_dvb_options) {
@@ -383,7 +383,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                     if (_use_variable) {
                         *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
                     }
-                    *_output << tp->toPluginOptions(true);
+                    *_output << tp.toPluginOptions(true);
                     if (_use_variable) {
                         *_output << "\"";
                     }
@@ -394,7 +394,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                 if (_save_channel_file || _update_channel_file) {
                     // Get or create network description in channel database.
                     // Use tuner type from delivery descriptor.
-                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, tp->tunerType()));
+                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, TunerTypeOf(tp.delivery_system.value(DS_UNDEFINED))));
                     // Get or create TS description in channel database.
                     ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
                     // Do not reset services in TS, keep existing if any, just update tuning info.

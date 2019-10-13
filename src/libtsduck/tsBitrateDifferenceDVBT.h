@@ -28,51 +28,53 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract base class for DVB tuners parameters
+//!  A set of DVB-T tuners parameters with an bitrate offset.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsObject.h"
-#include "tsMPEG.h"
-#include "tsModulation.h"
-#include "tsSafePtr.h"
-#include "tsException.h"
-#include "tsDescriptor.h"
-#include "tsxml.h"
+#include "tsModulationArgs.h"
 
 namespace ts {
+
+    class BitrateDifferenceDVBT;
+
     //!
-    //! Abstract base class for DVB tuners parameters.
+    //! List of BitrateDifferenceDVBT.
+    //!
+    typedef std::list<BitrateDifferenceDVBT> BitrateDifferenceDVBTList;
+
+    //!
+    //! A variant of DVB-T tuners parameters with an offset between a target bitrate and their theoretical bitrate.
     //! @ingroup hardware
     //!
-    class TSDUCKDLL TunerParameters: public Object
+    class TSDUCKDLL BitrateDifferenceDVBT
     {
     public:
-        //!
-        //! Format a short description (frequency and essential parameters).
-        //! @param [in] strength Signal strength in percent. Ignored if negative.
-        //! @param [in] quality Signal quality in percent. Ignored if negative.
-        //! @return A description string.
-        //!
-        virtual UString shortDescription(int strength = -1, int quality = -1) const = 0;
+        ModulationArgs tune;          //!< Modulation parameters.
+        int            bitrate_diff;  //!< Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
 
         //!
-        //! Format the tuner parameters as a list of options for the "dvb" tsp plugin.
-        //! @param [in] no_local When true, the "local" options are not included.
-        //! The local options are related to the local equipment (--lnb for instance)
-        //! and may vary from one system to another for the same transponder.
-        //! @return A string containing a command line options for the "dvb" tsp plugin.
+        //! Default constructor.
         //!
-        virtual UString toPluginOptions(bool no_local = false) const = 0;
+        BitrateDifferenceDVBT();
 
         //!
-        //! Display a description of the modulation paramters on a stream, line by line.
-        //! @param [in,out] strm Where to display the parameters.
-        //! @param [in] margin Left margin to display.
-        //! @param [in] verbose When false, display only essentials parameters.
-        //! When true, display all parameters.
+        //! Comparison operator for list sort.
+        //! Sort criterion: increasing order of absolute value of bitrate_diff.
+        //! This allow the creation of a list of parameters, from the closest to a target bitrate.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this object is logically less than @a other.
         //!
-        virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const = 0;
+        bool operator<(const BitrateDifferenceDVBT& other) const;
+
+        //!
+        //! Build a list of all possible combinations of DVB-T parameters for a target bitrate.
+        //! @param [out] params List of all possible combinations of bandwidth, constellation,
+        //! guard interval and high-priority FEC, sorted in increasing order of bitrate
+        //! difference from a @a bitrate.
+        //! @param [in] bitrate Target bitrate in bits/second.
+        //!
+        static void EvaluateToBitrate(BitrateDifferenceDVBTList& params, BitRate bitrate);
     };
 }
