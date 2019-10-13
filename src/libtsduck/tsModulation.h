@@ -176,6 +176,14 @@ namespace ts {
     TSDUCKDLL bool IsSatelliteDelivery(DeliverySystem sys);
 
     //!
+    //! Check if a delivery system is a terrestrial one.
+    //! This can be used to validate the use of UHD and VHF bands.
+    //! @param [in] sys The delivery system to check.
+    //! @return True if @a sys is a terrestrial system, false otherwise.
+    //!
+    TSDUCKDLL bool IsTerrestrialDelivery(DeliverySystem sys);
+
+    //!
     //! A set of delivery system values (ts::DeliverySystem).
     //! Typically used to indicate the list of standards which are supported by a tuner.
     //!
@@ -289,7 +297,7 @@ namespace ts {
         FEC_3_5  = ::FEC_3_5,
         FEC_1_3  = -12,
         FEC_1_4  = -13,
-        FEC_2_5  = -14,
+        FEC_2_5  = ::FEC_2_5,
         FEC_5_11 = -15,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         FEC_NONE = ::BDA_BCC_RATE_NOT_SET,

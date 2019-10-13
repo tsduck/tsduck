@@ -60,13 +60,14 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 
 
 //----------------------------------------------------------------------------
-// Check if a delivery system is a satellite one.
+// Check if a delivery system is a satellite or terrestrial one.
 //----------------------------------------------------------------------------
 
 bool ts::IsSatelliteDelivery(DeliverySystem sys)
 {
     TS_PUSH_WARNING()
     TS_LLVM_NOWARNING(switch-enum) // ignore all non-satellite values
+    TS_MSC_NOWARNING(4061)
 
     switch (sys) {
         case DS_DVB_S:
@@ -74,6 +75,27 @@ bool ts::IsSatelliteDelivery(DeliverySystem sys)
         case DS_DVB_S_TURBO:
         case DS_ISDB_S:
         case DS_DSS:
+            return true;
+        default:
+            return false;
+    }
+
+    TS_POP_WARNING()
+}
+
+bool ts::IsTerrestrialDelivery(DeliverySystem sys)
+{
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(switch-enum) // ignore all non-terrestrial values
+    TS_MSC_NOWARNING(4061)
+
+    switch (sys) {
+        case DS_DVB_T:
+        case DS_DVB_T2:
+        case DS_ISDB_T:
+        case DS_ATSC:
+        case DS_DTMB:
+        case DS_CMMB:
             return true;
         default:
             return false;

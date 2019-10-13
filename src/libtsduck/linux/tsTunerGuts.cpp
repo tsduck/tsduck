@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+#include "tsDuckContext.h"
 #include "tsHFBand.h"
 #include "tsTime.h"
 #include "tsSysUtils.h"
@@ -40,6 +41,16 @@
 #include "tsMemoryUtils.h"
 #include "tsDTVProperties.h"
 TSDUCK_SOURCE;
+
+// We used to report "bit error rate", "signal/noise ratio", "signal strength",
+// "uncorrected blocks". But the corresponding ioctl commands (FE_READ_BER, FE_READ_SNR,
+// FE_READ_SIGNAL_STRENGTH, FE_READ_UNCORRECTED_BLOCKS) are marked as deprecated with
+// DVB API v5 and most drivers now return error 524 (ENOTSUPP). So, we simply drop the
+// feature. Also note that there are several forms os "unsupported" in errno and 524
+// is usually not defined...
+#if !defined(DVB_ENOTSUPP)
+    #define DVB_ENOTSUPP 524
+#endif
 
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
 
@@ -382,8 +393,8 @@ bool ts::Tuner::Guts::getFrontendStatus(::fe_status_t& status, Report& report)
 {
     status = FE_ZERO;
     errno = 0;
-    bool ok = ::ioctl(frontend_fd, FE_READ_STATUS, &status) == 0;
-    int err = errno;
+    const bool ok = ::ioctl(frontend_fd, FE_READ_STATUS, &status) == 0;
+    const ErrorCode err = LastErrorCode();
     if (ok || (!ok && err == EBUSY && status != FE_ZERO)) {
         return true;
     }
@@ -424,9 +435,13 @@ int ts::Tuner::signalStrength(Report& report)
         return false;
     }
 
-    uint16_t strength;
+    uint16_t strength = 0;
     if (::ioctl(_guts->frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
-        report.error(u"error reading signal strength on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
+        const ErrorCode err = LastErrorCode();
+        // Silently ignore deprecated feature, see comment at beginning of file.
+        if (err != DVB_ENOTSUPP) {
+            report.error(u"error reading signal strength on %s: %s", {_guts->frontend_name, ErrorCodeMessage(err)});
+        }
         return -1;
     }
 
@@ -763,35 +778,10 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, Report& report)
 // Tune to the specified parameters and start receiving.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(const ModulationArgs& in_params, Report& report)
+bool ts::Tuner::tune(ModulationArgs& params, Report& report)
 {
-    if (!_is_open) {
-        report.error(u"tuner not open");
-        return false;
-    }
-
-    // Set all unset tuning parameters to their default value.
-    ModulationArgs params(in_params);
-    params.setDefaultValues();
-
-    if (!params.delivery_system.set()) {
-        report.error(u"no tuning delivery specified");
-        return false;
-    }
-
-    // Check if all specified values are supported on the operating system.
-    if (!CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
-        !CheckModVar(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
-        !CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) ||
-        !CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, report) ||
-        !CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, report) ||
-        !CheckModVar(params.pilots, u"pilots", PilotEnum, report) ||
-        !CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, report))
-    {
+    // Initial parameter checks.
+    if (!checkTuneParameters(params, report)) {
         return false;
     }
 
@@ -856,7 +846,7 @@ bool ts::Tuner::tune(const ModulationArgs& in_params, Report& report)
             }
             props.addVar(DTV_CODE_RATE_HP, params.fec_hp);
             props.addVar(DTV_CODE_RATE_LP, params.fec_lp);
-            props.addVar(DTV_TRANSMISSION_MODE, params.transmission_mode));
+            props.addVar(DTV_TRANSMISSION_MODE, params.transmission_mode);
             props.addVar(DTV_GUARD_INTERVAL, params.guard_interval);
             props.addVar(DTV_HIERARCHY, params.hierarchy);
             props.addVar(DTV_STREAM_ID, params.plp);
@@ -1134,8 +1124,8 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 
         if (insize > 0) {
             // Normal case: some data were read
-            assert(got_size + insize <= req_size);
-            got_size += insize;
+            assert(got_size + size_t(insize) <= req_size);
+            got_size += size_t(insize);
         }
         else if (insize == 0) {
             // End of file. Truncate potential partial packet at eof.
@@ -1311,7 +1301,7 @@ namespace {
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, const ts::UString& margin, Report& report)
 {
     if (!_is_open) {
         report.error(u"DVB tuner not open");
@@ -1354,94 +1344,48 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         {u"hierarchy auto",         ::FE_CAN_HIERARCHY_AUTO},
         {u"8-VSB",                  ::FE_CAN_8VSB},
         {u"16-VSB",                 ::FE_CAN_16VSB},
+        {u"extended caps",          ::FE_HAS_EXTENDED_CAPS},
+        {u"multistream",            ::FE_CAN_MULTISTREAM},
+        {u"turbo FEC",              ::FE_CAN_TURBO_FEC},
+        {u"2nd generation",         ::FE_CAN_2G_MODULATION},
         {u"needs bending",          ::FE_NEEDS_BENDING},
         {u"recover",                ::FE_CAN_RECOVER},
         {u"mute TS",                int(::FE_CAN_MUTE_TS)},
-#if TS_DVB_API_VERSION >= 501
-        {u"2nd generation",         ::FE_CAN_2G_MODULATION},
-#endif
-#if TS_DVB_API_VERSION >= 502
-        {u"turbo FEC",              ::FE_CAN_TURBO_FEC},
-#endif
-#if TS_DVB_API_VERSION >= 508
-        {u"extended caps",          ::FE_HAS_EXTENDED_CAPS},
-        {u"multistream",            ::FE_CAN_MULTISTREAM},
-#endif
     });
 
     // Read current status, ignore errors.
     ::fe_status_t status = FE_ZERO;
     _guts->getFrontendStatus(status, report);
 
-    // Read current tuning parameters
-    TunerParametersPtr params(TunerParameters::Factory(_tuner_type));
-    if (!params.isNull() && !getCurrentTuning(*params, false, report)) {
-        params.clear();
-    }
-    const TunerParametersDVBS* params_dvbs = dynamic_cast <const TunerParametersDVBS*>(params.pointer());
-    const TunerParametersDVBC* params_dvbc = dynamic_cast <const TunerParametersDVBC*>(params.pointer());
-    const TunerParametersDVBT* params_dvbt = dynamic_cast <const TunerParametersDVBT*>(params.pointer());
-    const TunerParametersATSC* params_atsc = dynamic_cast <const TunerParametersATSC*>(params.pointer());
+    // Read current tuning parameters. Ignore errors (some fields may be unset).
+    ModulationArgs params;
+    getCurrentTuning(params, false, report);
 
-    // Read Bit Error Rate
-    uint32_t ber = 0;
-    if (::ioctl(_guts->frontend_fd, FE_READ_BER, &ber) < 0) {
-        report.error(u"ioctl FE_READ_BER on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
-        ber = 0;
+    // Display delivery system.
+    DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
+    if (delsys == DS_UNDEFINED) {
+        delsys = defaultDeliverySystem();
     }
-
-    // Read Signal/Noise Ratio
-    uint16_t snr = 0;
-    if (::ioctl(_guts->frontend_fd, FE_READ_SNR, &snr) < 0) {
-        report.error(u"ioctl FE_READ_SNR on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
-        snr = 0;
-    }
-
-    // Read signal strength
-    uint16_t strength = 0;
-    if (::ioctl(_guts->frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
-        report.error(u"ioctl FE_READ_SIGNAL_STRENGTH on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
-        strength = 0;
-    }
-
-    // Read uncorrected blocks
-    uint32_t ublocks = 0;
-    if (::ioctl(_guts->frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &ublocks) < 0) {
-        report.error(u"ioctl FE_READ_UNCORRECTED_BLOCKS on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
-        ublocks = 0;
-    }
-
-    // Display current information
-    DisplayFlags(strm, margin, u"Status", uint32_t(status), enum_fe_status);
-    strm << std::endl;
-    Display(strm, margin, u"Bit error rate",     UString::Decimal(ber),      Percent(ber));
-    Display(strm, margin, u"Signal/noise ratio", UString::Decimal(snr),      Percent(snr));
-    Display(strm, margin, u"Signal strength",    UString::Decimal(strength), Percent(strength));
-    Display(strm, margin, u"Uncorrected blocks", UString::Decimal(ublocks),  u"");
+    const TunerType ttype = TunerTypeOf(delsys);
+    Display(strm, margin, u"Delivery system", DeliverySystemEnum.name(delsys), u"");
 
     // Display frequency characteristics
-    const uint64_t hz_factor = _guts->fe_info.type == ::FE_QPSK ? 1000 : 1;
+    const uint64_t freq = params.frequency.value(0);
+    const uint64_t hz_factor = IsSatelliteDelivery(delsys) ? 1000 : 1;
     strm << margin << "Frequencies:" << std::endl;
-    if (params_dvbs != nullptr) {
-        Display(strm, margin, u"  Current", UString::Decimal(params_dvbs->frequency), u"Hz");
-    }
-    if (params_dvbc != nullptr) {
-        Display(strm, margin, u"  Current", UString::Decimal(params_dvbc->frequency), u"Hz");
-    }
-    if (params_dvbt != nullptr) {
-        // Get UHF and VHF band descriptions in the default region.
-        const HFBand* uhf = HFBand::GetBand(u"", HFBand::UHF);
-        const HFBand* vhf = HFBand::GetBand(u"", HFBand::VHF);
-        Display(strm, margin, u"  Current", UString::Decimal(params_dvbt->frequency), u"Hz");
-        if (uhf->inBand(params_dvbt->frequency, true)) {
-            Display(strm, margin, u"  UHF channel", UString::Decimal(uhf->channelNumber(params_dvbt->frequency)), u"");
+    if (freq > 0) {
+        Display(strm, margin, u"  Current", UString::Decimal(freq), u"Hz");
+        if (IsTerrestrialDelivery(delsys)) {
+            // Get UHF and VHF band descriptions in the default region.
+            const HFBand* uhf = duck.uhfBand();
+            const HFBand* vhf = duck.vhfBand();
+            if (uhf->inBand(freq, true)) {
+                Display(strm, margin, u"  UHF channel", UString::Decimal(uhf->channelNumber(freq)), u"");
+            }
+            else if (vhf->inBand(freq, true)) {
+                Display(strm, margin, u"  VHF channel", UString::Decimal(vhf->channelNumber(freq)), u"");
+            }
         }
-        else if (vhf->inBand(params_dvbt->frequency, true)) {
-            Display(strm, margin, u"  VHF channel", UString::Decimal(vhf->channelNumber(params_dvbt->frequency)), u"");
-        }
-    }
-    if (params_atsc != nullptr) {
-        Display(strm, margin, u"  Current", UString::Decimal(params_atsc->frequency), u"Hz");
     }
     Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _guts->fe_info.frequency_min), u"Hz");
     Display(strm, margin, u"  Max", UString::Decimal(hz_factor * _guts->fe_info.frequency_max), u"Hz");
@@ -1449,43 +1393,47 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _guts->fe_info.frequency_tolerance), u"Hz");
 
     // Display symbol rate characteristics.
-
-    if (params_dvbs != nullptr || params_dvbc != nullptr) {
+    if (ttype == TT_DVB_S || ttype == TT_DVB_C) {
+        const uint32_t symrate = params.symbol_rate.value(0);
         strm << margin << "Symbol rates:" << std::endl;
-        Display(strm, margin, u"  Current",
-                 UString::Decimal(params_dvbs != nullptr ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
-                 u"sym/s");
+        if (symrate > 0) {
+            Display(strm, margin, u"  Current", UString::Decimal(symrate), u"sym/s");
+        }
         Display(strm, margin, u"  Min", UString::Decimal(_guts->fe_info.symbol_rate_min), u"sym/s");
         Display(strm, margin, u"  Max", UString::Decimal(_guts->fe_info.symbol_rate_max), u"sym/s");
         Display(strm, margin, u"  Tolerance", UString::Decimal(_guts->fe_info.symbol_rate_tolerance), u"sym/s");
     }
 
     // Frontend-specific information
-    if (params_dvbs != nullptr) {
-        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbs->inversion), u"");
-        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params_dvbs->inner_fec) , u"");
+    if (params.inversion.set()) {
+        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params.inversion.value()), u"");
     }
-    if (params_dvbc != nullptr) {
-        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbc->inversion), u"");
-        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params_dvbc->inner_fec) , u"");
-        Display(strm, margin, u"Modulation", ModulationEnum.name(params_dvbc->modulation) , u"");
+    if (params.inner_fec.set()) {
+        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params.inner_fec.value()) , u"");
     }
-    if (params_dvbt != nullptr) {
-        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbt->inversion), u"");
-        Display(strm, margin, u"Bandwidth", BandWidthEnum.name(params_dvbt->bandwidth) , u"");
-        Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params_dvbt->fec_hp) , u"");
-        Display(strm, margin, u"FEC(low priority)", InnerFECEnum.name(params_dvbt->fec_lp) , u"");
-        Display(strm, margin, u"Constellation", ModulationEnum.name(params_dvbt->modulation) , u"");
-        Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params_dvbt->transmission_mode) , u"");
-        Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params_dvbt->guard_interval) , u"");
-        Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params_dvbt->hierarchy) , u"");
-        if (params_dvbt->plp != PLP_DISABLE) {
-            Display(strm, margin, u"PLP", UString::Decimal(params_dvbt->plp) , u"");
-        }
+    if (params.modulation.set()) {
+        Display(strm, margin, u"Modulation", ModulationEnum.name(params.modulation.value()) , u"");
     }
-    if (params_atsc != nullptr) {
-        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_atsc->inversion), u"");
-        Display(strm, margin, u"Modulation", ModulationEnum.name(params_atsc->modulation) , u"");
+    if (params.bandwidth.set()) {
+        Display(strm, margin, u"Bandwidth", BandWidthEnum.name(params.bandwidth.value()) , u"");
+    }
+    if (params.fec_hp.set()) {
+        Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params.fec_hp.value()) , u"");
+    }
+    if (params.fec_lp.set()) {
+        Display(strm, margin, u"FEC(low priority)", InnerFECEnum.name(params.fec_lp.value()) , u"");
+    }
+    if (params.transmission_mode.set()) {
+        Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params.transmission_mode.value()) , u"");
+    }
+    if (params.guard_interval.set()) {
+        Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params.guard_interval.value()) , u"");
+    }
+    if (params.hierarchy.set()) {
+        Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params.hierarchy.value()) , u"");
+    }
+    if (params.plp.set() && params.plp != PLP_DISABLE) {
+        Display(strm, margin, u"PLP", UString::Decimal(params.plp.value()) , u"");
     }
 
     // Display general capabilities

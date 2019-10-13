@@ -544,11 +544,19 @@ bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
 // Tune the modulator with DVB-T modulation parameters.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
+bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
 {
     if (!_is_open) {
         report.error(u"HiDes device not open");
         return false;
+    }
+
+    // Get tuning parameters with default values.
+    ModulationArgs params(in_params);
+    params.delivery_system.setDefault(DS_DVB_T);
+    params.setDefaultValues();
+    if (params.delivery_system != DS_DVB_T) {
+        report.error(u"invalid tuning parameters for HiDes device, not DVB-T parameters");
     }
 
     // Build frequency + bandwidth parameters.
@@ -556,10 +564,10 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     TS_ZERO(acqRequest);
 
     // Frequency is in kHz.
-    acqRequest.frequency = uint32_t(params.frequency / 1000);
+    acqRequest.frequency = uint32_t(params.frequency.value() / 1000);
 
     // Bandwidth is in kHz
-    acqRequest.bandwidth = BandWidthValueHz(params.bandwidth) / 1000;
+    acqRequest.bandwidth = BandWidthValueHz(params.bandwidth.value()) / 1000;
     if (acqRequest.bandwidth == 0) {
         report.error(u"unsupported bandwidth");
         return false;
@@ -570,7 +578,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     ite::TxSetModuleRequest modRequest;
     TS_ZERO(modRequest);
 
-    switch (params.modulation) {
+    switch (params.modulation.value()) {
         case QPSK:
             modRequest.constellation = ite::Byte(ite::Mode_QPSK);
             break;
@@ -585,7 +593,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             return false;
     }
 
-    switch (params.fec_hp) {
+    switch (params.fec_hp.value()) {
         case FEC_1_2:
             modRequest.highCodeRate = ite::Byte(ite::CodeRate_1_OVER_2);
             break;
@@ -606,7 +614,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             return false;
     }
 
-    switch (params.guard_interval) {
+    switch (params.guard_interval.value()) {
         case GUARD_1_32:
             modRequest.interval = ite::Byte(ite::Interval_1_OVER_32);
             break;
@@ -624,7 +632,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             return false;
     }
 
-    switch (params.transmission_mode) {
+    switch (params.transmission_mode.value()) {
         case TM_2K:
             modRequest.transmissionMode = ite::Byte(ite::TransmissionMode_2K);
             break;
@@ -644,7 +652,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     TS_ZERO(invRequest);
     bool setInversion = true;
 
-    switch (params.inversion) {
+    switch (params.inversion.value()) {
         case SPINV_OFF:
             invRequest.isInversion = ite::False;
             break;

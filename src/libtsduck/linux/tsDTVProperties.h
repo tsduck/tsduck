@@ -142,7 +142,7 @@ namespace ts {
         //!
         //! Returned value for unknown data.
         //!
-        static constexpr uint32_t UNKNOWN = ~0;
+        static constexpr uint32_t UNKNOWN = ~0U;
 
         //!
         //! Display the content of the object (for debug purpose).

@@ -109,7 +109,7 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void ListTuner(ts::Tuner& tuner, int tuner_index, Options& opt)
+    void ListTuner(ts::DuckContext& duck, ts::Tuner& tuner, int tuner_index, Options& opt)
     {
         // If not opened, nothing to display.
         if (!tuner.isOpen()) {
@@ -140,7 +140,7 @@ namespace {
         // Display verbose information
         if (opt.verbose()) {
             std::cout << std::endl;
-            tuner.displayStatus(std::cout, u"  ", opt);
+            tuner.displayStatus(duck, std::cout, u"  ", opt);
             std::cout << std::endl;
         }
     }
@@ -159,7 +159,7 @@ int MainCode(int argc, char *argv[])
     if (!opt.tuner.device_name.empty()) {
         // One device name specified.
         ts::Tuner tuner(opt.tuner.device_name, true, opt);
-        ListTuner(tuner, -1, opt);
+        ListTuner(opt.duck, tuner, -1, opt);
     }
     else {
         // List all tuners.
@@ -175,7 +175,7 @@ int MainCode(int argc, char *argv[])
                 std::cout << std::endl;
             }
             for (size_t i = 0; i < tuners.size(); ++i) {
-                ListTuner(*tuners[i], int(i), opt);
+                ListTuner(opt.duck, *tuners[i], int(i), opt);
             }
         }
     }
