@@ -194,6 +194,214 @@ ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report
 
 
 //-----------------------------------------------------------------------------
+// Get a DirectShow tuning space from a network type (Windows-specific).
+//-----------------------------------------------------------------------------
+
+bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuningSpace>& tuningSpace, Report& report)
+{
+    // Make sure that previous object is released.
+    tuningSpace.release();
+
+    // Now, we have to try all known network types, one by one.
+    if (networkType == CLSID_DVBCNetworkProvider) {
+
+        ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
+
+        if (loc.isNull() ||
+            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, Modulation, ::BDA_MOD_NOT_SET) ||
+            !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, SymbolRate, long(-1)))
+        {
+            return false;
+        }
+
+        ComPtr<::IDVBTuningSpace> newTs(CLSID_DVBTuningSpace, ::IID_IDVBTuningSpace, report);
+
+        if (newTs.isNull() ||
+            !PUT(newTs, UniqueName, L"TSDuck DVB-C Tuning Space") ||
+            !PUT(newTs, FriendlyName, L"TSDuck DVB-C Tuning Space") ||
+            !PUT(newTs, _NetworkType, CLSID_DVBCNetworkProvider) ||
+            !PUT(newTs, SystemType, DVBSystemType::DVB_Cable) ||
+            !PUT(newTs, DefaultLocator, loc.pointer()))
+        {
+            return false;
+        }
+
+        tuningSpace.assign(newTs);
+        return true;
+    }
+
+    if (networkType == CLSID_DVBTNetworkProvider) {
+
+        ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
+
+        if (loc.isNull() ||
+            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, Modulation, ::BDA_MOD_NOT_SET) ||
+            !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, SymbolRate, long(-1)))
+        {
+            return false;
+        }
+
+        ComPtr<::IDVBTuningSpace> newTs(CLSID_DVBTuningSpace, ::IID_IDVBTuningSpace, report);
+
+        if (newTs.isNull() ||
+            !PUT(newTs, UniqueName, L"TSDuck DVB-T Tuning Space") ||
+            !PUT(newTs, FriendlyName, L"TSDuck DVB-T Tuning Space") ||
+            !PUT(newTs, _NetworkType, CLSID_DVBTNetworkProvider) ||
+            !PUT(newTs, SystemType, DVBSystemType::DVB_Terrestrial) ||
+            !PUT(newTs, DefaultLocator, loc.pointer()))
+        {
+            return false;
+        }
+
+        tuningSpace.assign(newTs);
+        return true;
+    }
+
+    if (networkType == CLSID_DVBSNetworkProvider) {
+
+        ComPtr<::IDVBSLocator> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator, report);
+
+        if (loc.isNull() ||
+            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, Modulation, ::BDA_MOD_NOT_SET) ||
+            !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, SymbolRate, long(-1)))
+        {
+            return false;
+        }
+
+        ComPtr<::IDVBSTuningSpace> newTs(CLSID_DVBSTuningSpace, ::IID_IDVBSTuningSpace, report);
+
+        if (newTs.isNull() ||
+            !PUT(newTs, UniqueName, L"TSDuck DVB-S Tuning Space") ||
+            !PUT(newTs, FriendlyName, L"TSDuck DVB-S Tuning Space") ||
+            !PUT(newTs, _NetworkType, CLSID_DVBSNetworkProvider) ||
+            !PUT(newTs, SystemType, DVBSystemType::DVB_Satellite) ||
+            !PUT(newTs, LNBSwitch, 11700000) ||
+            !PUT(newTs, LowOscillator, 9750000) ||
+            !PUT(newTs, HighOscillator, 10600000) ||
+            !PUT(newTs, NetworkID, -1) ||
+            !PUT(newTs, SpectralInversion, ::BDA_SPECTRAL_INVERSION_NOT_SET) ||
+            !PUT(newTs, DefaultLocator, loc.pointer()))
+        {
+            return false;
+        }
+
+        tuningSpace.assign(newTs);
+        return true;
+    }
+
+    if (networkType == CLSID_ATSCNetworkProvider) {
+
+        ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
+
+        if (loc.isNull() ||
+            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, PhysicalChannel, long(-1)) || 
+            !PUT(loc, TSID, long(-1)) || 
+            !PUT(loc, Modulation, ::BDA_MOD_8VSB) ||
+            !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, SymbolRate, long(-1)))
+        {
+            return false;
+        }
+
+        ComPtr<::IATSCTuningSpace> newTs(CLSID_ATSCTuningSpace, ::IID_IATSCTuningSpace, report);
+
+        if (newTs.isNull() ||
+            !PUT(newTs, UniqueName, L"TSDuck ATSC Tuning Space") ||
+            !PUT(newTs, FriendlyName, L"TSDuck ATSC Tuning Space") ||
+            !PUT(newTs, _NetworkType, CLSID_ATSCNetworkProvider) ||
+            !PUT(newTs, CountryCode, 0) ||
+            !PUT(newTs, InputType, TunerInputAntenna) ||
+            !PUT(newTs, MaxMinorChannel, 999) ||
+            !PUT(newTs, MaxPhysicalChannel, 158) ||
+            !PUT(newTs, MaxChannel, 99) ||
+            !PUT(newTs, MinMinorChannel, 0) ||
+            !PUT(newTs, MinPhysicalChannel, 1) ||
+            !PUT(newTs, MinChannel, 1) ||
+            !PUT(newTs, DefaultLocator, loc.pointer()))
+        {
+            return false;
+        }
+
+        tuningSpace.assign(newTs);
+        return true;
+    }
+
+    // Also:
+    // ISDB_TERRESTRIAL_TV_NETWORK_TYPE
+    // ISDB_SATELLITE_TV_NETWORK_TYPE
+    // ISDB_S_NETWORK_TYPE (?)
+    // ISDB_CABLE_TV_NETWORK_TYPE
+
+    if (networkType == DIGITAL_CABLE_NETWORK_TYPE) {
+
+        ComPtr<::IDigitalCableLocator> loc(CLSID_DigitalCableLocator, ::IID_IDigitalCableLocator, report);
+
+        if (loc.isNull() ||
+            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, PhysicalChannel, long(-1)) || 
+            !PUT(loc, ProgramNumber, long(-1)) || 
+            !PUT(loc, TSID, long(-1)) || 
+            !PUT(loc, Modulation, ::BDA_MOD_256QAM) ||
+            !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) ||
+            !PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) ||
+            !PUT(loc, SymbolRate, long(-1)))
+        {
+            return false;
+        }
+
+        ComPtr<::IDigitalCableTuningSpace> newTs(CLSID_DigitalCableTuningSpace, ::IID_IDigitalCableTuningSpace, report);
+
+        if (newTs.isNull() ||
+            !PUT(newTs, UniqueName, L"TSDuck DigitalCable Tuning Space") ||
+            !PUT(newTs, FriendlyName, L"TSDuck DigitalCable Tuning Space") ||
+            !PUT(newTs, _NetworkType, DIGITAL_CABLE_NETWORK_TYPE) ||
+            !PUT(newTs, CountryCode, 0) ||
+            !PUT(newTs, InputType, TunerInputCable) ||
+            !PUT(newTs, MaxMajorChannel, 99) ||
+            !PUT(newTs, MaxMinorChannel, 999) ||
+            !PUT(newTs, MaxPhysicalChannel, 158) ||
+            !PUT(newTs, MaxChannel, 9999) ||
+            !PUT(newTs, MinMinorChannel, -1) ||
+            !PUT(newTs, MinMajorChannel, -1) ||
+            !PUT(newTs, MinPhysicalChannel, 2) ||
+            !PUT(newTs, MinChannel, -1) ||
+            !PUT(newTs, MinSourceID, 0) ||
+            !PUT(newTs, MaxSourceID, 0x7fffffff) ||
+            !PUT(newTs, DefaultLocator, loc.pointer()))
+        {
+            return false;
+        }
+
+        tuningSpace.assign(newTs);
+        return true;
+    }
+
+    return false;
+}
+
+
+//-----------------------------------------------------------------------------
 // Get the name for various enum values.
 //-----------------------------------------------------------------------------
 
