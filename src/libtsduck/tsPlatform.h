@@ -586,10 +586,10 @@
 //!
 #if defined(TS_LLVM)
     #define TS_FALLTHROUGH [[clang::fallthrough]];
-#elif defined(TS_GCC)
+#elif defined(__GNUC__) && (__GNUC__ >= 7)
     #define TS_FALLTHROUGH __attribute__((fallthrough));
 #else
-    #define TS_FALLTHROUGH /* fallthrough */
+    #define TS_FALLTHROUGH /* fall through */
 #endif
 
 #if defined(DOXYGEN)
