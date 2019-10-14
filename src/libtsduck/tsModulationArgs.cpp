@@ -260,7 +260,7 @@ bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems,
             return false;
         }
         else {
-            delivery_system = *systems.begin();
+            delivery_system = systems.preferred();
             report.debug(u"using %s as default delivery system", {DeliverySystemEnum.name(delivery_system.value())});
             return true;
         }

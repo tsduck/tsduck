@@ -134,6 +134,7 @@ HEADERS += \
     ../../../src/libtsduck/tsDektecInputPlugin.h \
     ../../../src/libtsduck/tsDektecOutputPlugin.h \
     ../../../src/libtsduck/tsDektecUtils.h \
+    ../../../src/libtsduck/tsDeliverySystem.h \
     ../../../src/libtsduck/tsDES.h \
     ../../../src/libtsduck/tsDescriptor.h \
     ../../../src/libtsduck/tsDescriptorList.h \
@@ -642,6 +643,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDektecInputPlugin.cpp \
     ../../../src/libtsduck/tsDektecOutputPlugin.cpp \
     ../../../src/libtsduck/tsDektecUtils.cpp \
+    ../../../src/libtsduck/tsDeliverySystem.cpp \
     ../../../src/libtsduck/tsDES.cpp \
     ../../../src/libtsduck/tsDescriptor.cpp \
     ../../../src/libtsduck/tsDescriptorList.cpp \

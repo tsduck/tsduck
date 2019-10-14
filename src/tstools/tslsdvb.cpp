@@ -135,7 +135,7 @@ namespace {
         if (!info.empty()) {
             std::cout << info << ", ";
         }
-        std::cout << tuner.deliverySystemsString() << ")" << std::endl;
+        std::cout << tuner.deliverySystems().toString() << ")" << std::endl;
 
         // Display verbose information
         if (opt.verbose()) {

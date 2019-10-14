@@ -120,7 +120,7 @@ bool ts::DVBInput::start()
     if (!_args.configureTuner(_tuner, *tsp) || !_args.resolveChannel(_tuner.deliverySystems(), *tsp)) {
         return false;
     }
-    tsp->verbose(u"using %s (%s)", {_tuner.deviceName(), _tuner.deliverySystemsString()});
+    tsp->verbose(u"using %s (%s)", {_tuner.deviceName(), _tuner.deliverySystems().toString()});
 
     // Tune to the specified frequency.
     if (!_tuner.tune(_args, *tsp)) {

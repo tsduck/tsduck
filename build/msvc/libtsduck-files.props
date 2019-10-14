@@ -136,6 +136,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsDektecInputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecOutputPlugin.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecUtils.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDeliverySystem.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDES.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorList.h" />
@@ -654,6 +655,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDektecInputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecOutputPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDektecUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDeliverySystem.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />

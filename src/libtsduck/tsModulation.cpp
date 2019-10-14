@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definition for MPEG transport modulations
-//
-//----------------------------------------------------------------------------
 
 #include "tsModulation.h"
 TSDUCK_SOURCE;
@@ -60,121 +56,8 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 
 
 //----------------------------------------------------------------------------
-// Check if a delivery system is a satellite or terrestrial one.
-//----------------------------------------------------------------------------
-
-bool ts::IsSatelliteDelivery(DeliverySystem sys)
-{
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum) // ignore all non-satellite values
-    TS_MSC_NOWARNING(4061)
-
-    switch (sys) {
-        case DS_DVB_S:
-        case DS_DVB_S2:
-        case DS_DVB_S_TURBO:
-        case DS_ISDB_S:
-        case DS_DSS:
-            return true;
-        default:
-            return false;
-    }
-
-    TS_POP_WARNING()
-}
-
-bool ts::IsTerrestrialDelivery(DeliverySystem sys)
-{
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(switch-enum) // ignore all non-terrestrial values
-    TS_MSC_NOWARNING(4061)
-
-    switch (sys) {
-        case DS_DVB_T:
-        case DS_DVB_T2:
-        case DS_ISDB_T:
-        case DS_ATSC:
-        case DS_DTMB:
-        case DS_CMMB:
-            return true;
-        default:
-            return false;
-    }
-
-    TS_POP_WARNING()
-}
-
-
-//----------------------------------------------------------------------------
-// Get the tuner type of a delivery system.
-//----------------------------------------------------------------------------
-
-ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
-{
-    switch (system) {
-        case DS_DVB_S:
-        case DS_DVB_S2:
-        case DS_DVB_S_TURBO:
-            return TT_DVB_S;
-        case DS_DVB_T:
-        case DS_DVB_T2:
-            return TT_DVB_T;
-        case DS_DVB_C_ANNEX_A:
-        case DS_DVB_C_ANNEX_B:
-        case DS_DVB_C_ANNEX_C:
-        case DS_DVB_C2:
-            return TT_DVB_C;
-        case DS_ATSC:
-            return TT_ATSC;
-        case DS_ISDB_S:
-        case DS_ISDB_T:
-        case DS_ISDB_C:
-        case DS_DVB_H:
-        case DS_ATSC_MH:
-        case DS_DTMB:
-        case DS_CMMB:
-        case DS_DAB:
-        case DS_DSS:
-        case DS_UNDEFINED:
-        default:
-            return TT_UNDEFINED;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Enumerations, names for values
 //----------------------------------------------------------------------------
-
-const ts::Enumeration ts::DeliverySystemEnum({
-    {u"undefined",   ts::DS_UNDEFINED},
-    {u"DVB-S",       ts::DS_DVB_S},
-    {u"DVB-S2",      ts::DS_DVB_S2},
-    {u"DVB-S-Turbo", ts::DS_DVB_S_TURBO},
-    {u"DVB-T",       ts::DS_DVB_T},
-    {u"DVB-T2",      ts::DS_DVB_T2},
-    {u"DVB-C/A",     ts::DS_DVB_C_ANNEX_A},
-    {u"DVB-C/B",     ts::DS_DVB_C_ANNEX_A},
-    {u"DVB-C/C",     ts::DS_DVB_C_ANNEX_C},
-    {u"DVB-C2",      ts::DS_DVB_C2},
-    {u"DVB-H",       ts::DS_DVB_H},
-    {u"ISDB-S",      ts::DS_ISDB_S},
-    {u"ISDB-T",      ts::DS_ISDB_T},
-    {u"ISDB-C",      ts::DS_ISDB_C},
-    {u"ATSC",        ts::DS_ATSC},
-    {u"ATSC-MH",     ts::DS_ATSC_MH},
-    {u"DTMB",        ts::DS_DTMB},
-    {u"CMMB",        ts::DS_CMMB},
-    {u"DAB",         ts::DS_DAB},
-    {u"DSS",         ts::DS_DSS},
-});
-
-const ts::Enumeration ts::TunerTypeEnum({
-    {u"DVB-S", ts::TT_DVB_S},
-    {u"DVB-T", ts::TT_DVB_T},
-    {u"DVB-C", ts::TT_DVB_C},
-    {u"ATSC",  ts::TT_ATSC},
-});
 
 const ts::Enumeration ts::ModulationEnum({
     {u"QPSK",     ts::QPSK},
