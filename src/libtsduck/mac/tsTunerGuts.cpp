@@ -52,7 +52,7 @@ void ts::Tuner::deleteGuts()
 {
     delete _guts;
 }
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
+bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
     ERROR(false);
 }

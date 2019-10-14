@@ -223,7 +223,7 @@ namespace {
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
+bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
     // Reset returned vector
     tuners.clear();
@@ -238,7 +238,7 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
     for (UStringVector::const_iterator it = names.begin(); it != names.end(); ++it) {
         const size_t index = tuners.size();
         tuners.resize(index + 1);
-        tuners[index] = new Tuner(*it, true, report);
+        tuners[index] = new Tuner(duck, *it, true, report);
         if (!tuners[index]->isOpen()) {
             ok = false;
             tuners[index].clear();

@@ -140,7 +140,7 @@ namespace {
         // Display verbose information
         if (opt.verbose()) {
             std::cout << std::endl;
-            tuner.displayStatus(duck, std::cout, u"  ", opt);
+            tuner.displayStatus(std::cout, u"  ", opt);
             std::cout << std::endl;
         }
     }
@@ -158,13 +158,13 @@ int MainCode(int argc, char *argv[])
     // List DVB tuner devices
     if (!opt.tuner.device_name.empty()) {
         // One device name specified.
-        ts::Tuner tuner(opt.tuner.device_name, true, opt);
+        ts::Tuner tuner(opt.duck, opt.tuner.device_name, true, opt);
         ListTuner(opt.duck, tuner, -1, opt);
     }
     else {
         // List all tuners.
         ts::TunerPtrVector tuners;
-        if (!ts::Tuner::GetAllTuners(tuners, opt)) {
+        if (!ts::Tuner::GetAllTuners(opt.duck, tuners, opt)) {
             return EXIT_FAILURE;
         }
         else if (tuners.empty()) {
