@@ -116,7 +116,7 @@ public:
     // If _device_name is ":integer", use integer as device index in list of DVB devices.
     // If TunerPtrVector* is non- zero, find all tuners in the system.
     // Return true on success, false on error.
-    static bool FindTuners(Tuner*, TunerPtrVector*, Report&);
+    static bool FindTuners(DuckContext& duck, Tuner*, TunerPtrVector*, Report&);
 
     // Search criteria for properties.
     enum PropSearch {psFIRST, psLAST, psLOWEST, psHIGHEST};
@@ -203,9 +203,9 @@ void ts::Tuner::setSinkQueueSize(size_t s)
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
+bool ts::Tuner::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
 {
-    return Guts::FindTuners(nullptr, &tuners, report);
+    return Guts::FindTuners(duck, nullptr, &tuners, report);
 }
 
 
@@ -220,7 +220,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         return false;
     }
     _device_name = device_name;
-    if (!Guts::FindTuners(this, nullptr, report)) {
+    if (!Guts::FindTuners(_duck, this, nullptr, report)) {
         return false;
     }
     else if (_is_open) {
@@ -793,23 +793,23 @@ void ts::Tuner::Guts::findTunerSubinterfaces(ComPtr<COMCLASS>& obj)
 // Private static method: Find one or more tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::Guts::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& report)
+bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector* tuner_list, Report& report)
 {
     // Report to use when errors shall be reported in debug mode only
     Report& debug_report(report.debug() ? report : NULLREP);
 
     // Exactly one of Tuner* or TunerPtrVector* must be non-zero.
-    assert(tuner == 0 || tuner_list == 0);
-    assert(tuner != 0 || tuner_list != 0);
+    assert(tuner == nullptr || tuner_list == nullptr);
+    assert(tuner != nullptr || tuner_list != nullptr);
 
     // Reset content of tuner vector
-    if (tuner_list != 0) {
+    if (tuner_list != nullptr) {
         tuner_list->clear();
     }
 
     // Check if tuner device name is ":integer"
     int dvb_device_index = -1;
-    if (tuner != 0 && !tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
+    if (tuner != nullptr && !tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
         tuner->_device_name.substr(1).toInteger(dvb_device_index);
     }
 
@@ -829,7 +829,7 @@ bool ts::Tuner::Guts::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Repor
         report.debug(u"found tuner filter \"%s\"", {tuner_name});
 
         // If a device name was specified, filter this name.
-        if (tuner != 0 && !tuner->_device_name.empty()) {
+        if (tuner != nullptr && !tuner->_device_name.empty()) {
             if (dvb_device_index >= 0 && int(dvb_device_current) != dvb_device_index) {
                 // Device specified by index, but not this one, try next tuner
                 continue;
@@ -843,10 +843,10 @@ bool ts::Tuner::Guts::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Repor
             tuner->_device_name = tuner_name;
         }
 
-        // If we search one specific tuner (tuner != 0), use this one.
-        // If we are building a list of all tuners (tuner_list != 0), allocate a new tuner.
-        TunerPtr tptr(tuner == 0 ? new Tuner(tuner_name) : 0);
-        Tuner& tref(tuner == 0 ? *tptr : *tuner);
+        // If we search one specific tuner (tuner != nullptr), use this one.
+        // If we are building a list of all tuners (tuner_list != nullptr), allocate a new tuner.
+        TunerPtr tptr(tuner == nullptr ? new Tuner(duck, tuner_name) : 0);
+        Tuner& tref(tuner == nullptr ? *tptr : *tuner);
 
         // Try to build a graph from this network provider and tuner
         if (tref._guts->buildGraph(tuner_monikers[dvb_device_current].pointer(), report)) {
@@ -858,7 +858,7 @@ bool ts::Tuner::Guts::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Repor
             tref._device_info.clear();  // none on Windows
 
             // Add tuner it to response set
-            if (tuner_list != 0) {
+            if (tuner_list != nullptr) {
                 // Add the tuner to the vector
                 tuner_list->push_back(tptr);
             }

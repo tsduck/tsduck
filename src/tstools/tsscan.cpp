@@ -516,7 +516,7 @@ private:
 // Contructor.
 ScanContext::ScanContext(ScanOptions& opt) :
     _opt(opt),
-    _tuner(),
+    _tuner(_opt.duck),
     _services(),
     _channels()
 {

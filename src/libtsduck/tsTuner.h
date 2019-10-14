@@ -85,11 +85,12 @@ namespace ts {
     public:
         //!
         //! Get the list of all existing DVB tuners.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [out] tuners Returned list of DVB tuners on the system.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool GetAllTuners(TunerPtrVector& tuners, Report& report);
+        static bool GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report);
 
         //!
         //! Constructor.
