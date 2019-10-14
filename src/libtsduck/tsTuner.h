@@ -145,35 +145,10 @@ namespace ts {
         bool infoOnly() const { return _info_only; }
 
         //!
-        //! Check if the tuner supports at least one delivery system.
-        //! @return True if the tuner supports at least one delivery system.
-        //!
-        bool hasDeliverySystem() const;
-
-        //!
-        //! Check if the tuner supports the specified delivery system.
-        //! @param [in] ds The delivery system to check.
-        //! @return True if the tuner supports the specified delivery system.
-        //!
-        bool hasDeliverySystem(DeliverySystem ds) const;
-
-        //!
         //! Set of delivery systems which are supported by the tuner.
-        //! @return The set of delivery systems which are supported by the tuner.
+        //! @return A constant reference to the set of delivery systems which are supported by the tuner.
         //!
-        DeliverySystemSet deliverySystems() const;
-
-        //!
-        //! Set of delivery systems which are supported by the tuner, as a string.
-        //! @return The set of delivery systems which are supported by the tuner.
-        //!
-        UString deliverySystemsString() const;
-
-        //!
-        //! Get the "default" delivery system of the tuner.
-        //! @return The default delivery system of the tuner.
-        //!
-        DeliverySystem defaultDeliverySystem() const;
+        const DeliverySystemSet& deliverySystems() const { return _delivery_systems; }
 
         //!
         //! Get the device name of the tuner.
@@ -356,20 +331,10 @@ namespace ts {
         void allocateGuts();
         void deleteGuts();
 
-        // Clear all or add a delivery system to the tuner.
-        void clearDeliverySystems();
-        void addDeliverySystem(DeliverySystem ds);
-
         // Check the consistency of tune() parameters.
         // Return full parameters with default values.
         // Return true on success, false on error.
         bool checkTuneParameters(ModulationArgs& params, Report& report) const;
-
-        // List of delivery systems, from most preferred to least preferred.
-        // This list is used to find the default delivery system of a tuner
-        // and to build the list of supported delivery systems in order of
-        // preference.
-        static const std::list<DeliverySystem> _preferred_order;
 
         // Private members.
         bool              _is_open;

@@ -149,6 +149,7 @@
 #include "tsDektecInputPlugin.h"
 #include "tsDektecOutputPlugin.h"
 #include "tsDektecUtils.h"
+#include "tsDeliverySystem.h"
 #include "tsDES.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"

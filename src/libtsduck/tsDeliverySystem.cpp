@@ -1,0 +1,209 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2019, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+
+#include "tsDeliverySystem.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// A classification of delivery systems.
+//----------------------------------------------------------------------------
+
+// List of delivery systems, from most preferred to least preferred.
+const ts::DeliverySystemList ts::DeliverySystemSet::_preferred_order
+({
+     // On a tuner, we consider terrestrial capabilities first.
+     DS_DVB_T,
+     DS_DVB_T2,
+     DS_ATSC,
+     DS_ISDB_T,
+     DS_DTMB,
+     DS_CMMB,
+     // Then satellite capabilities.
+     DS_DVB_S,
+     DS_DVB_S2,
+     DS_DVB_S_TURBO,
+     DS_ISDB_S,
+     DS_DSS,
+     // Then cable capabilities.
+     DS_DVB_C_ANNEX_A,
+     DS_DVB_C_ANNEX_B,
+     DS_DVB_C_ANNEX_C,
+     DS_DVB_C2,
+     DS_ISDB_C,
+     // Exotic capabilities come last.
+     DS_DVB_H,
+     DS_ATSC_MH,
+     DS_DAB,
+     DS_UNDEFINED
+});
+
+namespace {
+
+    // Classification of delivery systems (bit flags).
+    enum : uint16_t {
+        DSF_TERRESTRIAL = 0x0001,
+        DSF_SATELLITE   = 0x0002,
+        DSF_CABLE       = 0x0004,
+    };
+
+    // Description of one delivery system.
+    struct DeliverySystemDescription {
+        ts::TunerType type;
+        uint32_t      flags;
+    };
+    const std::map<ts::DeliverySystem,DeliverySystemDescription> DelSysDescs = {
+        {ts::DS_UNDEFINED,     {ts::TT_UNDEFINED, 0}},
+        {ts::DS_DVB_S,         {ts::TT_DVB_S,     DSF_SATELLITE}},
+        {ts::DS_DVB_S2,        {ts::TT_DVB_S,     DSF_SATELLITE}},
+        {ts::DS_DVB_S_TURBO,   {ts::TT_DVB_S,     DSF_SATELLITE}},
+        {ts::DS_DVB_T,         {ts::TT_DVB_T,     DSF_TERRESTRIAL}},
+        {ts::DS_DVB_T2,        {ts::TT_DVB_T,     DSF_TERRESTRIAL}},
+        {ts::DS_DVB_C_ANNEX_A, {ts::TT_DVB_C,     DSF_CABLE}},
+        {ts::DS_DVB_C_ANNEX_B, {ts::TT_DVB_C,     DSF_CABLE}},
+        {ts::DS_DVB_C_ANNEX_C, {ts::TT_DVB_C,     DSF_CABLE}},
+        {ts::DS_DVB_C2,        {ts::TT_DVB_C,     DSF_CABLE}},
+        {ts::DS_DVB_H,         {ts::TT_UNDEFINED, 0}},
+        {ts::DS_ISDB_S,        {ts::TT_UNDEFINED, DSF_SATELLITE}},
+        {ts::DS_ISDB_T,        {ts::TT_UNDEFINED, DSF_TERRESTRIAL}},
+        {ts::DS_ISDB_C,        {ts::TT_UNDEFINED, DSF_CABLE}},
+        {ts::DS_ATSC,          {ts::TT_ATSC,      DSF_TERRESTRIAL | DSF_CABLE}},
+        {ts::DS_ATSC_MH,       {ts::TT_UNDEFINED, 0}},
+        {ts::DS_DTMB,          {ts::TT_UNDEFINED, DSF_TERRESTRIAL}},
+        {ts::DS_CMMB,          {ts::TT_UNDEFINED, DSF_TERRESTRIAL}},
+        {ts::DS_DAB,           {ts::TT_UNDEFINED, 0}},
+        {ts::DS_DSS,           {ts::TT_UNDEFINED, DSF_SATELLITE}},
+    };
+}
+
+
+//----------------------------------------------------------------------------
+// Enumerations, names for values
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::DeliverySystemEnum({
+    {u"undefined",   ts::DS_UNDEFINED},
+    {u"DVB-S",       ts::DS_DVB_S},
+    {u"DVB-S2",      ts::DS_DVB_S2},
+    {u"DVB-S-Turbo", ts::DS_DVB_S_TURBO},
+    {u"DVB-T",       ts::DS_DVB_T},
+    {u"DVB-T2",      ts::DS_DVB_T2},
+    {u"DVB-C",       ts::DS_DVB_C}, // a synonym for DS_DVB_C_ANNEX_A
+    {u"DVB-C/A",     ts::DS_DVB_C_ANNEX_A},
+    {u"DVB-C/B",     ts::DS_DVB_C_ANNEX_A},
+    {u"DVB-C/C",     ts::DS_DVB_C_ANNEX_C},
+    {u"DVB-C2",      ts::DS_DVB_C2},
+    {u"DVB-H",       ts::DS_DVB_H},
+    {u"ISDB-S",      ts::DS_ISDB_S},
+    {u"ISDB-T",      ts::DS_ISDB_T},
+    {u"ISDB-C",      ts::DS_ISDB_C},
+    {u"ATSC",        ts::DS_ATSC},
+    {u"ATSC-MH",     ts::DS_ATSC_MH},
+    {u"DTMB",        ts::DS_DTMB},
+    {u"CMMB",        ts::DS_CMMB},
+    {u"DAB",         ts::DS_DAB},
+    {u"DSS",         ts::DS_DSS},
+});
+
+const ts::Enumeration ts::TunerTypeEnum({
+    {u"DVB-S", ts::TT_DVB_S},
+    {u"DVB-T", ts::TT_DVB_T},
+    {u"DVB-C", ts::TT_DVB_C},
+    {u"ATSC",  ts::TT_ATSC},
+});
+
+
+//----------------------------------------------------------------------------
+// Check if a delivery system is a satellite or terrestrial one.
+//----------------------------------------------------------------------------
+
+bool ts::IsSatelliteDelivery(DeliverySystem sys)
+{
+    const auto it = DelSysDescs.find(sys);
+    return it != DelSysDescs.end() && (it->second.flags & DSF_SATELLITE) != 0;
+}
+
+bool ts::IsTerrestrialDelivery(DeliverySystem sys)
+{
+    const auto it = DelSysDescs.find(sys);
+    return it != DelSysDescs.end() && (it->second.flags & DSF_TERRESTRIAL) != 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the tuner type of a delivery system.
+//----------------------------------------------------------------------------
+
+ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
+{
+    const auto it = DelSysDescs.find(system);
+    return it != DelSysDescs.end() ? it->second.type : TT_UNDEFINED;
+}
+
+
+//----------------------------------------------------------------------------
+// Delivery system sets.
+//----------------------------------------------------------------------------
+
+ts::DeliverySystem ts::DeliverySystemSet::preferred() const
+{
+    // Inspect delivery systems in decreasing order of preference.
+    for (auto it = _preferred_order.begin(); it != _preferred_order.end(); ++it) {
+        if (contains(*it)) {
+            return *it;
+        }
+    }
+    return DS_UNDEFINED;
+}
+
+ts::DeliverySystemList ts::DeliverySystemSet::toList() const
+{
+    DeliverySystemList list;
+    for (auto it = _preferred_order.begin(); it != _preferred_order.end(); ++it) {
+        if (contains(*it)) {
+            list.push_back(*it);
+        }
+    }
+    return list;
+}
+
+ts::UString ts::DeliverySystemSet::toString() const
+{
+    UString str;
+    // Build list of delivery systems in decreasing order of preference.
+    for (auto it = _preferred_order.begin(); it != _preferred_order.end(); ++it) {
+        if (contains(*it)) {
+            if (!str.empty()) {
+                str += u", ";
+            }
+            str += DeliverySystemEnum.name(int(*it));
+        }
+    }
+    return str.empty() ? u"none" : str;
+}

@@ -320,7 +320,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
     // Get the set of delivery systems for this frontend.
 
-    clearDeliverySystems();
+    _delivery_systems.clear();
     DTVProperties props;
     props.add(DTV_ENUM_DELSYS);
     if (::ioctl(_guts->frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
@@ -1364,7 +1364,7 @@ std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, co
     // Display delivery system.
     DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
     if (delsys == DS_UNDEFINED) {
-        delsys = defaultDeliverySystem();
+        delsys = _delivery_systems.preferred();
     }
     const TunerType ttype = TunerTypeOf(delsys);
     Display(strm, margin, u"Delivery system", DeliverySystemEnum.name(delsys), u"");
