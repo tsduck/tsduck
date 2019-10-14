@@ -1301,7 +1301,7 @@ namespace {
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, const ts::UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& margin, Report& report)
 {
     if (!_is_open) {
         report.error(u"DVB tuner not open");
@@ -1377,8 +1377,8 @@ std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, co
         Display(strm, margin, u"  Current", UString::Decimal(freq), u"Hz");
         if (IsTerrestrialDelivery(delsys)) {
             // Get UHF and VHF band descriptions in the default region.
-            const HFBand* uhf = duck.uhfBand();
-            const HFBand* vhf = duck.vhfBand();
+            const HFBand* uhf = _duck.uhfBand();
+            const HFBand* vhf = _duck.vhfBand();
             if (uhf->inBand(freq, true)) {
                 Display(strm, margin, u"  UHF channel", UString::Decimal(uhf->channelNumber(freq)), u"");
             }
