@@ -32,10 +32,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBT.h"
-#include "tsTunerParametersATSC.h"
 #include "tsTime.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
@@ -103,7 +99,7 @@ public:
 
     // Internal tune method, works also if the tuner is not in open state.
     // Return true on success, false on errors
-    bool internalTune(const TunerParameters&, Report&);
+    bool internalTune(ModulationArgs&, Report&);
 
     // Get signal strength in mdB.
     // Return true if found, false if not found.
@@ -432,7 +428,7 @@ int ts::Tuner::signalQuality(Report& report)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report)
+bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -616,15 +612,10 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(const TunerParameters& params, Report& report)
+bool ts::Tuner::tune(ModulationArgs& params, Report& report)
 {
-    if (!_is_open) {
-        report.error(u"tuner not open");
-        return false;
-    }
-    else {
-        return _guts->internalTune(params, report);
-    }
+    // Initial parameter checks.
+    return checkTuneParameters(params, report) && _guts->internalTune(params, report);
 }
 
 
@@ -633,17 +624,11 @@ bool ts::Tuner::tune(const TunerParameters& params, Report& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::Guts::internalTune(const TunerParameters& params, Report& report)
+bool ts::Tuner::Guts::internalTune(ModulationArgs& params, Report& report)
 {
-    // Check subclass of TunerParameters
-    if (params.tunerType() != _parent->_tuner_type) {
-        report.error(u"inconsistent tuner parameter type");
-        return false;
-    }
-
     // Create a DirectShow tune request
     ComPtr<::ITuneRequest> tune_request;
-    if (!CreateTuneRequest(tune_request, tuning_space.pointer(), params, report)) {
+    if (!CreateTuneRequest(_parent->_duck, tune_request, tuning_space.pointer(), params, report)) {
         return false;
     }
     assert(!tune_request.isNull());
@@ -756,7 +741,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(DuckContext& duck, std::ostream& strm, const UString& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
 {
     if (!_is_open) {
         report.error(u"tuner not open");

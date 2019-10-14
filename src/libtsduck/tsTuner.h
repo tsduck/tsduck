@@ -81,7 +81,7 @@ namespace ts {
     //!
     class TSDUCKDLL Tuner
     {
-        TS_NOCOPY(Tuner);
+        TS_NOBUILD_NOCOPY(Tuner);
     public:
         //!
         //! Get the list of all existing DVB tuners.
@@ -92,9 +92,10 @@ namespace ts {
         static bool GetAllTuners(TunerPtrVector& tuners, Report& report);
 
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in,out] duck TSDuck execution context.
         //!
-        Tuner();
+        Tuner(DuckContext& duck);
 
         //!
         //! Destructor.
@@ -103,6 +104,7 @@ namespace ts {
 
         //!
         //! Constructor and open device name.
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in] device_name Tuner device name.
         //! If name is empty, use "first" or "default" tuner.
         //! @param [in] info_only If true, we will only fetch the properties of
@@ -110,7 +112,7 @@ namespace ts {
         //! to open tuners which are already used to actually receive a stream.
         //! @param [in,out] report Where to report errors.
         //!
-        Tuner(const UString& device_name, bool info_only, Report& report);
+        Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report);
 
         //!
         //! Open the tuner.
@@ -314,13 +316,12 @@ namespace ts {
 
         //!
         //! Display the characteristics and status of the tuner.
-        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] strm Output text stream.
         //! @param [in] margin Left margin to display.
         //! @param [in,out] report Where to report errors.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displayStatus(DuckContext& duck, std::ostream& strm, const UString& margin, Report& report);
+        std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report);
 
     private:
         // System-specific parts are stored in a private structure.
@@ -337,6 +338,7 @@ namespace ts {
         bool checkTuneParameters(ModulationArgs& params, Report& report) const;
 
         // Private members.
+        DuckContext&      _duck;
         bool              _is_open;
         bool              _info_only;
         UString           _device_name;    // Used to open the tuner

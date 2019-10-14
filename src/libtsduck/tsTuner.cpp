@@ -40,7 +40,8 @@ constexpr ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
 // Constructors
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner() :
+ts::Tuner::Tuner(DuckContext& duck) :
+    _duck(duck),
     _is_open(false),
     _info_only(true),
     _device_name(),
@@ -55,8 +56,8 @@ ts::Tuner::Tuner() :
     CheckNonNull(_guts);
 }
 
-ts::Tuner::Tuner(const UString& device_name, bool info_only, Report& report) :
-    Tuner()
+ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report) :
+    Tuner(duck)
 {
     this->open(device_name, info_only, report);
 }
@@ -113,6 +114,12 @@ bool ts::Tuner::checkTuneParameters(ModulationArgs& params, Report& report) cons
         else if (_delivery_systems.size() > 1) {
             report.verbose(u"using default deliver system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
+    }
+
+    // Check if the delivery system is supported by this tuner.
+    if (!_delivery_systems.contains(params.delivery_system.value())) {
+        report.error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), _device_name});
+        return false;
     }
 
     // Set all unset tuning parameters to their default value.

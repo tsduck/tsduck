@@ -34,11 +34,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTunerParametersDVBS.h"
-#include "tsTunerParametersDVBC.h"
-#include "tsTunerParametersDVBT.h"
-#include "tsTunerParametersATSC.h"
-#include "tsModulation.h"
+#include "tsModulationArgs.h"
 #include "tsComPtr.h"
 
 namespace ts {
@@ -104,57 +100,63 @@ namespace ts {
 
     //!
     //! Create a DirectShow tune request object from tuning parameters.
+    //! @param [in,out] duck TSDuck execution context.
     //! @param [out] request COM pointer to the ITuneRequest interface of the created object.
     //! @param [in] tuning_space Associated tuning space.
     //! @param [in] params Tuning parameters in portable format.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, Report& report);
+    TSDUCKDLL bool CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const ModulationArgs& params, Report& report);
 
     //!
     //! Create a Locator object for tuning parameters.
     //! A locator object indicates where to find the physical TS, ie. tuning params.
+    //! @param [in,out] duck TSDuck execution context.
     //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
-    //! @param [in] params Tuning parameters in portable format.
+    //! @param [in] params Tuning parameters in portable format. All required parameters must be set.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, Report& report);
+    TSDUCKDLL bool CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for DVB-S parameters.
+    //! @param [in,out] duck TSDuck execution context.
     //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
-    //! @param [in] params DVB-S parameters in portable format.
+    //! @param [in] params DVB-S parameters in portable format. All required parameters must be set.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, Report& report);
+    TSDUCKDLL bool CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for DVB-T parameters.
+    //! @param [in,out] duck TSDuck execution context.
     //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
-    //! @param [in] params DVB-T parameters in portable format.
+    //! @param [in] params DVB-T parameters in portable format. All required parameters must be set.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, Report& report);
+    TSDUCKDLL bool CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for DVB-C parameters.
+    //! @param [in,out] duck TSDuck execution context.
     //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
-    //! @param [in] params DVB-C parameters in portable format.
+    //! @param [in] params DVB-C parameters in portable format. All required parameters must be set.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, Report& report);
+    TSDUCKDLL bool CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for ATSC parameters.
+    //! @param [in,out] duck TSDuck execution context.
     //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
-    //! @param [in] params ATSC parameters in portable format.
+    //! @param [in] params ATSC parameters in portable format. All required parameters must be set.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorATSC(ComPtr<::IDigitalLocator>& locator, const TunerParametersATSC& params, Report& report);
+    TSDUCKDLL bool CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report);
 }

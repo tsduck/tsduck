@@ -707,11 +707,19 @@ bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
 // Tune the modulator with DVB-T modulation parameters.
 //----------------------------------------------------------------------------
 
-bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
+bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
 {
     if (!_is_open) {
         report.error(u"HiDes device not open");
         return false;
+    }
+
+    // Get tuning parameters with default values.
+    ModulationArgs params(in_params);
+    params.delivery_system.setDefault(DS_DVB_T);
+    params.setDefaultValues();
+    if (params.delivery_system != DS_DVB_T) {
+        report.error(u"invalid tuning parameters for HiDes device, not DVB-T parameters");
     }
 
     // Stop transmission while tuning.
@@ -722,8 +730,8 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     // Build frequency + bandwidth parameters.
     // Frequency and bandwidth are in kHz
     ite::IoctlGeneric freqRequest(ite::IOCTL_IT95X_SET_CHANNEL);
-    freqRequest.param1 = uint32_t(params.frequency / 1000);
-    freqRequest.param2 = BandWidthValueHz(params.bandwidth) / 1000;
+    freqRequest.param1 = uint32_t(params.frequency.value() / 1000);
+    freqRequest.param2 = BandWidthValueHz(params.bandwidth.value()) / 1000;
 
     if (freqRequest.param2 == 0) {
         report.error(u"unsupported bandwidth");
@@ -739,7 +747,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
     // Translate TSDuck enums into HiDes codes.
     ite::IoctlDVBT modRequest(ite::IOCTL_IT95X_SET_DVBT_MODULATION);
 
-    switch (params.modulation) {
+    switch (params.modulation.value()) {
         case QPSK:
             modRequest.constellation = uint8_t(ite::IT95X_CONSTELLATION_QPSK);
             break;
@@ -754,7 +762,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             return false;
     }
 
-    switch (params.fec_hp) {
+    switch (params.fec_hp.value()) {
         case FEC_1_2:
             modRequest.code_rate = uint8_t(ite::IT95X_CODERATE_1_2);
             break;
@@ -775,7 +783,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             return false;
     }
 
-    switch (params.guard_interval) {
+    switch (params.guard_interval.value()) {
         case GUARD_1_32:
             modRequest.guard_interval = uint8_t(ite::IT95X_GUARD_1_32);
             break;
@@ -793,7 +801,7 @@ bool ts::HiDesDevice::tune(const TunerParametersDVBT& params, Report& report)
             return false;
     }
 
-    switch (params.transmission_mode) {
+    switch (params.transmission_mode.value()) {
         case TM_2K:
             modRequest.tx_mode = uint8_t(ite::IT95X_TX_MODE_2K);
             break;
