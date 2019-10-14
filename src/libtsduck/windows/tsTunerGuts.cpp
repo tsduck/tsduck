@@ -435,170 +435,163 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
         return false;
     }
 
-    // Check subclass of TunerParameters
-    if (params.tunerType() != _tuner_type) {
-        report.error(u"inconsistent tuner parameter type");
-        return false;
+    // We do not know which delivery system is current. Use default one.
+    if (!params.delivery_system.set() || !_delivery_systems.contains(params.delivery_system.value())) {
+        params.delivery_system = _delivery_systems.preferred();
     }
+    const TunerType ttype = TunerType(params.delivery_system.value());
 
     // Search individual tuning parameters
     bool found = false;
-    switch (_tuner_type) {
+    switch (ttype) {
 
-        case DVB_S: {
-            TunerParametersDVBS* tpp = dynamic_cast<TunerParametersDVBS*>(&params);
-            assert (tpp != 0);
+        case TT_DVB_S: {
             if (reset_unknown) {
-                tpp->frequency = 0;
-                tpp->symbol_rate = 0;
-                tpp->polarity = TunerParametersDVBS::DEFAULT_POLARITY;
-                tpp->satellite_number = TunerParametersDVBS::DEFAULT_SATELLITE_NUMBER;
-                tpp->lnb.setUniversalLNB();
+                params.frequency = 0;
+                params.symbol_rate = 0;
+                params.polarity = ModulationArgs::DEFAULT_POLARITY;
+                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
+                params.lnb = ModulationArgs::DEFAULT_LNB;
             }
             // Spectral inversion
             ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
             found = _guts->searchProperty(spinv, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            tpp->inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
+            params.inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
             // Symbol rate
             ::ULONG symrate = 0;
             found = _guts->searchProperty(symrate, Guts::psHIGHEST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_SymbolRate,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             if (found) {
-                tpp->symbol_rate = uint32_t(symrate);
+                params.symbol_rate = uint32_t(symrate);
             }
             // Inner FEC
             ::BinaryConvolutionCodeRate fec = ::BDA_BCC_RATE_NOT_SET;
             found = _guts->searchProperty(fec, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
-            tpp->inner_fec = found ? ts::InnerFEC (fec) : ts::FEC_AUTO;
+            params.inner_fec = found ? ts::InnerFEC (fec) : ts::FEC_AUTO;
             // Modulation
             ::ModulationType mod = ::BDA_MOD_NOT_SET;
             found = _guts->searchProperty(mod, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            tpp->modulation = found ? ts::Modulation(mod) : QPSK;
+            params.modulation = found ? ts::Modulation(mod) : QPSK;
             // Delivery system.
             // Found no way to get DVB-S vs. DVB-S2 on Windows.
             // Make a not quite correct assumption, based on modulation type.
-            tpp->delivery_system = tpp->modulation == QPSK ? DS_DVB_S : DS_DVB_S2;
+            params.delivery_system = params.modulation == QPSK ? DS_DVB_S : DS_DVB_S2;
             // DVB-S2 pilot
             ::Pilot pilot = ::BDA_PILOT_NOT_SET;
             found = _guts->searchProperty(pilot, Guts::psFIRST,
                                           _guts->demods2, &::IBDA_DigitalDemodulator2::get_Pilot,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_PILOT);
-            tpp->pilots = found ? ts::Pilot(pilot) : PILOT_AUTO;
+            params.pilots = found ? ts::Pilot(pilot) : PILOT_AUTO;
             // DVB-S2 roll-off factor
             ::RollOff roff = ::BDA_ROLL_OFF_NOT_SET;
             found = _guts->searchProperty(roff, Guts::psFIRST,
                                           _guts->demods2, &::IBDA_DigitalDemodulator2::get_RollOff,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_ROLL_OFF);
-            tpp->roll_off = found ? ts::RollOff(roff) : ROLLOFF_AUTO;
+            params.roll_off = found ? ts::RollOff(roff) : ROLLOFF_AUTO;
             break;
         }
 
-        case DVB_C: {
-            TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*>(&params);
-            assert(tpp != 0);
+        case TT_DVB_C: {
             if (reset_unknown) {
-                tpp->frequency = 0;
-                tpp->symbol_rate = 0;
+                params.frequency = 0;
+                params.symbol_rate = 0;
             }
             // Spectral inversion
             ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
             found = _guts->searchProperty(spinv, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            tpp->inversion = found ? ts::SpectralInversion (spinv) : SPINV_AUTO;
+            params.inversion = found ? ts::SpectralInversion (spinv) : SPINV_AUTO;
             // Symbol rate
             ::ULONG symrate = 0;
             found = _guts->searchProperty(symrate, Guts::psHIGHEST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_SymbolRate,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             if (found) {
-                tpp->symbol_rate = uint32_t(symrate);
+                params.symbol_rate = uint32_t(symrate);
             }
             // Inner FEC
             ::BinaryConvolutionCodeRate fec = ::BDA_BCC_RATE_NOT_SET;
             found = _guts->searchProperty(fec, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
-            tpp->inner_fec = found ? ts::InnerFEC(fec) : ts::FEC_AUTO;
+            params.inner_fec = found ? ts::InnerFEC(fec) : ts::FEC_AUTO;
             // Modulation
             ::ModulationType mod = ::BDA_MOD_NOT_SET;
             found = _guts->searchProperty(mod, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            tpp->modulation = found ? ts::Modulation(mod) : QAM_AUTO;
+            params.modulation = found ? ts::Modulation(mod) : QAM_AUTO;
             break;
         }
 
-        case DVB_T: {
-            TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*>(&params);
-            assert(tpp != 0);
+        case TT_DVB_T: {
             if (reset_unknown) {
-                tpp->frequency = 0;
+                params.frequency = 0;
             }
             // Spectral inversion
             ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
             found = _guts->searchProperty(spinv, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            tpp->inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
+            params.inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
             // High priority FEC
             ::BinaryConvolutionCodeRate fec = ::BDA_BCC_RATE_NOT_SET;
             found = _guts->searchProperty(fec, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
-            tpp->fec_hp = found ? ts::InnerFEC(fec) : ts::FEC_AUTO;
+            params.fec_hp = found ? ts::InnerFEC(fec) : ts::FEC_AUTO;
             // Modulation
             ::ModulationType mod = ::BDA_MOD_NOT_SET;
             found = _guts->searchProperty(mod, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            tpp->modulation = found ? ts::Modulation(mod) : QAM_AUTO;
+            params.modulation = found ? ts::Modulation(mod) : QAM_AUTO;
             // Other DVB-T parameters, not supported in IBDA_DigitalDemodulator
             // but which may be supported as properties.
             ::TransmissionMode tm = ::BDA_XMIT_MODE_NOT_SET;
             found = _guts->searchTunerProperty(tm, Guts::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_TRANSMISSION_MODE);
-            tpp->transmission_mode = found ? ts::TransmissionMode(tm) : TM_AUTO;
+            params.transmission_mode = found ? ts::TransmissionMode(tm) : TM_AUTO;
             ::GuardInterval gi = ::BDA_GUARD_NOT_SET;
             found = _guts->searchTunerProperty(gi, Guts::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL);
-            tpp->guard_interval = found ? ts::GuardInterval(gi) : GUARD_AUTO;
+            params.guard_interval = found ? ts::GuardInterval(gi) : GUARD_AUTO;
             // Other DVB-T parameters, not supported at all
-            tpp->bandwidth = BW_AUTO;
-            tpp->hierarchy = HIERARCHY_AUTO;
-            tpp->fec_lp = FEC_AUTO;
-            tpp->plp = PLP_DISABLE;
+            params.bandwidth = BW_AUTO;
+            params.hierarchy = HIERARCHY_AUTO;
+            params.fec_lp = FEC_AUTO;
+            params.plp = PLP_DISABLE;
             break;
         }
 
-        case ATSC: {
-            TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*>(&params);
-            assert(tpp != 0);
+        case TT_ATSC: {
             if (reset_unknown) {
-                tpp->frequency = 0;
+                params.frequency = 0;
             }
             // Spectral inversion
             ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
             found = _guts->searchProperty(spinv, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            tpp->inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
+            params.inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
             // Modulation
             ::ModulationType mod = ::BDA_MOD_NOT_SET;
             found = _guts->searchProperty(mod, Guts::psFIRST,
                                           _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
                                           KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            tpp->modulation = found ? ts::Modulation(mod) : QAM_AUTO;
+            params.modulation = found ? ts::Modulation(mod) : QAM_AUTO;
             break;
         }
 
+        case TT_UNDEFINED:
         default: {
-            report.error(u"cannot convert BDA tuning parameters to %s parameters", {TunerTypeEnum.name(_tuner_type)});
+            report.error(u"cannot convert BDA tuning parameters to %s parameters", {TunerTypeEnum.name(ttype)});
             return false;
         }
     }
@@ -845,7 +838,7 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
 
         // If we search one specific tuner (tuner != nullptr), use this one.
         // If we are building a list of all tuners (tuner_list != nullptr), allocate a new tuner.
-        TunerPtr tptr(tuner == nullptr ? new Tuner(duck, tuner_name) : 0);
+        TunerPtr tptr(tuner == nullptr ? new Tuner(duck) : 0);
         Tuner& tref(tuner == nullptr ? *tptr : *tuner);
 
         // Try to build a graph from this network provider and tuner
@@ -961,21 +954,23 @@ bool ts::Tuner::Guts::buildGraph(::IMoniker* tuner_moniker, Report& report)
                 switch (systype) {
                     case ::DVB_Satellite: {
                         tspace_found = true;
-                        _parent->_tuner_type = ts::DVB_S;
-                        _parent->addDeliverySystem(DS_DVB_S);
-                        // No way to check if DS_DVB_S2 is supported
+                        _parent->_delivery_systems.insert(DS_DVB_S);
+                        _parent->_delivery_systems.insert(DS_DVB_S2);
+                        // No way to check if DS_DVB_S2 is supported, assume it.
                         break;
                     }
                     case ::DVB_Terrestrial: {
                         tspace_found = true;
-                        _parent->_tuner_type = ts::DVB_T;
-                        _parent->addDeliverySystem(DS_DVB_T);
+                        _parent->_delivery_systems.insert(DS_DVB_T);
+                        _parent->_delivery_systems.insert(DS_DVB_T2);
+                        // No way to check if DS_DVB_T2 is supported, assume it.
                         break;
                     }
                     case ::DVB_Cable: {
                         tspace_found = true;
-                        _parent->_tuner_type = ts::DVB_C;
-                        _parent->addDeliverySystem(DS_DVB_C);
+                        _parent->_delivery_systems.insert(DS_DVB_C_ANNEX_A);
+                        _parent->_delivery_systems.insert(DS_DVB_C_ANNEX_C);
+                        // No way to check which annex is supported. Skip annex B (too special).
                         break;
                     }
                     case ::ISDB_Terrestrial:
@@ -1008,8 +1003,7 @@ bool ts::Tuner::Guts::buildGraph(::IMoniker* tuner_moniker, Report& report)
                 // Check if ATSC network type matches our tuner type.
                 if (nettype == CLSID_ATSCNetworkProvider) {
                     tspace_found = true;
-                    _parent->_tuner_type = ts::ATSC;
-                    _parent->addDeliverySystem(DS_ATSC);
+                    _parent->_delivery_systems.insert(DS_ATSC);
                 }
             }
             else {
