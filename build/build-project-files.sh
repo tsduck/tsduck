@@ -35,7 +35,6 @@
 #  The following files are rebuilt:
 #
 #  - build/msvc/libtsduck-files.props
-#  - build/msvc/libtsduck-filters.props
 #  - build/qtcreator/libtsduck/libtsduck-files.pri
 #  - src/libtsduck/tsduck.h
 #  - src/libtsduck/tsTables.h
@@ -62,11 +61,20 @@ MSVCDIR="$BUILDDIR/msvc"
 MS_RELPATH="..\\..\\src\\libtsduck\\"
 QT_RELPATH="../../../src/libtsduck/"
 
-# find(1) option to limit the search to one level.
-[[ $(uname -s) == Linux ]] && FIND1="-maxdepth 1" || FIND1="-depth 1"
-
-# On macOS, make sure that commands which were installed by Homebrew packages are in the path.
-[[ $(uname -s) == Darwin ]] && export PATH="$PATH:/usr/local/bin"
+# System-specific options
+OS=$(uname -s | tr A-Z a-z)
+case $OS in
+    linux|cygwin*|msys*|mingw*)
+        # find(1) option to limit the search to one level (GNU version).
+        FIND1="-maxdepth 1"
+        ;;
+    darwin)
+        # find(1) option to limit the search to one level (BSD version).
+        FIND1="-depth 1"
+        # On macOS, make sure that commands which were installed by Homebrew packages are in the path.
+        export PATH="$PATH:/usr/local/bin"
+        ;;
+esac
 
 # Enforce LANG to get the same sort order as "Sort-Object -Culture en-US" in PowerShell
 export LANG=C
@@ -115,32 +123,6 @@ GenerateMSProject()
     echo '  </ItemGroup>'
     echo '  <ItemGroup>'
     PREFIX="    <ClCompile Include=\"${MS_RELPATH}"
-    GetSources cpp "" ! -name "tsStaticReferences*"
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}private\\"
-    GetSources cpp private
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}windows\\"
-    GetSources cpp windows
-    echo '  </ItemGroup>'
-    echo '</Project>'
-}
-
-# Generate the MS filters file.
-GenerateMSFilters()
-{
-    echo '<?xml version="1.0" encoding="utf-8"?>'
-    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}"
-    SUFFIX="\">${NL}      <Filter>Header Files</Filter>${NL}    </ClInclude>"
-    GetSources h "" ! -name "tsStaticReferences*"
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}private\\"
-    GetSources h private
-    PREFIX="    <ClInclude Include=\"${MS_RELPATH}windows\\"
-    GetSources h windows
-    echo '  </ItemGroup>'
-    echo '  <ItemGroup>'
-    PREFIX="    <ClCompile Include=\"${MS_RELPATH}"
-    SUFFIX="\">${NL}      <Filter>Source Files</Filter>${NL}    </ClCompile>"
     GetSources cpp "" ! -name "tsStaticReferences*"
     PREFIX="    <ClCompile Include=\"${MS_RELPATH}private\\"
     GetSources cpp private
@@ -265,7 +247,6 @@ GenerateRefType()
 
 # Generate the files.
 [[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject | unix2dos >"$MSVCDIR/libtsduck-files.props"
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-filters.props" ]] && GenerateMSFilters | unix2dos >"$MSVCDIR/libtsduck-filters.props"
 [[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri"     ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
 [[ -z "$TARGET" || "$TARGET" == "tsduck.h"                ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
 [[ -z "$TARGET" || "$TARGET" == "tsTables.h"              ]] && GenerateTablesHeader >"$SRCDIR/tsTables.h"

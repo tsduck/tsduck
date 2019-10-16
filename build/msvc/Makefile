@@ -35,9 +35,9 @@ include ../../Makefile.tsduck
 
 RECURSE_ORDER = none
 
-default: libtsduck-files.props libtsduck-filters.props
+default: libtsduck-files.props
 	@true
 
-libtsduck-files.props libtsduck-filters.props: $(BUILD_PROJ_FILES) $(LIB_HEADERS) $(LIB_SOURCES)
+libtsduck-files.props: $(BUILD_PROJ_FILES) $(LIB_HEADERS) $(LIB_SOURCES)
 	@echo '  [REBUILD] $@'; \
 	$(BUILD_PROJ_FILES) $@
