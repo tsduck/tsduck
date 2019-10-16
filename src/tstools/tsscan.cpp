@@ -203,7 +203,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"read on the specified frequency and a full scan of the corresponding network is "
          u"performed. By default, without specific frequency, an UHF-band scanning is performed.");
 
-    option(u"vhf-band");
+    option(u"vhf-band", 'v');
     help(u"vhf-band",
          u"Perform a complete DVB-T or ATSC VHF-band scanning. See also --uhf-band.");
 
