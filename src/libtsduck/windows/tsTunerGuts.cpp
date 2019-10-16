@@ -924,7 +924,7 @@ bool ts::Tuner::Guts::buildGraph(::IMoniker* tuner_moniker, Report& report)
     // Loop on all tuning spaces.
     bool tspace_found = false;
     ts::ComPtr<::ITuningSpace> tspace;
-    while (!tspace_found && tsEnum->Next(1, tspace.creator(), NULL) == S_OK) {
+    while (!tspace_found && tsEnum->Next(1, tspace.creator(), nullptr) == S_OK) {
 
         // Display tuning space in debug mode
         const UString fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
@@ -933,7 +933,36 @@ bool ts::Tuner::Guts::buildGraph(::IMoniker* tuner_moniker, Report& report)
 
         // Try to use this tuning space with our tuner.
         hr = tuner->put_TuningSpace(tspace.pointer());
-        if (ComSuccess(hr, u"fail to set default tuning space \"" + fname + u"\"", debug_report)) {
+        if (ComSuccess(hr, u"fail to set tuning space \"" + fname + u"\"", debug_report)) {
+
+            // In debug mode, get all supported network types.
+            // For debug only, sometimes it does not work.
+            if (report.debug()) {
+                ComPtr<::ITunerCap> tuner_cap;
+                tuner_cap.queryInterface(tuner.pointer(), ::IID_ITunerCap, debug_report);
+                if (tuner_cap.isNull()) {
+                    report.error(u"failed to get ITunerCap interface");
+                    // Debug only: return false;
+                }
+                else {
+                    std::array<::GUID,10> net_types;
+                    ::ULONG net_count = ::LONG(net_types.size());
+                    hr = tuner_cap->get_SupportedNetworkTypes(net_count, &net_count, net_types.data());
+                    if (!ComSuccess(hr, u"ITunerCap::get_SupportedNetworkTypes", report)) {
+                        // Debug only: return false;
+                    }
+                    else if (net_count == 0) {
+                        report.error(u"tuner did not return any supported network types");
+                        // Debug only: return false;
+                    }
+                    else {
+                        report.debug(u"Supported Network Types:");
+                        for (size_t n = 0; n < net_count; n++) {
+                            report.debug(u"  %d) %s", {n, NameGUID(net_types[n])});
+                        }
+                    }
+                }
+            }
 
             // This tuning space is compatible with our tuner.
             // Check if this is a tuning space we can support by getting its DVB system type:
