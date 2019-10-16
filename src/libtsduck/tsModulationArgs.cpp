@@ -1179,7 +1179,7 @@ void ts::ModulationArgs::defineArgs(Args& args) const
 
     args.option(u"modulation", _allow_short_options ? 'm' : 0, ModulationEnum);
     args.help(u"modulation",
-              u"Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.  Modulation type. The default is \"" +
+              u"Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners. Modulation type. The default is \"" +
               ModulationEnum.name(DEFAULT_MODULATION_DVBT) + u"\" for DVB-T/T2, \"" +
               ModulationEnum.name(DEFAULT_MODULATION_DVBC) + u"\" for DVB-C, \"" +
               ModulationEnum.name(DEFAULT_MODULATION_DVBS) + u"\" for DVB-S2, \"" +
@@ -1192,7 +1192,7 @@ void ts::ModulationArgs::defineArgs(Args& args) const
 
     args.option(u"high-priority-fec", 0, InnerFECEnum);
     args.help(u"high-priority-fec",
-              u"Used for DVB-T/T2 tuners only.Error correction for high priority streams. "
+              u"Used for DVB-T/T2 tuners only. Error correction for high priority streams. "
               u"The default is \"auto\".");
 
     args.option(u"low-priority-fec", 0, InnerFECEnum);
@@ -1250,17 +1250,17 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Warning: this option is supported on Linux only.");
 
     // UHF/VHF frequency bands options.
-    args.option(u"uhf-channel", 0, Args::POSITIVE);
+    args.option(u"uhf-channel", _allow_short_options ? 'u' : 0, Args::POSITIVE);
     args.help(u"uhf-channel",
-              u"Used for DVB-T or ATSC tuners only. "
+              u"Used for terrestrial tuners only. "
               u"Specify the UHF channel number of the carrier. "
               u"Can be used in replacement to --frequency. "
               u"Can be combined with an --offset-count option. "
               u"The UHF frequency layout depends on the region, see --hf-band-region option.");
 
-    args.option(u"vhf-channel", 0, Args::POSITIVE);
+    args.option(u"vhf-channel", _allow_short_options ? 'v' : 0, Args::POSITIVE);
     args.help(u"vhf-channel",
-              u"Used for DVB-T or ATSC tuners only. "
+              u"Used for terrestrial tuners only. "
               u"Specify the VHF channel number of the carrier. "
               u"Can be used in replacement to --frequency. "
               u"Can be combined with an --offset-count option. "
@@ -1268,7 +1268,7 @@ void ts::ModulationArgs::defineArgs(Args& args) const
 
     args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -10, 10);
     args.help(u"offset-count",
-              u"Used for DVB-T or ATSC tuners only. "
+              u"Used for terrestrial tuners only. "
               u"Specify the number of offsets from the UHF or VHF channel. "
               u"The default is zero. See options --uhf-channel or --vhf-channel.");
 }

@@ -546,7 +546,7 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         return false;
     }
 
-    if (params.plp != PLP_DISABLE) {
+    if (params.plp.set() && params.plp != PLP_DISABLE) {
         report.warning(u"DVT-T2 PLP selection disabled on Windows");
     }
 

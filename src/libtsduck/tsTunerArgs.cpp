@@ -151,7 +151,7 @@ void ts::TunerArgs::defineArgs(Args& args) const
 #if defined(TS_LINUX)
               u"Specifies the Linux DVB adapter N (/dev/dvb/adapterN). "
 #elif defined(TS_WINDOWS)
-              u"Specifies the Nth DVB adapter in the system. "
+              u"Specifies the Nth tuner device in the system. "
 #endif
               u"This option can be used instead of device name.");
 

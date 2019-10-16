@@ -138,6 +138,17 @@ public:
                         const ::GUID& propset,
                         ::DWORD propid);
 
+    // Same one with additional handling of unknown return value.
+    template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
+    bool searchProperty(VALTYPE unset,
+                        Variable<ARGTYPE>& parameter,
+                        PropSearch searchtype,
+                        bool reset_unknown,
+                        const std::vector<ComPtr<FILTER>>& ivector,
+                        ::HRESULT (FILTER::*getmethod)(IVALTYPE*),
+                        const ::GUID& propset,
+                        ::DWORD propid);
+
 private:
     // Repeatedly called when searching for a propery.
     // Each "val" is proposed until "terminated" is returned as true.
@@ -319,6 +330,32 @@ bool ts::Tuner::Guts::searchProperty(VALTYPE& retvalue,
 
 
 //-----------------------------------------------------------------------------
+// Same one with additional handling of unknown return value.
+//-----------------------------------------------------------------------------
+
+template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
+bool ts::Tuner::Guts::searchProperty(VALTYPE unset,
+                                     Variable<ARGTYPE>& parameter,
+                                     PropSearch searchtype,
+                                     bool reset_unknown,
+                                     const std::vector<ComPtr<FILTER>>& ivector,
+                                     ::HRESULT (FILTER::*getmethod)(IVALTYPE*),
+                                     const ::GUID& propset,
+                                     ::DWORD propid)
+{
+    VALTYPE retvalue = unset;
+    bool found = searchProperty(retvalue, searchtype, ivector, getmethod, propset, propid);
+    if (found && retvalue != unset) {
+        parameter = ARGTYPE(retvalue);
+    }
+    else if (reset_unknown) {
+        parameter.reset();
+    }
+    return found;
+}
+
+
+//-----------------------------------------------------------------------------
 // Repeatedly called when searching for a propery.
 //-----------------------------------------------------------------------------
 
@@ -439,153 +476,148 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
     if (!params.delivery_system.set() || !_delivery_systems.contains(params.delivery_system.value())) {
         params.delivery_system = _delivery_systems.preferred();
     }
-    const TunerType ttype = TunerType(params.delivery_system.value());
+    const TunerType ttype = TunerTypeOf(params.delivery_system.value());
 
     // Search individual tuning parameters
     bool found = false;
     switch (ttype) {
 
         case TT_DVB_S: {
+            // Note: it is useless to get the frequency of a DVB-S tuner since it
+            // returns the intermediate frequency and there is no unique satellite
+            // frequency for a given intermediate frequency.
             if (reset_unknown) {
-                params.frequency = 0;
-                params.symbol_rate = 0;
-                params.polarity = ModulationArgs::DEFAULT_POLARITY;
-                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
-                params.lnb = ModulationArgs::DEFAULT_LNB;
+                params.frequency.reset();
+                params.satellite_number.reset();
+                params.lnb.reset();
             }
             // Spectral inversion
-            ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
-            found = _guts->searchProperty(spinv, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            params.inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
+            _guts->searchProperty<::SpectralInversion>(
+                ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Symbol rate
-            ::ULONG symrate = 0;
-            found = _guts->searchProperty(symrate, Guts::psHIGHEST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_SymbolRate,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
-            if (found) {
-                params.symbol_rate = uint32_t(symrate);
-            }
+            _guts->searchProperty<::ULONG>(
+                0, params.symbol_rate, Guts::psHIGHEST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_SymbolRate,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             // Inner FEC
-            ::BinaryConvolutionCodeRate fec = ::BDA_BCC_RATE_NOT_SET;
-            found = _guts->searchProperty(fec, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
-            params.inner_fec = found ? ts::InnerFEC (fec) : ts::FEC_AUTO;
+            _guts->searchProperty<::BinaryConvolutionCodeRate>(
+                ::BDA_BCC_RATE_NOT_SET, params.inner_fec, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            ::ModulationType mod = ::BDA_MOD_NOT_SET;
-            found = _guts->searchProperty(mod, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            params.modulation = found ? ts::Modulation(mod) : QPSK;
-            // Delivery system.
-            // Found no way to get DVB-S vs. DVB-S2 on Windows.
+            _guts->searchProperty<::ModulationType>(
+                ::BDA_MOD_NOT_SET, params.modulation, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
+            // Delivery system. Found no way to get DVB-S vs. DVB-S2 on Windows.
             // Make a not quite correct assumption, based on modulation type.
-            params.delivery_system = params.modulation == QPSK ? DS_DVB_S : DS_DVB_S2;
+            if (params.modulation.set()) {
+                params.delivery_system = params.modulation == QPSK ? DS_DVB_S : DS_DVB_S2;
+            }
+            else if (reset_unknown) {
+                params.delivery_system.reset();
+            }
             // DVB-S2 pilot
-            ::Pilot pilot = ::BDA_PILOT_NOT_SET;
-            found = _guts->searchProperty(pilot, Guts::psFIRST,
-                                          _guts->demods2, &::IBDA_DigitalDemodulator2::get_Pilot,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_PILOT);
-            params.pilots = found ? ts::Pilot(pilot) : PILOT_AUTO;
+            _guts->searchProperty<::Pilot>(
+                ::BDA_PILOT_NOT_SET, params.pilots, Guts::psFIRST, reset_unknown,
+                _guts->demods2, &::IBDA_DigitalDemodulator2::get_Pilot,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_PILOT);
             // DVB-S2 roll-off factor
-            ::RollOff roff = ::BDA_ROLL_OFF_NOT_SET;
-            found = _guts->searchProperty(roff, Guts::psFIRST,
-                                          _guts->demods2, &::IBDA_DigitalDemodulator2::get_RollOff,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_ROLL_OFF);
-            params.roll_off = found ? ts::RollOff(roff) : ROLLOFF_AUTO;
+            _guts->searchProperty<::RollOff>(
+                ::BDA_ROLL_OFF_NOT_SET, params.roll_off, Guts::psFIRST, reset_unknown,
+                _guts->demods2, &::IBDA_DigitalDemodulator2::get_RollOff,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_ROLL_OFF);
             break;
         }
 
         case TT_DVB_C: {
             if (reset_unknown) {
-                params.frequency = 0;
-                params.symbol_rate = 0;
+                params.frequency.reset();
             }
             // Spectral inversion
-            ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
-            found = _guts->searchProperty(spinv, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            params.inversion = found ? ts::SpectralInversion (spinv) : SPINV_AUTO;
+            _guts->searchProperty<::SpectralInversion>(
+                ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Symbol rate
-            ::ULONG symrate = 0;
-            found = _guts->searchProperty(symrate, Guts::psHIGHEST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_SymbolRate,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
-            if (found) {
-                params.symbol_rate = uint32_t(symrate);
-            }
+            _guts->searchProperty<::ULONG>(
+                0, params.symbol_rate, Guts::psHIGHEST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_SymbolRate,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             // Inner FEC
-            ::BinaryConvolutionCodeRate fec = ::BDA_BCC_RATE_NOT_SET;
-            found = _guts->searchProperty(fec, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
-            params.inner_fec = found ? ts::InnerFEC(fec) : ts::FEC_AUTO;
+            _guts->searchProperty<::BinaryConvolutionCodeRate>(
+                ::BDA_BCC_RATE_NOT_SET, params.inner_fec, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            ::ModulationType mod = ::BDA_MOD_NOT_SET;
-            found = _guts->searchProperty(mod, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            params.modulation = found ? ts::Modulation(mod) : QAM_AUTO;
+            _guts->searchProperty<::ModulationType>(
+                ::BDA_MOD_NOT_SET, params.modulation, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
             break;
         }
 
         case TT_DVB_T: {
             if (reset_unknown) {
-                params.frequency = 0;
+                params.frequency.reset();
             }
             // Spectral inversion
-            ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
-            found = _guts->searchProperty(spinv, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            params.inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
+            _guts->searchProperty<::SpectralInversion>(
+                ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // High priority FEC
-            ::BinaryConvolutionCodeRate fec = ::BDA_BCC_RATE_NOT_SET;
-            found = _guts->searchProperty(fec, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
-            params.fec_hp = found ? ts::InnerFEC(fec) : ts::FEC_AUTO;
+            _guts->searchProperty<::BinaryConvolutionCodeRate>(
+                ::BDA_BCC_RATE_NOT_SET, params.fec_hp, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_InnerFECRate,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            ::ModulationType mod = ::BDA_MOD_NOT_SET;
-            found = _guts->searchProperty(mod, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            params.modulation = found ? ts::Modulation(mod) : QAM_AUTO;
+            _guts->searchProperty<::ModulationType>(
+                ::BDA_MOD_NOT_SET, params.modulation, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
             // Other DVB-T parameters, not supported in IBDA_DigitalDemodulator
             // but which may be supported as properties.
             ::TransmissionMode tm = ::BDA_XMIT_MODE_NOT_SET;
             found = _guts->searchTunerProperty(tm, Guts::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_TRANSMISSION_MODE);
-            params.transmission_mode = found ? ts::TransmissionMode(tm) : TM_AUTO;
+            if (found && tm != ::BDA_XMIT_MODE_NOT_SET) {
+                params.transmission_mode = ts::TransmissionMode(tm);
+            }
+            else if (reset_unknown) {
+                params.transmission_mode.reset();
+            }
             ::GuardInterval gi = ::BDA_GUARD_NOT_SET;
             found = _guts->searchTunerProperty(gi, Guts::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL);
-            params.guard_interval = found ? ts::GuardInterval(gi) : GUARD_AUTO;
+            if (found && gi != ::BDA_GUARD_NOT_SET) {
+                params.guard_interval = ts::GuardInterval(gi);
+            }
+            else if (reset_unknown) {
+                params.guard_interval.reset();
+            }
             // Other DVB-T parameters, not supported at all
-            params.bandwidth = BW_AUTO;
-            params.hierarchy = HIERARCHY_AUTO;
-            params.fec_lp = FEC_AUTO;
-            params.plp = PLP_DISABLE;
+            params.bandwidth.reset();
+            params.hierarchy.reset();
+            params.fec_lp.reset();
+            params.plp.reset();
             break;
         }
 
         case TT_ATSC: {
             if (reset_unknown) {
-                params.frequency = 0;
+                params.frequency.reset();
             }
             // Spectral inversion
-            ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
-            found = _guts->searchProperty(spinv, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
-            params.inversion = found ? ts::SpectralInversion(spinv) : SPINV_AUTO;
+            _guts->searchProperty<::SpectralInversion>(
+                ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_SpectralInversion,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Modulation
-            ::ModulationType mod = ::BDA_MOD_NOT_SET;
-            found = _guts->searchProperty(mod, Guts::psFIRST,
-                                          _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
-                                          KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
-            params.modulation = found ? ts::Modulation(mod) : QAM_AUTO;
+            _guts->searchProperty<::ModulationType>(
+                ::BDA_MOD_NOT_SET, params.modulation, Guts::psFIRST, reset_unknown,
+                _guts->demods, &::IBDA_DigitalDemodulator::get_ModulationType,
+                KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
             break;
         }
 
