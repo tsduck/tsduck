@@ -40,7 +40,6 @@
   The following files are rebuilt:
 
   - build/msvc/libtsduck-files.props
-  - build/msvc/libtsduck-filters.props
   - build/qtcreator/libtsduck/libtsduck-files.pri
   - src/libtsduck/tsduck.h
   - src/libtsduck/tsTables.h
@@ -106,28 +105,6 @@ function GenerateMSProject()
     echo '  <ItemGroup>'
     $prefix = "    <ClCompile Include=`"$MsSrcRelPath"
     $suffix = "`" />"
-    GetSources cpp "" $prefix $suffix @("tsStaticReferences*")
-    GetSources cpp private "${prefix}private\" $suffix
-    GetSources cpp windows "${prefix}windows\" $suffix
-    echo '  </ItemGroup>'
-    echo '</Project>'
-}
-
-# Generate the MS filters file.
-function GenerateMSFilters()
-{
-    echo '<?xml version="1.0" encoding="utf-8"?>'
-    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-    echo '  <ItemGroup>'
-    $prefix = "    <ClInclude Include=`"$MsSrcRelPath"
-    $suffix = "`">`n      <Filter>Header Files</Filter>`n    </ClInclude>"
-    GetSources h "" $prefix $suffix @("tsStaticReferences*")
-    GetSources h private "${prefix}private\" $suffix
-    GetSources h windows "${prefix}windows\" $suffix
-    echo '  </ItemGroup>'
-    echo '  <ItemGroup>'
-    $prefix = "    <ClCompile Include=`"$MsSrcRelPath"
-    $suffix = "`">`n      <Filter>Source Files</Filter>`n    </ClCompile>"
     GetSources cpp "" $prefix $suffix @("tsStaticReferences*")
     GetSources cpp private "${prefix}private\" $suffix
     GetSources cpp windows "${prefix}windows\" $suffix
@@ -239,7 +216,6 @@ function GenerateRefType()
 
 # Generate the files.
 GenerateMSProject    | Out-File -Encoding ascii $MsvcDir\libtsduck-files.props
-GenerateMSFilters    | Out-File -Encoding ascii $MsvcDir\libtsduck-filters.props
 GenerateQtProject    | Out-File -Encoding ascii $RootDir\build\qtcreator\libtsduck\libtsduck-files.pri
 GenerateMainHeader   | Out-File -Encoding ascii $SrcDir\tsduck.h
 GenerateTablesHeader | Out-File -Encoding ascii $SrcDir\tsTables.h
