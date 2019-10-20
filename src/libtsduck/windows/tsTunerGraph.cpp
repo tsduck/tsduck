@@ -38,7 +38,6 @@ TSDUCK_SOURCE;
 
 ts::TunerGraph::TunerGraph() :
     DirectShowGraph(),
-    _delivery_systems(),
     _sink_filter(),
     _provider_filter(),
     _inet_provider(),
@@ -101,7 +100,7 @@ bool ts::TunerGraph::putTuneRequest(::ITuneRequest* request, Report& report)
 // Initialize the graph.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, Report& report)
+bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& delivery_systems, Report& report)
 {
     // Report to use when errors shall be reported in debug mode only
     Report& debug_report(report.debug() ? report : NULLREP);
@@ -218,22 +217,22 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, Report& report)
                 switch (systype) {
                     case ::DVB_Satellite: {
                         tspace_found = true;
-                        _delivery_systems.insert(DS_DVB_S);
-                        _delivery_systems.insert(DS_DVB_S2);
+                        delivery_systems.insert(DS_DVB_S);
+                        delivery_systems.insert(DS_DVB_S2);
                         // No way to check if DS_DVB_S2 is supported, assume it.
                         break;
                     }
                     case ::DVB_Terrestrial: {
                         tspace_found = true;
-                        _delivery_systems.insert(DS_DVB_T);
-                        _delivery_systems.insert(DS_DVB_T2);
+                        delivery_systems.insert(DS_DVB_T);
+                        delivery_systems.insert(DS_DVB_T2);
                         // No way to check if DS_DVB_T2 is supported, assume it.
                         break;
                     }
                     case ::DVB_Cable: {
                         tspace_found = true;
-                        _delivery_systems.insert(DS_DVB_C_ANNEX_A);
-                        _delivery_systems.insert(DS_DVB_C_ANNEX_C);
+                        delivery_systems.insert(DS_DVB_C_ANNEX_A);
+                        delivery_systems.insert(DS_DVB_C_ANNEX_C);
                         // No way to check which annex is supported. Skip annex B (too special).
                         break;
                     }
@@ -267,7 +266,7 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, Report& report)
                 // Check if ATSC network type matches our tuner type.
                 if (nettype == CLSID_ATSCNetworkProvider) {
                     tspace_found = true;
-                    _delivery_systems.insert(DS_ATSC);
+                    delivery_systems.insert(DS_ATSC);
                 }
             }
             else {

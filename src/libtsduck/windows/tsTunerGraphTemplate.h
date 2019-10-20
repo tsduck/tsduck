@@ -95,7 +95,7 @@ void ts::TunerGraph::SelectProperty(bool& terminated, bool& found, T& retvalue, 
 //-----------------------------------------------------------------------------
 
 template <typename VALTYPE>
-bool ts::TunerGraph::searchTunerProperty(VALTYPE& retvalue, PropSearch searchtype, const ::GUID& propset, ::DWORD propid)
+bool ts::TunerGraph::searchTunerProperty(VALTYPE& retvalue, PropSearch searchtype, const ::GUID& propset, int propid)
 {
     bool found = false;
     bool terminated = false;
@@ -120,9 +120,9 @@ template <typename VALTYPE, typename IVALTYPE, class FILTER>
 bool ts::TunerGraph::searchPropertyImpl(VALTYPE& retvalue,
                                         PropSearch searchtype,
                                         const std::vector<ComPtr<FILTER>>& ivector,
-                                        ::HRESULT (FILTER::*getmethod)(IVALTYPE*),
+                                        ::HRESULT (__stdcall FILTER::*getmethod)(IVALTYPE*),
                                         const ::GUID& propset,
-                                        ::DWORD propid)
+                                        int propid)
 {
     bool found = false;
     bool terminated = false;
@@ -154,14 +154,14 @@ bool ts::TunerGraph::searchPropertyImpl(VALTYPE& retvalue,
 //-----------------------------------------------------------------------------
 
 template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
-bool ts::TunerGraph::searchPropertyImpl(VALTYPE unset,
-                                        Variable<ARGTYPE>& parameter,
-                                        PropSearch searchtype,
-                                        bool reset_unknown,
-                                        const std::vector<ComPtr<FILTER>>& ivector,
-                                        ::HRESULT (FILTER::*getmethod)(IVALTYPE*),
-                                        const ::GUID& propset,
-                                        ::DWORD propid)
+bool ts::TunerGraph::searchVarPropertyImpl(VALTYPE unset,
+                                           Variable<ARGTYPE>& parameter,
+                                           PropSearch searchtype,
+                                           bool reset_unknown,
+                                           const std::vector<ComPtr<FILTER>>& ivector,
+                                           ::HRESULT (__stdcall FILTER::*getmethod)(IVALTYPE*),
+                                           const ::GUID& propset,
+                                           int propid)
 {
     VALTYPE retvalue = unset;
     bool found = searchPropertyImpl(retvalue, searchtype, ivector, getmethod, propset, propid);

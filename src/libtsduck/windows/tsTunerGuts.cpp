@@ -275,22 +275,22 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.lnb.reset();
             }
             // Spectral inversion
-            _guts->graph.searchProperty<::SpectralInversion>(
+            _guts->graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Symbol rate
-            _guts->graph.searchProperty<::ULONG>(
+            _guts->graph.searchVarProperty<::ULONG>(
                 0, params.symbol_rate, TunerGraph::psHIGHEST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SymbolRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             // Inner FEC
-            _guts->graph.searchProperty<::BinaryConvolutionCodeRate>(
+            _guts->graph.searchVarProperty<::BinaryConvolutionCodeRate>(
                 ::BDA_BCC_RATE_NOT_SET, params.inner_fec, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_InnerFECRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            _guts->graph.searchProperty<::ModulationType>(
+            _guts->graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -303,12 +303,12 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.delivery_system.reset();
             }
             // DVB-S2 pilot
-            _guts->graph.searchProperty<::Pilot>(
+            _guts->graph.searchVarProperty<::Pilot>(
                 ::BDA_PILOT_NOT_SET, params.pilots, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator2::get_Pilot,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_PILOT);
             // DVB-S2 roll-off factor
-            _guts->graph.searchProperty<::RollOff>(
+            _guts->graph.searchVarProperty<::RollOff>(
                 ::BDA_ROLL_OFF_NOT_SET, params.roll_off, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator2::get_RollOff,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_ROLL_OFF);
@@ -320,22 +320,22 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.frequency.reset();
             }
             // Spectral inversion
-            _guts->graph.searchProperty<::SpectralInversion>(
+            _guts->graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Symbol rate
-            _guts->graph.searchProperty<::ULONG>(
+            _guts->graph.searchVarProperty<::ULONG>(
                 0, params.symbol_rate, TunerGraph::psHIGHEST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SymbolRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SYMBOL_RATE);
             // Inner FEC
-            _guts->graph.searchProperty<::BinaryConvolutionCodeRate>(
+            _guts->graph.searchVarProperty<::BinaryConvolutionCodeRate>(
                 ::BDA_BCC_RATE_NOT_SET, params.inner_fec, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_InnerFECRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            _guts->graph.searchProperty<::ModulationType>(
+            _guts->graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -347,17 +347,17 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.frequency.reset();
             }
             // Spectral inversion
-            _guts->graph.searchProperty<::SpectralInversion>(
+            _guts->graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // High priority FEC
-            _guts->graph.searchProperty<::BinaryConvolutionCodeRate>(
+            _guts->graph.searchVarProperty<::BinaryConvolutionCodeRate>(
                 ::BDA_BCC_RATE_NOT_SET, params.fec_hp, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_InnerFECRate,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_INNER_FEC_RATE);
             // Modulation
-            _guts->graph.searchProperty<::ModulationType>(
+            _guts->graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -392,12 +392,12 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
                 params.frequency.reset();
             }
             // Spectral inversion
-            _guts->graph.searchProperty<::SpectralInversion>(
+            _guts->graph.searchVarProperty<::SpectralInversion>(
                 ::BDA_SPECTRAL_INVERSION_NOT_SET, params.inversion, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_SpectralInversion,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_SPECTRAL_INVERSION);
             // Modulation
-            _guts->graph.searchProperty<::ModulationType>(
+            _guts->graph.searchVarProperty<::ModulationType>(
                 ::BDA_MOD_NOT_SET, params.modulation, TunerGraph::psFIRST, reset_unknown,
                 &::IBDA_DigitalDemodulator::get_ModulationType,
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
@@ -625,7 +625,7 @@ bool ts::Tuner::Guts::FindTuners(DuckContext& duck, Tuner* tuner, TunerPtrVector
         Tuner& tref(tuner == nullptr ? *tptr : *tuner);
 
         // Try to build a graph from this network provider and tuner
-        if (tref._guts->graph.initialize(tuner_monikers[dvb_device_current].pointer(), report)) {
+        if (tref._guts->graph.initialize(tuner_monikers[dvb_device_current].pointer(), tref._delivery_systems, report)) {
 
             // Graph correctly built, we can use this tuner.
             tref._is_open = true;
