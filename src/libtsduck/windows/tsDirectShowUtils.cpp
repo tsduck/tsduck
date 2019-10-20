@@ -345,7 +345,7 @@ bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuni
         return true;
     }
 
-    // Also:
+    // Also from bdamedia.h:
     // ISDB_TERRESTRIAL_TV_NETWORK_TYPE
     // ISDB_SATELLITE_TV_NETWORK_TYPE
     // ISDB_S_NETWORK_TYPE (?)

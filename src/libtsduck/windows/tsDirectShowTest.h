@@ -58,6 +58,7 @@ namespace ts {
         //!
         enum TestType {
             NONE,                //!< No test, do nothing.
+            LIST_DEVICES,        //!< Briel list of most tuner-related DirectShow devices.
             ENUMERATE_DEVICES,   //!< Enumerate all tuner-related DirectShow devices.
             TUNING_SPACES,       //!< Test available tuning spaces.
             BDA_TUNERS,          //!< Test available BDA tuners.
@@ -73,6 +74,12 @@ namespace ts {
         //! @param [in] type The test to run.
         //!
         void runTest(TestType type);
+
+        //!
+        //! Brief list of DirectShow devices, same as runTest(LIST_DEVICES).
+        //! @param [in] margin Left margin to display.
+        //!
+        void listDevices(const UString& margin = UString());
 
         //!
         //! Enumerate DirectShow devices, same as runTest(ENUMERATE_DEVICES).
@@ -96,10 +103,11 @@ namespace ts {
         //! Display all devices of the specified category.
         //! @param [in] category Category of the devices to display.
         //! @param [in] name Name of the category to display.
+        //! @param [in] details When true, list all details.
         //! @param [in] margin Left margin to display.
         //! @return True on success, false on error.
         //!
-        bool displayDevicesByCategory(const ::GUID& category, const UString& name, const UString& margin = UString());
+        bool displayDevicesByCategory(const ::GUID& category, const UString& name, bool details = true, const UString& margin = UString());
 
         //!
         //! Display all DirectShow tuning spaces.
