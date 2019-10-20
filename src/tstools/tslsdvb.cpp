@@ -75,10 +75,16 @@ Options::Options(int argc, char *argv[]) :
     duck(this),
     tuner(true, true)
 {
+    // Common tuner options.
+    tuner.defineArgs(*this);
+
 #if defined(TS_WINDOWS)
 
     option(u"enumerate-devices", 'e');
     help(u"enumerate-devices", u"Legacy option, equivalent to --test enumerate-devices.");
+
+    option(u"list-devices", 'l');
+    help(u"list-devices", u"Get a list of all tuner and receiver devices, equivalent to --test list-devices.");
 
     option(u"test", 't', ts::DirectShowTest::TestNames);
     help(u"test", u"name",
@@ -87,16 +93,21 @@ Options::Options(int argc, char *argv[]) :
 
 #endif
 
-    // Add common tuner options.
-    tuner.defineArgs(*this);
-
     // Analyze command line options.
     analyze(argc, argv);
     tuner.loadArgs(duck, *this);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
-    test_type = enumValue(u"test", present(u"enumerate-devices") ? ts::DirectShowTest::ENUMERATE_DEVICES : ts::DirectShowTest::NONE);
+    if (present(u"list-devices")) {
+        test_type = ts::DirectShowTest::LIST_DEVICES;
+    }
+    else if (present(u"enumerate-devices")) {
+        test_type = ts::DirectShowTest::ENUMERATE_DEVICES;
+    }
+    else {
+        test_type = enumValue(u"test", ts::DirectShowTest::NONE);
+    }
 #endif
 
     exitOnError();
@@ -155,6 +166,15 @@ int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
 
+#if defined(TS_WINDOWS)
+    // Specific DirectShow tests on Windows.
+    if (opt.test_type != ts::DirectShowTest::NONE) {
+        ts::DirectShowTest ds(std::cout, opt);
+        ds.runTest(opt.test_type);
+        return EXIT_SUCCESS;
+    }
+#endif
+
     // List DVB tuner devices
     if (!opt.tuner.device_name.empty()) {
         // One device name specified.
@@ -179,12 +199,6 @@ int MainCode(int argc, char *argv[])
             }
         }
     }
-
-#if defined(TS_WINDOWS)
-    // Specific DirectShow tests on Windows.
-    ts::DirectShowTest ds(std::cout, opt);
-    ds.runTest(opt.test_type);
-#endif
 
     return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

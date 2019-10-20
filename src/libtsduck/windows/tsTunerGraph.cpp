@@ -403,12 +403,6 @@ bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter,
     // Report to use when errors shall be reported in debug mode only
     Report& debug_report(report.debug() ? report : NULLREP);
 
-    // Create a DirectShow System Device Enumerator
-    ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);
-    if (enum_devices.isNull()) {
-        return false;
-    }
-
     // Create an "infinite tee filter"
     ComPtr<::IBaseFilter> tee_filter(CLSID_InfTee, IID_IBaseFilter, report);
     if (tee_filter.isNull()) {
@@ -420,9 +414,7 @@ bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter,
         return false;
     }
 
-    // After this point, we cannot simply return false on error since
-    // the graph needs some cleanup.
-
+    // After this point, we cannot simply return false on error since the graph needs some cleanup.
     // Try to connect the "base" filter (tuner or receiver) to the tee filter.
     bool ok = connectFilters(base_filter.pointer(), tee_filter.pointer(), debug_report);
 
@@ -433,56 +425,16 @@ bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter,
          addFilter(sink.pointer(), L"Sink/Capture", report) &&
          connectFilters(tee_filter.pointer(), sink.pointer(), debug_report);
 
-    // Create branch B of graph: Create an MPEG-2 demultiplexer
+    // Create branch B of graph: Create an MPEG-2 demultiplexer followed by a Transport Information Filter (TIF).
     ComPtr<::IBaseFilter> demux_filter(::CLSID_MPEG2Demultiplexer, ::IID_IBaseFilter, report);
     ok = ok &&
          !demux_filter.isNull() &&
          addFilter(demux_filter.pointer(), L"Demux", report) &&
-         connectFilters(tee_filter.pointer(), demux_filter.pointer(), debug_report);
-
-    // Now, we need to connect a Transport Information Filter (TIF).
-    // There is no predefined CLSID for this one and we must loop on all
-    // filters with category KSCATEGORY_BDA_TRANSPORT_INFORMATION
-    ComPtr<::IEnumMoniker> enum_tif;
-    if (ok) {
-        ::HRESULT hr = enum_devices->CreateClassEnumerator(KSCATEGORY_BDA_TRANSPORT_INFORMATION, enum_tif.creator(), 0);
-        ok = ComSuccess(hr, u"CreateClassEnumerator (for TIF)", report) && hr == S_OK;
-    }
-
-    // Loop on all enumerated TIF
-    ComPtr<::IMoniker> tif_moniker;
-    bool tif_found = false;
-    while (ok && !tif_found && enum_tif->Next(1, tif_moniker.creator(), NULL) == S_OK) {
-
-        // Get friendly name of this TIF
-        UString tif_name(GetStringPropertyBag(tif_moniker.pointer(), L"FriendlyName", report));
-        report.debug(u"trying TIF \"%s\"", {tif_name});
-
-        // Create an instance of this TIF from moniker
-        ComPtr<::IBaseFilter> tif_filter;
-        tif_filter.bindToObject(tif_moniker.pointer(), ::IID_IBaseFilter, report);
-        if (tif_filter.isNull()) {
-            continue; // give up this TIF
-        }
-
-        // Add the TIF in the graph
-        if (!addFilter(tif_filter.pointer(), L"TIF", report)) {
-            continue; // give up this TIF
-        }
-
-        // Try to connect demux filter to tif
-        if (connectFilters(demux_filter.pointer(), tif_filter.pointer(), debug_report)) {
-            tif_found = true;
-            report.debug(u"using TIF \"%s\"", {tif_name});
-        }
-        else {
-            // This tif is not compatible, remove it from the graph
-            removeFilter(tif_filter.pointer(), report);
-        }
-    }
+         connectFilters(tee_filter.pointer(), demux_filter.pointer(), debug_report) &&
+         buildGraphEnd(demux_filter, report);
 
     // If successful so far, done
-    if (tif_found) {
+    if (ok) {
         _sink_filter = sink;
         return true;
     }
@@ -506,4 +458,103 @@ bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter,
     }
 
     return false;
+}
+
+
+//-----------------------------------------------------------------------------
+// Try to build the end of the graph, after the demux filter.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerGraph::buildGraphEnd(const ComPtr <::IBaseFilter>& demux, Report& report)
+{
+    // Connect a Transport Information Filter (TIF).
+    //
+    // The usual TIF is "BDA MPEG2 Transport Information Filter" but there is no predefined
+    // CLSID for this one and it is not guaranteed that this TIF will remain on all versions.
+    // The recommended procedure is to enumerate and try all filters with category
+    // KSCATEGORY_BDA_TRANSPORT_INFORMATION. But we can see that two TIF exist in the
+    // system. The second one is "MPEG-2 Sections and Tables". So, we are facing a dilemma:
+    //
+    // 1) If we hard-code the CLSID for "BDA MPEG2 Transport Information Filter" and use it
+    //    directly, we may get an error in some future version of Windows if this filter
+    //    is no longer supported.
+    //
+    // 2) If we follow the recommended procedure, it works only because the "BDA MPEG2
+    //    Transport Information Filter" comes first in the enumeration. What will happen
+    //    if the order changes in some future version?
+    //
+    // So, to stay on the safe side, we first try a direct activation of "BDA MPEG2
+    // Transport Information Filter" using its known (although not predefined) CLSID.
+    // And if it fails, we fallback into the enumeration.
+
+    // Try "BDA MPEG2 Transport Information Filter" using a known CLSID.
+    ComPtr<::IBaseFilter> tif(::CLSID_BDA_MPEG2TransportInformationFilter, ::IID_IBaseFilter, report);
+    if (installTIF(demux, tif, report)) {
+        // Know TIF properly installed, use it.
+        return true;
+    }
+    tif.release();
+
+    // Failed to use the known TIF, enumerate them all.
+    // Create a DirectShow System Device Enumerator
+    ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);
+    if (enum_devices.isNull()) {
+        return false;
+    }
+
+    // Enumerate all TIF.
+    ComPtr<::IEnumMoniker> enum_tif;
+    ::HRESULT hr = enum_devices->CreateClassEnumerator(KSCATEGORY_BDA_TRANSPORT_INFORMATION, enum_tif.creator(), 0);
+    if (!ComSuccess(hr, u"CreateClassEnumerator (for TIF)", report) || hr != S_OK) {
+        // Must use ComSuccess to get a message in case of error.
+        // Must also explicitly test for S_OK because empty categories return another success status.
+        return false;
+    }
+
+    // Loop on all enumerated TIF
+    ComPtr<::IMoniker> tif_moniker;
+    while (enum_tif->Next(1, tif_moniker.creator(), NULL) == S_OK) {
+
+        // Get friendly name of this TIF
+        UString tif_name(GetStringPropertyBag(tif_moniker.pointer(), L"FriendlyName", report));
+        report.debug(u"trying TIF \"%s\"", {tif_name});
+
+        // Create an instance of this TIF from moniker
+        tif.bindToObject(tif_moniker.pointer(), ::IID_IBaseFilter, report);
+        if (installTIF(demux, tif, report)) {
+            // TIF properly installed, use it.
+            return true;
+        }
+        tif.release();
+    }
+
+    // All TIF were rejected.
+    report.debug(u"all TIF failed");
+    return false;
+}
+
+
+//-----------------------------------------------------------------------------
+// Try to install a "transport information filter" (TIF), after the demux filter.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerGraph::installTIF(const ComPtr<::IBaseFilter>& demux, const ComPtr<::IBaseFilter>& tif, Report& report)
+{
+    // Report to use when errors shall be reported in debug mode only
+    Report& debug_report(report.debug() ? report : NULLREP);
+
+    // Add the TIF in the graph
+    if (tif.isNull() || !addFilter(tif.pointer(), L"TIF", report)) {
+        return false;
+    }
+
+    // Try to connect demux filter to tif
+    if (connectFilters(demux.pointer(), tif.pointer(), debug_report)) {
+        return true;
+    }
+    else {
+        // This tif is not compatible, remove it from the graph
+        removeFilter(tif.pointer(), report);
+        return false;
+    }
 }

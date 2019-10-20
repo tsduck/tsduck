@@ -210,12 +210,29 @@ namespace ts {
 
         //!
         //! Try to build the part of the graph starting at the tee filter.
-        //! @param [in,out] base Base filter, either the tuner filter or some
+        //! @param [in] base Base filter, either the tuner filter or some
         //! other intermediate receiver filter downstream the tuner.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool buildCaptureGraph(const ComPtr <::IBaseFilter>& base, Report& report);
+        bool buildCaptureGraph(const ComPtr<::IBaseFilter>& base, Report& report);
+
+        //!
+        //! Try to build the end of the graph, after the demux filter.
+        //! @param [in] demux Demux filter. The end of the graph is built from here.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool buildGraphEnd(const ComPtr<::IBaseFilter>& demux, Report& report);
+
+        //!
+        //! Try to install a "transport information filter" (TIF), after the demux filter.
+        //! @param [in] demux Demux filter.
+        //! @param [in] tif Transport informatio filter.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool installTIF(const ComPtr<::IBaseFilter>& demux, const ComPtr<::IBaseFilter>& tif, Report& report);
 
         //!
         //! Locate all known interfaces in a pin or node of the tuner filter.
