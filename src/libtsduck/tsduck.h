@@ -540,5 +540,6 @@
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
 #include "tsSinkFilter.h"
+#include "tsTunerGraph.h"
 #include "tsWinUtils.h"
 #endif

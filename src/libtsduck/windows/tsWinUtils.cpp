@@ -225,6 +225,9 @@ bool ts::ComSuccess(::HRESULT hr, const UString& message, Report& report)
 bool ts::ComSuccess(::HRESULT hr, const UChar* message, Report& report)
 {
     if (SUCCEEDED(hr)) {
+        if (message != 0 && report.maxSeverity() >= 10) {
+            report.log(10, u"%s: success", {message});
+        }
         return true;
     }
     else {
