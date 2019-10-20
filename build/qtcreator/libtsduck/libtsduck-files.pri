@@ -1034,6 +1034,8 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsDirectShowUtils.h \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.h \
         ../../../src/libtsduck/windows/tsSinkFilter.h \
+        ../../../src/libtsduck/windows/tsTunerGraph.h \
+        ../../../src/libtsduck/windows/tsTunerGraphTemplate.h \
         ../../../src/libtsduck/windows/tsWinUtils.h \
 
     SOURCES += \
@@ -1045,6 +1047,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsHiDesDevice.cpp \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
+        ../../../src/libtsduck/windows/tsTunerGraph.cpp \
         ../../../src/libtsduck/windows/tsTunerGuts.cpp \
         ../../../src/libtsduck/windows/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/windows/tsWinUtils.cpp \

@@ -541,6 +541,8 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h" />
+    <ClInclude Include="..\..\src\libtsduck\windows\tsTunerGraph.h" />
+    <ClInclude Include="..\..\src\libtsduck\windows\tsTunerGraphTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsWinUtils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -1015,6 +1017,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsHiDesDevice.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\windows\tsTunerGraph.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsTunerGuts.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsWebRequestGuts.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsWinUtils.cpp" />

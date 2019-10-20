@@ -45,15 +45,10 @@ ts::DirectShowGraph::DirectShowGraph() :
 {
 }
 
-ts::DirectShowGraph::DirectShowGraph(Report& report) :
-    DirectShowGraph()
-{
-    initialize(report);
-}
-
 ts::DirectShowGraph::~DirectShowGraph()
 {
-    clear(NULLREP);
+    // Clear only that class.
+    DirectShowGraph::clear(NULLREP);
 }
 
 
@@ -73,8 +68,10 @@ bool ts::DirectShowGraph::isValid() const
 
 bool ts::DirectShowGraph::initialize(Report& report)
 {
-    // Clear previous graph.
-    clear(report);
+    if (isValid()) {
+        report.error(u"graph already initialized");
+        return false;
+    }
 
     // Create the FilterGraph object and get its GraphBuilder interface.
     _graph_builder.createInstance(::CLSID_FilterGraph, ::IID_IGraphBuilder, report);
@@ -86,6 +83,7 @@ bool ts::DirectShowGraph::initialize(Report& report)
         }
     }
 
+    report.debug(u"DirectShowGraph init, graph build is valid: %s, media control is valid: %s", {!_graph_builder.isNull(), !_media_control.isNull()});
     return isValid();
 }
 
@@ -116,7 +114,9 @@ void ts::DirectShowGraph::clear(Report& report)
 
 bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, Report& report)
 {
-    if (isValid() && filter != 0) {
+    report.debug(u"adding filter \"%s\", graph valid: %s, filter not null: %s", {ToString(name), isValid(), filter != nullptr});
+
+    if (isValid() && filter != nullptr) {
         const ::HRESULT hr = _graph_builder->AddFilter(filter, name != 0 ? name : L"");
         return ComSuccess(hr, u"IFilterGraph::AddFilter", report);
     }
@@ -127,7 +127,7 @@ bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, 
 
 bool ts::DirectShowGraph::removeFilter(::IBaseFilter* filter, Report& report)
 {
-    if (isValid() && filter != 0) {
+    if (isValid() && filter != nullptr) {
         const ::HRESULT hr = _graph_builder->RemoveFilter(filter);
         return ComSuccess(hr, u"IFilterGraph::RemoveFilter", report);
     }
@@ -202,7 +202,8 @@ bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* 
         }
     }
 
-    // No connection made
+    // No connection made.
+    report.debug(u"failed to connect filters");
     return false;
 }
 
@@ -413,7 +414,7 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
             if (!filter_vendor.empty()) {
                 output << margin << bar << " vendor: \"" << filter_vendor << "\"" << std::endl;
             }
-            output << margin << bar << " class GUID: " << NameGUID(class_id) << std::endl;
+            output << margin << bar << " class GUID: " << NameGUID(class_id) << " " << FormatGUID(class_id) << std::endl;
             test.displayObject(filter.pointer(), margin + bar + u" ");
         }
 

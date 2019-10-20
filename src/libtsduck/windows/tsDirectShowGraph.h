@@ -51,15 +51,9 @@ namespace ts {
         DirectShowGraph();
 
         //!
-        //! Constructor and initializes the graph.
-        //! @param [in,out] report Where to report errors.
-        //!
-        DirectShowGraph(Report& report);
-
-        //!
         //! Destructor.
         //!
-        ~DirectShowGraph();
+        virtual ~DirectShowGraph();
 
         //!
         //! Initialize the graph.
@@ -72,7 +66,7 @@ namespace ts {
         //! Clear the graph back to uninitialized state.
         //! @param [in,out] report Where to report errors.
         //!
-        void clear(Report& report);
+        virtual void clear(Report& report);
 
         //!
         //! Check if the graph was correctly initialized.

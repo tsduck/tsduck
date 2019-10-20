@@ -101,8 +101,8 @@ void ts::DirectShowTest::testBDATuners(const UString& margin)
         _output << std::endl << margin << "=== Testing \"" << tuners.name(tuner_index) << "\"" << std::endl << std::endl;
 
         // Build a DirectShow graph.
-        DirectShowGraph graph(_report);
-        if (!graph.isValid()) {
+        DirectShowGraph graph;
+        if (!graph.initialize(_report)) {
             break; // fatal error
         }
 
