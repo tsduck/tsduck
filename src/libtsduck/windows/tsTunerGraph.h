@@ -73,10 +73,11 @@ namespace ts {
         //! @param [in,out] tuner_moniker A moniker to create instances of a tuner filter.
         //! This tuner filter is the base of the graph creation (not the starting point
         //! of the graph, which is the network provider filter).
+        //! @param [out] delivery_systems List of delivery systems which are supported by the tuner.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool initialize(::IMoniker* tuner_moniker, Report& report);
+        bool initialize(::IMoniker* tuner_moniker, DeliverySystemSet& delivery_systems, Report& report);
 
         // Inherited methods.
         virtual void clear(Report& report) override;
@@ -90,7 +91,7 @@ namespace ts {
 
         //!
         //! Get the tuning space of the graph.
-        //! This function will be removed soon to support multi-standard tuners.
+        //! @@@@ This function will be removed soon to support multi-standard tuners.
         //! @return The address of the tuning space or a null pointer if the graph is not initialized.
         //!
         ::ITuningSpace* tuningSpace() { return _ituning_space.pointer(); }
@@ -123,7 +124,7 @@ namespace ts {
         //! @return True when the property was found, false otherwise.
         //!
         template <typename VALTYPE>
-        bool searchTunerProperty(VALTYPE& retvalue, PropSearch searchtype, const ::GUID& propset, ::DWORD propid);
+        bool searchTunerProperty(VALTYPE& retvalue, PropSearch searchtype, const ::GUID& propset, int propid);
 
         //!
         //! Search a property, until found, in all interfaces of a given class and then in tuner properties.
@@ -140,9 +141,9 @@ namespace ts {
         template <typename VALTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_base_of<::IBDA_SignalStatistics, FILTER>::value>::type* = nullptr>
         bool searchProperty(VALTYPE& retvalue,
                             PropSearch searchtype,
-                            ::HRESULT(FILTER::* getmethod)(IVALTYPE*),
+                            ::HRESULT (__stdcall FILTER::* getmethod)(IVALTYPE*),
                             const ::GUID& propset,
-                            ::DWORD propid)
+                            int propid)
         {
             return searchPropertyImpl(retvalue, searchtype, _sigstats, getmethod, propset, propid);
         }
@@ -165,36 +166,35 @@ namespace ts {
         //! @return True when the property was found, false otherwise.
         //!
         template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_same<::IBDA_DigitalDemodulator, FILTER>::value>::type* = nullptr>
-        bool searchProperty(VALTYPE unset,
-                            Variable<ARGTYPE>& parameter,
-                            PropSearch searchtype,
-                            bool reset_unknown,
-                            ::HRESULT(FILTER::* getmethod)(IVALTYPE*),
-                            const ::GUID& propset,
-                            ::DWORD propid)
+        bool searchVarProperty(VALTYPE unset,
+                               Variable<ARGTYPE>& parameter,
+                               PropSearch searchtype,
+                               bool reset_unknown,
+                               ::HRESULT (__stdcall FILTER::* getmethod)(IVALTYPE*),
+                               const ::GUID& propset,
+                               int propid)
         {
-            return searchPropertyImpl(unset, parameter, searchtype, reset_unknown, _demods, getmethod, propset, propid);
+            return searchVarPropertyImpl(unset, parameter, searchtype, reset_unknown, _demods, getmethod, propset, propid);
         }
 
 #if !defined(DOXYGEN)
 
         // There is one specialization per interface type.
         template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_same<::IBDA_DigitalDemodulator2, FILTER>::value>::type* = nullptr>
-        bool searchProperty(VALTYPE unset,
-                            Variable<ARGTYPE>& parameter,
-                            PropSearch searchtype,
-                            bool reset_unknown,
-                            ::HRESULT(FILTER::* getmethod)(IVALTYPE*),
-                            const ::GUID& propset,
-                            ::DWORD propid)
+        bool searchVarProperty(VALTYPE unset,
+                               Variable<ARGTYPE>& parameter,
+                               PropSearch searchtype,
+                               bool reset_unknown,
+                               ::HRESULT (__stdcall FILTER::* getmethod)(IVALTYPE*),
+                               const ::GUID& propset,
+                               int propid)
         {
-            return searchPropertyImpl(unset, parameter, searchtype, reset_unknown, _demods2, getmethod, propset, propid);
+            return searchVarPropertyImpl(unset, parameter, searchtype, reset_unknown, _demods2, getmethod, propset, propid);
         }
 
 #endif
 
     private:
-        DeliverySystemSet              _delivery_systems;    // Supported delivery systems.
         ComPtr<SinkFilter>             _sink_filter;         // Sink filter to TSDuck
         ComPtr<::IBaseFilter>          _provider_filter;     // Network provider filter
         ComPtr<::IBDA_NetworkProvider> _inet_provider;       // ... interface of _provider_filter
@@ -256,9 +256,9 @@ namespace ts {
         bool searchPropertyImpl(VALTYPE& retvalue,
                                 PropSearch searchtype,
                                 const std::vector<ComPtr<FILTER>>& ivector,
-                                ::HRESULT (FILTER::*getmethod)(IVALTYPE*),
+                                ::HRESULT (__stdcall FILTER::*getmethod)(IVALTYPE*),
                                 const ::GUID& propset,
-                                ::DWORD propid);
+                                int propid);
 
         //!
         //! Search a property, until found, in all interfaces of a given class and then in tuner properties.
@@ -279,14 +279,14 @@ namespace ts {
         //! @return True when the property was found, false otherwise.
         //!
         template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
-        bool searchPropertyImpl(VALTYPE unset,
-                                Variable<ARGTYPE>& parameter,
-                                PropSearch searchtype,
-                                bool reset_unknown,
-                                const std::vector<ComPtr<FILTER>>& ivector,
-                                ::HRESULT (FILTER::*getmethod)(IVALTYPE*),
-                                const ::GUID& propset,
-                                ::DWORD propid);
+        bool searchVarPropertyImpl(VALTYPE unset,
+                                   Variable<ARGTYPE>& parameter,
+                                   PropSearch searchtype,
+                                   bool reset_unknown,
+                                   const std::vector<ComPtr<FILTER>>& ivector,
+                                   ::HRESULT (__stdcall FILTER::*getmethod)(IVALTYPE*),
+                                   const ::GUID& propset,
+                                   int propid);
 
         //!
         //! Repeatedly called when searching for a propery.
