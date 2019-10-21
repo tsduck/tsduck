@@ -313,6 +313,14 @@ namespace ts {
         //! the graph thread and the application thread.
         //!
         void setSinkQueueSize(size_t s);
+
+        //!
+        //! Specify a receiver filter name.
+        //! Must be set before open().
+        //! @param [in] name Name of the receiver filter to use. The DirectShow graph will
+        //! use the specified receiver filter instead of the standard search algorithm.
+        //!
+        void setReceiverFilterName(const UString& name);
 #endif
 
         //!

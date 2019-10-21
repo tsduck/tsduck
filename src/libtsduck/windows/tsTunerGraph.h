@@ -69,6 +69,14 @@ namespace ts {
         virtual ~TunerGraph();
 
         //!
+        //! Specify a receiver filter name.
+        //! Must be called before initialize(). The graph will use the specified receiver
+        //! filter instead of the standard algorithm.
+        //! @param [in] name Name of the receiver filter to use.
+        //!
+        void setReceiverName(const UString& name) { _user_receiver_name = name; }
+
+        //!
         //! Initialize the graph.
         //! @param [in,out] tuner_moniker A moniker to create instances of a tuner filter.
         //! This tuner filter is the base of the graph creation (not the starting point
@@ -195,6 +203,7 @@ namespace ts {
 #endif
 
     private:
+        UString                        _user_receiver_name;  // User-specified receiver filter name.
         ComPtr<SinkFilter>             _sink_filter;         // Sink filter to TSDuck
         ComPtr<::IBaseFilter>          _provider_filter;     // Network provider filter
         ComPtr<::IBDA_NetworkProvider> _inet_provider;       // ... interface of _provider_filter
@@ -215,20 +224,20 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool buildCaptureGraph(const ComPtr<::IBaseFilter>& base, Report& report);
+        bool buildGraphAtTee(const ComPtr<::IBaseFilter>& base, Report& report);
 
         //!
-        //! Try to build the end of the graph, after the demux filter.
+        //! Try to build the end of the graph starting at the Transport Information Filter (TIF), after the demux filter.
         //! @param [in] demux Demux filter. The end of the graph is built from here.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool buildGraphEnd(const ComPtr<::IBaseFilter>& demux, Report& report);
+        bool buildGraphAtTIF(const ComPtr<::IBaseFilter>& demux, Report& report);
 
         //!
-        //! Try to install a "transport information filter" (TIF), after the demux filter.
-        //! @param [in] demux Demux filter.
-        //! @param [in] tif Transport informatio filter.
+        //! Try to install a Transport Information Filter (TIF), after the demux filter.
+        //! @param [in] demux Demux filter (already in the graph).
+        //! @param [in] tif The transport information filter to install.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
