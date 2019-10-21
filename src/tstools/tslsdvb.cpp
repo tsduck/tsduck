@@ -60,7 +60,7 @@ public:
 #endif
 
     ts::DuckContext duck;
-    ts::TunerArgs   tuner;  // Name of device to list (unspecified means all).
+    ts::TunerArgs   tuner_args;  // Name of device to list (unspecified means all).
 };
 
 // Destructor.
@@ -73,10 +73,10 @@ Options::Options(int argc, char *argv[]) :
     test_type(ts::DirectShowTest::NONE),
 #endif
     duck(this),
-    tuner(true, true)
+    tuner_args(true, true)
 {
     // Common tuner options.
-    tuner.defineArgs(*this);
+    tuner_args.defineArgs(*this);
 
 #if defined(TS_WINDOWS)
 
@@ -95,7 +95,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Analyze command line options.
     analyze(argc, argv);
-    tuner.loadArgs(duck, *this);
+    tuner_args.loadArgs(duck, *this);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
@@ -176,10 +176,12 @@ int MainCode(int argc, char *argv[])
 #endif
 
     // List DVB tuner devices
-    if (!opt.tuner.device_name.empty()) {
+    if (!opt.tuner_args.device_name.empty()) {
         // One device name specified.
-        ts::Tuner tuner(opt.duck, opt.tuner.device_name, true, opt);
-        ListTuner(opt.duck, tuner, -1, opt);
+        ts::Tuner tuner(opt.duck);
+        if (opt.tuner_args.configureTuner(tuner, opt)) {
+            ListTuner(opt.duck, tuner, -1, opt);
+        }
     }
     else {
         // List all tuners.

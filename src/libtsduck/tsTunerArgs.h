@@ -58,6 +58,7 @@ namespace ts {
 #endif
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         size_t      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
+        UString     receiver_name;      //!< Name of the DirectShow receiver to use (Windows-specific).
 #endif
         UString     channel_name;       //!< Use transponder containing this channel.
         UString     tuning_file_name;   //!< Where channel_name is located.

@@ -1032,9 +1032,8 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
 
 bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    reset();
-
     bool status = true;
+    ModulationArgs::reset();
 
     // If delivery system is unspecified, will use the default one for the tuner.
     if (args.present(u"delivery-system")) {

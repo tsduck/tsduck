@@ -51,6 +51,7 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     demux_buffer_size(Tuner::DEFAULT_DEMUX_BUFFER_SIZE),
 #elif defined(TS_WINDOWS)
     demux_queue_size(Tuner::DEFAULT_SINK_QUEUE_SIZE),
+    receiver_name(),
 #endif
     channel_name(),
     tuning_file_name(),
@@ -72,6 +73,7 @@ void ts::TunerArgs::reset()
     demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
 #elif defined(TS_WINDOWS)
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
+    receiver_name.clear();
 #endif
     channel_name.clear();
     tuning_file_name.clear();
@@ -88,7 +90,7 @@ void ts::TunerArgs::reset()
 bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 {
     bool status = true;
-    reset();
+    TunerArgs::reset();
 
     // Tuner identification.
     if (args.present(u"adapter") && args.present(u"device-name")) {
@@ -109,6 +111,11 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
         device_name.format(u"DVB adapter %d", {adapter});
 #endif
     }
+
+#if defined(TS_WINDOWS)
+    // Windows-specific tuner options.
+    receiver_name = args.value(u"receiver-name");
+#endif
 
     // Tuning options.
     if (!_info_only) {
@@ -167,6 +174,14 @@ void ts::TunerArgs::defineArgs(Args& args) const
 #endif
               u"By default, the first receiver device is used. "
               u"Use the tslsdvb utility to list all DVB devices. ");
+
+#if defined(TS_WINDOWS)
+    args.option(u"receiver-name", 0, Args::STRING);
+    args.help(u"receiver-name", u"name",
+        u"Specify the name of the DirectShow receiver filter to use. "
+        u"By default, first try a direct connection from the tuner filter to the rest of the graph. "
+        u"Then, try all receiver filters and concatenate them all.");
+#endif
 
     // All other parameters are used to control the tuner.
     if (!_info_only) {
@@ -239,24 +254,30 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
         return false;
     }
 
+    // These options shall be set before open().
+#if defined(TS_WINDOWS)
+    tuner.setReceiverFilterName(receiver_name);
+#endif
+
     // Open DVB tuner. Use first device by default (if device name is empty).
     if (!tuner.open(device_name, _info_only, report)) {
         return false;
     }
 
     // Set configuration parameters.
-    tuner.setSignalTimeout(signal_timeout);
-    if (!tuner.setReceiveTimeout(receive_timeout, report)) {
-        tuner.close(NULLREP);
-        return false;
-    }
-
+    if (!_info_only) {
+        tuner.setSignalTimeout(signal_timeout);
+        if (!tuner.setReceiveTimeout(receive_timeout, report)) {
+            tuner.close(NULLREP);
+            return false;
+        }
 #if defined(TS_LINUX)
-    tuner.setSignalPoll(Tuner::DEFAULT_SIGNAL_POLL);
-    tuner.setDemuxBufferSize(demux_buffer_size);
+        tuner.setSignalPoll(Tuner::DEFAULT_SIGNAL_POLL);
+        tuner.setDemuxBufferSize(demux_buffer_size);
 #elif defined(TS_WINDOWS)
-    tuner.setSinkQueueSize(demux_queue_size);
+        tuner.setSinkQueueSize(demux_queue_size);
 #endif
+    }
 
     return true;
 }

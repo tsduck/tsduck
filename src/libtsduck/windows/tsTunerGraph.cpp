@@ -38,6 +38,7 @@ TSDUCK_SOURCE;
 
 ts::TunerGraph::TunerGraph() :
     DirectShowGraph(),
+    _user_receiver_name(),
     _sink_filter(),
     _provider_filter(),
     _inet_provider(),
@@ -289,15 +290,20 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& de
     _tuning_space_uname = GetTuningSpaceUniqueName(_ituning_space.pointer(), report);
     report.debug(u"using tuning space \"%s\" (\"%s\")", {_tuning_space_uname, _tuning_space_fname});
 
-    // Try to build the rest of the graph starting at tuner filter.
-    // Usually work with Terratec driver for instance.
-    report.debug(u"trying direct connection from tuner (no receiver)");
-    bool graph_done = buildCaptureGraph(_tuner_filter, report);
+    bool graph_done = false;
+    bool user_receiver_found = false;
+    report.debug(u"user-specified receiver filter name: \"%s\"", {_user_receiver_name});
 
-    // If the tuner cannot be directly connected to the rest of the
-    // graph, we need to find a specific "receiver" filter (usually
-    // provided by the same vendor as the tuner filter). Needed by
-    // Hauppauge or Pinnacle drivers for instance.
+    // Try to build the rest of the graph starting at tuner filter, without receiver filter.
+    // Usually work with Terratec driver for instance.
+    if (_user_receiver_name.empty()) {
+        report.debug(u"trying direct connection from tuner (no receiver)");
+        graph_done = buildGraphAtTee(_tuner_filter, report);
+    }
+
+    // If the tuner cannot be directly connected to the rest of the graph, we need to find
+    // a specific "receiver" filter (usually provided by the same vendor as the tuner filter).
+    // Needed by Hauppauge or Pinnacle drivers for instance.
     if (!graph_done) {
 
         // Enumerate all filters with category KSCATEGORY_BDA_RECEIVER_COMPONENT
@@ -308,39 +314,49 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& de
         }
 
         // Loop on all enumerated receiver filters
-        for (size_t receiver_index = 0; !graph_done && receiver_index < receiver_monikers.size(); ++receiver_index) {
+        for (size_t receiver_index = 0; !graph_done && !user_receiver_found && receiver_index < receiver_monikers.size(); ++receiver_index) {
 
             // Get friendly name of this network provider
             UString receiver_name(GetStringPropertyBag(receiver_monikers[receiver_index].pointer(), L"FriendlyName", debug_report));
-            report.debug(u"trying receiver filter \"%s\"", {receiver_name});
 
-            // Create an instance of this receiver filter from moniker
-            ComPtr<::IBaseFilter> receiver_filter;
-            receiver_filter.bindToObject(receiver_monikers[receiver_index].pointer(), ::IID_IBaseFilter, debug_report);
-            if (receiver_filter.isNull()) {
-                continue; // give up this receiver filter
-            }
+            // Check if a specific receiver is provider by the user.
+            user_receiver_found = !_user_receiver_name.empty() && _user_receiver_name.similar(receiver_name);
 
-            // Add the filter in the graph
-            if (!addFilter(receiver_filter.pointer(), L"Receiver", report)) {
-                continue; // give up this receiver filter
-            }
+            // Try this receiver if there is no user-specified one or it is the user-specified one.
+            if (_user_receiver_name.empty() || user_receiver_found) {
+                report.debug(u"trying receiver filter \"%s\"", {receiver_name});
 
-            // Try to connect the tuner to the receiver
-            if (!connectFilters(_tuner_filter.pointer(), receiver_filter.pointer(), debug_report)) {
-                // This receiver is not compatible, remove it from the graph
-                removeFilter(receiver_filter.pointer(), debug_report);
-                continue;
-            }
+                // Create an instance of this receiver filter from moniker
+                ComPtr<::IBaseFilter> receiver_filter;
+                receiver_filter.bindToObject(receiver_monikers[receiver_index].pointer(), ::IID_IBaseFilter, debug_report);
+                if (receiver_filter.isNull()) {
+                    continue; // give up this receiver filter
+                }
 
-            // Try to build the rest of the graph
-            if (buildCaptureGraph(receiver_filter, report)) {
-                graph_done = true;
-                report.debug(u"using receiver filter \"%s\"", {receiver_name});
+                // Add the filter in the graph
+                if (!addFilter(receiver_filter.pointer(), L"Receiver", report)) {
+                    continue; // give up this receiver filter
+                }
+
+                // Try to connect the tuner to the receiver
+                if (!connectFilters(_tuner_filter.pointer(), receiver_filter.pointer(), debug_report)) {
+                    // This receiver is not compatible, remove it from the graph
+                    removeFilter(receiver_filter.pointer(), debug_report);
+                    continue;
+                }
+
+                // Try to build the rest of the graph
+                if (buildGraphAtTee(receiver_filter, report)) {
+                    graph_done = true;
+                    report.debug(u"using receiver filter \"%s\"", {receiver_name});
+                }
             }
         }
     }
     if (!graph_done) {
+        if (!_user_receiver_name.empty() && !user_receiver_found) {
+            report.error(u"receiver filter \"%s\" not found", {_user_receiver_name});
+        }
         clear(report);
         return false;
     }
@@ -398,7 +414,7 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& de
 // Try to build the part of the graph starting at the tee filter.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Report& report)
+bool ts::TunerGraph::buildGraphAtTee(const ComPtr<::IBaseFilter>& base_filter, Report& report)
 {
     // Report to use when errors shall be reported in debug mode only
     Report& debug_report(report.debug() ? report : NULLREP);
@@ -431,7 +447,7 @@ bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter,
          !demux_filter.isNull() &&
          addFilter(demux_filter.pointer(), L"Demux", report) &&
          connectFilters(tee_filter.pointer(), demux_filter.pointer(), debug_report) &&
-         buildGraphEnd(demux_filter, report);
+         buildGraphAtTIF(demux_filter, report);
 
     // If successful so far, done
     if (ok) {
@@ -462,10 +478,10 @@ bool ts::TunerGraph::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter,
 
 
 //-----------------------------------------------------------------------------
-// Try to build the end of the graph, after the demux filter.
+// Try to build the end of the graph starting at the TIF, after the demux.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerGraph::buildGraphEnd(const ComPtr <::IBaseFilter>& demux, Report& report)
+bool ts::TunerGraph::buildGraphAtTIF(const ComPtr <::IBaseFilter>& demux, Report& report)
 {
     // Connect a Transport Information Filter (TIF).
     //
