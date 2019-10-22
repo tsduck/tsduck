@@ -70,13 +70,14 @@ apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev li
 
 - Setup for a TSDuck native build:
 ~~~~
-apk add coreutils diffutils git make g++ doxygen graphviz linux-headers curl pcsc-lite-dev curl-dev
+apk add coreutils diffutils dos2unix git make g++ doxygen graphviz linux-headers curl pcsc-lite-dev curl-dev
 ~~~~
 
 Important: Alpine Linux does not use the GNU libc. It uses the musl libc. This creates
-some compatibility issues with other Linux distros. While TSDuck can be built on Alpine
-Linux, its test suites fail because of threading issues. The problem is currently under
-investigation.
+some compatibility issues with other Linux distros. TSDuck can be built on Alpine Linux
+and its test suite passes. But the unitary tests fail because of threading issues.
+The problem is currently under investigation. If you use TSDuck on Alpine Linux,
+you will do it at your own risks.
 
 ## All Linux distros {#reqlinux}
 

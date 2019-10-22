@@ -3126,7 +3126,7 @@ namespace ts {
     typedef ::DWORD ioctl_request_t;
 #else
     // Extract the type of the second parameter of ::ioctl().
-    // It is "unsigned long" on most Linux systems but "int" on Alpine Linux. 
+    // It is "unsigned long" on most Linux systems but "int" on Alpine Linux.
     template<typename T>
     auto request_param_type(int (*ioctl_syscall)(int, T, ...)) -> T;
     typedef decltype(request_param_type(&::ioctl)) ioctl_request_t;

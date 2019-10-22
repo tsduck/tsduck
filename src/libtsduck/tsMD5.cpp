@@ -241,15 +241,15 @@ bool ts::MD5::getHash (void* hash, size_t bufsize, size_t* retsize)
 // Implementation of Hash interface:
 //----------------------------------------------------------------------------
 
-ts::UString ts::MD5::name() const 
+ts::UString ts::MD5::name() const
 {
     return u"MD-5";
 }
-size_t ts::MD5::hashSize() const 
+size_t ts::MD5::hashSize() const
 {
     return HASH_SIZE;
 }
-size_t ts::MD5::blockSize() const 
+size_t ts::MD5::blockSize() const
 {
     return BLOCK_SIZE;
 }

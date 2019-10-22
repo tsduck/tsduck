@@ -55,7 +55,7 @@ namespace ts {
             new_state          = 0x02,  //!< Addition to state code data.
             new_county         = 0x03,  //!< Addition to county code data.
         };
-            
+
         //!
         //! Description of an update.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".

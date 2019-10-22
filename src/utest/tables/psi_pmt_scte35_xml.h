@@ -1,4 +1,4 @@
-static const ts::UChar psi_pmt_scte35_xml[] = 
+static const ts::UChar psi_pmt_scte35_xml[] =
     u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     u"<tsduck>\n"
     u"  <PMT version=\"11\" current=\"true\" service_id=\"0x03F2\" PCR_PID=\"0x03F3\">\n"

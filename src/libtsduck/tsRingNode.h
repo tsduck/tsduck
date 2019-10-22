@@ -57,7 +57,7 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~RingNode();
-    
+
         //!
         //! Check if the node is alone in its own ring.
         //! @return True if the node is alone in its own ring.

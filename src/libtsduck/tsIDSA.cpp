@@ -48,19 +48,19 @@ ts::IDSA::IDSA() :
 // Simple virtual methods.
 //----------------------------------------------------------------------------
 
-ts::UString ts::IDSA::name() const 
+ts::UString ts::IDSA::name() const
 {
     return u"ATIS-IDSA";
 }
 
-bool ts::IDSA::setIV(const void* iv_, size_t iv_length) 
+bool ts::IDSA::setIV(const void* iv_, size_t iv_length)
 {
     // The IV are defined by the standard and not modifiable.
     // This method is hidden (private) but redirected to its super class.
     return DVS042<AES>::setIV(iv_, iv_length);
 }
 
-bool ts::IDSA::setShortIV(const void* iv_, size_t iv_length) 
+bool ts::IDSA::setShortIV(const void* iv_, size_t iv_length)
 {
     // The IV are defined by the standard and not modifiable.
     // This method is hidden (private) but redirected to its super class.

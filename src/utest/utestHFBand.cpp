@@ -121,7 +121,7 @@ void HFBandTest::testEurope()
     TSUNIT_EQUAL(49, hf->channelCount());
     TSUNIT_EQUAL(21, hf->firstChannel());
     TSUNIT_EQUAL(69, hf->lastChannel());
-    
+
     TSUNIT_EQUAL(25, hf->nextChannel(24));
     TSUNIT_EQUAL(23, hf->previousChannel(24));
     TSUNIT_EQUAL(498000000, hf->frequency(24));

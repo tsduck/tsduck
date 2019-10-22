@@ -39,12 +39,12 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::GuardCondition::GuardCondition (Mutex& mutex, Condition& condition, MilliSecond timeout) :
+ts::GuardCondition::GuardCondition(Mutex& mutex, Condition& condition, MilliSecond timeout) :
     _mutex(mutex),
     _condition(condition),
     _is_locked(false)
 {
-    _is_locked = mutex.acquire (timeout);
+    _is_locked = mutex.acquire(timeout);
 
     if (timeout == Infinite && !_is_locked) {
         throw GuardConditionError(u"failed to acquire mutex");

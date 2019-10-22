@@ -36,19 +36,19 @@ TSDUCK_SOURCE;
 // Simple virtual methods.
 //----------------------------------------------------------------------------
 
-ts::json::Type ts::json::Array::type() const 
+ts::json::Type ts::json::Array::type() const
 {
      return TypeArray;
 }
-bool ts::json::Array::isArray() const 
+bool ts::json::Array::isArray() const
 {
      return true;
 }
-size_t ts::json::Array::size() const 
+size_t ts::json::Array::size() const
 {
      return _value.size();
 }
-void ts::json::Array::clear() 
+void ts::json::Array::clear()
 {
     _value.clear();
 }

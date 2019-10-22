@@ -104,13 +104,13 @@ namespace ts {
         //! @return The minimum date (January 1st, base year).
         //!
         static CASDate Min() { return CASDate(0x0021); }
-                                              
+
         //!
         //! A static function to return the maximum date.
         //! @return The maximum date (December 31st, last year).
         //!
         static CASDate Max() { return CASDate(0xFF9F); }
-                                              
+
         //!
         //! Check if a date is valid.
         //! @return True if the date is valid.

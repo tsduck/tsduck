@@ -89,7 +89,7 @@ ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
     _demux(duck, this)
 {
     option(u"stuffing", 's');
-    help(u"stuffing", 
+    help(u"stuffing",
          u"Replace excluded packets with stuffing (null packets) instead "
          u"of removing them. Useful to preserve bitrate.");
 }

@@ -208,7 +208,7 @@ bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuni
         ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
 
         if (loc.isNull() ||
-            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, CarrierFrequency, long(-1)) ||
             !PUT(loc, Modulation, ::BDA_MOD_NOT_SET) ||
             !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
             !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -240,7 +240,7 @@ bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuni
         ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
 
         if (loc.isNull() ||
-            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, CarrierFrequency, long(-1)) ||
             !PUT(loc, Modulation, ::BDA_MOD_NOT_SET) ||
             !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
             !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -272,7 +272,7 @@ bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuni
         ComPtr<::IDVBSLocator> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator, report);
 
         if (loc.isNull() ||
-            !PUT(loc, CarrierFrequency, long(-1)) || 
+            !PUT(loc, CarrierFrequency, long(-1)) ||
             !PUT(loc, Modulation, ::BDA_MOD_NOT_SET) ||
             !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
             !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -309,9 +309,9 @@ bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuni
         ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
 
         if (loc.isNull() ||
-            !PUT(loc, CarrierFrequency, long(-1)) || 
-            !PUT(loc, PhysicalChannel, long(-1)) || 
-            !PUT(loc, TSID, long(-1)) || 
+            !PUT(loc, CarrierFrequency, long(-1)) ||
+            !PUT(loc, PhysicalChannel, long(-1)) ||
+            !PUT(loc, TSID, long(-1)) ||
             !PUT(loc, Modulation, ::BDA_MOD_8VSB) ||
             !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
             !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -356,10 +356,10 @@ bool ts::GetTuningSpaceFromNetworkType(const ::GUID& networkType, ComPtr<::ITuni
         ComPtr<::IDigitalCableLocator> loc(CLSID_DigitalCableLocator, ::IID_IDigitalCableLocator, report);
 
         if (loc.isNull() ||
-            !PUT(loc, CarrierFrequency, long(-1)) || 
-            !PUT(loc, PhysicalChannel, long(-1)) || 
-            !PUT(loc, ProgramNumber, long(-1)) || 
-            !PUT(loc, TSID, long(-1)) || 
+            !PUT(loc, CarrierFrequency, long(-1)) ||
+            !PUT(loc, PhysicalChannel, long(-1)) ||
+            !PUT(loc, ProgramNumber, long(-1)) ||
+            !PUT(loc, TSID, long(-1)) ||
             !PUT(loc, Modulation, ::BDA_MOD_256QAM) ||
             !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
             !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -698,10 +698,10 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     }
 
     report.debug(u"mapped frequency %'d to physical channel %d", {freq, physical_channel});
-	
+
     if (loc.isNull() ||
         !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-		!CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
+        !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
         !PUT(loc, CarrierFrequency, -1) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
         !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||

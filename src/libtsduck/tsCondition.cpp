@@ -80,7 +80,7 @@ ts::Condition::Condition() :
 
 
 //----------------------------------------------------------------------------
-// Constructor/destructor
+// Destructor
 //----------------------------------------------------------------------------
 
 ts::Condition::~Condition()
@@ -123,8 +123,9 @@ void ts::Condition::signal()
 // Wait for the condition to be signaled (or timeout expires).
 //----------------------------------------------------------------------------
 
-bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
+bool ts::Condition::wait(Mutex& mutex, MilliSecond timeout, bool& signaled)
 {
+    // Condition initially not signaled.
     signaled = false;
 
     if (!_created) {
@@ -133,7 +134,7 @@ bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
 
 #if defined(TS_WINDOWS)
 
-    if (!mutex.release ()) {
+    if (!mutex.release()) {
         return false;
     }
 

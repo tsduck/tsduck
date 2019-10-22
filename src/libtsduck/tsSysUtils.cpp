@@ -747,28 +747,31 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 //----------------------------------------------------------------------------
 
 #if !defined(TS_WINDOWS)
+// Depending on GNU vs. POSIX, strerror_r returns an int or a char*.
+// There are two short functions to handle the strerror_r result.
+// The C++ compiler will automatically invoke the right one.
+// The other one is unused (disable unused warning).
+
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(unused-function)
 TS_GCC_NOWARNING(unused-function)
-
 namespace {
     // POSIX version, strerror_r returns an int, leave result unmodified.
-    void handle_strerror_r(bool& found, char*& result, int strerror_t_ret)
+    inline void handle_strerror_r(bool& found, char*& result, int strerror_t_ret)
     {
         found = strerror_t_ret == 0; // success
     }
-
-    // GNU version, strerror_r returns char*, not necessarilly in buffer.
-    void handle_strerror_r(bool& found, char*& result, char* strerror_t_ret)
+    // GNU version, strerror_r returns char*, not necessarily in buffer.
+    inline void handle_strerror_r(bool& found, char*& result, char* strerror_t_ret)
     {
-        result = strerror_t_ret;
+        result = strerror_t_ret; // actual message
         found = result != nullptr;
     }
 }
-
 TS_POP_WARNING()
-#endif
+#endif // not Windows
 
+// Portable public interface:
 ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
 {
 #if defined(TS_WINDOWS)

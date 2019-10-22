@@ -71,8 +71,8 @@ class EMMGOptions: public ts::Args
 public:
     EMMGOptions(int argc, char *argv[]);
     virtual ~EMMGOptions();
-    
-    ts::DuckContext      duck;                // TSDuck execution context.    
+
+    ts::DuckContext      duck;                // TSDuck execution context.
     ts::tlv::Logger      logger;              // Message logger.
     ts::UStringVector    inputFiles;          // Input file names.
     ts::SectionPtrVector sections;            // Loaded sections from input files.

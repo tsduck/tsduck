@@ -69,7 +69,7 @@ namespace ts {
         //! List of recording labels.
         //!
         typedef std::list<RecodingLabel> RecodingLabelList;
-        
+
         // ApplicationRecordingDescriptor public members:
         bool      scheduled_recording;  //!< Accept scheduled recording.
         bool      trick_mode_aware;     //!< Accept trick modes.

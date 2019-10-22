@@ -119,7 +119,7 @@ void ts::EASAudioFileDescriptor::deserialize(DuckContext& duck, const Descriptor
 {
     entries.clear();
     _is_valid = false;
-    
+
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 

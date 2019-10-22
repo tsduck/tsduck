@@ -19,7 +19,7 @@ The possible features of a TSDuck extensions are:
   displayed with the standard TSDuck tools.
 
 - Adding filtering capabilities based on specific or private conditions on sections
-  for command `tstables` and plugin `tables`. 
+  for command `tstables` and plugin `tables`.
 
 - Additional plugins for `tsp`.
 
@@ -48,12 +48,12 @@ A TSDuck extension typically contains the following types of files:
 
 - XML files describing the XML models for third-party signalization (tables and descriptors).
   There is no mandatory naming template for those files but `tslibext_XXX.xml` is recommended.
-  These XML files must be registered by the extension dynamic library (details below). 
-  
+  These XML files must be registered by the extension dynamic library (details below).
+
 - Name files describing third party identifiers (table ids, descriptor tags, CA system id,
   stream types, etc.) These files are used by TSDuck to better identify the various entities.
   There is no mandatory naming template for those files but `tslibext_XXX.names` is recommended.
-  These files must be registered by the extension dynamic library (details below). 
+  These files must be registered by the extension dynamic library (details below).
 
 # The extension dynamic library
 

@@ -48,12 +48,12 @@ ts::DVBCISSA::DVBCISSA() :
 // Simple virtual methods.
 //----------------------------------------------------------------------------
 
-ts::UString ts::DVBCISSA::name() const 
+ts::UString ts::DVBCISSA::name() const
 {
     return u"DVB-CISSA";
 }
 
-bool ts::DVBCISSA::setIV(const void* iv_, size_t iv_length) 
+bool ts::DVBCISSA::setIV(const void* iv_, size_t iv_length)
 {
     // The IV is defined by the standard and not modifiable.
     // This method is hidden (private) but redirected to its super class.

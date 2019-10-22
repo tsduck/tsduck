@@ -226,15 +226,15 @@ bool ts::SHA1::getHash (void* hash, size_t bufsize, size_t* retsize)
 // Implementation of Hash interface:
 //----------------------------------------------------------------------------
 
-ts::UString ts::SHA1::name() const 
+ts::UString ts::SHA1::name() const
 {
     return u"SHA-1";
 }
-size_t ts::SHA1::hashSize() const 
+size_t ts::SHA1::hashSize() const
 {
     return HASH_SIZE;
 }
-size_t ts::SHA1::blockSize() const 
+size_t ts::SHA1::blockSize() const
 {
     return BLOCK_SIZE;
 }
