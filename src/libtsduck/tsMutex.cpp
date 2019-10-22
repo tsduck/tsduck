@@ -29,6 +29,7 @@
 
 #include "tsMutex.h"
 #include "tsTime.h"
+#include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
 // On MacOS, we must do polling on mutex "lock with timeout".
@@ -54,7 +55,6 @@ ts::Mutex::Mutex() :
     _mutex(PTHREAD_MUTEX_INITIALIZER)
 #endif
 {
-
     TS_POP_WARNING()
 
 #if defined(TS_WINDOWS)
@@ -68,19 +68,20 @@ ts::Mutex::Mutex() :
 #else
 
     // POSIX pthread implementation
-    int error;
+    int error = 0;
     ::pthread_mutexattr_t attr;
+    TS_ZERO(attr);
 
-    if ((error = ::pthread_mutexattr_init (&attr)) != 0) {
+    if ((error = ::pthread_mutexattr_init(&attr)) != 0) {
         throw MutexError(u"mutex attr init", error);
     }
-    if ((error = ::pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
+    if ((error = ::pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
         throw MutexError(u"mutex attr set type", error);
     }
-    if ((error = ::pthread_mutex_init (&_mutex, &attr)) != 0) {
+    if ((error = ::pthread_mutex_init(&_mutex, &attr)) != 0) {
         throw MutexError(u"mutex init", error);
     }
-    if ((error = ::pthread_mutexattr_destroy (&attr)) != 0) {
+    if ((error = ::pthread_mutexattr_destroy(&attr)) != 0) {
         throw MutexError(u"mutex attr destroy", error);
     }
 
@@ -94,7 +95,7 @@ ts::Mutex::Mutex() :
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::Mutex::~Mutex ()
+ts::Mutex::~Mutex()
 {
     if (_created) {
 #if defined(TS_WINDOWS)

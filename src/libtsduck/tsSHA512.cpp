@@ -255,15 +255,15 @@ bool ts::SHA512::getHash (void* hash, size_t bufsize, size_t* retsize)
 // Implementation of Hash interface:
 //----------------------------------------------------------------------------
 
-ts::UString ts::SHA512::name() const 
+ts::UString ts::SHA512::name() const
 {
     return u"SHA-512";
 }
-size_t ts::SHA512::hashSize() const 
+size_t ts::SHA512::hashSize() const
 {
     return HASH_SIZE;
 }
-size_t ts::SHA512::blockSize() const 
+size_t ts::SHA512::blockSize() const
 {
     return BLOCK_SIZE;
 }

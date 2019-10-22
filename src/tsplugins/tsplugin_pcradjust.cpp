@@ -63,7 +63,7 @@
 //     Note: this is not ideal since it does not solve the problem of
 //         simultaneous modified packet placement (bad muxin/merging) and
 //         PCR warp (file loop for instance).
-//  
+//
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"

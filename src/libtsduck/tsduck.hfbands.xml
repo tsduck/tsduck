@@ -40,7 +40,7 @@
     <channels first_channel="21" last_channel="69" base_frequency="474,000,000" channel_width="8,000,000"
               first_offset="-1" last_offset="3" offset_width="166,666"/>
   </hfband>
-  
+
   <hfband type="VHF">
     <region name="europe"/>
     <region name="uk"/>
@@ -48,13 +48,13 @@
     <channels first_channel="5" last_channel="12" base_frequency="177,500,000" channel_width="7,000,000"
               first_offset="-1" last_offset="3" offset_width="166,666"/>
   </hfband>
-  
+
   <hfband type="UHF">
     <region name="usa"/>
     <region name="us"/>
     <channels first_channel="14" last_channel="69" base_frequency="473,000,000" channel_width="6,000,000"/>
   </hfband>
-  
+
   <hfband type="VHF">
     <region name="americas"/>
     <region name="usa"/>
@@ -67,11 +67,11 @@
     <channels first_channel="5" last_channel="6" base_frequency="79,000,000" channel_width="6,000,000"/>
     <channels first_channel="7" last_channel="13" base_frequency="177,000,000" channel_width="6,000,000"/>
   </hfband>
-  
+
   <hfband type="VHF">
     <region name="japan"/>
     <channels first_channel="1" last_channel="3" base_frequency="93,000,000" channel_width="6,000,000"/>
     <channels first_channel="4" last_channel="12" base_frequency="173,000,000" channel_width="6,000,000"/>
   </hfband>
-  
+
 </tsduck>

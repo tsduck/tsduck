@@ -160,7 +160,7 @@ namespace ts {
         //! Search a property, until found, in all interfaces of a given class and then in tuner properties.
         //! Same as previous method, with additional handling of unknown return value.
         //! @tparam VALTYPE The type of the property to search.
-        //! @tparam ARGTYPE 
+        //! @tparam ARGTYPE
         //! @tparam IVALTYPE The type of the property in the get_XXX() method of the object.
         //! @tparam FILTER The interface class through which the property can be found.
         //! @param [in] unset A value which, when returned by the interface, means "value is unset".
@@ -290,7 +290,7 @@ namespace ts {
         //! Search a property, until found, in all interfaces of a given class and then in tuner properties.
         //! Same as previous method, with additional handling of unknown return value.
         //! @tparam VALTYPE The type of the property to search.
-        //! @tparam ARGTYPE 
+        //! @tparam ARGTYPE
         //! @tparam IVALTYPE The type of the property in the get_XXX() method of the object.
         //! @tparam FILTER The interface class through which the property can be found.
         //! @param [in] unset A value which, when returned by the interface, means "value is unset".

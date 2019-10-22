@@ -108,7 +108,9 @@ int ts::ThreadAttributes::PthreadSchedulingPolicy()
     // This is far from ideal, can we do better?
     return SCHED_OTHER;
 #else
-    return ::sched_getscheduler(0);
+    // Get the scheduling policy of the current thread. Return SCHED_OTHER on error.
+    const int pol = ::sched_getscheduler(0);
+    return pol >= 0 ? pol : SCHED_OTHER;
 #endif
 }
 #endif

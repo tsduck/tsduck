@@ -58,7 +58,7 @@ namespace ts {
             // Public members
             uint8_t  RF_channel;      //!< RF channel number of the carrier.
             uint16_t program_number;  //!< Programe number, aka service id.
- 
+
             //!
             //! Default constructor.
             //! @param [in] chan RF channel number of the carrier.

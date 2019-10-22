@@ -429,7 +429,7 @@ void TimeTest::testCAS()
     TSUNIT_EQUAL(1999, f.year);
     TSUNIT_EQUAL(2, f.month);
     TSUNIT_EQUAL(28, f.day);
-    
+
     md.invalidate();
     TSUNIT_ASSERT(!md.isValid());
 }

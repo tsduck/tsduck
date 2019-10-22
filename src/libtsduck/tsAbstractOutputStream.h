@@ -67,7 +67,7 @@ namespace ts {
         //! Default stream buffer size in bytes.
         //!
         static constexpr size_t DEFAULT_STREAM_BUFFER_SIZE = 1024;
-        
+
         //!
         //! Constructor.
         //! @param [in] bufferSize Buffer size in bytes.

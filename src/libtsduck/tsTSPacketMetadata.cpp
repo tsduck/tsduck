@@ -73,12 +73,12 @@ bool ts::TSPacketMetadata::hasLabel(size_t label) const
 
 bool ts::TSPacketMetadata::hasAnyLabel(const LabelSet& mask) const
 {
-    return (_labels & mask).any(); 
+    return (_labels & mask).any();
 }
 
 bool ts::TSPacketMetadata::hasAllLabels(const LabelSet& mask) const
 {
-    return (_labels & mask) == mask; 
+    return (_labels & mask) == mask;
 }
 
 void ts::TSPacketMetadata::setLabels(const LabelSet& mask)

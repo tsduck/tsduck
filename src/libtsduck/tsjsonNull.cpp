@@ -38,17 +38,17 @@ const ts::json::Null ts::json::NullValue;
 // Simple virtual methods
 //----------------------------------------------------------------------------
 
-ts::json::Type ts::json::Null::type() const 
+ts::json::Type ts::json::Null::type() const
 {
      return TypeNull;
 }
 
-bool ts::json::Null::isNull() const 
+bool ts::json::Null::isNull() const
 {
      return true;
 }
 
-void ts::json::Null::print(TextFormatter& output) const 
+void ts::json::Null::print(TextFormatter& output) const
 {
     output << "null";
 }

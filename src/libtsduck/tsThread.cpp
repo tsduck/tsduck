@@ -29,6 +29,7 @@
 
 #include "tsThread.h"
 #include "tsGuard.h"
+#include "tsMemoryUtils.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
@@ -238,9 +239,11 @@ bool ts::Thread::start()
     // POSIX pthread implementation.
     // Create thread attributes.
     ::pthread_attr_t attr;
+    TS_ZERO(attr);
     if (::pthread_attr_init(&attr) != 0) {
         return false;
     }
+
     // Set required stack size.
     if (_attributes._stackSize > 0) {
         // Round to a multiple of the page size. This is required on MacOS.
@@ -250,34 +253,34 @@ bool ts::Thread::start()
             return false;
         }
     }
+
     // Set scheduling policy identical as current process.
-    // Note: Coverity seems out of its mind here:
-    //   CID 158305 (#1 of 1): Argument cannot be negative (NEGATIVE_RETURNS)
-    //   6. negative_returns: ts::ThreadAttributes::PthreadSchedulingPolicy() is passed to a parameter that cannot be negative
-    // But pthread_attr_setschedpolicy second argument is signed:
-    //   int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy);
-    // coverity[NEGATIVE_RETURNS]
     if (::pthread_attr_setschedpolicy(&attr, ThreadAttributes::PthreadSchedulingPolicy()) != 0) {
         ::pthread_attr_destroy(&attr);
         return false;
     }
+
     // Set scheduling priority.
     ::sched_param sparam;
+    TS_ZERO(sparam);
     sparam.sched_priority = _attributes._priority;
     if (::pthread_attr_setschedparam(&attr, &sparam) != 0) {
         ::pthread_attr_destroy(&attr);
         return false;
     }
+
     // Use explicit scheduling attributes, do not inherit them from the current thread.
     if (::pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) != 0) {
         ::pthread_attr_destroy(&attr);
         return false;
     }
+
     // Create the thread
     if (::pthread_create(&_pthread, &attr, Thread::ThreadProc, this) != 0) {
         ::pthread_attr_destroy(&attr);
         return false;
     }
+
     // Destroy thread attributes
     ::pthread_attr_destroy(&attr);
 

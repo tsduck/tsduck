@@ -64,7 +64,7 @@ ts::AbstractTransportListTable::AbstractTransportListTable(const AbstractTranspo
 {
 }
 
-ts::AbstractTransportListTable::AbstractTransportListTable(DuckContext& duck, 
+ts::AbstractTransportListTable::AbstractTransportListTable(DuckContext& duck,
                                                            TID tid,
                                                            const UChar* xml_name,
                                                            Standards standards,

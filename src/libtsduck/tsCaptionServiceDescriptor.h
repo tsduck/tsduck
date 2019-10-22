@@ -56,7 +56,7 @@ namespace ts {
             uint8_t  caption_service_number;  //!< When digital_cc == true.
             bool     easy_reader;             //!< Easy_reader type CC.
             bool     wide_aspect_ratio;       //!< 16:9 vs. 4:3.
-            
+
             //!
             //! Default constructor.
             //!
