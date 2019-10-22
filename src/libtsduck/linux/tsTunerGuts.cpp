@@ -206,15 +206,15 @@ void ts::Tuner::setDemuxBufferSize(size_t s)
 namespace {
     inline int ioctl_fe_set_tone(int fd, fe_sec_tone_mode_t tone)
     {
-        return ::ioctl(fd, FE_SET_TONE, tone);
+        return ::ioctl(fd, ts::ioctl_request_t(FE_SET_TONE), tone);
     }
     inline int ioctl_fe_set_voltage(int fd, fe_sec_voltage_t voltage)
     {
-        return ::ioctl(fd, FE_SET_VOLTAGE, voltage);
+        return ::ioctl(fd, ts::ioctl_request_t(FE_SET_VOLTAGE), voltage);
     }
     inline int ioctl_fe_diseqc_send_burst(int fd, fe_sec_mini_cmd_t burst)
     {
-        return ::ioctl(fd, FE_DISEQC_SEND_BURST, burst);
+        return ::ioctl(fd, ts::ioctl_request_t(FE_DISEQC_SEND_BURST), burst);
     }
 }
 
@@ -311,7 +311,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 
     // Get characteristics of the frontend
 
-    if (::ioctl(_guts->frontend_fd, FE_GET_INFO, &_guts->fe_info) < 0) {
+    if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_GET_INFO), &_guts->fe_info) < 0) {
         report.error(u"error getting info on %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return close(report) || false;
     }
@@ -323,7 +323,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     _delivery_systems.clear();
     DTVProperties props;
     props.add(DTV_ENUM_DELSYS);
-    if (::ioctl(_guts->frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
         report.error(u"error getting delivery systems of %s: %s", {_guts->frontend_name, ErrorCodeMessage()});
         return close(report) || false;
     }
@@ -356,7 +356,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 bool ts::Tuner::close(Report& report)
 {
     // Stop the demux
-    if (_guts->demux_fd >= 0 && ::ioctl(_guts->demux_fd, DMX_STOP) < 0) {
+    if (_guts->demux_fd >= 0 && ::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
         report.error(u"error stopping demux on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
     }
 
@@ -393,7 +393,7 @@ bool ts::Tuner::Guts::getFrontendStatus(::fe_status_t& status, Report& report)
 {
     status = FE_ZERO;
     errno = 0;
-    const bool ok = ::ioctl(frontend_fd, FE_READ_STATUS, &status) == 0;
+    const bool ok = ::ioctl(frontend_fd, ioctl_request_t(FE_READ_STATUS), &status) == 0;
     const ErrorCode err = LastErrorCode();
     if (ok || (!ok && err == EBUSY && status != FE_ZERO)) {
         return true;
@@ -436,7 +436,7 @@ int ts::Tuner::signalStrength(Report& report)
     }
 
     uint16_t strength = 0;
-    if (::ioctl(_guts->frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
+    if (::ioctl(_guts->frontend_fd, ioctl_request_t(FE_READ_SIGNAL_STRENGTH), &strength) < 0) {
         const ErrorCode err = LastErrorCode();
         // Silently ignore deprecated feature, see comment at beginning of file.
         if (err != DVB_ENOTSUPP) {
@@ -473,7 +473,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
     // Get the current delivery system
     DTVProperties props;
     props.add(DTV_DELIVERY_SYSTEM);
-    if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
         const ErrorCode err = LastErrorCode();
         report.error(u"error getting current delivery system from tuner: %s", {ErrorCodeMessage(err)});
         return false;
@@ -505,7 +505,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_ROLLOFF);
             props.add(DTV_STREAM_ID);
 
-            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+            if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
                 report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
                 return false;
@@ -540,7 +540,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_HIERARCHY);
             props.add(DTV_STREAM_ID);
 
-            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+            if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
                 report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
                 return false;
@@ -569,7 +569,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_INNER_FEC);
             props.add(DTV_MODULATION);
 
-            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+            if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
                 report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
                 return false;
@@ -588,7 +588,7 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_INVERSION);
             props.add(DTV_MODULATION);
 
-            if (::ioctl(frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+            if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const ErrorCode err = LastErrorCode();
                 report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
                 return false;
@@ -641,7 +641,7 @@ void ts::Tuner::Guts::discardFrontendEvents(Report& report)
 {
     ::dvb_frontend_event event;
     report.debug(u"starting discarding frontend events");
-    while (::ioctl(frontend_fd, FE_GET_EVENT, &event) >= 0) {
+    while (::ioctl(frontend_fd, ioctl_request_t(FE_GET_EVENT), &event) >= 0) {
         report.debug(u"one frontend event discarded");
     }
     report.debug(u"finished discarding frontend events");
@@ -656,7 +656,7 @@ bool ts::Tuner::Guts::tune(DTVProperties& props, Report& report)
 {
     report.debug(u"tuning on %s", {frontend_name});
     props.report(report, Severity::Debug);
-    if (::ioctl(frontend_fd, FE_SET_PROPERTY, props.getIoctlParam()) < 0) {
+    if (::ioctl(frontend_fd, ioctl_request_t(FE_SET_PROPERTY), props.getIoctlParam()) < 0) {
         const ErrorCode err = LastErrorCode();
         report.error(u"tuning error on %s: %s", {frontend_name, ErrorCodeMessage(err)});
         return false;
@@ -757,7 +757,7 @@ bool ts::Tuner::Guts::dishControl(const ModulationArgs& params, Report& report)
     cmd.msg[4] = 0x00;  // Unused
     cmd.msg[5] = 0x00;  // Unused
 
-    if (::ioctl(frontend_fd, FE_DISEQC_SEND_MASTER_CMD, &cmd) < 0) {
+    if (::ioctl(frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
         report.error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {ErrorCodeMessage()});
         return false;
     }
@@ -903,7 +903,7 @@ bool ts::Tuner::start(Report& report)
     // Set demux buffer size (default value is 2 kB, fine for sections,
     // completely undersized for full TS capture.
 
-    if (::ioctl(_guts->demux_fd, DMX_SET_BUFFER_SIZE, _guts->demux_bufsize) < 0) {
+    if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_SET_BUFFER_SIZE), _guts->demux_bufsize) < 0) {
         report.error(u"error setting buffer size on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
         return false;
     }
@@ -927,7 +927,7 @@ bool ts::Tuner::start(Report& report)
     filter.pes_type = DMX_PES_OTHER;    // Any type of PES
     filter.flags = DMX_IMMEDIATE_START; // Start capture immediately
 
-    if (::ioctl(_guts->demux_fd, DMX_SET_PES_FILTER, &filter) < 0) {
+    if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_SET_PES_FILTER), &filter) < 0) {
         report.error(u"error setting filter on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
         return false;
     }
@@ -976,7 +976,7 @@ bool ts::Tuner::stop(Report& report)
     }
 
     // Stop the demux
-    if (::ioctl(_guts->demux_fd, DMX_STOP) < 0) {
+    if (::ioctl(_guts->demux_fd, ioctl_request_t(DMX_STOP)) < 0) {
         report.error(u"error stopping demux on %s: %s", {_guts->demux_name, ErrorCodeMessage()});
         return false;
     }

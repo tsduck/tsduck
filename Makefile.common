@@ -1044,9 +1044,9 @@ cloc:
 # Utilities: display predefined macros for C and C++
 .PHONY: cmacros cxxmacros
 cmacros:
-	@$(CPP) -x c -dM /dev/null | sort
+	@$(CPP) $(CFLAGS) -x c -dM /dev/null | sort
 cxxmacros:
-	@$(CPP) -x c++ -dM /dev/null | sort
+	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort
 
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.

@@ -33,18 +33,9 @@
 
 include ../Makefile.tsduck
 
-# By default, download and expand LinuxSDK (if necessary).
-# This SDK is available on Linux and Windows, Intel CPU's only.
-
-DTAPI_TARGET :=
-ifeq ($(NODTAPI)$(LOCAL_OS),linux)
-    ifeq ($(MAIN_ARCH),i386)
-        DTAPI_TARGET := dtapi
-    endif
-    ifeq ($(MAIN_ARCH),x86_64)
-        DTAPI_TARGET := dtapi
-    endif
-endif
+# By default, download and expand LinuxSDK if necessary.
+# This SDK is only available on Windows and some flavors of Linux.
+DTAPI_TARGET := $(if $(shell ./dtapi-config.sh --support),dtapi,)
 
 default: $(DTAPI_TARGET)
 	@true

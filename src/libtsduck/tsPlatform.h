@@ -3112,6 +3112,29 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
+// Request type for ioctl.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    //!
+    //! Portable type for ioctl() request parameter.
+    //!
+#if defined(DOXYGEN)
+    typedef platform-dependent ioctl_request_t;
+#elif defined(TS_WINDOWS)
+    // Second parameter of ::DeviceIoControl().
+    typedef ::DWORD ioctl_request_t;
+#else
+    // Extract the type of the second parameter of ::ioctl().
+    // It is "unsigned long" on most Linux systems but "int" on Alpine Linux. 
+    template<typename T>
+    auto request_param_type(int (*ioctl_syscall)(int, T, ...)) -> T;
+    typedef decltype(request_param_type(&::ioctl)) ioctl_request_t;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Socket programming portability macros.
 // Most socket types and functions have identical API in UNIX and Windows.
 // However, there are some slight incompatibilities which are solved by
