@@ -29,7 +29,7 @@
 #-----------------------------------------------------------------------------
 #
 #  Get configuration for DTAPI on current Linux system.
-#  Options: --header --object
+#  Options: --header --object --support
 #
 #-----------------------------------------------------------------------------
 
@@ -38,6 +38,24 @@ ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
 DTAPIDIR="$ROOTDIR/LinuxSDK/DTAPI"
 
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+
+# Check if DTAPI is supported on the current system.
+dtapi-support()
+{
+    # DTAPI is supported in Linux only.
+    [[ $(uname -s) == Linux ]] || return -1
+
+    # DTAPI is supported on Intel CPU only.
+    arch=$(uname -m)
+    [[ $arch == x86_64 || $arch == i?86 ]] || return -1
+
+    # DTAPI is compiled with the GNU libc and is not supported on systems not using it.
+    # Alpine Linux uses musl libc => not supported (undefined reference to __isnan).
+    [[ -e /etc/alpine-release ]] && return -1
+
+    # Seems to be a supported distro.
+    return 0
+}
 
 # Compute an integer version from a x.y.z version string.
 int-version()
@@ -52,10 +70,8 @@ int-version()
 # Get DTAPI header file.
 get-header()
 {
-    # Unsupported outside Linux/Intel.
-    [[ $(uname -s) == Linux ]] || return
-    arch=$(uname -m)
-    [[ $arch == x86_64 || $arch == i?86 ]] || return
+    # Get DTAPI support on this system.
+    dtapi-support || return 0
 
     local HEADER="$DTAPIDIR/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
@@ -64,10 +80,8 @@ get-header()
 # Get DTAPI object file.
 get-object()
 {
-    # Unsupported outside Linux/Intel.
-    [[ $(uname -s) == Linux ]] || return
-    arch=$(uname -m)
-    [[ $arch == x86_64 || $arch == i?86 ]] || return
+    # Get DTAPI support on this system.
+    dtapi-support || return 0
 
     # Get GCC version as an integer.
     if [[ -z "$GCCVERSION" ]]; then
@@ -108,6 +122,9 @@ case "$1" in
         ;;
     --object)
         get-object
+        ;;
+    --support)
+        dtapi-support && echo supported        
         ;;
     -*)
         error "invalid option: $1"

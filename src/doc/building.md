@@ -66,44 +66,29 @@ apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev li
 - It is not possible to build 32-bit TSDuck on 64-bit Ubuntu system (command `make m32`) because
   there is no 32-bit cross-compiled package for pcsc on Ubuntu 64-bit.
 
-## Specific GCC requirement on Raspian and Debian {#reqraspbian}
+## Alpine Linux {#reqalpine}
 
-It has been noted that GCC 6 and 7 are broken and fail to compile TSDuck version 3.17 and higher.
-As of TSDuck version 3.17, the latest versions of the major Linux distros (Fedora, CentOS,
-Red Hat Entreprise, Ubuntu) have either older or newer versions of GCC. However, Raspbian 9.x and
-Debian 9.x (stretch) embed GCC 6.x. Similarly, Ubuntu 18.04 embeds GCC 7.x.
-
-If you have such a broken GCC, it is recommended to install an older or newer version of GCC.
-
-The following method has been successfully used to build TSDuck on Raspbian 9.9.
-The compiler is GCC 4.9, an older but valid version, which is available from the
-official repo.
-
-On Debian 9.x (stretch), it has been reported from users that you need to add the
-following line in file `/etc/apt/sources.list` before installing GCC 4.9:
+- Setup for a TSDuck native build:
 ~~~~
-deb http://http.debian.net/debian oldstable main contrib non-free
+apk add coreutils diffutils git make g++ doxygen graphviz linux-headers curl pcsc-lite-dev curl-dev
 ~~~~
 
-To install GCC 4.9:
-~~~~
-apt install gcc-4.9 g++-4.9
-~~~~
-
-Build TSDuck using the following command.
-The compiler and associated tools are redirected to their version 4.9.
-~~~~
-make CC=gcc-4.9 GCC=gcc-4.9 CXX=g++-4.9 AR=gcc-ar-4.9
-~~~~
-
-If you encounter errors from the `ar` tool, complaining about an unknown `U` option,
-you may have an outdated `binutils` package (probably a version prior to 2.28).
-In that case, add the option `ARFLAGS=rc` to the `make` command above.
+Important: Alpine Linux does not use the GNU libc. It uses the musl libc. This creates
+some compatibility issues with other Linux distros. While TSDuck can be built on Alpine
+Linux, its test suites fail because of threading issues. The problem is currently under
+investigation.
 
 ## All Linux distros {#reqlinux}
 
 - Optional Dektec DTAPI: The command `make` at the top level will automatically
   download the LinuxSDK from the Dektec site. See `dektec/Makefile` for details.
+  There is no manual setup for DTAPI on Linux.
+
+But note that the Dektec DTAPI is available only for Linux distros on Intel CPU's
+with the GNU libc. Non-Intel systems (for instance ARM-based devices such as
+Raspberry Pi) cannot use Dektec devices. Similarly, Intel-based distros using
+another libc (for instance Alpine Linux which uses musl libc) cannot use Dektec
+devices either.
 
 ## macOS {#reqmac}
 
@@ -137,6 +122,8 @@ objects (`.so`), are built in the `src` directory tree in subdirectories `releas
 and `release-x86_64` for 32-bit and 64-bit platforms respectively.
 
 To build a 32-bit version of TSDuck on a 64-bit system, execute the command `make m32`.
+Of course, this works only if your 64-bit system has all required 32-bit development
+tools and libraries.
 
 ### Building without specialized dependencies
 
