@@ -37,6 +37,7 @@
 #include "tsCerrReport.h"
 
 namespace ts {
+
     class DektecDeviceInfo;
 
     //!

@@ -63,11 +63,10 @@ namespace ts {
         virtual BitRate getBitrate() override;
 
     private:
-
-#if !defined(TS_NO_DTAPI)
         class Guts;
         Guts* _guts;
 
+#if !defined(TS_NO_DTAPI)
         // Output start error: log error, detach channel & device, return false.
         bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT
 

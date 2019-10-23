@@ -40,73 +40,16 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Simple virtual methods.
-//----------------------------------------------------------------------------
-
-bool ts::DektecInputPlugin::isRealTime()
-{
-    return true;
-}
-
-size_t ts::DektecInputPlugin::stackUsage() const
-{
-    return 512 * 1024; // 512 kB
-}
-
-
-//----------------------------------------------------------------------------
-// Stubs when compiled without Dektec support.
+// Class internals.
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_DTAPI)
 
-ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI device", u"[options]"),
-    _guts(nullptr)
+class ts::DektecInputPlugin::Guts
 {
-}
-
-ts::DektecInputPlugin::~DektecInputPlugin()
-{
-}
-
-bool ts::DektecInputPlugin::getOptions()
-{
-    return true;
-}
-
-bool ts::DektecInputPlugin::start()
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return false;
-}
-
-bool ts::DektecInputPlugin::configureLNB()
-{
-    return false;
-}
-
-bool ts::DektecInputPlugin::stop()
-{
-    return true;
-}
-
-ts::BitRate ts::DektecInputPlugin::getBitrate()
-{
-    return 0;
-}
-
-size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return 0;
-}
+};
 
 #else
-
-//----------------------------------------------------------------------------
-// Class internals.
-//----------------------------------------------------------------------------
 
 class ts::DektecInputPlugin::Guts
 {
@@ -149,6 +92,22 @@ ts::DektecInputPlugin::Guts::Guts() :
     high_band(false),
     lnb_setup(false)
 {
+}
+
+#endif
+
+//----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+bool ts::DektecInputPlugin::isRealTime()
+{
+    return true;
+}
+
+size_t ts::DektecInputPlugin::stackUsage() const
+{
+    return 512 * 1024; // 512 kB
 }
 
 
@@ -399,6 +358,60 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"ATSC demodulators: indicate the VSB constellation. The default is 8.");
 }
 
+
+//----------------------------------------------------------------------------
+// Input destructor
+//----------------------------------------------------------------------------
+
+ts::DektecInputPlugin::~DektecInputPlugin()
+{
+    if (_guts != nullptr) {
+        stop();
+        delete _guts;
+        _guts = nullptr;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Stubs when compiled without Dektec support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_DTAPI)
+
+bool ts::DektecInputPlugin::getOptions()
+{
+    return true;
+}
+
+bool ts::DektecInputPlugin::start()
+{
+    tsp->error(TS_NO_DTAPI_MESSAGE);
+    return false;
+}
+
+bool ts::DektecInputPlugin::configureLNB()
+{
+    return false;
+}
+
+bool ts::DektecInputPlugin::stop()
+{
+    return true;
+}
+
+ts::BitRate ts::DektecInputPlugin::getBitrate()
+{
+    return 0;
+}
+
+size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
+{
+    tsp->error(TS_NO_DTAPI_MESSAGE);
+    return 0;
+}
+
+#else
 
 //----------------------------------------------------------------------------
 // Command line options method
@@ -790,20 +803,6 @@ bool ts::DektecInputPlugin::stop()
         _guts->is_started = false;
     }
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Input destructor
-//----------------------------------------------------------------------------
-
-ts::DektecInputPlugin::~DektecInputPlugin()
-{
-    if (_guts != nullptr) {
-        stop();
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 
