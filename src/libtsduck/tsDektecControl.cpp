@@ -34,16 +34,6 @@
 #include "tsDektecVPD.h"
 TSDUCK_SOURCE;
 
-// Portable definitions of LED colors.
-#if defined(TS_NO_DTAPI)
-    #define DTAPI_LED_OFF      0
-    #define DTAPI_LED_GREEN    1
-    #define DTAPI_LED_RED      2
-    #define DTAPI_LED_YELLOW   3
-    #define DTAPI_LED_BLUE     4
-    #define DTAPI_LED_HARDWARE 5
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -76,11 +66,11 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"ports which can be either set in input or output mode.");
 
     option(u"led", 'l', Enumeration({
-        {u"off", DTAPI_LED_OFF},
-        {u"green", DTAPI_LED_GREEN},
-        {u"red", DTAPI_LED_RED},
-        {u"yellow", DTAPI_LED_YELLOW},
-        {u"blue", DTAPI_LED_BLUE},
+        {u"off",      DTAPI_LED_OFF},
+        {u"green",    DTAPI_LED_GREEN},
+        {u"red",      DTAPI_LED_RED},
+        {u"yellow",   DTAPI_LED_YELLOW},
+        {u"blue",     DTAPI_LED_BLUE},
         {u"hardware", DTAPI_LED_HARDWARE},
     }));
     help(u"led", u"state",

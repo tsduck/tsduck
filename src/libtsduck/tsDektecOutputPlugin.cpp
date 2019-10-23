@@ -38,59 +38,20 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+#define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
 
-//----------------------------------------------------------------------------
-// Simple virtual methods.
-//----------------------------------------------------------------------------
-
-bool ts::DektecOutputPlugin::isRealTime()
-{
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Stubs when compiled without Dektec support.
-//----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-
-ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device", u"[options]")
-{
-}
-
-ts::DektecOutputPlugin::~DektecOutputPlugin()
-{
-}
-
-bool ts::DektecOutputPlugin::start()
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return false;
-}
-
-bool ts::DektecOutputPlugin::stop()
-{
-    return true;
-}
-
-ts::BitRate ts::DektecOutputPlugin::getBitrate()
-{
-    return 0;
-}
-
-bool ts::DektecOutputPlugin::send(const TSPacket*, const TSPacketMetadata*, size_t)
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return false;
-}
-
-#else
 
 //----------------------------------------------------------------------------
 // Class internals.
 //----------------------------------------------------------------------------
+
+#if defined(TS_NO_DTAPI)
+
+class ts::DektecOutputPlugin::Guts
+{
+};
+
+#else
 
 class ts::DektecOutputPlugin::Guts
 {
@@ -116,7 +77,6 @@ public:
     bool                 maintain_preload;   // Roughly maintain the buffer size if the FIFO is preloaded prior to starting transmission
 };
 
-
 ts::DektecOutputPlugin::Guts::Guts() :
     starting(false),
     is_started(false),
@@ -138,7 +98,17 @@ ts::DektecOutputPlugin::Guts::Guts() :
 {
 }
 
-#define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
+#endif
+
+//----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+bool ts::DektecOutputPlugin::isRealTime()
+{
+    return true;
+}
+
 
 //----------------------------------------------------------------------------
 // Output constructor
@@ -790,6 +760,50 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"available, 32 taps produces acceptable results, too. ");
 }
 
+
+//----------------------------------------------------------------------------
+// Output destructor
+//----------------------------------------------------------------------------
+
+ts::DektecOutputPlugin::~DektecOutputPlugin()
+{
+    if (_guts != nullptr) {
+        stop();
+        delete _guts;
+        _guts = nullptr;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Stubs when compiled without Dektec support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_DTAPI)
+
+bool ts::DektecOutputPlugin::start()
+{
+    tsp->error(TS_NO_DTAPI_MESSAGE);
+    return false;
+}
+
+bool ts::DektecOutputPlugin::stop()
+{
+    return true;
+}
+
+ts::BitRate ts::DektecOutputPlugin::getBitrate()
+{
+    return 0;
+}
+
+bool ts::DektecOutputPlugin::send(const TSPacket*, const TSPacketMetadata*, size_t)
+{
+    tsp->error(TS_NO_DTAPI_MESSAGE);
+    return false;
+}
+
+#else
 
 //----------------------------------------------------------------------------
 // Output start method
@@ -1488,20 +1502,6 @@ bool ts::DektecOutputPlugin::stop()
         tsp->verbose(u"%s output terminated", {_guts->device.model});
     }
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Output destructor
-//----------------------------------------------------------------------------
-
-ts::DektecOutputPlugin::~DektecOutputPlugin()
-{
-    if (_guts != nullptr) {
-        stop();
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 
