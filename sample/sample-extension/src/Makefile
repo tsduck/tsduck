@@ -14,7 +14,7 @@ include $(SYSPREFIX)/include/tsduck/tsduck.mk
 
 # Default installation directory prefix.
 # RPM packagers should override this in the "make install" command line.
-DESTDIR := 
+DESTDIR :=
 
 # Compilation rules for shared libraries.
 %.so: %.o

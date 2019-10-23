@@ -35,7 +35,7 @@ include ../Makefile.tsduck
 
 # By default, download and expand LinuxSDK if necessary.
 # This SDK is only available on Windows and some flavors of Linux.
-DTAPI_TARGET := $(if $(shell ./dtapi-config.sh --support),dtapi,)
+DTAPI_TARGET := $(if $(NODTAPI),,$(if $(shell ./dtapi-config.sh --support),dtapi,))
 
 default: $(DTAPI_TARGET)
 	@true
@@ -51,7 +51,7 @@ DTNAME_FILE = LinuxSDK.version
 # If DTAPI_ORIGIN is defined (on the make command line for instance), it is the
 # path of a local copy of LinuxSDK*.tar.gz which is used instead of download.
 # The name of the tarball is either from DTAPI_ORIGIN, LinuxSDK.version or empty.
-DTAPI_URL = $(shell cat $(DTNAME_FILE))
+DTAPI_URL = $(file <$(DTNAME_FILE))
 DTAPI_FILE = $(if $(wildcard $(DTAPI_ORIGIN)),$(notdir $(DTAPI_ORIGIN)),$(if $(wildcard $(DTNAME_FILE)),$(notdir $(DTAPI_URL)),))
 
 # The tarball file always expands as LinuxSDK.
@@ -68,7 +68,7 @@ sdkfile: $(if $(wildcard $(DTAPI_ORIGIN)),copy,download)
 
 # Get full URL of LinuxSDK.
 geturl:
-	./get-dektec-linux-sdk-url.sh >$(DTNAME_FILE)
+	./dtapi-config.sh --url >$(DTNAME_FILE)
 
 # Forced expand of LinuxSDK.
 expand:

@@ -1,4 +1,4 @@
-﻿The following people are contributing or have contributed to TSDuck:
+The following people are contributing or have contributed to TSDuck:
 
 Thierry Lelégard (original author, current maintainer)
 Jérôme Lévèque

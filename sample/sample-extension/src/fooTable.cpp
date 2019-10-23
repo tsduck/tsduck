@@ -96,7 +96,7 @@ void foo::FooTable::serializeContent(ts::DuckContext& duck, ts::BinaryTable& tab
     size_t name_index = 0;
     size_t desc_index = 0;
     uint8_t payload[ts::MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    
+
     // Build sections until name and descriptors are all gone.
     // Make sure to build at least one section.
     do {
@@ -139,7 +139,7 @@ void foo::FooTable::DisplaySection(ts::TablesDisplay& display, const ts::Section
 
     const uint16_t id = section.tableIdExtension();
     const ts::UString name(ts::UString::FromDVBWithByteLength(data, size, display.duck().dvbCharsetIn()));
-    
+
     strm << ts::UString::Format(u"%*sFoo id: 0x%X (%d), name: \"%s\"", {indent, u"", id, id, name}) << std::endl;
 
     if (size >= 2) {
