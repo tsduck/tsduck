@@ -118,6 +118,48 @@ void ts::TSPacket::SanityCheck()
 }
 
 //----------------------------------------------------------------------------
+// TS packet copy functions.
+//----------------------------------------------------------------------------
+
+// Init this packet from a memory area.
+void  ts::TSPacket::copyFrom(const void* source)
+{
+    assert(source != nullptr);
+    ::memcpy(b, source, PKT_SIZE);
+}
+
+// Copy this packet content to a memory area.
+void ts::TSPacket::copyTo(void* dest) const
+{
+    assert(dest != nullptr);
+    ::memcpy(dest, b, PKT_SIZE);
+}
+
+// Static method to copy contiguous TS packets.
+void ts::TSPacket::Copy(TSPacket* dest, const TSPacket* source, size_t count)
+{
+    assert(dest != nullptr);
+    assert(source != nullptr);
+    ::memcpy(dest->b, source->b, count * PKT_SIZE);
+}
+
+// Static method to copy contiguous TS packets from raw memory.
+void ts::TSPacket::Copy(TSPacket* dest, const uint8_t* source, size_t count)
+{
+    assert(dest != nullptr);
+    assert(source != nullptr);
+    ::memcpy(dest->b, source, count * PKT_SIZE);
+}
+
+// Static method to copy contiguous TS packets into raw memory.
+void ts::TSPacket::Copy(uint8_t* dest, const TSPacket* source, size_t count)
+{
+    assert(dest != nullptr);
+    assert(source != nullptr);
+    ::memcpy(dest, source->b, count * PKT_SIZE);
+}
+
+//----------------------------------------------------------------------------
 // Initialize a TS packet.
 //----------------------------------------------------------------------------
 

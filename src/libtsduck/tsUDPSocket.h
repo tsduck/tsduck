@@ -38,7 +38,7 @@
 #include "tsIPUtils.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 
 namespace ts {
     //!

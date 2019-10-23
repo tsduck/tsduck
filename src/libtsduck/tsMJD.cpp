@@ -34,7 +34,7 @@
 #include "tsMJD.h"
 #include "tsBCD.h"
 #include "tsTime.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

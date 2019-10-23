@@ -30,7 +30,7 @@
 #include "tsTCPSocket.h"
 #include "tsIPUtils.h"
 #include "tsGuard.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsException.h"
 TSDUCK_SOURCE;
 

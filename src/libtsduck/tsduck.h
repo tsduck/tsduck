@@ -273,7 +273,7 @@
 #include "tsMain.h"
 #include "tsMaximumBitrateDescriptor.h"
 #include "tsMD5.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsMessageDescriptor.h"
 #include "tsMessagePriorityQueue.h"
 #include "tsMessageQueue.h"

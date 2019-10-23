@@ -29,7 +29,7 @@
 
 #include "tsThread.h"
 #include "tsGuard.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"

@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Analysis (deserialization) of TLV messages.
-//
-//----------------------------------------------------------------------------
 
 #include "tstlvAnalyzer.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

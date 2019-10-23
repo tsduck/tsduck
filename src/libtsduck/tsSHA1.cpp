@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA1.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))

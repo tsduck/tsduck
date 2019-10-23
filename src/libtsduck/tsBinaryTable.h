@@ -291,11 +291,7 @@ namespace ts {
         //! @param [in] index Index of the section to get.
         //! @return A safe pointer to the section or a null pointer if the specified section is not present.
         //!
-        const SectionPtr& sectionAt(size_t index) const
-        {
-            assert(index < _sections.size());
-            return _sections[index];
-        }
+        const SectionPtr& sectionAt(size_t index) const;
 
         //!
         //! Check if this is a table with one short section.

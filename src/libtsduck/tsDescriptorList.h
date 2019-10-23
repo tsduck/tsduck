@@ -147,22 +147,14 @@ namespace ts {
         //! @param [in] index Index in the list. Valid index are 0 to count()-1.
         //! @return A reference to the descriptor at @a index.
         //!
-        const DescriptorPtr& operator[](size_t index) const
-        {
-            assert(index < _list.size());
-            return _list[index].desc;
-        }
+        const DescriptorPtr& operator[](size_t index) const;
 
         //!
         //! Return the "private data specifier" associated to a descriptor in the list.
         //! @param [in] index Index of a descriptor in the list. Valid index are 0 to count()-1.
         //! @return The "private data specifier" associated to a descriptor at @a index.
         //!
-        PDS privateDataSpecifier(size_t index) const
-        {
-            assert(index < _list.size());
-            return _list[index].pds;
-        }
+        PDS privateDataSpecifier(size_t index) const;
 
         //!
         //! Add one descriptor at end of list

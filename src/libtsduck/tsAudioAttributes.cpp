@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAudioAttributes.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

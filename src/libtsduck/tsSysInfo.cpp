@@ -29,7 +29,7 @@
 
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #if defined(TS_MAC)
 #include "tsMacPList.h"
 #include <sys/param.h>

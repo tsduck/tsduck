@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  MPEG Program Clock Reference (PCR) utilities
-//
-//----------------------------------------------------------------------------
 
 #include "tsPCR.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

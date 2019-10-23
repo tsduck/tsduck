@@ -38,7 +38,7 @@
 #include "tsSysUtils.h"
 #include "tsSignalAllocator.h"
 #include "tsNullReport.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsDTVProperties.h"
 TSDUCK_SOURCE;
 

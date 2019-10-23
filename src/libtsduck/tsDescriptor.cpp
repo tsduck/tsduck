@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDescriptor.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsAbstractDescriptor.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"

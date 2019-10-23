@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA256.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))

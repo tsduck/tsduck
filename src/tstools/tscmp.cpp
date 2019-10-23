@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsBinaryTable.h"
 #include "tsSection.h"

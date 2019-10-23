@@ -33,7 +33,7 @@
 
 #include "tsTSPacket.h"
 #include "tsByteBlock.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 

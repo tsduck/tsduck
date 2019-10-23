@@ -62,11 +62,7 @@ namespace ts {
         //! @param [in] index Index of a demuxed table, from 0 to tableCount()-1.
         //! @return A safe pointer to the corresponding table.
         //!
-        const BinaryTablePtr& tableAt(size_t index) const
-        {
-            assert(index < _tables.size());
-            return _tables[index];
-        }
+        const BinaryTablePtr& tableAt(size_t index) const;
 
         //! @copydoc SectionDemux::reset()
         virtual void reset() override;
@@ -83,7 +79,7 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Make these methods inaccessible
-        void setHandler(TableHandlerInterface*);
-        void setHandler(SectionHandlerInterface*);
+        void setHandler(TableHandlerInterface*) = delete;
+        void setHandler(SectionHandlerInterface*) = delete;
     };
 }

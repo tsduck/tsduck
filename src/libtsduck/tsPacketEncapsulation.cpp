@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPacketEncapsulation.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)

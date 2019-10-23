@@ -28,7 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDektecVPD.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NO_DTAPI)

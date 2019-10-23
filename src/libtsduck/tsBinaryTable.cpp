@@ -217,6 +217,17 @@ bool ts::BinaryTable::operator==(const BinaryTable& table) const
 
 
 //----------------------------------------------------------------------------
+// Get a pointer to a section.
+//----------------------------------------------------------------------------
+
+const ts::SectionPtr& ts::BinaryTable::sectionAt(size_t index) const
+{
+    assert(index < _sections.size());
+    return _sections[index];
+}
+
+
+//----------------------------------------------------------------------------
 // Implementation of AbstractDefinedByStandards.
 //----------------------------------------------------------------------------
 

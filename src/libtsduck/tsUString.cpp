@@ -55,6 +55,43 @@ const ts::UString ts::UString::EMPTY;
 
 
 //----------------------------------------------------------------------------
+// Conversions with Windows Unicode strings (Windows-specific).
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
+
+// Constructor using a Windows Unicode string.
+ts::UString::UString(const ::WCHAR* s, size_type count, const allocator_type& alloc) :
+    UString(reinterpret_cast<const UChar*>(s), count, alloc)
+{
+    assert(sizeof(::WCHAR) == sizeof(UChar));
+}
+
+// Constructor using a Windows Unicode string.
+ts::UString::UString(const ::WCHAR* s, const allocator_type& alloc) :
+    UString(s == 0 ? &CHAR_NULL : reinterpret_cast<const UChar*>(s), alloc)
+{
+    assert(sizeof(::WCHAR) == sizeof(UChar));
+}
+
+// Get the address of the underlying null-terminated Unicode string.
+const ::WCHAR* ts::UString::wc_str() const
+{
+    assert(sizeof(::WCHAR) == sizeof(UChar));
+    return reinterpret_cast<const ::WCHAR*>(data());
+}
+
+// Get the address of the underlying null-terminated Unicode string.
+::WCHAR* ts::UString::wc_str()
+{
+    assert(sizeof(::WCHAR) == sizeof(UChar));
+    return reinterpret_cast<::WCHAR*>(const_cast<UChar*>(data()));
+}
+
+#endif
+
+
+//----------------------------------------------------------------------------
 // General routine to convert from UTF-16 to UTF-8.
 //----------------------------------------------------------------------------
 

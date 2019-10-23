@@ -36,7 +36,7 @@
 #include "tsStringifyInterface.h"
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 
 namespace ts {
     //!

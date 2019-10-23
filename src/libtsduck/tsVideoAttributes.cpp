@@ -26,12 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Video attributes for MPEG-1 and MPEG-2.
-//
-//----------------------------------------------------------------------------
 
 #include "tsVideoAttributes.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

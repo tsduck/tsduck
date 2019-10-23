@@ -36,7 +36,7 @@
 #include "tsHFBand.h"
 #include "tsMediaTypeUtils.h"
 #include "tsWinUtils.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 

@@ -70,6 +70,7 @@ HEADERS += \
     ../../../src/libtsduck/tsBitrateDifferenceDVBT.h \
     ../../../src/libtsduck/tsBitRateRegulator.h \
     ../../../src/libtsduck/tsBitStream.h \
+    ../../../src/libtsduck/tsBitStreamTemplate.h \
     ../../../src/libtsduck/tsBlockCipher.h \
     ../../../src/libtsduck/tsBlockCipherAlertInterface.h \
     ../../../src/libtsduck/tsBouquetNameDescriptor.h \
@@ -263,7 +264,8 @@ HEADERS += \
     ../../../src/libtsduck/tsMain.h \
     ../../../src/libtsduck/tsMaximumBitrateDescriptor.h \
     ../../../src/libtsduck/tsMD5.h \
-    ../../../src/libtsduck/tsMemoryUtils.h \
+    ../../../src/libtsduck/tsMemory.h \
+    ../../../src/libtsduck/tsMemoryTemplate.h \
     ../../../src/libtsduck/tsMessageDescriptor.h \
     ../../../src/libtsduck/tsMessagePriorityQueue.h \
     ../../../src/libtsduck/tsMessagePriorityQueueTemplate.h \
@@ -595,6 +597,7 @@ SOURCES += \
     ../../../src/libtsduck/tsBinaryTable.cpp \
     ../../../src/libtsduck/tsBitrateDifferenceDVBT.cpp \
     ../../../src/libtsduck/tsBitRateRegulator.cpp \
+    ../../../src/libtsduck/tsBitStream.cpp \
     ../../../src/libtsduck/tsBlockCipher.cpp \
     ../../../src/libtsduck/tsBlockCipherAlertInterface.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
@@ -761,7 +764,7 @@ SOURCES += \
     ../../../src/libtsduck/tsMACAddress.cpp \
     ../../../src/libtsduck/tsMaximumBitrateDescriptor.cpp \
     ../../../src/libtsduck/tsMD5.cpp \
-    ../../../src/libtsduck/tsMemoryUtils.cpp \
+    ../../../src/libtsduck/tsMemory.cpp \
     ../../../src/libtsduck/tsMessageDescriptor.cpp \
     ../../../src/libtsduck/tsMGT.cpp \
     ../../../src/libtsduck/tsMJD.cpp \
@@ -808,7 +811,6 @@ SOURCES += \
     ../../../src/libtsduck/tsPESHandlerInterface.cpp \
     ../../../src/libtsduck/tsPESPacket.cpp \
     ../../../src/libtsduck/tsPIDOperator.cpp \
-    ../../../src/libtsduck/tsPlatform.cpp \
     ../../../src/libtsduck/tsPlugin.cpp \
     ../../../src/libtsduck/tsPluginOptions.cpp \
     ../../../src/libtsduck/tsPluginRepository.cpp \

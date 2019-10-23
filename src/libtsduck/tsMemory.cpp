@@ -26,10 +26,69 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//
+//  Utility routines for memory operations.
+//
+//----------------------------------------------------------------------------
 
-#include "tsPlatform.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
+
+//----------------------------------------------------------------------------
+// Check if a memory area starts with the specified prefix
+//----------------------------------------------------------------------------
+
+bool ts::StartsWith(const void* area, size_t area_size, const void* prefix, size_t prefix_size)
+{
+    if (prefix_size == 0 || area_size < prefix_size) {
+        return false;
+    }
+    else {
+        return ::memcmp(area, prefix, prefix_size) == 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Locate a pattern into a memory area. Return 0 if not found
+//----------------------------------------------------------------------------
+
+const void* ts::LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size)
+{
+    if (pattern_size > 0) {
+        const uint8_t* a = reinterpret_cast<const uint8_t*>(area);
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(pattern);
+        while (area_size >= pattern_size) {
+            if (*a == *p && ::memcmp(a, p, pattern_size) == 0) {
+                return a;
+            }
+            ++a;
+            --area_size;
+        }
+    }
+    return nullptr; // not found
+}
+
+//----------------------------------------------------------------------------
+// Check if a memory area contains all identical byte values.
+//----------------------------------------------------------------------------
+
+bool ts::IdenticalBytes(const void * area, size_t area_size)
+{
+    if (area_size < 2) {
+        return false;
+    }
+    else {
+        const uint8_t* d = reinterpret_cast<const uint8_t*>(area);
+        for (size_t i = 0; i < area_size - 1; ++i) {
+            if (d[i] != d[i + 1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
 
 //----------------------------------------------------------------------------
 // Memory access with strict alignment.
