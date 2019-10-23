@@ -29,9 +29,13 @@
 #-----------------------------------------------------------------------------
 #
 #  Get configuration for DTAPI on current Linux system.
-#  Options: --header --object --support
+#  Options: --header --object --url --support
 #
 #-----------------------------------------------------------------------------
+
+URL_BASE=https://www.dektec.com
+HTML_URL=$URL_BASE/downloads/SDK/
+GENERIC_URL=$URL_BASE/products/SDK/DTAPI/Downloads/LatestLinuxSDK
 
 SCRIPT=$(basename $BASH_SOURCE)
 ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
@@ -42,6 +46,9 @@ error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 # Check if DTAPI is supported on the current system.
 dtapi-support()
 {
+    # Environment variable NODTAPI disables the usage of DTAPI.
+    [[ -n "$NODTAPI" ]] && return -1
+
     # DTAPI is supported in Linux only.
     [[ $(uname -s) == Linux ]] || return -1
 
@@ -83,6 +90,9 @@ get-object()
     # Get DTAPI support on this system.
     dtapi-support || return 0
 
+    # Check that DTAPI binaries are present.
+    [[ -d "$DTAPIDIR/Lib" ]] || return 0
+
     # Get GCC version as an integer.
     if [[ -z "$GCCVERSION" ]]; then
         local GCC=$(which gcc 2>/dev/null)
@@ -115,6 +125,58 @@ get-object()
     [[ -n "$OBJFILE" ]] && echo "$OBJFILE"
 }
 
+# Merge an URL with its base.
+# The base is the argument. The URL is read from stdin.
+merge-url()
+{
+    local ref="$1"
+    local url
+    read url
+
+    if [[ -n "$url" ]]; then
+        if [[ $url == *:* ]]; then
+            echo "$url"
+        elif [[ $url == /* ]]; then
+            echo "$URL_BASE$url"
+        elif [[ $ref == */ ]]; then
+            echo "$ref$url"
+        else
+            ref=$(dirname "$ref")
+            echo "$ref/$url"
+        fi
+    fi
+}
+
+# Retrieve the URL using the redirection from a fixed generic URL.
+# This should be the preferred method but Dektec may forget to update
+# the redirection in the generic URL.
+get-url-from-redirection()
+{
+    curl --silent --show-error --dump-header /dev/stdout "$GENERIC_URL" | \
+        grep -i 'Location:' | \
+        sed -e 's/.*: *//' -e 's/\r//g' | \
+        merge-url "$GENERIC_URL"
+}
+
+# Retrieve the URL by parsing the HTML from the Dektec download web page.
+get-url-from-html-page()
+{
+    curl --silent --show-error --location "$HTML_URL" | \
+        grep 'href=".*LinuxSDK' | \
+        sed -e 's/.*href="//' -e 's/".*//' | \
+        merge-url "$HTML_URL"
+}
+
+# Get Dektec LinuxSDK URL.
+get-url()
+{
+    # Try the HTML parsing first, then redirection.
+    URL=$(get-url-from-html-page)
+    [[ -z "$URL" ]] && URL=$(get-url-from-redirection)
+    [[ -z "$URL" ]] && error "cannot locate LinuxSDK location from Dektec"
+    echo "$URL"
+}
+
 # Main command
 case "$1" in
     --header)
@@ -123,8 +185,11 @@ case "$1" in
     --object)
         get-object
         ;;
+    --url)
+        get-url
+        ;;
     --support)
-        dtapi-support && echo supported        
+        dtapi-support && echo supported
         ;;
     -*)
         error "invalid option: $1"
@@ -132,6 +197,7 @@ case "$1" in
     *)
         echo "DTAPI_HEADER=$(get-header)"
         echo "DTAPI_OBJECT=$(get-object)"
+        echo "DTAPI_URL=$(get-url)"
         ;;
 esac
 exit 0

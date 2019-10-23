@@ -23,7 +23,7 @@ namespace foo {
     enum : ts::TID {
         TID_FOOT = 0xF0,   // Table id for Foo Table (FOOT).
     };
-    
+
     // Specific descriptor tags values for "foo".
     enum : ts::DID {
         DID_FOO = 0xE8,    // Descriptor id for foo_descriptor.

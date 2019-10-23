@@ -127,38 +127,3 @@ uint8_t ts::BitStream::readBit(uint8_t def)
         return b;
     }
 }
-
-
-//----------------------------------------------------------------------------
-// Read the next n bits as an integer value and advance the bitstream pointer.
-//----------------------------------------------------------------------------
-
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-INT read(size_t n, INT def = 0)
-{
-    if (_next_bit + n > _end_bit) {
-        return def;
-    }
-    INT val = 0;
-
-    // Read leading bits up to byte boundary
-    while (n > 0 && (_next_bit & 0x07) != 0) {
-        val = INT(val << 1) | INT(readBit());
-        --n;
-    }
-
-    // Read complete bytes
-    const uint8_t* byte = _base + (_next_bit >> 3);
-    while (n > 7) {
-        val = INT(val << 8) | INT(*byte++);
-        _next_bit += 8;
-        n -= 8;
-    }
-
-    // Read trailing bits
-    while (n > 0) {
-        val = INT(val << 1) | INT(readBit());
-        --n;
-    }
-    return val;
-}
