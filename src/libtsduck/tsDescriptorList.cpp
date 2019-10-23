@@ -169,6 +169,27 @@ void ts::DescriptorList::add(const void* data, size_t size)
     }
 }
 
+//----------------------------------------------------------------------------
+// Get a reference to the descriptor at a specified index.
+//----------------------------------------------------------------------------
+
+const ts::DescriptorPtr& ts::DescriptorList::operator[](size_t index) const
+{
+    assert(index < _list.size());
+    return _list[index].desc;
+}
+
+
+//----------------------------------------------------------------------------
+// Return the "private data specifier" associated to a descriptor in the list.
+//----------------------------------------------------------------------------
+
+ts::PDS ts::DescriptorList::privateDataSpecifier(size_t index) const
+{
+    assert(index < _list.size());
+    return _list[index].pds;
+}
+
 
 //----------------------------------------------------------------------------
 // Prepare removal of a private_data_specifier descriptor.

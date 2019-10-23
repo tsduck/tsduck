@@ -33,7 +33,7 @@
 
 #include "tsForkPipe.h"
 #include "tsNullReport.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 

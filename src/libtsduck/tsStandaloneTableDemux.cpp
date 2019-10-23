@@ -47,6 +47,17 @@ ts::StandaloneTableDemux::StandaloneTableDemux(DuckContext& duck, const PIDSet& 
 
 
 //----------------------------------------------------------------------------
+// Get a pointer to a demuxed table.
+//----------------------------------------------------------------------------
+
+const ts::BinaryTablePtr& ts::StandaloneTableDemux::tableAt(size_t index) const
+{
+    assert(index < _tables.size());
+    return _tables[index];
+}
+
+
+//----------------------------------------------------------------------------
 // Reset the analysis context (partially built sections and tables).
 // Inherited from SectionDemux
 //----------------------------------------------------------------------------

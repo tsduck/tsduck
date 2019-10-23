@@ -36,7 +36,7 @@
 #include "tsTime.h"
 #include "tstlvSerializer.h"
 #include "tstlvMessageFactory.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 
 namespace ts {
     //!

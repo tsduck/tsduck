@@ -35,7 +35,7 @@
 #include "tsTablesFactory.h"
 #include "tsCRC32.h"
 #include "tsNames.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
 

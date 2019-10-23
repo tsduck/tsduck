@@ -30,7 +30,7 @@
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowTest.h"
 #include "tsMediaTypeUtils.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 

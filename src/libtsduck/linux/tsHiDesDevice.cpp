@@ -82,7 +82,7 @@
 #include "tsIT950x.h"
 #include "tsHiDesDevice.h"
 #include "tsNullReport.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsSysUtils.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;

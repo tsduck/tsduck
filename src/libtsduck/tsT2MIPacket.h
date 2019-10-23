@@ -261,11 +261,7 @@ namespace ts {
         //! Size of the payload of the packet in bytes.
         //! @return Size of the payload of the packet in bytes.
         //!
-        size_t payloadSize() const
-        {
-            assert(!_is_valid || _data->size() >= T2MI_HEADER_SIZE + SECTION_CRC32_SIZE);
-            return _is_valid ? _data->size() - T2MI_HEADER_SIZE - SECTION_CRC32_SIZE : 0;
-        }
+        size_t payloadSize() const;
 
         //!
         //! Get the T2-MI packet type.

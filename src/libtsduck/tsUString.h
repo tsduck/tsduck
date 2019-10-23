@@ -334,22 +334,14 @@ namespace ts {
         //! @param [in] count Number of characters to copy from @a s. That number of characters is always copied, including null characters.
         //! @param [in] alloc Allocator.
         //!
-        UString(const ::WCHAR* s, size_type count, const allocator_type& alloc = allocator_type()) :
-            UString(reinterpret_cast<const UChar*>(s), count, alloc)
-        {
-            assert(sizeof(::WCHAR) == sizeof(UChar));
-        }
+        UString(const ::WCHAR* s, size_type count, const allocator_type& alloc = allocator_type());
 
         //!
         //! Constructor using a null-terminated Windows Unicode string (Windows-specific).
         //! @param [in] s Address of a null-terminated string. Can be a null pointer, in which case the string is empty.
         //! @param [in] alloc Allocator.
         //!
-        UString(const ::WCHAR* s, const allocator_type& alloc = allocator_type()) :
-            UString(s == 0 ? &CHAR_NULL : reinterpret_cast<const UChar*>(s), alloc)
-        {
-            assert(sizeof(::WCHAR) == sizeof(UChar));
-        }
+        UString(const ::WCHAR* s, const allocator_type& alloc = allocator_type());
 #endif
 
 #if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION) || defined(DOXYGEN)
@@ -656,21 +648,13 @@ namespace ts {
         //! Get the address of the underlying null-terminated Unicode string (Windows-specific).
         //! @return The address of the underlying null-terminated Unicode string .
         //!
-        const ::WCHAR* wc_str() const
-        {
-            assert(sizeof(::WCHAR) == sizeof(UChar));
-            return reinterpret_cast<const ::WCHAR*>(data());
-        }
+        const ::WCHAR* wc_str() const;
 
         //!
         //! Get the address of the underlying null-terminated Unicode string (Windows-specific).
         //! @return The address of the underlying null-terminated Unicode string .
         //!
-        ::WCHAR* wc_str()
-        {
-            assert(sizeof(::WCHAR) == sizeof(UChar));
-            return reinterpret_cast<::WCHAR*>(const_cast<UChar*>(data()));
-        }
+        ::WCHAR* wc_str();
 #endif
 
         //!

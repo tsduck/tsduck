@@ -72,6 +72,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsBitrateDifferenceDVBT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBitRateRegulator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBitStream.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsBitStreamTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBlockCipher.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBlockCipherAlertInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBouquetNameDescriptor.h" />
@@ -265,7 +266,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsMain.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMemory.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMemoryTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessagePriorityQueueTemplate.h" />
@@ -609,6 +611,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsBinaryTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBitrateDifferenceDVBT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBitRateRegulator.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsBitStream.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBlockCipher.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBlockCipherAlertInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBouquetNameDescriptor.cpp" />
@@ -775,7 +778,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMACAddress.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMD5.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsMemoryUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMemory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMessageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMGT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMJD.cpp" />
@@ -822,7 +825,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsPESHandlerInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPESPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPIDOperator.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsPlatform.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPluginRepository.cpp" />

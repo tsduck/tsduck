@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPESDemux.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 TSDUCK_SOURCE;

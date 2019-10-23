@@ -31,7 +31,7 @@
 #include "tsIPUtils.h"
 #include "tsException.h"
 #include "tsNullReport.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

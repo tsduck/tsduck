@@ -41,7 +41,7 @@
 #include "tsCondition.h"
 #include "tsMutex.h"
 #include "tsThread.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 
 namespace ts {
 

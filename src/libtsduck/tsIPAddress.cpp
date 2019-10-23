@@ -33,7 +33,7 @@
 
 #include "tsIPAddress.h"
 #include "tsIPUtils.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 // Local host address

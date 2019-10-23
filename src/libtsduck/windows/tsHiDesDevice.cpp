@@ -34,7 +34,7 @@
 #include "tsIT950x.h"
 #include "tsHiDesDevice.h"
 #include "tsDirectShowUtils.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsNullReport.h"
 #include "tsMPEG.h"
 #include <winioctl.h>

@@ -29,7 +29,7 @@
 
 #include "tsSysUtils.h"
 #include "tsStaticInstance.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsUID.h"
 #include "tsTime.h"
 #include "tsMutex.h"

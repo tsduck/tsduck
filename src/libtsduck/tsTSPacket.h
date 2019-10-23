@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsMPEG.h"
+#include "tsMemory.h"
 #include "tsCerrReport.h"
 #include "tsException.h"
 
@@ -813,21 +814,13 @@ namespace ts {
         //! Init packet from a memory area.
         //! @param [in] source Address of the memory area to read. Must contain at least PKT_SIZE bytes.
         //!
-        void copyFrom(const void* source)
-        {
-            assert(source != nullptr);
-            ::memcpy(b, source, PKT_SIZE);
-        }
+        void copyFrom(const void* source);
 
         //!
         //! Copy packet content to a memory area.
         //! @param [out] dest Address of the memory area to write. Must contain at least PKT_SIZE bytes.
         //!
-        void copyTo(void* dest) const
-        {
-            assert(dest != nullptr);
-            ::memcpy(dest, b, PKT_SIZE);
-        }
+        void copyTo(void* dest) const;
 
         //!
         //! Copy contiguous TS packets.
@@ -835,12 +828,7 @@ namespace ts {
         //! @param [in] source Address of the first contiguous TS packet to read.
         //! @param [in] count Number of TS packets to copy.
         //!
-        static void Copy(TSPacket* dest, const TSPacket* source, size_t count = 1)
-        {
-            assert(dest != nullptr);
-            assert(source != nullptr);
-            ::memcpy(dest->b, source->b, count * PKT_SIZE);
-        }
+        static void Copy(TSPacket* dest, const TSPacket* source, size_t count = 1);
 
         //!
         //! Copy contiguous TS packets from raw memory.
@@ -848,12 +836,7 @@ namespace ts {
         //! @param [in] source Address of the memory area to read.
         //! @param [in] count Number of TS packets to copy.
         //!
-        static void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1)
-        {
-            assert(dest != nullptr);
-            assert(source != nullptr);
-            ::memcpy(dest->b, source, count * PKT_SIZE);
-        }
+        static void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1);
 
         //!
         //! Copy contiguous TS packets into raw memory.
@@ -861,12 +844,7 @@ namespace ts {
         //! @param [in] source Address of the first contiguous TS packet to read.
         //! @param [in] count Number of TS packets to copy.
         //!
-        static void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1)
-        {
-            assert(dest != nullptr);
-            assert(source != nullptr);
-            ::memcpy(dest, source->b, count * PKT_SIZE);
-        }
+        static void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1);
 
         //!
         //! Sanity check routine.

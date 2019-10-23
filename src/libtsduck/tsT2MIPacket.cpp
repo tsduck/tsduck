@@ -201,3 +201,14 @@ bool ts::T2MIPacket::operator==(const T2MIPacket& pp) const
 {
     return _is_valid && pp._is_valid && (_data == pp._data || *_data == *pp._data);
 }
+
+
+//----------------------------------------------------------------------------
+// Size of the payload of the packet in bytes.
+///----------------------------------------------------------------------------
+
+size_t ts::T2MIPacket::payloadSize() const
+{
+    assert(!_is_valid || _data->size() >= T2MI_HEADER_SIZE + SECTION_CRC32_SIZE);
+    return _is_valid ? _data->size() - T2MI_HEADER_SIZE - SECTION_CRC32_SIZE : 0;
+}

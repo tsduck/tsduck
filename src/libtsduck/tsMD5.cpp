@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMD5.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 #define F(x,y,z)  (z ^ (x & (y ^ z)))

@@ -31,7 +31,7 @@
 #include "tsComPtr.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 

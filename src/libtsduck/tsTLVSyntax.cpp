@@ -33,6 +33,7 @@
 
 #include "tsTLVSyntax.h"
 #include "tsIntegerUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

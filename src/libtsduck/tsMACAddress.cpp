@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMACAddress.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

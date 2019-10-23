@@ -34,7 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsMemoryUtils.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 

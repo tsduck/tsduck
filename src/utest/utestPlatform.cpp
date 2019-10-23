@@ -27,11 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for tsPlatform.h
+//  TSUnit test suite for tsPlatform.h and tsMemory.h
 //
 //----------------------------------------------------------------------------
 
 #include "tsPlatform.h"
+#include "tsMemory.h"
 #include "tsVersion.h"
 #include "tsVersionInfo.h"
 #include "tsunit.h"

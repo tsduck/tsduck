@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsMemory.h"
 #include "tsSafePtr.h"
 
 namespace ts {
