@@ -90,9 +90,9 @@ namespace {
         {ts::DS_DVB_C_ANNEX_C, {ts::TT_DVB_C,     DSF_CABLE}},
         {ts::DS_DVB_C2,        {ts::TT_DVB_C,     DSF_CABLE}},
         {ts::DS_DVB_H,         {ts::TT_UNDEFINED, 0}},
-        {ts::DS_ISDB_S,        {ts::TT_UNDEFINED, DSF_SATELLITE}},
-        {ts::DS_ISDB_T,        {ts::TT_UNDEFINED, DSF_TERRESTRIAL}},
-        {ts::DS_ISDB_C,        {ts::TT_UNDEFINED, DSF_CABLE}},
+        {ts::DS_ISDB_S,        {ts::TT_ISDB_S,    DSF_SATELLITE}},
+        {ts::DS_ISDB_T,        {ts::TT_ISDB_T,    DSF_TERRESTRIAL}},
+        {ts::DS_ISDB_C,        {ts::TT_ISDB_C,    DSF_CABLE}},
         {ts::DS_ATSC,          {ts::TT_ATSC,      DSF_TERRESTRIAL | DSF_CABLE}},
         {ts::DS_ATSC_MH,       {ts::TT_UNDEFINED, 0}},
         {ts::DS_DTMB,          {ts::TT_UNDEFINED, DSF_TERRESTRIAL}},
@@ -132,10 +132,13 @@ const ts::Enumeration ts::DeliverySystemEnum({
 });
 
 const ts::Enumeration ts::TunerTypeEnum({
-    {u"DVB-S", ts::TT_DVB_S},
-    {u"DVB-T", ts::TT_DVB_T},
-    {u"DVB-C", ts::TT_DVB_C},
-    {u"ATSC",  ts::TT_ATSC},
+    {u"DVB-S",  ts::TT_DVB_S},
+    {u"DVB-T",  ts::TT_DVB_T},
+    {u"DVB-C",  ts::TT_DVB_C},
+    {u"ISDB-S", ts::TT_ISDB_S},
+    {u"ISDB-T", ts::TT_ISDB_T},
+    {u"ISDB-C", ts::TT_ISDB_C},
+    {u"ATSC",   ts::TT_ATSC},
 });
 
 

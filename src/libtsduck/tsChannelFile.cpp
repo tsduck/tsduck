@@ -744,6 +744,9 @@ ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element
             }
             return e;
         }
+        case TT_ISDB_S:
+        case TT_ISDB_T:
+        case TT_ISDB_C:
         case TT_UNDEFINED:
         default: {
             return nullptr;
