@@ -53,15 +53,13 @@ constexpr size_t ts::Tuner::DEFAULT_SINK_QUEUE_SIZE;
 
 class ts::Tuner::Guts
 {
-    TS_NOBUILD_NOCOPY(Guts);
-private:
-    Tuner*     _parent;             // Parent tuner.
+    TS_NOCOPY(Guts);
 public:
-    size_t     sink_queue_size;     // Media sample queue size
-    TunerGraph graph;               // The filter graph
+    size_t     sink_queue_size;   // Media sample queue size
+    TunerGraph graph;             // The filter graph
 
     // Constructor and destructor.
-    Guts(Tuner* tuner);
+    Guts();
     ~Guts();
 
     // Get signal strength in mdB.
@@ -81,8 +79,7 @@ public:
 // System guts constructor and destructor.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Guts::Guts(Tuner* tuner) :
-    _parent(tuner),
+ts::Tuner::Guts::Guts() :
     sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
     graph()
 {
@@ -99,7 +96,7 @@ ts::Tuner::Guts::~Guts()
 
 void ts::Tuner::allocateGuts()
 {
-    _guts = new Guts(this);
+    _guts = new Guts();
 }
 
 void ts::Tuner::deleteGuts()
@@ -270,7 +267,8 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
     bool found = false;
     switch (ttype) {
 
-        case TT_DVB_S: {
+        case TT_DVB_S:
+        case TT_ISDB_S: {
             // Note: it is useless to get the frequency of a DVB-S tuner since it
             // returns the intermediate frequency and there is no unique satellite
             // frequency for a given intermediate frequency.
@@ -320,7 +318,8 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
             break;
         }
 
-        case TT_DVB_C: {
+        case TT_DVB_C:
+        case TT_ISDB_C: {
             if (reset_unknown) {
                 params.frequency.reset();
             }
@@ -347,7 +346,8 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Rep
             break;
         }
 
-        case TT_DVB_T: {
+        case TT_DVB_T:
+        case TT_ISDB_T: {
             if (reset_unknown) {
                 params.frequency.reset();
             }

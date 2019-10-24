@@ -760,7 +760,8 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
 
     UString desc;
     switch (TunerTypeOf(delivery_system.value())) {
-        case TT_DVB_T: {
+        case TT_DVB_T:
+        case TT_ISDB_T: {
             // Try to resolve UHF/VHF channels.
             const UChar* band = nullptr;
             uint32_t channel = 0;
@@ -798,7 +799,8 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
             }
             break;
         }
-        case TT_DVB_S: {
+        case TT_DVB_S:
+        case TT_ISDB_S: {
             // Display frequency and polarity.
             desc = UString::Format(u"%'d Hz", {frequency.value()});
             if (polarity.set()) {
@@ -832,6 +834,7 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
         }
         case TT_ATSC:
         case TT_DVB_C:
+        case TT_ISDB_C:
         case TT_UNDEFINED:
         default: {
             // Generic display.
@@ -927,6 +930,9 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             }
             break;
         }
+        case TT_ISDB_S:
+        case TT_ISDB_T:
+        case TT_ISDB_C:
         case TT_ATSC:
         case TT_UNDEFINED:
         default: {
@@ -1010,6 +1016,9 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             }
             break;
         }
+        case TT_ISDB_S:
+        case TT_ISDB_T:
+        case TT_ISDB_C:
         case TT_UNDEFINED:
         default: {
             break;
