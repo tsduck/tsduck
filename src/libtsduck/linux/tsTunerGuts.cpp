@@ -1393,7 +1393,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _guts->fe_info.frequency_tolerance), u"Hz");
 
     // Display symbol rate characteristics.
-    if (ttype == TT_DVB_S || ttype == TT_DVB_C) {
+    if (ttype == TT_DVB_S || ttype == TT_DVB_C || ttype == TT_ISDB_S || ttype == TT_ISDB_C) {
         const uint32_t symrate = params.symbol_rate.value(0);
         strm << margin << "Symbol rates:" << std::endl;
         if (symrate > 0) {
