@@ -103,13 +103,17 @@ namespace ts {
         //!
         Variable<uint32_t> symbol_rate;
         //!
-        //! Default value for symbol_rate on satellite.
+        //! Default value for symbol_rate on DVB-S.
         //!
         static constexpr uint32_t DEFAULT_SYMBOL_RATE_DVBS = 27500000;
         //!
-        //! Default value for symbol_rate on cable.
+        //! Default value for symbol_rate on DVB-C.
         //!
         static constexpr uint32_t DEFAULT_SYMBOL_RATE_DVBC = 6900000;
+        //!
+        //! Default value for symbol_rate on ISDB-S.
+        //!
+        static constexpr uint32_t DEFAULT_SYMBOL_RATE_ISDBS = 27500000;
         //!
         //! Error correction.
         //! Applies to: DVB-S/S2, DVB-C (A,C), ISDB-S.
@@ -155,9 +159,13 @@ namespace ts {
         //!
         Variable<BandWidth> bandwidth;
         //!
-        //! Default value for bandwidth on DVBT.
+        //! Default value for bandwidth on DVB-T.
         //!
         static constexpr BandWidth DEFAULT_BANDWIDTH_DVBT = BW_8_MHZ;
+        //!
+        //! Default value for bandwidth on ISDB-T.
+        //!
+        static constexpr BandWidth DEFAULT_BANDWIDTH_ISDBT = BW_6_MHZ;
         //!
         //! High priority stream code rate.
         //! Applies to: DVB-T/T2.
@@ -182,18 +190,26 @@ namespace ts {
         //!
         Variable<TransmissionMode> transmission_mode;
         //!
-        //! Default value for transmission_mode on DVBT.
+        //! Default value for transmission_mode on DVB-T.
         //!
         static constexpr TransmissionMode DEFAULT_TRANSMISSION_MODE_DVBT = TM_8K;
+        //!
+        //! Default value for transmission_mode on ISDB-T.
+        //!
+        static constexpr TransmissionMode DEFAULT_TRANSMISSION_MODE_ISDBT = TM_8K;
         //!
         //! Guard interval.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
         Variable<GuardInterval> guard_interval;
         //!
-        //! Default value for guard_interval on DVBT.
+        //! Default value for guard_interval on DVB-T.
         //!
         static constexpr GuardInterval DEFAULT_GUARD_INTERVAL_DVBT = GUARD_1_32;
+        //!
+        //! Default value for guard_interval on ISDB-T.
+        //!
+        static constexpr GuardInterval DEFAULT_GUARD_INTERVAL_ISDBT = GUARD_1_32;
         //!
         //! Hierarchy.
         //! Applies to: DVB-T/T2.
@@ -258,31 +274,140 @@ namespace ts {
         //! Default value for PLS mode.
         //!
         static constexpr PLSMode DEFAULT_PLS_MODE = PLS_ROOT;
-
-        //@@  Future values for ISDB-T:
-        //@@
-        //@@    DTV_ISDBT_LAYER_ENABLED
-        //@@    DTV_ISDBT_PARTIAL_RECEPTION
-        //@@    DTV_ISDBT_SOUND_BROADCASTING
-        //@@    DTV_ISDBT_SB_SUBCHANNEL_ID
-        //@@    DTV_ISDBT_SB_SEGMENT_IDX
-        //@@    DTV_ISDBT_SB_SEGMENT_COUNT
-        //@@    DTV_ISDBT_LAYERA_FEC
-        //@@    DTV_ISDBT_LAYERA_MODULATION
-        //@@    DTV_ISDBT_LAYERA_SEGMENT_COUNT
-        //@@    DTV_ISDBT_LAYERA_TIME_INTERLEAVING
-        //@@    DTV_ISDBT_LAYERB_FEC
-        //@@    DTV_ISDBT_LAYERB_MODULATION
-        //@@    DTV_ISDBT_LAYERB_SEGMENT_COUNT
-        //@@    DTV_ISDBT_LAYERB_TIME_INTERLEAVING
-        //@@    DTV_ISDBT_LAYERC_FEC
-        //@@    DTV_ISDBT_LAYERC_MODULATION
-        //@@    DTV_ISDBT_LAYERC_SEGMENT_COUNT
-        //@@    DTV_ISDBT_LAYERC_TIME_INTERLEAVING
-        //@@
-        //@@  Future values for ISDB-S:
-        //@@
-        //@@    DTV_ISDBS_TS_ID
+        //!
+        //! Sound broadcasting.
+        //! When specified to true, the reception is an ISDB-Tsb channel instead of an ISDB-T one.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<bool> sound_broadcasting;
+        //!
+        //! Sound broadcasting sub-channel id.
+        //! When @a sound_broadcasting is specified to true, specify the sub-channel ID of the
+        //! segment to be demodulated in the ISDB-Tsb channel. Possible values: 0 to 41.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> sb_subchannel_id;
+        //!
+        //! Default value for ISDB-Tsb sub-channel id.
+        //!
+        static constexpr int DEFAULT_SB_SUBCHANNEL_ID = 0;
+        //!
+        //! Sound broadcasting segment count.
+        //! When @a sound_broadcasting is specified to true, specify the total count of connected ISDB-Tsb channels.
+        //! Possible values: 1 to 13.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> sb_segment_count;
+        //!
+        //! Default value for ISDB-Tsb segment count.
+        //!
+        static constexpr int DEFAULT_SB_SEGMENT_COUNT = 13;
+        //!
+        //! Sound broadcasting segment index.
+        //! When @a sound_broadcasting is specified to true, specify the index of the segment to be demodulated for
+        //! an ISDB-Tsb channel where several of them are transmitted in the connected manner.
+        //! Possible values: 0 to sb_segment_count - 1.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> sb_segment_index;
+        //!
+        //! Default value for ISDB-Tsb segment index.
+        //!
+        static constexpr int DEFAULT_SB_SEGMENT_INDEX = 0;
+        //!
+        //! ISDB-T hierarchical layers
+        //! ISDB-T channels can be coded hierarchically. As opposed to DVB-T in ISDB-T hierarchical layers can
+        //! be decoded simultaneously. For that reason a ISDB-T demodulator has 3 viterbi and 3 reed-solomon-decoders.
+        //! ISDB-T has 3 hierarchical layers which each can use a part of the available segments.
+        //! The total number of segments over all layers has to 13 in ISDB-T.
+        //! Hierarchical reception in ISDB-T is achieved by enabling or disabling layers in the decoding process.
+        //! The specified string contains a combination of characters 'A', 'B', 'C', indicating which layers
+        //! shall be used.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<UString> isdbt_layers;
+        //!
+        //! Default value for ISDB-T layers (all layers: "ABC").
+        //!
+        static const UString DEFAULT_ISDBT_LAYERS;
+        //!
+        //! ISDB-T partial reception.
+        //! When specified to true, the reception of the ISDB-T channel is in partial reception mode.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<bool> isdbt_partial_reception;
+        //!
+        //! Layer A code rate.
+        //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<InnerFEC> layer_a_fec;
+        //!
+        //! Layer A modulation.
+        //! Must be one of QAM_AUTO, QPSK, QAM_16, QAM_64, DQPSK. The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<Modulation> layer_a_modulation;
+        //!
+        //! Layer A segment count.
+        //! Possible values: 0 to 13 or -1 (auto). The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> layer_a_segment_count;
+        //!
+        //! Layer A time interleaving.
+        //! Possible values: 0 to 3 or -1 (auto). The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> layer_a_time_interleaving;
+        //!
+        //! Layer B code rate.
+        //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<InnerFEC> layer_b_fec;
+        //!
+        //! Layer B modulation.
+        //! Must be one of QAM_AUTO, QPSK, QAM_16, QAM_64, DQPSK. The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<Modulation> layer_b_modulation;
+        //!
+        //! Layer B segment count.
+        //! Possible values: 0 to 13 or -1 (auto). The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> layer_b_segment_count;
+        //!
+        //! Layer B time interleaving.
+        //! Possible values: 0 to 3 or -1 (auto). The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> layer_b_time_interleaving;
+        //!
+        //! Layer C code rate.
+        //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<InnerFEC> layer_c_fec;
+        //!
+        //! Layer C modulation.
+        //! Must be one of QAM_AUTO, QPSK, QAM_16, QAM_64, DQPSK. The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<Modulation> layer_c_modulation;
+        //!
+        //! Layer C segment count.
+        //! Possible values: 0 to 13 or -1 (auto). The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> layer_c_segment_count;
+        //!
+        //! Layer C time interleaving.
+        //! Possible values: 0 to 3 or -1 (auto). The default is automatically detected.
+        //! Applies to: ISDB-T.
+        //!
+        Variable<int> layer_c_time_interleaving;
 
         //!
         //! Default constructor.

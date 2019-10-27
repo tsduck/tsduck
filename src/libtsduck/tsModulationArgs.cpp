@@ -45,15 +45,19 @@ constexpr ts::SpectralInversion ts::ModulationArgs::DEFAULT_INVERSION;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_INNER_FEC;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBS;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBC;
+constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_ISDBS;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBS;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBT;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBC;
 constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_ATSC;
 constexpr ts::BandWidth         ts::ModulationArgs::DEFAULT_BANDWIDTH_DVBT;
+constexpr ts::BandWidth         ts::ModulationArgs::DEFAULT_BANDWIDTH_ISDBT;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_HP;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_LP;
 constexpr ts::TransmissionMode  ts::ModulationArgs::DEFAULT_TRANSMISSION_MODE_DVBT;
+constexpr ts::TransmissionMode  ts::ModulationArgs::DEFAULT_TRANSMISSION_MODE_ISDBT;
 constexpr ts::GuardInterval     ts::ModulationArgs::DEFAULT_GUARD_INTERVAL_DVBT;
+constexpr ts::GuardInterval     ts::ModulationArgs::DEFAULT_GUARD_INTERVAL_ISDBT;
 constexpr ts::Hierarchy         ts::ModulationArgs::DEFAULT_HIERARCHY;
 constexpr ts::Polarization      ts::ModulationArgs::DEFAULT_POLARITY;
 constexpr size_t                ts::ModulationArgs::DEFAULT_SATELLITE_NUMBER;
@@ -63,6 +67,10 @@ constexpr uint32_t              ts::ModulationArgs::DEFAULT_PLP;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_ISI;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_PLS_CODE;
 constexpr ts::PLSMode           ts::ModulationArgs::DEFAULT_PLS_MODE;
+constexpr int                   ts::ModulationArgs::DEFAULT_SB_SUBCHANNEL_ID;
+constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_COUNT;
+constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
+const     ts::UString           ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 #endif
 
 
@@ -92,6 +100,24 @@ ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
     isi(),
     pls_code(),
     pls_mode(),
+    sound_broadcasting(),
+    sb_subchannel_id(),
+    sb_segment_count(),
+    sb_segment_index(),
+    isdbt_layers(),
+    isdbt_partial_reception(),
+    layer_a_fec(),
+    layer_a_modulation(),
+    layer_a_segment_count(),
+    layer_a_time_interleaving(),
+    layer_b_fec(),
+    layer_b_modulation(),
+    layer_b_segment_count(),
+    layer_b_time_interleaving(),
+    layer_c_fec(),
+    layer_c_modulation(),
+    layer_c_segment_count(),
+    layer_c_time_interleaving(),
     _allow_short_options(allow_short_options)
 {
 }
@@ -124,6 +150,24 @@ void ts::ModulationArgs::reset()
     isi.reset();
     pls_code.reset();
     pls_mode.reset();
+    sound_broadcasting.reset();
+    sb_subchannel_id.reset();
+    sb_segment_count.reset();
+    sb_segment_index.reset();
+    isdbt_layers.reset();
+    isdbt_partial_reception.reset();
+    layer_a_fec.reset();
+    layer_a_modulation.reset();
+    layer_a_segment_count.reset();
+    layer_a_time_interleaving.reset();
+    layer_b_fec.reset();
+    layer_b_modulation.reset();
+    layer_b_segment_count.reset();
+    layer_b_time_interleaving.reset();
+    layer_c_fec.reset();
+    layer_c_modulation.reset();
+    layer_c_segment_count.reset();
+    layer_c_time_interleaving.reset();
 }
 
 
@@ -154,7 +198,25 @@ bool ts::ModulationArgs::hasModulationArgs() const
         plp.set() ||
         isi.set() ||
         pls_code.set() ||
-        pls_mode.set();
+        pls_mode.set() ||
+        sound_broadcasting.set() ||
+        sb_subchannel_id.set() ||
+        sb_segment_count.set() ||
+        sb_segment_index.set() ||
+        isdbt_layers.set() ||
+        isdbt_partial_reception.set() ||
+        layer_a_fec.set() ||
+        layer_a_modulation.set() ||
+        layer_a_segment_count.set() ||
+        layer_a_time_interleaving.set() ||
+        layer_b_fec.set() ||
+        layer_b_modulation.set() ||
+        layer_b_segment_count.set() ||
+        layer_b_time_interleaving.set() ||
+        layer_c_fec.set() ||
+        layer_c_modulation.set() ||
+        layer_c_segment_count.set() ||
+        layer_c_time_interleaving.set();
 }
 
 
@@ -220,11 +282,30 @@ void ts::ModulationArgs::setDefaultValues()
             inversion.setDefault(DEFAULT_INVERSION);
             modulation.setDefault(DEFAULT_MODULATION_ATSC);
             break;
+        case DS_ISDB_S:
+            frequency.setDefault(0);
+            polarity.setDefault(DEFAULT_POLARITY);
+            lnb.setDefault(DEFAULT_LNB);
+            satellite_number.setDefault(DEFAULT_SATELLITE_NUMBER);
+            inversion.setDefault(DEFAULT_INVERSION);
+            symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_ISDBS);
+            inner_fec.setDefault(DEFAULT_INNER_FEC);
+            break;
+        case DS_ISDB_T:
+            frequency.setDefault(0);
+            inversion.setDefault(DEFAULT_INVERSION);
+            bandwidth.setDefault(DEFAULT_BANDWIDTH_ISDBT);
+            transmission_mode.setDefault(DEFAULT_TRANSMISSION_MODE_ISDBT);
+            guard_interval.setDefault(DEFAULT_GUARD_INTERVAL_ISDBT);
+            sound_broadcasting.setDefault(false);
+            sb_subchannel_id.setDefault(DEFAULT_SB_SUBCHANNEL_ID);
+            sb_segment_count.setDefault(DEFAULT_SB_SEGMENT_COUNT);
+            sb_segment_index.setDefault(DEFAULT_SB_SEGMENT_INDEX);
+            isdbt_layers.setDefault(DEFAULT_ISDBT_LAYERS);
+            break;
+        case DS_ISDB_C:
         case DS_DVB_C2:
         case DS_DVB_H:
-        case DS_ISDB_S:
-        case DS_ISDB_T:
-        case DS_ISDB_C:
         case DS_ATSC_MH:
         case DS_DTMB:
         case DS_CMMB:
@@ -383,12 +464,17 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
             bitrate = BitRate((423 * guard_div * bw * bitpersym * fec_mul) / (544 * (guard_div + guard_mul) * fec_div));
             break;
         }
+        case DS_ISDB_S: {
+            // ISDB-S uses the Trellis coded 8-phase shift keying modulation.
+            // For the sake of bitrate computation, this is the same as 8PSK.
+            bitrate = TheoreticalBitrateForModulation(PSK_8, inner_fec.value(DEFAULT_INNER_FEC), symbol_rate.value(DEFAULT_SYMBOL_RATE_ISDBS));
+            break;
+        }
+        case DS_ISDB_T:
+        case DS_ISDB_C:
         case DS_DVB_C_ANNEX_B:
         case DS_DVB_C2:
         case DS_DVB_H:
-        case DS_ISDB_S:
-        case DS_ISDB_T:
-        case DS_ISDB_C:
         case DS_ATSC_MH:
         case DS_DTMB:
         case DS_CMMB:
@@ -823,7 +909,7 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
                         break;
                 }
             }
-            if (delivery_system != DS_DVB_S) {
+            if (delivery_system != DS_DVB_S && delivery_system != DS_ISDB_S) {
                 desc += u" (" + DeliverySystemEnum.name(delivery_system.value());
                 if (modulation != QAM_AUTO) {
                     desc += u", " + ModulationEnum.name(modulation.value());
@@ -930,8 +1016,93 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             }
             break;
         }
-        case TT_ISDB_S:
-        case TT_ISDB_T:
+        case TT_ISDB_S: {
+            if (polarity.set() && polarity != POL_AUTO) {
+                strm << margin << "Polarity: " << PolarizationEnum.name(polarity.value()) << std::endl;
+            }
+            if (inversion.set() && inversion != SPINV_AUTO) {
+                strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
+            }
+            if (symbol_rate.set() && symbol_rate != 0) {
+                strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
+            }
+            if (inner_fec.set() && inner_fec != ts::FEC_AUTO) {
+                strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
+            }
+            if (verbose) {
+                strm << margin << "LNB: " << UString(lnb.value(DEFAULT_LNB)) << std::endl;
+            }
+            if (verbose) {
+                strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
+            }
+            break;
+        }
+        case TT_ISDB_T: {
+            if (guard_interval.set() && guard_interval != GUARD_AUTO) {
+                strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
+            }
+            if (bandwidth.set() && bandwidth != BW_AUTO) {
+                strm << margin << "Bandwidth: " << BandWidthEnum.name(bandwidth.value()) << std::endl;
+            }
+            if (transmission_mode.set() && transmission_mode != TM_AUTO) {
+                strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
+            }
+            if (sound_broadcasting == true) {
+                strm << margin << "Sound broadcasting: on" << std::endl;
+                if (sb_subchannel_id.set()) {
+                    strm << margin << "- Sub-channel id: " << sb_subchannel_id.value() << std::endl;
+                }
+                if (sb_segment_count.set()) {
+                    strm << margin << "- Segment count: " << sb_segment_count.value() << std::endl;
+                }
+                if (sb_segment_index.set()) {
+                    strm << margin << "- Segment index: " << sb_segment_index.value() << std::endl;
+                }
+            }
+            if (isdbt_layers.set()) {
+                strm << margin << "Layers: " << (isdbt_layers.value().empty() ? u"none" : isdbt_layers.value()) << std::endl;
+            }
+            if (isdbt_partial_reception.set()) {
+                strm << margin << "Partial reception: " << UString::OnOff(isdbt_partial_reception.value()) << std::endl;
+            }
+            if (layer_a_fec.set() && layer_a_fec != FEC_AUTO) {
+                strm << margin << "Layers A FEC: " << InnerFECEnum.name(layer_a_fec.value()) << std::endl;
+            }
+            if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
+                strm << margin << "Layers A modulation: " << InnerFECEnum.name(layer_a_modulation.value()) << std::endl;
+            }
+            if (layer_a_segment_count.set()) {
+                strm << margin << "Layers A segment count: " << layer_a_segment_count.value() << std::endl;
+            }
+            if (layer_a_time_interleaving.set()) {
+                strm << margin << "Layers A time interleaving: " << layer_a_time_interleaving.value() << std::endl;
+            }
+            if (layer_b_fec.set() && layer_b_fec != FEC_AUTO) {
+                strm << margin << "Layers B FEC: " << InnerFECEnum.name(layer_b_fec.value()) << std::endl;
+            }
+            if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
+                strm << margin << "Layers B modulation: " << InnerFECEnum.name(layer_b_modulation.value()) << std::endl;
+            }
+            if (layer_b_segment_count.set()) {
+                strm << margin << "Layers B segment count: " << layer_b_segment_count.value() << std::endl;
+            }
+            if (layer_b_time_interleaving.set()) {
+                strm << margin << "Layers B time interleaving: " << layer_b_time_interleaving.value() << std::endl;
+            }
+            if (layer_c_fec.set() && layer_c_fec != FEC_AUTO) {
+                strm << margin << "Layers C FEC: " << InnerFECEnum.name(layer_c_fec.value()) << std::endl;
+            }
+            if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
+                strm << margin << "Layers C modulation: " << InnerFECEnum.name(layer_c_modulation.value()) << std::endl;
+            }
+            if (layer_c_segment_count.set()) {
+                strm << margin << "Layers C segment count: " << layer_c_segment_count.value() << std::endl;
+            }
+            if (layer_c_time_interleaving.set()) {
+                strm << margin << "Layers C time interleaving: " << layer_c_time_interleaving.value() << std::endl;
+            }
+            break;
+        }
         case TT_ISDB_C:
         case TT_ATSC:
         case TT_UNDEFINED:
@@ -1016,8 +1187,71 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             }
             break;
         }
-        case TT_ISDB_S:
-        case TT_ISDB_T:
+        case TT_ISDB_S: {
+            opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --polarity %s", {
+                                   symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
+                                   InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
+                                   PolarizationEnum.name(polarity.value(DEFAULT_POLARITY))});
+            if (!no_local) {
+                opt += UString::Format(u" --lnb %s --satellite-number %d", {UString(lnb.value(DEFAULT_LNB)), satellite_number.value()});
+            }
+            break;
+        }
+        case TT_ISDB_T: {
+            opt += UString::Format(u" --bandwidth %s --transmission-mode %s --guard-interval %s", {
+                                   BandWidthEnum.name(bandwidth.value(DEFAULT_BANDWIDTH_DVBT)),
+                                   TransmissionModeEnum.name(transmission_mode.value(DEFAULT_TRANSMISSION_MODE_DVBT)),
+                                   GuardIntervalEnum.name(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT))});
+            if (sound_broadcasting == true) {
+                opt += UString::Format(u" --sound-broadcasting --sb-subchannel-id %d --sb-segment-count %d --sb-segment-index %d", {
+                                       sb_subchannel_id.value(DEFAULT_SB_SUBCHANNEL_ID),
+                                       sb_segment_count.value(DEFAULT_SB_SEGMENT_COUNT),
+                                       sb_segment_index.value(DEFAULT_SB_SEGMENT_INDEX)});
+            }
+            if (isdbt_partial_reception == true) {
+                opt += u" --isdbt-partial-reception";
+            }
+            if (!isdbt_layers.set() || !isdbt_layers.value().empty()) {
+                opt += UString::Format(u" --isdbt-layers \"%s\"", {isdbt_layers.value(DEFAULT_ISDBT_LAYERS)});
+            }
+            if (layer_a_fec.set() && layer_a_fec != FEC_AUTO) {
+                opt += UString::Format(u" --isdbt-layer-a-fec %s", {InnerFECEnum.name(layer_a_fec.value())});
+            }
+            if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
+                opt += UString::Format(u" --isdbt-layer-a-modulation %s", {ModulationEnum.name(layer_a_modulation.value())});
+            }
+            if (layer_a_segment_count.set()) {
+                opt += UString::Format(u" --isdbt-layer-a-segment-count %d", {layer_a_segment_count.value()});
+            }
+            if (layer_a_time_interleaving.set()) {
+                opt += UString::Format(u" --isdbt-layer-a-time-interleaving %d", {layer_a_time_interleaving.value()});
+            }
+            if (layer_b_fec.set() && layer_b_fec != FEC_AUTO) {
+                opt += UString::Format(u" --isdbt-layer-b-fec %s", {InnerFECEnum.name(layer_b_fec.value())});
+            }
+            if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
+                opt += UString::Format(u" --isdbt-layer-b-modulation %s", {ModulationEnum.name(layer_b_modulation.value())});
+            }
+            if (layer_b_segment_count.set()) {
+                opt += UString::Format(u" --isdbt-layer-b-segment-count %d", {layer_b_segment_count.value()});
+            }
+            if (layer_b_time_interleaving.set()) {
+                opt += UString::Format(u" --isdbt-layer-b-time-interleaving %d", {layer_b_time_interleaving.value()});
+            }
+            if (layer_c_fec.set() && layer_c_fec != FEC_AUTO) {
+                opt += UString::Format(u" --isdbt-layer-c-fec %s", {InnerFECEnum.name(layer_c_fec.value())});
+            }
+            if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
+                opt += UString::Format(u" --isdbt-layer-c-modulation %s", {ModulationEnum.name(layer_c_modulation.value())});
+            }
+            if (layer_c_segment_count.set()) {
+                opt += UString::Format(u" --isdbt-layer-c-segment-count %d", {layer_c_segment_count.value()});
+            }
+            if (layer_c_time_interleaving.set()) {
+                opt += UString::Format(u" --isdbt-layer-c-time-interleaving %d", {layer_c_time_interleaving.value()});
+            }
+            break;
+        }
         case TT_ISDB_C:
         case TT_UNDEFINED:
         default: {
@@ -1116,6 +1350,60 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     if (args.present(u"pls-mode")) {
         pls_mode = args.enumValue<PLSMode>(u"pls-mode");
     }
+    if (args.present(u"sound-broadcasting")) {
+        sound_broadcasting = true;
+    }
+    if (args.present(u"sb-subchannel-id")) {
+        sb_subchannel_id = args.intValue<int>(u"sb-subchannel-id");
+    }
+    if (args.present(u"sb-segment-count")) {
+        sb_segment_count = args.intValue<int>(u"sb-segment-count");
+    }
+    if (args.present(u"sb-segment-index")) {
+        sb_segment_index = args.intValue<int>(u"sb-segment-index");
+    }
+    if (args.present(u"isdbt-partial-reception")) {
+        isdbt_partial_reception = true;
+    }
+    if (args.present(u"isdbt-layers")) {
+        isdbt_layers = args.value(u"isdbt-layers");
+    }
+    if (args.present(u"isdbt-layer-a-fec")) {
+        layer_a_fec = args.enumValue<InnerFEC>(u"isdbt-layer-a-fec");
+    }
+    if (args.present(u"isdbt-layer-a-modulation")) {
+        layer_a_modulation = args.enumValue<Modulation>(u"isdbt-layer-a-modulation");
+    }
+    if (args.present(u"isdbt-layer-a-segment-count")) {
+        layer_a_segment_count = args.intValue<int>(u"isdbt-layer-a-segment-count");
+    }
+    if (args.present(u"isdbt-layer-a-time-interleaving")) {
+        layer_a_time_interleaving = args.intValue<int>(u"isdbt-layer-a-time-interleaving");
+    }
+    if (args.present(u"isdbt-layer-b-fec")) {
+        layer_b_fec = args.enumValue<InnerFEC>(u"isdbt-layer-b-fec");
+    }
+    if (args.present(u"isdbt-layer-b-modulation")) {
+        layer_b_modulation = args.enumValue<Modulation>(u"isdbt-layer-b-modulation");
+    }
+    if (args.present(u"isdbt-layer-b-segment-count")) {
+        layer_b_segment_count = args.intValue<int>(u"isdbt-layer-b-segment-count");
+    }
+    if (args.present(u"isdbt-layer-b-time-interleaving")) {
+        layer_b_time_interleaving = args.intValue<int>(u"isdbt-layer-b-time-interleaving");
+    }
+    if (args.present(u"isdbt-layer-c-fec")) {
+        layer_c_fec = args.enumValue<InnerFEC>(u"isdbt-layer-c-fec");
+    }
+    if (args.present(u"isdbt-layer-c-modulation")) {
+        layer_c_modulation = args.enumValue<Modulation>(u"isdbt-layer-c-modulation");
+    }
+    if (args.present(u"isdbt-layer-c-segment-count")) {
+        layer_c_segment_count = args.intValue<int>(u"isdbt-layer-c-segment-count");
+    }
+    if (args.present(u"isdbt-layer-c-time-interleaving")) {
+        layer_c_time_interleaving = args.intValue<int>(u"isdbt-layer-c-time-interleaving");
+    }
 
     // Local options (not related to transponder)
     if (args.present(u"lnb")) {
@@ -1171,9 +1459,10 @@ void ts::ModulationArgs::defineArgs(Args& args) const
     args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
     args.help(u"symbol-rate",
               u"Used for satellite and cable tuners only. "
-              u"Symbol rate in symbols/second. The default is " + UString::Decimal(DEFAULT_SYMBOL_RATE_DVBS) +
-              u" sym/s for satellite and " + UString::Decimal(DEFAULT_SYMBOL_RATE_DVBC) +
-              u" sym/s for cable. ");
+              u"Symbol rate in symbols/second. The default is " +
+              UString::Decimal(DEFAULT_SYMBOL_RATE_DVBS) + u" sym/s for DVB-S, " +
+              UString::Decimal(DEFAULT_SYMBOL_RATE_DVBC) + u" sym/s for DVB-C, " +
+              UString::Decimal(DEFAULT_SYMBOL_RATE_ISDBS) + u" sym/s for ISDB-S, ");
 
     args.option(u"fec-inner", 0, InnerFECEnum);
     args.help(u"fec-inner",
@@ -1193,11 +1482,6 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               ModulationEnum.name(DEFAULT_MODULATION_DVBS) + u"\" for DVB-S2, \"" +
               ModulationEnum.name(DEFAULT_MODULATION_ATSC) + u"\" for ATSC.");
 
-    args.option(u"bandwidth", 0, BandWidthEnum);
-    args.help(u"bandwidth",
-              u"Used for terrestrial tuners only. Bandwidth. The default is \"" +
-              BandWidthEnum.name(DEFAULT_BANDWIDTH_DVBT) + u"\" for DVB-T/T2.");
-
     args.option(u"high-priority-fec", 0, InnerFECEnum);
     args.help(u"high-priority-fec",
               u"Used for DVB-T/T2 tuners only. Error correction for high priority streams. "
@@ -1208,15 +1492,23 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Used for DVB-T/T2 tuners only. Error correction for low priority streams. "
               u"The default is \"auto\".");
 
+    args.option(u"bandwidth", 0, BandWidthEnum);
+    args.help(u"bandwidth",
+              u"Used for terrestrial tuners only. Bandwidth. The default is \"" +
+              BandWidthEnum.name(DEFAULT_BANDWIDTH_DVBT) + u"\" for DVB-T/T2, \"" +
+              BandWidthEnum.name(DEFAULT_BANDWIDTH_ISDBT) + u"\" for ISDB-T.");
+
     args.option(u"transmission-mode", 0, TransmissionModeEnum);
     args.help(u"transmission-mode",
               u"Used for terrestrial tuners only. Transmission mode. The default is \"" +
-              TransmissionModeEnum.name(DEFAULT_TRANSMISSION_MODE_DVBT) + u"\" for DVB-T/T2.");
+              TransmissionModeEnum.name(DEFAULT_TRANSMISSION_MODE_DVBT) + u"\" for DVB-T/T2, \"" +
+              TransmissionModeEnum.name(DEFAULT_TRANSMISSION_MODE_ISDBT) + u"\" for ISDB-T.");
 
     args.option(u"guard-interval", 0, GuardIntervalEnum);
     args.help(u"guard-interval",
               u"Used for terrestrial tuners only. Guard interval. The default is \"" +
-              GuardIntervalEnum.name(DEFAULT_GUARD_INTERVAL_DVBT) + u"\" for DVB-T/T2.");
+              GuardIntervalEnum.name(DEFAULT_GUARD_INTERVAL_DVBT) + u"\" for DVB-T/T2, \"" +
+              GuardIntervalEnum.name(DEFAULT_GUARD_INTERVAL_ISDBT) + u"\" for ISDB-T.");
 
     args.option(u"hierarchy", 0, HierarchyEnum);
     args.help(u"hierarchy", u"Used for DVB-T/T2 tuners only. The default is \"none\".");
@@ -1256,6 +1548,86 @@ void ts::ModulationArgs::defineArgs(Args& args) const
               u"Used for DVB-S2 tuners only. "
               u"Physical Layer Scrambling (PLS) mode. With multistream only. The default is ROOT. "
               u"Warning: this option is supported on Linux only.");
+
+    // ISDB-T specific options.
+    args.option(u"sound-broadcasting");
+    args.help(u"sound-broadcasting",
+              u"Used for ISDB-T tuners only. "
+              u"Specify that the reception is an ISDB-Tsb (sound broadcasting) channel instead of an ISDB-T one");
+
+    args.option(u"sb-subchannel-id", 0, Args::INTEGER, 0, 1, 0, 41);
+    args.help(u"sb-subchannel-id",
+              u"Used for ISDB-T tuners only. "
+              u"With --sound-broadcasting, specify the sub-channel id of the segment to be demodulated "
+              u"in the ISDB-Tsb channel. Possible values: 0 to 41. The default is " +
+              UString::Decimal(DEFAULT_SB_SUBCHANNEL_ID) + u".");
+
+    args.option(u"sb-segment-count", 0, Args::INTEGER, 0, 1, 1, 13);
+    args.help(u"sb-segment-count",
+              u"Used for ISDB-T tuners only. "
+              u"With --sound-broadcasting, specify the total count of connected ISDB-Tsb channels. "
+              u"Possible values: 1 to 13. The default is " + UString::Decimal(DEFAULT_SB_SEGMENT_COUNT) + u".");
+
+    args.option(u"sb-segment-index", 0, Args::INTEGER, 0, 1, 0, 12);
+    args.help(u"sb-segment-index",
+              u"Used for ISDB-T tuners only. "
+              u"With --sound-broadcasting, specify the index of the segment to be demodulated for "
+              u"an ISDB-Tsb channel where several of them are transmitted in the connected manner. "
+              u"Possible values: 0 to sb-segment-count - 1. The default is " +
+              UString::Decimal(DEFAULT_SB_SEGMENT_INDEX) + u".");
+
+    args.option(u"isdbt-partial-reception");
+    args.help(u"isdbt-partial-reception",
+              u"Used for ISDB-T tuners only. "
+              u"Specify that the reception of the ISDB-T channel is in partial reception mode. "
+              u"The default is automatically detected.");
+
+    args.option(u"isdbt-layers", 0, Args::STRING);
+    args.help(u"isdbt-layers", u"'string'",
+              u"Used for ISDB-T tuners only. "
+              u"Hierarchical reception in ISDB-T is achieved by enabling or disabling layers in the decoding process. "
+              u"The specified string contains a combination of characters 'A', 'B', 'C', indicating which layers "
+              u"shall be used. The default is \"ABC\" (all layers).");
+
+    args.option(u"isdbt-layer-a-fec", 0, InnerFECEnum);
+    args.option(u"isdbt-layer-b-fec", 0, InnerFECEnum);
+    args.option(u"isdbt-layer-c-fec", 0, InnerFECEnum);
+
+    args.help(u"isdbt-layer-a-fec",
+              u"Used for ISDB-T tuners only. Error correction for layer A. "
+              u"The default is automatically detected.");
+    args.help(u"isdbt-layer-b-fec", u"Same as --isdbt-layer-a-fec for layer B.");
+    args.help(u"isdbt-layer-c-fec", u"Same as --isdbt-layer-a-fec for layer C.");
+
+    args.option(u"isdbt-layer-a-modulation", 0, ModulationEnum);
+    args.option(u"isdbt-layer-b-modulation", 0, ModulationEnum);
+    args.option(u"isdbt-layer-c-modulation", 0, ModulationEnum);
+
+    args.help(u"isdbt-layer-a-modulation",
+              u"Used for ISDB-T tuners only. Modulation for layer A. "
+              u"The default is automatically detected.");
+    args.help(u"isdbt-layer-b-modulation", u"Same as --isdbt-layer-a-modulation for layer B.");
+    args.help(u"isdbt-layer-c-modulation", u"Same as --isdbt-layer-a-modulation for layer C.");
+
+    args.option(u"isdbt-layer-a-segment-count", 0, Args::INTEGER, 0, 1, 0, 13);
+    args.option(u"isdbt-layer-b-segment-count", 0, Args::INTEGER, 0, 1, 0, 13);
+    args.option(u"isdbt-layer-c-segment-count", 0, Args::INTEGER, 0, 1, 0, 13);
+
+    args.help(u"isdbt-layer-a-segment-count",
+              u"Used for ISDB-T tuners only. Number of segments for layer A. "
+              u"Possible values: 0 to 13. The default is automatically detected.");
+    args.help(u"isdbt-layer-b-segment-count", u"Same as --isdbt-layer-a-segment-count for layer B.");
+    args.help(u"isdbt-layer-c-segment-count", u"Same as --isdbt-layer-a-segment-count for layer C.");
+
+    args.option(u"isdbt-layer-a-time-interleaving", 0, Args::INTEGER, 0, 1, 0, 3);
+    args.option(u"isdbt-layer-b-time-interleaving", 0, Args::INTEGER, 0, 1, 0, 3);
+    args.option(u"isdbt-layer-c-time-interleaving", 0, Args::INTEGER, 0, 1, 0, 3);
+
+    args.help(u"isdbt-layer-a-time-interleaving",
+              u"Used for ISDB-T tuners only. Time interleaving for layer A. "
+              u"Possible values: 0 to 3. The default is automatically detected.");
+    args.help(u"isdbt-layer-b-time-interleaving", u"Same as --isdbt-layer-a-time-interleaving for layer B.");
+    args.help(u"isdbt-layer-c-time-interleaving", u"Same as --isdbt-layer-a-time-interleaving for layer C.");
 
     // UHF/VHF frequency bands options.
     args.option(u"uhf-channel", _allow_short_options ? 'u' : 0, Args::POSITIVE);
