@@ -38,7 +38,8 @@
 #include "tsDektec.h"
 TSDUCK_SOURCE;
 
-const ts::LNB& ts::ModulationArgs::DEFAULT_LNB(ts::LNB::Universal);
+const ts::LNB&    ts::ModulationArgs::DEFAULT_LNB(ts::LNB::Universal);
+const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::SpectralInversion ts::ModulationArgs::DEFAULT_INVERSION;
@@ -70,7 +71,6 @@ constexpr ts::PLSMode           ts::ModulationArgs::DEFAULT_PLS_MODE;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SUBCHANNEL_ID;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_COUNT;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
-const     ts::UString           ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 #endif
 
 
