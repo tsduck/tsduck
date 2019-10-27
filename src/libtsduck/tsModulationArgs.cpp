@@ -1553,7 +1553,7 @@ void ts::ModulationArgs::defineArgs(Args& args) const
     args.option(u"sound-broadcasting");
     args.help(u"sound-broadcasting",
               u"Used for ISDB-T tuners only. "
-              u"Specify that the reception is an ISDB-Tsb (sound broadcasting) channel instead of an ISDB-T one");
+              u"Specify that the reception is an ISDB-Tsb (sound broadcasting) channel instead of an ISDB-T one.");
 
     args.option(u"sb-subchannel-id", 0, Args::INTEGER, 0, 1, 0, 41);
     args.help(u"sb-subchannel-id",
