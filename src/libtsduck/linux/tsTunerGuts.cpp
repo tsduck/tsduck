@@ -478,7 +478,9 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         report.error(u"error getting current delivery system from tuner: %s", {ErrorCodeMessage(err)});
         return false;
     }
+
     const DeliverySystem delsys = DeliverySystem(props.getByCommand(DTV_DELIVERY_SYSTEM));
+    params.delivery_system = delsys;
 
     // Get specific tuning parameters
     switch (delsys) {
@@ -499,7 +501,6 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_INVERSION);
             props.add(DTV_SYMBOL_RATE);
             props.add(DTV_INNER_FEC);
-            props.add(DTV_DELIVERY_SYSTEM);
             props.add(DTV_MODULATION);
             props.add(DTV_PILOT);
             props.add(DTV_ROLLOFF);
@@ -514,7 +515,6 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
             params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
             params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
-            params.delivery_system = DeliverySystem(props.getByCommand(DTV_DELIVERY_SYSTEM));
             params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
             params.pilots = Pilot(props.getByCommand(DTV_PILOT));
             params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
@@ -599,8 +599,152 @@ bool ts::Tuner::Guts::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.modulation = Modulation(props.getByCommand(DTV_MODULATION));
             return true;
         }
-        case DS_ISDB_S:
-        case DS_ISDB_T:
+        case DS_ISDB_S: {
+            // Note: same remark about the frequency as DVB-S tuner.
+            if (reset_unknown) {
+                params.frequency = 0;
+                params.polarity = ModulationArgs::DEFAULT_POLARITY;
+                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
+                params.lnb = ModulationArgs::DEFAULT_LNB;
+            }
+
+            props.clear();
+            props.add(DTV_INVERSION);
+            props.add(DTV_SYMBOL_RATE);
+            props.add(DTV_INNER_FEC);
+
+            if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
+                const ErrorCode err = LastErrorCode();
+                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                return false;
+            }
+
+            params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
+            params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
+            params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
+            return true;
+        }
+        case DS_ISDB_T: {
+            props.clear();
+            props.add(DTV_FREQUENCY);
+            props.add(DTV_INVERSION);
+            props.add(DTV_BANDWIDTH_HZ);
+            props.add(DTV_TRANSMISSION_MODE);
+            props.add(DTV_GUARD_INTERVAL);
+            props.add(DTV_ISDBT_SOUND_BROADCASTING);
+            props.add(DTV_ISDBT_SB_SUBCHANNEL_ID);
+            props.add(DTV_ISDBT_SB_SEGMENT_COUNT);
+            props.add(DTV_ISDBT_SB_SEGMENT_IDX);
+            props.add(DTV_ISDBT_LAYER_ENABLED);
+            props.add(DTV_ISDBT_PARTIAL_RECEPTION);
+            props.add(DTV_ISDBT_LAYERA_FEC);
+            props.add(DTV_ISDBT_LAYERA_MODULATION);
+            props.add(DTV_ISDBT_LAYERA_SEGMENT_COUNT);
+            props.add(DTV_ISDBT_LAYERA_TIME_INTERLEAVING);
+            props.add(DTV_ISDBT_LAYERB_FEC);
+            props.add(DTV_ISDBT_LAYERB_MODULATION);
+            props.add(DTV_ISDBT_LAYERB_SEGMENT_COUNT);
+            props.add(DTV_ISDBT_LAYERB_TIME_INTERLEAVING);
+            props.add(DTV_ISDBT_LAYERC_FEC);
+            props.add(DTV_ISDBT_LAYERC_MODULATION);
+            props.add(DTV_ISDBT_LAYERC_SEGMENT_COUNT);
+            props.add(DTV_ISDBT_LAYERC_TIME_INTERLEAVING);
+
+            if (::ioctl(frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
+                const ErrorCode err = LastErrorCode();
+                report.error(u"error getting tuning parameters : %s", {ErrorCodeMessage(err)});
+                return false;
+            }
+
+            uint32_t val = 0;
+            params.frequency = props.getByCommand(DTV_FREQUENCY);
+            params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
+            params.bandwidth = BandWidthCodeFromHz(props.getByCommand(DTV_BANDWIDTH_HZ));
+            params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
+            params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
+            params.sound_broadcasting.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_SOUND_BROADCASTING)) != DTVProperties::UNKNOWN) {
+                params.sound_broadcasting = val != 0;
+            }
+            params.sb_subchannel_id.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_SB_SUBCHANNEL_ID)) != DTVProperties::UNKNOWN) {
+                params.sb_subchannel_id = int(val);
+            }
+            params.sb_segment_count.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_SB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+                params.sb_segment_count = int(val);
+            }
+            params.sb_segment_index.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_SB_SEGMENT_IDX)) != DTVProperties::UNKNOWN) {
+                params.sb_segment_index = int(val);
+            }
+            params.isdbt_partial_reception.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_PARTIAL_RECEPTION)) != DTVProperties::UNKNOWN) {
+                params.isdbt_partial_reception = val != 0;
+            }
+            params.isdbt_layers.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYER_ENABLED)) != DTVProperties::UNKNOWN) {
+                params.isdbt_layers = UString();
+                if ((val & 0x01) != 0) {
+                    params.isdbt_layers.value().append(1, u'A');
+                }
+                if ((val & 0x02) != 0) {
+                    params.isdbt_layers.value().append(1, u'B');
+                }
+                if ((val & 0x04) != 0) {
+                    params.isdbt_layers.value().append(1, u'C');
+                }
+            }
+            params.layer_a_fec.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_FEC)) != DTVProperties::UNKNOWN) {
+                params.layer_a_fec = InnerFEC(val);
+            }
+            params.layer_a_modulation.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_MODULATION)) != DTVProperties::UNKNOWN) {
+                params.layer_a_modulation = Modulation(val);
+            }
+            params.layer_a_segment_count.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+                params.layer_a_segment_count = int(val);
+            }
+            params.layer_a_time_interleaving.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERA_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
+                params.layer_a_time_interleaving = int(val);
+            }
+            params.layer_b_fec.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_FEC)) != DTVProperties::UNKNOWN) {
+                params.layer_b_fec = InnerFEC(val);
+            }
+            params.layer_b_modulation.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_MODULATION)) != DTVProperties::UNKNOWN) {
+                params.layer_b_modulation = Modulation(val);
+            }
+            params.layer_b_segment_count.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+                params.layer_b_segment_count = int(val);
+            }
+            params.layer_b_time_interleaving.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERB_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
+                params.layer_b_time_interleaving = int(val);
+            }
+            params.layer_c_fec.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_FEC)) != DTVProperties::UNKNOWN) {
+                params.layer_c_fec = InnerFEC(val);
+            }
+            params.layer_c_modulation.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_MODULATION)) != DTVProperties::UNKNOWN) {
+                params.layer_c_modulation = Modulation(val);
+            }
+            params.layer_c_segment_count.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
+                params.layer_c_segment_count = int(val);
+            }
+            params.layer_c_time_interleaving.reset();
+            if ((val = props.getByCommand(DTV_ISDBT_LAYERC_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN) {
+                params.layer_c_time_interleaving = int(val);
+            }
+            return true;
+        }
         case DS_ISDB_C:
         case DS_DVB_H:
         case DS_ATSC_MH:
@@ -867,8 +1011,51 @@ bool ts::Tuner::tune(ModulationArgs& params, Report& report)
             props.addVar(DTV_INVERSION, params.inversion);
             break;
         }
-        case DS_ISDB_S:
-        case DS_ISDB_T:
+        case DS_ISDB_S: {
+            props.addVar(DTV_SYMBOL_RATE, params.symbol_rate);
+            props.addVar(DTV_INNER_FEC, params.inner_fec);
+            props.addVar(DTV_INVERSION, params.inversion);
+            break;
+        }
+        case DS_ISDB_T: {
+            props.addVar(DTV_INVERSION, params.inversion);
+            if (bwhz > 0) {
+                props.add(DTV_BANDWIDTH_HZ, bwhz);
+            }
+            props.addVar(DTV_TRANSMISSION_MODE, params.transmission_mode);
+            props.addVar(DTV_GUARD_INTERVAL, params.guard_interval);
+            props.addVar(DTV_ISDBT_SOUND_BROADCASTING, params.sound_broadcasting);
+            props.addVar(DTV_ISDBT_SB_SUBCHANNEL_ID, params.sb_subchannel_id);
+            props.addVar(DTV_ISDBT_SB_SEGMENT_COUNT, params.sb_segment_count);
+            props.addVar(DTV_ISDBT_SB_SEGMENT_IDX, params.sb_segment_index);
+            if (params.isdbt_layers.set()) {
+                const UString& layers(params.isdbt_layers.value());
+                uint32_t val = 0;
+                for (size_t i = 0; i < layers.size(); ++i) {
+                    switch (layers[i]) {
+                        case u'a': case u'A': val |= 0x01; break;
+                        case u'b': case u'B': val |= 0x02; break;
+                        case u'c': case u'C': val |= 0x04; break;
+                        default: break;
+                    }
+                }
+                props.add(DTV_ISDBT_LAYER_ENABLED, val);
+            }
+            props.add(DTV_ISDBT_PARTIAL_RECEPTION, params.isdbt_partial_reception.set() ? uint32_t(params.isdbt_partial_reception.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERA_FEC, params.layer_a_fec.set() ? uint32_t(params.layer_a_fec.value()) : uint32_t(::FEC_AUTO));
+            props.add(DTV_ISDBT_LAYERA_MODULATION, params.layer_a_modulation.set() ? uint32_t(params.layer_a_modulation.value()) : uint32_t(::QAM_AUTO));
+            props.add(DTV_ISDBT_LAYERA_SEGMENT_COUNT, params.layer_a_segment_count.set() ? uint32_t(params.layer_a_segment_count.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERA_TIME_INTERLEAVING, params.layer_a_time_interleaving.set() ? uint32_t(params.layer_a_time_interleaving.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERB_FEC, params.layer_b_fec.set() ? uint32_t(params.layer_b_fec.value()) : uint32_t(::FEC_AUTO));
+            props.add(DTV_ISDBT_LAYERB_MODULATION, params.layer_b_modulation.set() ? uint32_t(params.layer_b_modulation.value()) : uint32_t(::QAM_AUTO));
+            props.add(DTV_ISDBT_LAYERB_SEGMENT_COUNT, params.layer_b_segment_count.set() ? uint32_t(params.layer_b_segment_count.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERB_TIME_INTERLEAVING, params.layer_b_time_interleaving.set() ? uint32_t(params.layer_b_time_interleaving.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERC_FEC, params.layer_c_fec.set() ? uint32_t(params.layer_c_fec.value()) : uint32_t(::FEC_AUTO));
+            props.add(DTV_ISDBT_LAYERC_MODULATION, params.layer_c_modulation.set() ? uint32_t(params.layer_c_modulation.value()) : uint32_t(::QAM_AUTO));
+            props.add(DTV_ISDBT_LAYERC_SEGMENT_COUNT, params.layer_c_segment_count.set() ? uint32_t(params.layer_c_segment_count.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERC_TIME_INTERLEAVING, params.layer_c_time_interleaving.set() ? uint32_t(params.layer_c_time_interleaving.value()) : uint32_t(-1));
+            break;
+        }
         case DS_ISDB_C:
         case DS_DVB_H:
         case DS_ATSC_MH:
