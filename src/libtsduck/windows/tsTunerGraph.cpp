@@ -39,13 +39,13 @@ TSDUCK_SOURCE;
 ts::TunerGraph::TunerGraph() :
     DirectShowGraph(),
     _user_receiver_name(),
+    _tuner_name(),
     _sink_filter(),
     _provider_filter(),
     _inet_provider(),
     _ituner(),
-    _ituning_space(),
-    _tuning_space_fname(),
-    _tuning_space_uname(),
+    _ituner_cap(),
+    _net_types(),
     _tuner_filter(),
     _demods(),
     _demods2(),
@@ -71,13 +71,13 @@ void ts::TunerGraph::clear(Report& report)
     DirectShowGraph::clear(report);
 
     // Release local COM objects.
+    _tuner_name.clear();
     _sink_filter.release();
     _provider_filter.release();
     _inet_provider.release();
     _ituner.release();
-    _ituning_space.release();
-    _tuning_space_fname.clear();
-    _tuning_space_uname.clear();
+    _ituner_cap.release();
+    _net_types.clear();
     _tuner_filter.release();
     _demods.clear();
     _demods2.clear();
@@ -87,22 +87,15 @@ void ts::TunerGraph::clear(Report& report)
 
 
 //-----------------------------------------------------------------------------
-// Send a tune request.
-//-----------------------------------------------------------------------------
-
-bool ts::TunerGraph::putTuneRequest(::ITuneRequest* request, Report& report)
-{
-    ::HRESULT hr = _ituner->put_TuneRequest(request);
-    return ComSuccess(hr, u"DirectShow tuning error", report);
-}
-
-
-//-----------------------------------------------------------------------------
 // Initialize the graph.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& delivery_systems, Report& report)
+bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_moniker, DeliverySystemSet& delivery_systems, Report& report)
 {
+    // Initialize this object.
+    clear(report);
+    _tuner_name = tuner_name;
+
     // Report to use when errors shall be reported in debug mode only
     Report& debug_report(report.debug() ? report : NULLREP);
 
@@ -115,15 +108,16 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& de
     _provider_filter.createInstance(::CLSID_NetworkProvider, ::IID_IBaseFilter, report);
     _inet_provider.queryInterface(_provider_filter.pointer(), ::IID_IBDA_NetworkProvider, report);
     _ituner.queryInterface(_provider_filter.pointer(), ::IID_ITuner, report);
-    if (_provider_filter.isNull() || _inet_provider.isNull() || _ituner.isNull()) {
-        report.debug(u"failed to create an instance of network provider");
+    _ituner_cap.queryInterface(_provider_filter.pointer(), ::IID_ITunerCap, debug_report);
+    if (_provider_filter.isNull() || _inet_provider.isNull() || _ituner.isNull() || _ituner_cap.isNull()) {
+        report.debug(u"failed to create an instance of network provider for \"%s\"", {_tuner_name});
         return false;
     }
 
     // Create an instance of tuner from moniker
     _tuner_filter.bindToObject(tuner_moniker, ::IID_IBaseFilter, report);
     if (_tuner_filter.isNull()) {
-        report.debug(u"failed to create an instance of BDA tuner");
+        report.debug(u"failed to create an instance of BDA tuner for \"%s\"", {_tuner_name});
         return false;
     }
 
@@ -133,162 +127,47 @@ bool ts::TunerGraph::initialize(::IMoniker* tuner_moniker, DeliverySystemSet& de
         !addFilter(_tuner_filter.pointer(), L"Tuner", report) ||
         !connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), report))
     {
-        report.debug(u"failed to initiate the graph with network provider => tuner");
+        report.debug(u"failed to initiate the graph with network provider => tuner for \"%s\"", {_tuner_name});
         clear(report);
         return false;
     }
 
     // Now, the network provider is connected to the tuner.
+    // We can get all supported network types. Note that we query the network provider
+    // filter for the capabilities of the tuner filter. Strange but this is the way it works.
+    std::array<::GUID,16> net_types;
+    ::ULONG net_count = ::LONG(net_types.size());
+    ::HRESULT hr = _ituner_cap->get_SupportedNetworkTypes(net_count, &net_count, net_types.data());
+    if (!ComSuccess(hr, u"ITunerCap::get_SupportedNetworkTypes", report)) {
+        clear(report);
+        return false;
+    }
+    else if (net_count == 0) {
+        report.error(u"tuner \"%s\" did not return any supported network type", {_tuner_name});
+        clear(report);
+        return false;
+    }
 
-    // In debug mode, get all supported network types.
-    // For debug only, sometimes it does not work.
-    if (report.debug()) {
-        ComPtr<::ITunerCap> tuner_cap;
-        tuner_cap.queryInterface(_ituner.pointer(), ::IID_ITunerCap, debug_report);
-        if (tuner_cap.isNull()) {
-            report.error(u"failed to get ITunerCap interface");
-            // Debug only: return false;
+    // Loop on all supported network types and build corresponding tuning spaces.
+    for (size_t net_index = 0; net_index < net_count; ++net_index) {
+        DirectShowNetworkType net;
+        if (!net.initialize(net_types[net_index], report)) {
+            report.debug(u"failed to set network type %s", {NameGUID(net_types[net_index])});
         }
         else {
-            std::array<::GUID,10> net_types;
-            ::ULONG net_count = ::LONG(net_types.size());
-            ::HRESULT hr = tuner_cap->get_SupportedNetworkTypes(net_count, &net_count, net_types.data());
-            if (!ComSuccess(hr, u"ITunerCap::get_SupportedNetworkTypes", report)) {
-                // Debug only: return false;
-            }
-            else if (net_count == 0) {
-                report.error(u"tuner did not return any supported network types");
-                // Debug only: return false;
-            }
-            else {
-                report.debug(u"Supported Network Types:");
-                for (size_t n = 0; n < net_count; n++) {
-                    report.debug(u"  %d) %s", {n, NameGUID(net_types[n])});
-                }
-            }
+            // Add the delivery systems for the network type to the tuner.
+            net.getDeliverySystems(delivery_systems);
+            // Register the network type by tuner type.
+            _net_types.insert(std::make_pair(net.tunerType(), net));
         }
     }
 
-    // Now, we are going to try all tuning spaces. Normally, the network provider will
-    // reject the tuning spaces which are not compatible with the tuner.
-
-    // Enumerate all tuning spaces in the system.
-    ComPtr<::ITuningSpaceContainer> tsContainer(::CLSID_SystemTuningSpaces, ::IID_ITuningSpaceContainer, report);
-    if (tsContainer.isNull()) {
+    // Check that we have at least one network type.
+    if (_net_types.empty()) {
+        report.error(u"tuner \"%s\" failed to support all network types", {_tuner_name});
         clear(report);
         return false;
     }
-    ComPtr<::IEnumTuningSpaces> tsEnum;
-    ::HRESULT hr = tsContainer->get_EnumTuningSpaces(tsEnum.creator());
-    if (!ComSuccess(hr, u"ITuningSpaceContainer::get_EnumTuningSpaces", report)) {
-        clear(report);
-        return false;
-    }
-
-    // Loop on all tuning spaces.
-    bool tspace_found = false;
-    ts::ComPtr<::ITuningSpace> tspace;
-    while (!tspace_found && tsEnum->Next(1, tspace.creator(), nullptr) == S_OK) {
-
-        // Display tuning space in debug mode
-        const UString fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
-        const UString uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
-        report.debug(u"found tuning space \"%s\" (%s)", {fname, uname});
-
-        // Try to use this tuning space with our tuner.
-        hr = _ituner->put_TuningSpace(tspace.pointer());
-        if (ComSuccess(hr, u"fail to set tuning space \"" + fname + u"\"", debug_report)) {
-
-            // This tuning space is compatible with our tuner.
-            // Check if this is a tuning space we can support by getting its DVB system type:
-            // first get IDVBTuningSpace interface of tuning space (may not support it)
-            ComPtr<::IDVBTuningSpace> dvb_tspace;
-            dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, debug_report);
-            if (!dvb_tspace.isNull()) {
-
-                // Get DVB system type
-                ::DVBSystemType systype;
-                hr = dvb_tspace->get_SystemType(&systype);
-                if (!ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
-                    continue;
-                }
-                report.debug(u"DVB system type is %d for tuning space \"%s\"", { systype, fname });
-
-                // Check if DVB system type matches our tuner type.
-                switch (systype) {
-                    case ::DVB_Satellite: {
-                        tspace_found = true;
-                        delivery_systems.insert(DS_DVB_S);
-                        delivery_systems.insert(DS_DVB_S2);
-                        // No way to check if DS_DVB_S2 is supported, assume it.
-                        break;
-                    }
-                    case ::DVB_Terrestrial: {
-                        tspace_found = true;
-                        delivery_systems.insert(DS_DVB_T);
-                        delivery_systems.insert(DS_DVB_T2);
-                        // No way to check if DS_DVB_T2 is supported, assume it.
-                        break;
-                    }
-                    case ::DVB_Cable: {
-                        tspace_found = true;
-                        delivery_systems.insert(DS_DVB_C_ANNEX_A);
-                        delivery_systems.insert(DS_DVB_C_ANNEX_C);
-                        // No way to check which annex is supported. Skip annex B (too special).
-                        break;
-                    }
-                    case ::ISDB_Terrestrial:
-                    case ::ISDB_Satellite:
-                    default: {
-                        // Not a kind of tuning space we support.
-                        break;
-                    }
-                }
-            }
-            else {
-                // Not a DVB tuning space, silently ignore it.
-                report.debug(u"tuning space \"%s\" does not support IID_IDVBTuningSpace interface", {fname});
-            }
-
-            // Check if this is a tuning space we can support by getting its ATSC network type:
-            // first get IATSCTuningSpace interface of tuning space (may not support it)
-            ComPtr<::IATSCTuningSpace> atsc_tspace;
-            atsc_tspace.queryInterface(tspace.pointer(), ::IID_IATSCTuningSpace, debug_report);
-            if (!atsc_tspace.isNull()) {
-
-                // Get ATSC network type
-                ::GUID nettype;
-                hr = atsc_tspace->get__NetworkType(&nettype);
-                if (!ComSuccess(hr, u"cannot get ATSC network type from tuning space \"" + fname + u"\"", report)) {
-                    continue;
-                }
-                report.debug(u"ATSC network type is \"%s\" for tuning space \"%s\"", { GetTuningSpaceNetworkType(tspace.pointer(), report), fname });
-
-                // Check if ATSC network type matches our tuner type.
-                if (nettype == CLSID_ATSCNetworkProvider) {
-                    tspace_found = true;
-                    delivery_systems.insert(DS_ATSC);
-                }
-            }
-            else {
-                // Not an ATSC tuning space, silently ignore it.
-                report.debug(u"tuning space \"%s\" does not support IID_IATSCTuningSpace interface", {fname});
-            }
-        }
-    }
-
-    // Give up the tuner if no tuning space was found.
-    if (!tspace_found) {
-        report.debug(u"no supported tuning space found for this tuner");
-        clear(report);
-        return false;
-    }
-
-    // Keep this tuning space.
-    _ituning_space = tspace;
-    _tuning_space_fname = GetTuningSpaceFriendlyName(_ituning_space.pointer(), report);
-    _tuning_space_uname = GetTuningSpaceUniqueName(_ituning_space.pointer(), report);
-    report.debug(u"using tuning space \"%s\" (\"%s\")", {_tuning_space_uname, _tuning_space_fname});
 
     bool graph_done = false;
     bool user_receiver_found = false;
@@ -573,4 +452,45 @@ bool ts::TunerGraph::installTIF(const ComPtr<::IBaseFilter>& demux, const ComPtr
         removeFilter(tif.pointer(), report);
         return false;
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// Send a tune request.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& params, Report& report)
+{
+    // Check if we have a corresponding network type.
+    if (!params.delivery_system.set()) {
+        report.error(u"no delivery system specified");
+        return false;
+    }
+    const TunerType ttype = TunerTypeOf(params.delivery_system.value());
+    const auto it = _net_types.find(ttype);
+    if (it == _net_types.end()) {
+        report.error(u"tuner \"%s\" does not support %s", {_tuner_name, TunerTypeEnum.name(ttype)});
+        return false;
+    }
+
+    // The network type object.
+    DirectShowNetworkType& net(it->second);
+    assert(net.tuningSpace() != nullptr);
+
+    // Set the tuning space for this network type as current tuning space in the network provider.
+    ::HRESULT hr = _ituner->put_TuningSpace(net.tuningSpace());
+    if (!ComSuccess(hr, u"setting tuning space " + net.tuningSpaceName(), report)) {
+        return false;
+    }
+
+    // Create a DirectShow tune request
+    ComPtr<::ITuneRequest> tune_request;
+    if (!CreateTuneRequest(duck, tune_request, net.tuningSpace(), params, report)) {
+        return false;
+    }
+    assert(!tune_request.isNull());
+
+    // Send the tune request to the network provider.
+    hr = _ituner->put_TuneRequest(tune_request.pointer());
+    return ComSuccess(hr, u"DirectShow tuning error", report);
 }

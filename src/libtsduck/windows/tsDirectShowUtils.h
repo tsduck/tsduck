@@ -69,6 +69,14 @@ namespace ts {
     TSDUCKDLL UString GetTuningSpaceUniqueName(::ITuningSpace* tuning, Report& report);
 
     //!
+    //! Get the class name of a DirectShow tuning space (Windows-specific).
+    //! @param [in] tuning Tuning space.
+    //! @param [in,out] report Where to report errors.
+    //! @return Tuning space class name or an empty string on error.
+    //!
+    TSDUCKDLL UString GetTuningSpaceClass(::ITuningSpace* tuning, Report& report);
+
+    //!
     //! Get full description of a DirectShow tuning space (Windows-specific).
     //! @param [in] tuning Tuning space.
     //! @param [in,out] report Where to report errors.
@@ -83,16 +91,6 @@ namespace ts {
     //! @return Network type or an empty string on error.
     //!
     TSDUCKDLL UString GetTuningSpaceNetworkType(::ITuningSpace* tuning, Report& report);
-
-    //!
-    //! Get a DirectShow tuning space from a network type (Windows-specific).
-    //! @param [in] network_type GUID of network type.
-    //! @param [out] tuner_type Corresponding tuner type.
-    //! @param [out] tuning_space Corresponding tuning space.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool GetTuningSpaceFromNetworkType(const ::GUID& network_type, TunerType& tuner_type, ComPtr<::ITuningSpace>& tuning_space, Report& report);
 
     //!
     //! Get the name for a DirectShow pin direction value (Windows-specific).
@@ -118,117 +116,6 @@ namespace ts {
     //! @return True on success, false on error.
     //!
     TSDUCKDLL bool CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const ModulationArgs& params, Report& report);
-
-    //!
-    //! Reset the content of a TuningSpace object.
-    //! @param [in,out] tspace Pointer to the ITuningSpace interface of the object.
-    //! @param [in] name Name to use as unique name and friendly name.
-    //! @param [in] ntype GUID of associated network type.
-    //! @param [in] dlocator Default locator to set.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetTuningSpace(::ITuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::ILocator* dlocator, Report& report);
-
-    //!
-    //! Reset the content of a DVBTuningSpace object.
-    //! @param [in,out] tspace Pointer to the IDVBTuningSpace interface of the object.
-    //! @param [in] name Name to use as unique name and friendly name.
-    //! @param [in] ntype GUID of associated network type.
-    //! @param [in] stype DVB system type.
-    //! @param [in] dlocator Default locator to set.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetDVBTuningSpace(::IDVBTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::DVBSystemType stype, ::ILocator* dlocator, Report& report);
-
-    //!
-    //! Reset the content of a DVBTuningSpace2 object.
-    //! @param [in,out] tspace Pointer to the IDVBTuningSpace2 interface of the object.
-    //! @param [in] name Name to use as unique name and friendly name.
-    //! @param [in] ntype GUID of associated network type.
-    //! @param [in] stype DVB system type.
-    //! @param [in] dlocator Default locator to set.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetDVBTuningSpace2(::IDVBTuningSpace2* tspace, ::WCHAR* name, const ::GUID& ntype, ::DVBSystemType stype, ::ILocator* dlocator, Report& report);
-
-    //!
-    //! Reset the content of a DVBSTuningSpace object.
-    //! @param [in,out] tspace Pointer to the IDVBSTuningSpace interface of the object.
-    //! @param [in] name Name to use as unique name and friendly name.
-    //! @param [in] ntype GUID of associated network type.
-    //! @param [in] stype DVB system type.
-    //! @param [in] dlocator Default locator to set.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetDVBSTuningSpace(::IDVBSTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::DVBSystemType stype, ::ILocator* dlocator, Report& report);
-
-    //!
-    //! Reset the content of an ATSCTuningSpace object.
-    //! @param [in,out] tspace Pointer to the IATSCTuningSpace interface of the object.
-    //! @param [in] name Name to use as unique name and friendly name.
-    //! @param [in] ntype GUID of associated network type.
-    //! @param [in] ttype Tuner input type.
-    //! @param [in] dlocator Default locator to set.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetATSCTuningSpace(::IATSCTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::TunerInputType ttype, ::ILocator* dlocator, Report& report);
-
-    //!
-    //! Reset the content of a DigitalCableTuningSpace object.
-    //! @param [in,out] tspace Pointer to the IDigitalCableTuningSpace interface of the object.
-    //! @param [in] name Name to use as unique name and friendly name.
-    //! @param [in] ntype GUID of associated network type.
-    //! @param [in] ttype Tuner input type.
-    //! @param [in] dlocator Default locator to set.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetDigitalCableTuningSpace(::IDigitalCableTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::TunerInputType ttype, ::ILocator* dlocator, Report& report);
-
-    //!
-    //! Reset the content of a Locator object.
-    //! @param [in,out] locator Pointer to the ILocator interface of the object.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetLocator(::ILocator* locator, Report& report);
-
-    //!
-    //! Reset the content of a DVBTLocator object.
-    //! @param [in,out] locator Pointer to the IDVBTLocator interface of the object.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetDVBTLocator(::IDVBTLocator* locator, Report& report);
-
-    //!
-    //! Reset the content of a DVBSLocator object.
-    //! @param [in,out] locator Pointer to the IDVBSLocator interface of the object.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetDVBSLocator(::IDVBSLocator* locator, Report& report);
-
-    //!
-    //! Reset the content of an ATSCLocator object.
-    //! @param [in,out] locator Pointer to the IATSCLocator interface of the object.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetATSCLocator(::IATSCLocator* locator, Report& report);
-
-    //!
-    //! Reset the content of an ATSCLocator2 object.
-    //! @param [in,out] locator Pointer to the IATSCLocator2 interface of the object.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ResetATSCLocator2(::IATSCLocator2* locator, Report& report);
 
     //!
     //! Create a Locator object for tuning parameters.

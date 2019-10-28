@@ -35,10 +35,19 @@
 #pragma once
 #include "tsCerrReport.h"
 
-// #define TS_COMPTR_INSTRUMENTATION 1
+#if defined(DOXYGEN)
+//!
+//! When @c TS_COM_INSTRUMENTATION is externally defined and the application is
+//! compiled in debug mode, some Windows-specific classes using COM objects
+//! produce abundant trace messages on the standard error.
+//!
+#define TS_COM_INSTRUMENTATION 1
+#endif
 
-#if defined(TS_COMPTR_INSTRUMENTATION) && !defined(DEBUG)
-#undef TS_COMPTR_INSTRUMENTATION
+// Make sure that TS_COM_INSTRUMENTATION is undefined in release mode.
+// The massive amount of instrumentation messages is reserved to debug.
+#if defined(TS_COM_INSTRUMENTATION) && !defined(DEBUG)
+#undef TS_COM_INSTRUMENTATION
 #endif
 
 namespace ts {
@@ -47,7 +56,7 @@ namespace ts {
     //! @ingroup windows
     //! @tparam COMCLASS A COM interface or object class.
     //!
-    //! If @c TS_COMPTR_INSTRUMENTATION is defined and the application is
+    //! If @c TS_COM_INSTRUMENTATION is defined and the application is
     //! compiled in debug mode, the ComPtr class produces abundant trace
     //! messages on the standard error.
     //!
@@ -65,7 +74,7 @@ namespace ts {
     class ComPtr
     {
     private:
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
         mutable bool _traceCreator;  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
 #endif
         COMCLASS* _ptr;  // Encapsulated pointer to COM object.
@@ -183,7 +192,7 @@ namespace ts {
         //! @param [in] p A ComPtr to a @a COMSUBCLASS object.
         //! @return A reference to this object.
         //!
-        template <class COMSUBCLASS>
+        template <class COMSUBCLASS, typename std::enable_if<std::is_base_of<COMCLASS,COMSUBCLASS>::value>::type* = nullptr>
         ComPtr<COMCLASS>& assign(const ComPtr<COMSUBCLASS>& p);
 
         //!

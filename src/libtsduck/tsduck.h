@@ -536,6 +536,7 @@
 #include "tsComPtr.h"
 #include "tsDirectShowFilterCategory.h"
 #include "tsDirectShowGraph.h"
+#include "tsDirectShowNetworkType.h"
 #include "tsDirectShowTest.h"
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
