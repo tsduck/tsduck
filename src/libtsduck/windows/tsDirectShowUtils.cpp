@@ -123,47 +123,15 @@ ts::UString ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
     }
 }
 
-ts::UString ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report)
+ts::UString ts::GetTuningSpaceClass(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
         return UString();
     }
-
-    // Get tuning space names.
-    const UString fname(GetTuningSpaceFriendlyName(tspace, report));
-    const UString uname(GetTuningSpaceUniqueName(tspace, report));
-    UString tname;
-
-    // Build description.
-    if (!fname.empty()) {
-        tname = u"\"" + fname + u"\"";
+    else {
+        ::BSTR name = NULL;
+        return ToStringAndFree(tspace->get_CLSID(&name), name, u"ITuningSpace::get_CLSID", report);
     }
-    if (!uname.empty()) {
-        if (!fname.empty()) {
-            tname += u" (";
-        }
-        tname += uname;
-        if (!fname.empty()) {
-            tname += u")";
-        }
-    }
-
-    // Check if this tuning space supports IDVBTuningSpace interface.
-    ComPtr<::IDVBTuningSpace> dvb_tspace;
-    dvb_tspace.queryInterface(tspace, ::IID_IDVBTuningSpace, NULLREP);
-    if (!dvb_tspace.isNull()) {
-        // This is a DVB tuning space. Get DVB system type.
-        ::DVBSystemType sys_type = ::DVB_Cable;
-        ::HRESULT hr = dvb_tspace->get_SystemType(&sys_type);
-        if (ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
-            if (!tname.empty()) {
-                tname += u", DVB type: ";
-            }
-            tname += DVBSystemTypeName(sys_type);
-        }
-    }
-
-    return tname;
 }
 
 ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report)
@@ -188,257 +156,61 @@ ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report
     return type;
 }
 
-
-//-----------------------------------------------------------------------------
-// Reset the content of locator objects.
-//-----------------------------------------------------------------------------
-
-bool ts::ResetLocator(::ILocator* loc, Report& report)
+ts::UString ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report)
 {
-    return loc != nullptr &&
-        PUT(loc, CarrierFrequency, long(-1)) &&
-        PUT(loc, Modulation, ::BDA_MOD_NOT_SET) &&
-        PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) &&
-        PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) &&
-        PUT(loc, OuterFEC, ::BDA_FEC_METHOD_NOT_SET) &&
-        PUT(loc, OuterFECRate, ::BDA_BCC_RATE_NOT_SET) &&
-        PUT(loc, SymbolRate, long(-1));
-}
-
-bool ts::ResetDVBTLocator(::IDVBTLocator* loc, Report& report)
-{
-    return ResetLocator(loc, report) &&
-        PUT(loc, Bandwidth, long(-1)) &&
-        PUT(loc, LPInnerFEC, ::BDA_FEC_METHOD_NOT_SET) &&
-        PUT(loc, LPInnerFECRate, ::BDA_BCC_RATE_NOT_SET) &&
-        PUT(loc, HAlpha, ::BDA_HALPHA_NOT_SET) &&
-        PUT(loc, Guard, ::BDA_GUARD_NOT_SET) &&
-        PUT(loc, Mode, ::BDA_XMIT_MODE_NOT_SET) &&
-        PUT(loc, OtherFrequencyInUse, 0);
-}
-
-bool ts::ResetDVBSLocator(::IDVBSLocator* loc, Report& report)
-{
-    return ResetLocator(loc, report) &&
-        PUT(loc, SignalPolarisation, ::BDA_POLARISATION_NOT_SET) &&
-        PUT(loc, WestPosition, 0) &&
-        PUT(loc, OrbitalPosition, long(-1)) &&
-        PUT(loc, Azimuth, long(-1)) &&
-        PUT(loc, Elevation, long(-1));
-}
-
-bool ts::ResetATSCLocator(::IATSCLocator* loc, Report& report)
-{
-    return ResetLocator(loc, report) &&
-        PUT(loc, PhysicalChannel, long(-1)) &&
-        PUT(loc, TSID, long(-1));
-}
-
-bool ts::ResetATSCLocator2(::IATSCLocator2* loc, Report& report)
-{
-    return ResetATSCLocator(loc, report) &&
-        PUT(loc, ProgramNumber, long(-1));
-}
-
-
-//-----------------------------------------------------------------------------
-// Reset the content of a TuningSpace object.
-//-----------------------------------------------------------------------------
-
-bool ts::ResetTuningSpace(::ITuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::ILocator* dlocator, Report& report)
-{
-    return tspace != nullptr &&
-        PUT(tspace, UniqueName, name) &&
-        PUT(tspace, FriendlyName, name) &&
-        PUT(tspace, _NetworkType, ntype) &&
-        PUT(tspace, DefaultLocator, dlocator);
-}
-
-bool ts::ResetDVBTuningSpace(::IDVBTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::DVBSystemType stype, ::ILocator* dlocator, Report& report)
-{
-    return ResetTuningSpace(tspace, name, ntype, dlocator, report) &&
-        PUT(tspace, SystemType, stype);
-}
-
-bool ts::ResetDVBTuningSpace2(::IDVBTuningSpace2* tspace, ::WCHAR* name, const ::GUID& ntype, ::DVBSystemType stype, ::ILocator* dlocator, Report& report)
-{
-    return ResetDVBTuningSpace(tspace, name, ntype, stype, dlocator, report) && 
-        PUT(tspace, NetworkID, long(-1));
-}
-
-bool ts::ResetDVBSTuningSpace(::IDVBSTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::DVBSystemType stype, ::ILocator* dlocator, Report& report)
-{
-    return ResetDVBTuningSpace2(tspace, name, ntype, stype, dlocator, report) && 
-        PUT(tspace, LNBSwitch, 11700000) &&
-        PUT(tspace, LowOscillator, 9750000) &&
-        PUT(tspace, HighOscillator, 10600000) &&
-        PUT(tspace, SpectralInversion, ::BDA_SPECTRAL_INVERSION_NOT_SET);
-}
-
-bool ts::ResetATSCTuningSpace(::IATSCTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::TunerInputType ttype, ::ILocator* dlocator, Report& report)
-{
-    return ResetTuningSpace(tspace, name, ntype, dlocator, report) &&
-        PUT(tspace, InputType, ttype) &&
-        PUT(tspace, CountryCode, 0) &&
-        PUT(tspace, MinChannel, long(ttype == ::TunerInputType::TunerInputAntenna ? 1 : -1)) &&
-        PUT(tspace, MaxChannel, long(ttype == ::TunerInputType::TunerInputAntenna ? 99 : 9999)) &&
-        PUT(tspace, MinMinorChannel, long(ttype == ::TunerInputType::TunerInputAntenna ? 0 : -1)) &&
-        PUT(tspace, MaxMinorChannel, 999) &&
-        PUT(tspace, MinPhysicalChannel, long(ttype == ::TunerInputType::TunerInputAntenna ? 1 : 2)) &&
-        PUT(tspace, MaxPhysicalChannel, 158);
-}
-
-bool ts::ResetDigitalCableTuningSpace(::IDigitalCableTuningSpace* tspace, ::WCHAR* name, const ::GUID& ntype, ::TunerInputType ttype, ::ILocator* dlocator, Report& report)
-{
-    return ResetATSCTuningSpace(tspace, name, ntype, ttype, dlocator, report) &&
-        PUT(tspace, MinMajorChannel, -1) &&
-        PUT(tspace, MaxMajorChannel, 99) &&
-        PUT(tspace, MinSourceID, 0) &&
-        PUT(tspace, MaxSourceID, 0x7FFFFFFF);
-}
-
-
-//-----------------------------------------------------------------------------
-// Get a DirectShow tuning space from a network type (Windows-specific).
-//-----------------------------------------------------------------------------
-
-bool ts::GetTuningSpaceFromNetworkType(const ::GUID& network_type, TunerType& tuner_type, ComPtr<::ITuningSpace>& tuning_space, Report& report)
-{
-    // Make sure that previous object is released.
-    tuning_space.release();
-    tuner_type = TT_UNDEFINED;
-
-    // Now, we have to try all known network types, one by one.
-
-    // DVB-C network.
-    if (network_type == CLSID_DVBCNetworkProvider) {
-        tuner_type = TT_DVB_C;
-        ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
-        if (!ResetLocator(loc.pointer(), report)) {
-            return false;
-        }
-        ComPtr<::IDVBTuningSpace> tspace(CLSID_DVBTuningSpace, ::IID_IDVBTuningSpace, report);
-        if (!ResetDVBTuningSpace(tspace.pointer(), L"TSDuck DVB-C Tuning Space", network_type, ::DVBSystemType::DVB_Cable, loc.pointer(), report)) {
-            return false;
-        }
-        tuning_space.assign(tspace);
-        return true;
+    if (tspace == 0) {
+        return UString();
     }
 
-    // DVB-T network.
-    if (network_type == CLSID_DVBTNetworkProvider) {
-        tuner_type = TT_DVB_T;
-        ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
-        if (!ResetDVBTLocator(loc.pointer(), report)) {
-            return false;
+    // Get tuning space names.
+    const UString fname(GetTuningSpaceFriendlyName(tspace, report));
+    const UString uname(GetTuningSpaceUniqueName(tspace, report));
+    const UString ntype(GetTuningSpaceNetworkType(tspace, report));
+    const UString clsid(GetTuningSpaceClass(tspace, report));
+    UString tname;
+
+    // Build description.
+    if (!fname.empty()) {
+        tname = u"\"" + fname + u"\"";
+    }
+    if (!uname.empty()) {
+        if (!fname.empty()) {
+            tname += u" (";
         }
-        ComPtr<::IDVBTuningSpace> tspace(CLSID_DVBTuningSpace, ::IID_IDVBTuningSpace, report);
-        if (!ResetDVBTuningSpace(tspace.pointer(), L"TSDuck DVB-T Tuning Space", network_type, ::DVBSystemType::DVB_Terrestrial, loc.pointer(), report)) {
-            return false;
+        tname += uname;
+        if (!fname.empty()) {
+            tname += u")";
         }
-        tuning_space.assign(tspace);
-        return true;
+    }
+    if (!ntype.empty()) {
+        if (!tname.empty()) {
+            tname += u", network type: ";
+        }
+        tname += ntype;
+    }
+    if (!clsid.empty()) {
+        if (!tname.empty()) {
+            tname += u", class: ";
+        }
+        tname += u"\"" + clsid + u"\"";
     }
 
-    // DVB-S network.
-    if (network_type == CLSID_DVBSNetworkProvider) {
-        tuner_type = TT_DVB_S;
-        ComPtr<::IDVBSLocator> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator, report);
-        if (!ResetDVBSLocator(loc.pointer(), report)) {
-            return false;
+    // Check if this tuning space supports IDVBTuningSpace interface.
+    ComPtr<::IDVBTuningSpace> dvb_tspace;
+    dvb_tspace.queryInterface(tspace, ::IID_IDVBTuningSpace, NULLREP);
+    if (!dvb_tspace.isNull()) {
+        // This is a DVB tuning space. Get DVB system type.
+        ::DVBSystemType sys_type = ::DVBSystemType::DVB_Cable;
+        ::HRESULT hr = dvb_tspace->get_SystemType(&sys_type);
+        if (ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
+            if (!tname.empty()) {
+                tname += u", DVB type: ";
+            }
+            tname += DVBSystemTypeName(sys_type);
         }
-        ComPtr<::IDVBSTuningSpace> tspace(CLSID_DVBSTuningSpace, ::IID_IDVBSTuningSpace, report);
-        if (!ResetDVBSTuningSpace(tspace.pointer(), L"TSDuck DVB-S Tuning Space", network_type, ::DVBSystemType::DVB_Satellite, loc.pointer(), report)) {
-            return false;
-        }
-        tuning_space.assign(tspace);
-        return true;
     }
 
-    // ATSC terrestrial network.
-    if (network_type == CLSID_ATSCNetworkProvider) {
-        tuner_type = TT_ATSC;
-        ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
-        if (!ResetATSCLocator(loc.pointer(), report)) {
-            return false;
-        }
-        ComPtr<::IATSCTuningSpace> tspace(CLSID_ATSCTuningSpace, ::IID_IATSCTuningSpace, report);
-        if (!ResetATSCTuningSpace(tspace.pointer(), L"TSDuck ATSC Tuning Space", network_type, ::TunerInputType::TunerInputAntenna, loc.pointer(), report)) {
-            return false;
-        }
-
-        tuning_space.assign(tspace);
-        return true;
-    }
-
-    // ATSC cable network.
-    if (network_type == DIGITAL_CABLE_NETWORK_TYPE) {
-        tuner_type = TT_ATSC;
-        ComPtr<::IDigitalCableLocator> loc(CLSID_DigitalCableLocator, ::IID_IDigitalCableLocator, report);
-        if (!ResetATSCLocator2(loc.pointer(), report)) {
-            return false;
-        }
-        ComPtr<::IDigitalCableTuningSpace> tspace(CLSID_DigitalCableTuningSpace, ::IID_IDigitalCableTuningSpace, report);
-        if (!ResetDigitalCableTuningSpace(tspace.pointer(), L"TSDuck DigitalCable Tuning Space", network_type, ::TunerInputType::TunerInputCable, loc.pointer(), report)) {
-            return false;
-        }
-        tuning_space.assign(tspace);
-        return true;
-    }
-
-    // ISDB-S network.
-    // There are two GUID with similar names but distinct values.
-    // The differences are unknown, so treat them equally.
-    if (network_type == ISDB_SATELLITE_TV_NETWORK_TYPE || network_type == ISDB_S_NETWORK_TYPE) {
-        tuner_type = TT_ISDB_S;
-        ComPtr<::IISDBSLocator> loc(CLSID_ISDBSLocator, ::IID_IISDBSLocator, report);
-        if (!ResetDVBSLocator(loc.pointer(), report)) {
-            return false;
-        }
-        // Found no ISDB-S tuning space, using DVB-S one instead.
-        ComPtr<::IDVBSTuningSpace> tspace(CLSID_DVBSTuningSpace, ::IID_IDVBSTuningSpace, report);
-        if (!ResetDVBSTuningSpace(tspace.pointer(), L"TSDuck ISDB-S Tuning Space", network_type, ::DVBSystemType::DVB_Satellite, loc.pointer(), report)) {
-            return false;
-        }
-        tuning_space.assign(tspace);
-        return true;
-    }
-
-    // ISDB-T network.
-    if (network_type == ISDB_TERRESTRIAL_TV_NETWORK_TYPE) {
-        tuner_type = TT_ISDB_T;
-        // Found no ISDB-T locator, using DVB-T one instead.
-        ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
-        if (!ResetDVBTLocator(loc.pointer(), report)) {
-            return false;
-        }
-        // Found no ISDB-T tuning space, using DVB-T one instead.
-        ComPtr<::IDVBTuningSpace> tspace(CLSID_DVBTuningSpace, ::IID_IDVBTuningSpace, report);
-        if (!ResetDVBTuningSpace(tspace.pointer(), L"TSDuck ISDB-T Tuning Space", network_type, ::DVBSystemType::DVB_Terrestrial, loc.pointer(), report)) {
-            return false;
-        }
-        tuning_space.assign(tspace);
-        return true;
-    }
-
-    // ISDB-C network.
-    if (network_type == ISDB_CABLE_TV_NETWORK_TYPE) {
-        tuner_type = TT_ISDB_C;
-        // Found no ISDB-C locator, using DVB-C one instead.
-        ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
-        if (!ResetLocator(loc.pointer(), report)) {
-            return false;
-        }
-        // Found no ISDB-C tuning space, using DVB-C one instead.
-        ComPtr<::IDVBTuningSpace> tspace(CLSID_DVBTuningSpace, ::IID_IDVBTuningSpace, report);
-        if (!ResetDVBTuningSpace(tspace.pointer(), L"TSDuck ISDB-C Tuning Space", network_type, ::DVBSystemType::DVB_Cable, loc.pointer(), report)) {
-            return false;
-        }
-        tuning_space.assign(tspace);
-        return true;
-    }
-
-    return false;
+    return tname;
 }
 
 
@@ -562,12 +334,11 @@ bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, co
 
 //-----------------------------------------------------------------------------
 // Create an IDigitalLocator object for DVB-T parameters
-// Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
 bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
 {
-    ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
+    ComPtr<::IDVBTLocator2> loc(CLSID_DVBTLocator2, ::IID_IDVBTLocator2, report);
 
     if (loc.isNull() ||
         !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
@@ -585,13 +356,10 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         !PUT(loc, LPInnerFEC, ::BDA_FEC_VITERBI) ||
         !PUT(loc, LPInnerFECRate, ::BinaryConvolutionCodeRate(params.fec_lp.value())) ||
         !PUT(loc, Mode, ::TransmissionMode(params.transmission_mode.value())) ||
-        !PUT(loc, HAlpha, ::HierarchyAlpha(params.hierarchy.value())))
+        !PUT(loc, HAlpha, ::HierarchyAlpha(params.hierarchy.value())) ||
+        (params.plp.set() && params.plp != PLP_DISABLE && !PUT(loc, PhysicalLayerPipeId, long(params.plp.value()))))
     {
         return false;
-    }
-
-    if (params.plp.set() && params.plp != PLP_DISABLE) {
-        report.warning(u"DVT-T2 PLP selection disabled on Windows");
     }
 
     // Pending questions:
@@ -607,7 +375,6 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
 //-----------------------------------------------------------------------------
 // Create an IDigitalLocator object for DVB-C parameters
-// Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
 bool ts::CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
@@ -637,7 +404,6 @@ bool ts::CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
 //-----------------------------------------------------------------------------
 // Create an IDigitalLocator object for DVB-S/S2 parameters
-// Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
 bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
@@ -712,7 +478,6 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
 //-----------------------------------------------------------------------------
 // Create an IDigitalLocator object for ATSC parameters
-// Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
 bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)

@@ -225,13 +225,13 @@ bool ts::ComSuccess(::HRESULT hr, const UString& message, Report& report)
 bool ts::ComSuccess(::HRESULT hr, const UChar* message, Report& report)
 {
     if (SUCCEEDED(hr)) {
-        if (message != 0 && report.maxSeverity() >= 10) {
+        if (message != nullptr && report.maxSeverity() >= 10) {
             report.log(10, u"%s: success", {message});
         }
         return true;
     }
     else {
-        report.error(u"%s: %s", {message != 0 ? message : u"COM error", ComMessage(hr)});
+        report.error(u"%s: %s", {message != nullptr ? message : u"COM error", ComMessage(hr)});
         return false;
     }
 }

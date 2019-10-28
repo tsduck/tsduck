@@ -35,7 +35,7 @@
 // Instrumentation macros.
 //-----------------------------------------------------------------------------
 
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
 
 #define TRACE_HEADER(adj) std::cerr << ts::UString::Format(u"[COMPTR] %X=%-3d(@%X): ", size_t(_ptr), refCount() + (adj), size_t(this))
 #define TRACE_TRAILER()   std::endl << std::flush
@@ -70,7 +70,7 @@
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(COMCLASS* p, ::HRESULT hr) :
 
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
     _traceCreator(false),
 #endif
     _ptr(SUCCEEDED(hr) ? p : nullptr)
@@ -86,7 +86,7 @@ ts::ComPtr<COMCLASS>::ComPtr(COMCLASS* p, ::HRESULT hr) :
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(const ComPtr<COMCLASS>& p) :
 
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
     _traceCreator(false),
 #endif
     _ptr(p.pointer())
@@ -105,7 +105,7 @@ ts::ComPtr<COMCLASS>::ComPtr(const ComPtr<COMCLASS>& p) :
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(ComPtr<COMCLASS>&& p) :
 
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
     _traceCreator(false),
 #endif
     _ptr(p.pointer())
@@ -122,7 +122,7 @@ ts::ComPtr<COMCLASS>::ComPtr(ComPtr<COMCLASS>&& p) :
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, Report& report) :
 
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
     _traceCreator(false),
 #endif
     _ptr(nullptr)
@@ -138,7 +138,7 @@ ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, R
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, Report& report) :
 
-#if defined(TS_COMPTR_INSTRUMENTATION)
+#if defined(TS_COM_INSTRUMENTATION)
     _traceCreator(false),
 #endif
     _ptr(nullptr)
@@ -258,7 +258,7 @@ int ts::ComPtr<COMCLASS>::refCount() const
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-template <class COMSUBCLASS>
+template <class COMSUBCLASS, typename std::enable_if<std::is_base_of<COMCLASS,COMSUBCLASS>::value>::type*>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::assign(const ComPtr<COMSUBCLASS>& p)
 {
     TRACE_ENTRY();

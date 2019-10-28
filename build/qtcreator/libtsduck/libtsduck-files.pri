@@ -1032,6 +1032,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsComPtrTemplate.h \
         ../../../src/libtsduck/windows/tsDirectShowFilterCategory.h \
         ../../../src/libtsduck/windows/tsDirectShowGraph.h \
+        ../../../src/libtsduck/windows/tsDirectShowNetworkType.h \
         ../../../src/libtsduck/windows/tsDirectShowTest.h \
         ../../../src/libtsduck/windows/tsDirectShowUtils.h \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.h \
@@ -1044,6 +1045,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsComIds.cpp \
         ../../../src/libtsduck/windows/tsDirectShowFilterCategory.cpp \
         ../../../src/libtsduck/windows/tsDirectShowGraph.cpp \
+        ../../../src/libtsduck/windows/tsDirectShowNetworkType.cpp \
         ../../../src/libtsduck/windows/tsDirectShowTest.cpp \
         ../../../src/libtsduck/windows/tsDirectShowUtils.cpp \
         ../../../src/libtsduck/windows/tsHiDesDevice.cpp \

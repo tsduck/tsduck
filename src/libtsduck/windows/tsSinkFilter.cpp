@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  DirectShow filter for DVB tuners capture, Windows-specific.
-//  With many ideas taken from VLC and Microsoft Windows SDK samples.
-//
-//-----------------------------------------------------------------------------
 
 #include "tsSinkFilter.h"
 #include "tsDirectShowUtils.h"
@@ -43,7 +38,8 @@
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
-#if defined(DEBUG)
+// Trace every low-level operation when COM instrumentation is enabled.
+#if defined(TS_COM_INSTRUMENTATION)
 #define TRACE(...) _report.log(__VA_ARGS__)
 #define IF_TRACE(x) x
 #else
