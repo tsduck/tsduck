@@ -298,6 +298,8 @@
 #include "tsNames.h"
 #include "tsNetworkNameDescriptor.h"
 #include "tsNIT.h"
+#include "tsNorDigLogicalChannelDescriptorV1.h"
+#include "tsNorDigLogicalChannelDescriptorV2.h"
 #include "tsNPTEndpointDescriptor.h"
 #include "tsNPTReferenceDescriptor.h"
 #include "tsNullMutex.h"

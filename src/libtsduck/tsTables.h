@@ -154,6 +154,8 @@
 #include "tsMultilingualServiceNameDescriptor.h"
 #include "tsMultiplexBufferUtilizationDescriptor.h"
 #include "tsNetworkNameDescriptor.h"
+#include "tsNorDigLogicalChannelDescriptorV1.h"
+#include "tsNorDigLogicalChannelDescriptorV2.h"
 #include "tsNPTEndpointDescriptor.h"
 #include "tsNPTReferenceDescriptor.h"
 #include "tsNVODReferenceDescriptor.h"

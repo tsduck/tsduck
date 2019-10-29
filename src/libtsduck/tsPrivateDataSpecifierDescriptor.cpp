@@ -119,6 +119,7 @@ namespace {
     const ts::Enumeration KnownPDS({
         {u"eacem",    ts::PDS_EACEM},
         {u"eutelsat", ts::PDS_EUTELSAT},
+        {u"nordig",   ts::PDS_NORDIG},
     });
 }
 
