@@ -120,6 +120,8 @@
     REF_TYPE(MultilingualServiceNameDescriptor);
     REF_TYPE(MultiplexBufferUtilizationDescriptor);
     REF_TYPE(NetworkNameDescriptor);
+    REF_TYPE(NorDigLogicalChannelDescriptorV1);
+    REF_TYPE(NorDigLogicalChannelDescriptorV2);
     REF_TYPE(NPTEndpointDescriptor);
     REF_TYPE(NPTReferenceDescriptor);
     REF_TYPE(NVODReferenceDescriptor);

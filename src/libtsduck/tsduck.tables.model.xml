@@ -1281,6 +1281,25 @@
 
     <network_name_descriptor network_name="string, required"/>
 
+    <nordig_logical_channel_descriptor_v1>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint14, required"
+               visible_service="bool, default=true"/>
+    </nordig_logical_channel_descriptor_v1>
+
+    <nordig_logical_channel_descriptor_v2>
+      <!-- One per channel list -->
+      <channel_list id="uint8, required"
+                    name="string, required"
+                    country_code="char3, required">
+        <!-- One per service in the channel list -->
+        <service service_id="uint16, required"
+                 logical_channel_number="uint10, required"
+                 visible_service="bool, default=true"/>
+      </channel_list>
+    </nordig_logical_channel_descriptor_v2>
+
     <NPT_endpoint_descriptor
         start_NPT="uint33, required"
         stop_NPT="uint33, required"/>
@@ -1319,7 +1338,7 @@
 
     <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
 
-    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
+    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat|nordig, required"/>
 
     <protection_message_descriptor>
       <!-- One per component, up to 15 components -->

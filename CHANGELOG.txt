@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1460
+VERSION 3.19-1480
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -14,6 +14,7 @@ VERSION 3.19-1460
     to "tspsi", "tstabdump", "tstables" and plugins "psi", "tables".
   * Added option --extensions to "tsversion" and "tstabcomp".
   * Complete ATSC signalization, as defined in A/65, is now supported.
+  * NorDig-private descriptors are supported.
   * On Linux, multi-standard tuners are now supported (for instance tuners
     which support DVB-T and DVB-C). The options --delivery-system is used
     to select the appropriate type. Multi-standard tuners are not supported

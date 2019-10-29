@@ -939,6 +939,7 @@ namespace ts {
         PDS_TPS       = 0x00000010, //!< Private data specifier for TPS.
         PDS_EACEM     = 0x00000028, //!< Private data specifier for EACEM / EICTA.
         PDS_EICTA     = PDS_EACEM,  //!< Private data specifier for EACEM / EICTA.
+        PDS_NORDIG    = 0x00000029, //!< Private data specifier for NorDig (Northern Europe and Ireland).
         PDS_LOGIWAYS  = 0x000000A2, //!< Private data specifier for Logiways.
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
@@ -1200,6 +1201,11 @@ namespace ts {
         // Valid after PDS_EUTELSAT private_data_specifier
 
         DID_EUTELSAT_CHAN_NUM   = 0x83, //!< DID for eutelsat_channel_number_descriptor
+
+        // Valid after PDS_NORDIG private_data_specifier
+
+        DID_NORDIG_CHAN_NUM_V1  = 0x83, //!< DID for nordig_logical_channel_descriptor_v1
+        DID_NORDIG_CHAN_NUM_V2  = 0x87, //!< DID for nordig_logical_channel_descriptor_v2
 
         // Valid after PDS_EACEM/EICTA private_data_specifier
 

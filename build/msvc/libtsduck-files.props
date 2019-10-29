@@ -294,6 +294,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsNames.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNetworkNameDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNIT.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsNorDigLogicalChannelDescriptorV1.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsNorDigLogicalChannelDescriptorV2.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNPTEndpointDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNPTReferenceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNullMutex.h" />
@@ -802,6 +804,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNorDigLogicalChannelDescriptorV1.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNorDigLogicalChannelDescriptorV2.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNPTEndpointDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNPTReferenceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNullMutex.cpp" />

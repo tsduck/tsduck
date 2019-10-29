@@ -292,6 +292,8 @@ HEADERS += \
     ../../../src/libtsduck/tsNames.h \
     ../../../src/libtsduck/tsNetworkNameDescriptor.h \
     ../../../src/libtsduck/tsNIT.h \
+    ../../../src/libtsduck/tsNorDigLogicalChannelDescriptorV1.h \
+    ../../../src/libtsduck/tsNorDigLogicalChannelDescriptorV2.h \
     ../../../src/libtsduck/tsNPTEndpointDescriptor.h \
     ../../../src/libtsduck/tsNPTReferenceDescriptor.h \
     ../../../src/libtsduck/tsNullMutex.h \
@@ -787,6 +789,8 @@ SOURCES += \
     ../../../src/libtsduck/tsNames.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
     ../../../src/libtsduck/tsNIT.cpp \
+    ../../../src/libtsduck/tsNorDigLogicalChannelDescriptorV1.cpp \
+    ../../../src/libtsduck/tsNorDigLogicalChannelDescriptorV2.cpp \
     ../../../src/libtsduck/tsNPTEndpointDescriptor.cpp \
     ../../../src/libtsduck/tsNPTReferenceDescriptor.cpp \
     ../../../src/libtsduck/tsNullMutex.cpp \

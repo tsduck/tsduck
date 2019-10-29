@@ -641,6 +641,9 @@ Bits = 8
 0x0000002888 = HD Simulcast Logical Channel Number
 # With PDS for Eutelsat.
 0x0000055F83 = Eutelsat Channel Number
+# With PDS for NorDig.
+0x0000002983 = NorDig Logical Channel (V1)
+0x0000002987 = NorDig Logical Channel (V2)
 # ATSC descriptors, using the fake PDS for ATSC.
 0x4154534380 = ATSC Stuffing
 0x4154534381 = ATSC AC-3 Audio

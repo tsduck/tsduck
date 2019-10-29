@@ -53,6 +53,7 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
     {u"TPS",       ts::PDS_TPS},
     {u"EACEM",     ts::PDS_EACEM},
     {u"EICTA",     ts::PDS_EICTA},  // same value as EACEM
+    {u"NorDig",    ts::PDS_NORDIG},
     {u"Logiways",  ts::PDS_LOGIWAYS},
     {u"CanalPlus", ts::PDS_CANALPLUS},
     {u"Eutelsat",  ts::PDS_EUTELSAT},
