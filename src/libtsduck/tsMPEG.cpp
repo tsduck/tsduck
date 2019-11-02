@@ -171,8 +171,8 @@ uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
     }
 
     uint64_t next_pcr = last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
-    if (next_pcr > MAX_PCR) {
-        next_pcr -= MAX_PCR;
+    if (next_pcr >= PCR_SCALE) {
+        next_pcr -= PCR_SCALE;
     }
 
     return next_pcr;
