@@ -186,7 +186,7 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
 
     option(u"min-ms-interval", 0, POSITIVE);
     help(u"min-ms-interval", u"milliseconds",
-         u"Specify the minimum interval between two PCR's in miliseconds. "
+         u"Specify the minimum interval between two PCR's in milliseconds. "
          u"On a given PID, if the interval between two PCR's is larger than the minimum, "
          u"the next null packet will be replaced with an empty packet with a PCR for that PID.");
 
@@ -208,7 +208,7 @@ bool ts::PCRAdjustPlugin::getOptions()
     _ignore_dts = present(u"ignore-dts");
     _ignore_pts = present(u"ignore-pts");
     _ignore_scrambled = present(u"ignore-scrambled");
-    _min_pcr_interval = intValue<uint64_t>(u"min-ms-interval", 0) * (SYSTEM_CLOCK_FREQ / MilliSecPerSec);
+    _min_pcr_interval = (intValue<uint64_t>(u"min-ms-interval", 0) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
     return true;
 }
 
@@ -348,7 +348,7 @@ ts::PCRAdjustPlugin::PIDContextPtr ts::PCRAdjustPlugin::getContext(PID pid)
 
 
 //----------------------------------------------------------------------------
-// TableHandlerInterface implementation.
+// TableHandlerIntrface implementation.
 //----------------------------------------------------------------------------
 
 void ts::PCRAdjustPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)

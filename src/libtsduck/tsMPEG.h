@@ -389,12 +389,23 @@ namespace ts {
     constexpr uint64_t PTS_DTS_MASK = PTS_DTS_SCALE - 1;
 
     //!
+    //! The maximum value possible for a PTS/DTS value.
+    //!
+    constexpr uint64_t MAX_PTS_DTS = PTS_DTS_SCALE - 1;
+
+    //!
     //! Scale factor for PCR values.
     //! This is not a power of 2, it does not wrap up at a number of bits.
     //! The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
-    //! The PCR_ext part is a mod 300 value.
+    //! The PCR_ext part is a mod 300 value. Note that, since this not a
+    //! power of 2, there is no possible PCR_MASK value.
     //!
     constexpr uint64_t PCR_SCALE = PTS_DTS_SCALE * SYSTEM_CLOCK_SUBFACTOR;
+
+    //!
+    //! The maximum value possible for a PCR (Program Clock Reference) value.
+    //!
+    constexpr uint64_t MAX_PCR = PCR_SCALE - 1;
 
     //!
     //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
@@ -410,21 +421,6 @@ namespace ts {
     //! An invalid DTS value, can be used as a marker.
     //!
     constexpr uint64_t INVALID_DTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-
-    //!
-    //! The maximum value possible for a PCR (Program Clock Reference) value.
-    //! This is arrived at as follows:  (max PCR_base * 300) + max PCR_ext
-    //! PCR_base is represented by 33 bits, so max PCR_base = 2^33 - 1
-    //! PCR_ext is represented by 9 bits; however, it may only have values
-    //! 0-299 per specification.  As such, the maximum PCR is:
-    //! (2^33 - 1) * 300 + 299.
-    //!
-    constexpr uint64_t MAX_PCR = TS_UCONST64(2576980377599);
-
-    //!
-    //! The maximum value possible for a PTS/DTS value.
-    //!
-    constexpr uint64_t MAX_PTS_DTS = PTS_DTS_MASK;
 
     //!
     //! Check if PCR2 follows PCR1 after wrap up.
