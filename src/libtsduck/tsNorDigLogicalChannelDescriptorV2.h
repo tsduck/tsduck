@@ -59,16 +59,11 @@ namespace ts {
 
             //!
             //! Constructor
-            //! @param [in] id_ Service id.
-            //! @param [in] visible_ Service is visible.
-            //! @param [in] lcn_ Logical channel number.
+            //! @param [in] id Service id.
+            //! @param [in] visible Service is visible.
+            //! @param [in] lcn Logical channel number.
             //!
-            Service(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0):
-                service_id(id_),
-                visible(visible_),
-                lcn(lcn_)
-            {
-            }
+            Service(uint16_t id = 0, bool visible = true, uint16_t lcn = 0);
         };
 
         //!
@@ -89,11 +84,11 @@ namespace ts {
 
             //!
             //! Constructor
-            //! @param [in] id_ Service id.
-            //! @param [in] visible_ Service is visible.
-            //! @param [in] lcn_ Logical channel number.
+            //! @param [in] id Channel list id.
+            //! @param [in] name Channel list name.
+            //! @param [in] country Country code.
             //!
-            ChannelList(uint8_t id_ = 0, const UString& name = UString(), const UString& country = UString());
+            ChannelList(uint8_t id = 0, const UString& name = UString(), const UString& country = UString());
         };
 
         //!
