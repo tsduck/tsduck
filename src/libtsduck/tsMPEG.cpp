@@ -185,20 +185,20 @@ uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
 
 uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
 {
-    if ((pcr1 == INVALID_PCR) || (pcr2 == INVALID_PCR)) {
+    if (pcr1 > MAX_PCR || pcr2 > MAX_PCR) {
         return INVALID_PCR;
     }
     else {
-        return WrapUpPCR(pcr1, pcr2) ? (pcr2 + MAX_PCR) - pcr1 : pcr2 - pcr1;
+        return pcr2 >= pcr1 ? pcr2 - pcr1 : PCR_SCALE + pcr2 - pcr1;
     }
 }
 
 uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
 {
-    if ((pts1 == INVALID_PCR) || (pts2 == INVALID_PCR)) {
+    if (pts1 > MAX_PTS_DTS || pts2 > MAX_PTS_DTS) {
         return INVALID_PTS;
     }
     else {
-        return WrapUpPTS(pts1, pts2) ? (pts2 + MAX_PTS_DTS) - pts1 : pts2 - pts1;
+        return pts2 >= pts1 ? pts2 - pts1 : PTS_DTS_SCALE + pts2 - pts1;
     }
 }

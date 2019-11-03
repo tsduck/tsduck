@@ -375,16 +375,17 @@ namespace ts {
 
     //!
     //! Size in bits of a PTS (Presentation Time Stamp) or DTS (Decoding Time Stamp).
+    //! Unlike PCR, PTS and DTS are regular 33-bit binary values, wrapping up at 2^33.
     //!
     constexpr size_t PTS_DTS_BIT_SIZE = 33;
 
     //!
-    //! Scale factor for PTS and DTS values (wrap up at 2**33).
+    //! Scale factor for PTS and DTS values (wrap up at 2^33).
     //!
     constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(1) << PTS_DTS_BIT_SIZE;
 
     //!
-    //! Mask for PTS and DTS values (wrap up at 2**33).
+    //! Mask for PTS and DTS values (wrap up at 2^33).
     //!
     constexpr uint64_t PTS_DTS_MASK = PTS_DTS_SCALE - 1;
 
@@ -427,6 +428,8 @@ namespace ts {
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
     //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up.
+    //! The exact criteria is that @a pcr2 wraps up after @a pcr1 and their
+    //! distance is within 20% of a full PCR range.
     //!
     TSDUCKDLL inline bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
     {
@@ -456,7 +459,7 @@ namespace ts {
     //! Check if PTS2 follows PTS1 after wrap up.
     //! @param [in] pts1 First PTS.
     //! @param [in] pts2 Second PTS.
-    //! @return True is @a pts2 is probably following @a pts1 after wrapping up at 2**33.
+    //! @return True is @a pts2 is probably following @a pts1 after wrapping up at 2^33.
     //!
     TSDUCKDLL inline bool WrapUpPTS(uint64_t pts1, uint64_t pts2)
     {
