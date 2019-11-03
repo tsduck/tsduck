@@ -61,6 +61,13 @@ ts::NorDigLogicalChannelDescriptorV2::NorDigLogicalChannelDescriptorV2(DuckConte
     deserialize(duck, desc);
 }
 
+ts::NorDigLogicalChannelDescriptorV2::Service::Service(uint16_t id, bool vis, uint16_t num):
+    service_id(id),
+    visible(vis),
+    lcn(num)
+{
+}
+
 ts::NorDigLogicalChannelDescriptorV2::ChannelList::ChannelList(uint8_t id, const UString& name, const UString& country) :
     channel_list_id(id),
     channel_list_name(name),
