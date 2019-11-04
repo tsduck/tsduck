@@ -75,6 +75,7 @@ namespace ts {
             MilliSecond   bitrate_adj;      //!< Bitrate adjust interval.
             PacketCounter init_bitrate_adj; //!< As long as input bitrate is unknown, reevaluate periodically.
             Tristate      realtime;         //!< Use real-time options.
+            MilliSecond   receive_timeout;  //!< Timeout on input operations.
 
             //!
             //! Apply default values to options which were not specified on the command line.

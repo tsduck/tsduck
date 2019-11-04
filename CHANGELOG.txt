@@ -2,10 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1480
+VERSION 3.19-1485
 
 [IMP] Improvements on existing commands and plugins:
 
+  * Added option --receive-timeout to "tsp".
   * Added options --aes-cbc, --aes-ctr, --iv, --ctr-counter-bits,
     --output-cw-file to plugins "scrambler" and "descrambler".
   * Added option --swap-cw to plugin "descrambler".

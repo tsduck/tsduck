@@ -52,7 +52,8 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool abortInput() override { return true; }
+        virtual bool abortInput() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
         uint8_t       _initCC;      // continuity_counter
@@ -386,6 +387,21 @@ bool ts::CraftInput::start()
 {
     _packet.setCC(_initCC);
     _limit = _maxCount;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Input is never blocking.
+//----------------------------------------------------------------------------
+
+bool ts::CraftInput::setReceiveTimeout(MilliSecond timeout)
+{
+    return true;
+}
+
+bool ts::CraftInput::abortInput()
+{
     return true;
 }
 

@@ -152,7 +152,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
     _use_ssm = args.present(u"ssm");
     _use_first_source = args.present(u"first-source");
     _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
-    _recv_timeout = args.intValue<MilliSecond>(u"receive-timeout", -1);
+    _recv_timeout = args.intValue<MilliSecond>(u"receive-timeout", _recv_timeout); // preserve previous value
 
     // Check the presence of the '@' indicating a source address.
     const size_t sep = destination.find(u'@');
@@ -239,6 +239,18 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
     }
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Set reception timeout.
+//----------------------------------------------------------------------------
+
+void ts::UDPReceiver::setReceiveTimeoutArg(MilliSecond timeout)
+{
+    if (timeout > 0) {
+        _recv_timeout = timeout;
+    }
 }
 
 

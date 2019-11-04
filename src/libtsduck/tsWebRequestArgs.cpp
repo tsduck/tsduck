@@ -95,8 +95,9 @@ void ts::WebRequestArgs::defineArgs(Args& args) const
 
 bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    connectionTimeout = args.intValue<MilliSecond>(u"connection-timeout");
-    receiveTimeout = args.intValue<MilliSecond>(u"receive-timeout");
+    // Preserve previous timeout values
+    connectionTimeout = args.intValue<MilliSecond>(u"connection-timeout", connectionTimeout);
+    receiveTimeout = args.intValue<MilliSecond>(u"receive-timeout", receiveTimeout);
     proxyPort = args.intValue<uint16_t>(u"proxy-port");
     proxyHost = args.value(u"proxy-host");
     proxyUser = args.value(u"proxy-user");

@@ -129,7 +129,7 @@ void ts::WatchDog::main()
 
         // Handle the expiration. No longer under mutex protection to avoid deadlocks in handler.
         if (!_terminate && expired && h != nullptr) {
-            _log.debug(u"Watchdog expired, id %d", { _watchDogId });
+            _log.debug(u"Watchdog expired, id %d", {_watchDogId});
             h->handleWatchDogTimeout(*this);
         }
     }

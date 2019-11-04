@@ -380,6 +380,16 @@ namespace ts {
         virtual size_t receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets) = 0;
 
         //!
+        //! Set a receive timeout for all input operations.
+        //!
+        //! This method is typically invoked from tsp before starting the plugin.
+        //!
+        //! @param [in] timeout Receive timeout in milliseconds. No timeout if zero or negative.
+        //! @return True when the timeout is accepted, false if not supported by the plugin.
+        //!
+        virtual bool setReceiveTimeout(MilliSecond timeout);
+
+        //!
         //! Abort the input operation currently in progress.
         //!
         //! This method is typically invoked from another thread when the input

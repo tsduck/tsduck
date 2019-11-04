@@ -121,7 +121,7 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
     if (!_info_only) {
         // Reception parameters.
         signal_timeout = args.intValue<MilliSecond>(u"signal-timeout", Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) * 1000;
-        receive_timeout = args.intValue<MilliSecond>(u"receive-timeout", 0);
+        receive_timeout = args.intValue<MilliSecond>(u"receive-timeout", receive_timeout); // preserve previous value
 #if defined(TS_LINUX)
         demux_buffer_size = args.intValue<size_t>(u"demux-buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE);
 #elif defined(TS_WINDOWS)

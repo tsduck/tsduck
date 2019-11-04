@@ -75,6 +75,12 @@ namespace ts {
         //!
         void setParameters(const SocketAddress& localAddress, bool reusePort, size_t bufferSize = 0);
 
+        //!
+        //! Set reception timeout as if it comes from command line.
+        //! @param [in] timeout Receive timeout in milliseconds. No timeout if zero or negative.
+        //!
+        void setReceiveTimeoutArg(MilliSecond timeout);
+
         // Override UDPSocket methods
         virtual bool open(Report& report = CERR) override;
         virtual bool receive(void* data,

@@ -63,6 +63,7 @@ namespace ts {
         virtual bool isRealTime() override;
         virtual BitRate getBitrate() override;
         virtual size_t stackUsage() const override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
         class Guts;

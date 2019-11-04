@@ -154,6 +154,11 @@ bool ts::Plugin::handlePacketTimeout()
     return false;
 }
 
+bool ts::InputPlugin::setReceiveTimeout(MilliSecond timeout)
+{
+    return false;
+}
+
 bool ts::InputPlugin::abortInput()
 {
     return false;
