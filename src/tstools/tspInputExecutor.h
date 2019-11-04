@@ -35,6 +35,7 @@
 #pragma once
 #include "tspPluginExecutor.h"
 #include "tsPCRAnalyzer.h"
+#include "tsWatchDog.h"
 
 namespace ts {
     namespace tsp {
@@ -42,7 +43,7 @@ namespace ts {
         //! Execution context of a tsp input plugin.
         //! @ingroup plugin
         //!
-        class InputExecutor: public PluginExecutor
+        class InputExecutor: public PluginExecutor, private WatchDogHandlerInterface
         {
             TS_NOBUILD_NOCOPY(InputExecutor);
         public:
@@ -73,6 +74,13 @@ namespace ts {
             //!
             bool initAllBuffers(PacketBuffer* buffer, PacketMetadataBuffer* metadata);
 
+            //!
+            //! Access the shared library API.
+            //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
+            //! @return Address of the plugin interface.
+            //!
+            InputPlugin* plugin() {return _input;}
+
         private:
             InputPlugin* _input;                  // Plugin API
             bool         _in_sync_lost;           // Input synchronization lost (no 0x47 at start of packet)
@@ -83,9 +91,14 @@ namespace ts {
             PCRAnalyzer  _pcr_analyzer;           // Compute input bitrate from PCR's.
             PCRAnalyzer  _dts_analyzer;           // Compute input bitrate from video DTS's.
             bool         _use_dts_analyzer;       // Use DTS analyzer, not PCR analyzer.
+            WatchDog     _watchdog;               // Watchdog when plugin does not support receive timeout.
+            bool         _use_watchdog;           // The watchdog shall be used.
 
             // Inherited from Thread
             virtual void main() override;
+
+            // Implementation of WatchDogHandlerInterface
+            virtual void handleWatchDogTimeout(WatchDog& watchdog) override;
 
             // Receive null packets.
             size_t receiveNullPackets(size_t index, size_t max_packets);

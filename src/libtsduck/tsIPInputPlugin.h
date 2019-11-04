@@ -61,6 +61,7 @@ namespace ts {
         virtual BitRate getBitrate() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
         UDPReceiver   _sock;               // Incoming socket with associated command line options

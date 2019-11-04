@@ -59,9 +59,18 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
     _instuff_inpkt_remain(0),
     _pcr_analyzer(MIN_ANALYZE_PID, MIN_ANALYZE_PCR),
     _dts_analyzer(),
-    _use_dts_analyzer(false)
+    _use_dts_analyzer(false),
+    _watchdog(this, options->receive_timeout, 0, *this),
+    _use_watchdog(false)
 {
+    // Configure PTS/DTS analyze
     _dts_analyzer.resetAndUseDTS(MIN_ANALYZE_PID, MIN_ANALYZE_DTS);
+
+    // Propose receive timeout to input plugin.
+    if (options->receive_timeout > 0 && !_input->setReceiveTimeout(options->receive_timeout)) {
+        debug(u"%s input plugin does not support receive timeout, using watchdog and abort", {pluginName()});
+        _use_watchdog = true;
+    }
 }
 
 
@@ -146,6 +155,19 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate()
 
 
 //----------------------------------------------------------------------------
+// Implementation of WatchDogHandlerInterface
+//----------------------------------------------------------------------------
+
+void ts::tsp::InputExecutor::handleWatchDogTimeout(WatchDog& watchdog)
+{
+    debug(u"receive timeout, aborting");
+    if (!_input->abortInput()) {
+        warning(u"failed to abort input on receive timeout, maybe not supported by this plugin");
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Receive null packets.
 //----------------------------------------------------------------------------
 
@@ -190,7 +212,13 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
     }
 
     // Invoke the plugin receive method
+    if (_use_watchdog) {
+        _watchdog.restart();
+    }
     size_t count = _input->receive(pkt, data, max_packets);
+    if (_use_watchdog) {
+        _watchdog.suspend();
+    }
 
     // Validate sync byte (0x47) at beginning of each packet
     for (size_t n = 0; n < count; ++n) {

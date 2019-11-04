@@ -58,6 +58,7 @@ namespace ts {
         virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
         // Larger stack size than default
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
@@ -99,6 +100,19 @@ bool ts::DVBInput::getOptions()
     duck.loadArgs(*this);
     _tuner_args.loadArgs(duck, *this);
     return Args::valid();
+}
+
+
+//----------------------------------------------------------------------------
+// Set receive timeout from tsp.
+//----------------------------------------------------------------------------
+
+bool ts::DVBInput::setReceiveTimeout(MilliSecond timeout)
+{
+    if (timeout > 0) {
+        _tuner_args.receive_timeout = timeout;
+    }
+    return true;
 }
 
 

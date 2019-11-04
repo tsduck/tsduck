@@ -94,6 +94,19 @@ bool ts::IPInputPlugin::getOptions()
 
 
 //----------------------------------------------------------------------------
+// Set receive timeout from tsp.
+//----------------------------------------------------------------------------
+
+bool ts::IPInputPlugin::setReceiveTimeout(MilliSecond timeout)
+{
+    if (timeout > 0) {
+        _sock.setReceiveTimeoutArg(timeout);
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Input start method
 //----------------------------------------------------------------------------
 
@@ -134,6 +147,7 @@ bool ts::IPInputPlugin::abortInput()
     _sock.close(*tsp);
     return true;
 }
+
 
 //----------------------------------------------------------------------------
 // Input bitrate evaluation method

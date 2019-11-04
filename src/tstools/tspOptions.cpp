@@ -75,7 +75,8 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     bitrate(0),
     bitrate_adj(0),
     init_bitrate_adj(DEF_INIT_BITRATE_PKT_INTERVAL),
-    realtime(MAYBE)
+    realtime(Tristate::MAYBE),
+    receive_timeout(0)
 {
     setDescription(u"MPEG transport stream processor using a chain of plugins");
 
@@ -136,6 +137,12 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
          u"The option "
          u"--ignore-joint-termination disables the termination of tsp when all "
          u"plugins have reached their joint termination condition.");
+
+    option(u"receive-timeout", 0, POSITIVE);
+    help(u"receive-timeout", u"milliseconds",
+         u"Specify a timeout in milliseconds for all input operations. "
+         u"Equivalent to the same --receive-timeout options in some plugins. "
+         u"By default, there is no input timeout.");
 
     option(u"list-processors", 'l', ListProcessorEnum, 0, 1, true);
     help(u"list-processors", u"List all available processors.");
@@ -211,6 +218,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     log_msg_count = intValue<size_t>(u"log-message-count", AsyncReport::MAX_LOG_MESSAGES);
     ignore_jt = present(u"ignore-joint-termination");
     realtime = tristateValue(u"realtime");
+    receive_timeout = intValue<MilliSecond>(u"receive-timeout", 0);
 
     if (present(u"add-input-stuffing") && !value(u"add-input-stuffing").scan(u"%d/%d", {&instuff_nullpkt, &instuff_inpkt})) {
         error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");

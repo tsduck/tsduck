@@ -51,7 +51,8 @@ namespace ts {
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool abortInput() override { return true; }
+        virtual bool abortInput() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
         PacketCounter _max_count;   // Number of packets to generate
@@ -108,6 +109,21 @@ bool ts::NullInput::start()
 {
     _count = 0;
     _limit = _max_count;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Input is never blocking.
+//----------------------------------------------------------------------------
+
+bool ts::NullInput::setReceiveTimeout(MilliSecond timeout)
+{
+    return true;
+}
+
+bool ts::NullInput::abortInput()
+{
     return true;
 }
 

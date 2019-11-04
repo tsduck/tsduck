@@ -63,6 +63,7 @@ namespace ts {
             virtual bool stop() override;
             virtual bool isRealTime() override;
             virtual void processInput() override;
+            virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
         private:
             UString        _url;
