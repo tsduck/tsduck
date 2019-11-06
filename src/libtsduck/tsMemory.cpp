@@ -70,6 +70,7 @@ const void* ts::LocatePattern(const void* area, size_t area_size, const void* pa
     return nullptr; // not found
 }
 
+
 //----------------------------------------------------------------------------
 // Check if a memory area contains all identical byte values.
 //----------------------------------------------------------------------------
@@ -89,6 +90,88 @@ bool ts::IdenticalBytes(const void * area, size_t area_size)
         return true;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Memory accesses with non-natural sizes
+//----------------------------------------------------------------------------
+
+#if !defined(TS_STRICT_MEMORY_ALIGN)
+
+// 24 bits
+
+uint32_t ts::GetUInt24BE(const void* p)
+{
+    return (static_cast<uint32_t>(GetUInt16BE(p)) << 8) | *(static_cast<const uint8_t*>(p) + 2);
+}
+
+uint32_t ts::GetUInt24LE(const void* p)
+{
+    return (static_cast<uint32_t>(*(static_cast<const uint8_t*>(p) + 2)) << 16) | GetUInt16LE(p);
+}
+
+void ts::PutUInt24BE(void* p, uint32_t i)
+{
+    *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 8));
+    *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i);
+}
+
+void ts::PutUInt24LE(void* p, uint32_t i)
+{
+    *(static_cast<uint16_t*>(p)) = CondByteSwap16LE(static_cast<uint16_t>(i));
+    *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i >> 16);
+}
+
+// 40 bits
+
+uint64_t ts::GetUInt40BE(const void* p)
+{
+    return (static_cast<uint64_t>(GetUInt32BE(p)) << 8) | *(static_cast<const uint8_t*>(p) + 4);
+}
+
+uint64_t ts::GetUInt40LE(const void* p)
+{
+    return (static_cast<uint64_t>(*(static_cast<const uint8_t*>(p) + 4)) << 32) | GetUInt32LE(p);
+}
+
+void ts::PutUInt40BE(void* p, uint64_t i)
+{
+    *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 32);
+    *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+}
+
+void ts::PutUInt40LE(void* p, uint64_t i)
+{
+    *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+    *(static_cast<uint8_t*>(p) + 4) = static_cast<uint8_t>(i >> 32);
+}
+
+// 48 bits
+
+uint64_t ts::GetUInt48BE(const void* p)
+{
+    return (static_cast<uint64_t>(GetUInt32BE(p)) << 16) | GetUInt16BE(static_cast<const uint8_t*>(p) + 4);
+}
+
+uint64_t ts::GetUInt48LE(const void* p)
+{
+    return (static_cast<uint64_t>(GetUInt16LE(static_cast<const uint8_t*>(p) + 4)) << 32) | GetUInt32LE(p);
+}
+
+void ts::PutUInt48BE(void* p, uint64_t i)
+{
+    *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
+    *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 2)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+}
+
+void ts::PutUInt48LE(void* p, uint64_t i)
+{
+    *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+    *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
+}
+
+#endif
+
 
 //----------------------------------------------------------------------------
 // Memory access with strict alignment.
