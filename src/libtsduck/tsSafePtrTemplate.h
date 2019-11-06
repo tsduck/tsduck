@@ -61,6 +61,9 @@ template <typename T, class MUTEX>
 ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(SafePtr<T,MUTEX>&& sp) noexcept
 {
     if (_shared != sp._shared) {
+        if (_shared != nullptr) {
+            _shared->detach();
+        }
         _shared = sp._shared;
         sp._shared = nullptr;
     }
