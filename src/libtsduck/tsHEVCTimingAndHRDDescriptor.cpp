@@ -77,7 +77,7 @@ void ts::HEVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& de
     const bool has_90kHz = N_90khz.set() && K_90khz.set();
     const bool info_present = num_units_in_tick.set();
     bbp->appendUInt8((hrd_management_valid ? 0x80 : 0x00) |
-                     (target_schedule_idx.set() ? ((target_schedule_idx.value() & 0x1F) << 1) : 0x7E) |
+                     (target_schedule_idx.set() ? uint8_t((target_schedule_idx.value() & 0x1F) << 1) : 0x7E) |
                      (info_present ? 0x01 : 0x00));
     if (info_present) {
         bbp->appendUInt8((has_90kHz ? 0x80 : 0x00) | 0x7F);
