@@ -40,19 +40,18 @@ namespace ts {
     //!
     //! Representation of an HEVC_timing_and_HRD_descriptor.
     //!
-    //! This MPG-defined descriptor is not defined in ISO/IEC 13818-1,
-    //! ITU-T Rec. H.222.0. See its "Amendment 3: Transport of HEVC video
-    //! over ITU-T Rec. H.222.0 | ISO/IEC 13818-1 streams", section 2.6.97.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.97.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL HEVCTimingAndHRDDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        bool               hrd_management_valid;  //!< See ISO/IEC 13818-1, Amendment 3.
-        Variable<uint32_t> N_90khz;               //!< See ISO/IEC 13818-1, Amendment 3.
-        Variable<uint32_t> K_90khz;               //!< See ISO/IEC 13818-1, Amendment 3.
-        Variable<uint32_t> num_units_in_tick;     //!< See ISO/IEC 13818-1, Amendment 3.
+        bool               hrd_management_valid;  //!< See ISO/IEC 13818-1.
+        Variable<uint8_t>  target_schedule_idx;   //!< 5 bits, see ISO/IEC 13818-1.
+        Variable<uint32_t> N_90khz;               //!< See ISO/IEC 13818-1.
+        Variable<uint32_t> K_90khz;               //!< See ISO/IEC 13818-1.
+        Variable<uint32_t> num_units_in_tick;     //!< See ISO/IEC 13818-1.
 
         //!
         //! Default constructor.

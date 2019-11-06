@@ -13,14 +13,38 @@ TSDuck - List of features to be implemented or fixed
   - 2.6.48   muxcode_descriptor
   - 2.6.50   FmxBufferSize_descriptor
   - 2.6.52   MultiplexBuffer_descriptor
+  - 2.6.54   FlexMuxTiming_descriptor
+  - 2.6.56   content_labelling_descriptor
+  - 2.6.58   metadata_pointer_descriptor
+  - 2.6.60   metadata_descriptor
+  - 2.6.62   metadata_STD_descriptor
+  - 2.6.68   MPEG2_AAC_audio_descriptor
+  - 2.6.70   MPEG4_text_descriptor
+  - 2.6.72   MPEG4_audio_extension_descriptor
+  - 2.6.74   auxiliary_video_stream_descriptor
+  - 2.6.76   SVC_extension_descriptor
+  - 2.6.78   MVC_extension_descriptor
+  - 2.6.80   J2K_video_descriptor
+  - 2.6.82   MVC_operation_point_descriptor
+  - 2.6.84   MPEG2_stereoscopic_video_format_descriptor
+  - 2.6.86   stereoscopic_program_info_descriptor
+  - 2.6.88   stereoscopic_video_info_descriptor
+  - 2.6.93   transport_profile_descriptor
+  - 2.6.99   AF_extensions_descriptor
+  - 2.6.100  HEVC_operation_point_descriptor
+  - 2.6.102  HEVC_hierarchy_extension_descriptor
+  - 2.6.104  green_extension_descriptor
+  - 2.6.106  MPEGH_3D_audio_descriptor
+  - 2.6.108  MPEGH_3D_audio_config_descriptor
+  - 2.6.110  MPEGH_3D_audio_scene_descriptor
+  - 2.6.112  MPEGH_3D_audio_text_label_descriptor
+  - 2.6.114  MPEGH_3D_audio_multi_stream_descriptor
+  - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
+  - 2.6.118  MPEGH_3D_audio_command_descriptor
+  - 2.6.119  quality_extension_descriptor
+  - 2.6.120  virtual_segmentation_descriptor
+  - 2.12.6   metadata_section
   - 2.11.3.8 ISO_IEC_14496_section
-
-  ISO/IEC 13818-1 2000, Amendment 1, Transport of Metadata
-  - 2.6.56  content_labelling_descriptor
-  - 2.6.58  metadata_pointer_descriptor
-  - 2.6.60  metadata_descriptor
-  - 2.6.62  metadata_STD_descriptor
-  - 2.12.6  metadata_section
 
   ETSI EN 300 468 (DVB SI)
   - 5.2.8    Stuffing Table (ST)
