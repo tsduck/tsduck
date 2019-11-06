@@ -497,7 +497,7 @@ namespace ts {
             SafePtrShared* attach();
 
             // Decrement reference count and deallocate this if needed.
-            // Return true is deleted, false otherwise.
+            // Return true if deleted, false otherwise.
             bool detach();
 
             // The following three methods have the same semantics as their SafePtr counterparts.
