@@ -25,14 +25,30 @@
     <When Condition="'$(DtapiLibraryPath)'!=''">
       <!-- Already externally defined, nothing to do -->
     </When>
+    <!-- Visual Studio 2015 -->
+    <When Condition="'$(MSBuildToolsVersion)' == '14.0' AND Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC14')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+        <DtapiVSDir>VC14</DtapiVSDir>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(MSBuildToolsVersion)' == '14.0' AND Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC14')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+        <DtapiVSDir>VC14</DtapiVSDir>
+      </PropertyGroup>
+    </When>
+    <!-- Visual Studio 2017 and up (Dektec hasn't released a version for VS2019 yet) -->
     <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
       <PropertyGroup Label="UserMacros">
         <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+        <DtapiVSDir>VC15</DtapiVSDir>
       </PropertyGroup>
     </When>
     <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
       <PropertyGroup Label="UserMacros">
         <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+        <DtapiVSDir>VC15</DtapiVSDir>
       </PropertyGroup>
     </When>
   </Choose>
@@ -46,6 +62,11 @@
   <ItemGroup Condition="'$(DtapiLibraryPath)'!=''">
     <BuildMacro Include="DtapiLibraryPath">
       <Value>$(DtapiLibraryPath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+  <ItemGroup Condition="'$(DtapiVSDir)'!=''">
+    <BuildMacro Include="DtapiVSDir">
+      <Value>$(DtapiVSDir)</Value>
     </BuildMacro>
   </ItemGroup>
 
@@ -67,7 +88,7 @@
       <PreprocessorDefinitions>_DTAPI_DISABLE_AUTO_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(DtapiLibraryPath)\VC15;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DtapiLibraryPath)\$(DtapiVSDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Link Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       <AdditionalDependencies>DTAPIMD.lib;%(AdditionalDependencies)</AdditionalDependencies>
