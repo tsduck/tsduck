@@ -1111,6 +1111,7 @@
 
     <HEVC_timing_and_HRD_descriptor
         hrd_management_valid="bool, required"
+        target_schedule_idx="uint5, optional"
         N_90khz="uint32, optional"
         K_90khz="uint32, optional"
         num_units_in_tick="uint32, optional"/>
@@ -1124,10 +1125,13 @@
         interlaced_source_flag="bool, required"
         non_packed_constraint_flag="bool, required"
         frame_only_constraint_flag="bool, required"
+        copied_44bits="uint44, default=0"
         reserved_zero_44bits="uint44, default=0"
         level_idc="uint8, required"
         HEVC_still_present_flag="bool, required"
         HEVC_24hr_picture_present_flag="bool, required"
+        sub_pic_hrd_params_not_present="bool, default=true"
+        HDR_WCG_idc="uint2, default=3"
         temporal_id_min="uint3, optional, specify both min and max or none"
         temporal_id_max="uint3, optional, specify both min and max or none"/>
 

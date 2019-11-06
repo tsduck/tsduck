@@ -51,6 +51,7 @@ TS_FACTORY_REGISTER(ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor, ts::EDID:
 ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     hrd_management_valid(false),
+    target_schedule_idx(),
     N_90khz(),
     K_90khz(),
     num_units_in_tick()
@@ -75,7 +76,9 @@ void ts::HEVCTimingAndHRDDescriptor::serialize(DuckContext& duck, Descriptor& de
     bbp->appendUInt8(MY_EDID);
     const bool has_90kHz = N_90khz.set() && K_90khz.set();
     const bool info_present = num_units_in_tick.set();
-    bbp->appendUInt8((hrd_management_valid ? 0x80 : 0x00) | 0x7E | (info_present ? 0x01 : 0x00));
+    bbp->appendUInt8((hrd_management_valid ? 0x80 : 0x00) |
+                     (target_schedule_idx.set() ? ((target_schedule_idx.value() & 0x1F) << 1) : 0x7E) |
+                     (info_present ? 0x01 : 0x00));
     if (info_present) {
         bbp->appendUInt8((has_90kHz ? 0x80 : 0x00) | 0x7F);
         if (has_90kHz) {
@@ -99,6 +102,7 @@ void ts::HEVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descri
 
     _is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == MY_EDID;
 
+    target_schedule_idx.reset();
     N_90khz.reset();
     K_90khz.reset();
     num_units_in_tick.reset();
@@ -106,6 +110,9 @@ void ts::HEVCTimingAndHRDDescriptor::deserialize(DuckContext& duck, const Descri
     if (_is_valid) {
         hrd_management_valid = (data[1] & 0x80) != 0;
         const bool info_present = (data[1] & 0x01) != 0;
+        if ((data[1] & 0x40) == 0) {
+            target_schedule_idx = (data[1] >> 1) & 0x1F;
+        }
         data += 2; size -= 2;
 
         if (info_present) {
@@ -147,6 +154,10 @@ void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& display, D
     if (size >= 1) {
         strm << margin << "HRD management valid: " << UString::TrueFalse((data[0] & 0x80) != 0) << std::endl;
         bool info_present = (data[0] & 0x01) != 0;
+        if ((data[0] & 0x40) == 0) {
+            const uint8_t idx = (data[0] >> 1) & 0x1F;
+            strm << margin << UString::Format(u"Target schedule idx: 0x%x (%d)", {idx, idx}) << std::endl;
+        }
         data++; size--;
 
         bool ok = size >= 1;
@@ -179,6 +190,7 @@ void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& display, D
 void ts::HEVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"hrd_management_valid", hrd_management_valid);
+    root->setOptionalIntAttribute(u"target_schedule_idx", target_schedule_idx);
     root->setOptionalIntAttribute(u"N_90khz", N_90khz);
     root->setOptionalIntAttribute(u"K_90khz", K_90khz);
     root->setOptionalIntAttribute(u"num_units_in_tick", num_units_in_tick);
@@ -194,6 +206,7 @@ void ts::HEVCTimingAndHRDDescriptor::fromXML(DuckContext& duck, const xml::Eleme
     _is_valid =
         checkXMLName(element) &&
         element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
+        element->getOptionalIntAttribute<uint8_t>(target_schedule_idx, u"target_schedule_idx", 0x00, 0x1F) &&
         element->getOptionalIntAttribute<uint32_t>(N_90khz, u"N_90khz") &&
         element->getOptionalIntAttribute<uint32_t>(K_90khz, u"K_90khz") &&
         element->getOptionalIntAttribute<uint32_t>(num_units_in_tick, u"num_units_in_tick");

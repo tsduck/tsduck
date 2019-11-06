@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1485
+VERSION 3.19-1486
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -27,6 +27,7 @@ VERSION 3.19-1485
     was requested.
   * In plugin "continuity", packets were incorrectly detected as duplicate
     when they had the same continuity counter but distinct content.
+  * Fixed HEVC_video_descriptor to latest version of ISO 13818-1 standard.
 
 -------------------------------------------------------------------------------
 

@@ -106,7 +106,7 @@ namespace ts {
         //! @c int data named @c tspInterfaceVersion which contains the current
         //! interface version at the time the library is built.
         //!
-        static const int API_VERSION = 12;
+        static const int API_VERSION = 13;
 
         //!
         //! Get the current input bitrate in bits/seconds.
