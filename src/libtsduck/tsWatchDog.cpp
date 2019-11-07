@@ -29,7 +29,6 @@
 
 #include "tsWatchDog.h"
 #include "tsGuard.h"
-#include "tsGuardCondition.h"
 TSDUCK_SOURCE;
 
 
@@ -45,15 +44,15 @@ ts::WatchDog::WatchDog(ts::WatchDogHandlerInterface* handler, ts::MilliSecond ti
     _condition(),
     _handler(handler),
     _timeout(timeout == 0 ? Infinite : timeout),
-    _active(false)
+    _active(false),
+    _started(false)
 {
-    // Start the thread.
-    start();
 }
 
 ts::WatchDog::~WatchDog()
 {
     // Terminate the thread and wait for actual thread termination.
+    // Does nothing if the thread has not been started.
     _terminate = true;
     _condition.signal();
     waitForTermination();
@@ -72,6 +71,24 @@ void ts::WatchDog::setWatchDogHandler(WatchDogHandlerInterface* h)
 
 
 //----------------------------------------------------------------------------
+// Activate the watchdog. Must be called with mutex held.
+//----------------------------------------------------------------------------
+
+void ts::WatchDog::activate(GuardCondition& lock)
+{
+    if (_started) {
+        // Watchdog thread already started, signal the condition.
+        lock.signal();
+    }
+    else {
+        // Start the watchdog thread.
+        _started = true;
+        Thread::start();
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Set a new timeout value.
 //----------------------------------------------------------------------------
 
@@ -80,7 +97,9 @@ void ts::WatchDog::setTimeout(MilliSecond timeout, bool autoStart)
     GuardCondition lock(_mutex, _condition);
     _timeout = timeout == 0 ? Infinite : timeout;
     _active = autoStart;
-    lock.signal();
+    if (autoStart) {
+        activate(lock);
+    }
 }
 
 
@@ -92,7 +111,7 @@ void ts::WatchDog::restart()
 {
     GuardCondition lock(_mutex, _condition);
     _active = true;
-    lock.signal();
+    activate(lock);
 }
 
 
@@ -104,6 +123,8 @@ void ts::WatchDog::suspend()
 {
     GuardCondition lock(_mutex, _condition);
     _active = false;
+    // Signal the condition if the thread is started.
+    // No need to activate the thread if not started.
     lock.signal();
 }
 

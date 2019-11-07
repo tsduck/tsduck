@@ -39,6 +39,7 @@
 #include "tsReport.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
+#include "tsGuardCondition.h"
 
 namespace ts {
     //!
@@ -120,6 +121,10 @@ namespace ts {
         WatchDogHandlerInterface* _handler;     // Handler for expiration.
         MilliSecond               _timeout;     // Expiration timeout, 0 means no timeout.
         bool                      _active;      // The watchdog is active.
+        bool                      _started;     // The thread is started.
+
+        // Activate the watchdog. Must be called with mutex held.
+        void activate(GuardCondition& lock);
 
         // Implementation of Thread.
         virtual void main() override;

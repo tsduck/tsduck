@@ -444,5 +444,4 @@ void ts::TSFileInput::abortRead()
         _fd = -1;
 #endif
     }
-
 }
