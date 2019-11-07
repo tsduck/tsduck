@@ -87,6 +87,7 @@ namespace ts {
         int    _led_state;     //!< State of the LED (one of DTAPI_LED_*)
         int    _set_input;     //!< Port number to set as input, for directional ports
         int    _set_output;    //!< Port number to set as output, for directional ports
+        int    _power_mode;    //!< Power mode to set on DTU-315
 
         // Apply commands to one device. Return command status.
         int oneDevice(const DektecDevice& device);

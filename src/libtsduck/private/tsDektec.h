@@ -121,6 +121,8 @@
     #define DTAPI_DVBT2_QAM256           0
     #define DTAPI_DVBT2_QAM64            0
     #define DTAPI_DVBT2_QPSK             0
+    #define DTAPI_IOCONFIG_MODHQ         0
+    #define DTAPI_IOCONFIG_LOWPWR        0
     #define DTAPI_ISDBT_BW_5MHZ          0
     #define DTAPI_ISDBT_BW_6MHZ          0
     #define DTAPI_ISDBT_BW_7MHZ          0

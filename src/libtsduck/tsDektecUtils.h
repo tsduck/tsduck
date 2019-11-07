@@ -84,6 +84,11 @@ namespace ts {
     TSDUCKDLL extern const Enumeration DektecDVBTProperty;
 
     //!
+    //! Enumeration (names/values) for Dektec DTU-315 modulator power modes.
+    //!
+    TSDUCKDLL extern const Enumeration DektecPowerMode;
+
+    //!
     //! Check if this version of TSDuck was built with Dektec support.
     //! @return True is Dektec devices are supported. Always false on macOS or on Windows/Linux on non-Intel platforms.
     //!
