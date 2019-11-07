@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 
 // On UNIX platforms, we use a semaphore (sem_t). On MacOS, the address of the
-// semaphore is returned by sep_open. On other UNIX, the semaphore instance is
+// semaphore is returned by sem_open. On other UNIX, the semaphore instance is
 // initialized by sem_init.
 #if defined(TS_UNIX)
     #if defined(TS_MAC)
@@ -209,7 +209,7 @@ void ts::UserInterrupt::activate()
     // Install the console interrupt handler
     if (SetConsoleCtrlHandler(sysHandler, TRUE) == 0) {
         // Failure
-        ErrorCode err = LastErrorCode();
+        const ErrorCode err = LastErrorCode();
         std::cerr << "* Error establishing console interrupt handler: " << ErrorCodeMessage(err) << std::endl;
         return;
     }
@@ -261,7 +261,7 @@ void ts::UserInterrupt::activate()
 // Deactivate
 //----------------------------------------------------------------------------
 
-void ts::UserInterrupt::deactivate ()
+void ts::UserInterrupt::deactivate()
 {
     // Deactivate only if active
     Guard lock(SingletonManager::Instance()->mutex);
