@@ -75,6 +75,7 @@ public:
     int                  preload_fifo_size;  // Size of FIFO to preload before starting transmission
     uint64_t             preload_fifo_delay; // Preload FIFO such that it starts transmission after specified delay in ms
     bool                 maintain_preload;   // Roughly maintain the buffer size if the FIFO is preloaded prior to starting transmission
+    int                  power_mode;         // Power mode to set on DTU-315
 };
 
 ts::DektecOutputPlugin::Guts::Guts() :
@@ -94,7 +95,8 @@ ts::DektecOutputPlugin::Guts::Guts() :
     preload_fifo(false),
     preload_fifo_size(0),
     preload_fifo_delay(0),
-    maintain_preload(false)
+    maintain_preload(false),
+    power_mode(-1)
 {
 }
 
@@ -594,6 +596,9 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"plp0-type",
          u"DVB-T2 modulators: indicate the PLP type for PLP #0. The default is COMMON.");
 
+    option(u"power-mode", 0, DektecPowerMode);
+    help(u"power-mode", u"DTU-315 modulators: set the power mode to the specified value.");
+
     option(u"preload-fifo");
     help(u"preload-fifo",
          u"Preload FIFO (hardware buffer) before starting transmission. Preloading the FIFO "
@@ -824,6 +829,7 @@ bool ts::DektecOutputPlugin::start()
     _guts->mute_on_stop = false;
     _guts->preload_fifo = present(u"preload-fifo");
     _guts->maintain_preload = present(u"maintain-preload");
+    _guts->power_mode = intValue(u"power-mode", -1);
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();
@@ -841,7 +847,8 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Open the channel
-    status = _guts->chan.AttachToPort(&_guts->dtdev, _guts->device.output[_guts->chan_index].m_Port);
+    const int port = _guts->device.output[_guts->chan_index].m_Port;
+    status = _guts->chan.AttachToPort(&_guts->dtdev, port);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching output channel %d of Dektec device %d (%s): %s", {_guts->chan_index, _guts->dev_index, _guts->device.model, DektecStrError(status)});
         _guts->dtdev.Detach();
@@ -905,6 +912,14 @@ bool ts::DektecOutputPlugin::start()
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
         return startError(u"output device reset error", status);
+    }
+
+    // Set power mode.
+    if (_guts->power_mode >= 0) {
+        status = _guts->dtdev.SetIoConfig(port, DTAPI_IOCONFIG_PWRMODE, _guts->power_mode);
+        if (status != DTAPI_OK) {
+            return startError(u"set power mode", status);
+        }
     }
 
     // Set 188/204-byte output packet format and stuffing

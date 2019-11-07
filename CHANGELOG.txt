@@ -16,6 +16,7 @@ VERSION 3.19-1486
   * Added option --extensions to "tsversion" and "tstabcomp".
   * Complete ATSC signalization, as defined in A/65, is now supported.
   * NorDig-private descriptors are supported.
+  * Added option --power-mode to "tsdektec" and output plugin "dektec".
   * On Linux, multi-standard tuners are now supported (for instance tuners
     which support DVB-T and DVB-C). The options --delivery-system is used
     to select the appropriate type. Multi-standard tuners are not supported

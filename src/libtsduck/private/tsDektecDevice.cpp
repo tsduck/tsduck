@@ -560,61 +560,62 @@ ts::UString ts::DektecDevice::DtCapsIndexToString(int index)
         /* 165 */ u"Mute RF output signal",
         /* 166 */ u"Adjustable roll-off factor",
         /* 167 */ u"DVB-S2 16-APSK/32-APSK",
-        /* 168 */ u"AWGN insertion",
-        /* 169 */ u"16MHz bandwidth mode",
-        /* 170 */ u"SNF operation",
+        /* 168 */ u"Noise insertion",
+        /* 169 */ u"AWGN insertion",
+        /* 170 */ u"16 MHz bandwidth mode",
+        /* 171 */ u"SNF operation",
 
         // Capability group RFCLKSEL - RF clock source selection
-        /* 171 */ u"External RF clock input",
-        /* 172 */ u"Internal RF clock reference",
+        /* 172 */ u"External RF clock input",
+        /* 173 */ u"Internal RF clock reference",
 
         // Capability group RXSTD - Receiver standards
-        /* 173 */ u"ATSC 8-VSB reception",
-        /* 174 */ u"ATSC3.0 reception",
-        /* 175 */ u"CMMB reception",
-        /* 176 */ u"DAB reception",
-        /* 177 */ u"DTMB reception",
-        /* 178 */ u"DVB-C2 reception",
-        /* 179 */ u"DVB-S reception",
-        /* 180 */ u"DVB-S2 reception",
-        /* 181 */ u"DVB-T reception",
-        /* 182 */ u"DVB-T2 reception",
-        /* 183 */ u"GOLD for receivers",
-        /* 184 */ u"I/Q sample reception",
-        /* 185 */ u"ISDB-S reception",
-        /* 186 */ u"ISDB-T reception",
-        /* 187 */ u"ATSC-MH reception",
-        /* 188 */ u"QAM-A reception",
-        /* 189 */ u"QAM-B reception",
-        /* 190 */ u"QAM-C reception",
-        /* 191 */ u"T2MI reception",
+        /* 174 */ u"ATSC 8-VSB reception",
+        /* 175 */ u"ATSC3.0 reception",
+        /* 176 */ u"CMMB reception",
+        /* 177 */ u"DAB reception",
+        /* 178 */ u"DTMB reception",
+        /* 179 */ u"DVB-C2 reception",
+        /* 180 */ u"DVB-S reception",
+        /* 181 */ u"DVB-S2 reception",
+        /* 182 */ u"DVB-T reception",
+        /* 183 */ u"DVB-T2 reception",
+        /* 184 */ u"GOLD for receivers",
+        /* 185 */ u"I/Q sample reception",
+        /* 186 */ u"ISDB-S reception",
+        /* 187 */ u"ISDB-T reception",
+        /* 188 */ u"ATSC-MH reception",
+        /* 189 */ u"QAM-A reception",
+        /* 190 */ u"QAM-B reception",
+        /* 191 */ u"QAM-C reception",
+        /* 192 */ u"T2MI reception",
 
         // Capability group SPICLKSEL - Parallel port clock source selection
-        /* 192 */ u"External clock input",
-        /* 193 */ u"Internal clock reference",
+        /* 193 */ u"External clock input",
+        /* 194 */ u"Internal clock reference",
 
         // Capability group SPIMODE - Parallel port mode
-        /* 194 */ u"SPI fixed clock with valid signal",
-        /* 195 */ u"SPI DVB mode",
-        /* 196 */ u"SPI serial 8-bit mode",
-        /* 197 */ u"SPI serial 10-bit mode",
+        /* 195 */ u"SPI fixed clock with valid signal",
+        /* 196 */ u"SPI DVB mode",
+        /* 197 */ u"SPI serial 8-bit mode",
+        /* 198 */ u"SPI serial 10-bit mode",
 
         // Capability group SPISTD - Parallel port I/O standard
-        /* 198 */ u"LVDS1",
-        /* 199 */ u"LVDS2",
-        /* 200 */ u"LVTTL",
+        /* 199 */ u"LVDS1",
+        /* 200 */ u"LVDS2",
+        /* 201 */ u"LVTTL",
 
         // Capability group TSRATESEL - Transport-stream rate selection
-        /* 201 */ u"External TS rate clock input",
-        /* 202 */ u"External TS rate clock with ratio",
-        /* 203 */ u"Internal TS rate clock reference",
-        /* 204 */ u"Lock TS rate to input port",
+        /* 202 */ u"External TS rate clock input",
+        /* 203 */ u"External TS rate clock with ratio",
+        /* 204 */ u"Internal TS rate clock reference",
+        /* 205 */ u"Lock TS rate to input port",
 
         // Capability group VIDENC - Supported video standards
-        /* 205 */ u"H.264 video encoder",
-        /* 206 */ u"MPEG2 video encoder",
+        /* 206 */ u"H.264 video encoder",
+        /* 207 */ u"MPEG2 video encoder",
 
-        #define TS_DT_CAPS_LAST 206   // UPDATE WHEN NEW LINES ARE ADDED
+        #define TS_DT_CAPS_LAST 207   // UPDATE WHEN NEW LINES ARE ADDED
     };
 
     static const int names_count = int(sizeof(names) / sizeof(names[0]));
@@ -645,7 +646,7 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
     // Dtapi::DtCaps::ToString() returns only "LBAND", which is only the first value.
     //
     // As a consequence, we build the list manually.
-    // As of DTAPI 5.24, there are no more than 256 capabilities.
+    // As of DTAPI 5.35, there are no more than 256 capabilities.
 
     UString caps;
     for (int c = 0; c < 256; c++) {
