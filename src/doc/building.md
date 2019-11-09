@@ -68,9 +68,9 @@ apt install g++ dpkg-dev doxygen dos2unix graphviz curl pcscd libpcsclite-dev li
 
 ## Alpine Linux {#reqalpine}
 
-- Setup for a TSDuck native build:
+- Setup for a TSDuck native build, including a few useful tools:
 ~~~~
-apk add coreutils diffutils dos2unix git make g++ doxygen graphviz linux-headers curl pcsc-lite-dev curl-dev
+apk add bash coreutils diffutils procps util-linux dos2unix git make g++ doxygen graphviz linux-headers curl pcsc-lite-dev curl-dev
 ~~~~
 
 Important: Alpine Linux does not use the GNU libc. It uses the musl libc. This creates
