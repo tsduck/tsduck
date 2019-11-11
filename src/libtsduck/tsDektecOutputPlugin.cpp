@@ -846,8 +846,16 @@ bool ts::DektecOutputPlugin::start()
         return false;
     }
 
-    // Open the channel
+    // Set power mode.
     const int port = _guts->device.output[_guts->chan_index].m_Port;
+    if (_guts->power_mode >= 0) {
+        status = _guts->dtdev.SetIoConfig(port, DTAPI_IOCONFIG_PWRMODE, _guts->power_mode);
+        if (status != DTAPI_OK) {
+            return startError(u"set power mode", status);
+        }
+    }
+
+    // Open the channel
     status = _guts->chan.AttachToPort(&_guts->dtdev, port);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching output channel %d of Dektec device %d (%s): %s", {_guts->chan_index, _guts->dev_index, _guts->device.model, DektecStrError(status)});
@@ -912,14 +920,6 @@ bool ts::DektecOutputPlugin::start()
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
         return startError(u"output device reset error", status);
-    }
-
-    // Set power mode.
-    if (_guts->power_mode >= 0) {
-        status = _guts->dtdev.SetIoConfig(port, DTAPI_IOCONFIG_PWRMODE, _guts->power_mode);
-        if (status != DTAPI_OK) {
-            return startError(u"set power mode", status);
-        }
     }
 
     // Set 188/204-byte output packet format and stuffing
