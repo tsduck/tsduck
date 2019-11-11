@@ -333,9 +333,9 @@
 #    Optional installation prefix. If not defined, will be set on output.
 #    See SYSPREFIX in "Output variables".
 #
-#  TARGET_ARCH
-#    Contains the target architecture for gcc. Defaults to -march=`uname -m`.
-#    Should be overriden if your `uname -m` is not recognized by gcc.
+#  TARGET_FLAGS
+#    Contains the target architecture options for gcc. Empty for a native
+#    build.
 #
 #  TEXI2DVI
 #    Contains the absolute path of the texi2dvi utility (part of Texinfo).
@@ -666,16 +666,16 @@ endif
 # Target architecture is skipped on ARM because of numerous variants.
 ifdef M32
     override MAIN_ARCH   := i386
-    override TARGET_ARCH := -march=i686
+    override TARGET_FLAGS := -march=i686
     CFLAGS_M32  := -m32
     LDFLAGS_M32 := -m32
 else ifndef MAIN_ARCH
-    MAIN_ARCH   := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
-    TARGET_ARCH := $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
-    CFLAGS_M32  :=
-    LDFLAGS_M32 :=
+    MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    TARGET_FLAGS := 
+    CFLAGS_M32   :=
+    LDFLAGS_M32  :=
 endif
-export MAIN_ARCH TARGET_ARCH
+export MAIN_ARCH TARGET_FLAGS
 
 # Use $(CC) for compilation. Use $(GCC) to explicitly reference GCC.
 GCC ?= gcc
@@ -698,7 +698,7 @@ else
     $(if $(CROSS_TARGET),,$(error CROSS is defined but no cross-compilation tool-chain was found))
     # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
     override MAIN_ARCH := $(if $(findstring @arm,@$(CROSS_TARGET)),arm,$(CROSS_TARGET))
-    override TARGET_ARCH :=
+    override TARGET_FLAGS :=
     override GCC_VERSION_DONE :=
     # Redirect build tools.
     CC  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
@@ -837,10 +837,10 @@ LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
+           $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
+           $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_FLAGS) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
