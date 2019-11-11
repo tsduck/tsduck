@@ -342,6 +342,7 @@ void ThreadTest::testMutexTimeout()
     TSUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
     TSUNIT_ASSERT(mutex.acquire(1000));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
+    TSUNIT_ASSERT(mutex.release());
 
     debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
 }

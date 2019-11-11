@@ -97,8 +97,16 @@ namespace ts {
         //!
         //! Release the mutex.
         //!
-        //! For each successful call to acquire(), there must be exactly
-        //! one call to release().
+        //! For each successful call to acquire(), there must be exactly one call to release().
+        //!
+        //! @b Important: If a mutex is destroyed while it is still acquired, the results are
+        //! unpredictible. Experience has shown than destroying a mutex while it is acquired
+        //! is harmless on Windows, macOS and Linux with glibc. However, on Linux with musl
+        //! libc (Alpine Linux for instance), failing to call release() as many times as
+        //! acquire() leads to random memory corruptions and crashes.
+        //!
+        //! For this reason, it is recommended to never use acquire() and release() directly
+        //! and use the Guard class instead.
         //!
         //! @return true on success and false on error.
         //!
