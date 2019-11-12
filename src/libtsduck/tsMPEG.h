@@ -934,6 +934,9 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum {
+        PDS_BSKYB     = 0x00000002, //!< Private data specifier for BskyB (1).
+        PDS_BSKYB_2   = 0x00000003, //!< Private data specifier for BskyB (2).
+        PDS_BSKYB_3   = 0x00000004, //!< Private data specifier for BskyB (3).
         PDS_NAGRA     = 0x00000009, //!< Private data specifier for Nagra (1).
         PDS_NAGRA_2   = 0x0000000A, //!< Private data specifier for Nagra (2).
         PDS_NAGRA_3   = 0x0000000B, //!< Private data specifier for Nagra (3).
@@ -1293,6 +1296,11 @@ namespace ts {
         DID_CMP_SELECTION       = 0xFC, //!< DID for Canal+ CMP_Selection_descriptor
         DID_DATA_COMPONENT_FD   = 0xFD, //!< DID for Canal+ data_component_descriptor
         DID_SYSTEM_MGMT_FE      = 0xFE, //!< DID for Canal+ system_management_descriptor
+
+        // Valid after PDS_BSKYB private_data_specifier
+
+        DID_LOGICAL_CHANNEL_SKY = 0xB1, //!< DID for BskyB logical_channel_number_by_region_descriptor
+        DID_SERVICE_SKY         = 0xB2, //!< DID for BskyB service_descriptor
     };
 
     //---------------------------------------------------------------------
