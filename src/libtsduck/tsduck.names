@@ -648,6 +648,9 @@ Bits = 8
 # With PDS for NorDig.
 0x0000002983 = NorDig Logical Channel (V1)
 0x0000002987 = NorDig Logical Channel (V2)
+# With PDS for BskyB
+0x00000002B1 = Sky Channel Number
+0x00000002B2 = Sky Service
 # ATSC descriptors, using the fake PDS for ATSC.
 0x4154534380 = ATSC Stuffing
 0x4154534381 = ATSC AC-3 Audio
