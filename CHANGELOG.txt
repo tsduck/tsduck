@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1486
+VERSION 3.19-1500
+
+[NEW] New commands and plugins:
+
+  * Added plugin "timeshift" (delay packet transmission).
 
 [IMP] Improvements on existing commands and plugins:
 
