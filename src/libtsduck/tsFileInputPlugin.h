@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsPlugin.h"
-#include "tsTSFileInput.h"
+#include "tsTSFile.h"
 
 namespace ts {
     //!
@@ -70,8 +70,8 @@ namespace ts {
         uint64_t      _start_offset;
         size_t        _base_label;
         UStringVector _filenames;
-        std::set<size_t> _eof;             // Set of file indexes having reached end of file.
-        std::vector<TSFileInput> _files;   // Array of open files, only one without interleave.
+        std::set<size_t>    _eof;          // Set of file indexes having reached end of file.
+        std::vector<TSFile> _files;        // Array of open files, only one without interleave.
 
         // Open one input file.
         bool openFile(size_t name_index, size_t file_index);

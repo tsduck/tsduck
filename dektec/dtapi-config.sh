@@ -29,7 +29,7 @@
 #-----------------------------------------------------------------------------
 #
 #  Get configuration for DTAPI on current Linux system.
-#  Options: --header --object --url --support
+#  Options: --dtapi --header --object --url --support
 #
 #-----------------------------------------------------------------------------
 
@@ -39,9 +39,32 @@ GENERIC_URL=$URL_BASE/products/SDK/DTAPI/Downloads/LatestLinuxSDK
 
 SCRIPT=$(basename $BASH_SOURCE)
 ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
-DTAPIDIR="$ROOTDIR/LinuxSDK/DTAPI"
+SYSTEM=$(uname -s | tr A-Z a-z)
 
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+
+# Get the root directory of the DTAPI.
+get-dtapi()
+{
+    local prefix=
+    case "$SYSTEM" in
+        linux)
+            header=$(find 2>/dev/null "$ROOTDIR/LinuxSDK/DTAPI" -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            ;;
+        cygwin*)
+            header=$(find 2>/dev/null /cygdrive/c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            ;;
+        mingw*|msys*)
+            header=$(find 2>/dev/null /c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            ;;
+        *)
+            header=
+    esac
+    if [[ -n "$header" ]]; then
+        d=$(dirname "$header")
+        dirname "$d"
+    fi
+}
 
 # Check if DTAPI is supported on the current system.
 dtapi-support()
@@ -49,8 +72,13 @@ dtapi-support()
     # Environment variable NODTAPI disables the usage of DTAPI.
     [[ -n "$NODTAPI" ]] && return -1
 
-    # DTAPI is supported in Linux only.
-    [[ $(uname -s) == Linux ]] || return -1
+    # DTAPI is supported on Linux and Windows only.
+    case "$SYSTEM" in
+        linux|cygwin*|mingw*|msys*)
+            ;;
+        *)
+            return -1
+    esac
 
     # DTAPI is supported on Intel CPU only.
     arch=$(uname -m)
@@ -80,7 +108,7 @@ get-header()
     # Get DTAPI support on this system.
     dtapi-support || return 0
 
-    local HEADER="$DTAPIDIR/Include/DTAPI.h"
+    local HEADER="$(get-dtapi)/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
 }
 
@@ -91,7 +119,7 @@ get-object()
     dtapi-support || return 0
 
     # Check that DTAPI binaries are present.
-    [[ -d "$DTAPIDIR/Lib" ]] || return 0
+    [[ -d "$(get-dtapi)/Lib" ]] || return 0
 
     # Get GCC version as an integer.
     if [[ -z "$GCCVERSION" ]]; then
@@ -112,16 +140,19 @@ get-object()
     # Find the DTAPI object with highest version, lower than or equal to GCC version.
     local OBJFILE=
     local OBJVERS=0
-    for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
-        DIRVERS=$(basename $(dirname "$obj"))
-        DIRVERS=${DIRVERS#GCC}
-        DIRVERS=${DIRVERS%%_*}
-        DIRVERS=$(int-version $DIRVERS)
-        if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
-            OBJFILE="$obj"
-            OBJVERS=$DIRVERS
-        fi
-    done
+    local DTAPIDIR=$(get-dtapi)
+    if [[ -n "$DTAPIDIR" ]]; then
+        for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
+            DIRVERS=$(basename $(dirname "$obj"))
+            DIRVERS=${DIRVERS#GCC}
+            DIRVERS=${DIRVERS%%_*}
+            DIRVERS=$(int-version $DIRVERS)
+            if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
+                OBJFILE="$obj"
+                OBJVERS=$DIRVERS
+            fi
+        done
+    fi
     [[ -n "$OBJFILE" ]] && echo "$OBJFILE"
 }
 
@@ -179,6 +210,9 @@ get-url()
 
 # Main command
 case "$1" in
+    --dtapi)
+        get-dtapi
+        ;;
     --header)
         get-header
         ;;
@@ -195,6 +229,7 @@ case "$1" in
         error "invalid option: $1"
         ;;
     *)
+        echo "DTAPI_ROOT=$(get-dtapi)"
         echo "DTAPI_HEADER=$(get-header)"
         echo "DTAPI_OBJECT=$(get-object)"
         echo "DTAPI_URL=$(get-url)"

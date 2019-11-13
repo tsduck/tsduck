@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPushInputPlugin.h"
 #include "tsWebRequestHandlerInterface.h"
-#include "tsTSFileOutput.h"
+#include "tsTSFile.h"
 
 namespace ts {
     //!
@@ -77,6 +77,6 @@ namespace ts {
         TSPacket     _partial;       // Buffer for incomplete packets.
         size_t       _partial_size;  // Number of bytes in partial.
         UString      _autoSaveDir;   // If not empty, automatically save loaded files to this directory.
-        TSFileOutput _outSave;       // TS file where to store the loaded file.
+        TSFile       _outSave;       // TS file where to store the loaded file.
     };
 }

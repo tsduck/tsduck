@@ -82,7 +82,7 @@ bool ts::AbstractHTTPInputPlugin::handleWebStart(const WebRequest& request, size
         const UString name(_autoSaveDir + PathSeparator + BaseName(url));
         tsp->verbose(u"saving input TS to %s", {name});
         // Display errors but do not fail, this is just auto save.
-        _outSave.open(name, TSFileOutput::SHARED, *tsp);
+        _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *tsp);
     }
 
     // Reinitialize partial packet if some bytes were left from a previous iteration.

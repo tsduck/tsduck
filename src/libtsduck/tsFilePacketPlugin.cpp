@@ -38,7 +38,7 @@ TSDUCK_SOURCE;
 ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
     _name(),
-    _flags(TSFileOutput::NONE),
+    _flags(TSFile::NONE),
     _file()
 {
     option(u"", 0, STRING, 1, 1);
@@ -59,12 +59,12 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
-    _flags = TSFileOutput::SHARED;
+    _flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
-        _flags |= TSFileOutput::APPEND;
+        _flags |= TSFile::APPEND;
     }
     if (present(u"keep")) {
-        _flags |= TSFileOutput::KEEP;
+        _flags |= TSFile::KEEP;
     }
     return true;
 }

@@ -53,6 +53,7 @@
     <ClCompile Include="..\..\src\utest\utestThread.cpp" />
     <ClCompile Include="..\..\src\utest\utestThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\utest\utestTime.cpp" />
+    <ClCompile Include="..\..\src\utest\utestTimeShiftBuffer.cpp" />
     <ClCompile Include="..\..\src\utest\utestTSPacket.cpp" />
     <ClCompile Include="..\..\src\utest\utestVariable.cpp" />
     <ClCompile Include="..\..\src\utest\utestWebRequest.cpp" />

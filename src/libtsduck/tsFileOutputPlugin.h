@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsPlugin.h"
-#include "tsTSFileOutput.h"
+#include "tsTSFile.h"
 
 namespace ts {
     //!
@@ -58,8 +58,8 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        UString                 _name;
-        TSFileOutput::OpenFlags _flags;
-        TSFileOutput            _file;
+        UString           _name;
+        TSFile::OpenFlags _flags;
+        TSFile            _file;
     };
 }

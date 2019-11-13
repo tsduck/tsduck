@@ -460,6 +460,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsThread.h" />
     <ClInclude Include="..\..\src\libtsduck\tsThreadAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTime.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTimeShiftBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h" />
@@ -484,9 +485,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzerOptions.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzerReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSDT.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTSFileInput.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTSFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSFileInputBuffered.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTSFileOutput.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSFileOutputResync.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSPacket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSPacketMetadata.h" />
@@ -531,6 +531,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlText.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlTweaks.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h" />
+    <ClInclude Include="..\..\src\libtsduck\private\DtCapsNames.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektec.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecDevice.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektecVPD.h" />
@@ -955,6 +956,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsThread.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTimeShiftBuffer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeSliceFECIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
@@ -974,9 +976,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSDT.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTSFileInput.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTSFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSFileInputBuffered.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTSFileOutput.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSFileOutputResync.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSPacketMetadata.cpp" />

@@ -37,7 +37,7 @@
 #include "tsT2MIDemux.h"
 #include "tsT2MIDescriptor.h"
 #include "tsT2MIPacket.h"
-#include "tsTSFileOutput.h"
+#include "tsTSFile.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -66,23 +66,23 @@ namespace ts {
         typedef std::map<PID, PLPSet> IdentifiedSet;
 
         // Plugin private fields.
-        bool          _abort;           // Error, abort asap.
-        bool          _extract;         // Extract encapsulated TS.
-        bool          _replace_ts;      // Replace transferred TS.
-        bool          _log;             // Log T2-MI packets.
-        bool          _identify;        // Identify T2-MI PID's and PLP's in the TS or PID.
-        PID           _original_pid;    // Original value for --pid.
-        PID           _extract_pid;     // PID carrying the T2-MI encapsulation.
-        uint8_t       _plp;             // The PLP to extract in _pid.
-        bool          _plp_valid;       // False if PLP not yet known.
-        TSFileOutput::OpenFlags _outfile_flags; // Open flags for output file.
-        UString       _outfile_name;    // Output file name.
-        TSFileOutput  _outfile;         // Output file for extracted stream.
-        PacketCounter _t2mi_count;      // Number of input T2-MI packets.
-        PacketCounter _ts_count;        // Number of extracted TS packets.
-        T2MIDemux     _demux;           // T2-MI demux.
-        IdentifiedSet _identified;      // Map of identified PID's and PLP's.
-        std::deque<TSPacket> _ts_queue; // Queue of demuxed TS packets.
+        bool              _abort;           // Error, abort asap.
+        bool              _extract;         // Extract encapsulated TS.
+        bool              _replace_ts;      // Replace transferred TS.
+        bool              _log;             // Log T2-MI packets.
+        bool              _identify;        // Identify T2-MI PID's and PLP's in the TS or PID.
+        PID               _original_pid;    // Original value for --pid.
+        PID               _extract_pid;     // PID carrying the T2-MI encapsulation.
+        uint8_t           _plp;             // The PLP to extract in _pid.
+        bool              _plp_valid;       // False if PLP not yet known.
+        TSFile::OpenFlags _outfile_flags;   // Open flags for output file.
+        UString           _outfile_name;    // Output file name.
+        TSFile            _outfile;         // Output file for extracted stream.
+        PacketCounter     _t2mi_count;      // Number of input T2-MI packets.
+        PacketCounter     _ts_count;        // Number of extracted TS packets.
+        T2MIDemux         _demux;           // T2-MI demux.
+        IdentifiedSet     _identified;      // Map of identified PID's and PLP's.
+        std::deque<TSPacket> _ts_queue;     // Queue of demuxed TS packets.
 
         // Inherited methods.
         virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
@@ -111,7 +111,7 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _extract_pid(PID_NULL),
     _plp(0),
     _plp_valid(false),
-    _outfile_flags(TSFileOutput::NONE),
+    _outfile_flags(TSFile::NONE),
     _outfile_name(),
     _outfile(),
     _t2mi_count(0),
@@ -180,12 +180,12 @@ bool ts::T2MIPlugin::getOptions()
     getValue(_outfile_name, u"output-file");
 
     // Output file open flags.
-    _outfile_flags = TSFileOutput::SHARED;
+    _outfile_flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
-        _outfile_flags |= TSFileOutput::APPEND;
+        _outfile_flags |= TSFile::APPEND;
     }
     if (present(u"keep")) {
-        _outfile_flags |= TSFileOutput::KEEP;
+        _outfile_flags |= TSFile::KEEP;
     }
 
     // Extract is the default operation.

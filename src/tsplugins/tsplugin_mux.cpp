@@ -34,7 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsTSFileInput.h"
+#include "tsTSFile.h"
 #include "tsContinuityAnalyzer.h"
 #include "tsMemory.h"
 TSDUCK_SOURCE;
@@ -56,7 +56,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TSFileInput   _file;                  // Input file
+        TSFile        _file;                  // Input file
         bool          _terminate;             // Terminate processing after last new packet.
         bool          _update_cc;             // Ignore continuity counters.
         bool          _check_pid_conflict;    // Check new PIDs in TS
@@ -264,10 +264,10 @@ bool ts::MuxPlugin::start()
         _cc_fixer.setGenerator(true);
     }
 
-    return _file.open(value(u""),
-                      intValue<size_t>(u"repeat", 0),
-                      intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
-                      *tsp);
+    return _file.openRead(value(u""),
+                          intValue<size_t>(u"repeat", 0),
+                          intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
+                          *tsp);
 }
 
 

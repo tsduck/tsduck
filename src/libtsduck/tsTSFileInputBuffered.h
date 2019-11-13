@@ -33,17 +33,17 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTSFileInput.h"
+#include "tsTSFile.h"
 
 namespace ts {
     //!
     //! Transport stream file input with a seekable buffer.
     //! @ingroup mpeg
     //!
-    //! This variant of TSFileInput allows to seek back and forth to some extent
+    //! This variant of TSFile allows to seek back and forth to some extent
     //! without doing I/O's and can work on non-seekable files (pipes for instance).
     //!
-    class TSDUCKDLL TSFileInputBuffered: public TSFileInput
+    class TSDUCKDLL TSFileInputBuffered: public TSFile
     {
         TS_NOBUILD_NOCOPY(TSFileInputBuffered);
     public:
@@ -77,32 +77,23 @@ namespace ts {
         //! Get the buffer size.
         //! @return The buffer size in number of TS packets.
         //!
-        size_t getBufferSize() const
-        {
-            return _buffer.size();
-        }
+        size_t getBufferSize() const { return _buffer.size(); }
 
         //!
         //! Get the size of the free space in the buffer.
         //! @return The number of free TS packets in the buffer.
         //!
-        size_t getBufferFreeSize() const
-        {
-            return _buffer.size() - _total_count;
-        }
+        size_t getBufferFreeSize() const { return _buffer.size() - _total_count; }
 
         //!
         //! Get the number of TS packets in the buffer.
         //! @return The number of TS packets in the buffer.
         //!
-        size_t getBufferedCount() const
-        {
-            return isOpen() ? _total_count : 0;
-        }
+        size_t getBufferedCount() const { return isOpen() ? _total_count : 0; }
 
         //!
         //! Open the file.
-        //! Override TSFileInput::open(). There is no rewindable version.
+        //! Override TSFile::openRead(). There is no rewindable version.
         //! @param [in] filename File name. If empty, use standard input.
         //! Must be a regular file is @a repeat_count is not 1 or if
         //! @a start_offset is not zero.
@@ -113,10 +104,11 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report);
+        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report);
 
         //!
         //! Read TS packets.
+        //! Override TSFile::read().
         //! If the file file was opened with a @a repeat_count different from 1,
         //! reading packets transparently loops back at end if file.
         //! @param [out] buffer Address of reception packet buffer.
@@ -133,20 +125,14 @@ namespace ts {
         //! @return The buffer size from the highest previously read packet or
         //! the beginning of file, whichever comes first.
         //!
-        size_t getBackwardSeekableCount() const
-        {
-            return isOpen() ? _current_offset : 0;
-        }
+        size_t getBackwardSeekableCount() const { return isOpen() ? _current_offset : 0; }
 
         //!
         //! Get the forward seekable distance inside the buffer.
         //! This is the minimum guaranteed seekable distance.
         //! @return  The highest previously read packet index, before backward seek.
         //!
-        size_t getForwardSeekableCount() const
-        {
-            return isOpen() ? _total_count - _current_offset : 0;
-        }
+        size_t getForwardSeekableCount() const { return isOpen() ? _total_count - _current_offset : 0; }
 
         //!
         //! Seek the file backward the specified number of packets.
@@ -168,9 +154,10 @@ namespace ts {
 
         //!
         //! Get the number of read packets.
+        //! Override TSFile::getReadCount().
         //! @return The number of read packets.
         //!
-        PacketCounter getPacketCount() const;
+        PacketCounter getReadCount() const;
 
         //!
         //! Check if we can seek to the specified absolute position.
@@ -193,7 +180,10 @@ namespace ts {
         size_t         _current_offset; // Offset from _first_index of "current" readable packet
         size_t         _total_count;    // Total count of valid packets in buffer.
 
+        // Make sure that the generic open() returns an error.
+        virtual bool open(const UString& filename, OpenFlags flags, Report& report) override;
+
         // Make rewind inaccessible.
-        bool rewind(Report&);
+        bool rewind(Report&) = delete;
     };
 }

@@ -307,8 +307,8 @@ int MainCode(int argc, char *argv[])
     ts::TSFileInputBuffered file2(opt.buffered_packets);
 
     // Open files
-    file1.open(opt.filename1, 1, opt.byte_offset, opt);
-    file2.open(opt.filename2, 1, opt.byte_offset, opt);
+    file1.openRead(opt.filename1, 1, opt.byte_offset, opt);
+    file2.openRead(opt.filename2, 1, opt.byte_offset, opt);
     opt.exitOnError();
 
     // Display headers
@@ -362,22 +362,22 @@ int MainCode(int argc, char *argv[])
             if (read1 != 0) {
                 // File 2 is truncated
                 if (opt.normalized) {
-                    std::cout << "truncated:file=2:packet=" << file2.getPacketCount()
+                    std::cout << "truncated:file=2:packet=" << file2.getReadCount()
                               << ":filename=" << file2.getFileName() << ":" << std::endl;
                 }
                 else if (!opt.quiet) {
-                    std::cout << "* Packet " << ts::UString::Decimal(file2.getPacketCount())
+                    std::cout << "* Packet " << ts::UString::Decimal(file2.getReadCount())
                               << ": file " << file2.getFileName() << " is truncated" << std::endl;
                 }
             }
             if (read2 != 0) {
                 // File 1 is truncated
                 if (opt.normalized) {
-                    std::cout << "truncated:file=1:packet=" << file1.getPacketCount()
+                    std::cout << "truncated:file=1:packet=" << file1.getReadCount()
                               << ":filename=" << file1.getFileName() << ":" << std::endl;
                 }
                 else if (!opt.quiet) {
-                    std::cout << "* Packet " << ts::UString::Decimal(file1.getPacketCount())
+                    std::cout << "* Packet " << ts::UString::Decimal(file1.getReadCount())
                               << ": file " << file1.getFileName() << " is truncated" << std::endl;
                 }
             }
@@ -396,12 +396,12 @@ int MainCode(int argc, char *argv[])
         // Report resynchronization after missing packets
         if (subset_skipped > 0) {
             if (opt.normalized) {
-                std::cout << "skip:packet=" << (file1.getPacketCount() - 1 - subset_skipped)
+                std::cout << "skip:packet=" << (file1.getReadCount() - 1 - subset_skipped)
                           << ":skipped=" << ts::UString::Decimal(subset_skipped)
                           << ":" << std::endl;
             }
             else {
-                std::cout << "* Packet " << ts::UString::Decimal(file1.getPacketCount() - 1 - subset_skipped)
+                std::cout << "* Packet " << ts::UString::Decimal(file1.getReadCount() - 1 - subset_skipped)
                           << ", missing " << ts::UString::Decimal(subset_skipped)
                           << " packets in " << file2.getFileName() << std::endl;
             }
@@ -414,7 +414,7 @@ int MainCode(int argc, char *argv[])
         if (!comp.equal) {
             diff_count++;
             if (opt.normalized) {
-                std::cout << "diff:packet=" << (file1.getPacketCount() - 1)
+                std::cout << "diff:packet=" << (file1.getReadCount() - 1)
                           << (opt.payload_only ? ":payload" : "")
                           << ":offset=" << comp.first_diff
                           << ":endoffset=" << comp.end_diff
@@ -429,7 +429,7 @@ int MainCode(int argc, char *argv[])
                           << ":" << std::endl;
             }
             else if (!opt.quiet) {
-                std::cout << "* Packet " << ts::UString::Decimal(file1.getPacketCount() - 1) << " differ at offset " << comp.first_diff;
+                std::cout << "* Packet " << ts::UString::Decimal(file1.getReadCount() - 1) << " differ at offset " << comp.first_diff;
                 if (opt.payload_only) {
                     std::cout << " in payload";
                 }
@@ -467,14 +467,14 @@ int MainCode(int argc, char *argv[])
 
     // Final report
     if (opt.normalized) {
-        std::cout << "total:packets=" << file1.getPacketCount()
+        std::cout << "total:packets=" << file1.getReadCount()
                   << ":diff=" << diff_count
                   << ":missing=" << total_subset_skipped
                   << ":holes=" << subset_skipped_chunks
                   << ":" << std::endl;
     }
     else if (opt.verbose()) {
-        std::cout << "* Read " << ts::UString::Decimal(file1.getPacketCount())
+        std::cout << "* Read " << ts::UString::Decimal(file1.getReadCount())
                   << " packets, found " << ts::UString::Decimal(diff_count) << " differences";
         if (subset_skipped_chunks > 0) {
             std::cout << ", missing " << ts::UString::Decimal(total_subset_skipped)
