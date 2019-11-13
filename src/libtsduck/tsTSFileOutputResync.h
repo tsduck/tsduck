@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTSFileOutput.h"
+#include "tsTSFile.h"
 #include "tsContinuityAnalyzer.h"
 
 namespace ts {
@@ -45,7 +45,7 @@ namespace ts {
     //! On each PID, the continuity counters are automatically updated and synchronized.
     //! It is also possible to force the PID of packets.
     //!
-    class TSDUCKDLL TSFileOutputResync: public TSFileOutput
+    class TSDUCKDLL TSFileOutputResync: public TSFile
     {
         TS_NOCOPY(TSFileOutputResync);
     public:
@@ -59,7 +59,7 @@ namespace ts {
         //!
         virtual ~TSFileOutputResync();
 
-        // Overrides TSFileOutput methods
+        // Overrides TSFile methods
         virtual bool open(const UString& filename, OpenFlags flags, Report& report) override;
 
         //!
@@ -85,5 +85,9 @@ namespace ts {
 
     private:
         ContinuityAnalyzer _ccFixer;
+
+        // Make openRead() inaccessible.
+        bool openRead(const UString&, size_t, uint64_t, Report&) = delete;
+        bool openRead(const UString&, uint64_t, Report&) = delete;
     };
 }

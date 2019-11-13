@@ -155,7 +155,7 @@ bool ts::FileInputPlugin::openFile(size_t name_index, size_t file_index)
     }
 
     // Actually open the file.
-    return _files[file_index].open(name, _repeat_count, _start_offset, *tsp);
+    return _files[file_index].openRead(name, _repeat_count, _start_offset, *tsp);
 }
 
 
@@ -232,7 +232,7 @@ bool ts::FileInputPlugin::abortInput()
 
     // Abort current operations on all files.
     for (auto it = _files.begin(); it != _files.end(); ++it) {
-        it->abortRead();
+        it->abort();
     }
 
     return true;

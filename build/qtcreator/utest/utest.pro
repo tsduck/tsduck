@@ -60,6 +60,7 @@ SOURCES += \
     ../../../src/utest/utestThread.cpp \
     ../../../src/utest/utestThreadAttributes.cpp \
     ../../../src/utest/utestTime.cpp \
+    ../../../src/utest/utestTimeShiftBuffer.cpp \
     ../../../src/utest/utestTSPacket.cpp \
     ../../../src/utest/utestUString.cpp \
     ../../../src/utest/utestVariable.cpp \

@@ -1,0 +1,317 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2019, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+
+#include "tsTimeShiftBuffer.h"
+#include "tsNullReport.h"
+#include "tsSysUtils.h"
+TSDUCK_SOURCE;
+
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr size_t ts::TimeShiftBuffer::MIN_TOTAL_PACKETS;
+constexpr size_t ts::TimeShiftBuffer::DEFAULT_TOTAL_PACKETS;
+constexpr size_t ts::TimeShiftBuffer::MIN_MEMORY_PACKETS;
+constexpr size_t ts::TimeShiftBuffer::DEFAULT_MEMORY_PACKETS;
+#endif
+
+
+//----------------------------------------------------------------------------
+// Constructors and destructors
+//----------------------------------------------------------------------------
+
+ts::TimeShiftBuffer::TimeShiftBuffer(size_t count) :
+    _is_open(false),
+    _cur_packets(0),
+    _total_packets(std::max(count, MIN_TOTAL_PACKETS)),
+    _mem_packets(DEFAULT_MEMORY_PACKETS),
+    _directory(),
+    _file(),
+    _wcache(),
+    _rcache(),
+    _next_read(0),
+    _next_write(0),
+    _wcache_next(0),
+    _rcache_end(0),
+    _rcache_next(0)
+{
+}
+
+ts::TimeShiftBuffer::~TimeShiftBuffer()
+{
+    close(NULLREP);
+}
+
+
+//----------------------------------------------------------------------------
+// Set various characteristics, must be called before open.
+//----------------------------------------------------------------------------
+
+bool ts::TimeShiftBuffer::setTotalPackets(size_t count)
+{
+    if (_is_open) {
+        return false;
+    }
+    else {
+        _total_packets = std::max(count, MIN_TOTAL_PACKETS);
+        return true;
+    }
+}
+
+bool ts::TimeShiftBuffer::setMemoryPackets(size_t count)
+{
+    if (_is_open) {
+        return false;
+    }
+    else {
+        _mem_packets = std::max(count, MIN_MEMORY_PACKETS);
+        return true;
+    }
+}
+
+bool ts::TimeShiftBuffer::setBackupDirectory(const UString& directory)
+{
+    if (_is_open) {
+        return false;
+    }
+    else {
+        _directory = directory;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Open the buffer.
+//----------------------------------------------------------------------------
+
+bool ts::TimeShiftBuffer::open(Report& report)
+{
+    if (_is_open) {
+        report.error(u"time-shift buffer already open");
+        return false;
+    }
+
+    if (memoryResident()) {
+        // The buffer is entirely memory-resident in _wcache.
+        _wcache.resize(_total_packets);
+        _rcache.clear();
+    }
+    else {
+        // The buffer is backed up on disk.
+        // Get the name of a temporary file. If a directory is specified, we will use the base name only.
+        UString filename(TempFile());
+        if (!_directory.empty()) {
+            if (IsDirectory(_directory)) {
+                filename = _directory + PathSeparator + BaseName(filename);
+            }
+            else {
+                report.error(u"directory %s does not exist", {_directory});
+                return false;
+            }
+        }
+
+        // Create the backup file. The flag temporary means that it will be deleted on close.
+        if (!_file.open(filename, TSFile::READ | TSFile::WRITE | TSFile::TEMPORARY, report)) {
+            return false;
+        }
+ 
+        // The read and write buffers use half of memory quota each. 
+        // Since the size of the file is larger than the sum of the two,
+        // the read and write caches neve overlap when the buffer is full.
+        _wcache.resize(_mem_packets / 2);
+        _rcache.resize(_mem_packets / 2);
+    }
+
+    _cur_packets = 0;
+    _next_read = _next_write = 0;
+    _wcache_next = _rcache_end = _rcache_next = 0;
+    _is_open = true;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Close the buffer.
+//----------------------------------------------------------------------------
+
+bool ts::TimeShiftBuffer::close(Report& report)
+{
+    if (!_is_open) {
+        return false;
+    }
+
+    _is_open = false;
+    _cur_packets = 0;
+    _wcache.clear();
+    _rcache.clear();
+    return !_file.isOpen() || _file.close(report);
+}
+
+
+//----------------------------------------------------------------------------
+// Push a packet in the time-shift buffer and pull the oldest one.
+//----------------------------------------------------------------------------
+
+bool ts::TimeShiftBuffer::shift(TSPacket& pkt, Report& report)
+{
+    if (!_is_open) {
+        report.error(u"time-shift buffer not open");
+        return false;
+    }
+
+    TSPacket retpkt;
+    const bool was_full = full();
+
+    assert(_cur_packets <= _total_packets);
+    assert(_next_read < _total_packets);
+    assert(_next_write < _total_packets);
+
+    if (memoryResident()) {
+        // The buffer is entirely memory-resident in _wcache.
+        assert(_wcache.size() == _total_packets);
+        if (was_full) {
+            // Buffer full: return oldest packet.
+            retpkt = _wcache[_next_read];
+            _next_read = (_next_read + 1) % _wcache.size();
+        }
+        else {
+            // Buffer not full, increase the packet count.
+            _cur_packets++;
+        }
+        _wcache[_next_write] = pkt;
+        _next_write = (_next_write + 1) % _wcache.size();
+    }
+    else {
+        // The buffer uses a backup file.
+        if (!was_full) {
+            // While the buffer is not full, simply write the packet in the file.
+            if (!_file.write(&pkt, 1, report)) {
+                return false;
+            }
+            _cur_packets++;
+        }
+        else {
+            // The buffer is full, now read and write in caches.
+            // First, make sure the read cache is filled.
+            if (_rcache_next >= _rcache_end) {
+                // Read cache is empty, load it.
+                const size_t count = std::min(_rcache.size(), _total_packets - _next_read);
+                _rcache_next = 0;
+                _rcache_end = readFile(_next_read, &_rcache[0], count, report);
+                if (_rcache_end == 0) {
+                    report.error(u"error reading time-shift file");
+                    return false;
+                }
+            }
+            // Return oldest packet from memory cache.
+            retpkt = _rcache[_rcache_next++];
+            _next_read = (_next_read + 1) % _total_packets;
+            // Flush the write cache if necessary.
+            if (_wcache_next >= _wcache.size()) {
+                // Flush the entire write cache on disk.
+                // Split in two operations if exceeds the end of file.
+                // Write index in file of the start of the write cache:
+                const size_t file_index = _next_write >= _wcache.size() ? _next_write - _wcache.size() : _total_packets + _next_write - _wcache.size();
+                assert(file_index < _total_packets);
+                const size_t count = std::min(_wcache.size(), _total_packets - file_index);
+                if (!writeFile(file_index, &_wcache[0], count, report)) {
+                    return false;
+                }
+                // Write second part at begining of file if required.
+                if (count < _wcache.size() && !writeFile(0, &_wcache[count], _wcache.size() - count, report)) {
+                    return false;
+                }
+                // Write cache is now empty.
+                _wcache_next = 0;
+            }
+            // Write the next packet in the write cache.
+            _wcache[_wcache_next++] = pkt;
+        }
+        _next_write = (_next_write + 1) % _total_packets;
+    }
+
+    // Returned packet. It is a null packet when the buffer was not yet full.
+    pkt = was_full ? retpkt : NullPacket;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Seek in the backup file.
+//----------------------------------------------------------------------------
+
+bool ts::TimeShiftBuffer::seekFile(size_t index, Report& report)
+{
+    if (_file.seek(index, report)) {
+        return true;
+    }
+    else {
+        report.error(u"error seeking time-shift file at packet index %d", {index});
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Seek and write in the backup file.
+//----------------------------------------------------------------------------
+
+bool ts::TimeShiftBuffer::writeFile(size_t index, const TSPacket* buffer, size_t count, Report& report)
+{
+    if (!seekFile(index, report)) {
+        return false;
+    }
+    else if (_file.write(buffer, count, report)) {
+        report.debug(u"written %d packets in time-shift file at packet index %d", {count, index});
+        return true;
+    }
+    else {
+        report.error(u"error writing %d packets in time-shift file at packet index %d", {count, index});
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Seek and read in the backup file.
+//----------------------------------------------------------------------------
+
+size_t ts::TimeShiftBuffer::readFile(size_t index, TSPacket* buffer, size_t count, Report& report)
+{
+    if (!seekFile(index, report)) {
+        return false;
+    }
+    const size_t retcount = _file.read(buffer, count, report);
+    if (retcount == 0) {
+        report.error(u"error reading %d packets in time-shift file at packet index %d", {count, index});
+    }
+    else {
+        report.debug(u"read %d packets in time-shift file at packet index %d", {retcount, index});
+    }
+    return retcount;
+}

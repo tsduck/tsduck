@@ -230,7 +230,7 @@ bool ts::hls::OutputPlugin::createNextSegment()
 
     // Create the segment file.
     tsp->verbose(u"creating media segment %s", {fileName});
-    if (!_segmentFile.open(fileName, TSFileOutput::SHARED, *tsp)) {
+    if (!_segmentFile.open(fileName, TSFile::WRITE | TSFile::SHARED, *tsp)) {
         return false;
     }
 
@@ -262,7 +262,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
     // Get the segment file name and size (to be inserted in the playlist).
     const UString segName(_segmentFile.getFileName());
-    const PacketCounter segPackets = _segmentFile.getPacketCount();
+    const PacketCounter segPackets = _segmentFile.getWriteCount();
 
     // Close the TS file.
     if (!_segmentFile.close(*tsp)) {
@@ -463,12 +463,12 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
         bool renew = false;
         if (_fixedSegmentSize > 0) {
             // Each segment shall have a fixed size.
-            renew = _segmentFile.getPacketCount() >= _fixedSegmentSize;
+            renew = _segmentFile.getWriteCount() >= _fixedSegmentSize;
         }
         else {
             // The segment file shall be closed when the estimated duration exceeds the target duration.
             if (!_segClosePending && _pcrAnalyzer.bitrateIsValid()) {
-                _segClosePending = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.getPacketCount()) >= _targetDuration * MilliSecPerSec;
+                _segClosePending = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.getWriteCount()) >= _targetDuration * MilliSecPerSec;
             }
             // We do close only when we start a new PES packet on the video PID.
             renew = _segClosePending && (_videoPID == PID_NULL || (pkt[i].getPID() == _videoPID && pkt[i].getPUSI()));

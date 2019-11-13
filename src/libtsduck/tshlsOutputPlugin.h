@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPlugin.h"
 #include "tsSectionDemux.h"
-#include "tsTSFileOutput.h"
+#include "tsTSFile.h"
 #include "tsPCRAnalyzer.h"
 #include "tsContinuityAnalyzer.h"
 #include "tshlsPlayList.h"
@@ -85,7 +85,7 @@ namespace ts {
             PID            _videoPID;             // Video PID on which the segmentation is evaluated.
             PID            _pmtPID;               // PID of the PMT of the reference service.
             bool           _segClosePending;      // Close the current segment when possible.
-            TSFileOutput   _segmentFile;          // Output segment file.
+            TSFile         _segmentFile;          // Output segment file.
             UStringList    _liveSegmentFiles;     // List of current segments in a live stream.
             hls::PlayList  _playlist;             // Generated playlist.
             PCRAnalyzer    _pcrAnalyzer;          // PCR analyzer to compute bitrates.

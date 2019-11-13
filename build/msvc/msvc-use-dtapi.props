@@ -5,7 +5,7 @@
 
   <!-- Define DtapiIncludePath if not already defined and DTAPI.h found in some predefined locations -->
   <Choose>
-    <When Condition="'$(DtapiIncludePath)'!=''">
+    <When Condition="'$(DtapiIncludePath)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
     <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
@@ -22,7 +22,7 @@
 
   <!-- Define DtapiLibraryPath if not already defined and DTAPI found in some predefined locations -->
   <Choose>
-    <When Condition="'$(DtapiLibraryPath)'!=''">
+    <When Condition="'$(DtapiLibraryPath)' != '' AND '$(DtapiVSDir)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
     <!-- Visual Studio 2015 -->
@@ -38,17 +38,30 @@
         <DtapiVSDir>VC14</DtapiVSDir>
       </PropertyGroup>
     </When>
-    <!-- Visual Studio 2017 and up (Dektec hasn't released a version for VS2019 yet) -->
-    <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
+    <!-- Visual Studio 2017 -->
+    <When Condition="'$(MSBuildToolsVersion)' == '15.0' AND Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
       <PropertyGroup Label="UserMacros">
         <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
         <DtapiVSDir>VC15</DtapiVSDir>
       </PropertyGroup>
     </When>
-    <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
+    <When Condition="'$(MSBuildToolsVersion)' == '15.0' AND Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
       <PropertyGroup Label="UserMacros">
         <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
         <DtapiVSDir>VC15</DtapiVSDir>
+      </PropertyGroup>
+    </When>
+    <!-- Visual Studio 2019 -->
+    <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC16')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+        <DtapiVSDir>VC16</DtapiVSDir>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC16')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+        <DtapiVSDir>VC16</DtapiVSDir>
       </PropertyGroup>
     </When>
   </Choose>

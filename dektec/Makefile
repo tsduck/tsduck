@@ -35,9 +35,9 @@ include ../Makefile.tsduck
 
 # By default, download and expand LinuxSDK if necessary.
 # This SDK is only available on Windows and some flavors of Linux.
-DTAPI_TARGET := $(if $(NODTAPI),,$(if $(shell ./dtapi-config.sh --support),dtapi,))
+DTAPI_TARGETS := $(if $(NODTAPI),,$(if $(shell ./dtapi-config.sh --support),dtapi dtcaps,))
 
-default: $(DTAPI_TARGET)
+default: $(DTAPI_TARGETS)
 	@true
 
 EXTRA_DISTCLEAN += WinSDK*.zip WinSDK LinuxSDK.zip LinuxSDK*.tar.gz LinuxSDK LinuxSDK.version
@@ -81,3 +81,9 @@ dtapi: $(DTAPI_H)
 	@true
 $(DTAPI_H): $(if $(wildcard $(DTAPI_FILE)),$(DTAPI_FILE),sdkfile)
 	$(MAKE) expand
+
+# There is an auto-generated file with DtCaps definitions.
+DTCAPSNAMES_H = ../src/libtsduck/private/DtCapsNames.h
+dtcaps: $(DTCAPSNAMES_H)
+$(DTCAPSNAMES_H): $(DTAPI_H) format-dtcaps.sh
+	./format-dtcaps.sh >$@

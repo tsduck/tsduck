@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream file input with seekable buffer.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSFileInputBuffered.h"
 TSDUCK_SOURCE;
@@ -43,12 +39,12 @@ const size_t ts::TSFileInputBuffered::MIN_BUFFER_SIZE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TSFileInputBuffered::TSFileInputBuffered (size_t buffer_size) :
-    TSFileInput (),
-    _buffer (std::max<size_t> (buffer_size, MIN_BUFFER_SIZE)),
-    _first_index (0),
-    _current_offset (0),
-    _total_count (0)
+ts::TSFileInputBuffered::TSFileInputBuffered(size_t buffer_size) :
+    TSFile(),
+    _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
+    _first_index(0),
+    _current_offset(0),
+    _total_count(0)
 {
 }
 
@@ -66,7 +62,7 @@ ts::TSFileInputBuffered::~TSFileInputBuffered()
 // Set the buffer size. Can be done only when the file is closed.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, Report& report)
+bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 {
     if (isOpen()) {
         report.error(u"file %s is already open, cannot resize buffer", {getFileName()});
@@ -80,10 +76,10 @@ bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Open file. Override TSFileInput::open().
+// Open file. Override TSFile::openRead().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report)
+bool ts::TSFileInputBuffered::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report)
 {
     if (isOpen()) {
         report.error(u"file %s is already open", {getFileName()});
@@ -93,18 +89,30 @@ bool ts::TSFileInputBuffered::open(const UString& filename, size_t repeat_count,
         _first_index = 0;
         _current_offset = 0;
         _total_count = 0;
-        return TSFileInput::open(filename, repeat_count, start_offset, report);
+        return TSFile::openRead(filename, repeat_count, start_offset, report);
     }
 }
 
+
 //----------------------------------------------------------------------------
-// Return the number of read packets. Override TSFileInput::getPacketCount().
+// Make sure that the generic open() returns an error.
 //----------------------------------------------------------------------------
 
-ts::PacketCounter ts::TSFileInputBuffered::getPacketCount() const
+bool ts::TSFileInputBuffered::open(const UString& filename, OpenFlags flags, Report& report)
+{
+    // Accept read-only mode only.
+    return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, report);
+}
+
+
+//----------------------------------------------------------------------------
+// Return the number of read packets.
+//----------------------------------------------------------------------------
+
+ts::PacketCounter ts::TSFileInputBuffered::getReadCount() const
 {
     // Make sure we do not report packets twice.
-    return isOpen() ? TSFileInput::getPacketCount() - (_total_count - _current_offset) : 0;
+    return isOpen() ? TSFile::getReadCount() - (_total_count - _current_offset) : 0;
 }
 
 
@@ -113,12 +121,12 @@ ts::PacketCounter ts::TSFileInputBuffered::getPacketCount() const
 // (the "position" is the getPacketCount() value).
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::canSeek (PacketCounter pos) const
+bool ts::TSFileInputBuffered::canSeek(PacketCounter pos) const
 {
-    const int64_t rel = int64_t (pos) - int64_t (getPacketCount());
+    const int64_t rel = int64_t(pos) - int64_t(getReadCount());
     return isOpen() &&
-        ((rel >= 0 && uint64_t (_current_offset) + uint64_t (rel) <= uint64_t (_total_count)) ||
-         (rel < 0 && uint64_t (-rel) <= uint64_t (_current_offset)));
+        ((rel >= 0 && uint64_t(_current_offset) + uint64_t(rel) <= uint64_t(_total_count)) ||
+         (rel < 0 && uint64_t(-rel) <= uint64_t(_current_offset)));
 }
 
 
@@ -126,10 +134,10 @@ bool ts::TSFileInputBuffered::canSeek (PacketCounter pos) const
 // Seek to the specified absolute position, if it is inside the buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::seek (PacketCounter pos, Report& report)
+bool ts::TSFileInputBuffered::seek(PacketCounter pos, Report& report)
 {
-    if (canSeek (pos)) {
-        _current_offset = size_t (int64_t (_current_offset) + int64_t (pos) - int64_t (getPacketCount()));
+    if (canSeek(pos)) {
+        _current_offset = size_t(int64_t(_current_offset) + int64_t(pos) - int64_t(getReadCount()));
         return true;
     }
     else {
@@ -143,7 +151,7 @@ bool ts::TSFileInputBuffered::seek (PacketCounter pos, Report& report)
 // Relative seek the file inside the buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, Report& report)
+bool ts::TSFileInputBuffered::seekBackward(size_t packet_count, Report& report)
 {
     if (!isOpen()) {
         report.error(u"file not open");
@@ -160,7 +168,7 @@ bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, Report& report)
 }
 
 
-bool ts::TSFileInputBuffered::seekForward (size_t packet_count, Report& report)
+bool ts::TSFileInputBuffered::seekForward(size_t packet_count, Report& report)
 {
     if (!isOpen()) {
         report.error(u"file not open");
@@ -178,10 +186,10 @@ bool ts::TSFileInputBuffered::seekForward (size_t packet_count, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Read TS packets. Override TSFileInput::read().
+// Read TS packets. Override TSFile::read().
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets, Report& report)
+size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, Report& report)
 {
     if (!isOpen()) {
         report.error(u"file not open");
@@ -190,9 +198,9 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
 
     const size_t buffer_size = _buffer.size();
 
-    assert (_first_index < buffer_size);
-    assert (_current_offset <= _total_count);
-    assert (_total_count <= buffer_size);
+    assert(_first_index < buffer_size);
+    assert(_current_offset <= _total_count);
+    assert(_total_count <= buffer_size);
 
     // Total number of read packets (future returned value)
     size_t _in_packets = 0;
@@ -211,7 +219,7 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
     }
 
     // Then, read the rest directly from the file into the user's buffer.
-    size_t user_count = TSFileInput::read(user_buffer, max_packets, report);
+    size_t user_count = TSFile::read(user_buffer, max_packets, report);
     _in_packets += user_count;
 
     // Finally, read back the rest into our buffer. We do the exchanges that way
@@ -228,7 +236,7 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
         // Replace part of the buffer with these user_count packets
         // First, fill the remaining free space from the buffer
         while (user_count > 0 && _total_count < buffer_size) {
-            assert (_current_offset == _total_count);
+            assert(_current_offset == _total_count);
             const size_t index = (_first_index + _total_count) % buffer_size;
             const size_t count = std::min (user_count, buffer_size - index);
             assert (count > 0);
@@ -252,9 +260,9 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
         }
     }
 
-    assert (_first_index < buffer_size);
-    assert (_current_offset <= _total_count);
-    assert (_total_count <= buffer_size);
+    assert(_first_index < buffer_size);
+    assert(_current_offset <= _total_count);
+    assert(_total_count <= buffer_size);
 
     return _in_packets;
 }

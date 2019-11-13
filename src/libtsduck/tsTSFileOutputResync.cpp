@@ -26,11 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A specialized form of transport stream output file with resynchronized
-//  PID and continuity counters.
-//
-//----------------------------------------------------------------------------
 
 #include "tsTSFileOutputResync.h"
 #include "tsMemory.h"
@@ -42,7 +37,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TSFileOutputResync::TSFileOutputResync() :
-    TSFileOutput(),
+    TSFile(),
     _ccFixer(AllPIDs)
 {
     // Continuity counters are generated regardless of previous values.
@@ -60,8 +55,14 @@ ts::TSFileOutputResync::~TSFileOutputResync()
 
 bool ts::TSFileOutputResync::open(const UString& filename, OpenFlags flags, Report& report)
 {
-    // Invoke superclass for actual file opening.
-    const bool ok = TSFileOutput::open(filename, flags, report);
+    // Forbid input access.
+    if ((flags & READ) != 0) {
+        report.log(getErrorSeverityLevel(), u"read mode not allowed on TSFileOutputResync");
+        return false;
+    }
+
+    // Invoke superclass for actual file opening. Force write mode.
+    const bool ok = TSFile::open(filename, flags | WRITE, report);
 
     // Reset continuity counters.
     if (ok) {
@@ -84,7 +85,7 @@ bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report
     }
 
     // Invoke superclass
-    return TSFileOutput::write(buffer, packet_count, report);
+    return TSFile::write(buffer, packet_count, report);
 }
 
 
