@@ -180,6 +180,7 @@
 #include "tsShortEventDescriptor.h"
 #include "tsSimpleApplicationBoundaryDescriptor.h"
 #include "tsSimpleApplicationLocationDescriptor.h"
+#include "tsSkyLogicalChannelNumberDescriptor.h"
 #include "tsSLDescriptor.h"
 #include "tsSmoothingBufferDescriptor.h"
 #include "tsSpliceAvailDescriptor.h"

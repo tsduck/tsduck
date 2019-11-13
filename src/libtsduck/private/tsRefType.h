@@ -146,6 +146,7 @@
     REF_TYPE(ShortEventDescriptor);
     REF_TYPE(SimpleApplicationBoundaryDescriptor);
     REF_TYPE(SimpleApplicationLocationDescriptor);
+    REF_TYPE(SkyLogicalChannelNumberDescriptor);
     REF_TYPE(SLDescriptor);
     REF_TYPE(SmoothingBufferDescriptor);
     REF_TYPE(SpliceAvailDescriptor);
