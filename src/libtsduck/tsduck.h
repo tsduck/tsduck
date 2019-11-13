@@ -386,6 +386,7 @@
 #include "tsSimpleApplicationLocationDescriptor.h"
 #include "tsSimulCryptDate.h"
 #include "tsSingletonManager.h"
+#include "tsSkyLogicalChannelNumberDescriptor.h"
 #include "tsSLDescriptor.h"
 #include "tsSmoothingBufferDescriptor.h"
 #include "tsSocket.h"
