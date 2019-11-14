@@ -89,7 +89,6 @@ namespace ts {
 
         // SkyLogicalChannelNumberDescriptor public members:
         EntryList entries;  //!< List of service entries.
-
         uint16_t region_id; //!< Region id (maybe in the UK?, 0xFFFF for all country).
 
         //!
