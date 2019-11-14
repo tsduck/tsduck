@@ -8,5 +8,6 @@ Harald Jordan
 Chris Hibbert
 Aaron Levinson
 Oliver Collyer
+Anthony Delannoy
 
 If you wish to contribute, please see https://tsduck.io/doxy/contributing.html
