@@ -49,6 +49,7 @@ const ts::PIDSet ts::AllPIDs (~NoPID);
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::PrivateDataSpecifierEnum({
+    {u"BskyB",     ts::PDS_BSKYB},
     {u"Nagra",     ts::PDS_NAGRA},
     {u"TPS",       ts::PDS_TPS},
     {u"EACEM",     ts::PDS_EACEM},
