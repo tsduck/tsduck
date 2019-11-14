@@ -1304,6 +1304,15 @@
       </channel_list>
     </nordig_logical_channel_descriptor_v2>
 
+    <sky_logical_channel_number_descriptor region_id="uint16, required">
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               service_type="uint8, required"
+               channel_id="uint16, required"
+               logical_channel_number="uint16, required"
+               sky_id="uint16, required"/>
+    </sky_logical_channel_number_descriptor>
+
     <NPT_endpoint_descriptor
         start_NPT="uint33, required"
         stop_NPT="uint33, required"/>
