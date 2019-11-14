@@ -75,9 +75,7 @@ ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor(DuckCon
 
 void ts::SkyLogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
+    ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt16(region_id);
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         bbp->appendUInt16 (it->service_id);
@@ -86,11 +84,7 @@ void ts::SkyLogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descrip
         bbp->appendUInt16 (it->lcn);
         bbp->appendUInt16 (it->sky_id);
     }
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -100,7 +94,7 @@ void ts::SkyLogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descrip
 
 void ts::SkyLogicalChannelNumberDescriptor::deserialize(DuckContext& duck, const Descriptor& desc)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && (desc.payloadSize() - 2) % 9 == 0;
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 9 == 2;
     entries.clear();
 
     if (_is_valid) {
@@ -166,14 +160,14 @@ void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& dis
 
 void ts::SkyLogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"region_id", region_id);
+    root->setIntAttribute(u"region_id", region_id, true);
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         xml::Element* e = root->addElement(u"service");
         e->setIntAttribute(u"service_id", it->service_id, true);
         e->setIntAttribute(u"service_type", it->service_type, true);
         e->setIntAttribute(u"channel_id", it->channel_id, true);
-        e->setIntAttribute(u"logical_channel_number", it->lcn, true);
+        e->setIntAttribute(u"logical_channel_number", it->lcn, false);
         e->setIntAttribute(u"sky_id", it->sky_id, true);
     }
 }
@@ -190,9 +184,8 @@ void ts::SkyLogicalChannelNumberDescriptor::fromXML(DuckContext& duck, const xml
     xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
+        element->getIntAttribute<uint16_t>(region_id, u"region_id", true, 0, 0x0000, 0xFFFF) &&
         element->getChildren(children, u"service", 0, MAX_ENTRIES);
-
-    element->getIntAttribute<uint16_t>(region_id, u"region_id", true, 0, 0x0000, 0xFFFF);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
@@ -201,7 +194,7 @@ void ts::SkyLogicalChannelNumberDescriptor::fromXML(DuckContext& duck, const xml
             children[i]->getIntAttribute<uint8_t>(entry.service_type, u"service_type", true, 0, 0x00, 0xFF) &&
             children[i]->getIntAttribute<uint16_t>(entry.channel_id, u"channel_id", true, 0, 0x0000, 0xFFFF) &&
             children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getIntAttribute<uint16_t>(entry.channel_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
+            children[i]->getIntAttribute<uint16_t>(entry.sky_id, u"sky_id", true, 0, 0x0000, 0xFFFF);
         if (_is_valid) {
             entries.push_back(entry);
         }
