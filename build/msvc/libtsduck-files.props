@@ -389,6 +389,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSimulCryptDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSingletonManager.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSkyLogicalChannelNumberDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSkyServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSLDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSmoothingBufferDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSocket.h" />
@@ -890,6 +891,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSimulCryptDate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSingletonManager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSkyLogicalChannelNumberDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSkyServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSLDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSmoothingBufferDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSocket.cpp" />

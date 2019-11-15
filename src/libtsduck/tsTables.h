@@ -181,6 +181,7 @@
 #include "tsSimpleApplicationBoundaryDescriptor.h"
 #include "tsSimpleApplicationLocationDescriptor.h"
 #include "tsSkyLogicalChannelNumberDescriptor.h"
+#include "tsSkyServiceDescriptor.h"
 #include "tsSLDescriptor.h"
 #include "tsSmoothingBufferDescriptor.h"
 #include "tsSpliceAvailDescriptor.h"

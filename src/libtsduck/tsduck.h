@@ -387,6 +387,7 @@
 #include "tsSimulCryptDate.h"
 #include "tsSingletonManager.h"
 #include "tsSkyLogicalChannelNumberDescriptor.h"
+#include "tsSkyServiceDescriptor.h"
 #include "tsSLDescriptor.h"
 #include "tsSmoothingBufferDescriptor.h"
 #include "tsSocket.h"

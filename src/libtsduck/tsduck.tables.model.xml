@@ -1313,6 +1313,13 @@
                sky_id="uint16, required"/>
     </sky_logical_channel_number_descriptor>
 
+    <sky_service_descriptor
+        unknow1="uint16_t,required"
+        flags="uint16_t, required"
+        description_flags="uint8_t, required">
+      <description>String</description>
+    </sky_service_descriptor>
+
     <NPT_endpoint_descriptor
         start_NPT="uint33, required"
         stop_NPT="uint33, required"/>

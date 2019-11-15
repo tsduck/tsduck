@@ -387,6 +387,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSimulCryptDate.h \
     ../../../src/libtsduck/tsSingletonManager.h \
     ../../../src/libtsduck/tsSkyLogicalChannelNumberDescriptor.h \
+    ../../../src/libtsduck/tsSkyServiceDescriptor.h \
     ../../../src/libtsduck/tsSLDescriptor.h \
     ../../../src/libtsduck/tsSmoothingBufferDescriptor.h \
     ../../../src/libtsduck/tsSocket.h \
@@ -875,6 +876,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSimulCryptDate.cpp \
     ../../../src/libtsduck/tsSingletonManager.cpp \
     ../../../src/libtsduck/tsSkyLogicalChannelNumberDescriptor.cpp \
+    ../../../src/libtsduck/tsSkyServiceDescriptor.cpp \
     ../../../src/libtsduck/tsSLDescriptor.cpp \
     ../../../src/libtsduck/tsSmoothingBufferDescriptor.cpp \
     ../../../src/libtsduck/tsSocket.cpp \
