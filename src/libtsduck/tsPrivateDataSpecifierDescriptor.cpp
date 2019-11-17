@@ -68,13 +68,9 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(DuckContext& 
 
 void ts::PrivateDataSpecifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    uint8_t data[6];
-    data[0] = _tag;
-    data[1] = 4;
-    PutUInt32 (data + 2, pds);
-
-    Descriptor d (data, sizeof(data));
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt32(pds);
+    serializeEnd(desc, bbp);
 }
 
 

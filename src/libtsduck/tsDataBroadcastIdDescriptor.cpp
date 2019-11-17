@@ -81,16 +81,10 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(DuckContext& duck, cons
 
 void ts::DataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    bbp->appendUInt16 (data_broadcast_id);
-    bbp->append (private_data);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt16(data_broadcast_id);
+    bbp->append(private_data);
+    serializeEnd(desc, bbp);
 }
 
 

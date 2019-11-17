@@ -83,11 +83,13 @@ ts::ByteBlockPtr ts::AbstractDescriptor::serializeStart() const
 
 bool ts::AbstractDescriptor::serializeEnd(Descriptor& desc, const ByteBlockPtr& bbp) const
 {
-    if (bbp->size() > MAX_DESCRIPTOR_SIZE) {
+    if (!_is_valid || bbp.isNull() || bbp->size() < 2 || bbp->size() > MAX_DESCRIPTOR_SIZE) {
+        // Invalid descriptor instance or invalid serialized descriptor.
         desc.invalidate();
         return false;
     }
     else {
+        // Update descriptor tag and size.
         (*bbp)[0] = _tag;
         (*bbp)[1] = uint8_t(bbp->size() - 2);
         desc = Descriptor(bbp, SHARE);

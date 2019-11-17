@@ -83,23 +83,19 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor(DuckContext& duck, const Descriptor& 
 
 void ts::AVCVideoDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    uint8_t data[6];
-    data[0] = _tag;
-    data[1] = 4;
-    data[2] = profile_idc;
-    data[3] =
-        (constraint_set0 ? 0x80 : 0x00) |
-        (constraint_set1 ? 0x40 : 0x00) |
-        (constraint_set2 ? 0x20 : 0x00) |
-        (AVC_compatible_flags & 0x1F);
-    data[4] = level_idc;
-    data[5] =
-        (AVC_still_present ? 0x80 : 0x00) |
-        (AVC_24_hour_picture ? 0x40 : 0x00) |
-        0x3F;
+    ByteBlockPtr bbp(serializeStart());
 
-    Descriptor d(data, sizeof(data));
-    desc = d;
+    bbp->appendUInt8(profile_idc);
+    bbp->appendUInt8((constraint_set0 ? 0x80 : 0x00) |
+                     (constraint_set1 ? 0x40 : 0x00) |
+                     (constraint_set2 ? 0x20 : 0x00) |
+                     (AVC_compatible_flags & 0x1F));
+    bbp->appendUInt8(level_idc);
+    bbp->appendUInt8((AVC_still_present ? 0x80 : 0x00) |
+                     (AVC_24_hour_picture ? 0x40 : 0x00) |
+                     0x3F);
+
+    serializeEnd(desc, bbp);
 }
 
 

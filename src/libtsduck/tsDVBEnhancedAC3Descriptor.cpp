@@ -112,44 +112,38 @@ void ts::DVBEnhancedAC3Descriptor::merge(const DVBEnhancedAC3Descriptor& other)
 
 void ts::DVBEnhancedAC3Descriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    bbp->appendUInt8 ((component_type.set() ? 0x80 : 0x00) |
-                      (bsid.set()           ? 0x40 : 0x00) |
-                      (mainid.set()         ? 0x20 : 0x00) |
-                      (asvc.set()           ? 0x10 : 0x00) |
-                      (mixinfoexists        ? 0x08 : 0x00) |
-                      (substream1.set()     ? 0x04 : 0x00) |
-                      (substream2.set()     ? 0x02 : 0x00) |
-                      (substream3.set()     ? 0x01 : 0x00));
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8((component_type.set() ? 0x80 : 0x00) |
+                     (bsid.set()           ? 0x40 : 0x00) |
+                     (mainid.set()         ? 0x20 : 0x00) |
+                     (asvc.set()           ? 0x10 : 0x00) |
+                     (mixinfoexists        ? 0x08 : 0x00) |
+                     (substream1.set()     ? 0x04 : 0x00) |
+                     (substream2.set()     ? 0x02 : 0x00) |
+                     (substream3.set()     ? 0x01 : 0x00));
     if (component_type.set()) {
-        bbp->appendUInt8 (component_type.value());
+        bbp->appendUInt8(component_type.value());
     }
     if (bsid.set()) {
-        bbp->appendUInt8 (bsid.value());
+        bbp->appendUInt8(bsid.value());
     }
     if (mainid.set()) {
-        bbp->appendUInt8 (mainid.value());
+        bbp->appendUInt8(mainid.value());
     }
     if (asvc.set()) {
-        bbp->appendUInt8 (asvc.value());
+        bbp->appendUInt8(asvc.value());
     }
     if (substream1.set()) {
-        bbp->appendUInt8 (substream1.value());
+        bbp->appendUInt8(substream1.value());
     }
     if (substream2.set()) {
-        bbp->appendUInt8 (substream2.value());
+        bbp->appendUInt8(substream2.value());
     }
     if (substream3.set()) {
-        bbp->appendUInt8 (substream3.value());
+        bbp->appendUInt8(substream3.value());
     }
-    bbp->append (additional_info);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    bbp->append(additional_info);
+    serializeEnd(desc, bbp);
 }
 
 

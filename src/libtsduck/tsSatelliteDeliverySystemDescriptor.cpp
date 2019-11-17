@@ -93,21 +93,17 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(DuckCon
 
 void ts::SatelliteDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    uint8_t data[13];
-    data[0] = _tag;
-    data[1] = 11;
-    EncodeBCD(data + 2, 8, frequency);
-    EncodeBCD(data + 6, 4, orbital_position);
-    data[8] = (eastNotWest ? 0x80 : 0x00) |
-        uint8_t((polarization & 0x03) << 5) |
-        (dvbS2 ? uint8_t((roll_off & 0x03) << 3) : 0x00) |
-        (dvbS2 ? 0x04 : 0x00) |
-        (modulation_type & 0x03);
-    EncodeBCD(data + 9, 7, symbol_rate);
-    data[12] = (data[12] & 0xF0) | (FEC_inner & 0x0F);
-
-    Descriptor d (data, sizeof(data));
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    EncodeBCD(bbp->enlarge(4), 8, frequency);
+    EncodeBCD(bbp->enlarge(2), 4, orbital_position);
+    bbp->appendUInt8((eastNotWest ? 0x80 : 0x00) |
+                     uint8_t((polarization & 0x03) << 5) |
+                     (dvbS2 ? uint8_t((roll_off & 0x03) << 3) : 0x00) |
+                     (dvbS2 ? 0x04 : 0x00) |
+                     (modulation_type & 0x03));
+    EncodeBCD(bbp->enlarge(4), 7, symbol_rate);
+    bbp->back() = (bbp->back() & 0xF0) | (FEC_inner & 0x0F);
+    serializeEnd(desc, bbp);
 }
 
 

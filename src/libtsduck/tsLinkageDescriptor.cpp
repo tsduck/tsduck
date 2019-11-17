@@ -148,13 +148,7 @@ ts::LinkageDescriptor::LinkageDescriptor(DuckContext& duck, const Descriptor& de
 
 void ts::LinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    if (!_is_valid) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     // Fixed part.
     bbp->appendUInt16(ts_id);
@@ -209,16 +203,7 @@ void ts::LinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
     // Finally, add private data.
     bbp->append(private_data);
 
-    // We have serialized many things, check that it fits in a descriptor.
-    if (bbp->size() <= MAX_DESCRIPTOR_SIZE) {
-        (*bbp)[0] = _tag;
-        (*bbp)[1] = uint8_t(bbp->size() - 2);
-        Descriptor d(bbp, SHARE);
-        desc = d;
-    }
-    else {
-        desc.invalidate();
-    }
+    serializeEnd(desc, bbp);
 }
 
 

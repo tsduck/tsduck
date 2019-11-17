@@ -151,7 +151,7 @@ void ts::VBIDataDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
         }
         else {
             bbp->appendUInt8(uint8_t(it1->fields.size())); // one byte per field entry
-            for (FieldList::const_iterator it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
+            for (auto it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
                 bbp->appendUInt8(0xC0 | (it2->field_parity ? 0x20 : 0x00) | (it2->line_offset & 0x1F));
             }
         }
