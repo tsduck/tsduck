@@ -77,14 +77,9 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(DuckContext& duck, co
 
 void ts::StreamIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (3));
-    CheckNonNull (bbp.pointer());
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = 1;
-    (*bbp)[2] = component_tag;
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(component_tag);
+    serializeEnd(desc, bbp);
 }
 
 

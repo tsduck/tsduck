@@ -83,13 +83,9 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(DuckContext
 
 void ts::EacemStreamIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp(new ByteBlock(3));
-    CheckNonNull (bbp.pointer());
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = 1; // size
-    (*bbp)[2] = version;
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(version);
+    serializeEnd(desc, bbp);
 }
 
 

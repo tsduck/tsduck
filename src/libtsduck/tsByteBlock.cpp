@@ -105,7 +105,7 @@ void ts::ByteBlock::copy(const void* data_, size_type size_)
 // Increase size by n and return pointer to new n-byte area
 //----------------------------------------------------------------------------
 
-void* ts::ByteBlock::enlarge(size_type n)
+uint8_t* ts::ByteBlock::enlarge(size_type n)
 {
     const size_type oldsize = this->size();
     resize(oldsize + n);

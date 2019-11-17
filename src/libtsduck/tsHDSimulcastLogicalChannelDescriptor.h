@@ -95,17 +95,6 @@ namespace ts {
         //!
         HDSimulcastLogicalChannelDescriptor(DuckContext& duck, const Descriptor& bin);
 
-        //!
-        //! Constructor using a variable-length argument list.
-        //! Each entry is described by 2 arguments: @a service_id and @ lcn.
-        //! All services are marked as visible by default.
-        //! All arguments are int, not uint16_t, since integer literals are int
-        //! by default. The end of the argument list must be marked by -1.
-        //! @param [in] service_id Service id.
-        //! @param [in] lcn Logical channel number.
-        //!
-        HDSimulcastLogicalChannelDescriptor(int service_id, int lcn, ...);
-
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
         virtual void deserialize(DuckContext&, const Descriptor&) override;

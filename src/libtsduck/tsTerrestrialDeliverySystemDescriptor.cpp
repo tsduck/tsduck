@@ -98,26 +98,22 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(Duc
 
 void ts::TerrestrialDeliverySystemDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    uint8_t data[13];
-    data[0] = _tag;
-    data[1] = 11;
-    PutUInt32(data + 2, centre_frequency);
-    data[6] = uint8_t(bandwidth << 5) |
-              uint8_t(uint8_t(high_priority) << 4) |
-              uint8_t(uint8_t(no_time_slicing) << 3) |
-              uint8_t(uint8_t(no_mpe_fec) << 2) |
-              0x03;
-    data[7] = uint8_t(constellation << 6) |
-              uint8_t((hierarchy & 0x07) << 3) |
-              (code_rate_hp & 0x07);
-    data[8] = uint8_t(code_rate_lp << 5) |
-              uint8_t((guard_interval & 0x03) << 3) |
-              uint8_t((transmission_mode & 0x03) << 1) |
-              uint8_t(other_frequency);
-    data[9] = data[10] = data[11] = data[12] = 0xFF;
-
-    Descriptor d(data, sizeof(data));
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt32(centre_frequency);
+    bbp->appendUInt8(uint8_t(bandwidth << 5) |
+                     uint8_t(uint8_t(high_priority) << 4) |
+                     uint8_t(uint8_t(no_time_slicing) << 3) |
+                     uint8_t(uint8_t(no_mpe_fec) << 2) |
+                     0x03);
+    bbp->appendUInt8(uint8_t(constellation << 6) |
+                     uint8_t((hierarchy & 0x07) << 3) |
+                     (code_rate_hp & 0x07));
+    bbp->appendUInt8(uint8_t(code_rate_lp << 5) |
+                     uint8_t((guard_interval & 0x03) << 3) |
+                     uint8_t((transmission_mode & 0x03) << 1) |
+                     uint8_t(other_frequency));
+    bbp->appendUInt32(0xFFFFFFFF);
+    serializeEnd(desc, bbp);
 }
 
 

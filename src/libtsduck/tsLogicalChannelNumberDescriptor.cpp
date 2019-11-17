@@ -70,21 +70,6 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(DuckContext& 
     deserialize(duck, desc);
 }
 
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(int service_id, int lcn, ...) :
-    LogicalChannelNumberDescriptor()
-{
-    _is_valid = true;
-    entries.push_back (Entry (uint16_t (service_id), true, uint16_t (lcn)));
-
-    va_list ap;
-    va_start (ap, lcn);
-    int id, n;
-    while ((id = va_arg (ap, int)) >= 0 && (n = va_arg (ap, int)) >= 0) {
-        entries.push_back (Entry (uint16_t (id), true, uint16_t (n)));
-    }
-    va_end (ap);
-}
-
 
 //----------------------------------------------------------------------------
 // Serialization
@@ -92,18 +77,12 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor(int service_i
 
 void ts::LogicalChannelNumberDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt16 (it->service_id);
-        bbp->appendUInt16 ((it->visible ? 0xFC00 : 0x7C00) | (it->lcn & 0x03FF));
+    ByteBlockPtr bbp(serializeStart());
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        bbp->appendUInt16(it->service_id);
+        bbp->appendUInt16((it->visible ? 0xFC00 : 0x7C00) | (it->lcn & 0x03FF));
     }
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 

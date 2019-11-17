@@ -106,12 +106,10 @@ void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DuckContext& 
 
 void ts::SSUDataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    bbp->appendUInt16 (0x000A); // data_broadcast_id for SSU
-    bbp->enlarge (1); // placeholder for oui_data_length at offset 4
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt16(0x000A);        // data_broadcast_id for SSU
+    uint8_t* len = bbp->enlarge(1);   // placeholder for oui_data_length
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
         bbp->appendUInt8((it->oui >> 16) & 0xFF);
         bbp->appendUInt16(it->oui & 0xFFFF);
         bbp->appendUInt8(0xF0 | (it->update_type & 0x0F));
@@ -119,13 +117,9 @@ void ts::SSUDataBroadcastIdDescriptor::serialize(DuckContext& duck, Descriptor& 
         bbp->appendUInt8(uint8_t(it->selector.size()));
         bbp->append(it->selector);
     }
-    (*bbp)[4] = uint8_t(bbp->size() - 5);  // update oui_data_length
+    *len = uint8_t(bbp->data() + bbp->size() - len - 1);  // update oui_data_length
     bbp->append(private_data);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 

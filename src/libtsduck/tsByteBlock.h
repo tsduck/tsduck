@@ -121,7 +121,7 @@ namespace ts {
         //! @param [in] n Number of bytes to add at the end of the block.
         //! @return Address of the new n-byte area at the end of the block.
         //!
-        TSDUCKDLL void* enlarge(size_type n);
+        TSDUCKDLL uint8_t* enlarge(size_type n);
 
         //!
         //! Append raw data to a byte block.

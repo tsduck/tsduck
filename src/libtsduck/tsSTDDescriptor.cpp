@@ -77,13 +77,9 @@ ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
 
 void ts::STDDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    uint8_t data[3];
-    data[0] = _tag;
-    data[1] = 1;
-    data[2] = leak_valid ? 0xFF : 0xFE;
-
-    Descriptor d(data, sizeof(data));
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(leak_valid ? 0xFF : 0xFE);
+    serializeEnd(desc, bbp);
 }
 
 

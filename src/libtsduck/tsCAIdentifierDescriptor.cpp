@@ -87,17 +87,13 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor(int casid, ...) :
 
 void ts::CAIdentifierDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     for (size_t n = 0; n < casids.size(); ++n) {
-        bbp->appendUInt16 (casids[n]);
+        bbp->appendUInt16(casids[n]);
     }
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 

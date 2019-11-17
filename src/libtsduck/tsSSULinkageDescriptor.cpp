@@ -109,27 +109,21 @@ void ts::SSULinkageDescriptor::toLinkageDescriptor(DuckContext& duck, ts::Linkag
 
 void ts::SSULinkageDescriptor::serialize(DuckContext& duck, Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    bbp->appendUInt16 (ts_id);
-    bbp->appendUInt16 (onetw_id);
-    bbp->appendUInt16 (service_id);
-    bbp->appendUInt8 (LINKAGE_SSU);
-    bbp->enlarge (1); // placeholder for oui_data_length at offset 9
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        bbp->appendUInt8 ((it->oui >> 16) & 0xFF);
-        bbp->appendUInt16 (it->oui & 0xFFFF);
-        bbp->appendUInt8 (uint8_t(it->selector.size()));
-        bbp->append (it->selector);
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt16(ts_id);
+    bbp->appendUInt16(onetw_id);
+    bbp->appendUInt16(service_id);
+    bbp->appendUInt8(LINKAGE_SSU);
+    uint8_t* len = bbp->enlarge(1); // placeholder for oui_data_length
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        bbp->appendUInt8((it->oui >> 16) & 0xFF);
+        bbp->appendUInt16(it->oui & 0xFFFF);
+        bbp->appendUInt8(uint8_t(it->selector.size()));
+        bbp->append(it->selector);
     }
-    (*bbp)[9] = uint8_t(bbp->size() - 10);  // update oui_data_length
-    bbp->append (private_data);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    *len = uint8_t(bbp->data() + bbp->size() - len - 1);  // update oui_data_length
+    bbp->append(private_data);
+    serializeEnd(desc, bbp);
 }
 
 
