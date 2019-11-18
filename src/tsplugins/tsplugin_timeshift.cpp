@@ -155,7 +155,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
                 return false;
             }
             else {
-                _buffer.setTotalPackets(packets);
+                _buffer.setTotalPackets(size_t(packets));
                 return _buffer.open(*tsp);
             }
         }
