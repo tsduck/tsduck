@@ -61,19 +61,44 @@ ts::ServiceListDescriptor::ServiceListDescriptor(DuckContext& duck, const Descri
     deserialize(duck, desc);
 }
 
-ts::ServiceListDescriptor::ServiceListDescriptor(int service_id, int service_type, ...) :
-    ServiceListDescriptor()
-{
-    _is_valid = true;
-    entries.push_back(Entry(uint16_t(service_id), uint8_t(service_type)));
 
-    va_list ap;
-    va_start(ap, service_type);
-    int id, type;
-    while ((id = va_arg(ap, int)) >= 0 && (type = va_arg(ap, int)) >= 0) {
-        entries.push_back(Entry(uint16_t(id), uint8_t(type)));
+//----------------------------------------------------------------------------
+// Check if a service is present in the descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::ServiceListDescriptor::hasService(uint16_t id) const
+{
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        if (it->service_id == id) {
+            return true;
+        }
     }
-    va_end (ap);
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Add or replace a service.
+//----------------------------------------------------------------------------
+
+bool ts::ServiceListDescriptor::addService(uint16_t id, uint8_t type)
+{
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        if (it->service_id == id) {
+            // The service alreay exists, only overwrite the service type.
+            if (it->service_type == type) {
+                return false; // descriptor not modified
+            }
+            else {
+                it->service_type = type;
+                return true; // descriptor modified
+            }
+        }
+    }
+
+    // The service is not found, it an entry.
+    entries.push_back(Entry(id, type));
+    return true; // descriptor modified
 }
 
 

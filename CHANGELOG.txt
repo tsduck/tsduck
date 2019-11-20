@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1500
+VERSION 3.19-1513
 
 [NEW] New commands and plugins:
 
@@ -21,6 +21,8 @@ VERSION 3.19-1500
   * Complete ATSC signalization, as defined in A/65, is now supported.
   * NorDig-private descriptors are supported.
   * Added option --power-mode to "tsdektec" and output plugin "dektec".
+  * Added options --build-service-list-descriptors and --default-service-type
+    to plugin "nit".
   * Service id or name is now optional in plugin "svrename". When omitted, the
     default service is the first one in the PAT.
   * On Linux, multi-standard tuners are now supported (for instance tuners

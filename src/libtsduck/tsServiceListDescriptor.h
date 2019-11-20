@@ -84,21 +84,27 @@ namespace ts {
         ServiceListDescriptor();
 
         //!
-        //! Constructor using a variable-length argument list.
-        //! Each entry is described by 2 arguments: @a service_id and @ service_type.
-        //! All arguments are int, not uint16_t, since integer literals are int
-        //! by default. The end of the argument list must be marked by -1.
-        //! @param [in] service_id Service id.
-        //! @param [in] service_type Service type.
-        //!
-        ServiceListDescriptor(int service_id, int service_type, ...);
-
-        //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         ServiceListDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        //!
+        //! Check if a service is present.
+        //! @param [in] id Service id.
+        //! @return True if the service is present in the descriptor.
+        //!
+        bool hasService(uint16_t id) const;
+
+        //!
+        //! Add or replace a service.
+        //! If the service is already present, overwrite the service type.
+        //! @param [in] id Service id.
+        //! @param [in] type Service type.
+        //! @return True if the descriptor was modified.
+        //!
+        bool addService(uint16_t id, uint8_t type);
 
         // Inherited methods
         virtual void serialize(DuckContext&, Descriptor&) const override;
