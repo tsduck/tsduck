@@ -105,6 +105,14 @@ namespace ts {
         virtual void createNewTable(BinaryTable& table) = 0;
 
         //!
+        //! Called by the subclass when some external event forces an update of the table.
+        //! Most subclasses will not need to call this.
+        //! @param [in,out] table The new updated table.
+        //! Modified when common modification options are specified.
+        //!
+        void forceTableUpdate(BinaryTable& table);
+
+        //!
         //! Set the error flag to terminate the processing asap.
         //! @param [in] on Error state (true by default).
         //!
@@ -116,12 +124,16 @@ namespace ts {
         //!
         bool hasError() const { return _abort; }
 
+        // Implementation of TableHandlerInterface.
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+
     private:
         bool              _abort;            // Error, abort as soon as possible.
         UString           _table_name;       // Table name, informational only.
         BitRate           _default_bitrate;  // Default bitrate of new PID.
         PID               _pid;              // PID to process.
-        bool              _found;            // Found a the target table.
+        bool              _found_pid;        // Found the target PID.
+        bool              _found_table;      // Found an instance of the target table.
         PacketCounter     _pkt_create;       // Packet# after which a new table shall be created
         PacketCounter     _pkt_insert;       // Packet# after which a PID packet shall be inserted
         MilliSecond       _create_after_ms;  // Create a new table if none found after that time.
@@ -133,7 +145,7 @@ namespace ts {
         SectionDemux      _demux;            // Section demux.
         CyclingPacketizer _pzer;             // Packetizer for modified tables.
 
-        // Implementation of TableHandlerInterface.
-        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        // Reinsert a table in the target PID.
+        void reinsertTable(BinaryTable& table, bool is_target_table);
     };
 }

@@ -47,7 +47,8 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     _table_name(table_name),
     _default_bitrate(default_bitrate),
     _pid(pid),
-    _found(false),
+    _found_pid(false),
+    _found_table(false),
     _pkt_create(0),
     _pkt_insert(0),
     _create_after_ms(0),
@@ -124,6 +125,7 @@ void ts::AbstractTablePlugin::setPID(PID pid)
     // Reset demux and packetizer if we change PID.
     if (pid != _pid) {
         _pid = pid;
+        _found_pid = false;
         _demux.reset();
         _demux.addPID(_pid);
         _pzer.reset();
@@ -145,7 +147,7 @@ bool ts::AbstractTablePlugin::start()
     _pzer.setPID(_pid);
 
     // Reset other states
-    _found = false;
+    _found_pid = _found_table = false;
     _pkt_create = _pkt_insert = tsp->pluginPackets();
 
     return true;
@@ -156,45 +158,73 @@ bool ts::AbstractTablePlugin::start()
 // Invoked by the demux when a table is found on the input PID.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTablePlugin::handleTable(SectionDemux&, const BinaryTable& intable)
+void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable& intable)
 {
-    // A modifiable version of the table.
+    // Filter out call for some other demux (maybe from a suclass).
+    if (&demux != &_demux) {
+        return;
+    }
+
+    // Build a modifiable version of the table.
     BinaryTable table(intable, SHARE);
-    const int old_version = table.version();
 
     // Call subclass to process the table.
     bool is_target = true;
     bool reinsert = true;
     modifyTable(table, is_target, reinsert);
 
-    // Case of the target table.
-    if (is_target) {
-        // If the target table is found, no longer need to create a new one.
-        _found = true;
+    // Place modified table in the packetizer.
+    if (reinsert) {
+        reinsertTable(table, is_target);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Called by the subclass when some external event forces an update of the table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTablePlugin::forceTableUpdate(BinaryTable& table)
+{
+    // Common processing of target table.
+    reinsertTable(table, true);
+
+    // Insert first packet as soon as possible when the target PID is not present.
+    _pkt_insert = tsp->pluginPackets();
+}
+
+
+//----------------------------------------------------------------------------
+// Reinsert a table in the target PID.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTablePlugin::reinsertTable(BinaryTable& table, bool is_target_table)
+{
+    // Make common modifications on target table.
+    if (is_target_table) {
+        tsp->verbose(u"%s version %d modified", {_table_name, table.version()});
+
+        // The target table is found, no longer need to create a new one.
+        _found_table = true;
         _pkt_insert = 0;
 
         // Modify the table version.
         if (_incr_version) {
-            table.setVersion((table.version() + 1) & 0x1F);
+            table.setVersion((table.version() + 1) & SVERSION_MASK);
         }
         else if (_set_version) {
             table.setVersion(_new_version);
         }
     }
 
-    // Place modified table in the packetizer.
-    if (reinsert) {
-        if (is_target) {
-            tsp->verbose(u"%s version %d modified", {_table_name, old_version});
-        }
-        if (table.isShortSection()) {
-            _pzer.removeSections(table.tableId());
-        }
-        else {
-            _pzer.removeSections(table.tableId(), table.tableIdExtension());
-        }
-        _pzer.addTable(table);
+    // Reinsert the table in the packetizer.
+    if (table.isShortSection()) {
+        _pzer.removeSections(table.tableId());
     }
+    else {
+        _pzer.removeSections(table.tableId(), table.tableIdExtension());
+    }
+    _pzer.addTable(table);
 }
 
 
@@ -205,12 +235,15 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux&, const BinaryTable& inta
 ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
+    if (pid == _pid) {
+        _found_pid = true;
+    }
 
     // Filter incoming sections
     _demux.feedPacket(pkt);
 
     // Determine when a new table shall be created. Executed only once, when the bitrate is known
-    if (!_found && _create_after_ms > 0 && _pkt_create == 0) {
+    if (!_found_table && _create_after_ms > 0 && _pkt_create == 0) {
         const BitRate ts_bitrate = tsp->bitrate();
         if (ts_bitrate > 0) {
             _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
@@ -219,18 +252,19 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
     }
 
     // Create a new table when necessary.
-    if (!_found && _pkt_create > 0 && tsp->pluginPackets() >= _pkt_create) {
+    if (!_found_table && _pkt_create > 0 && tsp->pluginPackets() >= _pkt_create) {
         // Let the subclass create a new empty table.
         BinaryTable table;
         createNewTable(table);
-        // Process it as if it comes from the TS.
+        // Now pretend to have collected the table from the stream
+        // so that the subclass can apply its modifications.
         handleTable(_demux, table);
-        // Insert first packet as soon as possible
+        // Insert first packet as soon as possible when the target PID is not present.
         _pkt_insert = tsp->pluginPackets();
     }
 
     // Insertion of packets from the input PID.
-    if (pid == PID_NULL && _pkt_insert > 0 && tsp->pluginPackets() >= _pkt_insert) {
+    if (!_found_pid && pid == PID_NULL && _pkt_insert > 0 && tsp->pluginPackets() >= _pkt_insert) {
         // It is time to replace stuffing by a created table packet.
         _pzer.getNextPacket(pkt);
         // Next insertion point.

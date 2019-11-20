@@ -71,6 +71,7 @@ namespace ts {
             //! Get the service type.
             //! @param [in,out] duck TSDuck execution context.
             //! @return The service type, as found from the first DVB "service descriptor", if there is one in the list.
+            //! Return zero if there is no service descriptor.
             //!
             uint8_t serviceType(DuckContext& duck) const;
 
