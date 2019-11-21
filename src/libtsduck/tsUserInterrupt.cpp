@@ -240,8 +240,9 @@ void ts::UserInterrupt::activate()
     act.sa_flags = _one_shot ? SA_ONESHOT : 0;
     sigemptyset(&act.sa_mask);
 
-    if (::sigaction(SIGINT, &act, nullptr) < 0) {
-        ::perror("Error setting SIGINT handler");
+    // Catch SIGINT (user ctlr-C), SIGQUIT (quit) and SIGTERM (terminate, kill command).
+    if (::sigaction(SIGINT, &act, nullptr) < 0 || ::sigaction(SIGQUIT, &act, nullptr) < 0 || ::sigaction(SIGTERM, &act, nullptr) < 0) {
+        ::perror("Error setting interrupt signal handler");
         ::exit(EXIT_FAILURE);
     }
 
@@ -290,8 +291,8 @@ void ts::UserInterrupt::deactivate()
     act.sa_flags = 0;
     sigemptyset(&act.sa_mask);
 
-    if (::sigaction(SIGINT, &act, nullptr) < 0) {
-        ::perror("Error resetting SIGINT handler");
+    if (::sigaction(SIGINT, &act, nullptr) < 0 || ::sigaction(SIGQUIT, &act, nullptr) < 0 || ::sigaction(SIGTERM, &act, nullptr) < 0) {
+        ::perror("Error resetting interrupt signal handler");
         ::exit(EXIT_FAILURE);
     }
 
