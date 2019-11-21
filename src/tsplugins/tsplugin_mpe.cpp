@@ -78,7 +78,8 @@ namespace ts {
         SocketAddress _ip_source;       // IP source filter.
         SocketAddress _ip_dest;         // IP destination filter.
         SocketAddress _ip_forward;      // Forwarded socket address.
-        IPAddress     _localAddress;    // Local IP address for UDP forwarding.
+        IPAddress     _local_address;   // Local IP address for UDP forwarding.
+        uint16_t      _local_port;      // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
         bool          _abort;           // Error, abort asap.
@@ -130,7 +131,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _ip_source(),
     _ip_dest(),
     _ip_forward(),
-    _localAddress(),
+    _local_address(),
+    _local_port(SocketAddress::AnyPort),
     _abort(false),
     _sock(false, *tsp_),
     _previous_uc_ttl(0),
@@ -145,7 +147,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"file. By default, existing files are overwritten.");
 
     option(u"destination", 'd', STRING);
-    help(u"destination", u"address[:port]" u"Filter MPE UDP datagrams based on the specified destination IP address.");
+    help(u"destination", u"address[:port]",
+         u"Filter MPE UDP datagrams based on the specified destination IP address.");
 
     option(u"dump-datagram");
     help(u"dump-datagram", u"With --log, dump each complete network datagram.");
@@ -163,6 +166,11 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"With --udp-forward, specify the IP address of the outgoing local interface "
          u"for multicast traffic. It can be also a host name that translates to a "
          u"local address.");
+
+    option(u"local-port", 0, UINT16);
+    help(u"local-port",
+         u"With --udp-forward, specify the local UDP source port for outgoing packets. "
+         u"By default, a random source port is used.");
 
     option(u"net-size", 0, UNSIGNED);
     help(u"net-size",
@@ -266,6 +274,7 @@ bool ts::MPEPlugin::getOptions()
     const UString ipDest(value(u"destination"));
     const UString ipForward(value(u"redirect"));
     const UString ipLocal(value(u"local-address"));
+    getIntValue(_local_port, u"local-port", SocketAddress::AnyPort);
     getIntValue(_min_net_size, u"min-net-size");
     getIntValue(_max_net_size, u"max-net-size", NPOS);
     getIntValue(_min_udp_size, u"min-udp-size");
@@ -297,7 +306,7 @@ bool ts::MPEPlugin::getOptions()
     _ip_source.clear();
     _ip_dest.clear();
     _ip_forward.clear();
-    _localAddress.clear();
+    _local_address.clear();
     if (!ipSource.empty() && !_ip_source.resolve(ipSource, *tsp)) {
         return false;
     }
@@ -307,7 +316,7 @@ bool ts::MPEPlugin::getOptions()
     if (!ipForward.empty() && !_ip_forward.resolve(ipForward, *tsp)) {
         return false;
     }
-    if (!ipLocal.empty() && !_localAddress.resolve(ipLocal, *tsp)) {
+    if (!ipLocal.empty() && !_local_address.resolve(ipLocal, *tsp)) {
         return false;
     }
 
@@ -345,13 +354,18 @@ bool ts::MPEPlugin::start()
         if (!_sock.open(*tsp)) {
             return false;
         }
+        // If local port is specified, bint to socket.
+        const SocketAddress local(IPAddress::AnyAddress, _local_port);
+        if (_local_port != SocketAddress::AnyPort && (!_sock.reusePort(true, *tsp) || !_sock.bind(local, *tsp))) {
+            return false;
+        }
         // If specified, set TTL option, for unicast and multicast.
         // Otherwise, we will set the TTL for each packet.
         if (_ttl > 0 && (!_sock.setTTL(_ttl, false, *tsp) || !_sock.setTTL(_ttl, true, *tsp))) {
             return false;
         }
         // Specify local address for outgoing multicast traffic.
-        if (_localAddress.hasAddress() && !_sock.setOutgoingMulticast(_localAddress, *tsp)) {
+        if (_local_address.hasAddress() && !_sock.setOutgoingMulticast(_local_address, *tsp)) {
             return false;
         }
     }

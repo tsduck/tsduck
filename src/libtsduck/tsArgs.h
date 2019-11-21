@@ -681,7 +681,7 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getIntValue(INT& value,
                          const UChar* name = nullptr,
-                         const INT& def_value = static_cast<INT>(0),
+                         const INT def_value = static_cast<INT>(0),
                          size_t index = 0) const;
 
         //!
@@ -700,7 +700,7 @@ namespace ts {
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         INT intValue(const UChar* name = nullptr,
-                     const INT& def_value = static_cast<INT>(0),
+                     const INT def_value = static_cast<INT>(0),
                      size_t index = 0) const;
 
         //!

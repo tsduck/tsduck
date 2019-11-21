@@ -45,6 +45,7 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast", u"[options] address:port"),
     _destination(),
     _local_addr(),
+    _local_port(SocketAddress::AnyPort),
     _ttl(0),
     _tos(-1),
     _pkt_burst(DEF_PACKET_BURST),
@@ -85,6 +86,11 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
          u"When the destination is a multicast address, specify the IP address "
          u"of the outgoing local interface. It can be also a host name that "
          u"translates to a local address.");
+
+    option(u"local-port", 0, UINT16);
+    help(u"local-port",
+         u"Specify the local UDP source port for outgoing packets. "
+         u"By default, a random source port is used.");
 
     option(u"packet-burst", 'p', INTEGER, 0, 1, 1, MAX_PACKET_BURST);
     help(u"packet-burst",
@@ -149,6 +155,7 @@ bool ts::IPOutputPlugin::getOptions()
     // Get command line arguments
     getValue(_destination, u"");
     getValue(_local_addr, u"local-address");
+    _local_port = intValue<uint16_t>(u"local-port", SocketAddress::AnyPort);
     _ttl = intValue<int>(u"ttl", 0);
     _tos = intValue<int>(u"tos", -1);
     _pkt_burst = intValue<size_t>(u"packet-burst", DEF_PACKET_BURST);
@@ -176,7 +183,9 @@ bool ts::IPOutputPlugin::start()
     }
 
     // Configure socket.
-    if (!_sock.setDefaultDestination(_destination, *tsp) ||
+    const SocketAddress local(IPAddress::AnyAddress, _local_port);
+    if ((_local_port != SocketAddress::AnyPort && (!_sock.reusePort(true, *tsp) || !_sock.bind(local, *tsp))) ||
+        !_sock.setDefaultDestination(_destination, *tsp) ||
         (!_local_addr.empty() && !_sock.setOutgoingMulticast(_local_addr, *tsp)) ||
         (_tos >= 0 && !_sock.setTOS(_tos, *tsp)) ||
         (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)))

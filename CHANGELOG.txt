@@ -24,6 +24,7 @@ VERSION 3.19-1516
   * Added options --build-service-list-descriptors and --default-service-type
     to plugin "nit".
   * Added options --start and --stop to plugin "trigger".
+  * Added option --local-port to plugins "ip" (output) and "mpe".
   * Service id or name is now optional in plugin "svrename". When omitted, the
     default service is the first one in the PAT.
   * On Linux, multi-standard tuners are now supported (for instance tuners

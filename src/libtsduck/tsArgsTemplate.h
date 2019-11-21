@@ -52,7 +52,7 @@ bool ts::Args::IOption::inRange(INT value) const
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-void ts::Args::getIntValue(INT& value, const UChar* name, const INT& def_value, size_t index) const
+void ts::Args::getIntValue(INT& value, const UChar* name, const INT def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != INTEGER || index >= opt.value_count) {
@@ -82,7 +82,7 @@ void ts::Args::getIntValue(INT& value, const UChar* name, const INT& def_value, 
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-INT ts::Args::intValue(const UChar* name, const INT& def_value, size_t index) const
+INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) const
 {
     INT value = def_value;
     getIntValue(value, name, def_value, index);
