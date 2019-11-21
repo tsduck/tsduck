@@ -61,6 +61,7 @@ namespace ts {
     private:
         UString        _destination;        // Destination address/port.
         UString        _local_addr;         // Local address.
+        uint16_t       _local_port;         // Local UDP source port.
         int            _ttl;                // Time to live option.
         int            _tos;                // Type of service option.
         size_t         _pkt_burst;          // Number of TS packets per UDP message
