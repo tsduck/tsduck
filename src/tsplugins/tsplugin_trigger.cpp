@@ -66,6 +66,8 @@ namespace ts {
         UString                    _udpLocal;       // Name of outgoing local address (empty if unspecified).
         ByteBlock                  _udpMessage;     // What to send as UDP message.
         int                        _udpTTL;         // Time-to-live socket option.
+        bool                       _onStart;        // Trigger action on start.
+        bool                       _onStop;         // Trigger action on stop.
         bool                       _allPackets;     // Trigger on all packets in the stream.
         bool                       _allLabels;      // Need all labels to be set.
         TSPacketMetadata::LabelSet _labels;         // Trigger on packets with these labels.
@@ -74,6 +76,9 @@ namespace ts {
         PacketCounter _lastPacket;    // Last action packet.
         Time          _lastTime;      // UTC time of last action.
         UDPSocket     _sock;          // Output socket.
+
+        // Trigger the actions (exec, UDP).
+        void trigger();
     };
 }
 
@@ -86,7 +91,7 @@ TSPLUGIN_DECLARE_PROCESSOR(trigger, ts::TriggerPlugin)
 //----------------------------------------------------------------------------
 
 ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Trigger actions on selected labeled TS packets", u"[options]"),
+    ProcessorPlugin(tsp_, u"Trigger actions on selected TS packets", u"[options]"),
     _minInterPacket(0),
     _minInterTime(0),
     _execute(),
@@ -94,6 +99,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
     _udpLocal(),
     _udpMessage(),
     _udpTTL(0),
+    _onStart(false),
+    _onStop(false),
     _allPackets(false),
     _allLabels(false),
     _labels(),
@@ -151,6 +158,12 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"the IP address of the outgoing local interface. It can be also a host "
          u"name that translates to a local address.");
 
+    option(u"start");
+    help(u"start", u"Trigger the actions on tsp start.");
+
+    option(u"stop");
+    help(u"stop", u"Trigger the actions on tsp stop.");
+
     option(u"ttl", 0, POSITIVE);
     help(u"ttl",
          u"With --udp, specifies the TTL (Time-To-Live) socket option. "
@@ -173,8 +186,10 @@ bool ts::TriggerPlugin::getOptions()
     getValue(_udpLocal, u"local-address");
     getIntValue(_udpTTL, u"ttl");
     getIntValues(_labels, u"label");
+    _onStart = present(u"start");
+    _onStop = present(u"stop");
     _allLabels = present(u"all-labels");
-    _allPackets = _labels.none();
+    _allPackets = !_onStart && !_onStop && _labels.none();
 
     if (present(u"udp-message") && !value(u"udp-message").hexaDecode(_udpMessage)) {
         tsp->error(u"invalid hexadecimal UDP message");
@@ -208,6 +223,10 @@ bool ts::TriggerPlugin::start()
         }
     }
 
+    // Initial trigger.
+    if (_onStart) {
+        trigger();
+    }
     return true;
 }
 
@@ -218,6 +237,11 @@ bool ts::TriggerPlugin::start()
 
 bool ts::TriggerPlugin::stop()
 {
+    // Final trigger.
+    if (_onStop) {
+        trigger();
+    }
+
     if (_sock.isOpen()) {
         _sock.close(*tsp);
     }
@@ -243,17 +267,26 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
         tsp->debug(u"triggering action, packet %'d", {tsp->pluginPackets()});
         _lastTime = now == Time::Epoch ? Time::CurrentUTC() : now;
         _lastPacket = tsp->pluginPackets();
-
-        // Execute external command.
-        if (!_execute.empty()) {
-            ForkPipe::Launch(_execute, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
-        }
-
-        // Send message over a socket.
-        if (_sock.isOpen()) {
-            _sock.send(_udpMessage.data(), _udpMessage.size(), *tsp);
-        }
+        trigger();
     }
 
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Trigger the actions (exec, UDP).
+//----------------------------------------------------------------------------
+
+void ts::TriggerPlugin::trigger()
+{
+    // Execute external command.
+    if (!_execute.empty()) {
+        ForkPipe::Launch(_execute, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+    }
+
+    // Send message over a socket.
+    if (_sock.isOpen()) {
+        _sock.send(_udpMessage.data(), _udpMessage.size(), *tsp);
+    }
 }
