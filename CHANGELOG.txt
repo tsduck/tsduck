@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.19-1513
+VERSION 3.19-1516
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,7 @@ VERSION 3.19-1513
   * Added option --power-mode to "tsdektec" and output plugin "dektec".
   * Added options --build-service-list-descriptors and --default-service-type
     to plugin "nit".
+  * Added options --start and --stop to plugin "trigger".
   * Service id or name is now optional in plugin "svrename". When omitted, the
     default service is the first one in the PAT.
   * On Linux, multi-standard tuners are now supported (for instance tuners
