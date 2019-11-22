@@ -50,10 +50,6 @@
     #define TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG 1
 #endif
 
-#if defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG)
-    #pragma message "GCC versions 6 and 7 are broken and fail to properly handle some template substitutions, prefer using another version of GCC, see https://tsduck.io/doxy/building.html#reqraspbian"
-#endif
-
 namespace ts {
     namespace xml {
 
