@@ -46,7 +46,7 @@ TSDUCK_SOURCE;
 // "uncorrected blocks". But the corresponding ioctl commands (FE_READ_BER, FE_READ_SNR,
 // FE_READ_SIGNAL_STRENGTH, FE_READ_UNCORRECTED_BLOCKS) are marked as deprecated with
 // DVB API v5 and most drivers now return error 524 (ENOTSUPP). So, we simply drop the
-// feature. Also note that there are several forms os "unsupported" in errno and 524
+// feature. Also note that there are several forms of "unsupported" in errno and 524
 // is usually not defined...
 #if !defined(DVB_ENOTSUPP)
     #define DVB_ENOTSUPP 524
@@ -332,15 +332,25 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     else {
         // DTV_ENUM_DELSYS failed, convert tuner type from FE_GET_INFO.
         const ErrorCode err = LastErrorCode();
+        const bool can2g = (_guts->fe_info.caps & FE_CAN_2G_MODULATION) != 0;
         switch (_guts->fe_info.type) {
             case FE_QPSK:
                 _delivery_systems.insert(DS_DVB_S);
+                if (can2g) {
+                    _delivery_systems.insert(DS_DVB_S2);
+                }
                 break;
             case FE_QAM:
                 _delivery_systems.insert(DS_DVB_C);
+                if (can2g) {
+                    _delivery_systems.insert(DS_DVB_C2);
+                }
                 break;
             case FE_OFDM:
                 _delivery_systems.insert(DS_DVB_T);
+                if (can2g) {
+                    _delivery_systems.insert(DS_DVB_T2);
+                }
                 break;
             case FE_ATSC:
                 _delivery_systems.insert(DS_ATSC);
