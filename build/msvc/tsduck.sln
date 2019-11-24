@@ -606,6 +606,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_timeshift", "tsplu
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tspcontrol", "tspcontrol.vcxproj", "{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1454,6 +1459,14 @@ Global
 		{887B1F48-4AB1-43DA-BACA-CE14702C1760}.Release|Win32.Build.0 = Release|Win32
 		{887B1F48-4AB1-43DA-BACA-CE14702C1760}.Release|x64.ActiveCfg = Release|x64
 		{887B1F48-4AB1-43DA-BACA-CE14702C1760}.Release|x64.Build.0 = Release|x64
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Debug|Win32.Build.0 = Debug|Win32
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Debug|x64.ActiveCfg = Debug|x64
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Debug|x64.Build.0 = Debug|x64
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Release|Win32.ActiveCfg = Release|Win32
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Release|Win32.Build.0 = Release|Win32
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Release|x64.ActiveCfg = Release|x64
+		{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
