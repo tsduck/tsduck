@@ -860,10 +860,17 @@ namespace ts {
         bool startWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
+        //! Check if a string contains a specified character.
+        //! @param [in] c A character to check.
+        //! @return True if this string contains @a c, false otherwise.
+        //!
+        bool contain(UChar c) const;
+
+        //!
         //! Check if a string contains a specified substring.
         //! @param [in] substring A substring to check.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
-        //! @return True if this string contains @a sunstring, false otherwise.
+        //! @return True if this string contains @a substring, false otherwise.
         //!
         bool contain(const UString& substring, CaseSensitivity cs = CASE_SENSITIVE) const;
 
@@ -1099,6 +1106,75 @@ namespace ts {
         //! @return The justified string.
         //!
         UString toJustified(const UString& right, size_type width, UChar pad = SPACE, size_t spacesAroundPad = 0) const;
+
+        //!
+        //! The default list of characters to be protected by quoted().
+        //!
+        static const UString DEFAULT_SPECIAL_CHARACTERS;
+
+        //!
+        //! The default list of acceptable quote characters.
+        //!
+        static const UString DEFAULT_QUOTE_CHARACTERS;
+
+        //!
+        //! Replace the string with a "quoted" version of it.
+        //! If this string contains any space character or any character from @a specialCharacters,
+        //! then the string is replaced with a value surrounded by the @a quoteCharacter and
+        //! all special characters are properly escaped using a backslash.
+        //! @param [in] quoteCharacter The character to be used as quote.
+        //! @param [in] specialCharacters The list of special characters.
+        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @param [in] forceQuote If true, force quote, even if the content does not require it.
+        //!
+        void quoted(UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS, bool forceQuote = false);
+
+        //!
+        //! Return a "quoted" version of this string.
+        //! @param [in] quoteCharacter The character to be used as quote.
+        //! @param [in] specialCharacters The list of special characters.
+        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @param [in] forceQuote If true, force quote, even if the content does not require it.
+        //! @return A "quoted" version of this string.
+        //! @see quoted()
+        //!
+        UString toQuoted(UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS, bool forceQuote = false) const;
+
+        //!
+        //! Convert a container of strings into one big string where all elements are properly quoted when necessary.
+        //! This string object receives the final line with quoted elements.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of @c UString containing all elements.
+        //! @param [in] quoteCharacter The character to be used as quote.
+        //! @param [in] specialCharacters The list of special characters.
+        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //!
+        template <class CONTAINER>
+        void quotedLine(const CONTAINER& container, UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS);
+
+        //!
+        //! Convert a container of strings into one big string where all elements are properly quoted when necessary.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of @c UString containing all elements.
+        //! @param [in] quoteCharacter The character to be used as quote.
+        //! @param [in] specialCharacters The list of special characters.
+        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @return The final line with quoted elements.
+        //!
+        template <class CONTAINER>
+        static UString ToQuotedLine(const CONTAINER& container, UChar quoteCharacter = u'\'', const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS);
+
+        //!
+        //! Split this string in space-separated possibly-quoted elements.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of @c UString receiving all unquoted elements.
+        //! @param [in] quoteCharacters All characters which are recognized as quote at the beginning of an element.
+        //! @param [in] specialCharacters The list of special characters.
+        //! The @a quoteCharacter is implicitly part of @a specialCharacters.
+        //! @see quoted()
+        //!
+        template <class CONTAINER>
+        void fromQuotedLine(CONTAINER& container, const UString& quoteCharacters = DEFAULT_QUOTE_CHARACTERS, const UString& specialCharacters = DEFAULT_SPECIAL_CHARACTERS) const;
 
         //!
         //! Convert the string into a suitable HTML representation.

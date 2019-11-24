@@ -826,3 +826,94 @@ void ts::UString::trimLength(INT length, bool trimTrailingSpaces)
     resize(std::min<size_type>(size(), size_type(std::max<INT>(0, length))));
     trim(false, trimTrailingSpaces);
 }
+
+
+//----------------------------------------------------------------------------
+// Convert a container of strings into one big string where all elements are
+// properly quoted when necessary.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+void ts::UString::quotedLine(const CONTAINER& container, UChar quoteCharacter, const UString& specialCharacters)
+{
+    clear();
+    for (auto it = container.begin(); it != container.end(); ++it) {
+        if (!empty()) {
+            append(SPACE);
+        }
+        append(it->toQuoted(quoteCharacter, specialCharacters));
+    }
+}
+
+template <class CONTAINER>
+ts::UString ts::UString::ToQuotedLine(const CONTAINER& container, UChar quoteCharacter, const UString& specialCharacters)
+{
+    UString result;
+    result.quotedLine(container, quoteCharacter, specialCharacters);
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Split this string in space-separated possibly-quoted elements.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+void ts::UString::fromQuotedLine(CONTAINER& container, const UString& quoteCharacters, const UString& specialCharacters) const
+{
+    container.clear();
+
+    // Loop on words.
+    size_type index = 0;
+    while (index < size()) {
+
+        // Skip spaces before next word.
+        while (index < size() && IsSpace(at(index))) {
+            ++index;
+        }
+
+        // Return when no more word is available.
+        if (index >= size()) {
+            return;
+        }
+
+        // Current word under construction.
+        UString word;
+        UChar quoteChar = CHAR_NULL;
+        bool quoteOpen = false;
+
+        // Accumulate characters from the current word.
+        while (index < size() && (quoteOpen || !IsSpace(at(index)))) {
+            UChar c = at(index++);
+            if (!quoteOpen && quoteCharacters.contain(c)) {
+                // Start of a quoted sequence.
+                quoteOpen = true;
+                quoteChar = c;
+            }
+            else if (quoteOpen && c == quoteChar) {
+                // End of quoted sequence.
+                quoteOpen = false;
+            }
+            else if (c == '\\' && index < size()) {
+                // Start of an escape sequence.
+                c = at(index++);
+                switch (c) {
+                    case u'b': c = BACKSPACE; break;
+                    case u'f': c = FORM_FEED; break;
+                    case u'n': c = LINE_FEED; break;
+                    case u'r': c = CARRIAGE_RETURN; break;
+                    case u't': c = HORIZONTAL_TABULATION; break;
+                    default: break;
+                }
+                word.push_back(c);
+            }
+            else {
+                // Just a regular character.
+                word.push_back(c);
+            }
+        }
+
+        // End of word, push it.
+        container.push_back(word);
+    }
+}

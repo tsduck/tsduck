@@ -736,14 +736,42 @@ ts::Tristate ts::Args::tristateValue(const UChar* name, size_t index) const
 
 
 //----------------------------------------------------------------------------
+// Get the full command line from the last command line analysis.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::commandLine() const
+{
+    UString line(_app_name.toQuoted());
+    if (!_args.empty()) {
+        line.append(SPACE);
+        line.append(UString::ToQuotedLine(_args));
+    }
+    return line;
+}
+
+
+//----------------------------------------------------------------------------
 // Load arguments and analyze them.
 //----------------------------------------------------------------------------
+
+bool ts::Args::analyze(const UString& command, bool processRedirections)
+{
+    command.fromQuotedLine(_args);
+    if (_args.empty()) {
+        _app_name.clear();
+    }
+    else {
+        _app_name = _args.front();
+        _args.erase(_args.begin());
+    }
+    return analyzeInternal(processRedirections);
+}
 
 bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
 {
     _app_name = app_name;
     _args = arguments;
-    return analyze(processRedirections);
+    return analyzeInternal(processRedirections);
 }
 
 bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
@@ -755,7 +783,7 @@ bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
     else {
         UString::Assign(_args, argc - 1, argv + 1);
     }
-    return analyze(processRedirections);
+    return analyzeInternal(processRedirections);
 }
 
 
@@ -763,7 +791,7 @@ bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
 // Common code: analyze the command line.
 //----------------------------------------------------------------------------
 
-bool ts::Args::analyze(bool processRedirections)
+bool ts::Args::analyzeInternal(bool processRedirections)
 {
     // Clear previous values
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {

@@ -99,6 +99,9 @@ public:
     void testCommonSuffix();
     void testPrecombined();
     void testDVB();
+    void testQuoted();
+    void testToQuotedLine();
+    void testFromQuotedLine();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -149,6 +152,9 @@ public:
     TSUNIT_TEST(testCommonSuffix);
     TSUNIT_TEST(testPrecombined);
     TSUNIT_TEST(testDVB);
+    TSUNIT_TEST(testQuoted);
+    TSUNIT_TEST(testToQuotedLine);
+    TSUNIT_TEST(testFromQuotedLine);
     TSUNIT_TEST_END();
 
 private:
@@ -2050,4 +2056,51 @@ void UStringTest::testDVB()
     const ts::UString str1{u'0', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE, ts::LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX};
     TSUNIT_EQUAL(str1, ts::UString::FromDVB(dvb1, sizeof(dvb1)));
     TSUNIT_ASSERT(ts::ByteBlock(dvb1, sizeof(dvb1)) == str1.toDecomposedDiacritical().toDVB());
+}
+
+void UStringTest::testQuoted()
+{
+    TSUNIT_EQUAL(u"''", ts::UString().toQuoted());
+    TSUNIT_EQUAL(u"||", ts::UString().toQuoted(u'|'));
+    TSUNIT_EQUAL(u"a", ts::UString(u"a").toQuoted());
+    TSUNIT_EQUAL(u"'a b'", ts::UString(u"a b").toQuoted());
+    TSUNIT_EQUAL(u"a.b", ts::UString(u"a.b").toQuoted());
+    TSUNIT_EQUAL(u"'a?b'", ts::UString(u"a?b").toQuoted());
+    TSUNIT_EQUAL(u"'a\\nb'", ts::UString(u"a\nb").toQuoted());
+    TSUNIT_EQUAL(u"'a\\\\b'", ts::UString(u"a\\b").toQuoted());
+}
+
+void UStringTest::testToQuotedLine()
+{
+    TSUNIT_EQUAL(u"", ts::UString::ToQuotedLine(ts::UStringVector()));
+    TSUNIT_EQUAL(u"''", ts::UString::ToQuotedLine(ts::UStringVector({u""})));
+    TSUNIT_EQUAL(u"''", ts::UString::ToQuotedLine(ts::UStringVector({u""})));
+    TSUNIT_EQUAL(u"|| ||", ts::UString::ToQuotedLine(ts::UStringVector({u"", u""}), u'|'));
+    TSUNIT_EQUAL(u"ab cde fghi", ts::UString::ToQuotedLine(ts::UStringVector({u"ab", u"cde", u"fghi"})));
+    TSUNIT_EQUAL(u"ab 'er ty' 'sdf?hh' ' \"vf\\ndf\" '", ts::UString::ToQuotedLine(ts::UStringVector({u"ab", u"er ty", u"sdf?hh", u" \"vf\ndf\" "})));
+    TSUNIT_EQUAL(u"ab 'er ty' 'sdf?hh' ' \\'vf\\ndf\\' '", ts::UString::ToQuotedLine(ts::UStringVector({u"ab", u"er ty", u"sdf?hh", u" 'vf\ndf' "})));
+}
+
+void UStringTest::testFromQuotedLine()
+{
+    ts::UStringVector s;
+
+    ts::UString(u"ab cd ef").fromQuotedLine(s);
+    TSUNIT_EQUAL(3, s.size());
+    TSUNIT_EQUAL(u"ab", s[0]);
+    TSUNIT_EQUAL(u"cd", s[1]);
+    TSUNIT_EQUAL(u"ef", s[2]);
+
+    ts::UString().fromQuotedLine(s);
+    TSUNIT_EQUAL(0, s.size());
+
+    ts::UString(u" a'b c'd ef    ").fromQuotedLine(s);
+    TSUNIT_EQUAL(2, s.size());
+    TSUNIT_EQUAL(u"ab cd", s[0]);
+    TSUNIT_EQUAL(u"ef", s[1]);
+
+    ts::UString(u" a\\ \\nb c[d\\ e]f    ").fromQuotedLine(s);
+    TSUNIT_EQUAL(2, s.size());
+    TSUNIT_EQUAL(u"a \nb", s[0]);
+    TSUNIT_EQUAL(u"c[d e]f", s[1]);
 }
