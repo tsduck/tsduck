@@ -37,6 +37,7 @@
 #include "tsThread.h"
 #include "tsMutex.h"
 #include "tsTCPServer.h"
+#include "tsReportWithPrefix.h"
 
 namespace ts {
     namespace tsp {
@@ -73,15 +74,18 @@ namespace ts {
             void close();
 
         private:
-            volatile bool _is_open;
-            volatile bool _terminate;
-            Options&      _options;
-            Report&       _log;
-            //@@ Mutex&   _mutex;
-            TCPServer     _server;
+            volatile bool    _is_open;
+            volatile bool    _terminate;
+            Options&         _options;
+            ReportWithPrefix _log;
+            //@@ Mutex&      _mutex;
+            TCPServer        _server;
 
             // Implementation of Thread.
             virtual void main() override;
+
+            // Execute one command.
+            void executeCommand(const UString& line, Report& log);
         };
     }
 }

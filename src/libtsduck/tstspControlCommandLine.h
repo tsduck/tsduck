@@ -28,20 +28,54 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Definition of TSP control commands syntax.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1529
+#include "tstsp.h"
+#include "tsArgs.h"
+#include "tsCerrReport.h"
+
+namespace ts {
+    namespace tsp {
+        //!
+        //! Definition of TSP control commands syntax.
+        //! @ingroup plugin
+        //!
+        class TSDUCKDLL ControlCommandLine
+        {
+            TS_NOCOPY(ControlCommandLine);
+        public:
+            //!
+            //! Constructor.
+            //!
+            ControlCommandLine();
+
+            //!
+            //! Analyze a command line.
+            //! @param [in] line Command line to analyze.
+            //! @param [out] cmd Returned command line index.
+            //! @param [out] args Return pointer to analyzed args.
+            //! Points to an Args object inside this instance of ControlCommandLine.
+            //! @param [in,out] report Where to report errors.
+            //! @return True for a valid command, false on invalid command.
+            //!
+            bool analyze(const UString& line, ControlCommand& cmd, const Args*& args, Report& report);
+
+            //!
+            //! Get a formatted help text for all commands.
+            //! @param [in] format Requested format of the help text.
+            //! @param [in] line_width Maximum width of text lines.
+            //! @return The formatted help text.
+            //!
+            UString getAllHelpText(Args::HelpFormat format, size_t line_width = 79) const;
+
+        private:
+            std::map<ControlCommand,Args> _commands;
+
+            // Add a new command.
+            Args* newCommand(ControlCommand cmd, const UString& description, const UString& syntax);
+        };
+    }
+}

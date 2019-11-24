@@ -487,9 +487,11 @@ HEADERS += \
     ../../../src/libtsduck/tsTSFile.h \
     ../../../src/libtsduck/tsTSFileInputBuffered.h \
     ../../../src/libtsduck/tsTSFileOutputResync.h \
+    ../../../src/libtsduck/tstsp.h \
     ../../../src/libtsduck/tsTSPacket.h \
     ../../../src/libtsduck/tsTSPacketMetadata.h \
     ../../../src/libtsduck/tsTSPacketQueue.h \
+    ../../../src/libtsduck/tstspControlCommandLine.h \
     ../../../src/libtsduck/tsTSScanner.h \
     ../../../src/libtsduck/tsTSScrambling.h \
     ../../../src/libtsduck/tsTSSpeedMetrics.h \
@@ -966,9 +968,11 @@ SOURCES += \
     ../../../src/libtsduck/tsTSFile.cpp \
     ../../../src/libtsduck/tsTSFileInputBuffered.cpp \
     ../../../src/libtsduck/tsTSFileOutputResync.cpp \
+    ../../../src/libtsduck/tstsp.cpp \
     ../../../src/libtsduck/tsTSPacket.cpp \
     ../../../src/libtsduck/tsTSPacketMetadata.cpp \
     ../../../src/libtsduck/tsTSPacketQueue.cpp \
+    ../../../src/libtsduck/tstspControlCommandLine.cpp \
     ../../../src/libtsduck/tsTSScanner.cpp \
     ../../../src/libtsduck/tsTSScrambling.cpp \
     ../../../src/libtsduck/tsTSSpeedMetrics.cpp \

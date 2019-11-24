@@ -468,6 +468,13 @@ namespace ts {
         virtual void setIntro(const UString& intro);
 
         //!
+        //! Set the conclusion or tailing text for help description.
+        //!
+        //! @param [in] tail Tailing text.
+        //!
+        virtual void setTail(const UString& tail);
+
+        //!
         //! Set the option flags of the command.
         //!
         //! @param [in] flags Define various options, a combination of or'ed values from @link Flags @endlink.
@@ -513,12 +520,24 @@ namespace ts {
         static const Enumeration HelpFormatEnum;
 
         //!
+        //! Default line width for help texts.
+        //!
+        static constexpr size_t DEFAULT_LINE_WIDTH = 79;
+
+        //!
         //! Get a formatted help text.
         //! @param [in] format Requested format of the help text.
         //! @param [in] line_width Maximum width of text lines.
         //! @return The formatted help text.
         //!
-        UString getHelpText(HelpFormat format, size_t line_width = 79) const;
+        virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const;
+
+        //!
+        //! Set the initial application name (will be overwritten at next command analysis).
+        //!
+        //! @param [in] name Application name string.
+        //!
+        void setAppName(const UString& name) {_app_name = name;}
 
         //!
         //! Set the "shell" string.
@@ -1005,6 +1024,7 @@ namespace ts {
         UString       _shell;
         UString       _syntax;
         UString       _intro;
+        UString       _tail;
         UString       _app_name;
         UStringVector _args;
         bool          _is_valid;

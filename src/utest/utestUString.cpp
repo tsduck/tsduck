@@ -102,6 +102,7 @@ public:
     void testQuoted();
     void testToQuotedLine();
     void testFromQuotedLine();
+    void testIndent();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -155,6 +156,7 @@ public:
     TSUNIT_TEST(testQuoted);
     TSUNIT_TEST(testToQuotedLine);
     TSUNIT_TEST(testFromQuotedLine);
+    TSUNIT_TEST(testIndent);
     TSUNIT_TEST_END();
 
 private:
@@ -2103,4 +2105,13 @@ void UStringTest::testFromQuotedLine()
     TSUNIT_EQUAL(2, s.size());
     TSUNIT_EQUAL(u"a \nb", s[0]);
     TSUNIT_EQUAL(u"c[d e]f", s[1]);
+}
+
+void UStringTest::testIndent()
+{
+    TSUNIT_EQUAL(u"", ts::UString().toIndented(0));
+    TSUNIT_EQUAL(u"", ts::UString().toIndented(4));
+    TSUNIT_EQUAL(u"  ", ts::UString(u"  ").toIndented(4));
+    TSUNIT_EQUAL(u"      a", ts::UString(u"  a").toIndented(4));
+    TSUNIT_EQUAL(u"    a\n\n  b\n  c d", ts::UString(u"  a\n\nb\nc d").toIndented(2));
 }

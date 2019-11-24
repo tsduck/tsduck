@@ -256,6 +256,7 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     _shell(),
     _syntax(syntax),
     _intro(),
+    _tail(),
     _app_name(),
     _args(),
     _is_valid(false),
@@ -300,9 +301,28 @@ void ts::Args::setIntro(const UString& intro)
     _intro = intro;
 }
 
+void ts::Args::setTail(const UString& tail)
+{
+    _tail = tail;
+}
+
 void ts::Args::setFlags(int flags)
 {
     _flags = flags;
+
+    // Remove canceled predefined options.
+    if ((flags & NO_HELP) != 0) {
+        _iopts.erase(u"help");
+    }
+    if ((flags & NO_VERSION) != 0) {
+        _iopts.erase(u"version");
+    }
+    if ((flags & NO_VERBOSE) != 0) {
+        _iopts.erase(u"verbose");
+    }
+    if ((flags & NO_DEBUG) != 0) {
+        _iopts.erase(u"debug");
+    }
 }
 
 
@@ -381,6 +401,12 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
                 text += HelpLines(2, u"Must be one of " + optionNames(opt.name.c_str()) + u".", line_width);
             }
         }
+    }
+
+    // Set final text.
+    if (!_tail.empty()) {
+        text.append(u"\n");
+        text.append(HelpLines(0, _tail, line_width));
     }
     return text;
 }

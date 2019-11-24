@@ -26,22 +26,15 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1529
+#include "tstsp.h"
+TSDUCK_SOURCE;
+
+const ts::Enumeration ts::tsp::ControlCommandEnum({
+    {u"abort",   ts::tsp::CMD_ABORT},
+    {u"exit",    ts::tsp::CMD_EXIT},
+    {u"setlog",  ts::tsp::CMD_SETLOG},
+    {u"list",    ts::tsp::CMD_LIST},
+    {u"suspend", ts::tsp::CMD_SUSPEND},
+    {u"resume",  ts::tsp::CMD_RESUME},
+});

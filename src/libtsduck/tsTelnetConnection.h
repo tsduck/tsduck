@@ -51,7 +51,10 @@ namespace ts {
     //! - To send a request.
     //! - To get replies line until all the lines of the replies have been read.
     //!
-    class TSDUCKDLL TelnetConnection: public TCPConnection
+    //! This class is also a subclass of Report, allowing it to be used to end
+    //! log messages.
+    //!
+    class TSDUCKDLL TelnetConnection: public TCPConnection, public Report
     {
         TS_NOCOPY(TelnetConnection);
     public:
@@ -64,7 +67,7 @@ namespace ts {
         //! Constructor.
         //! @param [in] prompt Prompt string to send to the client.
         //!
-        TelnetConnection(const std::string prompt = std::string());
+        TelnetConnection(const std::string& prompt = std::string());
 
         //!
         //! Virtual destructor
@@ -72,7 +75,7 @@ namespace ts {
         virtual ~TelnetConnection();
 
         //!
-        //! Send a request to the server.
+        //! Send a string to the server.
         //! @param [in] str The string to send to the server.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
@@ -80,7 +83,7 @@ namespace ts {
         bool send(const std::string& str, Report& report);
 
         //!
-        //! Send a request to the server.
+        //! Send a string to the server.
         //! @param [in] str The string to send to the server.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
@@ -88,15 +91,42 @@ namespace ts {
         bool send(const UString& str, Report& report);
 
         //!
-        //! Receive a line.
-        //! @param [out] line The received line.
+        //! Send a text line to the server.
+        //! @param [in] str The line to send to the server.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool sendLine(const std::string& str, Report& report);
+
+        //!
+        //! Send a text line to the server.
+        //! @param [in] str The line to send to the server.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool sendLine(const UString& str, Report& report);
+
+        //!
+        //! Receive character data.
+        //! @param [out] data The received data.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receive(std::string& line, const AbortInterface* abort, Report& report);
+        bool receive(std::string& data, const AbortInterface* abort, Report& report);
+
+        //!
+        //! Receive character data.
+        //! @param [out] data The received data.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //! Return true until the last line of the replies has been received.
+        //!
+        bool receive(UString& data, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive a line.
@@ -107,10 +137,22 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receive(UString& line, const AbortInterface* abort, Report& report);
+        bool receiveLine(std::string& line, const AbortInterface* abort, Report& report);
+
+        //!
+        //! Receive a line.
+        //! @param [out] line The received line.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //! Return true until the last line of the replies has been received.
+        //!
+        bool receiveLine(UString& line, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive a prompt.
+        //! Do not wait if the prompt is empty.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
         //! @param [in,out] report Where to report errors.
@@ -118,12 +160,20 @@ namespace ts {
         //!
         bool waitForPrompt(const AbortInterface* abort, Report& report);
 
+        //!
+        //! A telnet end-of-line sequence.
+        //!
+        static const std::string EOL;
+
+    protected:
+        // Implementation of Report.
+        virtual void writeLog(int severity, const UString& msg) override;
+
     private:
-        static const size_t BUFFER_SIZE = 1024 * 4;
-        char        _buffer[BUFFER_SIZE];
-        size_t      _received;
+        std::string _buffer;
         std::string _prompt;
 
-        bool waitForChunk(const std::string, std::string&, const AbortInterface*, Report&);
+        // Receive all characters until a delimitor has been received.
+        bool waitForChunk(const std::string& eol, std::string& data, const AbortInterface*, Report&);
     };
 }

@@ -28,20 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Common definitions for the tsp tool.
+//!  @ingroup plugin
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1529
+#include "tsEnumeration.h"
+
+namespace ts {
+    //!
+    //! Namespace for TSP classes.
+    //!
+    namespace tsp {
+        //!
+        //! Definition of TSP control command.
+        //!
+        enum ControlCommand {
+            CMD_ABORT,    //!< Abort tsp.
+            CMD_EXIT,     //!< Clean exit tsp.
+            CMD_SETLOG,   //!< Change log level.
+            CMD_LIST,     //!< List all plugins.
+            CMD_SUSPEND,  //!< Suspend a plugin.
+            CMD_RESUME,   //!< Resume a suspended plugin.
+        };
+
+        //!
+        //! Enumeration description of ts::tsp::ControlCommand.
+        //!
+        TSDUCKDLL extern const Enumeration ControlCommandEnum;
+    }
+}
