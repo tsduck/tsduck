@@ -30,9 +30,10 @@
 #include "tsTelnetConnection.h"
 TSDUCK_SOURCE;
 
-namespace {
-    const std::string EOL = "\n";
-}
+
+//----------------------------------------------------------------------------
+// Constructors and destructors.
+//----------------------------------------------------------------------------
 
 ts::TelnetConnection::TelnetConnection(const std::string prompt) :
     TCPConnection(),
@@ -46,14 +47,23 @@ ts::TelnetConnection::~TelnetConnection()
 }
 
 
+//----------------------------------------------------------------------------
+// Send a request to the server.
+//----------------------------------------------------------------------------
+
 bool ts::TelnetConnection::send(const std::string& str, Report& report)
 {
     return SuperClass::send(str.c_str(), str.size(), report);
 }
 
+bool ts::TelnetConnection::send(const UString& str, Report& report)
+{
+    return send(str.toUTF8(), report);
+}
+
+
 //----------------------------------------------------------------------------
-// receive all characters until a delimitor has been received and returns
-// everything up to the delimitor.
+// Receive all characters until a delimitor has been received.
 //----------------------------------------------------------------------------
 
 bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& found, const AbortInterface* abort, Report& report)
@@ -96,15 +106,36 @@ bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& foun
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Receive a prompt.
+//----------------------------------------------------------------------------
+
 bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort, Report& report)
 {
     std::string found;
-    bool result = waitForChunk(_prompt, found, abort, report);
-    return result;
+    return waitForChunk(_prompt, found, abort, report);
 }
+
+
+//----------------------------------------------------------------------------
+// Receive a line.
+//----------------------------------------------------------------------------
 
 bool ts::TelnetConnection::receive(std::string& found, const AbortInterface* abort, Report& report)
 {
-    bool result = waitForChunk(_prompt, found, abort, report);
+    return waitForChunk(_prompt, found, abort, report);
+}
+
+bool ts::TelnetConnection::receive(UString& found, const AbortInterface* abort, Report& report)
+{
+    std::string line;
+    const bool result = receive(line, abort, report);
+    if (result) {
+        found.assignFromUTF8(line);
+    }
+    else {
+        found.clear();
+    }
     return result;
 }
