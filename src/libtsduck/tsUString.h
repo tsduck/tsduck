@@ -852,6 +852,19 @@ namespace ts {
         UString toRemovedSuffix(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
+        //! Indent all lines in the string.
+        //! @param [in] size Number of spaces to add at the beginning of each line.
+        //!
+        void indent(size_t size);
+
+        //!
+        //! Indent all lines in the string.
+        //! @param [in] size Number of spaces to add at the beginning of each line.
+        //! @return A copy of this string with indented lines.
+        //!
+        UString toIndented(size_t size) const;
+
+        //!
         //! Check if the string starts with a specified prefix.
         //! @param [in] prefix A string prefix to check.
         //! @param [in] cs Indicate if the comparison is case-sensitive.

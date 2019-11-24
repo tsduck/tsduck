@@ -2,6 +2,18 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.20-1529
+
+[NEW] New commands and plugins:
+
+  * Added command "tspcontrol" to send control commands to a running "tsp".
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Added option --control-port to "tsp" and other related --control options.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.19-1516
 
 [NEW] New commands and plugins:

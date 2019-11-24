@@ -28,10 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tspControlServer.h"
-#include "tsTelnetConnection.h"
 #include "tsNullMutex.h"
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
+#include "tsTelnetConnection.h"
 TSDUCK_SOURCE;
 
 
@@ -43,7 +43,7 @@ ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& glob
     _is_open(false),
     _terminate(false),
     _options(options),
-    _log(log),
+    _log(log, u"control commands: "),
     //@@@@ _mutex(global_mutex),
     _server()
 {
@@ -76,7 +76,6 @@ bool ts::tsp::ControlServer::open()
         const SocketAddress addr(_options.control_local, _options.control_port);
         if (!_server.open(_log) ||
             !_server.reusePort(_options.control_reuse, _log) ||
-            !_server.setReceiveTimeout(_options.control_timeout, _log) ||
             !_server.bind(addr, _log) ||
             !_server.listen(5, _log))
         {
@@ -119,21 +118,37 @@ void ts::tsp::ControlServer::main()
     // Client address and connection.
     SocketAddress source;
     TelnetConnection conn;
+    UString line;
 
     // Loop on incoming connections.
     // Since the commands are expected to be short, treat only one at a time.
     while (_server.accept(conn, source, error)) {
-
         // Filter allowed sources.
-        //@@@@
-
-        // Receive one command.
-        //@@@@
+        if (std::find(_options.control_sources.begin(), _options.control_sources.end(), source) == _options.control_sources.end()) {
+            _log.warning(u"connection attempt from unauthorized source %s (ignored)", {source});
+            conn.sendLine("error: client address is not authorized", _log);
+        }
+        else if (conn.setReceiveTimeout(_options.control_timeout, _log) && conn.receiveLine(line, nullptr, _log)) {
+            _log.verbose(u"received from %s: %s", {source, line});
+            executeCommand(line, conn);
+        }
+        conn.closeWriter(_log);
+        conn.close(_log);
     }
 
     // If termination was requested, receive error is not an error.
     if (!_terminate && !error.emptyMessages()) {
-        _log.info(error.getMessages());
+        _log.error(error.getMessages());
     }
     _log.debug(u"control command thread completed");
+}
+
+
+//----------------------------------------------------------------------------
+// Execute one command.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeCommand(const UString& line, Report& log)
+{
+    log.warning(u"@@@ ==> " + line);
 }

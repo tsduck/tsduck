@@ -124,6 +124,7 @@ SUBDIRS += \
     tslsdvb \
     tsp \
     tspacketize \
+    tspcontrol \
     tspsi \
     tsresync \
     tsscan \
