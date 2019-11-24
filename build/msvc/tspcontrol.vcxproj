@@ -7,7 +7,7 @@
     <ClCompile Include="..\..\src\tstools\tspcontrol.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1F038043-2FD9-4FCB-9C06-38B24F824794}</ProjectGuid>
+    <ProjectGuid>{0DBEC4E8-9EC3-49DE-A081-F005971A24F4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tspcontrol</RootNamespace>
   </PropertyGroup>
