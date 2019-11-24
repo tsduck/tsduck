@@ -1013,9 +1013,6 @@ namespace ts {
         // List of characters which are allowed thousands separators in integer values
         static const UChar* const THOUSANDS_SEPARATORS;
 
-        // Common code: analyze the command line.
-        bool analyzeInternal(bool processRedirections);
-
         // Add a new option.
         void addOption(const IOption& opt);
 
