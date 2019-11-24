@@ -51,9 +51,14 @@ namespace ts {
     public:
         // Implementation of plugin API
         BATPlugin(TSP*);
-        virtual bool start() override;
+        virtual bool getOptions() override;
+
+        // Implementation of AbstractTablePlugin.
+        virtual void createNewTable(BinaryTable& table) override;
+        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
 
     private:
+        // Command line options:
         bool               _single_bat;        // Modify one single BAT only
         uint16_t           _bouquet_id;        // Bouquet id of the BAT to modify (if _single_bat)
         std::set<uint16_t> _remove_serv;       // Set of services to remove
@@ -61,10 +66,6 @@ namespace ts {
         std::vector<DID>   _removed_desc;      // Set of descriptor tags to remove
         PDS                _pds;               // Private data specifier for removed descriptors
         bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-
-        // Implementation of AbstractTablePlugin.
-        virtual void createNewTable(BinaryTable& table) override;
-        virtual void modifyTable(BinaryTable& table, bool& is_target, bool& reinsert) override;
 
         // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
@@ -123,10 +124,10 @@ ts::BATPlugin::BATPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::BATPlugin::start()
+bool ts::BATPlugin::getOptions()
 {
     // Get option values
     _single_bat = present(u"bouquet-id");
@@ -138,7 +139,7 @@ bool ts::BATPlugin::start()
     getIntValues(_removed_desc, u"remove-descriptor");
 
     // Start superclass.
-    return AbstractTablePlugin::start();
+    return AbstractTablePlugin::getOptions();
 }
 
 

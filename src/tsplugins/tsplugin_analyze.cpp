@@ -51,20 +51,24 @@ namespace ts {
     public:
         // Implementation of plugin API
         AnalyzePlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Command line options:
         UString           _output_name;
-        std::ofstream     _output_stream;
-        std::ostream*     _output;
         NanoSecond        _output_interval;
         bool              _multiple_output;
+        TSAnalyzerOptions _analyzer_options;
+
+        // Working data:
+        std::ofstream     _output_stream;
+        std::ostream*     _output;
         TSSpeedMetrics    _metrics;
         NanoSecond        _next_report;
         TSAnalyzerReport  _analyzer;
-        TSAnalyzerOptions _analyzer_options;
 
         bool openOutput();
         void closeOutput();
@@ -83,14 +87,14 @@ TSPLUGIN_DECLARE_PROCESSOR(analyze, ts::AnalyzePlugin)
 ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Analyze the structure of a transport stream", u"[options]"),
     _output_name(),
-    _output_stream(),
-    _output(),
     _output_interval(0),
     _multiple_output(false),
+    _analyzer_options(),
+    _output_stream(),
+    _output(),
     _metrics(),
     _next_report(0),
-    _analyzer(duck),
-    _analyzer_options()
+    _analyzer(duck)
 {
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);
@@ -119,20 +123,27 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::AnalyzePlugin::getOptions()
+{
+    duck.loadArgs(*this);
+    _analyzer_options.loadArgs(duck, *this);
+    _output_name = value(u"output-file");
+    _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
+    _multiple_output = present(u"multiple-files");
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::AnalyzePlugin::start()
 {
-    // Load all standard analysis options.
-    duck.loadArgs(*this);
-    _analyzer_options.loadArgs(duck, *this);
-
-    _output_name = value(u"output-file");
-    _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
-    _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
-
     _analyzer.setAnalysisOptions(_analyzer_options);
 
     // For production of multiple reports at regular intervals.

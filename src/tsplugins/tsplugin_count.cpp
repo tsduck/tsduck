@@ -50,6 +50,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         CountPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -66,8 +67,8 @@ namespace ts {
             IntervalReport() : start(), counted_packets(0), total_packets(0) {}
         };
 
+        // Command  line options:
         UString        _tag;                // Message tag
-        std::ofstream  _outfile;            // User-specified output file
         bool           _negate;             // Negate filter (exclude selected packets)
         PIDSet         _pids;               // PID values to filter
         bool           _brief_report;       // Display biref report, values but not comments
@@ -75,6 +76,9 @@ namespace ts {
         bool           _report_summary;     // Report summary
         bool           _report_total;       // Report total of all PIDs
         PacketCounter  _report_interval;    // If non-zero, report time-stamp at this packet interval
+
+        // Working data:
+        std::ofstream  _outfile;            // User-specified output file
         IntervalReport _last_report;        // Last report content
         PacketCounter  _counters[PID_MAX];  // Packet counter per PID
 
@@ -94,7 +98,6 @@ TSPLUGIN_DECLARE_PROCESSOR(count, ts::CountPlugin)
 ts::CountPlugin::CountPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Count TS packets per PID", u"[options]"),
     _tag(),
-    _outfile(),
     _negate(false),
     _pids(),
     _brief_report(false),
@@ -102,6 +105,7 @@ ts::CountPlugin::CountPlugin(TSP* tsp_) :
     _report_summary(false),
     _report_total(false),
     _report_interval(0),
+    _outfile(),
     _last_report(),
     _counters()
 {
@@ -152,10 +156,10 @@ ts::CountPlugin::CountPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Get options method
 //----------------------------------------------------------------------------
 
-bool ts::CountPlugin::start()
+bool ts::CountPlugin::getOptions()
 {
     _report_all = present(u"all");
     _report_total = present(u"total");
@@ -173,7 +177,16 @@ bool ts::CountPlugin::start()
     if (!present(u"pid")) {
         _pids.set();
     }
+    return true;
+}
 
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::CountPlugin::start()
+{
     // Create output file
     if (present(u"output-file")) {
         const UString name(value(u"output-file"));
