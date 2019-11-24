@@ -70,6 +70,7 @@ namespace ts {
                         int flags = 0);
 
         // Inherited methods.
+        virtual bool analyze(const UString& command, bool processRedirections = true) override;
         virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
         virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true) override;
 

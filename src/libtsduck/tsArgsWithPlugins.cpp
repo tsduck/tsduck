@@ -69,19 +69,19 @@ ts::ArgsWithPlugins::ArgsWithPlugins(size_t min_inputs,
 // Analyze the command line.
 //----------------------------------------------------------------------------
 
-bool ts::ArgsWithPlugins::analyze(int argc, char* argv[], bool processRedirections)
+bool ts::ArgsWithPlugins::analyze(const UString& command, bool processRedirections)
 {
-    // Load arguments.
-    const UString app_name(argc > 0 ? BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX) : UString());
-    UStringVector args;
-    if (argc > 1) {
-        UString::Assign(args, argc - 1, argv + 1);
-    }
-
-    return analyze(app_name, args, processRedirections);
+    // Call superclass which, in turn, calls our virtual analyze(UString, UStringVector, bool).
+    return Args::analyze(command, processRedirections);
 }
 
-bool ts::ArgsWithPlugins::analyze(const ts::UString& app_name, const ts::UStringVector& arguments, bool processRedirections)
+bool ts::ArgsWithPlugins::analyze(int argc, char* argv[], bool processRedirections)
+{
+    // Call superclass which, in turn, calls our virtual analyze(UString, UStringVector, bool).
+    return Args::analyze(argc, argv, processRedirections);
+}
+
+bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
 {
     // Clear plugins.
     inputs.clear();

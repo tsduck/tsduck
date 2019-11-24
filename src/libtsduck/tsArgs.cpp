@@ -751,39 +751,30 @@ ts::UString ts::Args::commandLine() const
 
 
 //----------------------------------------------------------------------------
-// Load arguments and analyze them.
+// Load arguments and analyze them, overloads.
 //----------------------------------------------------------------------------
 
 bool ts::Args::analyze(const UString& command, bool processRedirections)
 {
-    command.fromQuotedLine(_args);
-    if (_args.empty()) {
-        _app_name.clear();
+    UString app;
+    UStringVector args;
+    command.fromQuotedLine(args);
+    if (!args.empty()) {
+        app = args.front();
+        args.erase(args.begin());
     }
-    else {
-        _app_name = _args.front();
-        _args.erase(_args.begin());
-    }
-    return analyzeInternal(processRedirections);
-}
-
-bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
-{
-    _app_name = app_name;
-    _args = arguments;
-    return analyzeInternal(processRedirections);
+    return analyze(app, args, processRedirections);
 }
 
 bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
 {
-    _app_name = argc > 0 ? BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX) : UString();
-    if (argc < 2) {
-        _args.clear();
+    UString app;
+    UStringVector args;
+    if (argc > 0) {
+        app = BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX);
+        UString::Assign(args, argc - 1, argv + 1);
     }
-    else {
-        UString::Assign(_args, argc - 1, argv + 1);
-    }
-    return analyzeInternal(processRedirections);
+    return analyze(app, args, processRedirections);
 }
 
 
@@ -791,8 +782,12 @@ bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
 // Common code: analyze the command line.
 //----------------------------------------------------------------------------
 
-bool ts::Args::analyzeInternal(bool processRedirections)
+bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
 {
+    // Save command line and arguments.
+    _app_name = app_name;
+    _args = arguments;
+
     // Clear previous values
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
         it->second.values.clear();
