@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsTCPConnection.h"
+#include "tsUString.h"
 #include "tsMutex.h"
 
 namespace ts {
@@ -79,6 +80,14 @@ namespace ts {
         bool send(const std::string& str, Report& report);
 
         //!
+        //! Send a request to the server.
+        //! @param [in] str The string to send to the server.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool send(const UString& str, Report& report);
+
+        //!
         //! Receive a line.
         //! @param [out] line The received line.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
@@ -88,6 +97,17 @@ namespace ts {
         //! Return true until the last line of the replies has been received.
         //!
         bool receive(std::string& line, const AbortInterface* abort, Report& report);
+
+        //!
+        //! Receive a line.
+        //! @param [out] line The received line.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //! Return true until the last line of the replies has been received.
+        //!
+        bool receive(UString& line, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive a prompt.
