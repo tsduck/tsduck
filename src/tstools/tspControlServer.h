@@ -28,20 +28,60 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Transport stream processor control command server.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 20
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 1526
+#include "tspOptions.h"
+#include "tsThread.h"
+#include "tsMutex.h"
+#include "tsTCPServer.h"
+
+namespace ts {
+    namespace tsp {
+        //!
+        //! Transport stream processor control command server.
+        //! @ingroup plugin
+        //!
+        class ControlServer : private Thread
+        {
+            TS_NOBUILD_NOCOPY(ControlServer);
+        public:
+            //!
+            //! Constructor.
+            //! @param [in,out] options Command line options for tsp.
+            //! @param [in,out] log Log report.
+            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //!
+            ControlServer(Options& options, Report& log, Mutex& global_mutex);
+
+            //!
+            //! Destructor.
+            //!
+            virtual ~ControlServer();
+
+            //!
+            //! Open and start the command listener.
+            //! @return True on success, false on error.
+            //!
+            bool open();
+
+            //!
+            //! Stop and close the command listener.
+            //!
+            void close();
+
+        private:
+            volatile bool _is_open;
+            volatile bool _terminate;
+            Options&      _options;
+            Report&       _log;
+            //@@ Mutex&   _mutex;
+            TCPServer     _server;
+
+            // Implementation of Thread.
+            virtual void main() override;
+        };
+    }
+}

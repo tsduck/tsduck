@@ -36,6 +36,7 @@
 #include "tspInputExecutor.h"
 #include "tspOutputExecutor.h"
 #include "tspProcessorExecutor.h"
+#include "tspControlServer.h"
 #include "tsPluginRepository.h"
 #include "tsAsyncReport.h"
 #include "tsSystemMonitor.h"
@@ -243,11 +244,18 @@ int MainCode(int argc, char *argv[])
         proc->start();
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
+    // Create a control server thread. Display but ignore errors (not a fatal error).
+    ts::tsp::ControlServer control(opt, report, global_mutex);
+    control.open();
+
     // Wait for threads to terminate
     proc = input;
     do {
         proc->waitForTermination();
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
+
+    // Make sure the control server thread is terminated before deleting plugins.
+    control.close();
 
     // Deallocate all plugins and plugin executor
     bool last;
