@@ -3,6 +3,7 @@ TARGET = tsp
 include(../tsduck.pri)
 
 SOURCES += \
+    ../../../src/tstools/tspControlServer.cpp \
     ../../../src/tstools/tspInputExecutor.cpp \
     ../../../src/tstools/tspJointTermination.cpp \
     ../../../src/tstools/tspOptions.cpp \
@@ -11,6 +12,7 @@ SOURCES += \
     ../../../src/tstools/tspProcessorExecutor.cpp
 
 HEADERS += \
+    ../../../src/tstools/tspControlServer.h \
     ../../../src/tstools/tspInputExecutor.h \
     ../../../src/tstools/tspJointTermination.h \
     ../../../src/tstools/tspOptions.h \
