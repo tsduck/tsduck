@@ -547,6 +547,27 @@ namespace ts {
         //! of the application, return @c true if the command is correct, @c false
         //! if the command is incorrect or @c -\-help or @c -\-version is specified.
         //!
+        //! @param [in] command Full command line, with application name and parameters.
+        //! Parameters are separated with spaces. Special characters and spaces must be
+        //! escaped or quoted in the parameters.
+        //! @param [in] processRedirections If true (the default), process command line arguments
+        //! redirection. All lines with the form @c '\@filename' are replaced by the content
+        //! of @a filename.
+        //! @return By default, always return true or the application is automatically
+        //! terminated in case of error. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        virtual bool analyze(const UString& command, bool processRedirections = true);
+
+        //!
+        //! Load command arguments and analyze them.
+        //!
+        //! Normally, in case of error or if @c -\-help or @c -\-version is specified, the
+        //! application is automatically terminated. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
         //! @param [in] argc Number of arguments from command line.
         //! @param [in] argv Arguments from command line.
         //! The application name is in argv[0].
@@ -599,6 +620,15 @@ namespace ts {
         //! @return The application name from the last command line analysis.
         //!
         UString appName() const {return _app_name;}
+
+        //!
+        //! Get the full command line from the last command line analysis.
+        //!
+        //! @return The full command line from the last command line analysis.
+        //! It contains the application name and arguments. Special characters
+        //! are escaped or quoted.
+        //!
+        UString commandLine() const;
 
         //!
         //! Check if an option is present in the last analyzed command line.
@@ -984,7 +1014,7 @@ namespace ts {
         static const UChar* const THOUSANDS_SEPARATORS;
 
         // Common code: analyze the command line.
-        bool analyze(bool processRedirections);
+        bool analyzeInternal(bool processRedirections);
 
         // Add a new option.
         void addOption(const IOption& opt);

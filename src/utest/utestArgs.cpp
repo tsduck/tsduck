@@ -98,6 +98,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
+    typedef ts::UStringVector USV;
     ts::UString _tempFile1;
     ts::UString _tempFile2;
 };
@@ -164,58 +165,58 @@ void ArgsTest::testHelp()
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&log);
 
-    TSUNIT_ASSERT(!args.analyze(u"test", {u"--help"}));
+    TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
     TSUNIT_EQUAL(u"\n"
-                                  u"{description}\n"
-                                  u"\n"
-                                  u"Usage: test {syntax}\n"
-                                  u"\n"
-                                  u"Options:\n"
-                                  u"\n"
-                                  u"  -d[level]\n"
-                                  u"  --debug[=level]\n"
-                                  u"      Produce debug traces. The default level is 1. Higher levels produce more\n"
-                                  u"      messages.\n"
-                                  u"\n"
-                                  u"  --help\n"
-                                  u"      Display this help text.\n"
-                                  u"\n"
-                                  u"  -v\n"
-                                  u"  --verbose\n"
-                                  u"      Produce verbose output.\n"
-                                  u"\n"
-                                  u"  --version\n"
-                                  u"      Display the TSDuck version number.\n",
-                                  log.getMessages());
+                 u"{description}\n"
+                 u"\n"
+                 u"Usage: test {syntax}\n"
+                 u"\n"
+                 u"Options:\n"
+                 u"\n"
+                 u"  -d[level]\n"
+                 u"  --debug[=level]\n"
+                 u"      Produce debug traces. The default level is 1. Higher levels produce more\n"
+                 u"      messages.\n"
+                 u"\n"
+                 u"  --help\n"
+                 u"      Display this help text.\n"
+                 u"\n"
+                 u"  -v\n"
+                 u"  --verbose\n"
+                 u"      Produce verbose output.\n"
+                 u"\n"
+                 u"  --version\n"
+                 u"      Display the TSDuck version number.\n",
+                 log.getMessages());
 
     args.setShell(u"{shell}");
     log.resetMessages();
-    TSUNIT_ASSERT(!args.analyze(u"test", {u"--help"}));
+    TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
     TSUNIT_EQUAL(u"\n"
-                                  u"{description}\n"
-                                  u"\n"
-                                  u"Usage: {shell} test {syntax}\n"
-                                  u"\n"
-                                  u"Options:\n"
-                                  u"\n"
-                                  u"  -d[level]\n"
-                                  u"  --debug[=level]\n"
-                                  u"      Produce debug traces. The default level is 1. Higher levels produce more\n"
-                                  u"      messages.\n"
-                                  u"\n"
-                                  u"  --help\n"
-                                  u"      Display this help text.\n"
-                                  u"\n"
-                                  u"  -v\n"
-                                  u"  --verbose\n"
-                                  u"      Produce verbose output.\n"
-                                  u"\n"
-                                  u"  --version\n"
-                                  u"      Display the TSDuck version number.\n",
-                                  log.getMessages());
+                 u"{description}\n"
+                 u"\n"
+                 u"Usage: {shell} test {syntax}\n"
+                 u"\n"
+                 u"Options:\n"
+                 u"\n"
+                 u"  -d[level]\n"
+                 u"  --debug[=level]\n"
+                 u"      Produce debug traces. The default level is 1. Higher levels produce more\n"
+                 u"      messages.\n"
+                 u"\n"
+                 u"  --help\n"
+                 u"      Display this help text.\n"
+                 u"\n"
+                 u"  -v\n"
+                 u"  --verbose\n"
+                 u"      Produce verbose output.\n"
+                 u"\n"
+                 u"  --version\n"
+                 u"      Display the TSDuck version number.\n",
+                 log.getMessages());
 
     log.resetMessages();
-    TSUNIT_ASSERT(!args.analyze(u"test", {u"--version=short"}));
+    TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--version=short"})));
     const ts::UString version(log.getMessages());
     debug() << "ArgsTest::testHelp: version = \"" << version << "\"" << std::endl;
     const size_t dash = version.find(u'-');
@@ -524,7 +525,7 @@ void ArgsTest::testMissingParameter()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt1"}));
+    TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--opt1"})));
     debug() << "ArgsTest: testMissingParameter: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: missing parameter", log.getMessages());
 }
@@ -579,7 +580,7 @@ void ArgsTest::testIntegerTooHigh()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"10", u"a", u"b"}));
+    TSUNIT_ASSERT(!args.analyze(u"test --opt3 10 a b"));
     debug() << "ArgsTest: testIntegerTooHigh: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: value for option --opt3 must be <= 7", log.getMessages());
 }
@@ -590,7 +591,7 @@ void ArgsTest::testInvalidEnum()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt9", u"x", u"a", u"b"}));
+    TSUNIT_ASSERT(!args.analyze(u"test --opt9 x a b"));
     debug() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of \"val1\", \"val2\", \"val3\"", log.getMessages());
 }
@@ -611,7 +612,7 @@ void ArgsTest::testBitMask()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    TSUNIT_ASSERT(args.analyze(u"test", {u"a"}));
+    TSUNIT_ASSERT(args.analyze(u"test", USV({u"a"})));
     TSUNIT_EQUAL(0x10, args.bitMaskValue<int>(u"mask", 0x10));
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--mask", u"bit1", u"a"}));
