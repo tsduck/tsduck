@@ -34,6 +34,10 @@
 
 #pragma once
 #include "tspOptions.h"
+#include "tspInputExecutor.h"
+#include "tspProcessorExecutor.h"
+#include "tspOutputExecutor.h"
+#include "tstspControlCommandLine.h"
 #include "tsThread.h"
 #include "tsMutex.h"
 #include "tsTCPServer.h"
@@ -54,8 +58,9 @@ namespace ts {
             //! @param [in,out] options Command line options for tsp.
             //! @param [in,out] log Log report.
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //! @param [in] input Input plugin executor (start of plugin chain).
             //!
-            ControlServer(Options& options, Report& log, Mutex& global_mutex);
+            ControlServer(Options& options, Report& log, Mutex& global_mutex, InputExecutor* input);
 
             //!
             //! Destructor.
@@ -74,18 +79,27 @@ namespace ts {
             void close();
 
         private:
-            volatile bool    _is_open;
-            volatile bool    _terminate;
-            Options&         _options;
-            ReportWithPrefix _log;
-            //@@ Mutex&      _mutex;
-            TCPServer        _server;
+            volatile bool      _is_open;
+            volatile bool      _terminate;
+            Options&           _options;
+            ReportWithPrefix   _log;
+            ControlCommandLine _reference;
+            TCPServer          _server;
+            Mutex&             _mutex;
+            InputExecutor*     _input;
+            OutputExecutor*    _output;
+            std::vector<ProcessorExecutor*> _plugins;  // Packet processing plugins
 
             // Implementation of Thread.
             virtual void main() override;
 
             // Execute one command.
             void executeCommand(const UString& line, Report& log);
+            void executeExit(const Args* args, Report& log);
+            void executeSetLog(const Args* args, Report& log);
+            void executeList(const Args* args, Report& log);
+            void executeSuspend(const Args* args, Report& log);
+            void executeResume(const Args* args, Report& log);
         };
     }
 }

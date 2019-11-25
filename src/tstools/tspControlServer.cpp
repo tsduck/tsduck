@@ -28,10 +28,12 @@
 //----------------------------------------------------------------------------
 
 #include "tspControlServer.h"
+#include "tspPluginExecutor.h"
 #include "tsNullMutex.h"
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
 #include "tsTelnetConnection.h"
+#include "tsGuard.h"
 TSDUCK_SOURCE;
 
 
@@ -39,14 +41,35 @@ TSDUCK_SOURCE;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& global_mutex) :
+ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& global_mutex, InputExecutor* input) :
     _is_open(false),
     _terminate(false),
     _options(options),
     _log(log, u"control commands: "),
-    //@@@@ _mutex(global_mutex),
-    _server()
+    _reference(),
+    _server(),
+    _mutex(global_mutex),
+    _input(input),
+    _output(nullptr),
+    _plugins()
 {
+    // Locate output plugin, count packet processor plugins.
+    if (_input != nullptr) {
+        Guard lock(_mutex);
+
+        // The output plugin "precedes" the input plugin in the ring.
+        _output = _input->ringPrevious<OutputExecutor>();
+        assert(_output != nullptr);
+
+        // Loop on all plugins between inputs and outputs
+        PluginExecutor* proc = _input;
+        while ((proc = proc->ringNext<PluginExecutor>()) != _output) {
+            ProcessorExecutor* pe = dynamic_cast<ProcessorExecutor*>(proc);
+            assert(pe != nullptr);
+            _plugins.push_back(pe);
+        }
+    }
+    _log.debug(u"found %d packet processor plugins", {_plugins.size()});
 }
 
 ts::tsp::ControlServer::~ControlServer()
@@ -150,5 +173,78 @@ void ts::tsp::ControlServer::main()
 
 void ts::tsp::ControlServer::executeCommand(const UString& line, Report& log)
 {
-    log.warning(u"@@@ ==> " + line);
+    ControlCommand cmd = ControlCommand(0);
+    const Args* args = nullptr;
+
+    // Analyze the command, return errors on the client connection.
+    if (_reference.analyze(line, cmd, args, log) && args != nullptr) {
+        // Dispatch the command.
+        switch (cmd) {
+            case CMD_EXIT: {
+                executeExit(args, log);
+                return;
+            }
+            case CMD_SETLOG: {
+                executeSetLog(args, log);
+                return;
+            }
+            case CMD_LIST: {
+                executeList(args, log);
+                return;
+            }
+            case CMD_SUSPEND: {
+                executeSuspend(args, log);
+                return;
+            }
+            case CMD_RESUME: {
+                executeResume(args, log);
+                return;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    // At this point, the command is incorrect.
+    log.error(u"invalid tsp control command: %s", {line});
+}
+
+
+//----------------------------------------------------------------------------
+// Command handlers.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeExit(const Args* args, Report& log)
+{
+    if (args->present(u"abort")) {
+        // Immediate exit.
+        ::exit(EXIT_FAILURE);
+    }
+    else {
+        // Send an end of stream to input plugin
+        //@@@@@@
+    }
+}
+
+void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& log)
+{
+    const int level = args->intValue(u"", Severity::Info);
+    _log.setMaxSeverity(args->intValue(u"", Severity::Info));
+    _log.log(level, u"set log level to %s", {Severity::Enums.name(level)});
+}
+
+void ts::tsp::ControlServer::executeList(const Args* args, Report& log)
+{
+    //@@@@@@
+}
+
+void ts::tsp::ControlServer::executeSuspend(const Args* args, Report& log)
+{
+    //@@@@@@
+}
+
+void ts::tsp::ControlServer::executeResume(const Args* args, Report& log)
+{
+    //@@@@@@
 }

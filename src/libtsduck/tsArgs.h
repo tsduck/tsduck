@@ -1036,6 +1036,9 @@ namespace ts {
         // Add a new option.
         void addOption(const IOption& opt);
 
+        // Adjust predefined options based on flags.
+        void adjustPredefinedOptions();
+
         // Validate the content of an option, add the value,
         // compute integer values when necessary, return false if not valid.
         bool validateParameter(IOption& opt, const Variable<UString>& val);

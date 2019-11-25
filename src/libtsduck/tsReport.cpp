@@ -26,22 +26,18 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract interface for event reporting and monitoring
-//
-//----------------------------------------------------------------------------
 
 #include "tsReport.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const int ts::Severity::Fatal;
-const int ts::Severity::Severe;
-const int ts::Severity::Error;
-const int ts::Severity::Warning;
-const int ts::Severity::Info;
-const int ts::Severity::Verbose;
-const int ts::Severity::Debug;
+constexpr int ts::Severity::Fatal;
+constexpr int ts::Severity::Severe;
+constexpr int ts::Severity::Error;
+constexpr int ts::Severity::Warning;
+constexpr int ts::Severity::Info;
+constexpr int ts::Severity::Verbose;
+constexpr int ts::Severity::Debug;
 #endif
 
 

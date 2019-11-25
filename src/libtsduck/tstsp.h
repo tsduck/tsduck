@@ -45,8 +45,7 @@ namespace ts {
         //! Definition of TSP control command.
         //!
         enum ControlCommand {
-            CMD_ABORT,    //!< Abort tsp.
-            CMD_EXIT,     //!< Clean exit tsp.
+            CMD_EXIT,     //!< Exit tsp.
             CMD_SETLOG,   //!< Change log level.
             CMD_LIST,     //!< List all plugins.
             CMD_SUSPEND,  //!< Suspend a plugin.
