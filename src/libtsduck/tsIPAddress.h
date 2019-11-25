@@ -155,6 +155,13 @@ namespace ts {
         void setAddress(uint32_t addr) { _addr = addr; }
 
         //!
+        //! Set the IP address from another IPAddress object.
+        //! Useful for subclasses.
+        //! @param [in] addr Another IP address.
+        //!
+        void setAddress(const IPAddress& addr) { _addr = addr._addr; }
+
+        //!
         //! Set the IP address from 4 bytes (classical IPv4 notation).
         //! @param [in] b1 First address byte.
         //! @param [in] b2 Second address byte.

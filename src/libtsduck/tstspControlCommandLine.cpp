@@ -45,7 +45,8 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
     arg->option(u"abort");
     arg->help(u"abort",
               u"Specify to immediately abort the tsp process. "
-              u"By default, this command forces an end of stream on the input plugin and let the processing terminate.");
+              u"By default, this command notifies each plugin to terminate "
+              u"and let the processing continue until the process naturally exits.");
 
     arg = newCommand(CMD_SETLOG, u"Change log level in the tsp process", u"level", Args::NO_VERBOSE);
     arg->option(u"", 0, Severity::Enums, 1, 1);
