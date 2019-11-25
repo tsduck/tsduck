@@ -82,8 +82,9 @@ Options::Options(int argc, char *argv[]) :
     command_line.quotedLine(args);
 
     // Validate the control command. It will be validated inside tsp anyway
-    // but let's not send an invalid command.
-    ts::tsp::ControlCommand cmd = ts::tsp::CMD_ABORT;
+    // but let's not send an invalid command. Not all commands can be fully
+    // validated outside the context of the tsp, but let's filter most errors.
+    ts::tsp::ControlCommand cmd = ts::tsp::ControlCommand(0);
     const ts::Args* ref = nullptr;
     if (!command_reference.analyze(command_line, cmd, ref, *this)) {
         error(u"invalid tsp control command: %s", {command_line});

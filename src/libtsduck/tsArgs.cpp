@@ -262,23 +262,7 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     _is_valid(false),
     _flags(flags)
 {
-    // Add predefined options. The short one-letter names may be overwritten later.
-    if ((flags & NO_HELP) == 0) {
-        addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
-        help(u"help", u"Display this help text.");
-    }
-    if ((flags & NO_VERSION) == 0) {
-        addOption(IOption(u"version", 0,  VersionFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
-        help(u"version", u"Display the TSDuck version number.");
-    }
-    if ((flags & NO_VERBOSE) == 0) {
-        addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, IOPT_PREDEFINED));
-        help(u"verbose", u"Produce verbose output.");
-    }
-    if ((flags & NO_DEBUG) == 0) {
-        addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, IOPT_PREDEFINED | IOPT_OPTVALUE));
-        help(u"debug", u"level", u"Produce debug traces. The default level is 1. Higher levels produce more messages.");
-    }
+    adjustPredefinedOptions();
 }
 
 
@@ -309,19 +293,50 @@ void ts::Args::setTail(const UString& tail)
 void ts::Args::setFlags(int flags)
 {
     _flags = flags;
+    adjustPredefinedOptions();
+}
 
-    // Remove canceled predefined options.
-    if ((flags & NO_HELP) != 0) {
+
+//----------------------------------------------------------------------------
+// Adjust predefined options based on flags.
+//----------------------------------------------------------------------------
+
+void ts::Args::adjustPredefinedOptions()
+{
+    // Option --help[=value].
+    if ((_flags & NO_HELP) != 0) {
         _iopts.erase(u"help");
     }
-    if ((flags & NO_VERSION) != 0) {
+    else if (_iopts.find(u"help") == _iopts.end()) {
+        addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
+        help(u"help", u"Display this help text.");
+    }
+
+    // Option --version[=value].
+    if ((_flags & NO_VERSION) != 0) {
         _iopts.erase(u"version");
     }
-    if ((flags & NO_VERBOSE) != 0) {
+    else if (_iopts.find(u"version") == _iopts.end()) {
+        addOption(IOption(u"version", 0,  VersionFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
+        help(u"version", u"Display the TSDuck version number.");
+    }
+
+    // Option --verbose.
+    if ((_flags & NO_VERBOSE) != 0) {
         _iopts.erase(u"verbose");
     }
-    if ((flags & NO_DEBUG) != 0) {
+    else if (_iopts.find(u"verbose") == _iopts.end()) {
+        addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, IOPT_PREDEFINED));
+        help(u"verbose", u"Produce verbose output.");
+    }
+
+    // Option --debug[=value].
+    if ((_flags & NO_DEBUG) != 0) {
         _iopts.erase(u"debug");
+    }
+    else if (_iopts.find(u"debug") == _iopts.end()) {
+        addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, IOPT_PREDEFINED | IOPT_OPTVALUE));
+        help(u"debug", u"level", u"Produce debug traces. The default level is 1. Higher levels produce more messages.");
     }
 }
 
@@ -378,6 +393,9 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
                 text += HelpLines(0, title + u':', line_width);
                 text += LINE_FEED;
                 text += HelpLines(1, opt.help.empty() ? opt.syntax : opt.help, line_width);
+                if (!opt.enumeration.empty() && (opt.flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) != (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
+                    text += HelpLines(1, u"Must be one of " + optionNames(opt.name.c_str()) + u".", line_width);
+                }
             }
         }
         else {

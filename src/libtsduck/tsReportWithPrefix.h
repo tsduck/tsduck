@@ -72,6 +72,9 @@ namespace ts {
             _prefix = prefix;
         }
 
+        // Inherited methods.
+        virtual void setMaxSeverity(int level) override;
+
     protected:
         // Inherited methods.
         virtual void writeLog(int severity, const UString& msg) override;

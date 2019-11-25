@@ -245,7 +245,7 @@ int MainCode(int argc, char *argv[])
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Create a control server thread. Display but ignore errors (not a fatal error).
-    ts::tsp::ControlServer control(opt, report, global_mutex);
+    ts::tsp::ControlServer control(opt, report, global_mutex, input);
     control.open();
 
     // Wait for threads to terminate

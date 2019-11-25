@@ -41,19 +41,21 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
     // Define the syntax for all commands.
     Args* arg = nullptr;
 
-    arg = newCommand(CMD_ABORT, u"Abort tsp", u"");
+    arg = newCommand(CMD_EXIT, u"Terminate the tsp process", u"[options]", Args::NO_VERBOSE);
+    arg->option(u"abort");
+    arg->help(u"abort",
+              u"Specify to immediately abort the tsp process. "
+              u"By default, this command forces an end of stream on the input plugin and let the processing terminate.");
 
-    arg = newCommand(CMD_EXIT, u"Clean exit tsp", u"");
-
-    arg = newCommand(CMD_SETLOG, u"Change log level", u"level");
+    arg = newCommand(CMD_SETLOG, u"Change log level in the tsp process", u"level", Args::NO_VERBOSE);
     arg->option(u"", 0, Severity::Enums, 1, 1);
     arg->help(u"",
               u"Specify a new logging level for the tsp process. "
               u"It can be either a name or a positive value for higher debug levels.");
 
-    arg = newCommand(CMD_LIST, u"List all plugins", u"");
+    arg = newCommand(CMD_LIST, u"List all running plugins", u"[options]");
 
-    arg = newCommand(CMD_SUSPEND, u"Suspend a plugin", u"plugin-index");
+    arg = newCommand(CMD_SUSPEND, u"Suspend a plugin", u"[options] plugin-index");
     arg->setIntro(u"Suspend a packet processing plugin. As long as a plugin is suspended, "
                   u"the TS packets are directly passed from the previous to the next plugin, "
                   u"without going through the suspended one. This must be a packet processing plugin; "
@@ -62,7 +64,7 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
     arg->option(u"", 0, Args::UNSIGNED);
     arg->help(u"", u"Index of the plugin to suspend.");
 
-    arg = newCommand(CMD_RESUME, u"Resume a suspended plugin", u"plugin-index");
+    arg = newCommand(CMD_RESUME, u"Resume a suspended plugin", u"[options] plugin-index");
     arg->option(u"", 0, Args::UNSIGNED);
     arg->help(u"", u"Index of the plugin to resume.");
 }
@@ -72,7 +74,7 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
 // Add a new command.
 //----------------------------------------------------------------------------
 
-ts::Args* ts::tsp::ControlCommandLine::newCommand(ControlCommand cmd, const UString& description, const UString& syntax)
+ts::Args* ts::tsp::ControlCommandLine::newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags)
 {
     Args* arg = &_commands[cmd];
 
@@ -81,7 +83,8 @@ ts::Args* ts::tsp::ControlCommandLine::newCommand(ControlCommand cmd, const UStr
     arg->setShell(u"tspcontrol");
     arg->setAppName(ControlCommandEnum.name(cmd));
 
-    arg->setFlags(Args::NO_EXIT_ON_HELP |
+    arg->setFlags(flags |
+                  Args::NO_EXIT_ON_HELP |
                   Args::NO_EXIT_ON_ERROR |
                   Args::NO_EXIT_ON_VERSION |
                   Args::HELP_ON_THIS |

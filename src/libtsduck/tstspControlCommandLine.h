@@ -75,7 +75,7 @@ namespace ts {
             std::map<ControlCommand,Args> _commands;
 
             // Add a new command.
-            Args* newCommand(ControlCommand cmd, const UString& description, const UString& syntax);
+            Args* newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags = 0);
         };
     }
 }

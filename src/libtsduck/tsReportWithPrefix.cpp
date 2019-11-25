@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract interface for event reporting and monitoring
-//
-//----------------------------------------------------------------------------
 
 #include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
@@ -54,4 +50,13 @@ ts::ReportWithPrefix::ReportWithPrefix(ts::Report& report, const UString& prefix
 void ts::ReportWithPrefix::writeLog(int severity, const UString& msg)
 {
     _report.log(severity, _prefix + msg);
+}
+
+void ts::ReportWithPrefix::setMaxSeverity(int level)
+{
+    // Set in superclass.
+    Report::setMaxSeverity(level);
+
+    // Propagate to redirected report.
+    _report.setMaxSeverity(level);
 }

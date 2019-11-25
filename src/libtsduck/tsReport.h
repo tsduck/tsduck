@@ -47,13 +47,13 @@ namespace ts {
     //!
     struct TSDUCKDLL Severity {
 
-        static const int Fatal   = -5;  //!< Fatal error, typically aborts the application.
-        static const int Severe  = -4;  //!< Severe errror.
-        static const int Error   = -3;  //!< Regular error.
-        static const int Warning = -2;  //!< Warning message.
-        static const int Info    = -1;  //!< Information message.
-        static const int Verbose = 0;   //!< Verbose information.
-        static const int Debug   = 1;   //!< First debug level.
+        static constexpr int Fatal   = -5;  //!< Fatal error, typically aborts the application.
+        static constexpr int Severe  = -4;  //!< Severe errror.
+        static constexpr int Error   = -3;  //!< Regular error.
+        static constexpr int Warning = -2;  //!< Warning message.
+        static constexpr int Info    = -1;  //!< Information message.
+        static constexpr int Verbose = 0;   //!< Verbose information.
+        static constexpr int Debug   = 1;   //!< First debug level.
 
         //!
         //! Formatted line prefix header for a severity
