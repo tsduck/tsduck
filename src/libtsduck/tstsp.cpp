@@ -32,7 +32,7 @@ TSDUCK_SOURCE;
 
 const ts::Enumeration ts::tsp::ControlCommandEnum({
     {u"exit",    ts::tsp::CMD_EXIT},
-    {u"setlog",  ts::tsp::CMD_SETLOG},
+    {u"set-log", ts::tsp::CMD_SETLOG},
     {u"list",    ts::tsp::CMD_LIST},
     {u"suspend", ts::tsp::CMD_SUSPEND},
     {u"resume",  ts::tsp::CMD_RESUME},

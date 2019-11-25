@@ -93,13 +93,15 @@ namespace ts {
             // Implementation of Thread.
             virtual void main() override;
 
-            // Execute one command.
-            void executeCommand(const UString& line, Report& log);
-            void executeExit(const Args* args, Report& log);
-            void executeSetLog(const Args* args, Report& log);
-            void executeList(const Args* args, Report& log);
-            void executeSuspend(const Args* args, Report& log);
-            void executeResume(const Args* args, Report& log);
+            // Command handlers.
+            typedef void (ControlServer::* CommandHandler)(const Args*, Report&);
+            std::map<ControlCommand,CommandHandler> _handlers;
+
+            void executeExit(const Args*, Report&);
+            void executeSetLog(const Args*, Report&);
+            void executeList(const Args*, Report&);
+            void executeSuspend(const Args*, Report&);
+            void executeResume(const Args*, Report&);
         };
     }
 }

@@ -51,7 +51,12 @@ ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& glob
     _mutex(global_mutex),
     _input(input),
     _output(nullptr),
-    _plugins()
+    _plugins(),
+    _handlers{{CMD_EXIT,    &ControlServer::executeExit},
+              {CMD_SETLOG,  &ControlServer::executeSetLog},
+              {CMD_LIST,    &ControlServer::executeList},
+              {CMD_SUSPEND, &ControlServer::executeSuspend},
+              {CMD_RESUME,  &ControlServer::executeResume}}
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
@@ -146,15 +151,39 @@ void ts::tsp::ControlServer::main()
     // Loop on incoming connections.
     // Since the commands are expected to be short, treat only one at a time.
     while (_server.accept(conn, source, error)) {
+
         // Filter allowed sources.
+        // Set receive timeout on the connection and read one line.
         if (std::find(_options.control_sources.begin(), _options.control_sources.end(), source) == _options.control_sources.end()) {
             _log.warning(u"connection attempt from unauthorized source %s (ignored)", {source});
             conn.sendLine("error: client address is not authorized", _log);
         }
         else if (conn.setReceiveTimeout(_options.control_timeout, _log) && conn.receiveLine(line, nullptr, _log)) {
             _log.verbose(u"received from %s: %s", {source, line});
-            executeCommand(line, conn);
+
+            // Analyze the command, return errors on the client connection.
+            ControlCommand cmd = CMD_NONE;
+            const Args* args = nullptr;
+            CommandHandler handler = nullptr;
+            if (_reference.analyze(line, cmd, args, conn)) {
+                const auto it = _handlers.find(cmd);
+                if (it != _handlers.end()) {
+                    handler = it->second;
+                }
+            }
+
+            // Execute the handler for this command or return an error message.
+            if (handler != nullptr && args != nullptr) {
+                // Set in response connection the same severity as analyzed in command arguments.
+                conn.setMaxSeverity(args->maxSeverity());
+                // Execute the command.
+                (this->*handler)(args, conn);
+            }
+            else {
+                conn.error(u"invalid tsp control command: %s", {line});
+            }
         }
+
         conn.closeWriter(_log);
         conn.close(_log);
     }
@@ -168,83 +197,79 @@ void ts::tsp::ControlServer::main()
 
 
 //----------------------------------------------------------------------------
-// Execute one command.
+// Exit command.
 //----------------------------------------------------------------------------
 
-void ts::tsp::ControlServer::executeCommand(const UString& line, Report& log)
-{
-    ControlCommand cmd = ControlCommand(0);
-    const Args* args = nullptr;
-
-    // Analyze the command, return errors on the client connection.
-    if (_reference.analyze(line, cmd, args, log) && args != nullptr) {
-        // Dispatch the command.
-        switch (cmd) {
-            case CMD_EXIT: {
-                executeExit(args, log);
-                return;
-            }
-            case CMD_SETLOG: {
-                executeSetLog(args, log);
-                return;
-            }
-            case CMD_LIST: {
-                executeList(args, log);
-                return;
-            }
-            case CMD_SUSPEND: {
-                executeSuspend(args, log);
-                return;
-            }
-            case CMD_RESUME: {
-                executeResume(args, log);
-                return;
-            }
-            default: {
-                break;
-            }
-        }
-    }
-
-    // At this point, the command is incorrect.
-    log.error(u"invalid tsp control command: %s", {line});
-}
-
-
-//----------------------------------------------------------------------------
-// Command handlers.
-//----------------------------------------------------------------------------
-
-void ts::tsp::ControlServer::executeExit(const Args* args, Report& log)
+void ts::tsp::ControlServer::executeExit(const Args* args, Report& response)
 {
     if (args->present(u"abort")) {
         // Immediate exit.
         ::exit(EXIT_FAILURE);
     }
     else {
-        // Send an end of stream to input plugin
-        //@@@@@@
+        _log.info(u"exit requested by remote tcpcontrol");
+        // Place all threads in "aborted" state so that each thread will see its
+        // successor as aborted. Notify all threads that something happened.
+        PluginExecutor* proc = _input;
+        do {
+            proc->setAbort();
+        } while ((proc = proc->ringNext<PluginExecutor>()) != _input);
     }
 }
 
-void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& log)
+
+//----------------------------------------------------------------------------
+// Set-log command.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& response)
 {
     const int level = args->intValue(u"", Severity::Info);
-    _log.setMaxSeverity(args->intValue(u"", Severity::Info));
+
+    // Set log severity of the main logger.
+    _log.setMaxSeverity(level);
     _log.log(level, u"set log level to %s", {Severity::Enums.name(level)});
+
+    // Also set the log severity on each individual plugin.
+    Guard lock(_mutex);
+    PluginExecutor* proc = _input;
+    do {
+        proc->setMaxSeverity(level);
+    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != _input);
 }
 
-void ts::tsp::ControlServer::executeList(const Args* args, Report& log)
+
+//----------------------------------------------------------------------------
+// List command.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeList(const Args* args, Report& response)
+{
+    const bool verbose = response.verbose();
+    size_t index = 0;
+    response.info(u"%2d: -I %s", {index++, verbose ? _input->plugin()->commandLine() : _input->pluginName()});
+    for (size_t i = 0; i < _plugins.size(); ++i) {
+        response.info(u"%2d: -P %s", {index++, verbose ? _plugins[i]->plugin()->commandLine() : _plugins[i]->pluginName()});
+    }
+    response.info(u"%2d: -O %s", { index++, verbose ? _output->plugin()->commandLine() : _output->pluginName() });
+}
+
+
+//----------------------------------------------------------------------------
+// Suspend command.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeSuspend(const Args* args, Report& response)
 {
     //@@@@@@
 }
 
-void ts::tsp::ControlServer::executeSuspend(const Args* args, Report& log)
-{
-    //@@@@@@
-}
 
-void ts::tsp::ControlServer::executeResume(const Args* args, Report& log)
+//----------------------------------------------------------------------------
+// Resume command.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeResume(const Args* args, Report& response)
 {
     //@@@@@@
 }

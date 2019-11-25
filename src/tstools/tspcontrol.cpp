@@ -84,7 +84,7 @@ Options::Options(int argc, char *argv[]) :
     // Validate the control command. It will be validated inside tsp anyway
     // but let's not send an invalid command. Not all commands can be fully
     // validated outside the context of the tsp, but let's filter most errors.
-    ts::tsp::ControlCommand cmd = ts::tsp::ControlCommand(0);
+    ts::tsp::ControlCommand cmd = ts::tsp::CMD_NONE;
     const ts::Args* ref = nullptr;
     if (!command_reference.analyze(command_line, cmd, ref, *this)) {
         error(u"invalid tsp control command: %s", {command_line});
@@ -93,6 +93,9 @@ Options::Options(int argc, char *argv[]) :
     // Resolve tsp address.
     if (!tsp_address.resolve(value(u"tsp"), *this) || !tsp_address.hasPort()) {
         error(u"invalid tsp address or port, use --tsp [address:]port");
+    }
+    if (!tsp_address.hasAddress()) {
+        tsp_address.setAddress(ts::IPAddress::LocalHost);
     }
 
     exitOnError();
