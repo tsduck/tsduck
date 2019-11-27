@@ -292,7 +292,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
         if (_update_eit && !_eit_active) {
             const MilliSecond add = _timeref - time;
             tsp->verbose(u"adding %'d milliseconds to all event start time in EIT's", {add});
-            _eit_processor.addStartTimeOffet(add);
+            _eit_processor.addStartTimeOffet(add, _eit_date_only);
             _eit_active = true;
         }
 
