@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.20-1529
+VERSION 3.20-1533
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,7 @@ VERSION 3.20-1529
 [IMP] Improvements on existing commands and plugins:
 
   * Added option --control-port to "tsp" and other related --control options.
+  * Added option --eit-date-only to plugin "timeref".
 
 -------------------------------------------------------------------------------
 
