@@ -207,14 +207,16 @@ namespace ts {
         //!
         //! Add an offset to all start times of all events in all EIT's.
         //! @param [in] offset The number of milliseconds to add to each start time. Can be negative.
+        //! @param [in] date_only If true, update the date field only, do not modify the hour/minute/second.
         //!
-        void addStartTimeOffet(MilliSecond offset) { _start_time_offset = offset; }
+        void addStartTimeOffet(MilliSecond offset, bool date_only = false);
 
     private:
         DuckContext&          _duck;
         PIDSet                _input_pids;
         PID                   _output_pid;
         MilliSecond           _start_time_offset;
+        bool                  _date_only;
         SectionDemux          _demux;
         Packetizer            _packetizer;
         std::list<SectionPtr> _sections;

@@ -61,6 +61,7 @@ namespace ts {
         bool          _update_tdt;        // Update the TDT
         bool          _update_tot;        // Update the TOT
         bool          _update_eit;        // Update the EIT's
+        bool          _eit_date_only;     // Update date field only in EIT.
         bool          _use_timeref;       // Use a new time reference
         MilliSecond   _add_milliseconds;  // Add this to all time values
         Time          _startref;          // Starting value of new time reference
@@ -88,6 +89,7 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     _update_tdt(false),
     _update_tot(false),
     _update_eit(false),
+    _eit_date_only(false),
     _use_timeref(false),
     _add_milliseconds(0),
     _startref(Time::Epoch),
@@ -107,6 +109,11 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
          u"When --add is used, the specified offset is applied to all events start time. "
          u"When --start is used, EIT's are dropped until the first TDT or TOT is encountered. "
          u"Then, the difference between the first TDT or TOT time and the new time reference at this point is applied.");
+
+    option(u"eit-date-only");
+    help(u"eit-date-only",
+        u"Same as --eit but update the date field only in the event start dates in EIT's. "
+        u"The hour, minute and second fields of the event start dates are left unchanged.");
 
     option(u"notdt");
     help(u"notdt", u"Do not update TDT.");
@@ -132,7 +139,8 @@ bool ts::TimeRefPlugin::getOptions()
 {
     _update_tdt = !present(u"notdt");
     _update_tot = !present(u"notot");
-    _update_eit = present(u"eit");
+    _eit_date_only = present(u"eit-date-only");
+    _update_eit = _eit_date_only || present(u"eit");
     _use_timeref = present(u"start");
     _add_milliseconds = MilliSecPerSec * intValue<int>(u"add", 0);
 
@@ -169,7 +177,7 @@ bool ts::TimeRefPlugin::start()
     _eit_processor.reset();
     _eit_active = _update_eit && _add_milliseconds != 0;
     if (_eit_active) {
-        _eit_processor.addStartTimeOffet(_add_milliseconds);
+        _eit_processor.addStartTimeOffet(_add_milliseconds, _eit_date_only);
     }
     return true;
 }

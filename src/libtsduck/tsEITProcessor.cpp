@@ -44,6 +44,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
     _input_pids(),
     _output_pid(pid),
     _start_time_offset(0),
+    _date_only(false),
     _demux(_duck, nullptr, this),
     _packetizer(pid, this),
     _sections(),
@@ -59,6 +60,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
 void ts::EITProcessor::reset()
 {
     _start_time_offset = 0;
+    _date_only = false;
     _demux.reset();
     _packetizer.reset();
     _sections.clear();
@@ -273,6 +275,17 @@ void ts::EITProcessor::removePresentFollowing()
 
 
 //----------------------------------------------------------------------------
+// Add an offset to all start times of all events in all EIT's.
+//----------------------------------------------------------------------------
+
+void ts::EITProcessor::addStartTimeOffet(MilliSecond offset, bool date_only)
+{
+    _start_time_offset = offset;
+    _date_only = date_only;
+}
+
+
+//----------------------------------------------------------------------------
 // Check if a service matches a DVB triplet.
 // The service must have at least a service id or transport id.
 //----------------------------------------------------------------------------
@@ -378,7 +391,7 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
                 }
                 else {
                     time += _start_time_offset;
-                    if (!EncodeMJD(time, data + 2, MJD_SIZE)) {
+                    if (!EncodeMJD(time, data + 2, _date_only ? MJD_MIN_SIZE : MJD_SIZE)) {
                         _duck.report().warning(u"error encoding event start time into EIT");
                     }
                     else {
