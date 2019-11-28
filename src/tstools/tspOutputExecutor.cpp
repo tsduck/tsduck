@@ -113,20 +113,30 @@ void ts::tsp::OutputExecutor::main()
             addNonPluginPackets(drop_cnt);
 
             // Find last non-dropped packet
-            size_t out_cnt;
-            for (out_cnt = 0; out_cnt < pkt_remain && pkt[out_cnt].b[0] != 0; out_cnt++) {}
+            size_t out_cnt = 0;
+            while (out_cnt < pkt_remain && pkt[out_cnt].b[0] != 0) {
+                out_cnt++;
+            }
 
             // Output a contiguous range of non-dropped packets.
             if (out_cnt > 0) {
-                if (!_output->send(pkt, data, out_cnt)) {
+                if (_suspended) {
+                    // Don't output packet when the plugin is suspended.
+                    addNonPluginPackets(out_cnt);
+                }
+                else if (_output->send(pkt, data, out_cnt)) {
+                    // Packet successfully sent.
+                    addPluginPackets(out_cnt);
+                    output_packets += out_cnt;
+                }
+                else {
+                    // Send error.
                     aborted = true;
                     break;
                 }
                 pkt += out_cnt;
                 data += out_cnt;
                 pkt_remain -= out_cnt;
-                output_packets += out_cnt;
-                addPluginPackets(out_cnt);
             }
         }
 

@@ -100,8 +100,10 @@ namespace ts {
             void executeExit(const Args*, Report&);
             void executeSetLog(const Args*, Report&);
             void executeList(const Args*, Report&);
+            void listOnePlugin(size_t index, UChar type, PluginExecutor* plugin, Report& report);
             void executeSuspend(const Args*, Report&);
             void executeResume(const Args*, Report&);
+            void executeSuspendResume(bool state, const Args*, Report&);
         };
     }
 }

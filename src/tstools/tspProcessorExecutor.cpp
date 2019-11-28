@@ -130,14 +130,14 @@ void ts::tsp::ProcessorExecutor::main()
                 pkt_data->setFlush(false);
                 pkt_data->setBitrateChanged(false);
                 ProcessorPlugin::Status status = ProcessorPlugin::TSP_OK;
-                if (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) {
+                if (!_suspended && (only_labels.none() || pkt_data->hasAnyLabel(only_labels))) {
                     // Either no --only-label option or the packet has a specified label => process it.
                     status = _processor->processPacket(*pkt, *pkt_data);
                     addPluginPackets(1);
                 }
                 else {
-                    // Some --only-label was specified but the packet does not have any required label.
-                    // Pass the packet without submitting it to the plugin.
+                    // The plugin is suspended or some --only-label was specified but the packet does
+                    // not have any required label. Pass the packet without submitting it to the plugin.
                     addNonPluginPackets(1);
                 }
 

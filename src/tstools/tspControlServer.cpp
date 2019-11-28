@@ -34,6 +34,7 @@
 #include "tsReportBuffer.h"
 #include "tsTelnetConnection.h"
 #include "tsGuard.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -161,6 +162,10 @@ void ts::tsp::ControlServer::main()
         else if (conn.setReceiveTimeout(_options.control_timeout, _log) && conn.receiveLine(line, nullptr, _log)) {
             _log.verbose(u"received from %s: %s", {source, line});
 
+            // Reset the severity of the connection before analysing the line.
+            // A previous analysis may have used --verbose or --debug.
+            conn.setMaxSeverity(Severity::Info);
+
             // Analyze the command, return errors on the client connection.
             ControlCommand cmd = CMD_NONE;
             const Args* args = nullptr;
@@ -174,8 +179,6 @@ void ts::tsp::ControlServer::main()
 
             // Execute the handler for this command or return an error message.
             if (handler != nullptr && args != nullptr) {
-                // Set in response connection the same severity as analyzed in command arguments.
-                conn.setMaxSeverity(args->maxSeverity());
                 // Execute the command.
                 (this->*handler)(args, conn);
             }
@@ -245,31 +248,63 @@ void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& response)
 
 void ts::tsp::ControlServer::executeList(const Args* args, Report& response)
 {
-    const bool verbose = response.verbose();
-    size_t index = 0;
-    response.info(u"%2d: -I %s", {index++, verbose ? _input->plugin()->commandLine() : _input->pluginName()});
-    for (size_t i = 0; i < _plugins.size(); ++i) {
-        response.info(u"%2d: -P %s", {index++, verbose ? _plugins[i]->plugin()->commandLine() : _plugins[i]->pluginName()});
+    if (response.verbose()) {
+        response.info(u"");
+        response.info(u"Executable: %s", {ExecutableFile()});
+        response.info(u"");
     }
-    response.info(u"%2d: -O %s", { index++, verbose ? _output->plugin()->commandLine() : _output->pluginName() });
+
+    listOnePlugin(0, u'I', _input, response);
+    size_t index = 1;
+    for (size_t i = 0; i < _plugins.size(); ++i) {
+        listOnePlugin(index++, u'P', _plugins[i], response);
+    }
+    listOnePlugin(index, u'O', _output, response);
+
+    if (response.verbose()) {
+        response.info(u"");
+    }
+}
+
+void ts::tsp::ControlServer::listOnePlugin(size_t index, UChar type, PluginExecutor* plugin, Report& response)
+{
+    const bool verbose = response.verbose();
+    const bool suspended = plugin->getSuspended();
+    response.info(u"%2d: %s-%c %s", {
+                  index,
+                  verbose && suspended ? u"(suspended) " : u"",
+                  type,
+                  verbose ? plugin->plugin()->commandLine() : plugin->pluginName() });
 }
 
 
 //----------------------------------------------------------------------------
-// Suspend command.
+// Suspend/resume commands.
 //----------------------------------------------------------------------------
 
 void ts::tsp::ControlServer::executeSuspend(const Args* args, Report& response)
 {
-    //@@@@@@
+    executeSuspendResume(true, args, response);
 }
-
-
-//----------------------------------------------------------------------------
-// Resume command.
-//----------------------------------------------------------------------------
 
 void ts::tsp::ControlServer::executeResume(const Args* args, Report& response)
 {
-    //@@@@@@
+    executeSuspendResume(false, args, response);
+}
+
+void ts::tsp::ControlServer::executeSuspendResume(bool state, const Args* args, Report& response)
+{
+    const size_t index = args->intValue<size_t>(u"");
+    if (index > 0 && index <= _plugins.size()) {
+        _plugins[index-1]->setSuspended(state);
+    }
+    else if (index == _plugins.size() + 1) {
+        _output->setSuspended(state);
+    }
+    else if (index == 0) {
+        response.error(u"cannot suspend/resume the input plugin");
+    }
+    else {
+        response.error(u"invalid plugin index %d, specify 1 to %d", { index, _plugins.size() + 1 });
+    }
 }
