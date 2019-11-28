@@ -104,6 +104,7 @@ namespace ts {
             void executeSuspend(const Args*, Report&);
             void executeResume(const Args*, Report&);
             void executeSuspendResume(bool state, const Args*, Report&);
+            void executeRestart(const Args*, Report&);
         };
     }
 }

@@ -51,6 +51,7 @@ namespace ts {
             CMD_LIST,     //!< List all plugins.
             CMD_SUSPEND,  //!< Suspend a plugin.
             CMD_RESUME,   //!< Resume a suspended plugin.
+            CMD_RESTART,  //!< Restart a plugin with different parameters.
         };
 
         //!
