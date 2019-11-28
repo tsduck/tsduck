@@ -55,7 +55,9 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
     _pkt_first(0),
     _pkt_cnt(0),
     _input_end(false),
-    _bitrate(0)
+    _bitrate(0),
+    _restart(false),
+    _restart_data()
 {
 }
 
@@ -193,4 +195,52 @@ void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRa
 
     log(10, u"waitWork(pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s, timeout = %s)",
         {pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout});
+}
+
+
+//----------------------------------------------------------------------------
+// Description of a restart operation (constructor).
+//----------------------------------------------------------------------------
+
+ts::tsp::PluginExecutor::RestartData::RestartData(const UStringVector& params, Report& rep) :
+    report(rep),
+    args(params),
+    mutex(),
+    condition(),
+    completed(false)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Restart the plugin with new parameters.
+//----------------------------------------------------------------------------
+
+void ts::tsp::PluginExecutor::restart(const UStringVector& params, Report& report)
+{
+    // Allocate an object describing the operation.
+    RestartDataPtr rd(new RestartData(params, report));
+
+    // Acquire the global mutex to modify global data.
+    {
+        Guard lock1(_global_mutex);
+
+        // If there was a previous pending restart operation, cancel it.
+        if (!_restart_data.isNull()) {
+            GuardCondition lock2(_restart_data->mutex, _restart_data->condition);
+            _restart_data->completed = true;
+            _restart_data->report.error(u"restart interrupted by another concurrent restart");
+            lock2.signal();
+        }
+
+        // Declare this restart operation and release the global mutex.
+        _restart_data = rd;
+        _restart = true;
+    }
+
+    // Now wait for the restart operation to complete.
+    GuardCondition lock3(rd->mutex, rd->condition);
+    while (!rd->completed) {
+        lock3.waitCondition();
+    }
 }

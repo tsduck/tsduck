@@ -57,7 +57,8 @@ ts::tsp::ControlServer::ControlServer(Options& options, Report& log, Mutex& glob
               {CMD_SETLOG,  &ControlServer::executeSetLog},
               {CMD_LIST,    &ControlServer::executeList},
               {CMD_SUSPEND, &ControlServer::executeSuspend},
-              {CMD_RESUME,  &ControlServer::executeResume}}
+              {CMD_RESUME,  &ControlServer::executeResume},
+              {CMD_RESTART, &ControlServer::executeRestart}}
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
@@ -307,4 +308,26 @@ void ts::tsp::ControlServer::executeSuspendResume(bool state, const Args* args, 
     else {
         response.error(u"invalid plugin index %d, specify 1 to %d", { index, _plugins.size() + 1 });
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Restart commands.
+//----------------------------------------------------------------------------
+
+void ts::tsp::ControlServer::executeRestart(const Args* args, Report& response)
+{
+    // Get all parameters. The first one is the plugin index. Others are plugin parameters.
+    UStringVector params;
+    args->getValues(params);
+    size_t index = 0;
+    if (params.empty() || !params[0].toInteger(index) || index > _plugins.size() + 1) {
+        response.error(u"invalid plugin index");
+        return;
+    }
+
+    // Keep only plugin parameters.
+    params.erase(params.begin());
+
+    response.error(u"@@@ not yet implemented");
 }

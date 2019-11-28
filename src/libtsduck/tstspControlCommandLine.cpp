@@ -68,6 +68,10 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
     arg = newCommand(CMD_RESUME, u"Resume a suspended plugin", u"[options] plugin-index");
     arg->option(u"", 0, Args::UNSIGNED);
     arg->help(u"", u"Index of the plugin to resume.");
+
+    arg = newCommand(CMD_RESTART, u"Restart plugin with different parameters", u"[options] plugin-index [plugin-options ...]", Args::GATHER_PARAMETERS);
+    arg->option(u"", 0, Args::UNSIGNED);
+    arg->help(u"", u"Index of the plugin to restart, followed by the new plugin parameters to use.");
 }
 
 

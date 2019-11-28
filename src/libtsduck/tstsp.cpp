@@ -36,4 +36,5 @@ const ts::Enumeration ts::tsp::ControlCommandEnum({
     {u"list",    ts::tsp::CMD_LIST},
     {u"suspend", ts::tsp::CMD_SUSPEND},
     {u"resume",  ts::tsp::CMD_RESUME},
+    {u"restart", ts::tsp::CMD_RESTART},
 });
