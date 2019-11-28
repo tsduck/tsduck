@@ -190,9 +190,26 @@ namespace ts {
             //!
             bool isRealTime() const;
 
+            //!
+            //! Set the plugin in suspended more or resume it.
+            //! When suspended, a plugin no longer processes packets.
+            //! The packets are passed directly from the previous to the next plugin.
+            //! A plugin executor is typically suspended of resumed from another thread.
+            //! @param [in] suspended When true, set the plugin in suspended mode.
+            //! When false, resume the plugin if it is currently  suspended.
+            //!
+            void setSuspended(bool suspended) { _suspended = suspended; }
+
+            //!
+            //! Get the plugin suspension mode.
+            //! @return True when the plugin is suspended, false otherwise.
+            //!
+            bool getSuspended() const { return _suspended; }
+
         protected:
             PacketBuffer*         _buffer;    //!< Description of shared packet buffer.
             PacketMetadataBuffer* _metadata;  //!< Description of shared packet metadata buffer.
+            volatile bool         _suspended; //!< The plugin is suspended / resumed.
 
             //!
             //! Pass processed packets to the next packet processor.

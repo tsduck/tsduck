@@ -57,11 +57,11 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
     arg = newCommand(CMD_LIST, u"List all running plugins", u"[options]");
 
     arg = newCommand(CMD_SUSPEND, u"Suspend a plugin", u"[options] plugin-index");
-    arg->setIntro(u"Suspend a packet processing plugin. As long as a plugin is suspended, "
+    arg->setIntro(u"Suspend a plugin. When a packet processing plugin is suspended, "
                   u"the TS packets are directly passed from the previous to the next plugin, "
-                  u"without going through the suspended one. This must be a packet processing plugin; "
-                  u"the input and output plugins cannot be suspended. Use the command " +
-                  ControlCommandEnum.name(CMD_LIST) + u" to list all running plugins. ");
+                  u"without going through the suspended one. When the output plugin is suspended, "
+                  u"the output packets are dropped. The input plugin cannot be suspended. "
+                  u"Use the command " + ControlCommandEnum.name(CMD_LIST) + u" to list all running plugins. ");
     arg->option(u"", 0, Args::UNSIGNED);
     arg->help(u"", u"Index of the plugin to suspend.");
 
