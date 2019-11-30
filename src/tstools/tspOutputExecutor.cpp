@@ -74,6 +74,11 @@ void ts::tsp::OutputExecutor::main()
         // output thread, aborted means was interrupted by user.
         aborted = _tsp_aborting;
 
+        // Process restart requests.
+        if (!processPendingRestart()) {
+            timeout = true;
+        }
+
         // In case of abort on timeout, notify previous and next plugin, then exit.
         if (timeout) {
             // Do not transmit bitrate or input end to next (since next is input processor).

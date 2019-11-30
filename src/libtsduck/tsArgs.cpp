@@ -532,12 +532,14 @@ ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 // Redirect report logging. Redirection cancelled if zero.
 //----------------------------------------------------------------------------
 
-void ts::Args::redirectReport(Report* rep)
+ts::Report* ts::Args::redirectReport(Report* rep)
 {
+    Report* previous = _subreport;
     _subreport = rep;
     if (rep != nullptr && rep->maxSeverity() > this->maxSeverity()) {
         this->setMaxSeverity(rep->maxSeverity());
     }
+    return previous;
 }
 
 

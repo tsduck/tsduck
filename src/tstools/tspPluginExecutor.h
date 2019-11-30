@@ -208,6 +208,7 @@ namespace ts {
 
             //!
             //! Restart the plugin with new parameters.
+            //! This method is called from another thread, not the plugin thread.
             //! @param [in] params New command line parameters.
             //! @param [in,out] report Where to report errors.
             //!
@@ -259,6 +260,13 @@ namespace ts {
             //! the plugin requested an abort.
             //!
             void waitWork(size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout);
+
+            //!
+            //! Process a pending restart operation if there is one.
+            //! @return True in case of success (no pending restart or successfully restarted)
+            //! or false on fatal error (cannot even restart with the original parameters).
+            //!
+            bool processPendingRestart();
 
         private:
             // A structure which is used to handle a restart of the plugin.

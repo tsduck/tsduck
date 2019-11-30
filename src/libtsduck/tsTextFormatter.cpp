@@ -144,6 +144,7 @@ bool ts::TextFormatter::isOpen() const
 
 void ts::TextFormatter::close()
 {
+    // Close resources.
     if (_out == &_outString) {
         // Output is set to string. Reset internal buffer.
         _outString.str(std::string());
@@ -151,10 +152,14 @@ void ts::TextFormatter::close()
     if (_outFile.is_open()) {
         _outFile.close();
     }
+
     // Set output to a closed file. Thus, _out is never null, it is safe to
     // output to *_out, but output is discarded (closed file).
     _out = &_outFile;
+
     // Reset margin.
+    _column = 0;
+    _afterSpace = false;
     _curMargin = _margin;
 }
 

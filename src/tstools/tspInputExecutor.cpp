@@ -356,6 +356,11 @@ void ts::tsp::InputExecutor::main()
         // Ignore input_end and bitrate from previous, we are the input processor.
         waitWork(pkt_first, pkt_max, bitrate, input_end, aborted, timeout);
 
+        // Process restart requests.
+        if (!processPendingRestart()) {
+            timeout = true;
+        }
+
         // If the next thread has given up, give up too since our packets are now useless.
         // Do not even try to add trailing stuffing (--add-stop-stuffing).
         if (aborted) {

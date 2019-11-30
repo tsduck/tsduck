@@ -329,5 +329,18 @@ void ts::tsp::ControlServer::executeRestart(const Args* args, Report& response)
     // Keep only plugin parameters.
     params.erase(params.begin());
 
-    response.error(u"@@@ not yet implemented");
+    // Get the target plugin.
+    PluginExecutor* plugin = nullptr;
+    if (index == 0) {
+        plugin = _input;
+    }
+    else if (index <= _plugins.size()) {
+        plugin = _plugins[index-1];
+    }
+    else {
+        plugin = _output;
+    }
+
+    // Restart the plugin.
+    plugin->restart(params, response);
 }

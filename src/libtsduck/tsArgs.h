@@ -641,6 +641,13 @@ namespace ts {
         UString appName() const {return _app_name;}
 
         //!
+        //! Get the command line parameters from the last command line analysis.
+        //!
+        //! @param [out] args The command parameters from the last command line analysis.
+        //!
+        void getCommandArgs(UStringVector& args) const { args = _args; }
+
+        //!
         //! Get the full command line from the last command line analysis.
         //!
         //! @return The full command line from the last command line analysis.
@@ -916,8 +923,9 @@ namespace ts {
         //! Redirect report logging.
         //!
         //! @param [in] report Where to report errors. The redirection is cancelled if zero.
+        //! @return The previous redirected report.
         //!
-        void redirectReport(Report* report);
+        Report* redirectReport(Report* report);
 
         // Inherited from Report.
         virtual void raiseMaxSeverity(int level) override;
