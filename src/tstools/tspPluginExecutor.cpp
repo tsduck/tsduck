@@ -222,20 +222,25 @@ void ts::tsp::PluginExecutor::restart(const UStringVector& params, Report& repor
     RestartDataPtr rd(new RestartData(params, report));
 
     // Acquire the global mutex to modify global data.
+    // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
     {
-        Guard lock1(_global_mutex);
+        GuardCondition lock1(_global_mutex, _to_do);
 
         // If there was a previous pending restart operation, cancel it.
         if (!_restart_data.isNull()) {
             GuardCondition lock2(_restart_data->mutex, _restart_data->condition);
             _restart_data->completed = true;
             _restart_data->report.error(u"restart interrupted by another concurrent restart");
+            // Notify the waiting thread that its restart command is aborted.
             lock2.signal();
         }
 
-        // Declare this restart operation and release the global mutex.
+        // Declare this new restart operation.
         _restart_data = rd;
         _restart = true;
+
+        // Signal the plugin thread that there is something to do.
+        lock1.signal();
     }
 
     // Now wait for the restart operation to complete.
@@ -243,4 +248,65 @@ void ts::tsp::PluginExecutor::restart(const UStringVector& params, Report& repor
     while (!rd->completed) {
         lock3.waitCondition();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a pending restart operation if there is one.
+//----------------------------------------------------------------------------
+
+bool ts::tsp::PluginExecutor::processPendingRestart()
+{
+    // Run under the protection of the global mutex.
+    // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
+    Guard lock1(_global_mutex);
+
+    // If there is no pending restart, immediate success.
+    if (!_restart || _restart_data.isNull()) {
+        return true;
+    }
+
+    // Now lock the content of the restart data.
+    GuardCondition lock2(_restart_data->mutex, _restart_data->condition);
+
+    // Verbose message in the current tsp process and back to the remote tspcontrol.
+    verbose(u"restarting due to remote tspcontrol");
+    _restart_data->report.verbose(u"restarting plugin %s", {pluginName()});
+
+    // First, stop the current execution.
+    plugin()->stop();
+
+    // Save previous arguments to restart with the previous configuration
+    // if the restart fails with the new arguments.
+    UStringVector previous_args;
+    plugin()->getCommandArgs(previous_args);
+
+    // Redirect error messages from command line analysis to the remote tspcontrol.
+    Report* previous_report = plugin()->redirectReport(&_restart_data->report);
+
+    // This command line analysis shall not affect the tsp process.
+    plugin()->setFlags(plugin()->getFlags() | Args::NO_HELP | Args::NO_EXIT_ON_ERROR);
+
+    // Try to restart with the new command line arguments.
+    bool success = plugin()->analyze(pluginName(), _restart_data->args, false) && plugin()->getOptions() && plugin()->start();
+
+    // In case of restart failure, try to restart with the previous arguments.
+    if (!success) {
+        _restart_data->report.warning(u"failed to restart plugin %s, restarting with previous parameters", {pluginName()});
+        success = plugin()->analyze(pluginName(), previous_args, false) && plugin()->getOptions() && plugin()->start();
+    }
+
+    // Restore error messages to previous report.
+    plugin()->redirectReport(previous_report);
+
+    // Finally notify the calling thread that the restart is completed.
+    _restart_data->completed = true;
+    lock2.signal();
+
+    // Clear restart trigger.
+    _restart = false;
+    _restart_data.clear();
+
+    debug(u"restarted plugin %s, status: %s", {pluginName(), success});
+    return success;
 }

@@ -358,8 +358,18 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
 
 bool ts::TablesLogger::open()
 {
-    // Set PID's to filter.
+    // Reinitialize working data.
+    _abort = _exit = false;
+    _table_count = _packet_count = 0;
     _demux.reset();
+    _cas_mapper.reset();
+    _xmlOpen = false;
+    _shortSections.clear();
+    _allSections.clear();
+    _sectionsOnce.clear();
+    _section_filters.clear();
+
+    // Set PID's to filter.
     _demux.setPIDFilter(_initial_pids);
 
     // Set either a table or section handler, depending on --all-sections

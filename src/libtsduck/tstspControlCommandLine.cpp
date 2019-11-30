@@ -70,7 +70,7 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
     arg->help(u"", u"Index of the plugin to resume.");
 
     arg = newCommand(CMD_RESTART, u"Restart plugin with different parameters", u"[options] plugin-index [plugin-options ...]", Args::GATHER_PARAMETERS);
-    arg->option(u"", 0, Args::UNSIGNED);
+    arg->option(u"", 0, Args::STRING, 1, Args::UNLIMITED_COUNT);
     arg->help(u"", u"Index of the plugin to restart, followed by the new plugin parameters to use.");
 }
 

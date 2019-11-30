@@ -55,6 +55,11 @@ namespace ts {
         CASMapper(DuckContext& duck);
 
         //!
+        //! Reset the CAS mapper.
+        //!
+        void reset();
+
+        //!
         //! This method feeds the CAS mapper with a TS packet.
         //! @param [in] pkt A new transport stream packet.
         //!
