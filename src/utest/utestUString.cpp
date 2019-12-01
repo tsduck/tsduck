@@ -1033,11 +1033,29 @@ void UStringTest::testToInteger()
     TSUNIT_ASSERT(ts::UString(u" 12,345").toInteger(i, u",."));
     TSUNIT_EQUAL(12345, i);
 
-    TSUNIT_ASSERT(ts::UString(u" -12.345").toInteger(i, u",."));
+    TSUNIT_ASSERT(ts::UString(u" -12#345").toInteger(i, u",#"));
     TSUNIT_EQUAL(-12345, i);
 
-    TSUNIT_ASSERT(!ts::UString(u" -12;345").toInteger(i, u",."));
+    TSUNIT_ASSERT(!ts::UString(u" -12;345").toInteger(i, u",#"));
     TSUNIT_EQUAL(-12, i);
+
+    TSUNIT_ASSERT(ts::UString(u" -12.345").toInteger(i, u",", 3));
+    TSUNIT_EQUAL(-12345, i);
+
+    TSUNIT_ASSERT(ts::UString(u" 1  ").toInteger(ui32, u",", 3));
+    TSUNIT_EQUAL(1000, ui32);
+
+    TSUNIT_ASSERT(ts::UString(u"1.").toInteger(ui32, u",", 2));
+    TSUNIT_EQUAL(100, ui32);
+
+    TSUNIT_ASSERT(ts::UString(u" +1.23").toInteger(ui32, u",", 6));
+    TSUNIT_EQUAL(1230000, ui32);
+
+    TSUNIT_ASSERT(ts::UString(u"2.345678").toInteger(i, u",", 3));
+    TSUNIT_EQUAL(2345, i);
+
+    TSUNIT_ASSERT(ts::UString(u" -2.345678").toInteger(i, u",", 4));
+    TSUNIT_EQUAL(-23456, i);
 
     std::list<int32_t> i32List;
     std::list<int32_t> i32Ref;

@@ -1492,10 +1492,19 @@ namespace ts {
         //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
         //! is interpreted as a separator. Note that this implies that the optional thousands separators
         //! may have one character only.
+        //! @param [in] decimals Reference number of decimal digits. When @a decimals is greater than
+        //! zero, the result is automatically adjusted by the corresponding power of ten. For instance,
+        //! when @a decimals is 3, u"12" returns 12000, u"12.34" returns 12340 and "12.345678" returns 12345.
+        //! All extra decimals are accepted but ignored.
+        //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
+        //! A decimal point is allowed only in base 10.
         //! @return True on success, false on error (invalid string).
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        bool toInteger(INT& value, const UString& thousandSeparators = UString()) const;
+        bool toInteger(INT& value,
+                       const UString& thousandSeparators = UString(),
+                       size_type decimals = 0,
+                       const UString& decimalSeparators = UString(u".")) const;
 
         //!
         //! Convert a string containing a list of integers into a container of integers.
@@ -1517,10 +1526,20 @@ namespace ts {
         //! Distinct integer values must be separated by one or more of these separators.
         //! <i>Any character</i> from the @a listSeparators string is interpreted as a separator.
         //! Note that this implies that the list separators may have one character only.
+        //! @param [in] decimals Reference number of decimal digits. When @a decimals is greater than
+        //! zero, the result is automatically adjusted by the corresponding power of ten. For instance,
+        //! when @a decimals is 3, u"12" returns 12000, u"12.34" returns 12340 and "12.345678" returns 12345.
+        //! All extra decimals are accepted but ignored.
+        //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
+        //! A decimal point is allowed only in base 10.
         //! @return True on success, false on error (invalid string).
         //!
         template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type* = nullptr>
-        bool toIntegers(CONTAINER& container, const UString& thousandSeparators = UString(), const UString& listSeparators = UString(u",; ")) const;
+        bool toIntegers(CONTAINER& container,
+                        const UString& thousandSeparators = UString(),
+                        const UString& listSeparators = UString(u",; "),
+                        size_type decimals = 0,
+                        const UString& decimalSeparators = UString(u".")) const;
 
         //!
         //! Format a string containing a decimal value.
@@ -2088,6 +2107,14 @@ namespace ts {
 #endif
 
     private:
+        // Internal helpers for toInteger, signed and unsigned versions.
+        // Work on trimmed strings, with leading '+' skipped.
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
+
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators);
+
         //!
         //! Analysis context of a Format or Scan string, base class.
         //!
