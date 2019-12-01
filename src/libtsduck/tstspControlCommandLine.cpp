@@ -71,7 +71,12 @@ ts::tsp::ControlCommandLine::ControlCommandLine() :
 
     arg = newCommand(CMD_RESTART, u"Restart plugin with different parameters", u"[options] plugin-index [plugin-options ...]", Args::GATHER_PARAMETERS);
     arg->option(u"", 0, Args::STRING, 1, Args::UNLIMITED_COUNT);
-    arg->help(u"", u"Index of the plugin to restart, followed by the new plugin parameters to use.");
+    arg->help(u"",
+              u"Index of the plugin to restart, followed by the new plugin parameters to use.");
+    arg->option(u"same", 's');
+    arg->help(u"same",
+              u"Restart the plugin with the same options and parameters. "
+              u"By default, when no plugin options are specified, restart with no option at all.");
 }
 
 

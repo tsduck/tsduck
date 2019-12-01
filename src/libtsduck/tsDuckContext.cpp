@@ -43,7 +43,8 @@ TSDUCK_SOURCE;
 
 ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _report(report != nullptr ? report : CerrReport::Instance()),
-    _out(output != nullptr ? output : &std::cout),
+    _initial_out(output != nullptr ? output : &std::cout),
+    _out(_initial_out),
     _outFile(),
     _dvbCharsetIn(nullptr),
     _dvbCharsetOut(nullptr),
@@ -62,6 +63,25 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
                     {CASID_VIACCESS_MIN,   u"viaccess"},
                     {CASID_WIDEVINE_MIN,   u"widevine"}}
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the TSDuck context to initial configuration.
+//----------------------------------------------------------------------------
+
+void ts::DuckContext::reset()
+{
+    if (_outFile.is_open()) {
+        _outFile.close();
+    }
+
+    _out = _initial_out;
+    _dvbCharsetIn = _dvbCharsetOut = nullptr;
+    _casId = CASID_NULL;
+    _defaultPDS = 0;
+    _cmdStandards = _accStandards = STD_NONE;
+    _hfDefaultRegion.clear();
 }
 
 

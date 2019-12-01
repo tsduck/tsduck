@@ -85,6 +85,11 @@ namespace ts {
         DuckContext(Report* report = nullptr, std::ostream* output = nullptr);
 
         //!
+        //! Reset the TSDuck context to initial configuration.
+        //!
+        void reset();
+
+        //!
         //! Get the current report for log and error messages.
         //! @return A reference to the current output report.
         //!
@@ -391,6 +396,7 @@ namespace ts {
 
     private:
         Report*           _report;            // Pointer to a report for error messages. Never null.
+        std::ostream*     _initial_out;       // Initial text output stream. Never null.
         std::ostream*     _out;               // Pointer to text output stream. Never null.
         std::ofstream     _outFile;           // Open stream when redirected to a file by name.
         const DVBCharset* _dvbCharsetIn;      // DVB character set to interpret strings without prefix code.
@@ -401,7 +407,7 @@ namespace ts {
         Standards         _accStandards;      // Accumulated list of standards in the context.
         UString           _hfDefaultRegion;   // Default region for UHF/VHF band. Empty until used for the first time.
         int               _definedCmdOptions; // Defined command line options.
-        std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
+        const std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.
         enum CmdOptions {
