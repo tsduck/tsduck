@@ -40,8 +40,9 @@ const size_t ts::Args::UNLIMITED_COUNT = std::numeric_limits<size_t>::max();
 // Unlimited value.
 const int64_t ts::Args::UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
 
-// List of characters which are allowed thousands separators in integer values
-const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u",. ";
+// List of characters which are allowed thousands separators and decimal points in integer values
+const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u", ";
+const ts::UChar* const ts::Args::DECIMAL_POINTS = u".";
 
 // Enumeration description of HelpFormat.
 const ts::Enumeration ts::Args::HelpFormatEnum({
@@ -990,6 +991,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
 bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
 {
     int64_t last = 0;
+    size_t point = NPOS;
 
     // Build the argument value.
     ArgValue arg;
@@ -1044,7 +1046,11 @@ bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
         // Found exactly one integer value.
         arg.int_count = 1;
     }
-    else if (val.value().scan(u"%'d-%'d", {&arg.int_base, &last})) {
+    else if ((point = val.value().find(u'-')) != NPOS &&
+             point + 1 < val.value().size() &&
+             val.value().substr(0, point).toInteger(arg.int_base, THOUSANDS_SEPARATORS) &&
+             val.value().substr(point + 1).toInteger(last, THOUSANDS_SEPARATORS))
+    {
         // Found one range of integer values.
         if (last < arg.int_base) {
             error(u"invalid range of integer values \"%s\" for %s", {val.value(), opt.display()});

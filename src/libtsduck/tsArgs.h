@@ -110,7 +110,7 @@ namespace ts {
     //! For integer values, the minimum and maximum allowed values are specified
     //! and the actual values for the command line are checked for valid integer
     //! values. The integer values can be entered in decimal or hexadecimal
-    //! (using the 0x prefix). The comma, dot and space characters are considered
+    //! (using the 0x prefix). The comma and space characters are considered
     //! as possible "thousands separators" and are ignored.
     //!
     //! <h3>Error management</h3>
@@ -1038,8 +1038,9 @@ namespace ts {
         bool          _is_valid;
         int           _flags;
 
-        // List of characters which are allowed thousands separators in integer values
+        // List of characters which are allowed thousands separators and decimal points in integer values
         static const UChar* const THOUSANDS_SEPARATORS;
+        static const UChar* const DECIMAL_POINTS;
 
         // Add a new option.
         void addOption(const IOption& opt);
