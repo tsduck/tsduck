@@ -52,8 +52,9 @@ public:
     virtual void afterTest() override;
 
     void testAccessors();
-    void testHelp();
+    void testHelpDefault();
     void testCopyOptions();
+    void testHelpCustom();
     void testValidCommandVariableArgs();
     void testValidCommandArgcArgv();
     void testValidCommandContainer();
@@ -72,11 +73,13 @@ public:
     void testRedirection();
     void testTristate();
     void testRanges();
+    void testDecimals();
 
     TSUNIT_TEST_BEGIN(ArgsTest);
     TSUNIT_TEST(testAccessors);
-    TSUNIT_TEST(testHelp);
+    TSUNIT_TEST(testHelpDefault);
     TSUNIT_TEST(testCopyOptions);
+    TSUNIT_TEST(testHelpCustom);
     TSUNIT_TEST(testValidCommandVariableArgs);
     TSUNIT_TEST(testValidCommandArgcArgv);
     TSUNIT_TEST(testValidCommandContainer);
@@ -95,6 +98,7 @@ public:
     TSUNIT_TEST(testRedirection);
     TSUNIT_TEST(testTristate);
     TSUNIT_TEST(testRanges);
+    TSUNIT_TEST(testDecimals);
     TSUNIT_TEST_END();
 
 private:
@@ -158,8 +162,8 @@ void ArgsTest::testAccessors()
     TSUNIT_EQUAL(int(ts::Args::NO_EXIT_ON_ERROR), args.getFlags());
 }
 
-// Test case: help text
-void ArgsTest::testHelp()
+// Test case: help text with default options
+void ArgsTest::testHelpDefault()
 {
     ts::ReportBuffer<> log;
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
@@ -218,7 +222,7 @@ void ArgsTest::testHelp()
     log.resetMessages();
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--version=short"})));
     const ts::UString version(log.getMessages());
-    debug() << "ArgsTest::testHelp: version = \"" << version << "\"" << std::endl;
+    debug() << "ArgsTest::testHelpDefault: version = \"" << version << "\"" << std::endl;
     const size_t dash = version.find(u'-');
     TSUNIT_ASSERT(dash != ts::NPOS);
     TSUNIT_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
@@ -250,7 +254,7 @@ namespace {
     {
     public:
         explicit TestArgs(ts::Report* log) :
-            ts::Args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR)
+            ts::Args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS)
         {
             redirectReport(log);
             option(u"",      0,  ts::Args::STRING, 1, 2);
@@ -264,8 +268,97 @@ namespace {
             option(u"opt8",  0,  ts::Args::UINT32, 0, 0, 0, 0, true);
             option(u"opt9", 'c', ts::Enumeration({{u"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
             option(u"mask",  0,  ts::Enumeration({{u"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
+            option(u"opt10", 0,  ts::Args::UNSIGNED, 0, ts::Args::UNLIMITED_COUNT, 0, 0, false, 3);
+
+            help(u"", u"The parameters");
+            help(u"opt1", u"No value.");
+            help(u"opt2", u"String value.");
+            help(u"opt3", u"Integer from -4 to 7, unlimited count.");
+            help(u"opt4", u"Integer from 0 to 2.");
+            help(u"opt5", u"Positive integer, unlimited count.");
+            help(u"opt6", u"Unsigned int, 8 bits.");
+            help(u"opt7", u"Unsigned int, 16 bits.");
+            help(u"opt8", u"Unsigned int, 32 bits, optional value.");
+            help(u"opt9", u"Enumeration.");
+            help(u"mask", u"Enumeration, unlimited count.");
+            help(u"opt10", u"Unsigned int 3 decimal digits.");
         }
     };
+}
+
+// Test case: help text of a custom commmand.
+void ArgsTest::testHelpCustom()
+{
+    ts::ReportBuffer<> log;
+    TestArgs args(&log);
+
+    TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
+    TSUNIT_EQUAL(u"\n"
+        u"{description}\n"
+        u"\n"
+        u"Usage: test {syntax}\n"
+        u"\n"
+        u"Parameters:\n"
+        u"\n"
+        u"  The parameters\n"
+        u"\n"
+        u"Options:\n"
+        u"\n"
+        u"  -d[level]\n"
+        u"  --debug[=level]\n"
+        u"      Produce debug traces. The default level is 1. Higher levels produce more\n"
+        u"      messages.\n"
+        u"\n"
+        u"  --help\n"
+        u"      Display this help text.\n"
+        u"\n"
+        u"  --mask value\n"
+        u"      Enumeration, unlimited count.\n"
+        u"      Must be one of \"bit1\", \"bit2\", \"bit3\".\n"
+        u"\n"
+        u"  --opt1\n"
+        u"      No value.\n"
+        u"\n"
+        u"  --opt10 value\n"
+        u"      Unsigned int 3 decimal digits.\n"
+        u"      The value may include up to 3 meaningful decimal digits.\n"
+        u"\n"
+        u"  -a value\n"
+        u"  --opt2 value\n"
+        u"      String value.\n"
+        u"\n"
+        u"  --opt3 value\n"
+        u"      Integer from -4 to 7, unlimited count.\n"
+        u"\n"
+        u"  --opt4 value\n"
+        u"      Integer from 0 to 2.\n"
+        u"\n"
+        u"  -5 value\n"
+        u"  --opt5 value\n"
+        u"      Positive integer, unlimited count.\n"
+        u"\n"
+        u"  -b value\n"
+        u"  --opt6 value\n"
+        u"      Unsigned int, 8 bits.\n"
+        u"\n"
+        u"  --opt7 value\n"
+        u"      Unsigned int, 16 bits.\n"
+        u"\n"
+        u"  --opt8[=value]\n"
+        u"      Unsigned int, 32 bits, optional value.\n"
+        u"\n"
+        u"  -c value\n"
+        u"  --opt9 value\n"
+        u"      Enumeration.\n"
+        u"      Must be one of \"val1\", \"val2\", \"val3\".\n"
+        u"\n"
+        u"  -v\n"
+        u"  --verbose\n"
+        u"      Produce verbose output.\n"
+        u"\n"
+        u"  --version\n"
+        u"      Display the TSDuck version number.\n",
+        log.getMessages());
 }
 
 // Test case: analyze valid command, get option values, use analyze() with variable length argument list
@@ -549,7 +642,7 @@ void ArgsTest::testAmbiguousOption()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"a", u"b"}));
     debug() << "ArgsTest: testAmbiguousOption: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: ambiguous option --opt (--opt1, --opt2)", log.getMessages());
+    TSUNIT_EQUAL(u"Error: ambiguous option --opt (--opt1, --opt10)", log.getMessages());
 }
 
 // Test case:
@@ -606,7 +699,7 @@ void ArgsTest::testValidEnum()
     TSUNIT_EQUAL(32, args.intValue<int>(u"opt9"));
 }
 
-// Test case:
+// Test case: bitmask of integer values.
 void ArgsTest::testBitMask()
 {
     ts::ReportBuffer<> log;
@@ -708,7 +801,7 @@ void ArgsTest::testTristate()
     TSUNIT_EQUAL(ts::MAYBE, args.tristateValue(u"opt8"));
 }
 
-// Test case: tristate parameters.
+// Test case: ranges of integer values.
 void ArgsTest::testRanges()
 {
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR);
@@ -750,4 +843,18 @@ void ArgsTest::testRanges()
     TSUNIT_EQUAL(9002, args.intValue<int>(u"opt3", -1, 4));
     TSUNIT_EQUAL(9003, args.intValue<int>(u"opt3", -1, 5));
     TSUNIT_EQUAL(-1,   args.intValue<int>(u"opt3", -1, 6));
+}
+
+// Test case: decimal values.
+void ArgsTest::testDecimals()
+{
+    TestArgs args(&CERR);
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"param", u"--opt10", u"34", u"--opt10", u"0.1", u"--opt10", u"2.3456789-3"}));
+    TSUNIT_EQUAL(658,   args.count(u"opt10"));
+    TSUNIT_EQUAL(34000, args.intValue<int>(u"opt10", 0, 0));
+    TSUNIT_EQUAL(100,   args.intValue<int>(u"opt10", 0, 1));
+    TSUNIT_EQUAL(2345,  args.intValue<int>(u"opt10", 0, 2));
+    TSUNIT_EQUAL(2346,  args.intValue<int>(u"opt10", 0, 3));
+    TSUNIT_EQUAL(3000,  args.intValue<int>(u"opt10", 0, 657));
 }

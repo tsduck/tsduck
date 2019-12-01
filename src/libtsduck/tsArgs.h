@@ -353,6 +353,10 @@ namespace ts {
         //! @param [in] min_value Minimum value, ignored if @a type is not @link INTEGER @endlink.
         //! @param [in] max_value Maximum value, ignored if @a type is not @link INTEGER @endlink.
         //! @param [in] optional  When true, the option's value is optional.
+        //! @param [in] decimals Reference number of decimal digits. When @a decimals is greater than
+        //! zero, the result is automatically adjusted by the corresponding power of ten. For instance,
+        //! when @a decimals is 3, u"12" returns 12000, u"12.34" returns 12340 and "12.345678" returns 12345.
+        //! All extra decimals are accepted but ignored.
         //! @return A reference to this instance.
         //!
         Args& option(const UChar* name = nullptr,
@@ -362,7 +366,8 @@ namespace ts {
                      size_t       max_occur = 0,
                      int64_t      min_value = 0,
                      int64_t      max_value = 0,
-                     bool         optional = false);
+                     bool         optional = false,
+                     size_t       decimals = 0);
 
         //!
         //! Add the definition of an option, the value being from an enumeration type.
@@ -982,6 +987,7 @@ namespace ts {
             size_t         max_occur;   // Maximum occurence
             int64_t        min_value;   // Minimum value (for integer args)
             int64_t        max_value;   // Maximum value (for integer args)
+            size_t         decimals;    // Number of meaningful decimal digits
             uint32_t       flags;       // Option flags
             Enumeration    enumeration; // Enumeration values (if not empty)
             UString        syntax;      // Syntax of value (informational, "address:port" for instance)
@@ -997,6 +1003,7 @@ namespace ts {
                     size_t       max_occur,
                     int64_t      min_value,
                     int64_t      max_value,
+                    size_t       decimals,
                     uint32_t     flags);
 
             // Constructor:
@@ -1013,6 +1020,12 @@ namespace ts {
             // Description of the option value.
             enum ValueContext {ALONE, SHORT, LONG};
             UString valueDescription(ValueContext ctx) const;
+
+            // When the option has an Enumeration type, get a list of all valid names.
+            UString optionNames(const UString& separator) const;
+
+            // Complete option help text.
+            UString helpText(size_t line_width) const;
 
             // Check if an integer value is in range.
             template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type* = nullptr>
@@ -1056,13 +1069,9 @@ namespace ts {
         void processHelp();
         void processVersion();
 
-        // Format help lines from a long text.
-        // Always terminated with a new line.
-        // Indentation level:
-        // - 0 : Titles, typically no indentation.
-        // - 1 : Description of parameters, option names.
-        // - 2 : Description of options.
-        static UString HelpLines(int level, const UString& text, size_t line_width);
+        // Format help lines from a long text. Always terminated with a new line.
+        enum IndentationContext {TITLE, PARAMETER_DESC, OPTION_NAME, OPTION_DESC};
+        static UString HelpLines(IndentationContext level, const UString& text, size_t line_width);
 
         // Format the help options of the command.
         UString formatHelpOptions(size_t line_width) const;

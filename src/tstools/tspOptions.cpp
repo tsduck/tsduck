@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor command-line options
-//
-//----------------------------------------------------------------------------
 
 #include "tspOptions.h"
 #include "tsAsyncReport.h"
@@ -125,7 +121,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
          u"or modulator devices use it, while file devices ignore it. "
          u"This option is ignored if --bitrate is specified. ");
 
-    option(u"buffer-size-mb", 0, POSITIVE);
+    option(u"buffer-size-mb", 0, POSITIVE, 0, 1, 0, 0, false, 6);
     help(u"buffer-size-mb",
          u"Specify the buffer size in mega-bytes. This is the size of "
          u"the buffer between the input and output devices. The default "
@@ -242,7 +238,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", PluginRepository::LIST_ALL) : 0;
     monitor = present(u"monitor");
     sync_log = present(u"synchronous-log");
-    bufsize = 1024 * 1024 * intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB);
+    bufsize = intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB * 1000000);
     bitrate = intValue<BitRate>(u"bitrate", 0);
     bitrate_adj = MilliSecPerSec * intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = intValue<size_t>(u"max-flushed-packets", 0);
@@ -256,6 +252,9 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     control_port = intValue<uint16_t>(u"control-port", 0);
     control_timeout = intValue<MilliSecond>(u"control-timeout", DEF_CONTROL_TIMEOUT);
     control_reuse = present(u"control-reuse-port");
+
+    // Convert MB in MiB for buffer size for compatibility with original versions.
+    bufsize = size_t((uint64_t(bufsize) * 1024 * 1024) / 1000000);
 
     // Get and resolve optional local address.
     if (!present(u"control-local")) {
